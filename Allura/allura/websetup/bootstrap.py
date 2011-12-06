@@ -153,6 +153,7 @@ def bootstrap(command, conf, vars):
         app = p0.install_app('Hg', 'src-hg', 'Mercurial')
         app.config.options['type'] = 'hg'
         p0.install_app('Wiki', 'wiki')
+        p1.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
         p0.install_app('Tickets', 'doc-bugs')
         p0.install_app('Discussion', 'discussion')

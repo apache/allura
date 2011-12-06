@@ -482,7 +482,7 @@ class Project(MappedClass):
     def first_mount(self, required_access=None):
         '''Returns the first (toolbar order) mount, or the first mount to
         which the user has the required access.'''
-        from allura.ext.project_home import ProjectHomeApp
+        from forgewiki.wiki_main import ForgeWikiApp
         mounts = self.ordered_mounts()
         if self.private_project_of():
             for mount in mounts:
@@ -497,7 +497,7 @@ class Project(MappedClass):
                 obj = self.app_instance(mount['ac'])
             else:
                 continue
-            if has_access(obj, required_access) or isinstance(obj, ProjectHomeApp):
+            if has_access(obj, required_access) or isinstance(obj, ForgeWikiApp):
                 return mount
         return None
 
@@ -552,22 +552,17 @@ class Project(MappedClass):
         is_user_project=False,
         is_private_project=False):
         from allura import model as M
-        try:
-            from forgewiki.wiki_main import ForgeWikiApp
-        except ImportError:
-            ForgeWikiApp = None
 
         self.notifications_disabled = True
         if users is None: users = [ c.user ]
         if apps is None:
             if is_user_project:
-                apps = [('Wiki', 'home', 'Home'),
+                apps = [('Wiki', 'wiki', 'Wiki'),
                         ('profile', 'profile', 'Profile'),
                         ('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search')]
             else:
-                apps = [('Wiki', 'home', 'Home'),
-                        ('admin', 'admin', 'Admin'),
+                apps = [('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
@@ -595,21 +590,6 @@ class Project(MappedClass):
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
                 self.install_app(ep_name, mount_point, label, ordinal=i)
-            if ForgeWikiApp is not None:
-                home_app = self.app_instance('home')
-                if isinstance(home_app, ForgeWikiApp):
-                    home_app.show_discussion = False
-                    home_app.show_left_bar = False
-                    new_acl = [ ace
-                        for ace in home_app.config.acl
-                        if not (
-                            ace.role_id==role_auth._id and ace.access==M.ACE.ALLOW and ace.permission in ('create', 'edit', 'delete', 'unmoderated_post')
-                        )
-                    ]
-                    new_acl.append(M.ACE.allow(role_member._id, 'create'))
-                    new_acl.append(M.ACE.allow(role_member._id, 'edit'))
-                    new_acl.append(M.ACE.allow(role_member._id, 'unmoderated_post'))
-                    home_app.config.acl = new_acl
             self.database_configured = True
             self.notifications_disabled = False
             ThreadLocalORMSession.flush_all()

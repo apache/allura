@@ -49,9 +49,9 @@ def main():
                 else:
                     log.info('creating Wiki "home" for project ' + project.shortname)
                     home_title = project.homepage_title or 'Home'
-                    home_text = project.description or ''
-                    if home_text == 'You can edit this description in the admin page':
-                        home_text = 'You can edit this description'
+                    wiki_text = project.description or ''
+                    if wiki_text == 'You can edit this description in the admin page':
+                        wiki_text = 'You can edit this description'
 
                     # re-number all the mounts so the new Wiki comes first
                     mounts = project.ordered_mounts()
@@ -80,7 +80,7 @@ def main():
                             new_home_page = WM.Page.upsert(home_title)
                             new_home_page.viewable_by = ['all']
                         new_home_page.title = home_title
-                        new_home_page.text = home_text
+                        new_home_page.text = wiki_text
                         with patch('forgewiki.model.wiki.Notification.post', notification_post):
                             new_home_page.commit()
                     assert new_home_page is not None

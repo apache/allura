@@ -319,7 +319,7 @@ class ProjectRegistrationProvider(object):
                 users=users,
                 is_user_project=False,
                 apps=[
-                    ('Wiki', 'home', 'Home'),
+                    ('Wiki', 'wiki', 'Wiki'),
                     ('admin', 'admin', 'Admin')])
         except:
             ThreadLocalORMSession.close_all()
@@ -380,8 +380,8 @@ class ProjectRegistrationProvider(object):
                     troves = getattr(p, 'trove_%s' % trove_type)
                     for trove_id in project_template['trove_cats'][trove_type]:
                         troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
-            if 'home_options' in project_template and p.app_config('home'):
-                options = p.app_config('home').options
+            if 'home_options' in project_template and p.app_config('Wiki'):
+                options = p.app_config('Wiki').options
                 for option in project_template['home_options'].keys():
                     options[option] = project_template['home_options'][option]
             if 'icon' in project_template:
@@ -390,12 +390,12 @@ class ProjectRegistrationProvider(object):
                     project_template['icon']['filename'], icon_file,
                     square=True, thumbnail_size=(48, 48),
                     thumbnail_meta=dict(project_id=p._id, category='icon'))
-            home_app = p.app_instance('home')
-            if home_app:
+            wiki_app = p.app_instance('wiki')
+            if wiki_app:
                 from forgewiki import model as WM
                 text = project_template.get('home_text',
                         '[[project_admins]]\n[[download_button]]')
-                WM.Page.query.get(app_config_id=home_app.config._id).text = text
+                WM.Page.query.get(app_config_id=wiki_app.config._id).text = text
         except forge_exc.ProjectConflict:
             raise
         except:
@@ -424,10 +424,6 @@ class ProjectRegistrationProvider(object):
         with h.push_config(c, project=sp):
             M.AppConfig.query.remove(dict(project_id=c.project._id))
             if install_apps:
-                home_app = sp.install_app('Wiki', 'home', 'Home', ordinal=0)
-                if home_app:
-                    home_app.show_discussion = False
-                    home_app.show_left_bar = False
                 sp.install_app('admin', 'admin', ordinal=1)
                 sp.install_app('search', 'search', ordinal=2)
             g.post_event('project_created')

@@ -71,7 +71,7 @@ def test_macros():
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p></div>' % p_test._id)
-    h.set_context('--init--', 'home', neighborhood='Projects')
+    h.set_context('--init--', 'wiki', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert 'WikiPage Home modified by' in r, r
     orig_len = len(r)

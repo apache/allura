@@ -288,7 +288,7 @@ class TestRootController(TestController):
                 'labels':'',
                 'labels_old':'',
                 'viewable_by-0.id':'all'})
-        
+
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = model.Page.query.find(dict(title='aaa')).first()
         a.text = '\n[TEST]\n'
@@ -298,7 +298,7 @@ class TestRootController(TestController):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        
+
         response = self.app.get('/wiki/TEST/')
         assert 'Related' in response
         assert 'aaa' in response

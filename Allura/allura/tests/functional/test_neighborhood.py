@@ -15,8 +15,8 @@ from allura.tests import TestController
 class TestNeighborhood(TestController):
 
     def test_home_project(self):
-        r = self.app.get('/adobe/home/')
-        assert r.location.endswith('/adobe/home/Home/')
+        r = self.app.get('/adobe/wiki/')
+        assert r.location.endswith('/adobe/wiki/Home/')
         r = r.follow()
         assert 'Welcome' in str(r), str(r)
         r = self.app.get('/adobe/admin/', extra_environ=dict(username='test-user'),
@@ -24,10 +24,10 @@ class TestNeighborhood(TestController):
 
     def test_redirect(self):
         r = self.app.post('/adobe/_admin/update',
-                          params=dict(redirect='home/Home/'),
+                          params=dict(redirect='wiki/Home/'),
                           extra_environ=dict(username='root'))
         r = self.app.get('/adobe/')
-        assert r.location.endswith('/adobe/home/Home/')
+        assert r.location.endswith('/adobe/wiki/Home/')
 
     def test_admin(self):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
@@ -175,21 +175,22 @@ class TestNeighborhood(TestController):
                 project_name='My Moz',
                 project_description='',
                 neighborhood='Projects',
-                private_project='on'),
+                private_project='on',
+                tools='Wiki'),
             antispam=True,
             extra_environ=dict(username='root'),
             status=302)
         assert config.get('auth.login_url', '/auth/') not in r.location, r.location
         r = self.app.get(
-            '/p/mymoz/home/',
+            '/p/mymoz/wiki/',
             extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
         r = self.app.get(
-            '/p/mymoz/home/',
+            '/p/mymoz/wiki/',
             extra_environ=dict(username='*anonymous'),
             status=302)
         assert config.get('auth.login_url', '/auth/') in r.location, r.location
         self.app.get(
-            '/p/mymoz/home/',
+            '/p/mymoz/wiki/',
             extra_environ=dict(username='test-user'),
             status=403)
 
@@ -204,7 +205,7 @@ class TestNeighborhood(TestController):
     "filename":"icon.png"
   },
   "tools":{
-    "wiki":{"label":"Home","mount_point":"home"},
+    "wiki":{"label":"Wiki","mount_point":"wiki"},
     "discussion":{"label":"Discussion","mount_point":"discussion"},
     "blog":{"label":"News","mount_point":"news","options":{
       "show_discussion":false
@@ -212,7 +213,7 @@ class TestNeighborhood(TestController):
     "downloads":{"label":"Downloads","mount_point":"downloads"},
     "admin":{"label":"Admin","mount_point":"admin"}
   },
-  "tool_order":["home","discussion","news","downloads","admin"],
+  "tool_order":["wiki","discussion","news","downloads","admin"],
   "labels":["mmi"],
   "trove_cats":{
     "topic":[247],
@@ -238,8 +239,8 @@ class TestNeighborhood(TestController):
             status=302).follow()
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div',{'id':'top_nav'})
-        assert top_nav.contents[1]['href'] == '/adobe/testtemp/home/'
-        assert 'Home' in top_nav.contents[1].contents[0]
+        assert top_nav.contents[1]['href'] == '/adobe/testtemp/wiki/'
+        assert 'Wiki' in top_nav.contents[1].contents[0]
         assert top_nav.contents[3]['href'] == '/adobe/testtemp/discussion/'
         assert 'Discussion' in top_nav.contents[3].contents[0]
         assert top_nav.contents[5]['href'] == '/adobe/testtemp/news/'
@@ -248,10 +249,10 @@ class TestNeighborhood(TestController):
         assert 'Admin' in top_nav.contents[7].contents[0]
         # make sure project is private
         r = self.app.get(
-            '/adobe/testtemp/home/',
+            '/adobe/testtemp/wiki/',
             extra_environ=dict(username='root')).follow(extra_environ=dict(username='root'), status=200)
         r = self.app.get(
-            '/adobe/testtemp/home/',
+            '/adobe/testtemp/wiki/',
             extra_environ=dict(username='*anonymous'),
             status=302)
         # check the labels and trove cats
@@ -260,7 +261,7 @@ class TestNeighborhood(TestController):
         assert 'Topic :: Communications :: Telephony' in r
         assert 'Development Status :: 5 - Production/Stable' in r
         # check the wiki text
-        r = self.app.get('/adobe/testtemp/home/').follow()
+        r = self.app.get('/adobe/testtemp/wiki/').follow()
         assert "My home text!" in r
 
     def test_name_suggest(self):
@@ -282,20 +283,20 @@ class TestNeighborhood(TestController):
         assert r.json['message'] == 'This project name is taken.'
 
     def test_neighborhood_project(self):
-        r = self.app.get('/adobe/adobe-1/home/').follow(status=200)
-        r = self.app.get('/p/test/sub1/home/')
-        r = self.app.get('/p/test/sub1/', status=302)
-        r = self.app.get('/p/test/no-such-app/', status=404)
+        self.app.get('/adobe/adobe-1/admin/', status=200)
+        self.app.get('/p/test/sub1/wiki/')
+        self.app.get('/p/test/sub1/', status=302)
+        self.app.get('/p/test/no-such-app/', status=404)
 
     def test_neighborhood_namespace(self):
         # p/test exists, so try creating adobe/test
-        r = self.app.get('/adobe/test/home/', status=404)
+        self.app.get('/adobe/test/wiki/', status=404)
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe'),
+                          params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe', tools='Wiki'),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.status_int==302, r.html.find('div',{'class':'error'}).string
-        r = self.app.get('/adobe/test/home/Home/', status=200)
+        r = self.app.get('/adobe/test/wiki/').follow(status=200)
 
     def test_neighborhood_awards(self):
         file_name = 'adobe_icon.png'
@@ -321,13 +322,13 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/awards/%s/icon' % foo_id, extra_environ=dict(username='root'))
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
-        r = self.app.post('/adobe/_admin/awards/grant',
+        self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/_admin/awards/%s/adobe-1' % foo_id, extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
+        self.app.get('/adobe/_admin/awards/%s/adobe-1' % foo_id, extra_environ=dict(username='root'))
+        self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
                           extra_environ=dict(username='root'))
-        r = self.app.post('/adobe/_admin/awards/%s/delete' % foo_id,
+        self.app.post('/adobe/_admin/awards/%s/delete' % foo_id,
                           extra_environ=dict(username='root'))
 
     def test_add_a_project_link(self):

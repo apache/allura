@@ -399,7 +399,7 @@ class User(MappedClass):
             # Allow for special user-only tools
             p._extra_tool_status = ['user']
             # add user project informative text to home
-            home_app = p.app_instance('home')
+            home_app = p.app_instance('wiki')
             home_page = WM.Page.query.get(app_config_id=home_app.config._id)
             home_page.text = ("This is the personal project of %s."
             " This project is created automatically during user registration"

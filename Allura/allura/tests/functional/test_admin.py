@@ -475,5 +475,5 @@ class TestProjectAdmin(TestController):
         assert 'rleNew2' not in roles
 
         # make sure can still access homepage after one of user's roles were deleted
-        r = self.app.get('/p/test/home/', extra_environ=dict(username='test-user')).follow()
+        r = self.app.get('/p/test/wiki/', extra_environ=dict(username='test-user')).follow()
         assert r.status == '200 OK'
