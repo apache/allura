@@ -95,6 +95,10 @@ class TestRootController(TestController):
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
     def test_redirect_external(self):
+        r = self.app.get('/nf/redirect/?path=%s' % quote('http://en.wikipedia.org/wiki/Aho–Corasick_string_matching_algorithm'))
+        assert r.status_int == 302
+        assert r.location == 'http://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_string_matching_algorithm'
+
         r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
         assert r.status_int == 302
         assert r.location == 'http://google.com'

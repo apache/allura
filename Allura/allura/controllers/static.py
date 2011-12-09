@@ -25,5 +25,20 @@ class NewForgeController(object):
     @with_trailing_slash
     def redirect(self, path, **kw):
         """Redirect to external sites."""
+
+        # Make sure the url can be encoded to iso-8859-1 (required for HTTP
+        # headers. If it can't, urlquote it first, then redirect. Allows us to
+        # redirect to external links in markdown, even if the url contains
+        # unquoted unicode chars.
+        try:
+            path.encode('ISO-8859-1')
+        except UnicodeEncodeError:
+            i = path.find('://')
+            if i > -1:
+                scheme = path[:i+3]
+                path = path[i+3:]
+            else:
+                scheme = ''
+            path = scheme + h.urlquote(path)
         redirect(path)
 

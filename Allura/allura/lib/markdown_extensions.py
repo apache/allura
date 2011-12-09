@@ -228,7 +228,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             if 'sf.net' in val or 'sourceforge.net' in val:
                 return
             else:
-                tag[attr] = '/nf/redirect/?path=%s' % quote(val)
+                tag[attr] = '/nf/redirect/?path=%s' % h.urlquote(val)
                 tag['rel']='nofollow'
                 return
         if val.startswith('/'): return
