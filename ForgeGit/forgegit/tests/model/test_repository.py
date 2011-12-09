@@ -73,7 +73,7 @@ class TestNewGit(unittest.TestCase):
         c.app = None
         converted = g.markdown.convert('[1e146e]')
         assert '1e146e' in converted, converted
-        h.set_context('test', 'Wiki', neighborhood='Projects')
+        h.set_context('test', 'wiki', neighborhood='Projects')
         pg = WM.Page(
             title='Test Page', text='This is a commit reference: [1e146e]')
         ThreadLocalORMSession.flush_all()
