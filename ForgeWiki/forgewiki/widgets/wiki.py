@@ -7,7 +7,8 @@ class CreatePageWidget(ffw.Lightbox):
         for r in super(CreatePageWidget, self).resources(): yield r
         yield ew.JSScript('''$(function () {
             $('#lightbox_create_wiki_page form').submit(function(){
-                location.href=$('#sidebar a.add_wiki_page').attr('href')+encodeURIComponent($('input[name=name]', $(this)).val())+'/edit';
+                location.href = $('#sidebar a.add_wiki_page').attr('href') +
+                    encodeURIComponent($('input[name=name]', $(this)).val().replace('/', '-')) + '/edit';
                 return false;
             });
         });''');

@@ -61,6 +61,19 @@ class TestRootController(TestController):
         response = self.app.post('/wiki/tést/edit')
         assert 'tést' in response
 
+    def test_title_slashes(self):
+        # forward slash not allowed in wiki page title - converted to dash
+        response = self.app.post(
+            '/wiki/foo-bar/update',
+            params={
+                'title':'foo/bar',
+                'text':'sometext',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'}).follow()
+        assert 'foo-bar' in response
+        assert 'foo-bar' in response.request.url
+
     def test_subpage_attempt(self):
         self.app.get('/wiki/tést/')
         self.app.post(

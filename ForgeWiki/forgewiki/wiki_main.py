@@ -571,6 +571,7 @@ class PageController(BaseController):
         if not title:
             flash('You must provide a title for the page.','error')
             redirect('edit')
+        title = title.replace('/', '-')
         if not self.page:
             # the page doesn't exist yet, so create it
             self.page = WM.Page.upsert(self.title)
