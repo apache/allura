@@ -140,9 +140,12 @@ class TestFunctionalController(TrackerTestController):
     def test_render_index(self):
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
+        assert 'Create Ticket' in index_view
+        # No 'Create Ticket' button for user without 'write' perm
+        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
+        assert 'Create Ticket' not in r
 
     def test_render_markdown_syntax(self):
-        summary = 'test render markdown syntax'
         r = self.app.get('/bugs/markdown_syntax')
         assert_true('Markdown Syntax' in r)
 

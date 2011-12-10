@@ -160,18 +160,21 @@ class ForgeWikiApp(Application):
             page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         except:
             page = None
-        links = [SitemapEntry('Create Page', c.app.url, ui_icon=g.icons['plus'], className='add_wiki_page'),
-                 SitemapEntry('')]
-        links = links + [
-            SitemapEntry('Wiki Home',c.app.url),
-            SitemapEntry('Browse Pages',c.app.url+'browse_pages/'),
-            SitemapEntry('Browse Labels',c.app.url+'browse_tags/')]
+        links = []
+        if has_access(self, 'create'):
+            links += [SitemapEntry('Create Page', c.app.url,
+                        ui_icon=g.icons['plus'], className='add_wiki_page'),
+                      SitemapEntry('')]
+        links += [
+            SitemapEntry('Wiki Home', c.app.url),
+            SitemapEntry('Browse Pages', c.app.url + 'browse_pages/'),
+            SitemapEntry('Browse Labels', c.app.url + 'browse_tags/')]
         discussion = c.app.config.discussion
         pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
-        links = links + [SitemapEntry(''),
+        links += [SitemapEntry(''),
             SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
         ]
         return links

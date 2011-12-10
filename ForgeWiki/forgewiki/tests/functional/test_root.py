@@ -23,8 +23,13 @@ from forgewiki import model
 
 class TestRootController(TestController):
     def test_root_index(self):
-        response = self.app.get('/wiki/tést/')
-        assert 'tést' in response.follow()
+        r = self.app.get('/wiki/tést/').follow()
+        assert 'tést' in r
+        assert 'Create Page' in r
+        # No 'Create Page' button if user doesn't have 'create' perm
+        r = self.app.get('/wiki/tést/',
+                extra_environ=dict(username='*anonymous')).follow()
+        assert 'Create Page' not in r
 
     def test_root_markdown_syntax(self):
         response = self.app.get('/wiki/markdown_syntax/')

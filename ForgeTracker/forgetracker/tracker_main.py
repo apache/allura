@@ -174,7 +174,11 @@ class ForgeTrackerApp(Application):
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
         else:
             ticket = None
-        links = [SitemapEntry('Create Ticket', self.config.url() + 'new/', ui_icon=g.icons['plus'])]
+
+        links = []
+        if has_access(self, 'write')():
+            links.append(SitemapEntry('Create Ticket',
+                self.config.url() + 'new/', ui_icon=g.icons['plus']))
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Edit Milestones', self.config.url() + 'milestones', ui_icon=g.icons['table']))
             links.append(SitemapEntry('Edit Searches', c.project.url() + 'admin/' + c.app.config.options.mount_point + '/bins/', ui_icon=g.icons['search']))
