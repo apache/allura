@@ -1,3 +1,4 @@
+import json
 import os
 from cStringIO import StringIO
 
@@ -196,36 +197,56 @@ class TestNeighborhood(TestController):
 
     def test_project_template(self):
         icon_url = 'file://' + os.path.join(allura.__path__[0],'nf','allura','images','neo-icon-set-454545-256x350.png')
-
-        r = self.app.post('/adobe/_admin/update',
-                          params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]', project_template="""{
-  "private":true,
-  "icon":{
-    "url":"%s",
-    "filename":"icon.png"
-  },
-  "tools":{
-    "wiki":{"label":"Wiki","mount_point":"wiki"},
-    "discussion":{"label":"Discussion","mount_point":"discussion"},
-    "blog":{"label":"News","mount_point":"news","options":{
-      "show_discussion":false
-    }},
-    "downloads":{"label":"Downloads","mount_point":"downloads"},
-    "admin":{"label":"Admin","mount_point":"admin"}
-  },
-  "tool_order":["wiki","discussion","news","downloads","admin"],
-  "labels":["mmi"],
-  "trove_cats":{
-    "topic":[247],
-    "developmentstatus":[11]
-  },
-  "home_options":{
-    "show_right_bar":false,
-    "show_discussion":false
-  },
-  "home_text":"My home text!"
-}""" % icon_url),
-                          extra_environ=dict(username='root'))
+        test_groups = [{
+            "name": "Viewer", # group will be created, all params are valid
+            "permissions": ["read"],
+            "usernames": ["user01"]
+        },{
+            "name": "", # group won't be created - invalid name
+            "permissions": ["read"],
+            "usernames": ["user01"]
+        },{
+            "name": "TestGroup1", # group won't be created - invalid perm name
+            "permissions": ["foobar"],
+            "usernames": ["user01"]
+        },{
+            "name": "TestGroup2", # will be created; 'inspect' perm ignored
+            "permissions": ["read", "inspect"],
+            "usernames": ["user01", "user02"]
+        },{
+            "name": "TestGroup3", # will be created with no users in group
+            "permissions": ["admin"]
+        }]
+        r = self.app.post('/adobe/_admin/update', params=dict(name='Mozq1',
+            css='', homepage='# MozQ1!\n[Root]', project_template="""{
+                "private":true,
+                "icon":{
+                    "url":"%s",
+                    "filename":"icon.png"
+                },
+                "tools":{
+                    "wiki":{"label":"Wiki","mount_point":"wiki"},
+                    "discussion":{"label":"Discussion","mount_point":"discussion"},
+                    "blog":{"label":"News","mount_point":"news","options":{
+                    "show_discussion":false
+                    }},
+                    "downloads":{"label":"Downloads","mount_point":"downloads"},
+                    "admin":{"label":"Admin","mount_point":"admin"}
+                },
+                "tool_order":["wiki","discussion","news","downloads","admin"],
+                "labels":["mmi"],
+                "trove_cats":{
+                    "topic":[247],
+                    "developmentstatus":[11]
+                },
+                "home_options":{
+                    "show_right_bar":false,
+                    "show_discussion":false
+                },
+                "home_text":"My home text!",
+                "groups": %s
+                }""" % (icon_url, json.dumps(test_groups))),
+            extra_environ=dict(username='root'))
         r = self.app.post(
             '/adobe/register',
             params=dict(
@@ -263,6 +284,33 @@ class TestNeighborhood(TestController):
         # check the wiki text
         r = self.app.get('/adobe/testtemp/wiki/').follow()
         assert "My home text!" in r
+        # check that custom groups/perms/users were setup correctly
+        p = M.Project.query.get(shortname='testtemp')
+        roles = p.named_roles
+        for group in test_groups:
+            name = group.get('name')
+            permissions = group.get('permissions', [])
+            usernames = group.get('usernames', [])
+            if name in ('Viewer', 'TestGroup2', 'TestGroup3'):
+                role = M.ProjectRole.by_name(name, project=p)
+                # confirm role created in project
+                assert role in roles
+                for perm in permissions:
+                    # confirm valid permissions added to role, and invalid
+                    # permissions ignored
+                    if perm in p.permissions:
+                        assert M.ACE.allow(role._id, perm) in p.acl
+                    else:
+                        assert M.ACE.allow(role._id, perm) not in p.acl
+                # confirm valid users received role
+                for username in usernames:
+                    user = M.User.by_username(username)
+                    if user and user._id:
+                        assert role in user.project_role(project=p).roles
+            # confirm roles with invalid json data are not created
+            if name in ('', 'TestGroup1'):
+                assert name not in roles
+
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')

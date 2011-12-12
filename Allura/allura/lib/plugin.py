@@ -360,6 +360,21 @@ class ProjectRegistrationProvider(object):
 
             # Setup defaults from neighborhood project template if applicable
             offset = p.next_mount_point(include_search=True)
+            if 'groups' in project_template:
+                for obj in project_template['groups']:
+                    name = obj.get('name')
+                    permissions = set(obj.get('permissions', [])) & \
+                                  set(p.permissions)
+                    usernames = obj.get('usernames', [])
+                    if not (name and permissions): continue
+                    if M.ProjectRole.by_name(name): continue
+                    group = M.ProjectRole(project_id=p._id, name=name)
+                    p.acl += [M.ACE.allow(group._id, perm)
+                              for perm in permissions]
+                    for username in usernames:
+                        user = M.User.by_username(username)
+                        if not (user and user._id): continue
+                        user.project_role(project=p).roles.append(group._id)
             if 'tools' in project_template:
                 for i, tool in enumerate(project_template['tools'].keys()):
                     tool_config = project_template['tools'][tool]
