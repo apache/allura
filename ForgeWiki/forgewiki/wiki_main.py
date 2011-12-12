@@ -253,7 +253,7 @@ class RootController(BaseController):
         # HACK: The TG request extension machinery will strip off the end of
         # a dotted wiki page name if it matches a known file extension. Here,
         # we reassemble the original page name.
-        if request.response_ext:
+        if request.response_ext and not remainder:
             pname += request.response_ext
         return PageController(pname), remainder
 
