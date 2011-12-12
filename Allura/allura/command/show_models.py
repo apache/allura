@@ -134,17 +134,17 @@ class EnsureIndexCommand(base.Command):
         for name, indexes in main_indexes.iteritems():
             self._update_indexes(db[name], indexes)
         base.log.info('Updating indexes for project DBs')
-        projects = M.Project.query.find().all()
         configured_dbs = set()
-        for p in projects:
-            db = p.database_uri
-            if db in configured_dbs: continue
-            configured_dbs.add(db)
-            c.project = p
-            db = M.project_doc_session.db
-            base.log.info('... DB: %s', db)
-            for name, indexes in project_indexes.iteritems():
-                self._update_indexes(db[name], indexes)
+        for projects in utils.chunked_find(M.Project):
+            for p in projects:
+                db = p.database_uri
+                if db in configured_dbs: continue
+                configured_dbs.add(db)
+                c.project = p
+                db = M.project_doc_session.db
+                base.log.info('... DB: %s', db)
+                for name, indexes in project_indexes.iteritems():
+                    self._update_indexes(db[name], indexes)
 
     def _update_indexes(self, collection, indexes):
         prev_indexes = {}
