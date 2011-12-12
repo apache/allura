@@ -74,6 +74,17 @@ class TestRootController(TestController):
         assert 'foo-bar' in response
         assert 'foo-bar' in response.request.url
 
+    def test_dotted_page_name(self):
+        r = self.app.post(
+            '/wiki/page.dot/update',
+            params={
+                'title':'page.dot',
+                'text':'text1',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'}).follow()
+        assert 'page.dot' in r
+
     def test_subpage_attempt(self):
         self.app.get('/wiki/tést/')
         self.app.post(

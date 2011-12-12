@@ -247,9 +247,14 @@ class RootController(BaseController):
     def index(self, **kw):
         redirect(h.really_unicode(c.app.root_page_name).encode('utf-8')+'/')
 
-    #Instantiate a Page object, and continue dispatch there
     @expose()
     def _lookup(self, pname, *remainder):
+        """Instantiate a Page object, and continue dispatch there."""
+        # HACK: The TG request extension machinery will strip off the end of
+        # a dotted wiki page name if it matches a known file extension. Here,
+        # we reassemble the original page name.
+        if request.response_ext:
+            pname += request.response_ext
         return PageController(pname), remainder
 
     @expose()
