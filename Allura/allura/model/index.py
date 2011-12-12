@@ -39,7 +39,7 @@ ShortlinkDoc = collection(
     Field('app_config_id', S.ObjectId()),
     Field('link', str),
     Field('url', str),
-    Index('link, project_id', 'app_config_id'))
+    Index('link', 'project_id', 'app_config_id'))
 
 # Class definitions
 class ArtifactReference(object):
