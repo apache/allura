@@ -443,20 +443,20 @@ class Mailbox(MappedClass):
         now = datetime.utcnow()
         # Queries to find all matching subscription objects
         q_direct = dict(
-            type='direct')
+            type='direct',
+            queue={'$ne':[]})
         if MAILBOX_QUIESCENT:
             q_direct['last_modified']={'$lt':now - MAILBOX_QUIESCENT}
         q_digest = dict(
             type={'$in': ['digest', 'summary']},
             next_scheduled={'$lt':now})
         for mbox in cls.query.find(q_direct):
-            if mbox.queue:
-                mbox = cls.query.find_and_modify(
-                    query=dict(_id=mbox._id),
-                    update={'$set': dict(
-                            queue=[])},
-                    new=False)
-                mbox.fire(now)
+            mbox = cls.query.find_and_modify(
+                query=dict(_id=mbox._id),
+                update={'$set': dict(
+                        queue=[])},
+                new=False)
+            mbox.fire(now)
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
             if mbox.frequency.unit == 'day':
