@@ -33,7 +33,7 @@ class ForgeExtension(markdown.Extension):
         self.forge_processor = ForgeProcessor(self._use_wiki, md, macro_context=self._macro_context)
         self.forge_processor.install()
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
-        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~]+)')
+        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
