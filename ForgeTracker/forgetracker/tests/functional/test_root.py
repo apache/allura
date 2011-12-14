@@ -786,6 +786,15 @@ class TestEmailMonitoring(TrackerTestController):
         assert email[0]['value'] == self.test_email
         assert mtype[0]['selected'] == 'selected'
 
+    @patch('forgetracker.model.ticket.Notification.send_direct')
+    def test_notifications_moderators(self, send_direct):
+        self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
+        self.app.post('/doc-bugs/1/update_ticket',{
+            'summary':'test moderation',
+            'comment':'test unmoderated post'
+        }, extra_environ=dict(username='*anonymous'))
+        send_direct.assert_called_with(str(M.User.query.get(username='test-admin')._id))
+
     @patch('forgetracker.model.ticket.Notification.send_simple')
     def test_notifications_new(self, send_simple):
         self._set_options('NewTicketsOnly')

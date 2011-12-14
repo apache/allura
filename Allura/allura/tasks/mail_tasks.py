@@ -68,7 +68,10 @@ def sendmail(
     addrs_plain = []
     addrs_html = []
     addrs_multi = []
-    if '@' not in fromaddr:
+    if fromaddr is None:
+        fromaddr = 'noreply@in.sf.net'
+    elif '@' not in fromaddr:
+        log.warning('Looking up user with fromaddr %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
             log.warning('Cannot find user with ID %s', fromaddr)
@@ -127,7 +130,10 @@ def sendsimplemail(
     message_id,
     in_reply_to=None):
     from allura import model as M
-    if '@' not in fromaddr:
+    if fromaddr is None:
+        fromaddr = 'noreply@in.sf.net'
+    elif '@' not in fromaddr:
+        log.warning('Looking up user with fromaddr %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
             log.warning('Cannot find user with ID %s', fromaddr)

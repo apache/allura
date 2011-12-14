@@ -193,7 +193,37 @@ class Thread(Artifact):
         if has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             post.approve()
+        else:
+            self.notify_moderators(post)
         return post
+
+    def notify_moderators(self, post):
+        ''' Notify moderators that a post needs approval [#2963] '''
+        from allura.model.notification import Notification, Mailbox
+        artifact = self.artifact or self
+        subject = '[%s:%s] Moderation action required' % (
+                c.project.shortname, c.app.config.options.mount_point)
+        author = post.author()
+        text = '''The following submission requires approval at %s before it can be approved for posting:
+
+        %s''' % (h.absurl(c.app.config.discussion.url() + 'moderate'), post.text)
+        n = Notification(
+                ref_id=artifact.index_id(),
+                topic='message',
+                link=artifact.url(),
+                _id=artifact.url()+post._id,
+                from_address=str(author._id) if author != User.anonymous() else None,
+                reply_to_address='noreply@in.sf.net',
+                subject=subject,
+                text=text,
+                in_reply_to=post.parent_id,
+                author_id=author._id,
+                pubdate=datetime.utcnow())
+        users = self.app_config.project.users()
+        for u in users:
+            if (has_access(self, 'moderate', u)
+                and Mailbox.subscribed(user_id=u._id, app_config_id=post.app_config_id)):
+                    n.send_direct(str(u._id))
 
     def update_stats(self):
         self.num_replies = self.post_class().query.find(

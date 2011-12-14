@@ -155,7 +155,10 @@ def bootstrap(command, conf, vars):
         p0.install_app('Wiki', 'wiki')
         p1.install_app('Wiki', 'wiki')
         p0.install_app('Tickets', 'bugs')
-        p0.install_app('Tickets', 'doc-bugs')
+        app = p0.install_app('Tickets', 'doc-bugs')
+        role_anon = M.ProjectRole.by_name('*anonymous')._id
+        app.config.acl.append(M.ACE.allow(role_anon, 'post'))
+        app.config.acl.append(M.ACE.allow(role_anon, 'write'))
         p0.install_app('Discussion', 'discussion')
         p0.install_app('Link', 'link')
         ThreadLocalORMSession.flush_all()

@@ -121,7 +121,7 @@ class Notification(MappedClass):
             author = post.author()
             d = dict(
                 _id=artifact.url()+post._id,
-                from_address=str(author._id),
+                from_address=str(author._id) if author != User.anonymous() else None,
                 reply_to_address='"%s" <%s>' % (
                     subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
