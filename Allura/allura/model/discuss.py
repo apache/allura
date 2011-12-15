@@ -204,9 +204,10 @@ class Thread(Artifact):
         subject = '[%s:%s] Moderation action required' % (
                 c.project.shortname, c.app.config.options.mount_point)
         author = post.author()
+        url = self.discussion_class().query.get(_id=self.discussion_id).url()
         text = '''The following submission requires approval at %s before it can be approved for posting:
 
-        %s''' % (h.absurl(c.app.config.discussion.url() + 'moderate'), post.text)
+        %s''' % (h.absurl(url + 'moderate'), post.text)
         n = Notification(
                 ref_id=artifact.index_id(),
                 topic='message',
