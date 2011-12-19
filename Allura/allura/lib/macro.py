@@ -116,7 +116,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
     from forgeblog import model as BM
     app_config_ids = []
     for conf in c.project.app_configs:
-        if conf.tool_name == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
+        if conf.tool_name.lower() == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
             app_config_ids.append(conf._id)
     posts = BM.BlogPost.query.find({'state':'published','app_config_id':{'$in':app_config_ids}})
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
