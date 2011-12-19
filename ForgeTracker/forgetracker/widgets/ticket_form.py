@@ -83,6 +83,9 @@ class TicketForm(GenericTicketForm):
                 $('#view_attach').show();
                 $('#show_attach').hide();
             });
+            $('form').submit(function() {
+                $('input[type=submit]', this).attr('disabled', 'disabled');
+            });
         });''')
 
 class TicketCustomField(object):
