@@ -49,8 +49,10 @@
     <form action="." id="col_list_form" style="display:none">
       <input type="hidden" name="limit" value="{{limit}}">
       <input type="hidden" name="page" value="{{page}}">
+      {% if sort %}
       <input type="hidden" name="sort" value="{{sort}}">
-      <input type="hidden" name="query" value="{{query}}">
+      {% endif %}
+      <input type="hidden" name="q" value="{{query}}">
       <ul>
       {% for col in columns %}
         <li class="clear">
