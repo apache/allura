@@ -49,6 +49,7 @@ class Repository(M.Repository):
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
+        '# The following line is required for site integration, do not remove/modify\n'
         'curl -s $url\n')
 
     def __init__(self, repo):

@@ -261,6 +261,7 @@ class HgImplementation(M.RepositoryImplementation):
             cp.add_section('hooks')
         url = (tg.config.get('base_url', 'http://localhost:8080')
                + '/auth/refresh_repo' + self._repo.url())
+        cp.set('hooks','; = [the next line is required for site integration, do not remove/modify]', '')
         cp.set('hooks','changegroup','curl -s %s' % url)
         with open(fn, 'w') as fp:
             cp.write(fp)
