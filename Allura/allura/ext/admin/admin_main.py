@@ -580,7 +580,7 @@ class GroupsController(BaseController):
             # Handle new users in groups
             user_added = False
             for username in new_users:
-                user = M.User.by_username(username)
+                user = M.User.by_username(username.strip())
                 if not user:
                     flash('User %s not found' % username, 'error')
                     redirect('.')
