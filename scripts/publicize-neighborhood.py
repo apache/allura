@@ -2,13 +2,11 @@ import logging
 import sys
 
 from ming.orm import ThreadLocalORMSession
-from pylons import g
+from pylons import c, g
 
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
-
-from sfx.lib.sfx_api import SFXProjectApi
 
 log = logging.getLogger(__name__)
 
@@ -16,13 +14,12 @@ def main(options):
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(getattr(logging, options.log_level.upper()))
 
-    api = SFXProjectApi()
     nbhd = M.Neighborhood.query.get(name=options.neighborhood)
     if not nbhd:
         return 'Invalid neighborhood "%s".' % options.neighborhood
-    sfx_siteadmin = M.User.query.get(username=api.sfx_siteadmin)
-    if not sfx_siteadmin:
-        return "Couldn't find sfx_siteadmin with username '%s'" % api.sfx_siteadmin
+    admin_role = M.ProjectRole.by_name('Admin', project=nbhd.neighborhood_project)
+    nbhd_admin = admin_role.users_with_role(project=nbhd.neighborhood_project)[0].user
+    log.info('Making updates as neighborhood admin "%s"' % nbhd_admin.username)
 
     q = {'neighborhood_id': nbhd._id,
             'shortname': {'$ne':'--init--'}, 'deleted':False}
@@ -37,12 +34,9 @@ def main(options):
                 else:
                     log.info('Making public: "%s"' % p.shortname)
                     p.acl.append(M.ACE.allow(role_anon._id, 'read'))
-                    ThreadLocalORMSession.flush_all()
-                    try:
-                        api.update(sfx_siteadmin, p)
-                    except Exception, e:
-                        log.warning('SFX API update failed for project "%s": '
-                                    '%s' % (p.shortname, e))
+                    with h.push_config(c, project=p, user=nbhd_admin):
+                        ThreadLocalORMSession.flush_all()
+                        g.post_event('project_updated')
                 private_count += 1
             else:
                 log.info('Already public: "%s"' % p.shortname)
