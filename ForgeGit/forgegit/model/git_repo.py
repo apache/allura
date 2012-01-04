@@ -275,7 +275,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def _refresh_tree(self, tree, obj, seen_object_ids):
         tree.object_ids = [
-            Object(object_id=o.hexsha, name=o.name)
+            Object(object_id=o.hexsha, name=h.really_unicode(o.name))
             for o in obj
             if o.type in ('blob', 'tree') ] # submodules poorly supported by GitPython
         for o in obj.trees:
