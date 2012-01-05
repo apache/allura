@@ -169,7 +169,7 @@ class GitImplementation(M.RepositoryImplementation):
             if tag.is_valid() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, seen_object_ids):
+    def refresh_commit(self, ci, seen_object_ids, lazy=True):
         obj = self._git.commit(ci.object_id)
         ci.tree_id = obj.tree.hexsha
         # Save commit metadata
@@ -186,9 +186,9 @@ class GitImplementation(M.RepositoryImplementation):
         # Save commit tree
         tree, isnew = M.Tree.upsert(obj.tree.hexsha)
         seen_object_ids.add(obj.tree.binsha)
-        if isnew:
+        if not lazy or isnew:
             tree.set_context(ci)
-            self._refresh_tree(tree, obj.tree, seen_object_ids)
+            self._refresh_tree(tree, obj.tree, seen_object_ids, lazy=lazy)
 
     def refresh_commit_info(self, oid, seen):
         from allura.model.repo import CommitDoc
@@ -273,7 +273,9 @@ class GitImplementation(M.RepositoryImplementation):
             fp.write(text)
         os.chmod(fn, 0755)
 
-    def _refresh_tree(self, tree, obj, seen_object_ids):
+    def _refresh_tree(self, tree, obj, seen_object_ids=None, lazy=True):
+        if seen_object_ids is None:
+            seen_object_ids = set()
         tree.object_ids = [
             Object(object_id=o.hexsha, name=h.really_unicode(o.name))
             for o in obj
@@ -282,20 +284,9 @@ class GitImplementation(M.RepositoryImplementation):
             if o.binsha in seen_object_ids: continue
             subtree, isnew = M.Tree.upsert(o.hexsha)
             seen_object_ids.add(o.binsha)
-            if isnew:
+            if not lazy or isnew:
                 subtree.set_context(tree, o.name)
-                self._refresh_tree(subtree, o, seen_object_ids)
-        for o in obj.blobs:
-            if o.binsha in seen_object_ids: continue
-            blob, isnew = M.Blob.upsert(o.hexsha)
-            seen_object_ids.add(o.binsha)
-        for o in obj.trees:
-            if o.binsha in seen_object_ids: continue
-            subtree, isnew = M.Tree.upsert(o.hexsha)
-            seen_object_ids.add(o.binsha)
-            if isnew:
-                subtree.set_context(tree, o.name)
-                self._refresh_tree(subtree, o, seen_object_ids)
+                self._refresh_tree(subtree, o, seen_object_ids, lazy)
         for o in obj.blobs:
             if o.binsha in seen_object_ids: continue
             blob, isnew = M.Blob.upsert(o.hexsha)

@@ -155,7 +155,7 @@ class HgImplementation(M.RepositoryImplementation):
             for name, tag in self._hg.tags().iteritems() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, seen_object_ids):
+    def refresh_commit(self, ci, seen_object_ids, lazy=True):
         obj = self._hg[ci.object_id]
         # Save commit metadata
         mo = self.re_hg_user.match(obj.user())
@@ -176,9 +176,9 @@ class HgImplementation(M.RepositoryImplementation):
         fake_tree = self._tree_from_changectx(obj)
         ci.tree_id = fake_tree.hex()
         tree, isnew = M.Tree.upsert(fake_tree.hex())
-        if isnew:
+        if not lazy or isnew:
             tree.set_context(ci)
-            self._refresh_tree(tree, fake_tree)
+            self._refresh_tree(tree, fake_tree, lazy)
 
     def refresh_commit_info(self, oid, seen):
         from allura.model.repo import CommitDoc
@@ -276,7 +276,7 @@ class HgImplementation(M.RepositoryImplementation):
             root.set_blob(filepath, oid)
         return root
 
-    def _refresh_tree(self, tree, obj):
+    def _refresh_tree(self, tree, obj, lazy=True):
         tree.object_ids=[
             Object(object_id=o.hex(), name=name)
             for name, o in obj.trees.iteritems() ]
@@ -285,7 +285,7 @@ class HgImplementation(M.RepositoryImplementation):
             for name, oid in obj.blobs.iteritems() ]
         for name, o in obj.trees.iteritems():
             subtree, isnew = M.Tree.upsert(o.hex())
-            if isnew:
+            if not lazy or isnew:
                 subtree.set_context(tree, name)
                 self._refresh_tree(subtree, o)
         for name, oid in obj.blobs.iteritems():
