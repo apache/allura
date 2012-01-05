@@ -8,6 +8,7 @@ from datetime import datetime
 
 import tg
 import git
+import gitdb
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
@@ -20,6 +21,9 @@ from allura.model.repository import topological_sort
 from allura import model as M
 
 log = logging.getLogger(__name__)
+
+gitdb.util.mman = gitdb.util.mman.__class__(
+    max_open_handles=1024)
 
 class Repository(M.Repository):
     tool_name='Git'
