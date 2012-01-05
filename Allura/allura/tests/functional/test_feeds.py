@@ -1,15 +1,16 @@
-from pylons import g
 from formencode.variabledecode import variable_encode
 
-from ming.orm.ormsession import ThreadLocalORMSession
-
 from allura.tests import TestController
-from allura import model as M
+from allura.tests import decorators as td
 
 class TestFeeds(TestController):
-
     def setUp(self):
         TestController.setUp(self)
+        self._setUp()
+
+    @td.with_wiki
+    @td.with_tracker
+    def _setUp(self):
         self.app.get('/wiki/')
         self.app.get('/bugs/')
         self.app.post(
@@ -39,10 +40,12 @@ class TestFeeds(TestController):
         self.app.get('/feed.rss')
         self.app.get('/feed.atom')
 
+    @td.with_wiki
     def test_wiki_feed(self):
         self.app.get('/wiki/feed.rss')
         self.app.get('/wiki/feed.atom')
 
+    @td.with_wiki
     def test_wiki_page_feed(self):
         self.app.post('/wiki/Root/update', params={
                 'title':'Root',
@@ -53,10 +56,12 @@ class TestFeeds(TestController):
         self.app.get('/wiki/Root/feed.rss')
         self.app.get('/wiki/Root/feed.atom')
 
+    @td.with_tracker
     def test_ticket_list_feed(self):
         self.app.get('/bugs/feed.rss')
         self.app.get('/bugs/feed.atom')
 
+    @td.with_tracker
     def test_ticket_feed(self):
         self.app.get('/bugs/1/feed.rss')
         r = self.app.get('/bugs/1/feed.atom')

@@ -8,12 +8,17 @@ from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from forgewiki import model as WM
 
 class TestNotification(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    def setup_with_tools(self):
         setup_global_objects()
         _clear_subscriptions()
         _clear_notifications()
@@ -46,6 +51,10 @@ class TestPostNotifications(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    def setup_with_tools(self):
         setup_global_objects()
         g.set_app('wiki')
         _clear_subscriptions()
@@ -147,6 +156,10 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    def setup_with_tools(self):
         setup_global_objects()
         g.set_app('wiki')
         _clear_subscriptions()

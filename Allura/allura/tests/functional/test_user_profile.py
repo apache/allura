@@ -1,7 +1,7 @@
 from formencode.variabledecode import variable_encode
 
+from allura.tests import decorators as td
 from allura.tests import TestController
-
 
 class TestUserProfile(TestController):
 
@@ -28,6 +28,7 @@ class TestUserProfile(TestController):
         response = self.app.get('/u/test-user/profile/')
         assert 'Email Addresses' not in response
 
+    @td.with_wiki
     def test_feed(self):
         response = self.app.get('/u/test-admin/profile/feed')
         assert 'Recent posts by Test Admin' in response

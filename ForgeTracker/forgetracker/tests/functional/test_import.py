@@ -7,13 +7,13 @@ import ming
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import g
 
 from allura import model as M
-from alluratest.controller import TestController, TestRestApiBase
+from alluratest.controller import TestRestApiBase
+from allura.tests import decorators as td
 
-
-class TestImportController(TestRestApiBase):#TestController):
+class TestImportController(TestRestApiBase):
 
     def new_ticket(self, mount_point='/bugs/', **kw):
         response = self.app.get(mount_point + 'new/')
@@ -32,7 +32,7 @@ class TestImportController(TestRestApiBase):#TestController):
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
 
-
+    @td.with_tracker
     def test_no_capability(self):
         here_dir = os.path.dirname(__file__)
 
@@ -66,6 +66,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert_equal(from_api['custom_fields']['_cc'], org['cc'])
         assert_equal(from_api['custom_fields']['_private'], org['private'])
 
+    @td.with_tracker
     def test_validate_import(self):
         here_dir = os.path.dirname(__file__)
         doc_text = open(here_dir + '/data/sf.json').read()
@@ -73,6 +74,7 @@ class TestImportController(TestRestApiBase):#TestController):
             doc=doc_text, options='{}')
         assert not r.json['errors']
 
+    @td.with_tracker
     def test_import(self):
         here_dir = os.path.dirname(__file__)
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},

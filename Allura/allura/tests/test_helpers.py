@@ -1,14 +1,11 @@
-from os import path, environ
+from os import path
 
-from tg import config
-from pylons import c, g
-from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
+from pylons import c
 from nose.tools import eq_, assert_equals
 
 from allura import model as M
 from allura.lib import helpers as h
-
+from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 
 
@@ -51,6 +48,7 @@ def test_make_roles():
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr
 
+@td.with_wiki
 def test_context_setters():
     h.set_context('test', 'wiki', neighborhood='Projects')
     assert c.project is not None

@@ -2,10 +2,7 @@
 import unittest
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
-from email import header
-from email.parser import Parser
 
-import tg
 from nose.tools import raises, assert_equal
 from ming.orm import ThreadLocalORMSession
 
@@ -14,7 +11,7 @@ from allura.lib.utils import ConfigProxy
 
 from allura.lib.mail_util import parse_address, parse_message
 from allura.lib.exceptions import AddressException
-from allura.tasks.mail_tasks import route_email
+from allura.tests import decorators as td
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
@@ -44,6 +41,7 @@ class TestReactor(unittest.TestCase):
     def test_parse_address_bad_tool(self):
         parse_address('foo@hammer.test.p' + config.common_suffix)
 
+    @td.with_wiki
     def test_parse_address_good(self):
         topic, project, app = parse_address('foo@wiki.test.p' + config.common_suffix)
         assert_equal(topic, 'foo')

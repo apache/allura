@@ -1,13 +1,10 @@
-from pprint import pprint
 from datetime import datetime, timedelta
-import json
 
-from pylons import c
 from ming.orm import session
 
 from allura import model as M
-from allura.lib import helpers as h
-from alluratest.controller import TestController, TestRestApiBase
+from allura.tests import decorators as td
+from alluratest.controller import TestRestApiBase
 
 
 class TestApiTicket(TestRestApiBase):
@@ -49,6 +46,7 @@ class TestApiTicket(TestRestApiBase):
         r = self.api_post('/rest/p/test/admin/')
         assert r.status_int == 404
 
+    @td.with_wiki
     def test_project_ping(self):
         self.set_api_ticket()
         r = self.api_get('/rest/p/test/wiki/Home/')
@@ -60,6 +58,7 @@ class TestApiTicket(TestRestApiBase):
         r = self.api_post('/rest/p/test/wiki/')
         assert r.status_int == 403
 
+    @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_subproject_ping(self):
         self.set_api_ticket()
         r = self.api_get('/rest/p/test/sub1/wiki/Home/')

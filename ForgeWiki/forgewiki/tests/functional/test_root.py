@@ -9,6 +9,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 from forgewiki import model
@@ -22,6 +23,14 @@ from forgewiki import model
 #     reply, delete
 
 class TestRootController(TestController):
+    def setUp(self):
+        super(TestRootController, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    def setup_with_tools(self):
+        pass
+
     def test_root_index(self):
         r = self.app.get('/wiki/tést/').follow()
         assert 'tést' in r

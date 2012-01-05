@@ -138,42 +138,23 @@ def bootstrap(command, conf, vars):
         # TODO: Hope that Ming can be improved to at least avoid stuff below
         sess.flush(x)
 
-
-    log.info('Registering initial apps')
-
     c.project = p0
     c.user = u_admin
     p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
     if asbool(conf.get('load_test_data')):
-        u_proj = M.Project.query.get(shortname='u/test-admin', neighborhood_id=n_users._id)
-        app = p0.install_app('SVN', 'src', 'SVN')
-        app = p0.install_app('Git', 'src-git', 'Git')
-        app.config.options['type'] = 'git'
-        app = p0.install_app('Hg', 'src-hg', 'Mercurial')
-        app.config.options['type'] = 'hg'
-        p0.install_app('Wiki', 'wiki')
-        p1.install_app('Wiki', 'wiki')
-        p0.install_app('Tickets', 'bugs')
-        app = p0.install_app('Tickets', 'doc-bugs')
-        role_anon = M.ProjectRole.by_name('*anonymous')._id
-        app.config.acl.append(M.ACE.allow(role_anon, 'post'))
-        app.config.acl.append(M.ACE.allow(role_anon, 'write'))
-        p0.install_app('Discussion', 'discussion')
-        p0.install_app('Link', 'link')
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
         if asbool(conf.get('cache_test_data')):
             cache_test_data()
     else: # pragma no cover
         # regular first-time setup
         p0.add_user(u_admin, ['Admin'])
+        log.info('Registering initial apps')
         for ep_name, app in g.entry_points['tool'].iteritems():
             if not app.installable:
                 continue
             p0.install_app(ep_name)
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+    ThreadLocalORMSession.flush_all()
+    ThreadLocalORMSession.close_all()
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn

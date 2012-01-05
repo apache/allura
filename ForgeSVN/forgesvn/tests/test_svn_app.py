@@ -1,21 +1,21 @@
-import os
-import shutil
 import unittest
-import pkg_resources
 from nose.tools import assert_equals
 
-from pylons import c, g
+from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from forgesvn import model as SM
-
+from allura.tests import decorators as td
 
 class TestSVNApp(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
         ThreadLocalORMSession.flush_all()
@@ -26,8 +26,9 @@ class TestSVNApp(unittest.TestCase):
         assert_equals(c.app.admin_menu()[0].label, 'Checkout URL')
 
     def test_uninstall(self):
-        c.app.uninstall(c.project)
         from allura import model as M
+        M.MonQTask.run_ready()
+        c.app.uninstall(c.project)
         M.main_orm_session.flush()
         task = M.MonQTask.get()
         assert task.task_name == 'allura.tasks.repo_tasks.uninstall', task.task_name

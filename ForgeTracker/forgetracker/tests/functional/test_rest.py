@@ -2,18 +2,20 @@ import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c
-from ming.orm import session
 
-from allura import model as M
 from allura.lib import helpers as h
-from alluratest.controller import TestController, TestRestApiBase
-from forgetracker import model as TM
+from allura.tests import decorators as td
+from alluratest.controller import TestRestApiBase
 
 
 class TestTrackerApiBase(TestRestApiBase):
 
     def setUp(self):
         super(TestTrackerApiBase, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_tracker
+    def setup_with_tools(self):
         h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals
 
@@ -108,6 +110,3 @@ class TestRestDiscussion(TestTrackerApiBase):
         assert reply.json['post']['text'] == 'This is a reply', reply.json
         thread = self.api_post('/rest/p/test/bugs/_discuss/thread/%s/' % discussion['threads'][0]['_id'])
         assert len(thread.json['thread']['posts']) == 2, thread.json
-
-
-

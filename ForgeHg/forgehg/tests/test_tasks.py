@@ -1,17 +1,20 @@
 import unittest
 
-from pylons import c, g
-
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from allura.tasks import repo_tasks
+from allura.tests import decorators as td
 
 class TestHgReactors(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
         ThreadLocalORMSession.flush_all()

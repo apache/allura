@@ -1,4 +1,3 @@
-import os
 import json
 
 import pkg_resources
@@ -7,6 +6,7 @@ from ming.orm import ThreadLocalORMSession
 from datadiff.tools import assert_equal
 
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from allura import model as M
 from alluratest.controller import TestController
 
@@ -15,6 +15,10 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')

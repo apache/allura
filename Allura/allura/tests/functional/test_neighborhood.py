@@ -4,14 +4,11 @@ from cStringIO import StringIO
 
 import Image
 from tg import config
-from pylons import g, c
-
-from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
 from allura import model as M
 from allura.tests import TestController
-
+from allura.tests import decorators as td
 
 class TestNeighborhood(TestController):
 
@@ -330,6 +327,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/check_name?project_name=test')
         assert r.json['message'] == 'This project name is taken.'
 
+    @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_neighborhood_project(self):
         self.app.get('/adobe/adobe-1/admin/', status=200)
         self.app.get('/p/test/sub1/wiki/')

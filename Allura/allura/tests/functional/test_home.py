@@ -1,15 +1,13 @@
 import json
-from pylons import g
-from formencode.variabledecode import variable_encode
-
-from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.tests import TestController
+from allura.tests import decorators as td
 from allura import model as M
 
 
 class TestProjectHome(TestController):
 
+    @td.with_wiki
     def test_project_nav(self):
         response = self.app.get('/p/test/_nav.json')
         root = self.app.get('/p/test/wiki/').follow()
@@ -18,6 +16,7 @@ class TestProjectHome(TestController):
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
 
+    @td.with_wiki
     def test_neighborhood_home(self):
         self.app.get('/p/test/wiki/', status=302)
         self.app.get('/adobe/test/wiki/', status=404)

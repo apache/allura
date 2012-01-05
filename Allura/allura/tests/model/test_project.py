@@ -2,22 +2,22 @@
 """
 Model tests for project
 """
-from datetime import datetime
-
-import mock
 from nose.tools import with_setup
-from pylons import c, g, request
-from webob import Request
+from pylons import c 
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
-from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 
 def setUp():
     setup_basic_test()
+    setup_with_tools()
+
+@td.with_wiki
+def setup_with_tools():
     setup_global_objects()
 
 @with_setup(setUp)

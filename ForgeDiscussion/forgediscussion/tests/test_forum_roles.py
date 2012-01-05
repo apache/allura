@@ -1,14 +1,15 @@
-from pylons import c, g
+from pylons import c
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import security
+from allura.tests import decorators as td
 
 def setUp():
     setup_basic_test()
     setup_global_objects()
-    g.set_app('discussion')
 
+@td.with_discussion
 def test_role_assignments():
     admin = M.User.by_username('test-admin')
     user = M.User.by_username('test-user')

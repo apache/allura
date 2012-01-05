@@ -2,9 +2,7 @@ import os, allura
 import pkg_resources
 import Image, StringIO
 
-from nose.tools import assert_equals, assert_true
-from pylons import g, c
-
+from nose.tools import assert_equals
 from ming.orm.ormsession import ThreadLocalORMSession
 
 try:
@@ -13,9 +11,8 @@ except ImportError:
     sfx = None
 
 from allura.tests import TestController
+from allura.tests import decorators as td
 from allura import model as M
-from allura.lib import helpers as h
-
 
 class TestProjectAdmin(TestController):
 
@@ -443,6 +440,7 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/groups/')
         assert 'test-user' not in str(r), r.showbrowser()
 
+    @td.with_wiki
     def test_new_group(self):
         r = self.app.get('/admin/groups/new', validate_chunk=True)
         r = self.app.post('/admin/groups/create', params={'name': 'Developer'})

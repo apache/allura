@@ -17,6 +17,7 @@ from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
 from allura.tasks import repo_tasks
+from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
 
 class TestEventTasks(unittest.TestCase):
@@ -45,6 +46,7 @@ class TestIndexTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
 
+    @td.with_wiki
     def test_add_artifacts(self):
         old_shortlinks = M.Shortlink.query.find().count()
         old_solr_size = len(g.solr.db)
@@ -65,6 +67,7 @@ class TestIndexTasks(unittest.TestCase):
         a = _TestArtifact.query.get(_shorthand_id='t3')
         assert len(a.backrefs) == 5, a.backrefs
 
+    @td.with_wiki
     def test_del_artifacts(self):
         old_shortlinks = M.Shortlink.query.find().count()
         old_solr_size = len(g.solr.db)
@@ -114,6 +117,7 @@ class TestMailTasks(unittest.TestCase):
             assert args[5] == None
             assert 'This is a test' in str(args[6]), str(args[6])
 
+    @td.with_wiki
     def test_receive_email_ok(self):
         c.user = M.User.by_username('test-admin')
         import forgewiki
@@ -143,7 +147,10 @@ class TestRepoTasks(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
-        setup_global_objects()
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         h.set_context('test', 'src', neighborhood='Projects')
 
     def test_init(self):

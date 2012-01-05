@@ -1,9 +1,5 @@
-import allura
-
+from allura.tests import decorators as td
 from alluratest.controller import TestController
-from allura.lib import helpers as h
-from allura.ext.search import search_main
-from ming.orm.ormsession import ThreadLocalORMSession
 
 
 class TestRootController(TestController):
@@ -11,6 +7,7 @@ class TestRootController(TestController):
         response = self.app.get('/link/index')
         assert 'Link is not configured' in response
 
+    @td.with_link
     def test_root_index_with_url(self):
         response = self.app.get('/admin/link/options', validate_chunk=True)
         response.form['url'] = 'http://www.google.com/'

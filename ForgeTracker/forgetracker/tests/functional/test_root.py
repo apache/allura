@@ -4,18 +4,27 @@ import Image, StringIO
 import allura
 
 from mock import patch
-from nose.tools import assert_true, assert_false, eq_, assert_equal
+from nose.tools import assert_true, assert_false, assert_equal
 from formencode.variabledecode import variable_encode
 
-from alluratest.controller import TestController, REGISTRY
+from alluratest.controller import TestController
 from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
 
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from ming.orm.ormsession import ThreadLocalORMSession
 
 class TrackerTestController(TestController):
+    def setUp(self):
+        super(TrackerTestController, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_tracker
+    def setup_with_tools(self):
+        pass
+
     def new_ticket(self, mount_point='/bugs/', **kw):
         response = self.app.get(mount_point + 'new/')
         form = response.forms[1]
@@ -118,6 +127,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/feed.atom')
         assert 'Private Ticket' not in r
 
+    @td.with_tool('test', 'Tickets', 'doc-bugs')
     def test_two_trackers(self):
         summary = 'test two trackers'
         ticket_view = self.new_ticket('/doc-bugs/', summary=summary, _milestone='1.0').follow()
@@ -766,6 +776,11 @@ class TestMilestoneAdmin(TrackerTestController):
         assert tm.Ticket.query.find({
             'custom_fields._releases': '1.1'}).count() == 1
 
+def post_install_hook(app):
+    role_anon = M.ProjectRole.by_name('*anonymous')._id
+    app.config.acl.append(M.ACE.allow(role_anon, 'post'))
+    app.config.acl.append(M.ACE.allow(role_anon, 'write'))
+
 class TestEmailMonitoring(TrackerTestController):
     def __init__(self):
         super(TestEmailMonitoring, self).__init__()
@@ -786,6 +801,7 @@ class TestEmailMonitoring(TrackerTestController):
         assert email[0]['value'] == self.test_email
         assert mtype[0]['selected'] == 'selected'
 
+    @td.with_tool('test', 'Tickets', 'doc-bugs', post_install_hook=post_install_hook)
     @patch('forgetracker.model.ticket.Notification.send_direct')
     def test_notifications_moderators(self, send_direct):
         self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')

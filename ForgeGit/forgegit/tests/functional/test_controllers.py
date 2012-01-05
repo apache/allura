@@ -11,12 +11,17 @@ from datadiff.tools import assert_equal
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        self.setup_with_tools()
+
+    @td.with_git
+    def setup_with_tools(self):
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')

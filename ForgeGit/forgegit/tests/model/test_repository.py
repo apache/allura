@@ -11,6 +11,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from allura import model as M
 from forgegit import model as GM
 from forgewiki import model as WM
@@ -19,6 +20,11 @@ class TestNewGit(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_git
+    @td.with_wiki
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -26,7 +32,7 @@ class TestNewGit(unittest.TestCase):
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
-        # self.repo = GM.Repository(
+        #self.repo = GM.Repository(
         #     name='testgit.git',
         #     fs_path=repo_dir,
         #     url_path = '/test/',
@@ -88,6 +94,10 @@ class TestGitRepo(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_git
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -150,8 +160,12 @@ class TestGitCommit(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_git
+    def setup_with_tools(self):
         setup_global_objects()
-        h.set_context('test', 'src', neighborhood='Projects')
+        h.set_context('test', 'src-git', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data')
         self.repo = GM.Repository(

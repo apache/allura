@@ -1,4 +1,3 @@
-import os
 import json
 
 import pkg_resources
@@ -7,9 +6,9 @@ pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c
 from ming.orm import ThreadLocalORMSession
-from datadiff.tools import assert_equal
 
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 
@@ -17,6 +16,10 @@ class TestRootController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')

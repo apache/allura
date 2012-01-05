@@ -3,9 +3,14 @@ from pylons import c, g
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import security
+from allura.tests import decorators as td
 
 def setUp():
     setup_basic_test()
+    setup_with_tools()
+
+@td.with_tracker
+def setup_with_tools():
     setup_global_objects()
     g.set_app('bugs')
 

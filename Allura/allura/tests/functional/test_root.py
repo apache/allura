@@ -12,12 +12,11 @@ Please read http://pythonpaste.org/webtest/ for more information.
 """
 from urllib import quote
 
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_equal
 
+from allura.tests import decorators as td
 from allura.tests import TestController
 from allura import model as M
-from ming.orm import session
-
 
 class TestRootController(TestController):
 
@@ -89,6 +88,7 @@ class TestRootController(TestController):
         assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
         assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
 
+    @td.with_wiki
     def test_markdown_to_html(self):
         n = M.Neighborhood.query.get(name='Projects')
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)

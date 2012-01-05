@@ -16,6 +16,7 @@ import allura
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import security
+from allura.tests import decorators as td
 from allura.websetup.schema import REGISTRY
 from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
@@ -34,6 +35,10 @@ Mapper.compile_all()
 def setUp():
     setup_basic_test()
     setup_unit_test()
+    setup_with_tools()
+
+@td.with_wiki
+def setup_with_tools():
     h.set_context('test', 'wiki', neighborhood='Projects')
     Checkmessage.query.remove({})
     WM.Page.query.remove({})

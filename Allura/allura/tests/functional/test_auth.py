@@ -3,8 +3,8 @@ import json
 from datadiff.tools import assert_equal
 
 from allura.tests import TestController
+from allura.tests import decorators as td
 from allura import model as M
-from allura.lib import helpers as h
 from ming.orm.ormsession import ThreadLocalORMSession
 
 
@@ -157,6 +157,7 @@ class TestAuth(TestController):
         # Make sure that default _lookup() throws 404
         self.app.get('/auth/foobar', status=404)
 
+    @td.with_svn
     def test_refresh_repo(self):
         r = self.app.get('/auth/refresh_repo')
         assert_equal(r.body, 'No repo specified')
@@ -185,22 +186,26 @@ class TestUserPermissions(TestController):
         r = self._check_repo('/git/test/bar')
         assert r == self.disallow, r
 
+    @td.with_svn
     def test_repo_write(self):
         r = self._check_repo('/git/test/src.git')
         assert r == self.allow, r
         r = self._check_repo('/git/test/src')
         assert r == self.allow, r
 
+    @td.with_svn
     def test_subdir(self):
         r = self._check_repo('/git/test/src.git/foo')
         assert r == self.allow, r
         r = self._check_repo('/git/test/src/foo')
         assert r == self.allow, r
 
+    @td.with_svn
     def test_neighborhood(self):
         r = self._check_repo('/git/test.p/src.git')
         assert r == self.allow, r
 
+    @td.with_svn
     def test_repo_read(self):
         r = self._check_repo(
             '/git/test.p/src.git',
@@ -223,6 +228,7 @@ class TestUserPermissions(TestController):
         except:
             return r
 
+    @td.with_repos
     def test_list_repos(self):
         r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
         assert_equal(json.loads(r.body), {"allow_write": [

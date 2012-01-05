@@ -1,7 +1,8 @@
 from alluratest.controller import TestController
-
+from allura.tests import decorators as td
 
 class TestRootController(TestController):
+    @td.with_wiki
     def test_root(self):
         response = self.app.get('/downloads/nav.json')
         root = self.app.get('/p/test/wiki/').follow()

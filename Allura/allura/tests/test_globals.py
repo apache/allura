@@ -3,11 +3,12 @@ from urllib import quote
 from nose.tools import with_setup, assert_equal
 from pylons import g, c
 
-from ming.orm import session, ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 
 from forgewiki import model as WM
 from forgeblog import model as BM
@@ -16,8 +17,13 @@ from forgeblog import model as BM
 def setUp():
     """Method called by nose before running each test"""
     setup_basic_test()
+    setup_with_tools()
+
+@td.with_wiki
+def setup_with_tools():
     setup_global_objects()
 
+@td.with_wiki
 def test_app_globals():
     g.oid_session()
     g.oid_session()

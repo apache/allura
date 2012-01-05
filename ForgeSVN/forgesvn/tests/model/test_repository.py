@@ -7,6 +7,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from allura import model as M
 from forgesvn import model as SM
 
@@ -14,6 +15,10 @@ class TestNewRepo(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -64,7 +69,12 @@ class TestSVNRepo(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         setup_global_objects()
+        h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
         self.repo = SM.Repository(
@@ -128,6 +138,10 @@ class TestSVNRev(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_svn
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -159,5 +173,3 @@ class TestSVNRev(unittest.TestCase):
                  +self.rev.diffs.copied)
         for d in diffs:
             print d
-
-

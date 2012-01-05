@@ -7,6 +7,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura.tests import decorators as td
 from allura import model as M
 from forgehg import model as HM
 
@@ -14,8 +15,12 @@ class TestNewRepo(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
         setup_global_objects()
-        h.set_context('test', 'src', neighborhood='Projects')
+        h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgehg', 'tests/data')
         self.repo = HM.Repository(
@@ -50,7 +55,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.shorthand_id() == '[1c7eb5]'
         assert self.rev.symbolic_ids == (['default'], ['tip'])
         assert self.rev.url() == (
-            '/p/test/src/ci/'
+            '/p/test/src-hg/ci/'
             '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1/')
         all_cis = self.rev.log(0, 1000)
         assert len(all_cis) == 5
@@ -65,7 +70,7 @@ class TestNewRepo(unittest.TestCase):
             'README', '<pre>This is readme\nAnother line\n</pre>')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/ci/'
+            '/p/test/src-hg/ci/'
             '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1/'
             'tree/')
         self.rev.tree.by_name['README']
@@ -75,6 +80,10 @@ class TestHgRepo(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -138,6 +147,10 @@ class TestHgCommit(unittest.TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
