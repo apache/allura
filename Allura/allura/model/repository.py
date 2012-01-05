@@ -73,7 +73,7 @@ class RepositoryImplementation(object):
         '''Sets repository metadata such as heads, tags, and branches'''
         raise NotImplementedError, 'refresh_heads'
 
-    def refresh_commit(self, ci, seen_object_ids): # pragma no cover
+    def refresh_commit(self, ci, seen_object_ids=None, lazy=True): # pragma no cover
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
 
@@ -339,7 +339,7 @@ class Repository(Artifact):
                 sess.expunge(ci)
                 continue
             ci.set_context(self)
-            self._impl.refresh_commit(ci, seen_object_ids)
+            self._impl.refresh_commit(ci, seen_object_ids, lazy=not all_commits)
             if (i+1) % self.BATCH_SIZE == 0:
                 log.info('...... flushing %d commits (%d total)',
                          self.BATCH_SIZE, (i+1))
@@ -385,6 +385,8 @@ class Repository(Artifact):
                 repositories={'$ne':self._id}),
             {'$push':dict(repositories=self._id)},
             upsert=False, multi=True)
+        if all_commits:
+            LastCommitFor.query.remove(dict(repo_id=self._id))
         self.compute_diffs()
         log.info('... refreshed repository %s.  Found %d new commits',
                  self, len(commit_ids))
