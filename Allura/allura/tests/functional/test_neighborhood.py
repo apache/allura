@@ -222,7 +222,15 @@ class TestNeighborhood(TestController):
                     "filename":"icon.png"
                 },
                 "tools":{
-                    "wiki":{"label":"Wiki","mount_point":"wiki"},
+                    "wiki":{
+                        "label":"Wiki",
+                        "mount_point":"wiki",
+                        "options":{
+                            "show_right_bar":false,
+                            "show_discussion":false
+                        },
+                        "home_text":"My home text!"
+                    },
                     "discussion":{"label":"Discussion","mount_point":"discussion"},
                     "blog":{"label":"News","mount_point":"news","options":{
                     "show_discussion":false
@@ -236,11 +244,6 @@ class TestNeighborhood(TestController):
                     "topic":[247],
                     "developmentstatus":[11]
                 },
-                "home_options":{
-                    "show_right_bar":false,
-                    "show_discussion":false
-                },
-                "home_text":"My home text!",
                 "groups": %s
                 }""" % (icon_url, json.dumps(test_groups))),
             extra_environ=dict(username='root'))

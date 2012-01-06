@@ -385,6 +385,12 @@ class ProjectRegistrationProvider(object):
                     if 'options' in tool_config:
                         for option in tool_config['options']:
                             app.config.options[option] = tool_config['options'][option]
+                    if tool == 'wiki':
+                        from forgewiki import model as WM
+                        text = tool_config.get('home_text',
+                            '[[project_admins]]\n[[download_button]]')
+                        WM.Page.query.get(app_config_id=app.config._id).text = text
+
             if 'tool_order' in project_template:
                 for i, tool in enumerate(project_template['tool_order']):
                     p.app_config(tool).options.ordinal = i
@@ -395,22 +401,12 @@ class ProjectRegistrationProvider(object):
                     troves = getattr(p, 'trove_%s' % trove_type)
                     for trove_id in project_template['trove_cats'][trove_type]:
                         troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
-            if 'home_options' in project_template and p.app_config('Wiki'):
-                options = p.app_config('Wiki').options
-                for option in project_template['home_options'].keys():
-                    options[option] = project_template['home_options'][option]
             if 'icon' in project_template:
                 icon_file = StringIO(urlopen(project_template['icon']['url']).read())
                 M.ProjectFile.save_image(
                     project_template['icon']['filename'], icon_file,
                     square=True, thumbnail_size=(48, 48),
                     thumbnail_meta=dict(project_id=p._id, category='icon'))
-            wiki_app = p.app_instance('wiki')
-            if wiki_app:
-                from forgewiki import model as WM
-                text = project_template.get('home_text',
-                        '[[project_admins]]\n[[download_button]]')
-                WM.Page.query.get(app_config_id=wiki_app.config._id).text = text
         except forge_exc.ProjectConflict:
             raise
         except:
