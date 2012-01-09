@@ -180,40 +180,44 @@ class HgImplementation(M.RepositoryImplementation):
             tree.set_context(ci)
             self._refresh_tree(tree, fake_tree, lazy)
 
-    def refresh_commit_info(self, oid, seen):
+    def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
-        if CommitDoc.m.find(dict(_id=oid)).count():
-            return False
-        try:
-            obj = self._hg[oid]
-            # Save commit metadata
-            mo = self.re_hg_user.match(obj.user())
-            if mo:
-                user_name, user_email = mo.groups()
-            else:
-                user_name = user_email = obj.user()
-            user = Object(
-                name=h.really_unicode(user_name),
-                email=h.really_unicode(user_email),
-                date=datetime.utcfromtimestamp(sum(obj.date())))
-            fake_tree = self._tree_from_changectx(obj)
-            ci_doc = CommitDoc(dict(
-                    _id=oid,
-                    tree_id=fake_tree.hex(),
-                    committed=user,
-                    authored=user,
-                    message=h.really_unicode(obj.description() or ''),
-                    child_ids=[],
-                    parent_ids=[ p.hex() for p in obj.parents() if p.hex() != obj.hex() ]))
-            ci_doc.m.insert(safe=True)
-        except DuplicateKeyError:
-            return False
-        self.refresh_tree_info(fake_tree, seen)
+        ci_doc = CommitDoc.m.get(_id=oid)
+        if ci_doc and lazy: return False
+        obj = self._hg[oid]
+        # Save commit metadata
+        mo = self.re_hg_user.match(obj.user())
+        if mo:
+            user_name, user_email = mo.groups()
+        else:
+            user_name = user_email = obj.user()
+        user = Object(
+            name=h.really_unicode(user_name),
+            email=h.really_unicode(user_email),
+            date=datetime.utcfromtimestamp(sum(obj.date())))
+        fake_tree = self._tree_from_changectx(obj)
+        args = dict(
+            tree_id=fake_tree.hex(),
+            committed=user,
+            authored=user,
+            message=h.really_unicode(obj.description() or ''),
+            child_ids=[],
+            parent_ids=[ p.hex() for p in obj.parents() if p.hex() != obj.hex() ])
+        if ci_doc:
+            ci_doc.update(args)
+            ci_doc.m.save()
+        else:
+            ci_doc = CommitDoc(dict(args, _id=oid))
+            try:
+                ci_doc.m.insert(safe=True)
+            except DuplicateKeyError:
+                if lazy: return False
+        self.refresh_tree_info(fake_tree, seen, lazy)
         return True
 
-    def refresh_tree_info(self, tree, seen):
+    def refresh_tree_info(self, tree, seen, lazy=True):
         from allura.model.repo import TreeDoc
-        if tree.hex() in seen: return
+        if lazy and tree.hex() in seen: return
         seen.add(tree.hex())
         doc = TreeDoc(dict(
                 _id=tree.hex(),
@@ -221,7 +225,7 @@ class HgImplementation(M.RepositoryImplementation):
                 blob_ids=[],
                 other_ids=[]))
         for name, t in tree.trees.iteritems():
-            self.refresh_tree_info(t, seen)
+            self.refresh_tree_info(t, seen, lazy)
             doc.tree_ids.append(
                 dict(name=name, id=t.hex()))
         for name, oid in tree.blobs.iteritems():

@@ -194,37 +194,41 @@ class GitImplementation(M.RepositoryImplementation):
             tree.set_context(ci)
             self._refresh_tree(tree, obj.tree, seen_object_ids, lazy=lazy)
 
-    def refresh_commit_info(self, oid, seen):
+    def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
-        if CommitDoc.m.find(dict(_id=oid)).count():
-            return False
-        try:
-            ci = self._git.rev_parse(oid)
-            ci_doc = CommitDoc(dict(
-                    _id=ci.hexsha,
-                    tree_id=ci.tree.hexsha,
-                    committed = Object(
-                        name=h.really_unicode(ci.committer.name),
-                        email=h.really_unicode(ci.committer.email),
-                        date=datetime.utcfromtimestamp(
-                            ci.committed_date-ci.committer_tz_offset)),
-                    authored = Object(
-                        name=h.really_unicode(ci.author.name),
-                        email=h.really_unicode(ci.author.email),
-                        date=datetime.utcfromtimestamp(
-                            ci.authored_date-ci.author_tz_offset)),
-                    message=h.really_unicode(ci.message or ''),
-                    child_ids=[],
-                    parent_ids = [ p.hexsha for p in ci.parents ]))
-            ci_doc.m.insert(safe=True)
-        except DuplicateKeyError:
-            return False
-        self.refresh_tree_info(ci.tree, seen)
+        ci_doc = CommitDoc.m.get(_id=oid)
+        if ci_doc and lazy: return False
+        ci = self._git.rev_parse(oid)
+        args = dict(
+            tree_id=ci.tree.hexsha,
+            committed = Object(
+                name=h.really_unicode(ci.committer.name),
+                email=h.really_unicode(ci.committer.email),
+                date=datetime.utcfromtimestamp(
+                    ci.committed_date-ci.committer_tz_offset)),
+            authored = Object(
+                name=h.really_unicode(ci.author.name),
+                email=h.really_unicode(ci.author.email),
+                date=datetime.utcfromtimestamp(
+                    ci.authored_date-ci.author_tz_offset)),
+            message=h.really_unicode(ci.message or ''),
+            child_ids=[],
+            parent_ids = [ p.hexsha for p in ci.parents ])
+        if ci_doc:
+            ci_doc.update(**args)
+            ci_doc.m.save()
+        else:
+            ci_doc = CommitDoc(dict(args, _id=ci.hexsha))
+            try:
+                ci_doc.m.insert(safe=True)
+            except DuplicateKeyError:
+                if lazy: return False
+        self.refresh_tree_info(ci.tree, seen, lazy)
         return True
 
-    def refresh_tree_info(self, tree, seen):
+    def refresh_tree_info(self, tree, seen, lazy=True):
         from allura.model.repo import TreeDoc
-        if tree.binsha in seen: return
+        if lazy and tree.binsha in seen: return
         seen.add(tree.binsha)
         doc = TreeDoc(dict(
                 _id=tree.hexsha,
@@ -236,7 +240,7 @@ class GitImplementation(M.RepositoryImplementation):
                 name=h.really_unicode(o.name),
                 id=o.hexsha)
             if o.type == 'tree':
-                self.refresh_tree_info(o, seen)
+                self.refresh_tree_info(o, seen, lazy)
                 doc.tree_ids.append(obj)
             elif o.type == 'blob':
                 doc.blob_ids.append(obj)

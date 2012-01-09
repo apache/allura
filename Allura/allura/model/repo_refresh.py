@@ -26,7 +26,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
     # Refresh commits
     seen = set()
     for i, oid in enumerate(commit_ids):
-        repo.refresh_commit_info(oid, seen)
+        repo.refresh_commit_info(oid, seen, not all_commits)
         if (i+1) % 100 == 0:
             log.info('Refresh commit info %d: %s', (i+1), oid)
 

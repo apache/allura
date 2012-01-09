@@ -150,7 +150,7 @@ class TestRepo(_TestWithRepo):
         Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
-        def refresh_commit_info(oid, seen):
+        def refresh_commit_info(oid, seen, lazy=False):
             M.repo.CommitDoc(dict(
                     authored=dict(
                         name='Test Committer',

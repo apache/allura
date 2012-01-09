@@ -77,7 +77,7 @@ class RepositoryImplementation(object):
         '''Refresh the data in the commit object 'ci' with data from the repo'''
         raise NotImplementedError, 'refresh_commit'
 
-    def refresh_commit_info(self, oid): # pragma no cover
+    def refresh_commit_info(self, oid, lazy=True): # pragma no cover
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
 
@@ -195,8 +195,8 @@ class Repository(Artifact):
         return self._impl.commit(rev)
     def all_commit_ids(self):
         return self._impl.all_commit_ids()
-    def refresh_commit_info(self, oid, seen):
-        return self._impl.refresh_commit_info(oid, seen)
+    def refresh_commit_info(self, oid, seen, lazy=True):
+        return self._impl.refresh_commit_info(oid, seen, lazy)
     def commit_context(self, commit):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):

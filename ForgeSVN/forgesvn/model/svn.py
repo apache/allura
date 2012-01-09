@@ -274,40 +274,44 @@ class SVNImplementation(M.RepositoryImplementation):
                 continue
             lst[path.action].append(h.really_unicode(path.path))
 
-    def refresh_commit_info(self, oid, seen_object_ids):
+    def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repo import CommitDoc
-        if CommitDoc.m.find(dict(_id=oid)).count():
-            return False
+        ci_doc = CommitDoc.m.get(_id=oid)
+        if ci_doc and lazy: return False
+        revno = self._revno(oid)
+        rev = self._revision(oid)
         try:
-            log.info('Refresh %r %r', oid, self._repo)
-            revno = self._revno(oid)
-            rev = self._revision(oid)
+            log_entry = self._svn.log(
+                self._url,
+                revision_start=rev,
+                limit=1,
+                discover_changed_paths=True)[0]
+        except pysvn.ClientError:
+            log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+            log_entry = Object(date='', message='', changed_paths=[])
+        user = Object(
+            name=log_entry.get('author', '--none--'),
+            email='',
+           date=datetime.utcfromtimestamp(log_entry.date))
+        args = dict(
+            tree_id=None,
+            committed=user,
+            authored=user,
+            message=log_entry.message,
+            parent_ids=[],
+            child_ids=[])
+        if revno > 1:
+            args['parent_ids'] = [ self._oid(revno-1) ]
+        if ci_doc:
+            ci_doc.update(**args)
+            ci_doc.m.save()
+        else:
+            ci_doc = CommitDoc(dict(args, _id=oid))
             try:
-                log_entry = self._svn.log(
-                    self._url,
-                    revision_start=rev,
-                    limit=1,
-                    discover_changed_paths=True)[0]
-            except pysvn.ClientError:
-                log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
-                log_entry = Object(date='', message='', changed_paths=[])
-            user = Object(
-                name=log_entry.get('author', '--none--'),
-                email='',
-                date=datetime.utcfromtimestamp(log_entry.date))
-            ci_doc = CommitDoc(dict(
-                    _id=oid,
-                    tree_id=None,
-                    committed=user,
-                    authored=user,
-                    message=log_entry.message,
-                    parent_ids=[],
-                    child_ids=[]))
-            if revno > 1:
-                ci_doc.parent_ids = [ self._oid(revno-1) ]
-            ci_doc.m.insert(safe=True)
-        except DuplicateKeyError:
-            return False
+                ci_doc.m.insert(safe=True)
+            except DuplicateKeyError:
+                if lazy: return False
+        return True
 
     def compute_tree(self, commit, tree_path='/'):
         tree_path = tree_path[:-1]
