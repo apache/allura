@@ -5,6 +5,7 @@ import logging
 import urllib
 import hmac
 import hashlib
+from urlparse import urlparse
 from email import header
 from datetime import timedelta, datetime
 from hashlib import sha256
@@ -14,6 +15,7 @@ import pymongo
 from pylons import c, g, request
 
 from ming import schema as S
+from ming import Field, Index, collection
 from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
@@ -22,7 +24,7 @@ import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
 
-from .session import main_orm_session
+from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
 
 log = logging.getLogger(__name__)
@@ -583,3 +585,47 @@ class ProjectRole(MappedClass):
             project = c.project
         return self.query.find(dict(project_id=project._id,
             user_id={'$ne': None}, roles=self._id)).all()
+
+audit_log = collection(
+    'audit_log', main_doc_session,
+    Field('_id', S.ObjectId()),
+    Field('project_id', S.ObjectId, if_missing=None),
+    Field('user_id', S.ObjectId, if_missing=None),
+    Field('timestamp', datetime, if_missing=datetime.utcnow),
+    Field('url', str),
+    Field('message', str))
+
+class AuditLog(object):
+
+    @property
+    def timestamp_str(self):
+        return self.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+
+    @property
+    def url_str(self):
+        scheme, netloc, path, params, query, fragment = urlparse(self.url)
+        s = path
+        if params:
+            s += ';' + params
+        if query:
+            s += '?' + query
+        if fragment:
+            s += '#' + fragment
+        return s
+
+    @classmethod
+    def log(cls, message, *args, **kwargs):
+        project = kwargs.pop('project', c.project)
+        user = kwargs.pop('user', c.user)
+        url = kwargs.pop('url', request.url)
+        if args:
+            message = message % args
+        elif kwargs:
+            message = message % kwargs
+        return cls(project_id=project._id, user_id=user._id, url=url, message=message)
+
+main_orm_session.mapper(AuditLog, audit_log, properties=dict(
+        project_id=ForeignIdProperty('Project'),
+        project=RelationProperty('Project'),
+        user_id=ForeignIdProperty('User'),
+        user=RelationProperty('User')))

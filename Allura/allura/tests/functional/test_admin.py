@@ -1,6 +1,8 @@
+import re
 import os, allura
 import pkg_resources
 import Image, StringIO
+from contextlib import contextmanager
 
 from nose.tools import assert_equals
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -14,64 +16,86 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 
+@contextmanager
+def audits(*messages):
+    M.AuditLog.query.remove()
+    yield
+    entries = M.AuditLog.query.find().sort('_id').all()
+    if not messages:
+        for e in entries:
+            print e.message
+        import pdb; pdb.set_trace()
+    for message in messages:
+        assert M.AuditLog.query.find(dict(
+            message=re.compile(message))).count()
+
 class TestProjectAdmin(TestController):
 
     def test_admin_controller(self):
         self.app.get('/admin/')
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                summary='Milkshakes are for crazy monkeys',
-                short_description=u'\u00bf A Test Project ?'.encode('utf-8') * 45,
-                labels='aaa,bbb'))
+        with audits(
+            'change summary to Milkshakes are for crazy monkeys',
+            'change project name to Test Project',
+            u'change short description to (\u00bf A Test Project \?){45}'):
+            self.app.post('/admin/update', params=dict(
+                    name='Test Project',
+                    shortname='test',
+                    summary='Milkshakes are for crazy monkeys',
+                    short_description=u'\u00bf A Test Project ?'.encode('utf-8') * 45,
+                    labels='aaa,bbb'))
         r = self.app.get('/admin/overview')
         assert 'A Test Project ?\xc2\xbf A' in r
         assert 'Test Subproject' not in r
         assert 'Milkshakes are for crazy monkeys' in r
 
         # Add a subproject
-        self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'',
-                'new.ordinal':'1',
-                'new.mount_point':'test-subproject',
-                'new.mount_label':'Test Subproject'})
+        with audits('create subproject test-subproject'):
+            self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'',
+                    'new.ordinal':'1',
+                    'new.mount_point':'test-subproject',
+                    'new.mount_label':'Test Subproject'})
         r = self.app.get('/admin/overview')
         assert 'Test Subproject' in r
         # Rename a subproject
-        self.app.post('/admin/update_mounts', params={
-                'subproject-0.shortname':'test/test-subproject',
-                'subproject-0.name':'Tst Sbprj',
-                'subproject-0.ordinal':'100',
-                })
+        with audits('update subproject test/test-subproject'):
+            self.app.post('/admin/update_mounts', params={
+                    'subproject-0.shortname':'test/test-subproject',
+                    'subproject-0.name':'Tst Sbprj',
+                    'subproject-0.ordinal':'100',
+                    })
         r = self.app.get('/admin/overview')
         assert 'Tst Sbprj' in r
         # Remove a subproject
-        self.app.post('/admin/update_mounts', params={
-                'subproject-0.delete':'on',
-                'subproject-0.shortname':'test/test-subproject',
-                'new.ep_name':'',
-                })
+        with audits('delete subproject test/test-subproject'):
+            self.app.post('/admin/update_mounts', params={
+                    'subproject-0.delete':'on',
+                    'subproject-0.shortname':'test/test-subproject',
+                    'new.ep_name':'',
+                    })
 
         # Add a tool
-        r = self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'Wiki',
-                'new.ordinal':'1',
-                'new.mount_point':'test-tool',
-                'new.mount_label':'Test Tool'})
+        with audits('install tool test-tool'):
+            r = self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'Wiki',
+                    'new.ordinal':'1',
+                    'new.mount_point':'test-tool',
+                    'new.mount_label':'Test Tool'})
         assert 'error' not in self.webflash(r)
         # check tool in the nav
         r = self.app.get('/p/test/test-tool/').follow()
         active_link = r.html.findAll('span',{'class':'diamond'})
         assert len(active_link) == 1
         assert active_link[0].parent['href'] == '/p/test/test-tool/'
-        r = self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'Wiki',
-                'new.ordinal':'1',
-                'new.mount_point':'test-tool2',
-                'new.mount_label':'Test Tool2'})
+        with audits('install tool test-tool2'):
+            r = self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'Wiki',
+                    'new.ordinal':'1',
+                    'new.mount_point':'test-tool2',
+                    'new.mount_label':'Test Tool2'})
         assert 'error' not in self.webflash(r)
         # check the nav - the similarly named tool should NOT be active
         r = self.app.get('/p/test/test-tool/Home/')
@@ -91,19 +115,21 @@ class TestProjectAdmin(TestController):
                 'new.mount_label':'Test Tool'})
         assert 'error' in self.webflash(r)
         # Rename a tool
-        self.app.post('/admin/update_mounts', params={
-                'tool-0.mount_point':'test-tool',
-                'tool-0.mount_label':'Tst Tuul',
-                'tool-0.ordinal':'200',
-                })
+        with audits('update tool test-tool'):
+            self.app.post('/admin/update_mounts', params={
+                    'tool-0.mount_point':'test-tool',
+                    'tool-0.mount_label':'Tst Tuul',
+                    'tool-0.ordinal':'200',
+                    })
         r = self.app.get('/admin/overview')
         assert 'Tst Tuul' in r
         # Remove a tool
-        self.app.post('/admin/update_mounts', params={
-                'tool-0.delete':'on',
-                'tool-0.mount_point':'test-tool',
-                'new.ep_name':'',
-                })
+        with audits('uninstall tool test-tool'):
+            self.app.post('/admin/update_mounts', params={
+                    'tool-0.delete':'on',
+                    'tool-0.mount_point':'test-tool',
+                    'new.ep_name':'',
+                    })
 
     def test_tool_permissions(self):
         self.app.get('/admin/')
@@ -111,12 +137,13 @@ class TestProjectAdmin(TestController):
             app = ep.load()
             if not app.installable: continue
             tool = ep.name
-            self.app.post('/admin/update_mounts', params={
-                    'new.install':'install',
-                    'new.ep_name':tool,
-                    'new.ordinal':str(i),
-                    'new.mount_point':'test-%d' % i,
-                    'new.mount_label':tool })
+            with audits('install tool test-%d' % i):
+                self.app.post('/admin/update_mounts', params={
+                        'new.install':'install',
+                        'new.ep_name':tool,
+                        'new.ordinal':str(i),
+                        'new.mount_point':'test-%d' % i,
+                        'new.mount_label':tool })
             r = self.app.get('/admin/test-%d/permissions' % i)
             cards = [
                 tag for tag in r.html.findAll('input')
@@ -152,11 +179,12 @@ class TestProjectAdmin(TestController):
         upload = ('icon', file_name, file_data)
 
         self.app.get('/admin/')
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                short_description='A Test Project'),
-                upload_files=[upload])
+        with audits('update project icon'):
+            self.app.post('/admin/update', params=dict(
+                    name='Test Project',
+                    shortname='test',
+                    short_description='A Test Project'),
+                    upload_files=[upload])
         r = self.app.get('/p/test/icon')
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
@@ -168,9 +196,10 @@ class TestProjectAdmin(TestController):
         upload = ('screenshot', file_name, file_data)
 
         self.app.get('/admin/')
-        self.app.post('/admin/add_screenshot', params=dict(
-                caption='test me'),
-                upload_files=[upload])
+        with audits('add screenshot'):
+            self.app.post('/admin/add_screenshot', params=dict(
+                    caption='test me'),
+                    upload_files=[upload])
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         project = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         filename = project.get_screenshots()[0].filename
@@ -200,22 +229,24 @@ class TestProjectAdmin(TestController):
 
     def test_project_delete_undelete(self):
         # create a subproject
-        self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'',
-                'new.ordinal':'1',
-                'new.mount_point':'sub1',
-                'new.mount_label':'sub1'})
+        with audits('create subproject sub1'):
+            self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'',
+                    'new.ordinal':'1',
+                    'new.mount_point':'sub1',
+                    'new.mount_label':'sub1'})
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'name':'removal','value':''}).has_key('checked')
         assert not r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                removal='deleted',
-                short_description='A Test Project',
-                delete='on'))
+        with audits('delete project'):
+            self.app.post('/admin/update', params=dict(
+                    name='Test Project',
+                    shortname='test',
+                    removal='deleted',
+                    short_description='A Test Project',
+                    delete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
         assert not r.html.find('input',{'name':'removal','value':''}).has_key('checked')
@@ -223,12 +254,13 @@ class TestProjectAdmin(TestController):
         # make sure subprojects get deleted too
         r = self.app.get('/p/test/sub1/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
-        self.app.post('/admin/update', params=dict(
-                name='Test Project',
-                shortname='test',
-                removal='',
-                short_description='A Test Project',
-                undelete='on'))
+        with audits('undelete project'):
+            self.app.post('/admin/update', params=dict(
+                    name='Test Project',
+                    shortname='test',
+                    removal='',
+                    short_description='A Test Project',
+                    undelete='on'))
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'name':'removal','value':''}).has_key('checked')
@@ -241,12 +273,13 @@ class TestProjectAdmin(TestController):
         config['allow_project_delete'] = False
         try:
             # create a subproject
-            self.app.post('/admin/update_mounts', params={
-                    'new.install':'install',
-                    'new.ep_name':'',
-                    'new.ordinal':'1',
-                    'new.mount_point':'sub1',
-                    'new.mount_label':'sub1'})
+            with audits('create subproject sub1'):
+                self.app.post('/admin/update_mounts', params={
+                        'new.install':'install',
+                        'new.ep_name':'',
+                        'new.ordinal':'1',
+                        'new.mount_point':'sub1',
+                        'new.mount_label':'sub1'})
             # root project doesn't have delete option
             r = self.app.get('/p/test/admin/overview')
             assert not r.html.find('input',{'name':'removal','value':'deleted'})
@@ -263,12 +296,15 @@ class TestProjectAdmin(TestController):
             r = self.app.get('/p/test/admin/overview')
             assert 'This project has been deleted and is not visible to non-admin users' not in r
             # make sure subproject delete works
-            self.app.post('/p/test/sub1/admin/update', params=dict(
-                    name='sub1',
-                    shortname='sub1',
-                    removal='deleted',
-                    short_description='A Test Project',
-                    delete='on'))
+            with audits(
+                'change project removal status to deleted',
+                'delete project'):
+                self.app.post('/p/test/sub1/admin/update', params=dict(
+                        name='sub1',
+                        shortname='sub1',
+                        removal='deleted',
+                        short_description='A Test Project',
+                        delete='on'))
             r = self.app.get('/p/test/sub1/admin/overview')
             assert 'This project has been deleted and is not visible to non-admin users' in r
             assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
@@ -283,14 +319,16 @@ class TestProjectAdmin(TestController):
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
         # add a cat
-        form = r.forms['add_trove_root_database']
-        form['new_trove'].value = '499'
-        r = form.submit().follow()
+        with audits('add trove root_database: Database Environment :: Database API'):
+            form = r.forms['add_trove_root_database']
+            form['new_trove'].value = '499'
+            r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' in r
         # delete the cat
-        r = r.forms['delete_trove_root_database_499'].submit().follow()
+        with audits('remove trove root_database: Database Environment :: Database API'):
+            r = r.forms['delete_trove_root_database_499'].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
         assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
@@ -299,7 +337,8 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/trove')
         form = r.forms['label_edit_form']
         form['labels'].value = 'foo,bar,baz'
-        r = form.submit()
+        with audits('updated labels'):
+            r = form.submit()
         r = r.follow()
         p_nbhd = M.Neighborhood.query.get(name='Projects')
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -307,7 +346,8 @@ class TestProjectAdmin(TestController):
         assert form['labels'].value == 'foo,bar,baz'
         ThreadLocalORMSession.close_all()
         form['labels'].value = 'asdf'
-        r = form.submit()
+        with audits('updated labels'):
+            r = form.submit()
         r = r.follow()
         p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         assert_equals(p.labels, ['asdf'])
@@ -321,10 +361,11 @@ class TestProjectAdmin(TestController):
         opt_developer = select.find(text='Developer').parent
         assert opt_admin.name == 'option'
         assert opt_developer.name == 'option'
-        r = self.app.post('/admin/permissions/update', params={
-                'card-0.new': opt_developer['value'],
-                'card-0.value': opt_admin['value'],
-                'card-0.id': 'admin'})
+        with audits('updated "admin" permissions: "Admin" => "Admin,Developer"'):
+            r = self.app.post('/admin/permissions/update', params={
+                    'card-0.new': opt_developer['value'],
+                    'card-0.value': opt_admin['value'],
+                    'card-0.id': 'admin'})
         r = self.app.get('/admin/permissions/')
         assigned_ids = [t['value'] for t in r.html.findAll('input', {'name': 'card-0.value'})]
         assert len(assigned_ids) == 2
@@ -332,12 +373,13 @@ class TestProjectAdmin(TestController):
         assert opt_admin['value'] in assigned_ids
 
     def test_subproject_permissions(self):
-        self.app.post('/admin/update_mounts', params={
-                'new.install':'install',
-                'new.ep_name':'',
-                'new.ordinal':'1',
-                'new.mount_point':'test-subproject',
-                'new.mount_label':'Test Subproject'})
+        with audits('create subproject test-subproject'):
+            self.app.post('/admin/update_mounts', params={
+                    'new.install':'install',
+                    'new.ep_name':'',
+                    'new.ordinal':'1',
+                    'new.mount_point':'test-subproject',
+                    'new.mount_label':'Test Subproject'})
         r = self.app.get('/test-subproject/admin/permissions/')
         assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 0
         select = r.html.find('select', {'name': 'card-0.new'})
@@ -345,10 +387,11 @@ class TestProjectAdmin(TestController):
         opt_developer = select.find(text='Developer').parent
         assert opt_admin.name == 'option'
         assert opt_developer.name == 'option'
-        r = self.app.post('/test-subproject/admin/permissions/update', params={
-                'card-0.new': opt_developer['value'],
-                'card-0.value': opt_admin['value'],
-                'card-0.id': 'admin'})
+        with audits('updated "admin" permissions: "" => "Admin,Developer"'):
+            r = self.app.post('/test-subproject/admin/permissions/update', params={
+                    'card-0.new': opt_developer['value'],
+                    'card-0.value': opt_admin['value'],
+                    'card-0.id': 'admin'})
         r = self.app.get('/test-subproject/admin/permissions/')
         assigned_ids = [t['value'] for t in r.html.findAll('input', {'name': 'card-0.value'})]
         assert len(assigned_ids) == 2
@@ -358,9 +401,10 @@ class TestProjectAdmin(TestController):
     def test_project_groups(self):
         r = self.app.get('/admin/groups/')
         developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
-        r = self.app.post('/admin/groups/update', params={
-                'card-1.id': developer_id,
-                'card-1.new': 'test-user'})
+        with audits('add user test-user to Developer'):
+            r = self.app.post('/admin/groups/update', params={
+                    'card-1.id': developer_id,
+                    'card-1.new': 'test-user'})
         r = self.app.get('/admin/groups/')
         users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
         assert 'test-user' in users
@@ -390,11 +434,13 @@ class TestProjectAdmin(TestController):
             'card-2.value': str(admin_id)
         }
         # test that subroles are intact after user added
-        r = self.app.post('/admin/groups/update', params=params).follow()
+        with audits('add user test-user to Admin'):
+            r = self.app.post('/admin/groups/update', params=params).follow()
         check_roles(r)
         # test that subroles are intact after user deleted
         del params['card-0.new']
-        r = self.app.post('/admin/groups/update', params=params).follow()
+        with audits('remove user test-user from Admin'):
+            r = self.app.post('/admin/groups/update', params=params).follow()
         check_roles(r)
 
     def test_cannot_remove_all_admins(self):
@@ -431,41 +477,49 @@ class TestProjectAdmin(TestController):
         for x in range(2):
             form = r.forms[0]
             form['card-0.new'].value = 'test-user'
-            r = form.submit().follow()
+            with audits('add user test-user to Admin'):
+                r = form.submit().follow()
         r = self.app.get('/admin/groups/')
         assert 'test-user' in str(r), r.showbrowser()
-        r = self.app.post('/admin/groups/update', params={
-                'card-0.id':admin_id,
-                'card-0.value':str(user_id)})
+        with audits('remove user test-user from Admin'):
+            r = self.app.post('/admin/groups/update', params={
+                    'card-0.id':admin_id,
+                    'card-0.value':str(user_id)})
         r = self.app.get('/admin/groups/')
         assert 'test-user' not in str(r), r.showbrowser()
 
     @td.with_wiki
     def test_new_group(self):
         r = self.app.get('/admin/groups/new', validate_chunk=True)
-        r = self.app.post('/admin/groups/create', params={'name': 'Developer'})
+        with audits('create group Developer'):
+            r = self.app.post('/admin/groups/create', params={'name': 'Developer'})
         assert 'error' in self.webflash(r)
-        r = self.app.post('/admin/groups/create', params={'name': 'RoleNew1'})
+        with audits('create group RoleNew1'):
+            r = self.app.post('/admin/groups/create', params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
         assert 'RoleNew1' in r
         role_id = r.html.find(text='RoleNew1').findPrevious('input', {'type': 'hidden'})['value']
         r = self.app.get('/admin/groups/' + role_id + '/', validate_chunk=True)
 
-        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
+        r = self.app.post('/admin/groups/'
+                          + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
         assert 'error' in self.webflash(r)
         assert 'already exists' in self.webflash(r)
 
-        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2'}).follow()
+        with audits('update group name RoleNew1=>rleNew2'):
+            r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2'}).follow()
         assert 'RoleNew1' not in r
         assert 'rleNew2' in r
 
         # add test-user to role
         rleNew2_id = r.html.find(text='rleNew2').findPrevious('input', {'type': 'hidden'})['value']
-        r = self.app.post('/admin/groups/update', params={
-                'card-1.id': rleNew2_id,
-                'card-1.new': 'test-user'})
+        with audits('add user test-user to rleNew2'):
+            r = self.app.post('/admin/groups/update', params={
+                    'card-1.id': rleNew2_id,
+                    'card-1.new': 'test-user'})
 
-        r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2', 'delete': 'delete'})
+        with audits('delete group rleNew2'):
+            r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2', 'delete': 'delete'})
         assert 'deleted' in self.webflash(r)
         r = self.app.get('/admin/groups/', status=200)
         roles = [t.string for t in r.html.findAll('h3')]

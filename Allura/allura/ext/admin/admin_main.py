@@ -44,6 +44,7 @@ class W:
     screenshot_admin = aw.ScreenshotAdmin()
     screenshot_list = ProjectScreenshots()
     metadata_admin = aw.MetadataAdmin()
+    audit = aw.AuditLog()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -138,6 +139,7 @@ class AdminApp(Application):
             links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
+        links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/', className='nav_child'))
         return links
 
     def admin_menu(self):
@@ -157,6 +159,7 @@ class ProjectAdminController(BaseController):
     def __init__(self):
         self.permissions = PermissionsController()
         self.groups = GroupsController()
+        self.audit = AuditController()
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')
@@ -212,7 +215,9 @@ class ProjectAdminController(BaseController):
     @expose()
     @require_post()
     def update_labels(self, labels=None, labels_old=None, **kw):
+        require_access(c.project, 'admin')
         c.project.labels = labels.split(',')
+        M.AuditLog.log('updated labels')
         redirect('trove')
 
     @without_trailing_slash
@@ -241,6 +246,7 @@ class ProjectAdminController(BaseController):
             mount_point=mount_point,
             mount_label=mount_label,
             init_from_url=source_url)
+        M.AuditLog.log('Create repo as clone')
         redirect('tools')
 
     @without_trailing_slash
@@ -273,56 +279,70 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
 
         if removal != c.project.removal:
+            M.AuditLog.log('change project removal status to %s', removal)
             h.log_action(log, 'change project removal status').info('')
             c.project.removal = removal
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
             M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
+            M.AuditLog.log('remove project icon')
             h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
             redirect('overview')
         elif 'delete' in kw:
             allow_project_delete = asbool(config.get('allow_project_delete', True))
             if allow_project_delete or not c.project.is_root:
+                M.AuditLog.log('delete project')
                 h.log_action(log, 'delete project').info('')
                 plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
             redirect('overview')
         elif 'undelete' in kw:
             h.log_action(log, 'undelete project').info('')
+            M.AuditLog.log('undelete project')
             plugin.ProjectRegistrationProvider.get().undelete_project(c.project, c.user)
             redirect('overview')
         if name != c.project.name:
             h.log_action(log, 'change project name').info('')
+            M.AuditLog.log('change project name to %s', name)
             c.project.name = name
         if short_description != c.project.short_description:
             h.log_action(log, 'change project short description').info('')
+            M.AuditLog.log('change short description to %s', short_description)
             c.project.short_description = short_description
         if summary != c.project.summary:
             h.log_action(log, 'change project summary').info('')
+            M.AuditLog.log('change summary to %s', summary)
             c.project.summary = summary
         category = category and ObjectId(category) or None
         if category != c.project.category_id:
             h.log_action(log, 'change project category').info('')
+            M.AuditLog.log('change category to %s', category)
             c.project.category_id = category
         if external_homepage != c.project.external_homepage:
             h.log_action(log, 'change external home page').info('')
+            M.AuditLog.log('change external home page to %s', external_homepage)
             c.project.external_homepage = external_homepage
         if support_page != c.project.support_page:
             h.log_action(log, 'change project support page').info('')
+            M.AuditLog.log('change project support page to %s', support_page)
             c.project.support_page = support_page
         if support_page_url != c.project.support_page_url:
             h.log_action(log, 'change project support page url').info('')
+            M.AuditLog.log('change project support page url to %s', support_page_url)
             c.project.support_page_url = support_page_url
         if moved_to_url != c.project.moved_to_url:
             h.log_action(log, 'change project moved to url').info('')
+            M.AuditLog.log('change project moved to url to %s', moved_to_url)
             c.project.moved_to_url = moved_to_url
         if export_controlled != c.project.export_controlled:
             h.log_action(log, 'change project export controlled status').info('')
+            M.AuditLog.log('change project export controlled status to %s', export_controlled)
             c.project.export_controlled = not not export_controlled
 
         if icon is not None and icon != '':
             if c.project.icon:
                 M.ProjectFile.remove(dict(project_id=c.project._id, category='icon'))
+            M.AuditLog.log('update project icon')
             M.ProjectFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48,48),
@@ -359,6 +379,7 @@ class ProjectAdminController(BaseController):
     def add_trove(self, type, new_trove, **kw):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
+        M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
         if error_msg:
             flash(error_msg,'error')
         redirect('trove')
@@ -370,6 +391,7 @@ class ProjectAdminController(BaseController):
         trove_obj = M.TroveCategory.query.get(trove_cat_id=int(trove))
         current_troves = getattr(c.project,'trove_%s'%type)
         if trove_obj is not None and trove_obj._id in current_troves:
+            M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
             current_troves.remove(trove_obj._id)
             g.post_event('project_updated')
         redirect('trove')
@@ -382,6 +404,7 @@ class ProjectAdminController(BaseController):
         if len(c.project.get_screenshots()) >= 6:
             flash('You may not have more than 6 screenshots per project.','error')
         elif screenshot is not None and screenshot != '':
+            M.AuditLog.log('add screenshot')
             M.ProjectFile.save_image(
                 screenshot.filename, screenshot.file, content_type=screenshot.type,
                 save_original=True,
@@ -396,6 +419,7 @@ class ProjectAdminController(BaseController):
     def delete_screenshot(self, id=None, **kw):
         require_access(c.project, 'update')
         if id is not None and id != '':
+            M.AuditLog.log('remove screenshot')
             M.ProjectFile.query.remove(dict(project_id=c.project._id, _id=ObjectId(id)))
             g.post_event('project_updated')
         redirect('screenshots')
@@ -452,22 +476,26 @@ class ProjectAdminController(BaseController):
                                     neighborhood_id=c.project.neighborhood_id)
             if sp.get('delete'):
                 require_access(c.project, 'admin')
+                M.AuditLog.log('delete subproject %s', sp['shortname'])
                 h.log_action(log, 'delete subproject').info(
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
                 p.removal = 'deleted'
                 plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
             elif not new:
+                M.AuditLog.log('update subproject %s', sp['shortname'])
                 p.name = sp['name']
                 p.ordinal = int(sp['ordinal'])
         for p in tool:
             if p.get('delete'):
                 require_access(c.project, 'admin')
+                M.AuditLog.log('uninstall tool %s', p['mount_point'])
                 h.log_action(log, 'uninstall tool').info(
                     'uninstall tool %s', p['mount_point'],
                     meta=dict(mount_point=p['mount_point']))
                 c.project.uninstall_app(p['mount_point'])
             elif not new:
+                M.AuditLog.log('update tool %s', p['mount_point'])
                 options = c.project.app_config(p['mount_point']).options
                 options.mount_label = p['mount_label']
                 options.ordinal = int(p['ordinal'])
@@ -477,6 +505,7 @@ class ProjectAdminController(BaseController):
                 if not ep_name:
                     require_access(c.project, 'create')
                     mount_point = new['mount_point'].lower() or h.nonce()
+                    M.AuditLog.log('create subproject %s', mount_point)
                     h.log_action(log, 'create subproject').info(
                         'create subproject %s', mount_point,
                         meta=dict(mount_point=mount_point,name=new['mount_label']))
@@ -486,6 +515,7 @@ class ProjectAdminController(BaseController):
                 else:
                     require_access(c.project, 'admin')
                     mount_point = new['mount_point'].lower() or ep_name.lower()
+                    M.AuditLog.log('install tool %s', mount_point)
                     h.log_action(log, 'install tool').info(
                         'install tool %s', mount_point,
                         meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
@@ -513,6 +543,7 @@ class PermissionsController(BaseController):
     @require_post()
     def update(self, card=None, **kw):
         permissions = self._index_permissions()
+        old_permissions = dict(permissions)
         for args in card:
             perm = args['id']
             new_group_ids = args.get('new', [])
@@ -536,7 +567,13 @@ class PermissionsController(BaseController):
             permissions[perm] = role_ids
         c.project.acl = []
         for perm, role_ids in permissions.iteritems():
-            c.project.acl += [
+            role_names = lambda ids: ','.join(sorted(
+                    pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in':ids}))))
+            old_role_ids = old_permissions.get(perm, [])
+            if old_role_ids != role_ids:
+                M.AuditLog.log('updated "%s" permissions: "%s" => "%s"',
+                               perm,role_names(old_role_ids), role_names(role_ids))
+                c.project.acl += [
                 M.ACE.allow(rid, perm) for rid in role_ids ]
         g.post_event('project_updated')
         redirect('.')
@@ -586,6 +623,7 @@ class GroupsController(BaseController):
                     redirect('.')
                 if not user._id:
                     continue # never add anon users to groups
+                M.AuditLog.log('add user %s to %s', username, group.name)
                 user.project_role().roles.append(group._id)
                 user_added = True
             # Make sure we aren't removing all users from the Admin group
@@ -600,6 +638,7 @@ class GroupsController(BaseController):
             for role in M.ProjectRole.query.find(dict(user_id={'$ne':None}, roles=group._id)):
                 if role.user_id and role.user_id not in user_ids:
                     role.roles = [ rid for rid in role.roles if rid != group._id ]
+                    M.AuditLog.log('remove user %s from %s', role.user.username, group.name)
         g.post_event('project_updated')
         redirect('.')
 
@@ -621,6 +660,7 @@ class GroupsController(BaseController):
             flash('%s already exists' % name, 'error')
         else:
             M.ProjectRole(project_id=c.project._id, name=name)
+        M.AuditLog.log('create group %s', name)
         g.post_event('project_updated')
         redirect('.')
 
@@ -659,11 +699,35 @@ class GroupController(BaseController):
             redirect('..')
         if delete:
             _id.delete()
+            M.AuditLog.log('delete group %s', _id.name)
             flash('%s deleted' % name)
             redirect('..')
+        M.AuditLog.log('update group name %s=>%s', _id.name, name)
         _id.name = name
         flash('%s updated' % name)
         redirect('..')
+
+class AuditController(BaseController):
+
+    @with_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/audit.html')
+    def index(self, limit=10, page=0, **kwargs):
+        limit = int(limit)
+        page = int(page)
+        count = M.AuditLog.query.find(project_id=c.project._id).count()
+        q = M.AuditLog.query.find(project_id=c.project._id)
+        q = q.sort('timestamp', -1)
+        q = q.skip(page * limit)
+        if count > limit:
+            q = q.limit(limit)
+        else:
+            limit=count
+        c.widget = W.audit
+        return dict(
+            entries=q.all(),
+            limit=limit,
+            page=page,
+            count=count)
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

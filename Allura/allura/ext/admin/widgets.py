@@ -9,6 +9,7 @@ from allura import model as M
 from allura.lib import validators as V
 from allura.lib import security
 from allura.lib.widgets import forms as ff
+from allura.lib.widgets import form_fields as ffw
 
 from bson import ObjectId
 
@@ -159,3 +160,21 @@ class MetadataAdmin(ff.AdminForm):
         delete = ew.InputField(field_type="hidden", label='Delete')
         delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
         undelete = ew.InputField(field_type="hidden", label='Undelete')
+
+class AuditLog(ew_core.Widget):
+    template='jinja:allura.ext.admin:templates/widgets/audit.html'
+    defaults=dict(
+        ew_core.Widget.defaults,
+        entries=None,
+        limit=None,
+        page=0,
+        count=0)
+
+    class fields(ew_core.NameList):
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
+
+    def resources(self):
+        for f in self.fields:
+            for r in f.resources():
+                yield r

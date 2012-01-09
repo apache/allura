@@ -8,6 +8,7 @@ from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, Awar
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, OpenId, EmailAddress, ApiToken, ApiTicket, OldProjectRole
+from .auth import AuditLog, audit_log
 from .openid_model import OpenIdStore, OpenIdAssociation, OpenIdNonce
 from .filesystem import File
 from .notification import Notification, Mailbox
