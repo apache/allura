@@ -25,10 +25,13 @@
       <tbody class="bin-list">
         {% for bin in bins %}
           <tr{% if loop.index0 % 2 == 0 %} class="even"{% endif %}>
-            <td class="view"><a href="{{bin.url()}}">{{bin.summary}}</a></td>
-            <td class="view">{{bin.terms}}</td>
-            <td class="edit" style="display:none"><input type="text" name="bins-{{loop.index0}}.summary" value="{{bin.summary}}"></td>
-            <td class="edit" style="display:none"><input type="text" name="bins-{{loop.index0}}.terms" value="{{bin.terms}}"></td>
+            <td class="view" {% if bin.error %}style="display:none"{% endif %}><a href="{{bin.url()}}">{{bin.summary}}</a></td>
+            <td class="view" {% if bin.error %}style="display:none"{% endif %}>{{bin.terms}}</td>
+            <td class="edit" style="{% if not bin.error %}display:none{% else %}vertical-align:top{% endif %}"><input type="text" name="bins-{{loop.index0}}.summary" value="{{bin.summary}}"></td>
+            <td class="edit" {% if not bin.error %}style="display:none"{% endif %}>
+                <input type="text" name="bins-{{loop.index0}}.terms" value="{{bin.terms}}">
+                {% if bin.error %}<br/><span style="color:red">{{bin.error}}</span>{% endif %}
+            </td>
             <td style="width:40px;">
               <a href="#" title="Delete" class="del_bin"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}"></b></a>
               <a href="#" title="Edit" class="edit_bin"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
@@ -38,23 +41,28 @@
           </tr>
         {% endfor %}
         {% set num_bins = bins.__len__() %}
-        <tr class="new_bin" style="display:none">
-          <td>
+        <tr class="new_bin" {% if not (new_bin and new_bin.error) %}style="display:none"{% endif %}>
+            <td {% if new_bin and new_bin.error %}style="vertical-align:top"{% endif %}>
             <input type="hidden" name="bins-{{num_bins}}.id">
             <input type="hidden" name="bins-{{loop.index0}}.delete" value="False" class="delete_flag">
-            <input type="text" name="bins-{{num_bins}}.summary" placeholder="Summary">
+            <input type="text" name="bins-{{num_bins}}.summary" placeholder="Summary" {% if new_bin %}value="{{new_bin.summary}}"{% endif %}>
           </td>
           <td>
-            <input type="text" name="bins-{{num_bins}}.terms" placeholder="Terms">
+            <input type="text" name="bins-{{num_bins}}.terms" placeholder="Terms" {% if new_bin %}value="{{new_bin.terms}}"{% endif %}>
+            {% if new_bin and new_bin.error %}<br/><span class="err" style="color:red">{{new_bin.error}}</span>{% endif %}
           </td>
           <td>&nbsp;</td>
         </tr>
       </tbody>
     </table>
-    <div class="grid-16"><a href="#" class="btn add_bin grid-3">Add Bin</a></div>
-    <div class="grid-16 save_controls" style="display:none">
+    <div class="grid-16"><a href="#" class="btn add_bin grid-3" {% if errors %}style="display:none"{% endif %}>Add Bin</a></div>
+    <div class="grid-16 save_controls" {% if not errors %}style="display:none"{% endif %}>
       <input type="submit" value="Save">
-      <a href="#" class="btn link cancel_edit">Cancel</a>
+      {% if errors %}
+        <a href="." class="btn link">Cancel</a>
+      {% else %}
+        <a href="#" class="btn link cancel_edit">Cancel</a>
+      {% endif %}
     </div>
   </form>
   {% else %}
@@ -97,6 +105,7 @@
         $add_button.show();
         $new_row.hide();
         $('input', $new_row).val('');
+        $('span.err', $new_row).html('')
         $('a.edit_bin').css({opacity: 1});
         return false;
       });

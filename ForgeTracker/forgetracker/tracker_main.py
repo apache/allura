@@ -701,17 +701,44 @@ class BinController(BaseController):
 
     @with_trailing_slash
     @h.vardec
-    @expose()
+    @expose('jinja:forgetracker:templates/tracker/bin.html')
     @require_post()
     @validate(W.bin_form, error_handler=newbin)
     def save_bin(self, **bin_form):
-        self.app.globals.invalidate_bin_counts()
+        """Update existing search bin or create a new one.
+
+        If the search terms are valid, save the search and redirect to the
+        search bin list page.
+
+        If the search terms are invalid (throw an error), do not save the
+        search. Instead, render the search bin edit page and display the error
+        so the user can fix.
+        """
+        # New search bin that the user is attempting to create
+        new_bin = None
         bin = bin_form['_id']
         if bin is None:
             bin = TM.Bin(app_config_id=self.app.config._id, summary='')
+            new_bin = bin
         require(lambda:bin.app_config_id==self.app.config._id)
         bin.summary=bin_form['summary']
         bin.terms=bin_form['terms']
+        try:
+            # Test the search by running it
+            with h.push_config(c, app=self.app):
+                search_artifact(TM.Ticket, bin.terms, rows=0)
+        except ValueError, e:
+            # Search threw an error.
+            # Save the error on the bin object for displaying
+            # in the template.
+            setattr(bin, 'error', str(e))
+            # Expunge the bin object so we don't save the
+            # errant search terms to mongo.
+            M.session.artifact_orm_session.expunge(bin)
+            # Render edit page with error messages
+            return dict(bins=self.app.bins, count=len(self.app.bins),
+                    app=self.app, new_bin=new_bin, errors=True)
+        self.app.globals.invalidate_bin_counts()
         redirect('.')
 
     @with_trailing_slash
@@ -726,22 +753,76 @@ class BinController(BaseController):
 
     @without_trailing_slash
     @h.vardec
-    @expose()
+    @expose('jinja:forgetracker:templates/tracker/bin.html')
     @require_post()
     def update_bins(self, field_name=None, bins=None, **kw):
+        """Update saved search bins.
+
+        If all the updated searches are valid solr searches, save them and
+        redirect to the search bin list page.
+
+        If any of the updated searches are invalid (throw an error), do not
+        save the offending search(es). Instead, render the search bin edit
+        page and display the error(s) so the user can fix.
+        """
         require_access(self.app, 'save_searches')
+        # Have any of the updated searches thrown an error?
+        errors = False
+        # Persistent search bins - will need this if we encounter errors
+        # and need to re-render the edit page
+        saved_bins = []
+        # New search bin that the user is attempting to create
+        new_bin = None
         for bin_form in bins:
             bin = None
             if bin_form['id']:
-                bin = TM.Bin.query.find(dict(app_config_id=self.app.config._id, _id=ObjectId(bin_form['id']))).first()
+                # An existing bin that might be getting updated
+                bin = TM.Bin.query.find(dict(
+                    app_config_id=self.app.config._id,
+                    _id=ObjectId(bin_form['id']))).first()
+                saved_bins.append(bin)
             elif bin_form['summary'] and bin_form['terms']:
+                # A brand new search bin being created
                 bin = TM.Bin(app_config_id=self.app.config._id, summary='')
+                new_bin = bin
             if bin:
                 if bin_form['delete'] == 'True':
+                    # Search bin is being deleted; delete from mongo and
+                    # remove from our list of saved search bins.
                     bin.delete()
+                    saved_bins.remove(bin)
                 else:
+                    # Update bin.summary with the posted value.
                     bin.summary = bin_form['summary']
-                    bin.terms = bin_form['terms']
+                    if bin.terms != bin_form['terms']:
+                        # If the bin terms are being updated, test the search.
+                        bin.terms = bin_form['terms']
+                        try:
+                            with h.push_config(c, app=self.app):
+                                search_artifact(TM.Ticket, bin.terms, rows=0)
+                        except ValueError, e:
+                            # Search threw an error.
+                            # Save the error on the bin object for displaying
+                            # in the template.
+                            setattr(bin, 'error', str(e))
+                            errors = True
+                            # Expunge the bin object so we don't save the
+                            # errant search terms to mongo.
+                            M.session.artifact_orm_session.expunge(bin)
+                        else:
+                            # Search was good (no errors)
+                            if bin is new_bin:
+                                # If this was a new bin, it'll get flushed to
+                                # mongo, meaning it'll no longer be a new bin
+                                # - add to saved_bins and reset new_bin.
+                                saved_bins.append(bin)
+                                new_bin = None
+        if errors:
+            # There were errors in some of the search terms. Render the edit
+            # page so the user can fix the errors.
+            return dict(bins=saved_bins, count=len(bins), app=self.app,
+                    new_bin=new_bin, errors=errors)
+        # No errors, redirect to search bin list page.
         self.app.globals.invalidate_bin_counts()
         redirect('.')
 

@@ -614,6 +614,23 @@ class TestFunctionalController(TrackerTestController):
         new_date = ticket.mod_date
         assert new_date > old_date
 
+    @patch('forgetracker.tracker_main.search_artifact')
+    def test_save_invalid_search(self, search_artifact):
+        err = 'Error running search query: [Reason: undefined field label]'
+        search_artifact.side_effect = ValueError(err)
+        r = self.app.post('/admin/bugs/bins/save_bin',{
+            'summary': 'This is not too long.',
+            'terms': 'label:foo',
+            'old_summary': '',
+            'sort': ''})
+        assert err in r
+        r = self.app.get('/admin/bugs/bins/')
+        edit_form = r.form
+        edit_form['bins-2.summary'] = 'Original'
+        edit_form['bins-2.terms'] = 'label:foo'
+        r = edit_form.submit()
+        assert err in r
+
     def test_saved_search_labels_truncated(self):
         r = self.app.post('/admin/bugs/bins/save_bin',{
             'summary': 'This is not too long.',
