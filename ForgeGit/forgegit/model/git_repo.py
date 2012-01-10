@@ -23,7 +23,7 @@ from allura import model as M
 log = logging.getLogger(__name__)
 
 gitdb.util.mman = gitdb.util.mman.__class__(
-    max_open_handles=1024)
+    max_open_handles=128)
 
 class Repository(M.Repository):
     tool_name='Git'
