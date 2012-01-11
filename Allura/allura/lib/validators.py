@@ -1,3 +1,4 @@
+import json
 from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
@@ -52,3 +53,11 @@ class MaxBytesValidator(fev.FancyValidator):
 
     def from_python(self, value, state):
         return h.really_unicode(value or '')
+
+class JsonValidator(fev.FancyValidator):
+    def _to_python(self, value, state):
+        try:
+            json.loads(value)
+        except ValueError, e:
+            raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
+        return value

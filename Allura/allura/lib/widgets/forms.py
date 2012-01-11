@@ -4,6 +4,7 @@ from pylons import g
 from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin
+from allura.lib.widgets import form_fields as ffw
 from allura import model as M
 
 from formencode import validators as fev
@@ -122,9 +123,21 @@ class RegistrationForm(ForgeForm):
             raise formencode.Invalid('Passwords must match', value, state)
         return d
 
-
 class AdminForm(ForgeForm):
     template='jinja:allura:templates/widgets/admin_form.html'
+
+class NeighborhoodOverviewForm(ForgeForm):
+    template='jinja:allura:templates/widgets/neighborhood_overview_form.html'
+
+    class fields(ew_core.NameList):
+        name = ew.TextField()
+        redirect = ew.TextField()
+        homepage = ffw.AutoResizeTextarea()
+        allow_browse = ew.Checkbox(label='')
+        css = ffw.AutoResizeTextarea()
+        project_template = ffw.AutoResizeTextarea(
+                validator=V.JsonValidator(if_empty=''))
+        icon = ew.FileField()
 
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'

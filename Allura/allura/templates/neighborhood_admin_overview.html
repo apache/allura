@@ -1,5 +1,5 @@
 {% extends g.theme.master %}
-    
+
 {% block title %}{{neighborhood.name}} / Overview{% endblock %}
 
 {% block header %}Administration Overview for {{neighborhood.name}}{% endblock %}
@@ -13,29 +13,7 @@
 {% endblock %}
 
 {% block content %}
-  <form method="POST" action="update" enctype="multipart/form-data">
-    <label class="grid-4">Name</label>
-    <div class="grid-14"><input type="text" name="name" value="{{neighborhood.name}}"></div>
-    <label class="grid-4">Redirect</label>
-    <div class="grid-14"><input type="text" name="redirect" value="{{neighborhood.redirect}}"/></div>
-    <label class="grid-4">Home Content (HTML)</label>
-    <div class="grid-14">{{c.resize_editor.display(name='homepage', value=neighborhood.homepage)}}</div>
-    <label class="grid-4">Allow Browsing</label>
-    <div class="grid-14"><input type="checkbox" name="allow_browse" {% if neighborhood.allow_browse %}checked="checked"{% endif %}/></div>
-    <label class="grid-4">Custom CSS</label>
-    <div class="grid-14">{{c.resize_editor.display(name='css', value=neighborhood.css)}}</div>
-    <label class="grid-4">Project Template</label>
-    <div class="grid-14">{{c.resize_editor.display(name='project_template', value=neighborhood.project_template)}}</div>
-    <label class="grid-4">Icon</label>
-    <div class="grid-14">
-      {% if neighborhood.icon %}
-        <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle" alt=""/>
-      {% endif %}
-      {{lib.file_field('icon', '')}}
-    </div>
-    <label class="grid-4">&nbsp;</label>
-    <div class="grid-14"><input type="submit" value="Save"/></div>
-  </form>
+    {{c.overview_form.display(value=neighborhood)}}
 {% endblock %}
 
 {% block extra_css %}

@@ -1,28 +1,19 @@
-import os, re
+import re
 import logging
-import json
 
 from bson import ObjectId
-from urllib import unquote, quote
-from urllib2 import urlopen
+from urllib import unquote
 from itertools import chain, islice
-from cStringIO import StringIO
 
-import pkg_resources
-import Image
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
-from paste.httpheaders import CACHE_CONTROL
 from webob import exc
-from bson import ObjectId
 import pymongo
 from formencode import validators
 
-import  ming.orm.ormsession
 from ming.utils import LazyProperty
 
-import allura
 from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
@@ -32,15 +23,13 @@ from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
 from allura.lib.security import require_access, has_access
 from allura.lib.security import RoleCache
+from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin
-from allura.lib import exceptions as forge_exc
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
-
-from allura.model.session import main_orm_session
 
 log = logging.getLogger(__name__)
 
@@ -51,6 +40,7 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     project_select = ffw.NeighborhoodProjectSelect
+    neighborhood_overview_form = ff.NeighborhoodOverviewForm()
 
 class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
@@ -408,10 +398,10 @@ class NeighborhoodAdminController(object):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')
-    def overview(self):
+    def overview(self, **kw):
         require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
-        c.resize_editor = W.resize_editor
+        c.overview_form = W.neighborhood_overview_form
         return dict(neighborhood=self.neighborhood)
 
     @without_trailing_slash
@@ -457,6 +447,7 @@ class NeighborhoodAdminController(object):
 
     @expose()
     @require_post()
+    @validate(W.neighborhood_overview_form, error_handler=overview)
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
         require_access(self.neighborhood, 'admin')
         self.neighborhood.name = name
@@ -473,6 +464,7 @@ class NeighborhoodAdminController(object):
                 square=True, thumbnail_size=(48,48),
                 thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
+
 
 class NeighborhoodModerateController(object):
 

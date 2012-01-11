@@ -37,6 +37,11 @@ class TestNeighborhood(TestController):
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]'),
                           extra_environ=dict(username='root'))
+        # make sure project_template is validated as proper json
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(project_template='{'),
+                          extra_environ=dict(username='root'))
+        assert 'Invalid JSON' in r
 
     def test_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
