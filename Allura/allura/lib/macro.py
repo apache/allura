@@ -132,15 +132,10 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
     return output
 
 @macro('neighborhood-wiki')
-def projects(
-    category=None,
-    display_mode='grid',
-    sort='last_updated',
-    show_total=False,
-    limit=100,
-    labels='',
-    award=''):
+def projects(category=None, display_mode='grid', sort='last_updated',
+        show_total=False, limit=100, labels='', award='', private=False):
     from allura.lib.widgets.project_list import ProjectList
+    from allura.lib import utils
     from allura import model as M
     q = dict(
         neighborhood_id=c.project.neighborhood_id,
@@ -152,27 +147,46 @@ def projects(
     if category is not None:
         category = M.ProjectCategory.query.get(name=category)
     if award:
-        aw = M.Award.query.find(dict(created_by_neighborhood_id=c.project.neighborhood_id, short=award)).first()
+        aw = M.Award.query.find(dict(
+            created_by_neighborhood_id=c.project.neighborhood_id,
+            short=award)).first()
         if aw:
-            q['_id'] = {'$in': [grant.granted_to_project_id for grant in M.AwardGrant.query.find(dict(
-                                   granted_by_neighborhood_id=c.project.neighborhood_id,
-                                   award_id=aw._id))]}
+            q['_id'] = {'$in': [grant.granted_to_project_id for grant in
+                M.AwardGrant.query.find(dict(
+                    granted_by_neighborhood_id=c.project.neighborhood_id,
+                    award_id=aw._id))]}
     if category is not None:
         q['category_id'] = category._id
-    pq = M.Project.query.find(q).limit(int(limit))
+    sort_key, sort_dir = 'last_updated', pymongo.DESCENDING
     if sort == 'alpha':
-        pq.sort('name')
+        sort_key, sort_dir = 'name', pymongo.ASCENDING
+
+    if private:
+        # Only return private projects.
+        # Can't filter these with a mongo query directly - have to iterate
+        # through and check the ACL of each project.
+        projects = []
+        for chunk in utils.chunked_find(M.Project, q, sort_key=sort_key,
+                sort_dir=sort_dir):
+            projects.extend([p for p in chunk if p.private])
+        total = len(projects)
+        projects = projects[:int(limit)]
     else:
-        pq.sort('last_updated', pymongo.DESCENDING)
+        total = None
+        projects = M.Project.query.find(q).limit(int(limit)).sort(sort_key,
+                sort_dir).all()
+
     pl = ProjectList()
     g.resource_manager.register(pl)
-    response = pl.display(projects=pq.all(), display_mode=display_mode)
+    response = pl.display(projects=projects, display_mode=display_mode)
     if show_total:
-        total = 0
-        for p in M.Project.query.find(q):
-            if h.has_access(p, 'read')():
-                total = total + 1
-        response = '<p class="macro_projects_total">%s Projects</p>%s' % (total,response)
+        if total is None:
+            total = 0
+            for p in M.Project.query.find(q):
+                if h.has_access(p, 'read')():
+                    total = total + 1
+        response = '<p class="macro_projects_total">%s Projects</p>%s' % \
+                (total, response)
     return response
 
 @macro()

@@ -36,9 +36,14 @@ def test_app_globals():
 def test_macros():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    p_test2 = M.Project.query.get(shortname='test2', neighborhood_id=p_nbhd._id)
     p_sub1 =  M.Project.query.get(shortname='test/sub1', neighborhood_id=p_nbhd._id)
     p_test.labels = [ 'test', 'root' ]
     p_sub1.labels = [ 'test', 'sub1' ]
+    # Make one project private
+    p_test.private = False
+    p_sub1.private = False
+    p_test2.private = True
 
     ThreadLocalORMSession.flush_all()
 
@@ -72,6 +77,11 @@ def test_macros():
         assert '<img alt="sub1 Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True]]')
         assert '<p class="macro_projects_total">3 Projects</p>' in r, r
+        r = g.markdown_wiki.convert('[[projects show_total=True private=True]]')
+        assert '<p class="macro_projects_total">1 Projects</p>' in r, r
+        assert '<img alt="test2 Logo"' in r, r
+        assert '<img alt="test Logo"' not in r, r
+        assert '<img alt="sub1 Logo"' not in r, r
 
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'

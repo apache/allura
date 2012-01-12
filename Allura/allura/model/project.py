@@ -249,6 +249,25 @@ class Project(MappedClass):
         if self.is_root: return None
         return self.query.get(_id=self.parent_id)
 
+    @property
+    def private(self):
+        """Return True if this project is private, else False."""
+        role_anon = ProjectRole.anonymous(project=self)
+        return ACE.allow(role_anon._id, 'read') not in self.acl
+
+    @private.setter
+    def private(self, val):
+        """Set whether this project is private or not."""
+        new_val = bool(val)
+        role_anon = ProjectRole.anonymous(project=self)
+        ace = ACE.allow(role_anon._id, 'read')
+        curr_val = ace not in self.acl
+        if new_val == curr_val: return
+        if new_val:
+            self.acl.remove(ace)
+        else:
+            self.acl.append(ace)
+
     def private_project_of(self):
         '''
         If this is a user-project, return the User, else None
@@ -578,11 +597,10 @@ class Project(MappedClass):
             self.acl = [
                 ACE.allow(role_developer._id, 'read'),
                 ACE.allow(role_member._id, 'read') ]
-            if not is_private_project:
-                self.acl.append(ACE.allow(role_anon._id, 'read'))
             self.acl += [
                 M.ACE.allow(role_admin._id, perm)
                 for perm in self.permissions ]
+            self.private = is_private_project
             for user in users:
                 pr = user.project_role()
                 pr.roles = [ role_admin._id ]

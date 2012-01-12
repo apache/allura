@@ -154,15 +154,14 @@ class StatsHandler(TimedRotatingHandler):
         record.exc_info = None # Never put tracebacks in the rtstats log
         TimedRotatingHandler.emit(self, record)
 
-def chunked_find(cls, query=None, pagesize=1024):
+def chunked_find(cls, query=None, pagesize=1024, sort_key=None, sort_dir=1):
     if query is None: query = {}
     page = 0
     while True:
-        results = (
-            cls.query.find(query)
-            .skip(pagesize*page)
-            .limit(pagesize)
-            .all())
+        q = cls.query.find(query).skip(pagesize * page).limit(pagesize)
+        if sort_key:
+            q.sort(sort_key, sort_dir)
+        results = (q.all())
         if not results: break
         yield results
         page += 1
