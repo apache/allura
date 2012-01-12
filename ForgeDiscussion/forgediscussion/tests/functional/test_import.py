@@ -49,13 +49,13 @@ class TestImportController(TestRestApiBase):#TestController):
                           doc=self.json_text)
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion:' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         for link in r.html.findAll('a'):
-            if link.string == 'Welcome to Developers': break
+            if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
         assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         assert 'Anonymous Coward' in str(r), r.showbrowser()
 
     def test_import_map(self):
@@ -69,13 +69,13 @@ class TestImportController(TestRestApiBase):#TestController):
                           username_mapping=json.dumps(dict(rick446='test-user')))
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion:' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         for link in r.html.findAll('a'):
-            if link.string == 'Welcome to Developers': break
+            if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
         assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         assert 'Test User' in str(r), r.showbrowser()
         assert 'Anonymous Coward' not in str(r), r.showbrowser()
 
@@ -89,13 +89,13 @@ class TestImportController(TestRestApiBase):#TestController):
                           doc=self.json_text, create_users='True')
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion:' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         for link in r.html.findAll('a'):
-            if link.string == 'Welcome to Developers': break
+            if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
         assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Developers' in str(r), r.showbrowser()
+        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         assert 'Anonymous Coward' not in str(r), r.showbrowser()
         assert 'test-rick446' in str(r), r.showbrowser()
 

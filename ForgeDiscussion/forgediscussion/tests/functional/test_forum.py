@@ -312,8 +312,6 @@ class TestForum(TestController):
                     'post-0.full_slug': slug,
                     'post-0.checked': 'on',
                     'approve': 'Approve Marked'})
-        r = self.app.get('/discussion/')
-        assert '1 post' in r
 
     def test_threads_with_zero_posts(self):
         # Make sure that threads with zero posts (b/c all posts have been
@@ -637,34 +635,6 @@ class TestForum(TestController):
         thread = self.app.post('/discussion/save_new_topic', params=params).follow(extra_environ=dict(username='*anonymous'))
         thread_sidebarmenu = str(thread.html.find('div',{'id':'sidebar'}))
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in thread_sidebarmenu
-
-    def test_recent_topics_truncated(self):
-        r = self.app.get('/discussion/create_topic/')
-        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
-        params[f.find('textarea')['name']] = 'text'
-        params[f.find('select')['name']] = 'testforum'
-        params[f.find('input',{'style':'width: 90%'})['name']] = 'This is not too long'
-        r = self.app.post('/discussion/save_new_topic', params=params).follow()
-        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert 'This is not too long' in sidebarmenu
-        r = self.app.get('/discussion/create_topic/')
-        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
-        params[f.find('textarea')['name']] = 'text'
-        params[f.find('select')['name']] = 'testforum'
-        params[f.find('input',{'style':'width: 90%'})['name']] = 'This will be truncated because it is too long to show in the sidebar without being ridiculous.'
-        r = self.app.post('/discussion/save_new_topic', params=params).follow()
-        sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert 'This will be truncated because it is too long to show in the sidebar ...' in sidebarmenu
 
     def test_feed(self):
         r = self.app.get('/discussion/general/feed', status=200)

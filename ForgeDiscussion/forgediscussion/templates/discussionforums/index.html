@@ -22,23 +22,44 @@
     {{c.announcements_table.display(value=announcements)}}
   {% endif %}
   {% set visible=0 %}
-  {% for forum in forums %}
-      <div class="discussion_forum grid-9">
-        <strong class="forum_name">{{forum.name}}:</strong>
-        <br>{{forum.description}}<br>&nbsp;<br>
-        {% for thread in threads[forum._id] %}
-          {% if loop.index0 == 5 %}
-            <a href="{{forum.url()}}">More</a>
-          {% else %}
-            {{thread.num_replies}} posts to <a href="{{thread.url()}}">{{h.text.truncate(h.really_unicode(thread.subject or '(no subject)'),75)}}</a><br>
+  <table id="discussion-forums">
+    <thead>
+      <tr>
+        <th>FORUM</th>
+        <th>LATEST POST</th>
+        <th># TOPICS</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for forum in forums %}
+      <tr>
+        <td>
+          <strong><a href="{{forum.url()}}">{{forum.name}}</a></strong><br>
+          {{forum.description}}
+          {% if forum.deleted %}
+            <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
           {% endif %}
-        {% endfor %}
-      </div>
-      {% set visible = visible + 1 %}
-      {% if visible%2==0 %}
-        <div class="clear">&nbsp;</div>
-      {% endif %}
-  {% endfor %}
+        </td>
+        <td>
+          {% if forum.last_post %}
+          <a href="{{forum.last_post.url()}}">{{h.text.truncate(h.really_unicode(forum.last_post.subject or '(no subject)'),75)}}</a><br>
+          by <a href="{{forum.last_post.author().url()}}">{{forum.last_post.author().display_name}}</a><br>
+          {{h.ago(forum.last_post.mod_date)}}
+          {% else %}
+          No posts yet
+          {% endif %}
+        </td>
+        <td class="count">
+          <span class="forum-topic-count">{{forum.num_topics}}</div>
+        </td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="3">No forums exist.</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}
 
 {% block extra_js %}
@@ -56,12 +77,4 @@
       });
     </script>
   {% endif %}
-{% endblock %}
-
-{% block extra_css %}
-<style type="text/css">
-  .forum_name{
-    font-size: 1.2em;
-  }
-</style>
 {% endblock %}
