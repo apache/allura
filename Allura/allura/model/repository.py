@@ -458,7 +458,7 @@ class MergeRequest(VersionedArtifact):
         name='merge-request'
         indexes=['commit_id']
         unique_indexes=[('app_config_id', 'request_number')]
-    type_s='Repository'
+    type_s='MergeRequest'
 
     request_number=FieldProperty(int)
     status=FieldProperty(str, if_missing='open')
@@ -533,6 +533,15 @@ class MergeRequest(VersionedArtifact):
 
     def url(self):
         return self.app.url + 'merge-requests/%s/' % self.request_number
+
+    def index(self):
+        result = Artifact.index(self)
+        result.update(
+            name_s='Merge Request #%d' % self.request_number,
+            type_s=self.type_s,
+            title_s='Merge Request #%d of %s:%s' % (
+                self.request_number, self.project.name, self.app.repo.name))
+        return result
 
 class LastCommitFor(MappedClass):
     class __mongometa__:

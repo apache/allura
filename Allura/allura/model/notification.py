@@ -132,7 +132,9 @@ class Notification(MappedClass):
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
                     idx['title_s'],c.user.get_pref('display_name')))
-            reply_to = '"%s" <%s>' % (idx['title_s'], artifact.email_address)
+            reply_to = '"%s" <%s>' % (
+                idx['title_s'],
+                getattr(artifact, 'email_address', 'noreply@in.sf.net'))
             d = dict(
                 from_address=reply_to,
                 reply_to_address=reply_to,
@@ -153,7 +155,7 @@ class Notification(MappedClass):
         try:
             ''' Add addional text to the notification e-mail based on the artifact type '''
             template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
-            d['text'] += template.render(dict(ticket=artifact))
+            d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact))
         except Exception, e:
             ''' Catch any errors loading or rendering the template,
             but the notification still gets sent if there is an error

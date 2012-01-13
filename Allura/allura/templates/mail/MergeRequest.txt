@@ -1,0 +1,7 @@
+
+
+---
+
+{{ data.creator_name }} has requested that you merge changes from {{ data.downstream_repo_url }} ({{data.downstream.commit_id}}) into the branch {{ data.target_branch }}
+
+{{ data.description }}

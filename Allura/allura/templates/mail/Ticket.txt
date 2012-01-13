@@ -2,16 +2,16 @@
 
 ---
 
-** [{{ticket.app_config.options.mount_point}}:{{ticket.ticket_num}}] {{ticket.summary}}**
+** [{{data.app_config.options.mount_point}}:{{data.ticket_num}}] {{data.summary}}**
 
-**Status:** {{ticket.status}}  
-{% if ticket.labels.__len__() -%}
-    **Labels:** {% for label in ticket.labels %}{{label}} {% else %}None{% endfor %}  
+**Status:** {{data.status}}
+{% if data.labels.__len__() -%}
+    **Labels:** {% for label in data.labels %}{{label}} {% else %}None{% endfor %}
 {% endif -%}
-**Created:** {{ticket.created_date.strftime('%a %b %d, %Y %I:%M %p UTC')}} by {{ticket.reported_by.display_name}}  
-{% if (ticket.mod_date - ticket.created_date).days >= 0 -%}
-    **Last Updated:** {{ticket.mod_date.strftime('%a %b %d, %Y %I:%M %p UTC')}}
+**Created:** {{data.created_date.strftime('%a %b %d, %Y %I:%M %p UTC')}} by {{data.reported_by.display_name}}
+{% if (data.mod_date - data.created_date).days >= 0 -%}
+    **Last Updated:** {{data.mod_date.strftime('%a %b %d, %Y %I:%M %p UTC')}}
 {% endif -%}
-**Owner:** {{ticket.assigned_to_name()}}
+**Owner:** {{data.assigned_to_name()}}
 
-{{ticket.description}}
+{{data.description}}

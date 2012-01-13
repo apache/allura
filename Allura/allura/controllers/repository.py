@@ -125,6 +125,9 @@ class RepoRootController(BaseController):
                 target_branch=kw['target_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
+            M.Notification.post(
+                mr, 'merge_request',
+                subject='Merge request: ' + mr.summary)
             t = M.Thread(
                 discussion_id=c.app.config.discussion_id,
                 artifact_reference=mr.index_id(),
