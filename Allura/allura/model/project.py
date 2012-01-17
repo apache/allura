@@ -249,13 +249,10 @@ class Project(MappedClass):
         if self.is_root: return None
         return self.query.get(_id=self.parent_id)
 
-    @property
-    def private(self):
+    def _get_private(self):
         """Return True if this project is private, else False."""
         role_anon = ProjectRole.anonymous(project=self)
         return ACE.allow(role_anon._id, 'read') not in self.acl
-
-    @private.setter
     def _set_private(self, val):
         """Set whether this project is private or not."""
         new_val = bool(val)
@@ -267,6 +264,7 @@ class Project(MappedClass):
             self.acl.remove(ace)
         else:
             self.acl.append(ace)
+    private = property(_get_private, _set_private)
 
     def private_project_of(self):
         '''
