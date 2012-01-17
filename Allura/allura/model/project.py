@@ -256,7 +256,7 @@ class Project(MappedClass):
         return ACE.allow(role_anon._id, 'read') not in self.acl
 
     @private.setter
-    def private(self, val):
+    def _set_private(self, val):
         """Set whether this project is private or not."""
         new_val = bool(val)
         role_anon = ProjectRole.anonymous(project=self)
