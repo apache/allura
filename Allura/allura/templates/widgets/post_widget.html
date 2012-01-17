@@ -29,7 +29,7 @@
         </div>
         {% if h.has_access(value.thread, 'post')() %}
         <div class="edit_post_form reply" style="display:none">
-            {{widgets.edit_post.display(value=value, submit_text='Save', action=value.url())}}
+            {{widgets.edit_post.display(value=value, submit_text='Post', action=value.url())}}
         </div>
         {% endif %}
         {% if h.has_access(value, 'moderate')() %}

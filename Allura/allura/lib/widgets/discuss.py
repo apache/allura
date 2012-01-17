@@ -253,7 +253,7 @@ class Post(HierWidget):
         suppress_promote=False)
     widgets=dict(
         moderate_post=ModeratePost(),
-        edit_post=EditPost(submit_text='Save'),
+        edit_post=EditPost(submit_text='Post'),
         attach_post=AttachPost(submit_text='Attach'),
         attachment=Attachment())
     def resources(self):

@@ -39,7 +39,7 @@ class RootController(BaseController):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
-        new_topic=DW.NewTopicPost(submit_text='Save')
+        new_topic=DW.NewTopicPost(submit_text='Post')
         announcements_table=FW.AnnouncementsTable()
         add_forum=AddForumShort()
         search_results = SearchResults()
