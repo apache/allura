@@ -714,8 +714,8 @@ class AuditController(BaseController):
     def index(self, limit=10, page=0, **kwargs):
         limit = int(limit)
         page = int(page)
-        count = M.AuditLog.query.find(project_id=c.project._id).count()
-        q = M.AuditLog.query.find(project_id=c.project._id)
+        count = M.AuditLog.query.find(dict(project_id=c.project._id).count())
+        q = M.AuditLog.query.find(dict(project_id=c.project._id))
         q = q.sort('timestamp', -1)
         q = q.skip(page * limit)
         if count > limit:
