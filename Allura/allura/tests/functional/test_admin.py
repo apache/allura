@@ -131,6 +131,10 @@ class TestProjectAdmin(TestController):
                     'new.ep_name':'',
                     })
 
+        # Check the audit log
+        r = self.app.get('/admin/audit/')
+        assert "uninstall tool test-tool" in r.body, r.body
+
     def test_tool_permissions(self):
         self.app.get('/admin/')
         for i, ep in enumerate(pkg_resources.iter_entry_points('allura')):
