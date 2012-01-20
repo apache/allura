@@ -45,7 +45,6 @@ setup(
         "BeautifulSoup",
         "PasteScript",
         "Babel >= 0.9.4",
-        "pymongo >= 1.9,<2.0",
         "jinja2",
         "pysolr",
         "repoze.what-quickstart",

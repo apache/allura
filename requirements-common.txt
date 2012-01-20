@@ -36,7 +36,7 @@ poster==0.8.1
 pyflakes==0.4.0
 Pygments==1.4
 Pylons==1.0
-pymongo==1.11
+pymongo==2.1.1
 Pypeline==0.1dev
 pyprof2calltree==1.1.0
 pysolr==2.1.0-beta
