@@ -548,6 +548,10 @@ class PermissionsController(BaseController):
             perm = args['id']
             new_group_ids = args.get('new', [])
             group_ids = args.get('value', [])
+            if isinstance(new_group_ids, basestring):
+                new_group_ids = [ new_group_ids ]
+            if isinstance(group_ids, basestring):
+                group_ids = [ group_ids ]
             # make sure the admin group has the admin permission
             if perm == 'admin':
                 if c.project.is_root:
@@ -555,14 +559,10 @@ class PermissionsController(BaseController):
                 else:
                     pid = c.project.parent_id
                 admin_group_id = str(M.ProjectRole.query.get(project_id=pid, name='Admin')._id)
-                if admin_group_id not in group_ids:
+                if admin_group_id not in group_ids + new_group_ids:
                     flash('You cannot remove the admin group from the admin permission.','warning')
                     group_ids.append(admin_group_id)
             permissions[perm] = []
-            if isinstance(new_group_ids, basestring):
-                new_group_ids = [ new_group_ids ]
-            if isinstance(group_ids, basestring):
-                group_ids = [ group_ids ]
             role_ids = map(ObjectId, group_ids + new_group_ids)
             permissions[perm] = role_ids
         c.project.acl = []
@@ -573,8 +573,7 @@ class PermissionsController(BaseController):
             if old_role_ids != role_ids:
                 M.AuditLog.log('updated "%s" permissions: "%s" => "%s"',
                                perm,role_names(old_role_ids), role_names(role_ids))
-                c.project.acl += [
-                M.ACE.allow(rid, perm) for rid in role_ids ]
+            c.project.acl += [M.ACE.allow(rid, perm) for rid in role_ids]
         g.post_event('project_updated')
         redirect('.')
 
