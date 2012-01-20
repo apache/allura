@@ -292,7 +292,7 @@ class DefaultAdminController(BaseController):
 
     @expose()
     def index(self, **kw):
-        return permanent_redirect('permissions')
+        permanent_redirect('permissions')
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash

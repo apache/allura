@@ -3,7 +3,7 @@ import logging
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response, config, flash
+from tg import expose, validate, response, config, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
 
@@ -12,6 +12,7 @@ from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminCont
 from allura.lib import helpers as h
 from allura.lib.security import has_access, require_access
 from allura.lib.decorators import require_post
+from allura.lib.utils import permanent_redirect
 from allura import model as M
 from allura.controllers import BaseController
 
@@ -82,7 +83,7 @@ class RootController(BaseController):
     @with_trailing_slash
     def index(self, **kw):
         url='/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
-        redirect(url)
+        permanent_redirect(url)
 
     @expose('json:')
     def nav(self):

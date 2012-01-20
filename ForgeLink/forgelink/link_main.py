@@ -10,6 +10,7 @@ from pylons import g, c, request
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.security import require_access
+from allura.lib.utils import permanent_redirect
 from allura import model as M
 from allura.controllers import BaseController
 
@@ -79,7 +80,7 @@ class RootController(BaseController):
     def index(self, **kw):
         url = c.app.config.options.get('url')
         if url:
-            redirect(url)
+            permanent_redirect(url)
         return dict()
 
 class LinkAdminController(DefaultAdminController):
