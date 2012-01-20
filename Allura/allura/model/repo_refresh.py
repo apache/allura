@@ -7,6 +7,7 @@ import bson
 from ming.base import Object
 
 from allura.lib import utils
+from allura.lib import helpers as h
 from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
 from allura.model.repo import LastCommitDoc, CommitRunDoc
 from allura.model.repo import Commit
@@ -18,9 +19,17 @@ QSIZE=100
 
 def refresh_repo(repo, all_commits=False, notify=True):
     all_commit_ids = commit_ids = list(repo.all_commit_ids())
+    new_commit_ids = unknown_commit_ids(commit_ids)
+    stats_log = h.log_action(log, 'commit')
+    for ci in new_commit_ids:
+        stats_log.info(
+            '',
+            meta=dict(
+                module='scm-%s' % repo.repo_id,
+                read='0'))
     if not all_commits:
         # Skip commits that are already in the DB
-        commit_ids = unknown_commit_ids(commit_ids)
+        commit_ids = new_commit_ids
     log.info('Refreshing %d commits', len(commit_ids))
 
     # Refresh commits
@@ -308,13 +317,12 @@ def send_notifications(repo, commit_ids):
             ci = index[oid]
             href = repo.url_for_commit(oid)
             summary = _summarize(ci.message)
-            item = Feed.post(
+            Feed.post(
                 repo, title='New commit',
                 description='%s<br><a href="%s">View Changes</a>' % (
-                    summary, href))
-            if not item: continue
-            item.author_link = ci.author_url
-            item.author_name = ci.authored.name
+                    summary, href),
+                author_link=ci.author_url,
+                author_name=ci.authored.name)
             commit_msgs.append('%s by %s <%s>' % (
                     summary, ci.authored.name, href))
     if commit_msgs:
