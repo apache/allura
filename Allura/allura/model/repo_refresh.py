@@ -157,6 +157,8 @@ class CommitRunBuilder(object):
             oids = list(oids)
             for run in CommitRunDoc.m.find(dict(commit_ids={'$in': oids})):
                 runs[run._id] = run
+            for run in CommitRunDoc.m.find(dict(parent_commit_ids={'$in': oids})):
+                runs[run._id] = run
         seen_run_ids = set()
         runs = runs.values()
         while runs:
@@ -169,7 +171,19 @@ class CommitRunBuilder(object):
                 runs.append(run)
 
     def cleanup(self):
-        '''Delete non-maximal runs'''
+        '''Delete non-maximal runs and merge any new runs with existing runs'''
+        runs = dict(
+            (run['commit_ids'][0], run)
+            for run in self._all_runs())
+        for rid, run in runs.items():
+            p_cis = run['parent_commit_ids']
+            if len(p_cis) != 1: continue
+            parent_run = runs.get(p_cis[0], None)
+            if parent_run is None: continue
+            run['commit_ids'] += parent_run['commit_ids']
+            run['parent_commit_ids'] = parent_run['parent_commit_ids']
+            run.m.save()
+            runs[p_cis[0]].m.delete()
         for run1 in self._all_runs():
             for run2 in CommitRunDoc.m.find(dict(
                     commit_ids=run1.commit_ids[0])):
