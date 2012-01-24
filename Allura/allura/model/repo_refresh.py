@@ -312,6 +312,7 @@ def send_notifications(repo, commit_ids):
                 repo, title='New commit',
                 description='%s<br><a href="%s">View Changes</a>' % (
                     summary, href))
+            if not item: continue
             item.author_link = ci.author_url
             item.author_name = ci.authored.name
             commit_msgs.append('%s by %s <%s>' % (

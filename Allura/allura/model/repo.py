@@ -203,7 +203,7 @@ class Commit(RepoObject):
         return self.shorthand_id()
 
     def log_iter(self, skip, count):
-        for oids in utils.chunked_iter(commitlog(self._id), QSIZE):
+        for oids in utils.chunked_iter(commitlog([self._id]), QSIZE):
             oids = list(oids)
             commits = dict(
                 (ci._id, ci) for ci in self.query.find(dict(
@@ -225,7 +225,7 @@ class Commit(RepoObject):
 
     def count_revisions(self):
         result = 0
-        for oid in commitlog(self._id): result += 1
+        for oid in commitlog([self._id]): result += 1
         return result
 
     def context(self):
@@ -359,7 +359,7 @@ class Tree(RepoObject):
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
 
-def commitlog(commit_id, skip=0, limit=sys.maxint):
+def commitlog(commit_ids, skip=0, limit=sys.maxint):
 
     seen = set()
     def _visit(commit_id):
@@ -379,9 +379,9 @@ def commitlog(commit_id, skip=0, limit=sys.maxint):
         for oid in run.parent_commit_ids:
             _visit(oid)
 
-    def _gen_ids(commit_id, skip, limit):
+    def _gen_ids(commit_ids, skip, limit):
         # Traverse the graph in topo order, yielding commit IDs
-        commits = set([commit_id])
+        commits = set(commit_ids)
         new_parent = None
         while commits and limit:
             # next commit is latest commit that's valid to log
@@ -411,9 +411,10 @@ def commitlog(commit_id, skip=0, limit=sys.maxint):
     ci_parents = {}
     ci_children = defaultdict(set)
     log.info('Build commit graph')
-    _visit(commit_id)
+    for cid in commit_ids:
+        _visit(cid)
     for oid, parents in ci_parents.iteritems():
         for ci_parent in parents:
             ci_children[ci_parent].add(oid)
 
-    return _gen_ids(commit_id, skip, limit)
+    return _gen_ids(commit_ids, skip, limit)

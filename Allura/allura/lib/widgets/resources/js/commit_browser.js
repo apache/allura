@@ -40,7 +40,7 @@ if (!Array.prototype.indexOf)
 }
 if($('#commit_graph')){
 $.getJSON(document.location.href+'_data', function(data) {
-  var tree = data['built_tree'];
+  var  tree = data['built_tree'];
   var max_row = data['max_row'];
   var next_column = data['next_column'];
 

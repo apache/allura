@@ -2,6 +2,7 @@ import os
 import json
 import logging
 from urllib import quote, unquote
+from collections import defaultdict
 
 from pylons import c, g, request, response
 from webob import exc
@@ -165,9 +166,9 @@ class RepoRootController(BaseController):
     def commit_browser(self):
         if not c.app.repo or c.app.repo.status != 'ready':
             return dict(status='not_ready')
-        if c.app.repo.count() > 2000:
-            return dict(status='too_many_commits')
-        elif c.app.repo.count() == 0:
+        # if c.app.repo.count() > 2000:
+        #     return dict(status='too_many_commits')
+        if c.app.repo.count() == 0:
             return dict(status='no_commits')
         c.commit_browser_widget = self.commit_browser_widget
         return dict(status='ready')
@@ -175,41 +176,52 @@ class RepoRootController(BaseController):
     @without_trailing_slash
     @expose('json:')
     def commit_browser_data(self):
-        all_commits = c.app.repo._impl.new_commits(all_commits=True)
-        sorted_commits = dict()
-        next_column = 0
-        series = 0
-        free_cols = set()
-        for i, commit in enumerate(reversed(all_commits)):
-            c_obj = M.Commit.query.get(object_id=commit)
-            c_obj.repo = c.app.repo
-            if commit not in sorted_commits:
-                col = next_column
-                if len(free_cols):
-                    col = free_cols.pop()
-                else:
-                    next_column = next_column + 1
-                sorted_commits[commit] = dict(column=col,series=series)
-                series = series + 1
-            sorted_commits[commit]['row'] = i
-            sorted_commits[commit]['parents'] = []
-            sorted_commits[commit]['message'] = c_obj.summary
-            sorted_commits[commit]['url'] = c_obj.url()
-            for j, parent in enumerate(c_obj.parent_ids):
-                sorted_commits[commit]['parents'].append(parent)
-                parent_already_mapped = parent in sorted_commits and sorted_commits[parent]['column'] > sorted_commits[commit]['column']
-                if (parent not in sorted_commits or parent_already_mapped) and j==0:
-                    # this parent is the branch point for a different column, so make that column available for re-use
-                    if parent_already_mapped:
-                        free_cols.add(sorted_commits[parent]['column'])
-                    sorted_commits[parent] = dict(column=sorted_commits[commit]['column'],series=sorted_commits[commit]['series'])
-                # this parent is the branch point for this column, so make this column available for re-use
-                elif parent in sorted_commits and sorted_commits[parent]['column'] < sorted_commits[commit]['column']:
-                    free_cols.add(sorted_commits[commit]['column'])
-        return dict(built_tree=sorted_commits,
-                    next_column=next_column,
-                    max_row=len(all_commits),
-                    )
+        head_ids = [ head.object_id for head in c.app.repo.heads ]
+        commit_ids = list(M.repo.commitlog(head_ids))
+        log.info('Grab %d commit objects by ID', len(commit_ids))
+        commits_by_id = dict(
+            (c_obj._id, c_obj)
+            for c_obj in M.repo.CommitDoc.m.find(dict(_id={'$in': commit_ids})))
+        log.info('... build graph')
+        parents = {}
+        children = defaultdict(list)
+        dates = {}
+        for row, (oid, ci) in enumerate(commits_by_id.iteritems()):
+            parents[oid] = list(ci.parent_ids)
+            dates[oid] = ci.committed.date
+            for p_oid in ci.parent_ids:
+                children[p_oid].append(oid)
+        result = []
+        for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
+            ci = commits_by_id[oid]
+            result.append(dict(
+                    oid=oid,
+                    row=row,
+                    parents=ci.parent_ids,
+                    message=ci.message.splitlines()[0],
+                    url='#'))
+        log.info('...done')
+        col_idx = {}
+        columns = []
+        for row, ci_json in enumerate(result):
+            oid = ci_json['oid']
+            colno = len(columns)
+            chs = children[oid]
+            for ch in chs:
+                ch_col = col_idx.get(ch, None)
+                if columns[ch_col] == ch:
+                    colno = min(colno, ch_col)
+            col_idx[oid] = ci_json['column'] = colno
+            while colno >= len(columns):
+                columns.append(None)
+            columns[colno] = oid
+        built_tree = dict(
+                (ci_json['oid'], ci_json) for ci_json in result)
+        return dict(
+            commits=[ ci_json['oid'] for ci_json in result ],
+            built_tree=built_tree,
+            next_column=len(columns),
+            max_row=row)
 
 class RepoRestController(RepoRootController):
     @expose('json:')
@@ -489,5 +501,20 @@ class FileBrowser(BaseController):
         return dict(
             a=a, b=b,
             diff=diff)
+
+def topo_sort(children, parents, dates, head_ids):
+    to_visit = set(head_ids)
+    visited = set()
+    while to_visit:
+        next = max(to_visit, key=lambda x: dates[x])
+        to_visit.remove(next)
+        if next in visited: continue
+        visited.add(next)
+        yield next
+        for p in parents[next]:
+            for c in children[p]:
+                if c not in visited: break
+            else:
+                to_visit.add(p)
 
 on_import()
