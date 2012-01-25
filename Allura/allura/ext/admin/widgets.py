@@ -140,12 +140,12 @@ class MetadataAdmin(ff.AdminForm):
                                 V.MaxBytesValidator(max=40)),
                              attrs=dict(maxlength=40,
                                         title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
-        summary = ew.InputField(field_type="text", label='Summary',
+        summary = ew.InputField(field_type="text", label='Short Summary',
                                 validator=formencode.All(
                                    fev.UnicodeString(not_empty=True, max=70),
                                    V.MaxBytesValidator(max=70)),
                                 attrs=dict(maxlength=70))
-        short_description = ew.TextArea(label='Description',
+        short_description = ew.TextArea(label='Full Description',
                                         validator=formencode.All(
                                             fev.UnicodeString(max=1000),
                                             V.MaxBytesValidator(max=1000)),
