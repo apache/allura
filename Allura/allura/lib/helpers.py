@@ -25,6 +25,7 @@ from pylons import c, response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
+from jinja2 import Markup
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 
@@ -541,12 +542,14 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     return limit, page
 
 def render_any_markup(name, text):
+    """
+    renders any markup format using the pypeline
+    Returns jinja-safe text
+    """
     if text == '':
         text = '<p><em>Empty File</em></p>'
     else:
-        renderer = pylons.g.pypeline_markup.renderer(name)
-        if renderer[1]:
-            text = pylons.g.pypeline_markup.render(name,text)
-        else:
+        text = pylons.g.pypeline_markup.render(name, text)
+        if not pylons.g.pypeline_markup.can_render(name):
             text = '<pre>%s</pre>' % text
-    return text
+    return Markup(text)

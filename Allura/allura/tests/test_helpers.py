@@ -114,5 +114,14 @@ def test_paging_sanitizer():
     for input, output in test_data.iteritems():
         assert (h.paging_sanitizer(*input)) == output
 
-def test_render_any_markup():
-    pass
+def test_render_any_markup_empty():
+    assert_equals(h.render_any_markup('foo', ''), '<p><em>Empty File</em></p>')
+
+def test_render_any_markup_plain():
+    assert_equals(h.render_any_markup('readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo'),
+                  '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
+
+def test_render_any_markup_formatting():
+    assert_equals(h.render_any_markup('README.md', '### foo\n<script>alert(1)</script> bar'),
+                  '<h3>foo</h3>\n<p>&lt;script&gt;alert(1)&lt;/script&gt; bar</p>')
+
