@@ -43,6 +43,8 @@ python-dateutil==1.5
 python-openid==2.2.5
 pytidylib==0.2.1
 PyYAML==3.10
+# needed for profiling
+repoze.profile==1.3
 repoze.tm2==1.0a5
 repoze.what==1.0.9
 repoze.what.plugins.sql==1.0.1
