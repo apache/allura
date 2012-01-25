@@ -8,6 +8,7 @@ pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c, g
 from ming.orm import ThreadLocalORMSession
+from nose.tools import assert_equal
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
@@ -66,8 +67,8 @@ class TestNewGit(unittest.TestCase):
             ci.context()
         self.rev.tree.ls()
         # print self.rev.tree.readme()
-        assert self.rev.tree.readme() == (
-            'README', '<pre>This is readme\nAnother Line\n</pre>')
+        assert_equal(self.rev.tree.readme(), (
+            'README', 'This is readme\nAnother Line\n'))
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src-git/ci/'

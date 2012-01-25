@@ -56,7 +56,7 @@ class TestNewRepo(unittest.TestCase):
             ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
-            'README', '<pre>This is readme\nAnother Line\n</pre>')
+            'README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src/5/tree/')

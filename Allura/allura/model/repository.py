@@ -926,24 +926,13 @@ class Tree(RepoObject):
             self.commit = commit_or_tree
 
     def readme(self):
-        name = None
-        text = ''
+        'returns (filename, unicode text) if a readme file is found'
         for x in self.object_ids:
             if README_RE.match(x.name):
                 obj = self[x.name]
                 if isinstance(obj, Blob):
-                    name = x.name
-                    text = h.really_unicode(obj.text)
-                    break
-        if text == '':
-            text = '<p><em>Empty File</em></p>'
-        else:
-            renderer = g.pypeline_markup.renderer(name)
-            if renderer[1]:
-                text = g.pypeline_markup.render(name,text)
-            else:
-                text = '<pre>%s</pre>' % text
-        return (name, text)
+                    return (x.name, h.really_unicode(obj.text))
+        return (None, '')
 
     def ls(self):
         results = []

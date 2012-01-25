@@ -27,6 +27,6 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 {% set name, text = tree.readme() %}
 {% if name %}
   <h1 id="readme">Read Me</h1>
-  {{text|safe}}
+  {{h.render_any_markup(name, text)|safe}}
 {% endif %}
 {% endblock %}

@@ -539,3 +539,14 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     max_page = max(0, max_page - (1 if zero_based_pages else 0))
     page = min(max(int(page), (0 if zero_based_pages else 1)), max_page)
     return limit, page
+
+def render_any_markup(name, text):
+    if text == '':
+        text = '<p><em>Empty File</em></p>'
+    else:
+        renderer = pylons.g.pypeline_markup.renderer(name)
+        if renderer[1]:
+            text = pylons.g.pypeline_markup.render(name,text)
+        else:
+            text = '<pre>%s</pre>' % text
+    return text

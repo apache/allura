@@ -67,7 +67,7 @@ class TestNewRepo(unittest.TestCase):
             ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
-            'README', '<pre>This is readme\nAnother line\n</pre>')
+            'README', 'This is readme\nAnother line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src-hg/ci/'
@@ -195,5 +195,3 @@ class TestHgCommit(unittest.TestCase):
                  +self.rev.diffs.copied)
         for d in diffs:
             print d
-
-

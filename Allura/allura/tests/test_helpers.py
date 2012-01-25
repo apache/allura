@@ -113,3 +113,6 @@ def test_paging_sanitizer():
     }
     for input, output in test_data.iteritems():
         assert (h.paging_sanitizer(*input)) == output
+
+def test_render_any_markup():
+    pass

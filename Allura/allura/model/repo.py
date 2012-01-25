@@ -278,8 +278,7 @@ class Tree(RepoObject):
             self.commit = commit_or_tree
 
     def readme(self):
-        name = None
-        text = ''
+        'returns (filename, unicode text) if a readme file is found'
         for x in self.blob_ids:
             if README_RE.match(x.name):
                 name = x.name
@@ -289,17 +288,7 @@ class Tree(RepoObject):
                     commit=Object(
                         object_id=self.commit._id))
                 text = self.repo.open_blob(obj).read()
-                text = h.really_unicode(text)
-                break
-        if text == '':
-            text = '<p><em>Empty File</em></p>'
-        else:
-            renderer = g.pypeline_markup.renderer(name)
-            if renderer[1]:
-                text = g.pypeline_markup.render(name,text)
-            else:
-                text = '<pre>%s</pre>' % text
-        return (name, text)
+                return (x.name, h.really_unicode(text))
 
     def ls(self):
         # Load last commit info
