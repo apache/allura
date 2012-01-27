@@ -38,6 +38,7 @@ Pygments==1.4
 Pylons==1.0
 pymongo==1.11
 Pypeline==0.1dev
+pyprof2calltree==1.1.0
 pysolr==2.1.0-beta
 python-dateutil==1.5
 python-openid==2.2.5
