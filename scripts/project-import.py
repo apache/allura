@@ -52,12 +52,8 @@ class ProjectNameType():
         if cstruct is col.null:
             return col.null
         name = cstruct
-        shortname = re.sub("[^A-Za-z0-9]", "", name).lower()
-        length = len(shortname)
-        if length < 3 or length > 15:
-            raise col.Invalid(node,
-                    'Project shortname "%s" must be between 3 and 15 '
-                    'characters.' % shortname)
+        shortname = re.sub("[^A-Za-z0-9 ]", "", name).lower()
+        shortname = re.sub(" ", "-", shortname)
         return ProjectName(name, shortname)
 
 class ProjectShortnameType():
@@ -110,8 +106,18 @@ class Project(col.MappingSchema):
     trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=[])
     trove_licenses = TroveLicenses(validator=col.Length(max=6), missing=[])
 
+def valid_shortname(project):
+    if project.shortname:
+        # already validated in ProjectShortnameType validator
+        return True
+    elif 3 <= len(project.name.shortname) <= 15:
+        return True
+    else:
+        return 'Project shortname "%s" must be between 3 and 15 characters' \
+                % project.name.shortname
+
 class Projects(col.SequenceSchema):
-    project = Project()
+    project = Project(validator=col.Function(valid_shortname))
 
 class Object(object):
     def __init__(self, d):
