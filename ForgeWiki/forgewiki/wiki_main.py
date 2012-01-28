@@ -175,7 +175,7 @@ class ForgeWikiApp(Application):
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         links += [SitemapEntry(''),
-            SitemapEntry('Markdown Syntax',c.app.url+'markdown_syntax/', className='nav_child')
+            SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/', className='nav_child')
         ]
         return links
 
