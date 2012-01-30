@@ -2,7 +2,7 @@
 <div class="markdown_edit">
   <a href="#" class="markdown_preview btn" title="Preview"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b> Preview</a>
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
-  <a href="#" class="markdown_help btn" title="Formatting Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Formatting Help</a>
+  <a href="{{c.app.url}}markdown_syntax_dialog" class="markdown_help btn" title="Formatting Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Formatting Help</a>
   <div style="clear:both"></div>
   <textarea id="{{id or rendered_name}}" name="{{rendered_name}}" class="auto_resize" {{widget.j2_attrs(attrs)}}>{{value or ''}}</textarea>
   <div class="markdown_preview" style="display:none"></div>
@@ -10,7 +10,7 @@
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <div class="modal markdown_help" style="display:none">
     <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
-    {{lib.markdown_syntax(id=(id or name))}}
+    <div class="markdown_help_contents"></div>
   </div>
   <input type="hidden" class="markdown_project" value="{{c.project.shortname}}">
   <input type="hidden" class="markdown_neighborhood" value="{{c.project.neighborhood._id}}">

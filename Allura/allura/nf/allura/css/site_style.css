@@ -715,6 +715,9 @@ blockquote {
 .modal .codehilite {
   background-color: #777;
 }
+.modal .hidden_in_modal {
+    display: none;
+}
 
 .ie7 .modal, .ie8 .modal {
   border: 1px solid black;
@@ -731,6 +734,12 @@ blockquote {
 }
 #help h1 {
   padding-left: 20px;
+}
+
+.markdown_syntax_toc_crumb {
+  float: right !important;
+  margin-left: 20px;
+  display: none;
 }
 
 /* forms */

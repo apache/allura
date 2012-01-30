@@ -109,12 +109,14 @@
 {% endmacro %}
 
 {% macro markdown_syntax(id='') %}
+<a class="markdown_syntax_toc_crumb" href="#md_ex_toc{{id}}">Back</a>
 <h1>Markdown Syntax Guide</h1>
 
+<div class="markdown_syntax_section md_ex_toc{{id}}">
 <p>The Allura code uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p>
 <p>Markdown was created to be easy to read, easy to write, and still readable in plain text format.</p>
 
-<ul>
+<ul class="markdown_syntax_toc">
     <li><a href="#md_ex_links{{id}}">Links</a></li>
     <li><a href="#md_ex_reflinks{{id}}">Reference Links</a></li>
     <li><a href="#md_ex_artlinks{{id}}">Artifact Links</a></li>
@@ -135,7 +137,9 @@
     <li><a href="#md_ex_project_screenshots{{id}}">Project Screenshots</a></li>
     <li><a href="#md_ex_thanks{{id}}">Thanks</a></li>
 </ul>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_links{{id}}">
 <h2 id="md_ex_links{{id}}">Links</h2>
 
 <p>Most URLs will automatically be turned into links.  To be explicit, just write it like this:</p>
@@ -164,8 +168,10 @@
 
 <p>Output:</p>
 {{g.markdown.convert('''[like this](http://someurl "this title shows up when you hover")''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_reflinks{{id}}">
 <h2 id="md_ex_reflinks{{id}}">Reference Links</h2>
 <div class="codehilite"><pre>You can also put the [link URL][1] below the current paragraph
 like [this][2].
@@ -195,8 +201,10 @@ showing "[1]: http://url" won't show anything.</p>
 "shortcut" to the link named "[shortcut]" on the next paragraph.
 
 [shortcut]: http://goes/with/the/link/name/text''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_artlinks{{id}}">
 <h2 id="md_ex_artlinks{{id}}">Artifact Links</h2>
 <p>Any existing forge resource can be linked with surrounding square brackets ie [MyPage] or [#123].</p>
 
@@ -214,7 +222,9 @@ You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</
 </pre></div>
 
 <p>No example output is available for this one because it only works on real artifacts. Try it in your project!</p>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_text{{id}}">
 <h2 id="md_ex_text{{id}}">Text</h2>
 <p>Use * or _ to emphasize things:</p>
 <div class="codehilite"><pre>*this is in italic*  and _so is this_
@@ -254,7 +264,9 @@ you would expect.  A blank line separates paragraphs.
 So this is a new paragraph. But any text on adjacent lines
 will all end up
 in the same paragraph.""")}}
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_bq{{id}}">
 <h2 id="md_ex_bq{{id}}">Blockquotes</h2>
 <p>Use the &gt; character in front of a line, <i>just like in email</i></p>
 <div class="codehilite"><pre>&gt; Use it if you're quoting a person, a song or whatever.
@@ -278,8 +290,10 @@ part of the blockquote, even without the &gt; character in front.
 
 To end the blockquote, just put a blank line before the following
 paragraph.""")}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_pre{{id}}">
 <h2 id="md_ex_pre{{id}}">Preformatted Text</h2>
 <p>If you want some text to show up exactly as you write it, without
 Markdown doing anything to it, just indent every line by at least 4
@@ -307,8 +321,10 @@ at all.`
 As a shortcut you can use backquotes to do the same thing while
 inside a normal pargraph.  `This won't be *italic* or **bold**
 at all.`""")}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_lists{{id}}">
 <h2 id="md_ex_lists{{id}}">Lists</h2>
 <div class="codehilite"><pre>* an asterisk starts an unordered list
 * and this is another item in the list
@@ -341,7 +357,9 @@ To start an ordered list, write this:
     * just indent by 4 spaces (or tab) to make a sub-list
         1. keep indenting for more sub lists
     * here i\'m back to the second level''')}}
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_tables{{id}}">
 <h2 id="md_ex_tables{{id}}">Tables</h2>
 <p>You can create tables using pipes and dashes like this:</p>
 <div class="codehilite"><pre>
@@ -375,7 +393,9 @@ First Header   | Second Header
 Content Cell   | Content Cell''')}}
 
 <p>You can also create tables using HTML code.</p>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_headers{{id}}">
 <h2 id="md_ex_headers{{id}}">Headers</h2>
 <p>Just put 1 or more dashes or equals signs (--- or ===) below the
 title.</p>
@@ -392,8 +412,10 @@ this is a smaller header
 
 this is a smaller header
 ------------------''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_hr{{id}}">
 <h2 id="md_ex_hr{{id}}">Horizontal Rule</h2>
 <p>Just put three or more *'s or -'s on a line:</p>
 <div class="codehilite"><pre>
@@ -431,8 +453,10 @@ you will get a header
 <p>Output:</p>
 {{g.markdown.convert('''you will get a header
 ---''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_img{{id}}">
 <h2 id="md_ex_img{{id}}">Images</h2>
 <p>To include an image, just put a "!" in front of a text link:</p>
 <div class="codehilite"><pre>
@@ -459,8 +483,10 @@ image.</p>
 
 <p>Output:</p>
 {{g.markdown.convert('''[[img src=attached-image.jpg alt=foobar]]''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_escapes{{id}}">
 <h2 id="md_ex_escapes{{id}}">Escapes</h2>
 <p>What if you want to just show asterisks, not italics?</p>
 <div class="codehilite"><pre>* this shows up in italics: *a happy day*
@@ -488,8 +514,10 @@ you should escape &lt;unknown&gt; tags
 &lt; special entities work
 &amp;lt; if you want to escape it''')}}
 <p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_moreheaders{{id}}">
 <h2 id="md_ex_moreheaders{{id}}">More Headers</h2>
 <p>More ways of doing headers:</p>
 <div class="codehilite"><pre># this is a huge header #
@@ -508,8 +536,10 @@ you should escape &lt;unknown&gt; tags
 ##### even smaller #####
 ###### smallest still: `<h6>` header''')}}
 <p>You can use up to 6 <code>#</code> characters at the beginning of the line.</p>
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_code{{id}}">
 <h2 id="md_ex_code{{id}}">Code Highlighting</h2>
 <p>The Code highlighting used in the newforge is based on (http://www.freewisdom.org/projects/python-markdown/CodeHilite). It  follows the same syntax as regular Markdown code blocks, except that there are two ways to tell the highlighter what language to use for the code block.</p>
 
@@ -550,8 +580,10 @@ you should escape &lt;unknown&gt; tags
 ~~~~~~
 <a href="#">My code</a>
 ~~~~~~''')}}
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_includes{{id}}">
 <h2 id="md_ex_includes{{id}}">Includes</h2>
 <p>You can embed another wiki page directly:</p>
 <div class="codehilite"><pre>
@@ -559,41 +591,54 @@ you should escape &lt;unknown&gt; tags
 </pre></div>
 
 <p>No example output is available for this one because it only works on real wiki pages. Try it in your wiki!</p>
+</div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_neighborhood_notes{{id}}">
 <h2 id="md_ex_neighborhood_notes{{id}}">Neighborhood Notifications</h2>
 <p>You can list updates from all projects in a neighborhood by tool type. Max_number (default is 5) and sort (default is pubdate) are optional:</p>
 <div class="codehilite"><pre>
 [[neighborhood_feeds tool_name=Wiki max_number=10 sort=pubdate]]
 </pre></div>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_neighborhood_blog_posts{{id}}">
 <h2 id="md_ex_neighborhood_blog_posts{{id}}">Neighborhood Blog Posts</h2>
 <p>You can view blog posts from all projects in a neighborhood. Max_number (default is 5) and sort (default is timestamp) are optional:</p>
 <div class="codehilite"><pre>
 [[neighborhood_blog_posts max_number=10 sort=timestamp]]
 </pre></div>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_project_blog_posts{{id}}">
 <h2 id="md_ex_project_blog_posts{{id}}">Project Blog Posts</h2>
 <p>You can view blog posts from all blogs in a project. Max_number (default is 5), mount point (leave empty to view posts from all blog tools in a project), and sort (default is timestamp) are optional:</p>
 <div class="codehilite"><pre>
 [[project_blog_posts max_number=10 sort=timestamp mount_point=news]]
 </pre></div>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_download_button{{id}}">
 <h2 id="md_ex_download_button{{id}}">Download Button</h2>
 <p>You can display a download button that links to the best download available for the active project. Please note that if you use this macro and there is no download associated with your project, the button will not appear.</p>
 <div class="codehilite"><pre>
 [[download_button]]
 </pre></div>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_project_screenshots{{id}}">
 <h2 id="md_ex_project_screenshots{{id}}">Project Screenshots</h2>
 <p>You can show all the screenshots for the current project as thumbnails that are linked to the full-size image.</p>
 <div class="codehilite"><pre>
 [[project_screenshots]]
 </pre></div>
+</div>
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_thanks{{id}}">
 <h2 id="md_ex_thanks{{id}}">Thanks</h2>
 <p>Thanks to John Gruber and Aaron Swartz for creating Markdown.</p>
 <p>
 This page is based on some examples from Greg Schueler, <a href="mailto:greg@vario.us">greg@vario.us</a>
 </p>
+</div>
 {% endmacro %}

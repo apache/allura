@@ -359,6 +359,12 @@ class RootController(BaseController):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
+    @with_trailing_slash
+    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
+    def markdown_syntax_dialog(self):
+        'Display a page about how to use markdown.'
+        return dict(example=MARKDOWN_EXAMPLE)
+
     @without_trailing_slash
     @expose()
     @validate(dict(
