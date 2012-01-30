@@ -54,6 +54,9 @@ $.getJSON(document.location.href+'_data', function(data) {
   var height = (max_row+1)*y_space;
   var canvas = document.getElementById('commit_graph');
   var ctx = canvas.getContext('2d');
+  if(height > 32767) {
+      height=32767;
+  };
   canvas.height=height;
   var taken_coords = {};
   var commit_rows = [];

@@ -11,6 +11,7 @@ from tg import redirect, expose, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators
 from bson import ObjectId
+from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
@@ -192,14 +193,16 @@ class RepoRootController(BaseController):
             for p_oid in ci.parent_ids:
                 children[p_oid].append(oid)
         result = []
+
         for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
             ci = commits_by_id[oid]
+            url=c.app.repo.url_for_commit(Object(object_id=oid))
             result.append(dict(
                     oid=oid,
                     row=row,
                     parents=ci.parent_ids,
                     message=ci.message.splitlines()[0],
-                    url='#'))
+                    url=url))
         log.info('...done')
         col_idx = {}
         columns = []
