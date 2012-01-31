@@ -170,7 +170,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
             l.append(SitemapEntry('Help'))
-            l.append(SitemapEntry('Markdown Syntax', c.app.url + 'markdown_syntax', className='nav_child'))
+            l.append(SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax', className='nav_child'))
             return l
         except: # pragma no cover
             log.exception('sidebar_menu')

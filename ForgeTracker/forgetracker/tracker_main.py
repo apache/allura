@@ -206,7 +206,7 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         links.append(SitemapEntry('Help'))
-        links.append(SitemapEntry('Markdown Syntax', self.config.url() + 'markdown_syntax', className='nav_child'))
+        links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
 
     def has_custom_field(self, field):
