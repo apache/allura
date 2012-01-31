@@ -215,6 +215,13 @@ class RootController(BaseController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
+    def markdown_syntax_dialog(self):
+        'Static dialog page about how to use markdown.'
+        return dict()
+
     @expose()
     def _lookup(self, year, month, name, *rest):
         slug = '/'.join((year, month, urllib2.unquote(name).decode('utf-8')))

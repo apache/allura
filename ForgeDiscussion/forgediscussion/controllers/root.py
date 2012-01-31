@@ -147,6 +147,12 @@ class RootController(BaseController):
         'Static page explaining markdown.'
         return dict()
 
+    @with_trailing_slash
+    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
+    def markdown_syntax_dialog(self):
+        'Static dialog page about how to use markdown.'
+        return dict()
+
     @expose()
     def _lookup(self, id=None, *remainder):
         if id:

@@ -495,6 +495,11 @@ class RootController(BaseController):
         'Static page explaining markdown.'
         return dict()
 
+    @expose('jinja:allura:templates/markdown_syntax_dialog.html')
+    def markdown_syntax_dialog(self):
+        'Static page explaining markdown.'
+        return dict()
+
     @without_trailing_slash
     @expose()
     @validate(dict(
