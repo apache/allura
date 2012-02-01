@@ -112,12 +112,9 @@ if($('#commit_graph')){
         });
     });
     function drawGraph(offset) {
-        // Clear the canvas
-        canvas_ctx.save();
-        canvas_ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Clear the canvas and set the contetx
+        var canvas_ctx = canvas.getContext('2d');
         canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas_ctx.restore();
-
         canvas_ctx.fillStyle = "rgb(0,0,0)";
         canvas_ctx.lineWidth = 1;
         canvas_ctx.lineJoin = 'round';
@@ -128,6 +125,7 @@ if($('#commit_graph')){
         highlighter.height=height;
         highlighter_ctx.fillStyle = "#ccc";
         // helper functions for laying out lines on the graph
+        /*
         taken_coords = {};
         var detect_collision = function(x,y1,y2){
             if(taken_coords[x]){
@@ -164,20 +162,6 @@ if($('#commit_graph')){
                 }
             }
         }
-        // map out where commit points will be
-        /*
-        for(var c in tree){
-            var commit = tree[c];
-            var x_pos = x_space+(commit.column*x_space);
-            var y_pos = y_space+((commit.row)*y_space);
-            if (!taken_coords[x_pos]){
-                taken_coords[x_pos] = [y_pos]
-            }
-            else if(taken_coords[x_pos].indexOf(y_pos) == -1){
-                taken_coords[x_pos].push(y_pos);
-            }
-        }
-        */
         // draw lines
         for(var c in tree){
             var commit = tree[c];
@@ -246,6 +230,7 @@ if($('#commit_graph')){
                 canvas_ctx.stroke();
             }
         }
+        */
         // draw commit points and message text
         canvas_ctx.fillStyle = "rgb(0,0,0)";
         for(var c in tree){
@@ -253,12 +238,7 @@ if($('#commit_graph')){
             var x_pos = x_space+(commit.column*x_space);
             var y_pos = y_space+((commit.row-offset)*y_space);
             canvas_ctx.fillRect(x_pos, y_pos, point_size, point_size);
-            for(var i=x_pos;i<=max_x_pos;i=i+x_space){
-                if(taken_coords[i].indexOf(y_pos) != -1){
-                    x_pos = i + x_space*2;
-                }
-            }
-            canvas_ctx.fillText(commit.message, x_pos, y_pos);
+            canvas_ctx.fillText(commit.message, (1+next_column) * x_space, y_pos);
         }
     }
 }
