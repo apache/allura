@@ -206,18 +206,25 @@ class RepoRootController(BaseController):
         log.info('...done')
         col_idx = {}
         columns = []
+        def find_column(columns):
+            for i,c in enumerate(columns):
+                if c is None: return i
+            columns.append(None)
+            return len(columns) - 1
         for row, ci_json in enumerate(result):
             oid = ci_json['oid']
-            colno = len(columns)
-            chs = children[oid]
-            for ch in chs:
-                ch_col = col_idx.get(ch, None)
-                if columns[ch_col] == ch:
-                    colno = min(colno, ch_col)
-            col_idx[oid] = ci_json['column'] = colno
-            while colno >= len(columns):
-                columns.append(None)
-            columns[colno] = oid
+            colno = col_idx.get(oid)
+            if colno is None:
+                colno = find_column(columns)
+                col_idx[oid] = colno
+            columns[colno] = None
+            ci_json['column'] = colno
+            for p in parents[oid]:
+                p_col = col_idx.get(p, None)
+                if p_col is not None: continue
+                p_col = find_column(columns)
+                col_idx[p] = p_col
+                columns[p_col] = p
         built_tree = dict(
                 (ci_json['oid'], ci_json) for ci_json in result)
         return dict(
