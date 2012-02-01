@@ -41,9 +41,9 @@ if (!Array.prototype.indexOf)
 if($('#commit_graph')){
     var data;
     var offset = 0;
-    var page_size = 12;
+    var page_size = 13;
     var limit = 14;
-    var tree, next_column, max_x_pos;
+    var tree, next_column, max_x_pos, max_row;
 
     // graph size settings
     var x_space = 10;
@@ -51,6 +51,8 @@ if($('#commit_graph')){
     var point_offset = 5;
     var point_size = 10;
 
+    var $first = $('#first');
+    var $last = $('#last');
     var $prev = $('#prev');
     var $next = $('#next');
     var $canvas = $('#commit_graph');
@@ -67,11 +69,16 @@ if($('#commit_graph')){
     var active_ys = [0,0]
     canvas.height=height;
 
+    // highlighter set up
+    highlighter.height=height;
+    highlighter_ctx.fillStyle = "#ccc";
+
     $.getJSON(document.location.href+'_data', function(data) {
         data = data;
         tree = data['built_tree'];
         next_column = data['next_column'];
         max_x_pos = x_space*next_column;
+        max_row = data['max_row']
 
         // Calculate the (x,y) positions of all the commits
         for(var c in tree){
@@ -89,18 +96,45 @@ if($('#commit_graph')){
                 x_pos: x_pos,
                 y_pos: y_pos }
         }
-        drawGraph(offset);
+        updateOffset(0);
     });
-    $prev.click(function() {
-        offset += page_size;
+    updateOffset = function(x) {
+        console.log('Set offset to', x);
+        offset = x;
+        $first.removeClass('disabled');
+        $prev.removeClass('disabled');
+        $next.removeClass('disabled');
+        $last.removeClass('disabled');
+        if(offset <= 0) {
+            offset = 0;
+            $last.addClass('disabled');
+            $next.addClass('disabled');
+        }
+        else if(offset > (max_row-page_size)) {
+            offset = max_row - page_size;
+            $first.addClass('disabled');
+            $prev.addClass('disabled');
+        }
         drawGraph(offset);
         return false;
+    };
+    $last.click(function() {
+        console.log('Last');
+        return updateOffset(0);
     });
     $next.click(function() {
-        offset -= page_size;
-        drawGraph(offset);
-        return false;
+        console.log('Next');
+        return updateOffset(offset - page_size);
     });
+    $prev.click(function() {
+        console.log('Prev');
+        return updateOffset(offset + page_size);
+    });
+    $first.click(function() {
+        console.log('First');
+        return updateOffset(max_row);
+    });
+
     $canvas.click(function(evt) {
         var y = Math.floor((evt.pageY-$canvas.offset().top) / y_space);
         var commit = commit_rows[offset+y-1];
@@ -121,94 +155,17 @@ if($('#commit_graph')){
         canvas_ctx.textBaseline = "top";
         canvas_ctx.font = "12px sans-serif";
 
-        // highlighter set up
-        highlighter.height=height;
-        highlighter_ctx.fillStyle = "#ccc";
-        // helper functions for laying out lines on the graph
-        /*
-        taken_coords = {};
-        var detect_collision = function(x,y1,y2){
-            if(taken_coords[x]){
-                for(var i=0,len=taken_coords[x].length;i<len;i++){
-                    if(taken_coords[x][i] >= y1 && taken_coords[x][i] <= y2){
-                        return true;
-                    }
-                }
-                return false;
-            }
-            else{
-                return false;
-            }
-        };
-        var adjust_x = function(x, y1, y2){
-            if(detect_collision(x, y1, y2)){
-                return adjust_x(x+x_space, y1, y2)
-            }
-            else{
-                if(x > max_x_pos){
-                    max_x_pos = x;
-                }
-                return x
-            }
-        }
-        var take_line_coords = function(x,y1,y2){
-            var taken_ys = taken_coords[x];
-            if(!taken_ys){
-                taken_ys = taken_coords[x] = [];
-            }
-            for(var i=y1;i<=y2;i=i+y_space){
-                if(taken_ys.indexOf(i) == -1){
-                    taken_ys.push(i);
-                }
-            }
-        }
-        // draw lines
         for(var c in tree){
             var commit = tree[c];
             var x_pos = x_space+(commit.column*x_space);
             var y_pos = y_space+((commit.row-offset)*y_space);
+
             for(var i=0,len=commit.parents.length;i<len;i++){
-                var parent = commit.parents[i];
-                canvas_ctx.beginPath();
-                canvas_ctx.moveTo(x_pos+point_offset, y_pos+point_offset);
-                var parent_x = x_space+tree[parent].column*x_space;
-                var parent_y = y_space+((tree[parent].row)*y_space);
-                var series = commit.series;
-                if(tree[parent].column == commit.column){
-                    canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
-                    take_line_coords(x_pos,y_pos,parent_y);
-                }
-                else if(tree[parent].column > commit.column){
-                    var y1 = y_pos+point_offset*2;
-                    var original_x = parent_x;
-                    var adjusted_x = adjust_x(parent_x,y1,parent_y-1);
-                    canvas_ctx.lineTo(adjusted_x+point_offset,y1);
-                    canvas_ctx.lineTo(adjusted_x+point_offset,parent_y);
-                    if(original_x != adjusted_x){
-                        canvas_ctx.lineTo(adjusted_x+point_offset,parent_y);
-                        canvas_ctx.lineTo(original_x+point_offset,parent_y+point_offset);
-                    }
-                    else{
-                        canvas_ctx.lineTo(adjusted_x+point_offset,parent_y);
-                    }
-                    take_line_coords(adjusted_x,y_pos,parent_y);
-                    series = tree[parent].series;
-                }
-                else{
-                    var y1 = y_space+((tree[parent].row)*y_space);
-                    var original_x = x_pos;
-                    var adjusted_x = adjust_x(x_pos,y_pos+point_offset*3,parent_y-point_offset);
-                    if(original_x != adjusted_x){
-                        canvas_ctx.lineTo(adjusted_x+point_offset, y_pos+point_offset*2);
-                    }
-                    canvas_ctx.lineTo(adjusted_x+point_offset, y1);
-                    canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
-                    take_line_coords(adjusted_x,y_pos,parent_y);
-                    if(i > 0){
-                        series = tree[parent].series;
-                    }
-                }
-                switch(series % 6){
+                var parent = tree[commit.parents[i]];
+                var parent_x = x_space+parent.column*x_space
+                var parent_y = y_space+(parent.row-offset)*y_space;
+
+                switch(parent.column % 6){
                 case 0:
                     canvas_ctx.strokeStyle = "#a00";
                     break;
@@ -227,17 +184,52 @@ if($('#commit_graph')){
                 default:
                     canvas_ctx.strokeStyle = "#f0f";
                 }
+
+                // Vertical
+                canvas_ctx.beginPath();
+                canvas_ctx.moveTo(parent_x+point_offset, y_pos+y_space);
+                canvas_ctx.lineTo(parent_x+point_offset, parent_y+point_offset);
+                canvas_ctx.stroke();
+
+                // Diagonal
+                canvas_ctx.beginPath()
+                canvas_ctx.moveTo(x_pos + point_offset, y_pos+point_offset);
+                canvas_ctx.lineTo(parent_x+point_offset, y_pos+y_space);
                 canvas_ctx.stroke();
             }
         }
-        */
         // draw commit points and message text
         canvas_ctx.fillStyle = "rgb(0,0,0)";
         for(var c in tree){
             var commit = tree[c];
             var x_pos = x_space+(commit.column*x_space);
             var y_pos = y_space+((commit.row-offset)*y_space);
-            canvas_ctx.fillRect(x_pos, y_pos, point_size, point_size);
+
+            switch(commit.column % 6){
+                case 0:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#a00";
+                    break;
+                case 1:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#0a0";
+                    break;
+                case 2:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#00a";
+                    break;
+                case 3:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#aa0";
+                    break;
+                case 4:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#0aa";
+                    break;
+                default:
+                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#f0f";
+                }
+
+            canvas_ctx.beginPath();
+            canvas_ctx.arc(x_pos + point_offset, y_pos + point_offset, point_offset, 0, 2 * Math.PI, false);
+            canvas_ctx.fill();
+            canvas_ctx.stroke();
+            canvas_ctx.fillStyle = "#000";
             canvas_ctx.fillText(commit.message, (1+next_column) * x_space, y_pos);
         }
     }

@@ -1,9 +1,16 @@
 <p id="commit_browser_canvas_message">This commit browser uses JS canvas but unfortunately your browser does not support it.</p>
-<p><a id="next" href="#">Next</a></p>
+<style>
+  a.disabled { visibility: hidden; }
+</style>
+<p>
+  <a id="last" href="#">Last</a>
+  <a id="next" href="#">Next</a>
+  <a id="prev" href="#">Prev</a>
+  <a id="first" href="#">First</a>
+</p>
 <div id="graph_holder" class="grid-19">
   <canvas id="commit_highlighter" width="750" height="300"></canvas>
   <canvas id="commit_graph" width="750" height="300"></canvas>
 </div>
-<p><a id="prev" href="#">Prev</a></p>
 <div id="commit_view" class="grid-19"><em>Select a commit to view details about it.</em></div>
 <!--[if IE]><script type="text/javascript" src="{{g.forge_static('js/excanvas.compiled.js')}}"></script><![endif]-->
