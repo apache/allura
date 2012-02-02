@@ -48,13 +48,13 @@ class TestRootController(TestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
         data = json.loads(resp.body);
-        assert data['max_row'] == 5
+        assert data['max_row'] == 4
         assert data['next_column'] == 1
-        assert ({'column': 0, 'series': 0,
-                 'url': "/p/test/src/1/",
-                 'parents': [],
-                 'message': 'Create readme', 'row': 4}
-              in data['built_tree'].values()), data['built_tree']
+        for val in data['built_tree'].values():
+            if val['url'] == '/p/test/src/1/':
+                assert val['column'] == 0
+                assert val['row'] == 4
+                assert val['message'] == 'Create readme'
 
 
     def test_feed(self):

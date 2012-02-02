@@ -197,11 +197,16 @@ class RepoRootController(BaseController):
         for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
             ci = commits_by_id[oid]
             url=c.app.repo.url_for_commit(Object(object_id=oid))
+            msg_split = ci.message.splitlines()
+            if msg_split:
+                msg = msg_split[0]
+            else:
+                msg = "No commit message."
             result.append(dict(
                     oid=oid,
                     row=row,
                     parents=ci.parent_ids,
-                    message=ci.message.splitlines()[0],
+                    message=msg,
                     url=url))
         log.info('...done')
         col_idx = {}
