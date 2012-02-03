@@ -233,7 +233,8 @@ class SVNImplementation(M.RepositoryImplementation):
             next = [ self.commit(revno + 1) ]
         return dict(prev=prev, next=next)
 
-    def refresh_commit(self, ci, seen_object_ids, lazy=True):
+    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
+        if seen_object_ids is None: seen_object_ids = set()
         log.info('Refresh %r %r', ci, self._repo)
         revno = self._revno(ci.object_id)
         rev = self._revision(ci.object_id)

@@ -155,7 +155,8 @@ class HgImplementation(M.RepositoryImplementation):
             for name, tag in self._hg.tags().iteritems() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, seen_object_ids, lazy=True):
+    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
+        if seen_object_ids is None: seen_object_ids = set()
         obj = self._hg[ci.object_id]
         # Save commit metadata
         mo = self.re_hg_user.match(obj.user())

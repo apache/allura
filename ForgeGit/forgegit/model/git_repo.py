@@ -173,7 +173,8 @@ class GitImplementation(M.RepositoryImplementation):
             if tag.is_valid() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, seen_object_ids, lazy=True):
+    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
+        if seen_object_ids is None: seen_object_ids = set()
         obj = self._git.commit(ci.object_id)
         ci.tree_id = obj.tree.hexsha
         # Save commit metadata
