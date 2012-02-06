@@ -212,7 +212,7 @@ class ForgeTrackerApp(Application):
                 url:'%sbin_counts',
                 success: function(data) {
                     $.each(data.bin_counts, function(i, item) {
-                        $span = $('.search_bin span:contains("' + item.label + '")');
+                        var $span = $('.search_bin span:contains("' + item.label + '")');
                         if ($span) {
                             $span.after('<small>' + item.count + '</small>').fadeIn('fast');
                         }
