@@ -36,6 +36,11 @@
       {% for s in c.app.sidebar_menu() %}
         {{sidebar_item(s)}}
       {% endfor %}
+      {% if c.app.sidebar_menu_js() %}
+          <script>
+            {{c.app.sidebar_menu_js()|safe}}
+          </script>
+      {% endif %}
     {% elif c.project %}
       {% for s in c.project.sidebar_menu() %}
         {{sidebar_item(s)}}

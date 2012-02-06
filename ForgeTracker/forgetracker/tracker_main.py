@@ -154,12 +154,8 @@ class ForgeTrackerApp(Application):
         ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in self.bins:
             label = bin.shorthand_id()
-            try:
-                search_bins.append(SitemapEntry(
-                        h.text.truncate(label, 72), bin.url(), className='nav_child',
-                        small=c.app.globals.bin_count(label)['hits']))
-            except ValueError:
-                log.info('Ticket bin %s search failed for project %s' % (label, c.project.shortname))
+            search_bins.append(SitemapEntry(
+                    h.text.truncate(label, 72), bin.url(), className='nav_child search_bin'))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
@@ -208,6 +204,23 @@ class ForgeTrackerApp(Application):
         links.append(SitemapEntry('Help'))
         links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax', className='nav_child'))
         return links
+
+    def sidebar_menu_js(self):
+        return """\
+        $(function() {
+            $.ajax({
+                url:'%sbin_counts',
+                success: function(data) {
+                    for(i in data.bin_counts) {
+                        var item = data.bin_counts[i];
+                        $span = $('.search_bin span:contains("' + item.label + '")');
+                        if ($span) {
+                            $span.after('<small>' + item.count + '</small>').fadeIn('fast');
+                        }
+                    }
+                }
+            });
+        });""" % c.app.url
 
     def has_custom_field(self, field):
         '''Checks if given custom field is defined. (Custom field names
@@ -279,6 +292,20 @@ class RootController(BaseController):
 
     def _check_security(self):
         require_access(c.app, 'read')
+
+    @expose('json:')
+    def bin_counts(self, *args, **kw):
+        bin_counts = []
+        for bin in c.app.bins:
+            label = h.text.truncate(bin.shorthand_id(), 72)
+            count = 0
+            try:
+                count = c.app.globals.bin_count(bin.shorthand_id())['hits']
+            except ValueError:
+                log.info('Ticket bin %s search failed for project %s' %
+                        (label, c.project.shortname))
+            bin_counts.append(dict(label=label, count=count))
+        return dict(bin_counts=bin_counts)
 
     def paged_query(self, q, limit=None, page=0, sort=None, columns=None, **kw):
         """Query tickets, sorting and paginating the result.
@@ -352,7 +379,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=250, columns=None, page=0, sort='ticket_num desc', **kw):
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', **kw):
         kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
