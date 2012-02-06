@@ -226,6 +226,13 @@ class Application(object):
         """
         return []
 
+    def sidebar_menu_js(self):
+        """
+        Apps can override this to provide Javascript needed by the sidebar_menu.
+        :return: a string of Javascript code
+        """
+        return ""
+
     def admin_menu(self, force_options=False):
         """
         Apps may override this to provide additional admin menu items
