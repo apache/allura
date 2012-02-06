@@ -211,13 +211,12 @@ class ForgeTrackerApp(Application):
             $.ajax({
                 url:'%sbin_counts',
                 success: function(data) {
-                    for(i in data.bin_counts) {
-                        var item = data.bin_counts[i];
+                    $.each(data.bin_counts, function(i, item) {
                         $span = $('.search_bin span:contains("' + item.label + '")');
                         if ($span) {
                             $span.after('<small>' + item.count + '</small>').fadeIn('fast');
                         }
-                    }
+                    });
                 }
             });
         });""" % c.app.url
