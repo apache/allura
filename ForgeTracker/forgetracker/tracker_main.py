@@ -296,10 +296,11 @@ class RootController(BaseController):
     def bin_counts(self, *args, **kw):
         bin_counts = []
         for bin in c.app.bins:
-            label = h.text.truncate(bin.shorthand_id(), 72)
+            bin_id = bin.shorthand_id()
+            label = h.text.truncate(bin_id, 72)
             count = 0
             try:
-                count = c.app.globals.bin_count(bin.shorthand_id())['hits']
+                count = c.app.globals.bin_count(bin_id)['hits']
             except ValueError:
                 log.info('Ticket bin %s search failed for project %s' %
                         (label, c.project.shortname))
