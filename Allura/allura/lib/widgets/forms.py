@@ -193,6 +193,13 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 var $url_fragment = $('#url_fragment');
                 var $error_icon = $('#error_icon');
                 var $success_icon = $('#success_icon');
+                var delay = (function(){
+                  var timer = 0;
+                  return function(callback, ms){
+                    clearTimeout (timer);
+                    timer = setTimeout(callback, ms);
+                  };
+                })();
                 $name_input.focus();
                 var handle_name_taken = function(message){
                     if(message){
@@ -233,12 +240,11 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 });
                 $unixname_input.keyup(function(){
                     $url_fragment.html($unixname_input.val());
-                });
-                $unixname_input.change(function(){
-                    $url_fragment.html($unixname_input.val());
-                    $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
-                        handle_name_taken(result.message);
-                    });
+                    delay(function(){
+                        $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
+                            handle_name_taken(result.message);
+                        });
+                    }, 500 );
                 });
             });
         ''' % dict(project_name=project_name, project_unixname=project_unixname))
