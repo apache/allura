@@ -104,13 +104,13 @@ class GitImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
-        '''Return a Commit object.  rev can be object_id or a branch/tag name'''
-        result = M.Commit.query.get(object_id=rev)
+        '''Return a Commit object.  rev can be _id or a branch/tag name'''
+        result = M.repo.Commit.query.get(_id=rev)
         if result is None:
             # find the id by branch/tag name
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
-                result = M.Commit.query.get(object_id=impl.hexsha)
+                result = M.repo.Commit.query.get(_id=impl.hexsha)
             except Exception:
                 url = ''
                 try:
@@ -270,7 +270,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def open_blob(self, blob):
         return _OpenedGitBlob(
-            self._object(blob.object_id).data_stream)
+            self._object(blob._id).data_stream)
 
     def _setup_hooks(self):
         'Set up the git post-commit hook'

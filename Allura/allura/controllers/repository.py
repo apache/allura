@@ -450,14 +450,16 @@ class TreeBrowser(BaseController):
             filename = h.really_unicode(
                 unquote(
                     request.environ['PATH_INFO'].rsplit('/')[-1]))
-            if filename and filename in self._tree.object_id_index and self._tree.is_blob(filename):
-                return self.FileBrowserClass(
-                    self._commit,
-                    self._tree,
-                    filename), rest
+            if filename:
+                obj = self._tree[filename]
+                if isinstance(obj, M.repo.Blob):
+                    return self.FileBrowserClass(
+                        self._commit,
+                        self._tree,
+                        filename), rest
         elif rest == ('index', ):
             rest = (request.environ['PATH_INFO'].rsplit('/')[-1],)
-        tree = self._tree.get_tree(next)
+        tree = self._tree[next]
         if tree is None:
             raise exc.HTTPNotFound
         return self.__class__(

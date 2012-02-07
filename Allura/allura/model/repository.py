@@ -322,92 +322,12 @@ class Repository(Artifact):
         if asbool(tg.config.get('scm.new_refresh')):
             refresh_repo(self, all_commits, notify)
             notify = False # don't double notify
-
-        self.status = 'analyzing'
-        session(self).flush()
-        sess = session(Commit)
-        log.info('Refreshing repository %s', self)
-        commit_ids = self._impl.new_commits(all_commits)
-        log.info('... %d new commits', len(commit_ids))
-        # Refresh history
-        seen_object_ids = set()
-        commit_msgs = []
-        base_url = tg.config.get('base_url', 'sourceforge.net')
-        i=0
-        for i, oid in enumerate(commit_ids):
-            if len(seen_object_ids) > 10000: # pragma no cover
-                log.info('... flushing seen object cache')
-                seen_object_ids = set()
-            ci, isnew = Commit.upsert(oid)
-            if not isnew and not all_commits:
-                sess.expunge(ci)
-                continue
-            ci.set_context(self)
-            self._impl.refresh_commit(ci, seen_object_ids, lazy=not all_commits)
-            if (i+1) % self.BATCH_SIZE == 0:
-                log.info('...... flushing %d commits (%d total)',
-                         self.BATCH_SIZE, (i+1))
-                sess.flush()
-                sess.clear()
-            if notify:
-                Feed.post(
-                    self,
-                    title='New commit',
-                    description='%s<br><a href="%s%s">View Changes</a>' % (
-                        h.really_unicode(ci.summary),config.common_prefix,ci.url()),
-                    author_link = ci.author_url,
-                    author_name = ci.authored.name,
-                )
-                branches = ci.symbolic_ids[0]
-                commit_msgs.append('%s: %s by %s %s%s' % (
-                        ",".join(b for b in branches),
-                        h.really_unicode(ci.summary), h.really_unicode(ci.committed.name), base_url, ci.url()))
-        if commit_msgs:
-            if len(commit_msgs) > 1:
-                subject = '%d new commits to %s %s' % (
-                    len(commit_msgs), self.app.project.name, self.app.config.options.mount_label)
-                text='\n\n'.join(commit_msgs)
-            else:
-                subject = '%s committed to %s %s: %s' % (
-                    h.really_unicode(ci.committed.name),
-                    self.app.project.name,
-                    self.app.config.options.mount_label,
-                    h.really_unicode(ci.summary))
-                ci.set_context(self)
-                branches = ci.symbolic_ids[0]
-                message = "%s: %s %s%s" % (",".join(b for b in branches),
-                                           ci.message,
-                                           base_url, ci.url())
-                text = h.really_unicode(message)
-            Notification.post(
-                artifact=self,
-                topic='metadata',
-                subject=subject,
-                text=text)
-        log.info('...... flushing %d commits (%d total)',
-                 (i+1) % self.BATCH_SIZE, i+1)
-        sess.flush()
-        sess.clear()
-        # Mark all commits in this repo as being in this repo
-        all_commit_ids = self._impl.new_commits(True)
-        Commit.query.update(
-            dict(
-                object_id={'$in':all_commit_ids},
-                repositories={'$ne':self._id}),
-            {'$push':dict(repositories=self._id)},
-            upsert=False, multi=True)
-        if all_commits:
-            LastCommitFor.query.remove(dict(repo_id=self._id))
-        self.compute_diffs()
-        log.info('... refreshed repository %s.  Found %d new commits',
-                 self, len(commit_ids))
         self.status = 'ready'
         for head in self.heads + self.branches + self.repo_tags:
             ci = self.commit(head.object_id)
             if ci is not None:
                 head.count = ci.count_revisions()
         session(self).flush()
-        return len(commit_ids)
 
     def compute_diffs(self):
         commit_ids = self._impl.new_commits(all_commits=True)
@@ -445,8 +365,9 @@ class Repository(Artifact):
             return MergeRequest.query.find(q).count()
 
     def get_last_commit(self, obj):
-        lc = LastCommitFor.query.get(
-            repo_id=self._id, object_id=obj.object_id)
+        from .repo import LastCommitDoc
+        lc = LastCommitDoc.m.get(
+            repo_id=self._id, object_id=obj._id)
         if lc is None:
             return dict(
                 author=None,
@@ -457,7 +378,7 @@ class Repository(Artifact):
                 href=None,
                 shortlink=None,
                 summary=None)
-        return lc.last_commit
+        return lc.commit_info
 
     @property
     def forks(self):
@@ -1141,6 +1062,7 @@ class DiffObject(object):
             return '<remove %s>' % self.a_path
         else:
             return '<change %s>' % (self.a_path)
+
 
 class GitLikeTree(object):
     '''

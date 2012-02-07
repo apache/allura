@@ -17,6 +17,7 @@ from ming.orm import mapper, session
 
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.patience import SequenceMatcher
 
 from .auth import User
 from .session import main_doc_session, project_doc_session
@@ -231,10 +232,38 @@ class Commit(RepoObject):
     def context(self):
         result = dict(prev=None, next=None)
         if self.parent_ids:
-            result['prev'] = self.query.get(_id=self.parent_ids[0])
+            result['prev'] = self.query.find(dict(_id={'$in': self.parent_ids })).all()
         if self.child_ids:
-            result['next'] = self.query.get(_id=self.child_ids[0])
+            result['next'] = self.query.find(dict(_id={'$in': self.child_ids })).all()
         return result
+
+    @LazyProperty
+    def diffs(self):
+        di = DiffInfoDoc.m.get(_id=self._id)
+        if di is None:
+            return dict(added=[], removed=[], changed=[], copied=[])
+        added = []
+        removed = []
+        changed = []
+        copied = []
+        for change in di.differences:
+            print change.name
+            if change.rhs_id is None:
+                removed.append(change.name)
+            elif change.lhs_id is None:
+                added.append(change.name)
+            else:
+                changed.append(change.name)
+            return dict(
+                added=added, removed=removed,
+                changed=changed, copied=copied)
+
+    def get_path(self, path):
+        parts = path.split('/')[1:]
+        cur = self.tree
+        for part in parts:
+            cur = cur[part]
+        return cur
 
 class Tree(RepoObject):
     # Ephemeral attrs
@@ -258,7 +287,8 @@ class Tree(RepoObject):
 
     def __getitem__(self, name):
         obj = self.by_name[name]
-        if obj['type'] == 'blob': return obj
+        if obj['type'] == 'blob':
+            return Blob(self, name, obj['id'])
         obj = self.query.get(_id=obj['id'])
         if obj is None:
             oid = self.repo.compute_tree_new(self.commit, self.path() + name + '/')
@@ -282,13 +312,9 @@ class Tree(RepoObject):
         for x in self.blob_ids:
             if README_RE.match(x.name):
                 name = x.name
-                obj = Object(
-                    object_id=x.id,
-                    path=lambda:self.path() + x['name'],
-                    commit=Object(
-                        object_id=self.commit._id))
-                text = self.repo.open_blob(obj).read()
-                return (x.name, h.really_unicode(text))
+                blob = self[name]
+                return (x.name, h.really_unicode(blob.text))
+        return None, None
 
     def ls(self):
         # Load last commit info
@@ -302,6 +328,7 @@ class Tree(RepoObject):
         def _get_last_commit(oid):
             lc = lc_index.get(oid)
             if lc is None:
+                import pdb; pdb.set_trace()
                 lc = dict(
                     author=None,
                     author_email=None,
@@ -344,17 +371,107 @@ class Tree(RepoObject):
 
     @LazyProperty
     def by_name(self):
-        d = dict((x.name, x) for x in self.other_ids)
+        d = Object((x.name, x) for x in self.other_ids)
         d.update(
-            (x.name, dict(x, type='tree'))
+            (x.name, Object(x, type='tree'))
             for x in self.tree_ids)
         d.update(
-            (x.name, dict(x, type='blob'))
+            (x.name, Object(x, type='blob'))
             for x in self.blob_ids)
         return d
 
     def is_blob(self, name):
         return self.by_name[name]['type'] == 'blob'
+
+    def get_blob(self, name):
+        x = self.by_name[name]
+        return Blob(self, name, x.id)
+
+class Blob(object):
+    '''Lightweight object representing a file in the repo'''
+
+    def __init__(self, tree, name, _id):
+        self._id = _id
+        self.tree = tree
+        self.name = name
+        self.repo = tree.repo
+        self.commit = tree.commit
+
+    def path(self):
+        return self.tree.path() + h.really_unicode(self.name)
+
+    def url(self):
+        return self.tree.url() + h.really_unicode(self.name)
+
+    @LazyProperty
+    def prev_commit(self):
+        lc = self.repo.get_last_commit(self)
+        if lc['id']:
+            last_commit = self.repo.commit(lc.id)
+            if last_commit.parent_ids:
+                return self.repo.commit(last_commit.parent_ids[0])
+        return None
+
+    @LazyProperty
+    def next_commit(self):
+        try:
+            path = self.path()
+            cur = self.commit
+            next = cur.context()['next']
+            while next:
+                cur = next[0]
+                next = cur.context()['next']
+                other_blob = cur.get_path(path)
+                if other_blob is None or other_blob._id != self._id:
+                    return cur
+        except:
+            log.exception('Lookup prev_commit')
+            return None
+
+    @LazyProperty
+    def _content_type_encoding(self):
+        return self.repo.guess_type(self.name)
+
+    @LazyProperty
+    def content_type(self):
+        return self._content_type_encoding[0]
+
+    @LazyProperty
+    def content_encoding(self):
+        return self._content_type_encoding[1]
+
+    @property
+    def has_html_view(self):
+        return self.content_type.startswith('text/')
+
+    @property
+    def has_image_view(self):
+        return self.content_type.startswith('image/')
+
+    def context(self):
+        path = self.path()
+        prev = self.prev_commit
+        next = self.next_commit
+        if prev is not None: prev = prev.get_path(path)
+        if next is not None: next = next.get_path(path)
+        return dict(
+            prev=prev,
+            next=next)
+
+    def open(self):
+        return self.repo.open_blob(self)
+
+    def __iter__(self):
+        return iter(self.open())
+
+    @LazyProperty
+    def text(self):
+        return self.open().read()
+
+    @classmethod
+    def diff(cls, v0, v1):
+        differ = SequenceMatcher(v0, v1)
+        return differ.get_opcodes()
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)

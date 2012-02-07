@@ -38,12 +38,10 @@ def main():
     log.info('Refreshing repositories')
     if options.clean:
         log.info('Removing all repository objects')
-        M.repository.RepoObject.query.remove()
         M.repo.CommitDoc.m.remove({})
         M.repo.TreeDoc.m.remove({})
         M.repo.TreesDoc.m.remove({})
         M.repo.DiffInfoDoc.m.remove({})
-        M.repo.LastCommitDoc.m.remove({})
         M.repo.CommitRunDoc.m.remove({})
     for chunk in utils.chunked_find(M.Project, q_project):
         for p in chunk:
@@ -56,8 +54,6 @@ def main():
             for app in (p.app_instance(mp) for mp in mount_points):
                 c.app = app
                 if not hasattr(app, 'repo'): continue
-                if options.clean:
-                    M.LastCommitFor.query.remove(dict(repo_id=c.app.repo._id))
                 try:
                     c.app.repo._impl._setup_hooks()
                 except:
