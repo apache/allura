@@ -30,9 +30,6 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
 
 """
-import logging
-import pkg_resources
-
 import tg
 import jinja2
 import pylons
@@ -45,8 +42,8 @@ import ew
 import allura
 # needed for tg.configuration to work
 from allura.lib import app_globals, helpers
+from allura.lib.package_path_loader import PackagePathLoader
 
-log = logging.getLogger(__name__)
 
 class ForgeConfig(AppConfig):
 
@@ -54,13 +51,12 @@ class ForgeConfig(AppConfig):
         AppConfig.__init__(self)
         self.root_controller = root_controller
         self.package = allura
-        self.renderers = [ 'json', 'genshi', 'jinja' ]
+        self.renderers = ['json', 'genshi', 'mako', 'jinja']
         self.default_renderer = 'genshi'
         self.use_sqlalchemy = False
         self.use_toscawidgets = True
         self.use_transaction_manager = False
-        # self.handle_status_codes = [ 403, 404 ]
-        self.handle_status_codes = [ 403, 404 ]
+        self.handle_status_codes = [403, 404]
         self.disable_request_extensions = True
 
     def after_init_config(self):
@@ -108,6 +104,7 @@ class ForgeConfig(AppConfig):
         config['pylons.strict_c'] = True
         self.render_functions.jinja = tg.render.render_jinja
 
+
 class JinjaEngine(ew.TemplateEngine):
 
     @property
@@ -128,16 +125,5 @@ class JinjaEngine(ew.TemplateEngine):
         with ew.utils.push_context(ew.widget_context, render_context=context):
             text = template.render(**context)
             return literal(text)
-
-class PackagePathLoader(jinja2.BaseLoader):
-
-    def __init__(self):
-        self.fs_loader = jinja2.FileSystemLoader(['/'])
-
-    def get_source(self, environment, template):
-        package, path = template.split(':')
-        filename = pkg_resources.resource_filename(package, path)
-        return self.fs_loader.get_source(environment, filename)
-
 
 base_config = ForgeConfig()
