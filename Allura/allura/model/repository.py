@@ -63,7 +63,7 @@ class RepositoryImplementation(object):
         '''
         raise NotImplementedError, 'new_commits'
 
-    def commit_parents(self, commit):
+    def commit_parents(self, commit): # pragma no cover
         '''Return a list of native commits for the parents of the given (native)
         commit'''
         raise NotImplementedError, 'commit_parents'
@@ -96,11 +96,11 @@ class RepositoryImplementation(object):
         exhausted).'''
         raise NotImplementedError, 'log'
 
-    def compute_tree(self, commit, path='/'):
+    def compute_tree(self, commit, path='/'): # pragma no cover
         '''Used in hg and svn to compute a git-like-tree lazily'''
         raise NotImplementedError, 'compute_tree'
 
-    def compute_tree_new(self, commit, path='/'):
+    def compute_tree_new(self, commit, path='/'): # pragma no cover
         '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
         raise NotImplementedError, 'compute_tree'
 
@@ -116,8 +116,8 @@ class RepositoryImplementation(object):
         '''Return symbolic branch and tag names for a commit.
         Default generic implementation is provided, subclasses
         may override if they have more efficient means.'''
-        branches = [b.name for b in self._repo.branches if b.object_id == commit.object_id]
-        tags = [t.name for t in self._repo.repo_tags if t.object_id == commit.object_id]
+        branches = [b.name for b in self._repo.branches if b.object_id == commit._id]
+        tags = [t.name for t in self._repo.repo_tags if t.object_id == commit._id]
         return branches, tags
 
     def url_for_commit(self, commit):
@@ -125,7 +125,7 @@ class RepositoryImplementation(object):
         if isinstance(commit, basestring):
             object_id = commit
         else:
-            object_id = commit.object_id
+            object_id = commit._id
         return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):
@@ -329,27 +329,6 @@ class Repository(Artifact):
                 head.count = ci.count_revisions()
         session(self).flush()
 
-    def compute_diffs(self):
-        commit_ids = self._impl.new_commits(all_commits=True)
-        sess = session(Commit)
-        # Compute diffs on all commits
-        log.info('... computing diffs')
-        i=0
-        for i, oid in enumerate(commit_ids):
-            ci = self._impl.commit(oid)
-            ci.tree.set_last_commit(ci, self)
-            if not ci.diffs_computed:
-                ci.compute_diffs()
-            if (i+1) % self.BATCH_SIZE == 0:
-                log.info('...... flushing %d commits (%d total)',
-                         self.BATCH_SIZE, (i+1))
-                sess.flush()
-                sess.clear()
-        log.info('...... flushing %d commits (%d total)',
-                 (i+1) % self.BATCH_SIZE, i+1)
-        sess.flush()
-        sess.clear()
-
     def push_upstream_context(self):
         project, rest=h.find_project(self.upstream_repo.name)
         with h.push_context(project._id):
@@ -437,12 +416,13 @@ class MergeRequest(VersionedArtifact):
         return self._commits()
 
     def _commits(self):
+        from .repo import Commit
         result = []
         next = [ self.downstream.commit_id ]
         while next:
             oid = next.pop(0)
-            ci = Commit.query.get(object_id=oid)
-            if self.app.repo._id in ci.repositories:
+            ci = Commit.query.get(_id=oid)
+            if self.app.repo._id in ci.repo_ids:
                 continue
             result.append(ci)
             next += ci.parent_ids

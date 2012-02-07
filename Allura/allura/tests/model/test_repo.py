@@ -4,10 +4,11 @@ from itertools import count
 from datetime import datetime
 
 import mock
-from nose.tools import assert_equal
+from nose.tools import assert_equal, nottest
 from pylons import c
 import tg
 import ming
+from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -18,16 +19,31 @@ class _Test(unittest.TestCase):
     idgen = ( 'obj_%d' % i for i in count())
 
     def _make_tree(self, object_id, **kwargs):
-        t, isnew = M.Tree.upsert(object_id)
+        t, isnew = M.repo.Tree.upsert(object_id)
         for k,v in kwargs.iteritems():
             if isinstance(v, basestring):
-                obj, isnew = M.Blob.upsert(self.idgen.next())
+                obj = M.repo.Blob(
+                    t, k, self.idgen.next())
+                t.blob_ids.append(Object(
+                        name=k, id=obj._id))
             else:
                 obj = self._make_tree(self.idgen.next(), **v)
-            t.object_ids.append(ming.base.Object(
-                    name=k, object_id=obj.object_id))
+                t.tree_ids.append(Object(
+                        name=k, id=obj._id))
         session(t).flush()
         return t
+
+    def _make_commit(self, object_id, **tree_parts):
+        ci, isnew = M.repo.Commit.upsert(object_id)
+        if isnew:
+            ci.committed.email=c.user.email_addresses[0]
+            ci.authored.email=c.user.email_addresses[0]
+            ci.authored.date = datetime.utcnow()
+            ci.message='summary\n\nddescription'
+            ci.set_context(self.repo)
+            ci.tree_id = 't_' + object_id
+            ci.tree = self._make_tree(ci.tree_id, **tree_parts)
+        return ci, isnew
 
     def setUp(self):
         setup_basic_test()
@@ -44,23 +60,15 @@ class _TestWithRepo(_Test):
         h.set_context('test', 'test1', neighborhood='Projects')
         self.repo = M.Repository(name='test1', tool='svn')
         self.repo._impl = mock.Mock(spec=M.RepositoryImplementation())
+        self.repo._impl.shorthand_for_commit = M.RepositoryImplementation.shorthand_for_commit
+        self.repo._impl.url_for_commit = (
+            lambda *a, **kw: M.RepositoryImplementation.url_for_commit(
+                self.repo._impl, *a, **kw))
         self.repo._impl.log = lambda *a,**kw:(['foo'], [])
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a,**kw: []
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-
-    def _make_commit(self, object_id, **tree_parts):
-        ci, isnew = M.Commit.upsert(object_id)
-        if isnew:
-            ci.committed.email=c.user.email_addresses[0]
-            ci.authored.email=c.user.email_addresses[0]
-            ci.authored.date = datetime.utcnow()
-            ci.message='summary\n\nddescription'
-            ci.set_context(self.repo)
-            ci.tree_id = 't_' + object_id
-            ci.tree = self._make_tree(ci.tree_id, **tree_parts)
-        return ci, isnew
 
 class _TestWithRepoAndCommit(_TestWithRepo):
     def setUp(self):
@@ -81,10 +89,20 @@ class TestRepo(_TestWithRepo):
         for fn in argless:
             getattr(self.repo, fn)()
             getattr(self.repo._impl, fn).assert_called_with()
-        unary = [ 'commit', 'commit_context', 'open_blob', 'shorthand_for_commit', 'url_for_commit' ]
+        unary = [ 'commit', 'commit_context', 'open_blob' ]
         for fn in unary:
             getattr(self.repo, fn)('foo')
             getattr(self.repo._impl, fn).assert_called_with('foo')
+
+    def test_shorthand_for_commit(self):
+        self.assertEqual(
+            self.repo.shorthand_for_commit('a'*40),
+            '[aaaaaa]')
+
+    def test_url_for_commit(self):
+        self.assertEqual(
+            self.repo.url_for_commit('a'*40),
+            '/p/test/test1/ci/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/')
 
     def test_init_as_clone(self):
         self.repo.init_as_clone('srcpath', 'srcname', 'srcurl')
@@ -139,15 +157,12 @@ class TestRepo(_TestWithRepo):
         assert self.repo.guess_type('foo.html') == ('text/html', None)
         assert self.repo.guess_type('.gitignore') == ('text/plain', None)
 
-    @mock.patch('allura.model.repository.Commit.upsert')
-    def test_refresh(self, Commit_upsert):
+    def test_refresh(self):
         ci = mock.Mock()
         ci.count_revisions=mock.Mock(return_value=100)
-        ci.diffs_computed = False
         ci.authored.name = 'Test Committer'
         ci.author_url = '/u/test-committer/'
         self.repo._impl.commit = mock.Mock(return_value=ci)
-        Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo.symbolics_for_commit = mock.Mock(return_value=[['master', 'branch'], []])
@@ -164,7 +179,6 @@ class TestRepo(_TestWithRepo):
         self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
         self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
         self.repo.refresh()
-        ci.compute_diffs.assert_called_with()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
@@ -177,13 +191,10 @@ class TestRepo(_TestWithRepo):
             title='New commit',
             author_name='Test Committer')).count()
 
-    @mock.patch('allura.model.repository.Commit.upsert')
-    def test_refresh_private(self, Commit_upsert):
+    def test_refresh_private(self):
         ci = mock.Mock()
         ci.count_revisions=mock.Mock(return_value=100)
-        ci.diffs_computed = False
         self.repo._impl.commit = mock.Mock(return_value=ci)
-        Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
@@ -248,23 +259,19 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2/'
         assert mr.commits == [ self._make_commit('foo')[0] ]
 
-class TestLastCommitFor(_TestWithRepoAndCommit):
-
-    def test_upsert(self):
-        h.set_context('test', 'test1', neighborhood='Projects')
-        lcf, isnew = M.LastCommitFor.upsert(repo_id=c.app.repo._id, object_id=self.ci.object_id)
-
 class TestRepoObject(_TestWithRepoAndCommit):
 
     def test_upsert(self):
-        obj0, isnew0 = M.RepoObject.upsert('foo1')
-        obj1, isnew1 = M.RepoObject.upsert('foo1')
+        obj0, isnew0 = M.repo.Tree.upsert('foo1')
+        obj1, isnew1 = M.repo.Tree.upsert('foo1')
         assert obj0 is obj1
         assert isnew0 and not isnew1
 
     def test_set_last_commit(self):
-        obj, isnew = M.RepoObject.upsert('foo1')
-        lc, isnew = obj.set_last_commit(self.ci)
+        obj, isnew = M.repo.Tree.upsert('foo1')
+        M.repo_refresh.set_last_commit(
+            self.repo._id, obj._id,
+            M.repo_refresh.get_commit_info(self.ci))
 
     def test_set_last_commit_nodate(self):
         obj, isnew = M.RepoObject.upsert('foo1')
@@ -273,23 +280,22 @@ class TestRepoObject(_TestWithRepoAndCommit):
         lc, isnew = obj.set_last_commit(self.ci)
 
     def test_get_last_commit(self):
-        obj, isnew = M.RepoObject.upsert('foo1')
-        lc, isnew = obj.set_last_commit(self.ci)
-        assert lc.last_commit == obj.get_last_commit()
+        obj, isnew = M.repo.Tree.upsert('foo1')
+        lc0 = M.repo_refresh.set_last_commit(
+            self.repo._id, obj._id,
+            M.repo_refresh.get_commit_info(self.ci))
+
+        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
+        assert lc0 == lc1
 
     def test_get_last_commit_missing(self):
-        obj, isnew = M.RepoObject.upsert('foo1')
-        assert obj.get_last_commit()['id'] is None
+        obj, isnew = M.repo.Tree.upsert('foo1')
+        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
+        assert lc1 is None
 
     def test_artifact_methods(self):
-        assert self.ci.index_id() == 'commit foo in test Code', self.ci.index_id()
+        assert self.ci.index_id() == 'allura/model/repo/Commit#foo', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()
-
-class TestLogCache(_TestWithRepo):
-
-    def test_get(self):
-        lc = M.LogCache.get(self.repo, 'foo')
-        assert lc.object_id == '$foo', lc.object_id
 
 class TestCommit(_TestWithRepo):
 
@@ -309,11 +315,10 @@ class TestCommit(_TestWithRepo):
         self.repo._impl.url_for_commit = impl.url_for_commit
 
     def test_upsert(self):
-        obj0, isnew0 = M.Commit.upsert('foo')
-        obj1, isnew1 = M.Commit.upsert('foo')
+        obj0, isnew0 = M.repo.Commit.upsert('foo')
+        obj1, isnew1 = M.repo.Commit.upsert('foo')
         assert obj0 is obj1
         assert not isnew1
-        assert not self.ci.diffs_computed
         u = M.User.by_username('test-admin')
         assert self.ci.author_url == u.url()
         assert self.ci.committer_url == u.url()
@@ -336,18 +341,19 @@ class TestCommit(_TestWithRepo):
 
     def test_compute_diffs(self):
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
-        self.ci.compute_diffs()
-        assert self.ci.diffs_computed == True
-        assert self.ci.diffs.added == [ '/a' ]
+        M.repo_refresh.refresh_commit_trees(self.ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
+        # self.ci.compute_diffs()
+        assert self.ci.diffs.added == [ 'a' ]
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
                 == [])
         ci, isnew = self._make_commit('bar')
         ci.parent_ids = [ 'foo' ]
-        ci.compute_diffs()
-        assert ci.diffs_computed == True
-        assert ci.diffs.removed == [ '/a/' ]
+        M.repo_refresh.refresh_commit_trees(ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
+        assert ci.diffs.removed == [ 'a' ]
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == ci.diffs.added
@@ -360,10 +366,10 @@ class TestCommit(_TestWithRepo):
                     b='',),
                 b=''))
         ci.parent_ids = [ 'foo' ]
-        ci.compute_diffs()
-        assert ci.diffs_computed == True
-        assert ci.diffs.added == [ '/b/' ]
-        assert ci.diffs.removed == [ '/a/' ]
+        M.repo_refresh.refresh_commit_trees(ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
+        assert ci.diffs.added == [ 'b' ]
+        assert ci.diffs.removed == [ 'a' ]
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])

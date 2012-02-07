@@ -290,17 +290,17 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
     else:
         lhs_tree = tree_index[lhs_ci.tree_id]
     differences = []
-    commit_info = _get_commit_info(rhs_ci)
+    commit_info = get_commit_info(rhs_ci)
     for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
         differences.append(
             dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
         # Set last commit info
         if rhs_id is not None:
-            _set_last_commit(repo_id, rhs_id, commit_info)
+            set_last_commit(repo_id, rhs_id, commit_info)
         rhs_tree = tree_index.get(rhs_id, None)
         if rhs_tree is not None:
             for oid in _walk_tree(rhs_tree, tree_index):
-                _set_last_commit(repo_id, oid, commit_info)
+                set_last_commit(repo_id, oid, commit_info)
     # Set last commit data for trees without it in the RHS
     if True:
         last_commit_collection = LastCommitDoc.m.session.db[
@@ -312,7 +312,7 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
                 { 'object_id': 1, '_id': 0 }))
         for tree_id in rhs_tree_ids:
             if tree_id not in last_commits:
-                _set_last_commit(repo_id, tree_id, commit_info)
+                set_last_commit(repo_id, tree_id, commit_info)
    # Build the diffinfo
     di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
@@ -412,8 +412,9 @@ def _diff_trees(lhs, rhs, index, *path):
     for name, id in rhs_blob_ids.items():
         yield (_fq(name), None, id)
 
-def _get_commit_info(commit_doc):
-    commit = mapper(Commit).create(commit_doc, dict(instrument=False))
+def get_commit_info(commit):
+    if not isinstance(commit, Commit):
+        commit = mapper(Commit).create(commit, dict(instrument=False))
     session(commit).expunge(commit)
     return dict(
         id=commit._id,
@@ -426,11 +427,11 @@ def _get_commit_info(commit_doc):
         summary=commit.summary
         )
 
-def _set_last_commit(repo_id, oid, commit_info):
+def set_last_commit(repo_id, oid, commit_info):
     lc = LastCommitDoc(dict(
             _id='%s:%s' % (repo_id, oid),
             repo_id=repo_id,
             object_id=oid,
             commit_info=commit_info))
-    lc.m.save(safe=False)
+    lc.m.save(safe=False, upsert=True)
     return lc

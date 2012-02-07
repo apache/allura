@@ -111,14 +111,6 @@ class RepoObject(object):
             self._id)
         return id.replace('.', '/')
 
-    @LazyProperty
-    def legacy(self):
-        return Object(object_id=self._id)
-
-    @property
-    def object_id(self):
-        return self._id
-
     @classmethod
     def upsert(cls, id):
         isnew = False
@@ -177,12 +169,12 @@ class Commit(RepoObject):
 
     @LazyProperty
     def symbolic_ids(self):
-        return self.repo.symbolics_for_commit(self.legacy)
+        return self.repo.symbolics_for_commit(self)
 
     def url(self):
         if self.repo is None: self.repo = self.guess_repo()
         if self.repo is None: return '#'
-        return self.repo.url_for_commit(self.legacy)
+        return self.repo.url_for_commit(self)
 
     def guess_repo(self):
         for ac in c.project.app_configs:
@@ -241,22 +233,21 @@ class Commit(RepoObject):
     def diffs(self):
         di = DiffInfoDoc.m.get(_id=self._id)
         if di is None:
-            return dict(added=[], removed=[], changed=[], copied=[])
+            return Object(added=[], removed=[], changed=[], copied=[])
         added = []
         removed = []
         changed = []
         copied = []
         for change in di.differences:
-            print change.name
             if change.rhs_id is None:
                 removed.append(change.name)
             elif change.lhs_id is None:
                 added.append(change.name)
             else:
                 changed.append(change.name)
-            return dict(
-                added=added, removed=removed,
-                changed=changed, copied=copied)
+        return Object(
+            added=added, removed=removed,
+            changed=changed, copied=copied)
 
     def get_path(self, path):
         parts = path.split('/')[1:]
