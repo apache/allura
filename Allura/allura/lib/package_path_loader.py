@@ -45,7 +45,7 @@ For the examples, assume the following directory structure:
 To override the above example, a Tool implementer would
 add the following line to their Tool's setup.py:
 
-    [theme.override]
+    [allura.theme.override]
     newtool = newtool.app:NewToolApp
 
 Then, in the neighbor path (see below) for the file containing the
@@ -102,7 +102,9 @@ class PackagePathLoader(jinja2.BaseLoader):
     the same with other Tools.
     '''
     def __init__(self, override_entrypoint='allura.theme.override',
-                default_paths=None):
+                default_paths=None,
+                override_root='override',
+                ):
         '''
         Set up initial values... defaults are for Allura.
         '''
@@ -116,6 +118,7 @@ class PackagePathLoader(jinja2.BaseLoader):
 
         self.override_entrypoint = override_entrypoint
         self.default_paths = default_paths
+        self.override_root = override_root
 
         # Finally instantiate the loader
         self.fs_loader = jinja2.FileSystemLoader(self.init_paths())
@@ -197,11 +200,11 @@ class PackagePathLoader(jinja2.BaseLoader):
             # the default allura behavior
             package, path = template.split(':')
             # TODO: is there a better way to do this?
-            path_fragment = os.path.join('templates', package, path)
+            path_fragment = os.path.join(self.override_root, package, path)
         elif len(bits) == 1:
             # TODO: is this even useful?
             path = bits[0]
-            path_fragment = os.path.join('templates', path)
+            path_fragment = os.path.join(self.override_root, path)
         else:
             raise Exception('malformed template path')
 
