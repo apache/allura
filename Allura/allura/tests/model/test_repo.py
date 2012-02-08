@@ -263,6 +263,12 @@ class TestRepoObject(_TestWithRepoAndCommit):
         obj, isnew = M.RepoObject.upsert('foo1')
         lc, isnew = obj.set_last_commit(self.ci)
 
+    def test_set_last_commit_nodate(self):
+        obj, isnew = M.RepoObject.upsert('foo1')
+        self.ci.authored.date = None
+        self.ci.object_id = 'asdfasdfasfd:1'
+        lc, isnew = obj.set_last_commit(self.ci)
+
     def test_get_last_commit(self):
         obj, isnew = M.RepoObject.upsert('foo1')
         lc, isnew = obj.set_last_commit(self.ci)
