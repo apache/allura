@@ -16,6 +16,10 @@ def onready(text):
 
 class LabelList(fev.UnicodeString):
 
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('if_empty', [])
+        super(LabelList, self).__init__(*args, **kwargs)
+
     def _to_python(self, value, state):
         value = super(LabelList, self)._to_python(value, state)
         return value.split(',')
