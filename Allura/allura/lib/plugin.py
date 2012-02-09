@@ -366,15 +366,23 @@ class ProjectRegistrationProvider(object):
                     permissions = set(obj.get('permissions', [])) & \
                                   set(p.permissions)
                     usernames = obj.get('usernames', [])
-                    if not (name and permissions): continue
-                    if M.ProjectRole.by_name(name): continue
-                    group = M.ProjectRole(project_id=p._id, name=name)
-                    p.acl += [M.ACE.allow(group._id, perm)
-                              for perm in permissions]
+                    # Must provide a group name
+                    if not name: continue
+                    # If the group already exists, we'll add users to it,
+                    # but we won't change permissions on the group
+                    group = M.ProjectRole.by_name(name, project=p)
+                    if not group:
+                        # If creating a new group, *must* specify permissions
+                        if not permissions: continue
+                        group = M.ProjectRole(project_id=p._id, name=name)
+                        p.acl += [M.ACE.allow(group._id, perm)
+                                for perm in permissions]
                     for username in usernames:
                         user = M.User.by_username(username)
                         if not (user and user._id): continue
-                        user.project_role(project=p).roles.append(group._id)
+                        pr = user.project_role(project=p)
+                        if group._id not in pr.roles:
+                            pr.roles.append(group._id)
             if 'tools' in project_template:
                 for i, tool in enumerate(project_template['tools'].keys()):
                     tool_config = project_template['tools'][tool]
@@ -383,8 +391,11 @@ class ProjectRegistrationProvider(object):
                         mount_point=tool_config['mount_point'],
                         ordinal=i+offset)
                     if 'options' in tool_config:
+                        from string import Template
                         for option in tool_config['options']:
-                            app.config.options[option] = tool_config['options'][option]
+                            s = Template(str(tool_config['options'][option]))
+                            app.config.options[option] = s.safe_substitute(
+                                    p.__dict__.get('root_project', {}))
                     if tool == 'wiki':
                         from forgewiki import model as WM
                         text = tool_config.get('home_text',
