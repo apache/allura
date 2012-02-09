@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import time
 import Image, StringIO
 import allura
 
@@ -630,6 +631,7 @@ class TestFunctionalController(TrackerTestController):
         ticket = tm.Ticket.query.get(ticket_num=1)
         old_date = ticket.mod_date
         ticket.summary = 'changing the summary'
+        time.sleep(1)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         ticket = tm.Ticket.query.get(ticket_num=1)

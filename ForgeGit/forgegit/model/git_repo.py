@@ -311,7 +311,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def symbolics_for_commit(self, commit):
         branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
-        containing_branches = self._git.git.branch(contains=commit.object_id)
+        containing_branches = self._git.git.branch(contains=commit._id)
         containing_branches = [br.strip(' *') for br in containing_branches.split('\n')]
         return containing_branches, tags
 

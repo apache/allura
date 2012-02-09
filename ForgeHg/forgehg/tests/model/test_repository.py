@@ -134,7 +134,7 @@ class TestHgRepo(unittest.TestCase):
 
     def test_log(self):
         for entry in self.repo.log():
-            if entry.object_id.startswith('00000000'): continue
+            if entry._id.startswith('00000000'): continue
             assert entry.committed.email == 'rick446@usa.net'
             assert entry.message
 
@@ -169,11 +169,12 @@ class TestHgCommit(unittest.TestCase):
     def test_redo_trees(self):
         old_tree = self.rev.tree
         del self.rev.tree
-        M.Tree.query.remove(dict(type='tree'))
+        M.repo.Tree.query.remove(dict(type='tree'))
         ThreadLocalORMSession.close_all()
         new_tree =  self.rev.tree
-        self.assertEqual(old_tree.object_ids, new_tree.object_ids)
-        self.assertEqual(old_tree.object_id, new_tree.object_id)
+        self.assertEqual(old_tree.tree_ids, new_tree.tree_ids)
+        self.assertEqual(old_tree.blob_ids, new_tree.blob_ids)
+        self.assertEqual(old_tree._id, new_tree._id)
 
     def test_url(self):
         assert self.rev.url().endswith('0ffff1/'), \

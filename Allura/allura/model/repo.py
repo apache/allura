@@ -250,7 +250,8 @@ class Commit(RepoObject):
             changed=changed, copied=copied)
 
     def get_path(self, path):
-        parts = path.split('/')[1:]
+        if path[0] == '/': path = path[1:]
+        parts = path.split('/')
         cur = self.tree
         for part in parts:
             cur = cur[part]
@@ -319,7 +320,6 @@ class Tree(RepoObject):
         def _get_last_commit(oid):
             lc = lc_index.get(oid)
             if lc is None:
-                import pdb; pdb.set_trace()
                 lc = dict(
                     author=None,
                     author_email=None,
@@ -340,7 +340,7 @@ class Tree(RepoObject):
             results.append(dict(
                     kind='FILE',
                     name=x.name,
-                    href=x.name + '/',
+                    href=x.name,
                     last_commit=_get_last_commit(x.id)))
         for x in sorted(self.other_ids, key=lambda x:x.name):
             results.append(dict(

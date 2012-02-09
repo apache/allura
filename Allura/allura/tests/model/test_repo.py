@@ -329,14 +329,21 @@ class TestCommit(_TestWithRepo):
 
     def test_get_path(self):
         b = self.ci.get_path('a/a/a')
-        assert isinstance(b, M.Blob)
-        assert self.ci.get_path('a/a') is None
+        assert isinstance(b, M.repo.Blob)
+        x = self.ci.get_path('a/a')
+        assert isinstance(x, M.repo.Tree)
 
     def test_log(self):
+        rb = M.repo_refresh.CommitRunBuilder(['foo'])
+        rb.run()
+        rb.cleanup()
         commits = self.ci.log(0, 100)
-        assert commits[0].object_id == 'foo'
+        assert commits[0]._id == 'foo'
 
     def test_count_revisions(self):
+        rb = M.repo_refresh.CommitRunBuilder(['foo'])
+        rb.run()
+        rb.cleanup()
         assert self.ci.count_revisions() == 1
 
     def test_compute_diffs(self):

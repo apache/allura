@@ -92,11 +92,11 @@ class HgImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
-        result = M.Commit.query.get(object_id=rev)
+        result = M.repo.Commit.query.get(_id=rev)
         if result is None:
             try:
                 impl = self._hg[str(rev)]
-                result = M.Commit.query.get(object_id=impl.hex())
+                result = M.repo.Commit.query.get(_id=impl.hex())
             except Exception, e:
                 log.exception(e)
         if result is None: return None
@@ -123,7 +123,7 @@ class HgImplementation(M.RepositoryImplementation):
             if obj.hex() in graph: continue
             if not all_commits:
                 # Look up the object
-                if M.Commit.query.find(dict(object_id=obj.hex())).count():
+                if M.repo.Commit.query.find(dict(_id=obj.hex())).count():
                     graph[obj.hex()] = set() # mark as parentless
                     continue
             graph[obj.hex()] = set(
@@ -131,17 +131,6 @@ class HgImplementation(M.RepositoryImplementation):
                 if p.hex() != obj.hex())
             to_visit += obj.parents()
         return list(topological_sort(graph))
-
-    def commit_context(self, commit):
-        prev_ids = commit.parent_ids
-        prev = M.Commit.query.find(dict(
-                object_id={'$in':prev_ids})).all()
-        next = M.Commit.query.find(dict(
-                parent_ids=commit.object_id,
-                repositories=self._repo._id)).all()
-        for ci in prev + next:
-            ci.set_context(self._repo)
-        return dict(prev=prev, next=next)
 
     def refresh_heads(self):
         self._repo.heads = [
@@ -157,7 +146,7 @@ class HgImplementation(M.RepositoryImplementation):
 
     def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
         if seen_object_ids is None: seen_object_ids = set()
-        obj = self._hg[ci.object_id]
+        obj = self._hg[ci._id]
         # Save commit metadata
         mo = self.re_hg_user.match(obj.user())
         if mo:
@@ -176,7 +165,7 @@ class HgImplementation(M.RepositoryImplementation):
         # Save commit tree (must build a fake git-like tree from the changectx)
         fake_tree = self._tree_from_changectx(obj)
         ci.tree_id = fake_tree.hex()
-        tree, isnew = M.Tree.upsert(fake_tree.hex())
+        tree, isnew = M.repo.Tree.upsert(fake_tree.hex())
         if not lazy or isnew:
             tree.set_context(ci)
             self._refresh_tree(tree, fake_tree, lazy)
@@ -254,7 +243,7 @@ class HgImplementation(M.RepositoryImplementation):
         return result, [ p.hex() for p in candidates ]
 
     def open_blob(self, blob):
-        fctx = self._hg[blob.commit.object_id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
+        fctx = self._hg[blob.commit._id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return StringIO(fctx.data())
 
     def _setup_hooks(self):
@@ -282,14 +271,14 @@ class HgImplementation(M.RepositoryImplementation):
         return root
 
     def _refresh_tree(self, tree, obj, lazy=True):
-        tree.object_ids=[
+        tree.tree_ids = [
             Object(object_id=o.hex(), name=name)
             for name, o in obj.trees.iteritems() ]
-        tree.object_ids += [
+        tree.blob_ids = [
             Object(object_id=oid, name=name)
             for name, oid in obj.blobs.iteritems() ]
         for name, o in obj.trees.iteritems():
-            subtree, isnew = M.Tree.upsert(o.hex())
+            subtree, isnew = M.repo.Tree.upsert(o.hex())
             if not lazy or isnew:
                 subtree.set_context(tree, name)
                 self._refresh_tree(subtree, o)
@@ -298,18 +287,18 @@ class HgImplementation(M.RepositoryImplementation):
 
     def symbolics_for_commit(self, commit):
         branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
-        ctx = self._hg[commit.object_id]
+        ctx = self._hg[commit._id]
         return [ctx.branch()], tags
 
     def compute_tree(self, commit, tree_path='/'):
-        ctx = self._hg[commit.object_id]
+        ctx = self._hg[commit._id]
         fake_tree = self._tree_from_changectx(ctx)
         fake_tree = fake_tree.get_tree(tree_path)
-        tree, isnew = M.Tree.upsert(fake_tree.hex())
+        tree, isnew = M.repo.Tree.upsert(fake_tree.hex())
         if isnew:
             tree.set_context(commit)
             self._refresh_tree(tree, fake_tree)
-        return tree.object_id
+        return tree._id
 
     def compute_tree_new(self, commit, tree_path='/'):
         ctx = self._hg[commit._id]

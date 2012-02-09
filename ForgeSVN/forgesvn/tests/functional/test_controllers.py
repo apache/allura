@@ -37,7 +37,7 @@ class TestRootController(TestController):
     def test_index(self):
         resp = self.app.get('/src/').follow()
         assert 'svn checkout' in resp
-        assert '[r4]' in resp, resp.showbrowser()
+        assert '[r5]' in resp, resp.showbrowser()
 
     def test_index_empty(self):
         self.app.get('/svn/')

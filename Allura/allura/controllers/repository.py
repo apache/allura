@@ -126,7 +126,7 @@ class RepoRootController(BaseController):
         downstream=dict(
             project_id=c.project._id,
             mount_point=c.app.config.options.mount_point,
-            commit_id=c.app.repo.commit(kw['source_branch']).object_id)
+            commit_id=c.app.repo.commit(kw['source_branch'])._id)
         with c.app.repo.push_upstream_context():
             mr = M.MergeRequest.upsert(
                 downstream=downstream,
@@ -202,7 +202,7 @@ class RepoRootController(BaseController):
 
         for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
             ci = commits_by_id[oid]
-            url=c.app.repo.url_for_commit(Object(object_id=oid))
+            url=c.app.repo.url_for_commit(Object(_id=oid))
             msg_split = ci.message.splitlines()
             if msg_split:
                 msg = msg_split[0]
@@ -265,11 +265,11 @@ class RepoRestController(RepoRootController):
                         email=commit.authored.email,
                     ),
                     url=commit.url(),
-                    id=commit.object_id,
+                    id=commit._id,
                     committed_date=commit.committed.date,
                     authored_date=commit.authored.date,
                     message=commit.message,
-                    tree=commit.tree.object_id,
+                    tree=commit.tree._id,
                     committer=dict(
                         name=commit.committed.name,
                         email=commit.committed.email,
@@ -407,7 +407,7 @@ class CommitBrowser(BaseController):
     def log(self, limit=None, page=0, count=0, **kw):
         limit, page, start = g.handle_paging(limit, page)
         revisions = c.app.repo.log(
-                branch=self._commit.object_id,
+                branch=self._commit._id,
                 offset=start,
                 limit=limit)
         c.log_widget = self.log_widget
@@ -451,7 +451,10 @@ class TreeBrowser(BaseController):
                 unquote(
                     request.environ['PATH_INFO'].rsplit('/')[-1]))
             if filename:
-                obj = self._tree[filename]
+                try:
+                    obj = self._tree[filename]
+                except KeyError:
+                    raise exc.HTTPNotFound()
                 if isinstance(obj, M.repo.Blob):
                     return self.FileBrowserClass(
                         self._commit,

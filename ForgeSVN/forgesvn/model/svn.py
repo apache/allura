@@ -79,34 +79,6 @@ class Repository(M.Repository):
             allura.tasks.repo_tasks.refresh.post()
         return self._impl.commit(last_id)
 
-    def get_last_commit(self, obj):
-        lc, isnew = M.LastCommitFor.upsert(repo_id=self._id, object_id=obj.object_id)
-        if not isnew and lc.last_commit.id:
-            return lc.last_commit
-        try:
-            info = self._impl._svn.info2(
-                self._impl._url + obj.path(),
-                revision=self._impl._revision(obj.commit.object_id),
-                depth=pysvn.depth.empty)[0][1]
-            lc.last_commit.author = lc.last_commit.author_email = info.last_changed_author
-            lc.last_commit.date = datetime.utcfromtimestamp(info.last_changed_date)
-            lc.last_commit.id = self._impl._oid(info.last_changed_rev.number)
-            lc.last_commit.href = '%s%d/' % (self.url(), info.last_changed_rev.number)
-            lc.last_commit.shortlink = '[r%d]' % info.last_changed_rev.number
-            lc.last_commit.summary = ''
-            return lc.last_commit
-        except:
-            log.exception('Cannot get last commit for %s', obj)
-            return dict(
-                author=None,
-                author_email=None,
-                author_url=None,
-                date=None,
-                id=None,
-                href=None,
-                shortlink=None,
-                summary=None)
-
 class SVNImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
@@ -131,7 +103,7 @@ class SVNImplementation(M.RepositoryImplementation):
         if isinstance(commit, basestring):
             object_id = commit
         else:
-            object_id = commit.object_id
+            object_id = commit._id
         return '%s%d/' % (
             self._repo.url(), self._revno(object_id))
 
@@ -204,7 +176,7 @@ class SVNImplementation(M.RepositoryImplementation):
             oid = self._oid(rev)
         else:
             oid = rev
-        result = M.Commit.query.get(object_id=oid)
+        result = M.repo.Commit.query.get(_id=oid)
         if result is None: return None
         result.set_context(self._repo)
         return result
@@ -220,23 +192,23 @@ class SVNImplementation(M.RepositoryImplementation):
             return oids
         # Find max commit id -- everything greater than that will be "unknown"
         prefix = self._oid('')
-        q = M.Commit.query.find(
+        q = M.repo.Commit.query.find(
             dict(
                 type='commit',
-                object_id={'$gt':prefix},
+                _id={'$gt':prefix},
                 ),
-            dict(object_id=True)
+            dict(_id=True)
             )
         seen_oids = set()
         for d in q.ming_cursor.cursor:
-            oid = d['object_id']
+            oid = d['_id']
             if not oid.startswith(prefix): break
             seen_oids.add(oid)
         return [
             oid for oid in oids if oid not in seen_oids ]
 
     def commit_context(self, commit):
-        revno = int(commit.object_id.split(':')[1])
+        revno = int(commit._id.split(':')[1])
         prev,next=[],[]
         if revno > 1:
             prev = [ self.commit(revno - 1) ]
@@ -247,8 +219,8 @@ class SVNImplementation(M.RepositoryImplementation):
     def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
         if seen_object_ids is None: seen_object_ids = set()
         log.info('Refresh %r %r', ci, self._repo)
-        revno = self._revno(ci.object_id)
-        rev = self._revision(ci.object_id)
+        revno = self._revno(ci._id)
+        rev = self._revision(ci._id)
         try:
             log_entry = self._svn.log(
                 self._url,
@@ -332,51 +304,15 @@ class SVNImplementation(M.RepositoryImplementation):
                 if lazy: return False
         return True
 
-    def compute_tree(self, commit, tree_path='/'):
-        tree_path = tree_path[:-1]
-        tree_id = self._tree_oid(commit.object_id, tree_path)
-        tree, isnew = M.Tree.upsert(tree_id)
-        if not isnew: return tree_id
-        log.debug('Computing tree for %s: %s',
-                 self._revno(commit.object_id), tree_path)
-        rev = self._revision(commit.object_id)
-        try:
-            infos = self._svn.info2(
-                self._url + tree_path,
-                revision=rev,
-                depth=pysvn.depth.immediates)
-        except pysvn.ClientError:
-            log.exception('Error computing tree for %s: %s(%s)',
-                          self._repo, commit, tree_path)
-            tree.delete()
-            return None
-        gl_tree = GitLikeTree()
-        log.debug('Compute tree for %d paths', len(infos))
-        for path, info in infos[1:]:
-            if info.kind == pysvn.node_kind.dir:
-                oid = self._tree_oid(commit.object_id, path)
-                gl_tree.set_blob(path, oid)
-            elif info.kind == pysvn.node_kind.file:
-                oid = self._blob_oid(commit.object_id, path)
-                gl_tree.set_blob(path, oid)
-                M.Blob.upsert(oid)
-            else:
-                assert False
-        tree.object_ids = [
-            Object(object_id=oid, name=name)
-            for name, oid in gl_tree.blobs.iteritems() ]
-        session(tree).flush(tree)
-        return tree_id
-
     def compute_tree_new(self, commit, tree_path='/'):
         from allura.model import repo as RM
         tree_path = tree_path[:-1]
-        tree_id = self._tree_oid(commit.object_id, tree_path)
+        tree_id = self._tree_oid(commit._id, tree_path)
         tree, isnew = RM.Tree.upsert(tree_id)
         if not isnew: return tree_id
         log.debug('Computing tree for %s: %s',
-                 self._revno(commit.object_id), tree_path)
-        rev = self._revision(commit.object_id)
+                 self._revno(commit._id), tree_path)
+        rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
                 self._url + tree_path,
@@ -391,11 +327,11 @@ class SVNImplementation(M.RepositoryImplementation):
         for path, info in infos[1:]:
             if info.kind == pysvn.node_kind.dir:
                 tree.tree_ids.append(Object(
-                        id=self._tree_oid(commit.object_id, path),
+                        id=self._tree_oid(commit._id, path),
                         name=path))
             elif info.kind == pysvn.node_kind.file:
                 tree.blob_ids.append(Object(
-                        id=self._tree_oid(commit.object_id, path),
+                        id=self._tree_oid(commit._id, path),
                         name=path))
             else:
                 assert False
@@ -428,7 +364,7 @@ class SVNImplementation(M.RepositoryImplementation):
     def open_blob(self, blob):
         data = self._svn.cat(
             self._url + blob.path(),
-            revision=self._revision(blob.commit.object_id))
+            revision=self._revision(blob.commit._id))
         return StringIO(data)
 
     def _setup_hooks(self):

@@ -140,6 +140,7 @@ class TestRootController(TestController):
 
     def test_diff(self):
         ci = self._get_ci()
+        #ci = '/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/'
         resp = self.app.get(ci + 'tree/README')
         resp = resp.click(description='diff')
         assert 'readme' in resp, resp.showbrowser()

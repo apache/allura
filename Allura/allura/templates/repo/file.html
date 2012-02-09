@@ -51,7 +51,7 @@
   <p>
     Parent:
     <a href="{{prev.url()}}">{{prev.commit.shorthand_id()}}</a>
-    <a href="?diff={{prev.commit.object_id}}">(diff)</a>
+    <a href="?diff={{prev.commit._id}}">(diff)</a>
   </p>
   {% endif %}
 
@@ -59,7 +59,7 @@
   <p>
     Child:
     <a href="{{next.url()}}">{{next.commit.shorthand_id()}}</a>
-    <a href="{{next.url()}}?diff={{blob.commit.object_id}}">(diff)</a>
+    <a href="{{next.url()}}?diff={{blob.commit._id}}">(diff)</a>
   </p>
   {% endif %}
 
