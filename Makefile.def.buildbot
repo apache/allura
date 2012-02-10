@@ -1,0 +1,5 @@
+test: buildbot_test
+
+buildbot_test:
+	./rebuild.bash
+	ALLURA_VALIDATION=none ./run_tests
