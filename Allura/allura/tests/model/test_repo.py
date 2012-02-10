@@ -273,12 +273,6 @@ class TestRepoObject(_TestWithRepoAndCommit):
             self.repo._id, obj._id,
             M.repo_refresh.get_commit_info(self.ci))
 
-    def test_set_last_commit_nodate(self):
-        obj, isnew = M.RepoObject.upsert('foo1')
-        self.ci.authored.date = None
-        self.ci.object_id = 'asdfasdfasfd:1'
-        lc, isnew = obj.set_last_commit(self.ci)
-
     def test_get_last_commit(self):
         obj, isnew = M.repo.Tree.upsert('foo1')
         lc0 = M.repo_refresh.set_last_commit(
