@@ -18,6 +18,5 @@ gevent-zeromq==0.2.0
 html2text==3.101
 postmarkup==1.1.4
 
-
 # Include our common requirements
 -r requirements-common.txt
