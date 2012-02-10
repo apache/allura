@@ -690,6 +690,7 @@ class RootRestController(RestController):
         if not page:
             require_access(c.app, 'create')
             page = WM.Page.upsert(title)
+            page.viewable_by = ['all']
         else:
             require_access(page, 'edit')
         page.text = post_data['text']
