@@ -2,12 +2,13 @@ import bson
 import datetime
 import json
 import logging
+import multiprocessing
 import re
 import sys
 
 import colander as col
 
-from ming.orm import ThreadLocalORMSession
+from ming.orm import session, ThreadLocalORMSession
 from pylons import g
 
 from allura import model as M
@@ -157,25 +158,30 @@ def trove_ids(orig, new_):
     return set(t._id for t in new_) or orig
 
 def create_project(p, nbhd, options):
+    worker_name = multiprocessing.current_process().name
     M.session.artifact_orm_session._get().skip_mod_date = True
     shortname = p.shortname or p.name.shortname
     project = M.Project.query.get(shortname=shortname,
             neighborhood_id=nbhd._id)
 
     if project and not (options.update and p.shortname):
-        log.warning('Skipping existing project "%s". To update an existing '
+        log.warning('[%s] Skipping existing project "%s". To update an existing '
                     'project you must provide the project shortname and run '
-                    'this script with --update.' % shortname)
+                    'this script with --update.' % (worker_name, shortname))
         return 0
 
     if not project:
-        log.info('Creating project "%s".' % shortname)
-        project = nbhd.register_project(shortname,
-                                        p.admin,
-                                        project_name=p.name.name,
-                                        private_project=p.private)
+        log.info('[%s] Creating project "%s".' % (worker_name, shortname))
+        try:
+                project = nbhd.register_project(shortname,
+                                                p.admin,
+                                            project_name=p.name.name,
+                                            private_project=p.private)
+        except Exception, e:
+            log.error('[%s] %s' % (worker_name, str(e)))
+            return 0
     else:
-        log.info('Updating project "%s".' % shortname)
+        log.info('[%s] Updating project "%s".' % (worker_name, shortname))
 
     project.notifications_disabled = True
     project.summary = p.summary
@@ -204,7 +210,14 @@ def create_project(p, nbhd, options):
     with h.push_context(project._id):
         ThreadLocalORMSession.flush_all()
         g.post_event('project_updated')
+    session(project).clear()
     return 0
+
+def create_projects(projects, nbhd, options):
+    for p in projects:
+        r = create_project(Object(p), nbhd, options)
+        if r != 0:
+            sys.exit(r)
 
 def main(options):
     log.addHandler(logging.StreamHandler(sys.stdout))
@@ -224,10 +237,17 @@ def main(options):
     projects = schema.deserialize(data)
     log.debug(projects)
 
-    for p in projects:
-        r = create_project(Object(p), nbhd, options)
-        if r != 0:
-            return r
+    chunks = [projects[i::options.nprocs] for i in range(options.nprocs)]
+    jobs = []
+    for i in range(options.nprocs):
+        p = multiprocessing.Process(target=create_projects,
+                args=(chunks[i], nbhd, options), name='worker-' + str(i+1))
+        jobs.append(p)
+        p.start()
+
+    for j in jobs:
+        j.join()
+        if j.exitcode <> 0: return j.exitcode
     return 0
 
 def parse_options():
@@ -244,6 +264,9 @@ def parse_options():
             action='store_true',
             help='Update existing projects. Without this option, existing '
                  'projects will be skipped.')
+    parser.add_argument('--nprocs', '-n', action='store', dest='nprocs', type=int,
+            help='Number of processes to divide the work among.',
+            default=multiprocessing.cpu_count())
     return parser.parse_args()
 
 if __name__ == '__main__':
