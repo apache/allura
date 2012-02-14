@@ -22,7 +22,9 @@ class TroveCategory():
     def deserialize(self, node, cstruct):
         if cstruct is col.null:
             return col.null
-        cat = M.TroveCategory.query.get(fullname=cstruct)
+        cat = M.TroveCategory.query.get(fullpath=cstruct)
+        if not cat:
+            cat = M.TroveCategory.query.get(fullname=cstruct)
         if not cat:
             raise col.Invalid(node,
                     '"%s" is not a valid trove category.' % cstruct)
@@ -85,11 +87,32 @@ class Award():
                     'Invalid award "%s".' % cstruct)
         return award
 
-class TroveAudiences(col.SequenceSchema):
-    trove_audience = col.SchemaNode(TroveCategory("Intended Audience"))
+class TroveTopics(col.SequenceSchema):
+    trove_topics = col.SchemaNode(TroveCategory("Topic"))
 
 class TroveLicenses(col.SequenceSchema):
     trove_license = col.SchemaNode(TroveCategory("License"))
+
+class TroveDatabases(col.SequenceSchema):
+    trove_databases = col.SchemaNode(TroveCategory("Database Environment"))
+
+class TroveStatuses(col.SequenceSchema):
+    trove_statuses = col.SchemaNode(TroveCategory("Development Status"))
+
+class TroveAudiences(col.SequenceSchema):
+    trove_audience = col.SchemaNode(TroveCategory("Intended Audience"))
+
+class TroveOSes(col.SequenceSchema):
+    trove_oses = col.SchemaNode(TroveCategory("Operating System"))
+
+class TroveLanguages(col.SequenceSchema):
+    trove_languages = col.SchemaNode(TroveCategory("Programming Language"))
+
+class TroveTranslations(col.SequenceSchema):
+    trove_translations = col.SchemaNode(TroveCategory("Translations"))
+
+class TroveUIs(col.SequenceSchema):
+    trove_uis = col.SchemaNode(TroveCategory("User Interface"))
 
 class Labels(col.SequenceSchema):
     label = col.SchemaNode(col.Str())
@@ -103,8 +126,15 @@ class Project(col.MappingSchema):
     private = col.SchemaNode(col.Bool(), missing=False)
     labels = Labels(missing=[])
     external_homepage = col.SchemaNode(col.Str(), missing='')
+    trove_root_databases = TroveDatabases(missing=[])
+    trove_developmentstatuses = TroveStatuses(validator=col.Length(max=6), missing=[])
     trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=[])
     trove_licenses = TroveLicenses(validator=col.Length(max=6), missing=[])
+    trove_oses = TroveOSes(missing=[])
+    trove_languages = TroveLanguages(validator=col.Length(max=6), missing=[])
+    trove_topics = TroveTopics(validator=col.Length(max=3), missing=[])
+    trove_natlanguages = TroveTranslations(missing=[])
+    trove_environments = TroveUIs(missing=[])
 
 def valid_shortname(project):
     if project.shortname:
@@ -122,6 +152,9 @@ class Projects(col.SequenceSchema):
 class Object(object):
     def __init__(self, d):
         self.__dict__.update(d)
+
+def trove_ids(orig, new_):
+    return set(t._id for t in new_) or orig
 
 def create_project(p, nbhd, options):
     M.session.artifact_orm_session._get().skip_mod_date = True
@@ -152,10 +185,16 @@ def create_project(p, nbhd, options):
     # These properties may have been populated by nbhd template defaults in
     # register_project(). Overwrite if we have data, otherwise keep defaults.
     project.labels = p.labels or project.labels
-    project.trove_audience = set(a._id for a in p.trove_audiences) or \
-            project.trove_audience
-    project.trove_license = set(l._id for l in p.trove_licenses) or \
-            project.trove_license
+    project.trove_root_database = trove_ids(project.trove_root_database, p.trove_root_databases)
+    project.trove_developmentstatus = trove_ids(project.trove_developmentstatus, p.trove_developmentstatuses)
+    project.trove_audience = trove_ids(project.trove_audience, p.trove_audiences)
+    project.trove_license = trove_ids(project.trove_license, p.trove_licenses)
+    project.trove_os = trove_ids(project.trove_os, p.trove_oses)
+    project.trove_language = trove_ids(project.trove_language, p.trove_languages)
+    project.trove_topic = trove_ids(project.trove_topic, p.trove_topics)
+    project.trove_natlanguage = trove_ids(project.trove_natlanguage, p.trove_natlanguages)
+    project.trove_environment = trove_ids(project.trove_environment, p.trove_environments)
+
     for a in p.awards:
         M.AwardGrant(app_config_id=bson.ObjectId(),
                 tool_version=dict(neighborhood='0'), award_id=a._id,
