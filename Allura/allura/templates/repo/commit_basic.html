@@ -16,7 +16,7 @@
       <td>change</td>
       <td>
         <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
-        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
+        <a href="{{commit.url()}}tree/{{h.really_unicode(diff)}}?diff={{prev[0]._id}}">(diff)</a>
       </td>
     </tr>
     {% endfor %}{% for diff in commit.diffs.copied %}
