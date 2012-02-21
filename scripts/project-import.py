@@ -127,15 +127,15 @@ class Project(col.MappingSchema):
     private = col.SchemaNode(col.Bool(), missing=False)
     labels = Labels(missing=[])
     external_homepage = col.SchemaNode(col.Str(), missing='')
-    trove_root_databases = TroveDatabases(missing=[])
-    trove_developmentstatuses = TroveStatuses(validator=col.Length(max=6), missing=[])
-    trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=[])
-    trove_licenses = TroveLicenses(validator=col.Length(max=6), missing=[])
-    trove_oses = TroveOSes(missing=[])
-    trove_languages = TroveLanguages(validator=col.Length(max=6), missing=[])
-    trove_topics = TroveTopics(validator=col.Length(max=3), missing=[])
-    trove_natlanguages = TroveTranslations(missing=[])
-    trove_environments = TroveUIs(missing=[])
+    trove_root_databases = TroveDatabases(missing=None)
+    trove_developmentstatuses = TroveStatuses(validator=col.Length(max=6), missing=None)
+    trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=None)
+    trove_licenses = TroveLicenses(validator=col.Length(max=6), missing=None)
+    trove_oses = TroveOSes(missing=None)
+    trove_languages = TroveLanguages(validator=col.Length(max=6), missing=None)
+    trove_topics = TroveTopics(validator=col.Length(max=3), missing=None)
+    trove_natlanguages = TroveTranslations(missing=None)
+    trove_environments = TroveUIs(missing=None)
 
 def valid_shortname(project):
     if project.shortname:
@@ -155,7 +155,8 @@ class Object(object):
         self.__dict__.update(d)
 
 def trove_ids(orig, new_):
-    return set(t._id for t in new_) or orig
+    if new_ is None: return orig
+    return set(t._id for t in list(new_))
 
 def create_project(p, nbhd, options):
     worker_name = multiprocessing.current_process().name
