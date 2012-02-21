@@ -39,7 +39,7 @@ The first step to installing the Forge platform is installing a virtual environm
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
 
-    ~$ virtualenv anvil
+    ~$ virtualenv --system-site-packages anvil
 
 This gives us a nice, clean environment into which we can install all the forge dependencies.  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
 
