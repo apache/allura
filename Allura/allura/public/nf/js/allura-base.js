@@ -145,6 +145,11 @@ function attach_form_retry( form ){
     });
 }
 
+function addCommas(num) {
+    // http://stackoverflow.com/questions/1990512/add-comma-to-numbers-every-three-digits-using-jquery/1990590#1990590
+    return String(num).replace(new RegExp('(\\d)(?=(\\d\\d\\d)+(?!\\d))', 'g'), "$1,");
+}
+
 $(function(){
     // Add notifications for form submission.
     attach_form_retry('form.can-retry');

@@ -3,11 +3,13 @@ import logging
 import re
 from datetime import datetime, timedelta
 from urllib import urlencode, unquote
+from urllib2 import urlopen
 from webob import exc
+import json
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash, url
+from tg import expose, validate, redirect, flash, url, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
@@ -29,6 +31,7 @@ from allura.lib import widgets as w
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
+from allura.lib.zarkov_helpers import zero_fill_zarkov_result
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
@@ -656,7 +659,7 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/stats.html')
-    def stats(self):
+    def stats(self, dates=None, **kw):
         globals = c.app.globals
         total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
         open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
@@ -676,6 +679,13 @@ class RootController(BaseController):
         fortnight_comments=self.ticket_comments_since(fortnight_ago)
         month_comments=self.ticket_comments_since(month_ago)
         c.user_select = ffw.ProjectUserSelect()
+        if dates is None:
+            today = datetime.utcnow()
+            dates = "%s to %s" % ((today - timedelta(days=61)).strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
+        if c.app.config.get_tool_data('sfx', 'group_artifact_id') and config.get('zarkov.webservice_host'):
+            show_stats = True
+        else:
+            show_stats = False
         return dict(
                 now=str(now),
                 week_ago=str(week_ago),
@@ -691,7 +701,30 @@ class RootController(BaseController):
                 total=total,
                 open=open,
                 closed=closed,
-                globals=globals)
+                globals=globals,
+                dates=dates,
+                show_stats=show_stats)
+
+    @expose('json:')
+    def stats_data(self, begin=None, end=None, **kw):
+        if c.app.config.get_tool_data('sfx', 'group_artifact_id') and config.get('zarkov.webservice_host'):
+            if begin is None and end is None:
+                end_time = datetime.utcnow()
+                begin_time = (end_time - timedelta(days=61))
+                end = end_time.strftime('%Y-%m-%d')
+                begin = begin_time.strftime('%Y-%m-%d')
+            else:
+                end_time = datetime.strptime(end,'%Y-%m-%d')
+                begin_time = datetime.strptime(begin,'%Y-%m-%d')
+            time_interval = 'date'
+            if end_time - begin_time > timedelta(days=183):
+                time_interval = 'month'
+            q_filter = 'group-tracker-%s/%s/%s/' % (time_interval,c.project.get_tool_data('sfx', 'group_id'),c.app.config.get_tool_data('sfx', 'group_artifact_id'))
+            params = urlencode({'data': '{"c":"tracker","b":"'+q_filter+begin+'","e":"'+q_filter+end+'"}'})
+            read_zarkov = json.load(urlopen(config.get('zarkov.webservice_host')+'/q', params))
+            return zero_fill_zarkov_result(read_zarkov, time_interval, begin, end)
+        else:
+            return dict()
 
     @expose()
     @validate(W.subscribe_form)
