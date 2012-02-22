@@ -9,7 +9,8 @@ import sys
 import colander as col
 
 from ming.orm import session, ThreadLocalORMSession
-from pylons import g
+from pylons import c, g
+from tg import config
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -158,7 +159,7 @@ def trove_ids(orig, new_):
     if new_ is None: return orig
     return set(t._id for t in list(new_))
 
-def create_project(p, nbhd, options):
+def create_project(p, nbhd, user, options):
     worker_name = multiprocessing.current_process().name
     M.session.artifact_orm_session._get().skip_mod_date = True
     shortname = p.shortname or p.name.shortname
@@ -208,15 +209,15 @@ def create_project(p, nbhd, options):
                 granted_to_project_id=project._id,
                 granted_by_neighborhood_id=nbhd._id)
     project.notifications_disabled = False
-    with h.push_context(project._id):
+    with h.push_config(c, project=project, user=user):
         ThreadLocalORMSession.flush_all()
         g.post_event('project_updated')
     session(project).clear()
     return 0
 
-def create_projects(projects, nbhd, options):
+def create_projects(projects, nbhd, user, options):
     for p in projects:
-        r = create_project(Object(p), nbhd, options)
+        r = create_project(Object(p), nbhd, user, options)
         if r != 0:
             sys.exit(r)
 
@@ -228,6 +229,7 @@ def main(options):
     nbhd = M.Neighborhood.query.get(name=options.neighborhood)
     if not nbhd:
         return 'Invalid neighborhood "%s".' % options.neighborhood
+    admin = M.User.query.get(username=config.get('sfx.api.siteadmin', 'sf-robot'))
 
     data = json.load(open(options.file, 'r'))
     project = Project()
@@ -242,7 +244,7 @@ def main(options):
     jobs = []
     for i in range(options.nprocs):
         p = multiprocessing.Process(target=create_projects,
-                args=(chunks[i], nbhd, options), name='worker-' + str(i+1))
+                args=(chunks[i], nbhd, admin, options), name='worker-' + str(i+1))
         jobs.append(p)
         p.start()
 
