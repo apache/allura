@@ -144,32 +144,6 @@ class HgImplementation(M.RepositoryImplementation):
             for name, tag in self._hg.tags().iteritems() ]
         session(self._repo).flush()
 
-    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
-        if seen_object_ids is None: seen_object_ids = set()
-        obj = self._hg[ci._id]
-        # Save commit metadata
-        mo = self.re_hg_user.match(obj.user())
-        if mo:
-            user_name, user_email = mo.groups()
-        else:
-            user_name = user_email = obj.user()
-        ci.committed = Object(
-            name=h.really_unicode(user_name),
-            email=h.really_unicode(user_email),
-            date=datetime.utcfromtimestamp(sum(obj.date())))
-        ci.authored=Object(ci.committed)
-        ci.message=h.really_unicode(obj.description() or '')
-        ci.parent_ids=[
-            p.hex() for p in obj.parents()
-            if p.hex() != obj.hex() ]
-        # Save commit tree (must build a fake git-like tree from the changectx)
-        fake_tree = self._tree_from_changectx(obj)
-        ci.tree_id = fake_tree.hex()
-        tree, isnew = M.repo.Tree.upsert(fake_tree.hex())
-        if not lazy or isnew:
-            tree.set_context(ci)
-            self._refresh_tree(tree, fake_tree, lazy)
-
     def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)
@@ -270,35 +244,10 @@ class HgImplementation(M.RepositoryImplementation):
             root.set_blob(filepath, oid)
         return root
 
-    def _refresh_tree(self, tree, obj, lazy=True):
-        tree.tree_ids = [
-            Object(object_id=o.hex(), name=name)
-            for name, o in obj.trees.iteritems() ]
-        tree.blob_ids = [
-            Object(object_id=oid, name=name)
-            for name, oid in obj.blobs.iteritems() ]
-        for name, o in obj.trees.iteritems():
-            subtree, isnew = M.repo.Tree.upsert(o.hex())
-            if not lazy or isnew:
-                subtree.set_context(tree, name)
-                self._refresh_tree(subtree, o)
-        for name, oid in obj.blobs.iteritems():
-            blob, isnew = M.Blob.upsert(oid)
-
     def symbolics_for_commit(self, commit):
         branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
         ctx = self._hg[commit._id]
         return [ctx.branch()], tags
-
-    def compute_tree(self, commit, tree_path='/'):
-        ctx = self._hg[commit._id]
-        fake_tree = self._tree_from_changectx(ctx)
-        fake_tree = fake_tree.get_tree(tree_path)
-        tree, isnew = M.repo.Tree.upsert(fake_tree.hex())
-        if isnew:
-            tree.set_context(commit)
-            self._refresh_tree(tree, fake_tree)
-        return tree._id
 
     def compute_tree_new(self, commit, tree_path='/'):
         ctx = self._hg[commit._id]

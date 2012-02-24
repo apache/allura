@@ -185,3 +185,30 @@ class TestRootController(TestController):
         content = str(resp.html.find('div', {'class':'clip grid-19'}))
         assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content
+
+
+class TestRestController(TestController):
+    def setUp(self):
+        super(TestRestController, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_git
+    def setup_with_tools(self):
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'testgit.git'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_index(self):
+        self.app.get('/rest/p/test/src-git/', status=200)
+
+    def test_commits(self):
+        self.app.get('/rest/p/test/src-git/commits', status=200)

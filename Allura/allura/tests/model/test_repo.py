@@ -89,7 +89,7 @@ class TestRepo(_TestWithRepo):
         for fn in argless:
             getattr(self.repo, fn)()
             getattr(self.repo._impl, fn).assert_called_with()
-        unary = [ 'commit', 'commit_context', 'open_blob' ]
+        unary = [ 'commit', 'open_blob' ]
         for fn in unary:
             getattr(self.repo, fn)('foo')
             getattr(self.repo._impl, fn).assert_called_with('foo')

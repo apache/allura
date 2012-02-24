@@ -207,61 +207,6 @@ class SVNImplementation(M.RepositoryImplementation):
         return [
             oid for oid in oids if oid not in seen_oids ]
 
-    def commit_context(self, commit):
-        revno = int(commit._id.split(':')[1])
-        prev,next=[],[]
-        if revno > 1:
-            prev = [ self.commit(revno - 1) ]
-        if revno < self._revno(self._repo.heads[0].object_id):
-            next = [ self.commit(revno + 1) ]
-        return dict(prev=prev, next=next)
-
-    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
-        if seen_object_ids is None: seen_object_ids = set()
-        log.info('Refresh %r %r', ci, self._repo)
-        revno = self._revno(ci._id)
-        rev = self._revision(ci._id)
-        try:
-            log_entry = self._svn.log(
-                self._url,
-                revision_start=rev,
-                limit=1,
-                discover_changed_paths=True)[0]
-        except pysvn.ClientError:
-            log.info('ClientError processing %r %r, treating as empty', ci, self._repo, exc_info=True)
-            log_entry = Object(date=0, message='', changed_paths=[])
-        # Save commit metadata
-        log_date = None
-        if hasattr(log_entry, 'date'):
-            log_date = datetime.utcfromtimestamp(log_entry.date)
-        ci.committed = Object(
-            name=log_entry.get('author', '--none--'),
-            email='',
-            date=log_date)
-        ci.authored=Object(ci.committed)
-        ci.message=log_entry.get("message", "--none--")
-        if revno > 1:
-            parent_oid = self._oid(revno - 1)
-            ci.parent_ids = [ parent_oid ]
-        # Save diff info
-        ci.diffs.added = []
-        ci.diffs.removed = []
-        ci.diffs.changed = []
-        ci.diffs.copied = []
-        lst = dict(
-            A=ci.diffs.added,
-            D=ci.diffs.removed,
-            M=ci.diffs.changed,
-            R=ci.diffs.changed)
-        if hasattr(log_entry, 'changed_paths'):
-            for path in log_entry.changed_paths:
-                if path.copyfrom_path:
-                    ci.diffs.copied.append(dict(
-                            old=h.really_unicode(path.copyfrom_path),
-                            new=h.really_unicode(path.path)))
-                    continue
-                lst[path.action].append(h.really_unicode(path.path))
-
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repo import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)

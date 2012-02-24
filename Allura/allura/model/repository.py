@@ -68,17 +68,9 @@ class RepositoryImplementation(object):
         commit'''
         raise NotImplementedError, 'commit_parents'
 
-    def commit_context(self, object_id): # pragma no cover
-        '''Returns {'prev':Commit, 'next':Commit}'''
-        raise NotImplementedError, 'context'
-
     def refresh_heads(self): # pragma no cover
         '''Sets repository metadata such as heads, tags, and branches'''
         raise NotImplementedError, 'refresh_heads'
-
-    def refresh_commit(self, ci, seen_object_ids=None, lazy=True): # pragma no cover
-        '''Refresh the data in the commit object 'ci' with data from the repo'''
-        raise NotImplementedError, 'refresh_commit'
 
     def refresh_commit_info(self, oid, lazy=True): # pragma no cover
         '''Refresh the data in the commit with id oid'''
@@ -95,10 +87,6 @@ class RepositoryImplementation(object):
         (these are candidates for he next commit after 'count' commits have been
         exhausted).'''
         raise NotImplementedError, 'log'
-
-    def compute_tree(self, commit, path='/'): # pragma no cover
-        '''Used in hg and svn to compute a git-like-tree lazily'''
-        raise NotImplementedError, 'compute_tree'
 
     def compute_tree_new(self, commit, path='/'): # pragma no cover
         '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
@@ -200,8 +188,6 @@ class Repository(Artifact):
         return self._impl.all_commit_ids()
     def refresh_commit_info(self, oid, seen, lazy=True):
         return self._impl.refresh_commit_info(oid, seen, lazy)
-    def commit_context(self, commit):
-        return self._impl.commit_context(commit)
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
     def shorthand_for_commit(self, oid):
@@ -210,8 +196,6 @@ class Repository(Artifact):
         return self._impl.symbolics_for_commit(commit)
     def url_for_commit(self, commit):
         return self._impl.url_for_commit(commit)
-    def compute_tree(self, commit, path='/'):
-        return self._impl.compute_tree(commit, path)
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
 

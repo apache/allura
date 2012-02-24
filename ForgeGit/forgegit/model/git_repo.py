@@ -140,23 +140,12 @@ class GitImplementation(M.RepositoryImplementation):
             if obj.hexsha in graph: continue
             if not all_commits:
                 # Look up the object
-                if M.Commit.query.find(dict(object_id=obj.hexsha)).count():
+                if M.repo.Commit.query.find(dict(_id=obj.hexsha)).count():
                     graph[obj.hexsha] = set() # mark as parentless
                     continue
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
             to_visit += obj.parents
         return list(topological_sort(graph))
-
-    def commit_context(self, commit):
-        prev_ids = commit.parent_ids
-        prev = M.Commit.query.find(dict(
-                object_id={'$in':prev_ids})).all()
-        next = M.Commit.query.find(dict(
-                parent_ids=commit.object_id,
-                repositories=self._repo._id)).all()
-        for ci in prev + next:
-            ci.set_context(self._repo)
-        return dict(prev=prev, next=next)
 
     def refresh_heads(self):
         self._repo.heads = [
@@ -172,28 +161,6 @@ class GitImplementation(M.RepositoryImplementation):
             for tag in self._git.tags
             if tag.is_valid() ]
         session(self._repo).flush()
-
-    def refresh_commit(self, ci, seen_object_ids=None, lazy=True):
-        if seen_object_ids is None: seen_object_ids = set()
-        obj = self._git.commit(ci.object_id)
-        ci.tree_id = obj.tree.hexsha
-        # Save commit metadata
-        ci.committed = Object(
-            name=h.really_unicode(obj.committer.name),
-            email=h.really_unicode(obj.committer.email),
-            date=datetime.utcfromtimestamp(obj.committed_date))
-        ci.authored=Object(
-            name=h.really_unicode(obj.author.name),
-            email=h.really_unicode(obj.author.email),
-            date=datetime.utcfromtimestamp(obj.authored_date))
-        ci.message=h.really_unicode(obj.message or '')
-        ci.parent_ids=[ p.hexsha for p in obj.parents ]
-        # Save commit tree
-        tree, isnew = M.Tree.upsert(obj.tree.hexsha)
-        seen_object_ids.add(obj.tree.binsha)
-        if not lazy or isnew:
-            tree.set_context(ci)
-            self._refresh_tree(tree, obj.tree, seen_object_ids, lazy=lazy)
 
     def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
@@ -281,25 +248,6 @@ class GitImplementation(M.RepositoryImplementation):
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
-
-    def _refresh_tree(self, tree, obj, seen_object_ids=None, lazy=True):
-        if seen_object_ids is None:
-            seen_object_ids = set()
-        tree.object_ids = [
-            Object(object_id=o.hexsha, name=h.really_unicode(o.name))
-            for o in obj
-            if o.type in ('blob', 'tree') ] # submodules poorly supported by GitPython
-        for o in obj.trees:
-            if o.binsha in seen_object_ids: continue
-            subtree, isnew = M.Tree.upsert(o.hexsha)
-            seen_object_ids.add(o.binsha)
-            if not lazy or isnew:
-                subtree.set_context(tree, o.name)
-                self._refresh_tree(subtree, o, seen_object_ids, lazy)
-        for o in obj.blobs:
-            if o.binsha in seen_object_ids: continue
-            blob, isnew = M.Blob.upsert(o.hexsha)
-            seen_object_ids.add(o.binsha)
 
     def _object(self, oid):
         evens = oid[::2]
