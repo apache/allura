@@ -24,17 +24,60 @@
 <li>14 days: {{fortnight_comments}}</li>
 <li>30 days: {{month_comments}}</li>
 </ul>
-<!--
-<p># of ticket changes in the last...</p>
-<ul>
-<li>7 days:</li>
-<li>14 days:</li>
-<li>30 days:</li>
-</ul>
--->
+{% if show_stats %}
+<h2>Open and closed tickets over time</h2>
+<form class="bp" action="{{request.path_url}}">
+  <div id="stats_date_picker">
+    <label for="dates">Date Range: </label>
+    <input value="{{dates}}" type="text" class="text ui-corner-all" name="dates" id="dates">
+  </div>
+</form>
+
+<div id="stats-viz-container" class="project_stats">
+  <div id="stats-viz" class="ui-corner-left ui-corner-br">
+    <table>
+      <tr>
+        <td class="yaxis">Tickets</td>
+        <td>
+          <div id="project_stats_holder">
+            <div id="grid">
+                <div class="busy"></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="xaxis">Date</td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
+{% block extra_js %}
+{% if show_stats %}
+<script type="text/javascript" src="{{g.forge_static('js/jquery.flot.js')}}"></script>
+<script type="text/javascript" src="{{g.forge_static('js/jquery.daterangepicker.js')}}"></script>
+<script type="text/javascript" src="{{g.forge_static('js/stats.js')}}"></script>
+<script type="text/javascript">
+  /*global chartProjectStats */
+  $(document).ready(function () {
+    var series = function(data){
+      return [{label: "Opened", lines: {show: true, lineWidth: 3}, points: {show:true, radius:2, fill: true, fillColor: '#0685c6'}, data: data.opened, shadowSize: 0},
+              {label: "Closed", lines: {show: true, lineWidth: 3}, points: {show:true, radius:2, fill: true, fillColor: '#87c706'}, data: data.closed, shadowSize: 0}];
+    };
+    var checkEmpty = function(data){
+      return !data.opened && !data.closed;
+    };
+    var tooltipFormat = function(x,y,item){
+      return y + " tickets";
+    };
+    chartProjectStats('{{c.app.url}}stats_data',{},series,checkEmpty,tooltipFormat);
 
-
-
-
-
+    $('#dates').change(function(){
+      $("form.bp").submit();
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

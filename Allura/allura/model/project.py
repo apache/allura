@@ -643,8 +643,17 @@ class AppConfig(MappedClass):
     options=FieldProperty(None)
     project = RelationProperty(Project, via='project_id')
     discussion = RelationProperty('Discussion', via='discussion_id')
+    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
 
     acl = FieldProperty(ACL())
+
+    def get_tool_data(self, tool, key, default=None):
+        return self.tool_data.get(tool, {}).get(key, default)
+
+    def set_tool_data(self, tool, **kw):
+        d = self.tool_data.setdefault(tool, {})
+        d.update(kw)
+        state(self).soil()
 
     def parent_security_context(self):
         '''ACL processing should terminate at the AppConfig'''

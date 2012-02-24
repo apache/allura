@@ -75,9 +75,9 @@ def test_macros():
         r = g.markdown_wiki.convert('[[projects labels=test,root|test,sub1]]')
         assert '<img alt="test Logo"' in r, r
         assert '<img alt="sub1 Logo"' in r, r
-        r = g.markdown_wiki.convert('[[projects show_total=True]]')
+        r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
         assert '<p class="macro_projects_total">3 Projects</p>' in r, r
-        r = g.markdown_wiki.convert('[[projects show_total=True private=True]]')
+        r = g.markdown_wiki.convert('[[projects show_total=True private=True sort=random]]')
         assert '<p class="macro_projects_total">1 Projects</p>' in r, r
         assert '<img alt="test2 Logo"' in r, r
         assert '<img alt="test Logo"' not in r, r
