@@ -38,7 +38,11 @@ class _Test(unittest.TestCase):
         if isnew:
             ci.committed.email=c.user.email_addresses[0]
             ci.authored.email=c.user.email_addresses[0]
-            ci.authored.date = datetime.utcnow()
+            dt = datetime.utcnow()
+            # BSON datetime resolution is to 1 millisecond, not 1 microsecond
+            # like Python. Round this now so it'll match the value that's
+            # pulled from MongoDB in the tests.
+            ci.authored.date = dt.replace(microsecond=dt.microsecond/1000 * 1000)
             ci.message='summary\n\nddescription'
             ci.set_context(self.repo)
             ci.tree_id = 't_' + object_id
