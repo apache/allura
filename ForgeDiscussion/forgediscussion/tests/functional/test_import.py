@@ -56,7 +56,7 @@ class TestImportController(TestRestApiBase):#TestController):
         r = self.app.get(link.get('href'))
         assert '2009-11-19' in str(r), r.showbrowser()
         assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
-        assert 'Anonymous Coward' in str(r), r.showbrowser()
+        assert 'Anonymous' in str(r), r.showbrowser()
 
     def test_import_map(self):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
@@ -77,7 +77,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert '2009-11-19' in str(r), r.showbrowser()
         assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
         assert 'Test User' in str(r), r.showbrowser()
-        assert 'Anonymous Coward' not in str(r), r.showbrowser()
+        assert 'Anonymous' not in str(r), r.showbrowser()
 
     def test_import_create(self):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
@@ -96,7 +96,7 @@ class TestImportController(TestRestApiBase):#TestController):
         r = self.app.get(link.get('href'))
         assert '2009-11-19' in str(r), r.showbrowser()
         assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
-        assert 'Anonymous Coward' not in str(r), r.showbrowser()
+        assert 'Anonymous' not in str(r), r.showbrowser()
         assert 'test-rick446' in str(r), r.showbrowser()
 
     def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
