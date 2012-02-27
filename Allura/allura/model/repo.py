@@ -507,7 +507,7 @@ def commitlog(commit_ids, skip=0, limit=sys.maxint):
             # remove this commit from its parents children and add any childless
             # parents to the 'ready set'
             new_parent = None
-            for oid in ci_parents[ci]:
+            for oid in ci_parents.get(ci, []):
                 children = ci_children[oid]
                 children.discard(ci)
                 if not children:
