@@ -3,7 +3,7 @@
   {% if related_artifacts %}
     <h4>Related</h4>
     <p>
-    {% for related in artifact.related_artifacts() %}
+    {% for related in related_artifacts %}
       <a href="{{related.url()}}">{{related.type_s}}: {{related.link_text()}}</a><br>
     {% endfor %}
     </p>
