@@ -193,6 +193,7 @@ class CommitRunBuilder(object):
             parent_run = runs.get(p_cis[0], None)
             if parent_run is None: continue
             run['commit_ids'] += parent_run['commit_ids']
+            run['commit_times'] += parent_run['commit_times']
             run['parent_commit_ids'] = parent_run['parent_commit_ids']
             run.m.save()
             runs[p_cis[0]].m.delete()
