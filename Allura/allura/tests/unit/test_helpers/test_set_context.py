@@ -1,5 +1,6 @@
 from nose.tools import assert_raises
 from pylons import c
+from bson import ObjectId
 
 from allura.lib.helpers import set_context
 from allura.lib.exceptions import NoSuchProjectError, NoSuchNeighborhoodError
@@ -78,6 +79,13 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       set_context,
                       'myproject',
                       neighborhood=nbhd)
+
+    def test_proper_exception_when_id_lookup(self):
+        nbhd = create_neighborhood()
+        assert_raises(NoSuchProjectError,
+                      set_context,
+                      ObjectId(),
+                      neighborhood=None)
 
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 

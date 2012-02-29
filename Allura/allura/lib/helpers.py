@@ -174,7 +174,7 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
         p = model.Project.query.get(_id=ObjectId(str(project_shortname_or_id)))
     except InvalidId:
         p = None
-    if p is None:
+    if p is None and type(project_shortname_or_id) != ObjectId:
         if neighborhood is None:
             raise TypeError('neighborhood is required; it must not be None')
         if not isinstance(neighborhood, model.Neighborhood):
