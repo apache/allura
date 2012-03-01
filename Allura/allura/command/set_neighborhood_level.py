@@ -4,7 +4,7 @@ from allura import model as M
 from allura.lib import plugin
 from ming.orm import session
 
-class CreateNeighborhoodCommand(base.Command):
+class SetNeighborhoodLevelCommand(base.Command):
     min_args=3
     max_args=3
     usage = '<ini file> <neighborhood_id> <level>'  #not sure if we need ini file
