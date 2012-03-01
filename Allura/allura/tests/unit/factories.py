@@ -37,7 +37,7 @@ def create_app_config(project, mount_point):
         project_id=project._id,
         tool_name='myapp',
         options={'mount_point': 'my_mounted_app'},
-        acl={})
+        acl=[])
 
 
 @flush_on_return
