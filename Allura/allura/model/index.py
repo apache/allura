@@ -145,7 +145,7 @@ class Shortlink(object):
             matches = matches_by_artifact.get(d['artifact'], [])
             matches = (
                 m for m in matches
-                if m.project.shortname == d['project'] and m.project.neighborhood_id == d['nbhd'])
+                if m.project.shortname == d['project'] and m.project.neighborhood_id == d['nbhd'] and m.app_config is not None)
             if d['app']:
                 matches = (
                     m for m in matches

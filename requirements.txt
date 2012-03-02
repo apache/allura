@@ -13,6 +13,7 @@ Zarkov==0.1.0dev-20110815
 gevent==0.13.6
 greenlet==0.3.1
 gevent-zeromq==0.2.0
+Pygments==1.4sf1-20110601
 
 # for the migration scripts only
 html2text==3.101

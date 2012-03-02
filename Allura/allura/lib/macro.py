@@ -1,4 +1,5 @@
 import cgi
+import random
 import shlex
 import string
 import logging
@@ -137,6 +138,7 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
+    limit = int(limit)
     q = dict(
         neighborhood_id=c.project.neighborhood_id,
         deleted=False,
@@ -160,20 +162,42 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     sort_key, sort_dir = 'last_updated', pymongo.DESCENDING
     if sort == 'alpha':
         sort_key, sort_dir = 'name', pymongo.ASCENDING
+    elif sort == 'random':
+        sort_key, sort_dir = None, None
 
+    projects = []
     if private:
         # Only return private projects.
         # Can't filter these with a mongo query directly - have to iterate
         # through and check the ACL of each project.
-        projects = []
         for chunk in utils.chunked_find(M.Project, q, sort_key=sort_key,
                 sort_dir=sort_dir):
             projects.extend([p for p in chunk if p.private])
         total = len(projects)
-        projects = projects[:int(limit)]
+        if sort == 'random':
+            projects = random.sample(projects, min(limit, total))
+        else:
+            projects = projects[:limit]
     else:
         total = None
-        projects = M.Project.query.find(q).limit(int(limit)).sort(sort_key,
+        if sort == 'random':
+            # MongoDB doesn't have a random sort built in, so...
+            # 1. Do a direct pymongo query (faster than ORM) to fetch just the
+            #    _ids of objects that match our criteria
+            # 2. Choose a random sample of those _ids
+            # 3. Do an ORM query to fetch the objects with those _ids
+            # 4. Shuffle the results
+            from ming.orm import mapper
+            m = mapper(M.Project)
+            collection = M.main_doc_session.db[m.collection.m.collection_name]
+            docs = list(collection.find(q, {'_id': 1}))
+            if docs:
+                ids = [doc['_id'] for doc in
+                        random.sample(docs, min(limit, len(docs)))]
+                projects = M.Project.query.find(dict(_id={'$in': ids})).all()
+                random.shuffle(projects)
+        else:
+            projects = M.Project.query.find(q).limit(limit).sort(sort_key,
                 sort_dir).all()
 
     pl = ProjectList()

@@ -2,4 +2,5 @@ test: buildbot_test
 
 buildbot_test:
 	./rebuild.bash
+	-[ ! -f $(VIRTUAL_ENV)/lib/python2.7/site-packages/pysvn ] && ln -s /usr/lib64/python2.7/site-packages/pysvn $(VIRTUAL_ENV)/lib/python2.7/site-packages/
 	ALLURA_VALIDATION=none ./run_tests
