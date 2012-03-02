@@ -34,7 +34,6 @@ PasteScript==1.7.4.2
 PIL==1.1.7
 poster==0.8.1
 pyflakes==0.4.0
-Pygments==1.4
 Pylons==1.0
 pymongo==2.1.1
 Pypeline==0.1dev

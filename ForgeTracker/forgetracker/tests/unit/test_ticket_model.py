@@ -39,7 +39,7 @@ class TestTicketModel(TrackerTestWithModel):
         developer = bootstrap.create_user('Project Developer')
         observer = bootstrap.create_user('Random Non-Project User')
         anon = User(_id=None, username='*anonymous',
-                    display_name='Anonymous Coward')
+                    display_name='Anonymous')
         t = Ticket(summary='my ticket', ticket_num=3, reported_by_id=creator._id)
 
         assert creator == t.reported_by
