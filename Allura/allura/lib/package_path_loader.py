@@ -43,7 +43,8 @@ For the examples, assume the following directory structure:
                    |- file.html     <- actual template
 
 To override the above example, a Tool implementer would
-add the following line to their Tool's setup.py:
+add the following line to their Tool's setup.py (assuming usage in Allura,
+with the default app_cfg):
 
     [allura.theme.override]
     newtool = newtool.app:NewToolApp
@@ -195,6 +196,7 @@ class PackagePathLoader(jinja2.BaseLoader):
         package, path = None, None
         src = None
         bits = template.split(':')
+
         if len(bits) == 2:
             # splitting out the Python module name from the template string...
             # the default allura behavior
@@ -206,14 +208,15 @@ class PackagePathLoader(jinja2.BaseLoader):
             path = bits[0]
             path_fragment = os.path.join(self.override_root, path)
         else:
-            raise Exception('malformed template path')
+            raise jinja2.TemplateNotFound(
+                'Malformed template path %s' % template)
 
         # look in all of the customized search locations...
         try:
             src = self.fs_loader.get_source(environment, path_fragment)
-        except Exception:
-            # no Tool implemented an override... not even sure if this will
-            # throw an error, but we're ready for it!
+        except jinja2.TemplateNotFound:
+            # ...this doesn't mean it's really not found... it's probably
+            # just specified in the Allura-normal manner
             pass
 
         # ...but if you don't find anything, fall back to the explicit package
@@ -221,11 +224,13 @@ class PackagePathLoader(jinja2.BaseLoader):
         if src is None and package is not None:
             # gets the absolute filename of the template
             filename = pkg_resources.resource_filename(package, path)
-            # get the filename relative to the fs root (/).. if this fails
-            # this error is not caught, so should get propagated normally
+            # get the filename relative to the root: (default '/').. if this
+            # fails this error is not caught, so should get propagated
+            # normally
             src = self.fs_loader.get_source(environment, filename)
         elif src is None:
-            raise Exception(('Template %s not found in search path ' +
+            raise jinja2.TemplateNotFound(
+                ('Template %s not found in search path ' +
                   'and no module specified') % (
                     path,
                   ))
