@@ -208,8 +208,7 @@ class PackagePathLoader(jinja2.BaseLoader):
             path = bits[0]
             path_fragment = os.path.join(self.override_root, path)
         else:
-            raise jinja2.TemplateNotFound(
-                'Malformed template path %s' % template)
+            raise jinja2.TemplateNotFound(template)
 
         # look in all of the customized search locations...
         try:
@@ -229,9 +228,5 @@ class PackagePathLoader(jinja2.BaseLoader):
             # normally
             src = self.fs_loader.get_source(environment, filename)
         elif src is None:
-            raise jinja2.TemplateNotFound(
-                ('Template %s not found in search path ' +
-                  'and no module specified') % (
-                    path,
-                  ))
+            raise jinja2.TemplateNotFound(template)
         return src
