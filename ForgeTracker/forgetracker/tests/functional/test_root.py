@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import time
 import Image, StringIO
 import allura
 
@@ -608,9 +607,6 @@ class TestFunctionalController(TrackerTestController):
         h.set_context('test', 'bugs', neighborhood='Projects')
         ticket = tm.Ticket.query.get(ticket_num=1)
         old_date = ticket.mod_date
-        # Ming now rounds datetimes to the nearest second, so we have to sleep
-        # to ensure the mod_date changes
-        time.sleep(1)
         ticket.summary = 'changing the summary'
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
