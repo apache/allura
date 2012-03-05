@@ -500,6 +500,9 @@ class ThemeProvider(object):
     }
 
     def require(self):
+        # TODO ticket4
+        if hasattr(c, 'custom_css'):
+            log.info("Custom css: %s" % (c.custom_css))
         g.register_theme_css('css/site_style.css', compress=False)
         g.register_theme_css('css/allura.css', compress=False)
 
