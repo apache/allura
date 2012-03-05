@@ -104,7 +104,7 @@ class NeighborhoodController(object):
         projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = []
-        if h.has_access(self.neighborhood, 'register')():
+        if h.has_access(self.neighborhood, 'register')() and count < self.neighborhood.get_max_projects():
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
@@ -154,6 +154,18 @@ class NeighborhoodController(object):
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
+
+        pq = M.Project.query.find(dict(
+                neighborhood_id=neighborhood._id,
+                deleted=False,
+                shortname={'$ne':'--init--'}
+                ))
+        count = pq.count()
+        if count >= neighborhood.get_max_projects():
+            flash("You have exceeded the maximum number of projects you are allowed to create"\
+                  "(%s of %s projects)" % (count, neighborhood.get_max_projects()), 'error')
+            redirect('.')
+
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
