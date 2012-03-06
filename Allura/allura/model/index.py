@@ -149,7 +149,10 @@ class Shortlink(object):
             matches = matches_by_artifact.get(d['artifact'], [])
             matches = (
                 m for m in matches
-                if m.project.shortname == d['project'] and m.project.neighborhood_id == d['nbhd'] and m.app_config is not None)
+                if m.project.shortname == d['project'] and
+                   m.project.neighborhood_id == d['nbhd'] and
+                   m.app_config is not None and
+                   m.project.app_instance(m.app_config.options.mount_point))
             if d['app']:
                 matches = (
                     m for m in matches
@@ -182,7 +185,7 @@ class Shortlink(object):
             p_id = getattr(c.project, '_id', None)
             p_nbhd = c.project.neighborhood_id
         if len(parts) == 3:
-            p_id = Project.query.get(shortname=parts[0])
+            p_id = Project.query.get(shortname=parts[0], neighborhood_id=p_nbhd)._id
             return dict(
                 nbhd=p_nbhd,
                 project=parts[0],
