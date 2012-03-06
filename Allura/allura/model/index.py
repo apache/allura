@@ -129,44 +129,47 @@ class Shortlink(object):
     @classmethod
     def from_links(cls, *links):
         '''Convert a sequence of shortlinks to the matching Shortlink objects'''
-        # Parse all the links
-        parsed_links = dict((link, cls._parse_link(link)) for link in links)
-        links_by_artifact = defaultdict(list)
-        project_ids = set()
-        for link, d in parsed_links.iteritems():
-            project_ids.add(d['project_id'])
-            links_by_artifact[d['artifact']].append(d)
-        q = cls.query.find(dict(
-                link={'$in': links_by_artifact.keys()},
-                project_id={'$in': list(project_ids)}
-            ), validate=False)
-        result = {}
-        matches_by_artifact = dict(
-            (link, list(matches))
-            for link, matches in groupby(q, key=lambda s:s.link))
-        result = {}
-        for link, d in parsed_links.iteritems():
-            matches = matches_by_artifact.get(d['artifact'], [])
-            matches = (
-                m for m in matches
-                if m.project.shortname == d['project'] and
-                   m.project.neighborhood_id == d['nbhd'] and
-                   m.app_config is not None and
-                   m.project.app_instance(m.app_config.options.mount_point))
-            if d['app']:
+        if len(links):
+            # Parse all the links
+            parsed_links = dict((link, cls._parse_link(link)) for link in links)
+            links_by_artifact = defaultdict(list)
+            project_ids = set()
+            for link, d in parsed_links.iteritems():
+                project_ids.add(d['project_id'])
+                links_by_artifact[d['artifact']].append(d)
+            q = cls.query.find(dict(
+                    link={'$in': links_by_artifact.keys()},
+                    project_id={'$in': list(project_ids)}
+                ), validate=False)
+            result = {}
+            matches_by_artifact = dict(
+                (link, list(matches))
+                for link, matches in groupby(q, key=lambda s:s.link))
+            result = {}
+            for link, d in parsed_links.iteritems():
+                matches = matches_by_artifact.get(d['artifact'], [])
                 matches = (
                     m for m in matches
-                    if m.app_config.options.mount_point == d['app'])
-            matches = list(matches)
-            if matches:
-                result[link] = matches[0]
-            else:
-                result[link] = None
-            if len(matches) > 1:
-                log.warn('Ambiguous link to %s', link)
-                for m in matches:
-                    log.warn('... %r', m)
-        return result
+                    if m.project.shortname == d['project'] and 
+                       m.project.neighborhood_id == d['nbhd'] and 
+                       m.app_config is not None and
+                       m.project.app_instance(m.app_config.options.mount_point))
+                if d['app']:
+                    matches = (
+                        m for m in matches
+                        if m.app_config.options.mount_point == d['app'])
+                matches = list(matches)
+                if matches:
+                    result[link] = matches[0]
+                else:
+                    result[link] = None
+                if len(matches) > 1:
+                    log.warn('Ambiguous link to %s', link)
+                    for m in matches:
+                        log.warn('... %r', m)
+            return result
+        else:
+            return {}
 
     @classmethod
     def _parse_link(cls, s):
@@ -185,7 +188,9 @@ class Shortlink(object):
             p_id = getattr(c.project, '_id', None)
             p_nbhd = c.project.neighborhood_id
         if len(parts) == 3:
-            p_id = Project.query.get(shortname=parts[0], neighborhood_id=p_nbhd)._id
+            p = Project.query.get(shortname=parts[0], neighborhood_id=p_nbhd)
+            if p:
+                p_id = p._id
             return dict(
                 nbhd=p_nbhd,
                 project=parts[0],
