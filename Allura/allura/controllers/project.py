@@ -459,7 +459,6 @@ class NeighborhoodAdminController(object):
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = kw['allow_browse'] if 'allow_browse' in kw else False
-        self.neighborhood.allow_private = kw['allow_private'] if 'allow_private' in kw else False
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
