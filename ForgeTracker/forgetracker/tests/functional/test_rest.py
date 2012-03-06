@@ -40,6 +40,9 @@ class TestRestNewTicket(TestTrackerApiBase):
         assert json['description'] == 'descr', json
         assert json['private'] == False, json
 
+    def test_invalid_ticket(self):
+        self.app.get('/rest/p/test/bugs/2', status=404)
+
 class TestRestUpdateTicket(TestTrackerApiBase):
 
     def setUp(self):
