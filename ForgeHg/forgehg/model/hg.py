@@ -110,7 +110,6 @@ class HgImplementation(M.RepositoryImplementation):
         return [p for p in ci.parents() if p]
 
     def all_commit_ids(self):
-        import pdb; pdb.set_trace()
         graph = {}
         to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
         while to_visit:
