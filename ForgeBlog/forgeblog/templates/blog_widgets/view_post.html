@@ -1,6 +1,7 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {{value.html_text|safe}}
+{{lib.related_artifacts(value)}}
 <em class="grid-19">
   Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar_or_name(base_post.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}
   {% if value.state != 'published' %}

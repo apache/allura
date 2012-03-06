@@ -27,7 +27,7 @@ class LabelList(fev.UnicodeString):
 
 class LabelEdit(ew.InputField):
     template='jinja:allura:templates/widgets/label_edit.html'
-    validator = LabelList()
+    validator = LabelList(if_empty=[])
     defaults=dict(
         ew.InputField.defaults,
         name=None,
