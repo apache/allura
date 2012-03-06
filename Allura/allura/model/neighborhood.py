@@ -44,7 +44,7 @@ class Neighborhood(MappedClass):
     allow_browse = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
-    level = FieldProperty(int)
+    level = FieldProperty(str)
 
     def parent_security_context(self):
         return None
@@ -85,6 +85,11 @@ class Neighborhood(MappedClass):
         controller_attr = self.url_prefix[1:-1]
         setattr(controller, controller_attr, NeighborhoodController(
                 self.name, self.shortname_prefix))
+
+    def set_custom_css(self):
+        if self.level in ["gold", "platinum"]:
+            return self.css
+        return ""
 
     @property
     def icon(self):
