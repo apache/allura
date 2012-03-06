@@ -86,6 +86,11 @@ class Neighborhood(MappedClass):
         setattr(controller, controller_attr, NeighborhoodController(
                 self.name, self.shortname_prefix))
 
+    def set_custom_css(self):
+        if self.level in ["gold", "platinum"]:
+            return self.css
+        return ""
+
     @property
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)

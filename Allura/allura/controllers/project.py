@@ -246,12 +246,6 @@ class ProjectController(object):
         if not app.root:
             raise exc.HTTPNotFound, name
 
-        # TODO ticket4
-        nb = M.Neighborhood.query.get(_id=c.project.neighborhood_id)
-        if nb is not None:
-            log.info("Level: %s" % (nb.level) )
-            c.custom_css = "/custom/css/"
-
         return app.root, remainder
 
     def _check_security(self):
