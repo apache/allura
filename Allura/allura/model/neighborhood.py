@@ -91,6 +91,13 @@ class Neighborhood(MappedClass):
             return self.css
         return ""
 
+    def is_show_icon(self):
+        if self.level is not None and \
+          self.level in ["silver", "gold", "platinum"]:
+           return True
+        else:
+           return False
+
     @property
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)
