@@ -98,7 +98,7 @@ class TestRootController(TestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src-hg/commit_browser_data')
         data = json.loads(resp.body);
-        assert data['max_row'] == 4
+        assert data['max_row'] == 3
         assert data['next_column'] == 1
         assert_equal(data['built_tree']['e5a0b44437be783c41084e7bf0740f9b58b96ecf'],
                 {u'url': u'/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/',

@@ -58,7 +58,7 @@ class TestNewRepo(unittest.TestCase):
             '/p/test/src-hg/ci/'
             '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1/')
         all_cis = self.rev.log(0, 1000)
-        assert len(all_cis) == 5
+        assert len(all_cis) == 4
         assert self.rev.log(1,1000) == all_cis[1:]
         assert self.rev.log(0,3) == all_cis[:3]
         assert self.rev.log(1,2) == all_cis[1:3]
