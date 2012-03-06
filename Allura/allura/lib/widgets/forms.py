@@ -134,6 +134,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         redirect = ew.TextField()
         homepage = ffw.AutoResizeTextarea()
         allow_browse = ew.Checkbox(label='')
+        allow_private = ew.Checkbox(label='')
         css = ffw.AutoResizeTextarea()
         project_template = ffw.AutoResizeTextarea(
                 validator=V.JsonValidator(if_empty=''))
