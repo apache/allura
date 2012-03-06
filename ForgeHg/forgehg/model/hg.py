@@ -103,16 +103,24 @@ class HgImplementation(M.RepositoryImplementation):
         result.set_context(self._repo)
         return result
 
+    def real_parents(self, ci):
+        """Return all parents of a commit, excluding the 'null revision' (a
+        fake revision added as the parent of the root commit by the Hg api).
+        """
+        return [p for p in ci.parents() if p]
+
     def all_commit_ids(self):
+        import pdb; pdb.set_trace()
         graph = {}
         to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
         while to_visit:
             obj = to_visit.pop()
             if obj.hex() in graph: continue
+            parents = self.real_parents(obj)
             graph[obj.hex()] = set(
-                p.hex() for p in obj.parents()
+                p.hex() for p in parents
                 if p.hex() != obj.hex())
-            to_visit += obj.parents()
+            to_visit += parents
         return [ ci for ci in topological_sort(graph) ]
 
     def new_commits(self, all_commits=False):
@@ -126,10 +134,11 @@ class HgImplementation(M.RepositoryImplementation):
                 if M.repo.Commit.query.find(dict(_id=obj.hex())).count():
                     graph[obj.hex()] = set() # mark as parentless
                     continue
+            parents = self.real_parents(obj)
             graph[obj.hex()] = set(
-                p.hex() for p in obj.parents()
+                p.hex() for p in parents
                 if p.hex() != obj.hex())
-            to_visit += obj.parents()
+            to_visit += parents
         return list(topological_sort(graph))
 
     def refresh_heads(self):
@@ -166,7 +175,8 @@ class HgImplementation(M.RepositoryImplementation):
             authored=user,
             message=h.really_unicode(obj.description() or ''),
             child_ids=[],
-            parent_ids=[ p.hex() for p in obj.parents() if p.hex() != obj.hex() ])
+            parent_ids=[ p.hex() for p in self.real_parents(obj)
+                                 if p.hex() != obj.hex() ])
         if ci_doc:
             ci_doc.update(args)
             ci_doc.m.save()
@@ -213,7 +223,7 @@ class HgImplementation(M.RepositoryImplementation):
                 count -= 1
             else:
                 skip -= 1
-            candidates += obj.parents()
+            candidates += self.real_parents(obj)
         return result, [ p.hex() for p in candidates ]
 
     def open_blob(self, blob):
