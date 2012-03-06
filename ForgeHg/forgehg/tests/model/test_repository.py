@@ -143,6 +143,19 @@ class TestHgRepo(unittest.TestCase):
         assert entry.committed.email == 'rick446@usa.net'
         assert entry.message
 
+    def test_commit_run(self):
+        commit_ids = self.repo.all_commit_ids()
+        # simulate building up a commit run from multiple pushes
+        for c_id in commit_ids:
+            crb = M.repo_refresh.CommitRunBuilder([c_id])
+            crb.run()
+            crb.cleanup()
+        runs = M.repo.CommitRunDoc.m.find().all()
+        self.assertEqual(len(runs), 1)
+        run = runs[0]
+        self.assertEqual(len(run.commit_ids), len(run.commit_times))
+        self.assertEqual(run.parent_commit_ids, [])
+
 class TestHgCommit(unittest.TestCase):
 
     def setUp(self):
