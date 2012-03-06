@@ -44,7 +44,7 @@ class Neighborhood(MappedClass):
     allow_browse = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
-    level = FieldProperty(str)
+    level = FieldProperty(str, if_missing='')
 
     def parent_security_context(self):
         return None
