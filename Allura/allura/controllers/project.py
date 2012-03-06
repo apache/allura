@@ -245,6 +245,7 @@ class ProjectController(object):
         c.app = app
         if not app.root:
             raise exc.HTTPNotFound, name
+
         return app.root, remainder
 
     def _check_security(self):

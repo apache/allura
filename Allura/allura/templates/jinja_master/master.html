@@ -33,14 +33,14 @@
       {{ blob }}
     {% endfor %}
     {% endif %}
-      
+
     {% if c.project and c.project.neighborhood.css %}
       <style type="text/css">
-        {{c.project.neighborhood.css}}
+        {{c.project.neighborhood.set_custom_css()}} 
       </style>
     {% elif neighborhood and neighborhood.css %}
       <style type="text/css">
-        {{neighborhood.css}}
+        {{neighborhood.set_custom_css()}}
       </style>
     {% endif %}
     {% block extra_css %}{% endblock %}
