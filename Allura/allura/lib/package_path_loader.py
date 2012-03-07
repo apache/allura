@@ -36,7 +36,8 @@ For the examples, assume the following directory structure:
     |- newtool/
        |- app.py                    <- entry point target here
        |- templates/
-          |- index.html             <- Tool's regular templates
+       |  |- index.html             <- Tool's regular templates
+       |- override                  <- override_root
           |- allura/                <- magic directory named after module
              |- templates/
                 |- repo/
@@ -52,7 +53,7 @@ with the default app_cfg):
 Then, in the neighbor path (see below) for the file containing the
 Tool class, add the following path/file:
 
-    templates/allura/templates/repo/file.html
+    override/allura/templates/repo/file.html
 
 The template will be overridden. Note that after changing
 setup.py, it would be required to re-initialize with setuptools:
@@ -175,8 +176,9 @@ class PackagePathLoader(jinja2.BaseLoader):
                     insert_position = min(sp_location + 1, insert_position)
                 else:
                     # don't know what that is!
-                    raise Exception('Unknown template path rule in %s: %s' % (
-                        overrider, direction))
+                    raise jinja2.TemplateError(
+                        'Unknown template path rule in %s: %s' % (
+                            overrider, direction))
 
             # in the case that we've already replaced a signpost, carry on
             if insert_position is not None:
