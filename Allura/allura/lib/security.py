@@ -238,6 +238,8 @@ def has_access(obj, permission, user=None, project=None):
     '''
     from allura import model as M
     def predicate(obj=obj, user=user, project=project, roles=None):
+        if obj is None:
+            return False
         if roles is None:
             if user is None: user = c.user
             assert user, 'c.user should always be at least M.User.anonymous()'
@@ -303,8 +305,11 @@ def require(predicate, message=None):
         raise exc.HTTPUnauthorized()
 
 def require_access(obj, permission, **kwargs):
-    predicate = has_access(obj, permission, **kwargs)
-    return require(predicate, message='%s access required' % permission.capitalize())
+    if obj is not None:
+        predicate = has_access(obj, permission, **kwargs)
+        return require(predicate, message='%s access required' % permission.capitalize())
+    else:
+        raise exc.HTTPForbidden(detail="Could not verify permissions for this page.")
 
 def require_authenticated():
     '''

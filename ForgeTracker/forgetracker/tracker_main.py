@@ -1353,6 +1353,8 @@ class TicketRestController(BaseController):
             self.ticket_num = int(ticket_num)
             self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
+            if self.ticket is None:
+                raise exc.HTTPNotFound()
 
     def _check_security(self):
         require_access(self.ticket, 'read')
