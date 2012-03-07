@@ -469,7 +469,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = 'allow_browse' in kw
-        if icon is not None and icon != '':
+        if self.neighborhood.is_show_icon() and icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
             M.NeighborhoodFile.save_image(
