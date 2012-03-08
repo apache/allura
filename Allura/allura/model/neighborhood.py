@@ -23,6 +23,12 @@ class NeighborhoodFile(File):
         session = main_orm_session
     neighborhood_id=FieldProperty(S.ObjectId)
 
+NEIGHBORHOOD_PROJECT_LIMITS = {
+  "silver": 10,
+  "gold": 20,
+  "platinum": 30
+}
+
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
 
@@ -92,6 +98,13 @@ class Neighborhood(MappedClass):
             return self.css
         return ""
 
+    def is_show_icon(self):
+        if self.level is not None and \
+          self.level in ["silver", "gold", "platinum"]:
+           return True
+        else:
+           return False
+
     @property
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)
@@ -100,3 +113,9 @@ class Neighborhood(MappedClass):
         if self.project_template:
             return json.loads(self.project_template)
         return {}
+
+    def get_max_projects(self):
+        if self.level is not None and self.level in NEIGHBORHOOD_PROJECT_LIMITS:
+            return NEIGHBORHOOD_PROJECT_LIMITS[self.level]
+
+        return 0

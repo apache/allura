@@ -1,5 +1,9 @@
 import datetime
+
+from ming.orm.ormsession import ThreadLocalORMSession
+
 from alluratest.controller import TestController
+from allura import model as M
 
 #---------x---------x---------x---------x---------x---------x---------x
 # RootController methods exposed:
@@ -159,3 +163,13 @@ class TestRootController(TestController):
         assert 'Nothing to see' in response
         response = self.app.get('/blog/%s/my-post/feed.atom' % d)
         assert 'Nothing to see' in response
+
+    def test_related_artifacts(self):
+        self._post(title='one')
+        d = self._blog_date()
+        self._post(title='two', text='[blog:%s/one]' % d)
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r= self.app.get('/blog/%s/one/' % d)
+        assert 'Related' in r
+        assert 'Blog Post: %s/two' % d in r
