@@ -151,6 +151,8 @@ class NeighborhoodController(object):
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
                  private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
+        if self.neighborhood.allow_private == False:
+            private_project = False
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
@@ -468,7 +470,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
-        self.neighborhood.allow_browse = 'allow_browse' in kw
+        self.neighborhood.allow_browse = kw['allow_browse'] if 'allow_browse' in kw else False
         if self.neighborhood.is_show_icon() and icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
