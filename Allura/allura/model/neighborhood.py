@@ -115,7 +115,9 @@ class Neighborhood(MappedClass):
         return {}
 
     def get_max_projects(self):
-        if self.level is not None and self.level in NEIGHBORHOOD_PROJECT_LIMITS:
-            return NEIGHBORHOOD_PROJECT_LIMITS[self.level]
-
-        return 0
+        if self.level is not None and self.level != '':
+            if self.level in NEIGHBORHOOD_PROJECT_LIMITS:
+                return NEIGHBORHOOD_PROJECT_LIMITS[self.level]
+            else:
+                return 0
+        return None
