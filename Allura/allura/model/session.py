@@ -36,6 +36,7 @@ class ArtifactSessionExtension(SessionExtension):
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
             # Ensure artifact references & shortlinks exist for new objects
+            arefs = []
             try:
                 arefs = [
                     ArtifactReference.from_artifact(obj)
@@ -45,7 +46,7 @@ class ArtifactSessionExtension(SessionExtension):
                 # Flush shortlinks
                 main_orm_session.flush()
             except Exception:
-                log.error("Failed to update artifact references. Is this a borked project migration?")
+                log.exception("Failed to update artifact references. Is this a borked project migration?")
             # Post delete and add indexing operations
             if self.objects_deleted:
                 allura.tasks.index_tasks.del_artifacts.post(
