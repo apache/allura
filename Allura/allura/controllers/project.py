@@ -101,10 +101,11 @@ class NeighborhoodController(object):
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
         count = pq.count()
+        nb_max_projects = self.neighborhood.get_max_projects()
         projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = []
-        if h.has_access(self.neighborhood, 'register')() and count < self.neighborhood.get_max_projects():
+        if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
@@ -163,9 +164,10 @@ class NeighborhoodController(object):
                 shortname={'$ne':'--init--'}
                 ))
         count = pq.count()
-        if count >= neighborhood.get_max_projects():
+        nb_max_projects = neighborhood.get_max_projects()
+        if nb_max_projects is not None and count >= nb_max_projects:
             flash("You have exceeded the maximum number of projects you are allowed to create"\
-                  "(%s of %s projects)" % (count, neighborhood.get_max_projects()), 'error')
+                  "(%s of %s projects)" % (count, nb_max_projects), 'error')
             redirect('.')
 
         project_description = h.really_unicode(project_description or '').encode('utf-8')
