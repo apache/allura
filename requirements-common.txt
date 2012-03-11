@@ -16,7 +16,7 @@ FormEncode==1.2.4
 Genshi==0.6
 gitdb==0.5.4
 GitPython==0.3.0-beta2
-httplib2==0.7.1
+httplib2==0.7.4
 iso8601==0.1.4
 Jinja2==2.6
 # Mako is not used directly
