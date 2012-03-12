@@ -133,26 +133,18 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
 
     (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
-And now you should be able to visit the server running on your [local machine](http://localhost:8080/).
+## Next Steps
+
+Go to the server running on your [local machine](http://localhost:8080/) port 8080.
 You can log in with username admin1, test-user or root.  They all have password "foo".  (For more details
 on the default data, see bootstrap.py)
 
+There are a few default projects (like "test") and neighborhoods.  Feel free to experiment with them.  If you want to
+register a new project in your own forge, visit /p/add_project
 
-## Next Steps
+## Extra
 
-
-### Generate the documentation
-
-Forge documentation currently lives in the `Allura/docs` directory and can be converted to HTML using `Sphinx`:
-
-    (anvil)~$ cd ~/src/forge/Allura/docs
-    (anvil)~/src/forge/Allura/docs$ easy_install sphinx
-    (anvil)~/src/forge/Allura/docs$ make html
-
-You will also want to give the test suite a run, to verify there were no problems with the installation.
-
-    (anvil)~$ cd ~/src/forge
-    (anvil)~/src/forge$ export ALLURA_VALIDATION=none
-    (anvil)~/src/forge$ ./run_tests
-
-Happy hacking!
+* Read more documentation: http://allura.sourceforge.net/
+* Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
+* File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
+* Contribute code according to this guide: <http://sourceforge.net/p/allura/wiki/Contributing%20Code/>
