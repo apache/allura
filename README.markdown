@@ -132,6 +132,8 @@ Routes messages from email addresses to tools in the forge.
 
     (anvil)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
 
+If port 8825 is in use, this command will fail.  You can check the log file for any errors.
+Edit `development.ini` and change `forgemail.port` to a port number that is not in use.
 
 ### TurboGears application server
 
