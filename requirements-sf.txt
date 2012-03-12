@@ -1,0 +1,28 @@
+# requirements for the SF instance
+
+amqplib==0.6.1
+kombu==1.0.4
+coverage==3.5a1-20110413
+mechanize==0.2.4
+MySQL-python==1.2.3c1
+phpserialize==1.2
+psycopg2==2.2.2
+sf.phpsession==0.1
+SQLAlchemy==0.7.2
+sqlalchemy-migrate==0.7.1
+pyzmq==2.1.7
+Zarkov==0.1.0dev-20110815
+gevent==0.13.6
+greenlet==0.3.1
+gevent-zeromq==0.2.0
+Pygments==1.4sf1-20110601
+
+# for the migration scripts only
+html2text==3.101
+postmarkup==1.1.4
+# suds needed for teamforge import script
+suds==0.4
+
+
+# Include our common requirements
+-r requirements-common.txt

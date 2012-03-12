@@ -57,10 +57,6 @@ Routes==1.12.3
 simplejson==2.2.1
 # used by gitdb
 smmap==0.8.1
-SQLAlchemy==0.7.2
-sqlalchemy-migrate==0.7.1
-# suds needed for teamforge import script
-suds==0.4
 Tempita==0.5.1
 textile==2.1.5
 tg.devtools==2.1.3
