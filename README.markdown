@@ -84,18 +84,6 @@ Hopefully everything completed without errors.  We'll also need to create a plac
 
 The forge consists of several components, all of which need to be running to have full functionality.
 
-
-### MongoDB database server
-
-Generally set up with its own directory, we'll use ~/var/mongodata to keep our installation localized.  We also need to disable the default distribution server.
-
-    (anvil)~$ sudo service mongodb stop
-    (anvil)~$ sudo update-rc.d mongodb remove
-
-    (anvil)~$ mkdir -p ~/var/mongodata ~/logs
-    (anvil)~$ nohup mongod --dbpath ~/var/mongodata > ~/logs/mongodb.log &
-
-
 ### SOLR search and indexing server
 
 We have a custom config ready for use.
