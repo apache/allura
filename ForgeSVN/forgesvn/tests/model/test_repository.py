@@ -35,6 +35,11 @@ class TestNewRepo(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+    def test_last_commit_for(self):
+        tree = self.rev.tree
+        for row in tree.ls():
+            assert row['last_commit']['author'] is not None
+
     def test_commit(self):
         assert self.rev.primary() is self.rev
         assert self.rev.index_id().startswith('allura/model/repo/Commit#')
