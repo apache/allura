@@ -9,7 +9,6 @@ phpserialize==1.2
 psycopg2==2.2.2
 sf.phpsession==0.1
 pyzmq==2.1.7
-Pygments==1.4sf1-20110601
 
 # for the migration scripts only
 html2text==3.101

@@ -1,6 +1,4 @@
 # requirements for local development, or other deployment instances
 
-Pygments==1.4
-
 # Include our common requirements
 -r requirements-common.txt
