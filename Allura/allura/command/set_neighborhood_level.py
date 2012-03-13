@@ -23,4 +23,6 @@ class SetNeighborhoodLevelCommand(base.Command):
             return
         n = M.Neighborhood.query.get(_id = ObjectId(n_id))
         n.level = n_level
+        if n_level == "gold":
+            n.migrate_css_for_gold_level()
         session(M.Neighborhood).flush()

@@ -121,3 +121,22 @@ class Neighborhood(MappedClass):
             else:
                 return 0
         return None
+
+    def get_css_for_gold_level(self):
+        # TODO change example to real values
+        return [{'name': 'body', 'value':'red'},
+                {'name': 'form', 'value': 'green'}]
+
+    @staticmethod
+    def compile_css_for_gold_level(css_form_dict):
+        # TODO change example to real values
+        css_text = ""
+        if 'body' in css_form_dict:
+           css_text = "body {background: %s;}" % (css_form_dict['body'])
+        if 'form' in css_form_dict:
+           css_text += "form {background: %s;}" % (css_form_dict['form'])
+        return css_text
+
+    def migrate_css_for_gold_level(self):
+        # TODO Here we must parse old css data
+        self.css = ""

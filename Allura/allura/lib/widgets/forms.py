@@ -139,6 +139,59 @@ class NeighborhoodOverviewForm(ForgeForm):
                 validator=V.JsonValidator(if_empty=''))
         icon = ew.FileField()
 
+    def from_python(self, value, state):
+        if value.level == "gold":
+            self.list_color_inputs = True
+            self.color_inputs = value.get_css_for_gold_level()
+        else:
+            self.list_color_inputs = False
+        return super(NeighborhoodOverviewForm, self).from_python(value, state)
+
+    def display_field(self, field, ignore_errors=False):
+        if field.name == "css" and self.list_color_inputs:
+            display = ""
+            ctx = self.context_for(field)
+            for inp in self.color_inputs:
+                display += '<input id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
+                          'rendered_name="%(ctx_name)s-%(inp_name)s" '\
+                          'value="%(inp_value)s"/><br/>' % {'ctx_id': ctx['id'],
+                                                            'ctx_name': ctx['name'],
+                                                            'inp_name': inp['name'],
+                                                            'inp_value': inp['value']}
+
+            if ctx['errors'] and field.show_errors and not ignore_errors:
+                display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+
+            return h.html.literal(display)
+        else:
+            return super(NeighborhoodOverviewForm, self).display_field(field, ignore_errors)
+
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(NeighborhoodOverviewForm, self).to_python(value, state)
+        neighborhood = M.Neighborhood.query.get(name=d['name'])
+        if neighborhood.level == "gold":
+            css_form_dict = {}
+            for key in d.keys():
+                if key[:4] == "css-":
+                    css_form_dict[key[4:]] = d[key]
+            d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
+            log.info("D: %s %s" % (d, css_form_dict))
+        return d
+
+class NeighborhoodGoldOverviewForm(ForgeForm):
+    template='jinja:allura:templates/widgets/neighborhood_gold_overview_form.html'
+
+    class fields(ew_core.NameList):
+        name = ew.TextField()
+        redirect = ew.TextField()
+        homepage = ffw.AutoResizeTextarea()
+        allow_browse = ew.Checkbox(label='')
+        css = ffw.AutoResizeTextarea()
+        project_template = ffw.AutoResizeTextarea(
+                validator=V.JsonValidator(if_empty=''))
+        icon = ew.FileField()
+
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'
     antispam=True
