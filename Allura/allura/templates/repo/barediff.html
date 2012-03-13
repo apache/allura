@@ -1,14 +1,10 @@
 {% if a.has_image_view and b.has_image_view %}
-<div class="grid-19">
   <img src="{{a.url()}}?format=raw"
        alt="{{h.text.truncate(a._commit._id, 10)}}"
        title="{{h.text.truncate(a._commit._id, 10)}}"/>
   <img src="{{b.url()}}?format=raw"
        alt="{{h.text.truncate(b._commit._id, 10)}}"
        title="{{h.text.truncate(b._commit._id, 10)}}"/>
-</div>
 {% else %}
-<div class="clip grid-19">
   {{g.highlight(diff, lexer='diff')}}
-</div>
 {% endif %}
