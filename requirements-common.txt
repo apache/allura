@@ -24,6 +24,7 @@ oauth2==1.5.170
 PasteScript==1.7.4.2
 PIL==1.1.7
 poster==0.8.1
+Pygments==1.5
 pymongo==2.1.1
 Pypeline==0.1dev
 pysolr==2.1.0-beta
