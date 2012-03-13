@@ -270,6 +270,12 @@ class SVNImplementation(M.RepositoryImplementation):
             return None
         log.debug('Compute tree for %d paths', len(infos))
         for path, info in infos[1:]:
+            last_commit_id = self._oid(info['last_changed_rev'].number)
+            last_commit = M.repo.Commit.query.get(_id=last_commit_id)
+            M.repo_refresh.set_last_commit(
+                self._repo._id,
+                self._tree_oid(commit._id, path),
+                M.repo_refresh.get_commit_info(last_commit))
             if info.kind == pysvn.node_kind.dir:
                 tree.tree_ids.append(Object(
                         id=self._tree_oid(commit._id, path),
