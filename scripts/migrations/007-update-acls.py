@@ -73,7 +73,7 @@ def main():
         for _, a_cls in dfs(M.Artifact, graph):
             c_artifact = project_db[a_cls.__mongometa__.name]
             for a in c_artifact.find(dict(app_config_id=ac['_id'])):
-                empty_acl = not a['acl']
+                empty_acl = a['acl'] == []
                 simple_acl_update(a, a_cls.__mongometa__.name)
                 if not options.test and not empty_acl: c_artifact.save(a)
 
