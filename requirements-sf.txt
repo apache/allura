@@ -23,6 +23,12 @@ postmarkup==1.1.4
 # suds needed for teamforge import script
 suds==0.4
 
+# development
+blessings==1.3
+ipython==0.11
+nose-progressive==1.3
+pyprof2calltree==1.1.0
+repoze.profile==1.3
 
 # Include our common requirements
 -r requirements-common.txt
