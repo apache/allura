@@ -98,7 +98,7 @@ class TroveCategory(MappedClass):
         return trove.shortname
 
 class ProjectMapperExtension(MapperExtension):
-    def after_insert(self, obj, st):
+    def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)
 
 class Project(MappedClass):
