@@ -156,11 +156,13 @@ class Notification(MappedClass):
             ''' Add addional text to the notification e-mail based on the artifact type '''
             template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
             d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact))
-        except Exception, e:
+        except jinja2.TemplateNotFound:
+            pass
+        except:
             ''' Catch any errors loading or rendering the template,
             but the notification still gets sent if there is an error
             '''
-            log.debug('Error rendering notification template %s: %s' % (artifact.type_s, e))
+            log.warn('Could not render notification template %s' % artifact.type_s, exc_info=True)
 
         assert d['reply_to_address'] is not None
         project = Project.query.get(_id=d.get('project_id', c.project._id))
