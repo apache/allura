@@ -30,6 +30,8 @@ And finally our document-oriented database, MongoDB, and our messaging server, R
 
     ~$ sudo aptitude install mongodb-server rabbitmq-server
 
+If you are using a different base system, make sure you have Mongo 1.8 or better.  If you need to upgrade, you can download the latest from <http://www.mongodb.org/downloads>
+
 ## Setting up a virtual python environment
 
 The first step to installing the Forge platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
