@@ -154,13 +154,15 @@ class NeighborhoodOverviewForm(ForgeForm):
             ctx = self.context_for(field)
             for inp in self.color_inputs:
                 display += '<tr><td class="left"><label>%(label)s<label/></td>'\
-                           '<td class="right"><input id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           '<td class="right"><input type="text" class="%(inp_type)s '\
+                           '"id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
                            'rendered_name="%(ctx_name)s-%(inp_name)s" '\
                            'value="%(inp_value)s"/></td></tr>' % {'ctx_id': ctx['id'],
                                                             'ctx_name': ctx['name'],
                                                             'inp_name': inp['name'],
                                                             'inp_value': inp['value'],
-                                                            'label': inp['label']}
+                                                            'label': inp['label'],
+                                                            'inp_type': inp['type']}
             display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
@@ -183,8 +185,8 @@ class NeighborhoodOverviewForm(ForgeForm):
         return d
 
     def resources(self):
-        # TODO add here color widget
         for r in super(NeighborhoodOverviewForm, self).resources(): yield r
+        yield ew.CSSLink('css/colorPicker.css')
         yield ew.CSSScript('''
 table.table_class{
   margin: 0;
@@ -197,6 +199,14 @@ table.table_class .right{ text-align: right; }
 
 table.table_class tbody tr td { border: none; }
 
+        ''')
+        yield ew.JSLink('js/jquery.colorPicker.js')
+        yield ew.JSScript('''
+            $(function(){
+              $('.table_class').find('input.color').each(function(index, element) {
+                $(element).colorPicker();
+              });
+            });
         ''')
 
 class NeighborhoodAddProjectForm(ForgeForm):

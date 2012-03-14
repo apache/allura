@@ -127,11 +127,11 @@ class Neighborhood(MappedClass):
         return None
 
     def get_css_for_gold_level(self):
-        projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':''}
-        projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':''}
-        barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': ''}
-        titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': ''}
-        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': ''}
+        projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':'', 'type': 'font'}
+        projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
+        barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
+        titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
+        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color'}
 
         if self.css is not None:
             for css_line in self.css.split('\n'):
