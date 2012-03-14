@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 
@@ -28,6 +29,13 @@ NEIGHBORHOOD_PROJECT_LIMITS = {
   "gold": 20,
   "platinum": 30
 }
+
+re_gold_css_type = re.compile('^/\*(.+)\*/')
+re_font_project_title = re.compile('font-family:(.+);\}')
+re_color_project_title = re.compile('color:(.+);\}')
+re_bgcolor_barontop = re.compile('background\-color:([^;}]+);')
+re_bgcolor_titlebar = re.compile('background\-color:([^;}]+);')
+re_color_titlebar = re.compile('color:([^;}]+);')
 
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
@@ -117,3 +125,81 @@ class Neighborhood(MappedClass):
             else:
                 return 0
         return None
+
+    def get_css_for_gold_level(self):
+        projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':'', 'type': 'font'}
+        projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
+        barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
+        titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
+        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color'}
+
+        if self.css is not None:
+            for css_line in self.css.split('\n'):
+                m = re_gold_css_type.search(css_line)
+                if not m:
+                    continue
+
+                css_type = m.group(1)
+                if css_type == "projecttitlefont":
+                    m = re_font_project_title.search(css_line)
+                    if m:
+                        projecttitlefont['value'] = m.group(1)
+
+                elif css_type == "projecttitlecolor":
+                    m = re_color_project_title.search(css_line)
+                    if m:
+                        projecttitlecolor['value'] = m.group(1)
+
+                elif css_type == "barontop":
+                    m = re_bgcolor_barontop.search(css_line)
+                    if m:
+                        barontop['value'] = m.group(1)
+
+                elif css_type == "titlebarbackground":
+                    m = re_bgcolor_titlebar.search(css_line)
+                    if m:
+                        titlebarbackground['value'] = m.group(1)
+
+                elif css_type == "titlebarcolor":
+                    m = re_color_titlebar.search(css_line)
+                    if m:
+                        titlebarcolor['value'] = m.group(1)
+
+
+        styles_list = []
+        styles_list.append(projecttitlefont)
+        styles_list.append(projecttitlecolor)
+        styles_list.append(barontop)
+        styles_list.append(titlebarbackground)
+        styles_list.append(titlebarcolor)
+        return styles_list
+
+    @staticmethod
+    def compile_css_for_gold_level(css_form_dict):
+        # Check css values
+        for key in css_form_dict.keys():
+            if ';' in css_form_dict[key] or '}' in css_form_dict[key]:
+                css_form_dict[key] = ''
+
+        css_text = ""
+        if 'projecttitlefont' in css_form_dict and css_form_dict['projecttitlefont'] != '':
+           css_text += "/*projecttitlefont*/.project_title{font-family:%s;}\n" % (css_form_dict['projecttitlefont'])
+
+        if 'projecttitlecolor' in css_form_dict and css_form_dict['projecttitlecolor'] != '':
+           css_text += "/*projecttitlecolor*/.project_title{color:%s;}\n" % (css_form_dict['projecttitlecolor'])
+
+        if 'barontop' in css_form_dict and css_form_dict['barontop'] != '':
+           css_text += "/*barontop*/.pad h2.colored {background-color:%(bgcolor)s; background-image: none;}\n" % \
+                       {'bgcolor': css_form_dict['barontop']}
+
+        if 'titlebarbackground' in css_form_dict and css_form_dict['titlebarbackground'] != '':
+           css_text += "/*titlebarbackground*/.pad h2.title{background-color:%(bgcolor)s; background-image: none;}\n" % \
+                       {'bgcolor': css_form_dict['titlebarbackground']}
+
+        if 'titlebarcolor' in css_form_dict and css_form_dict['titlebarcolor'] != '':
+           css_text += "/*titlebarcolor*/.pad h2.title{color:%s;}\n" % (css_form_dict['titlebarcolor'])
+
+        return css_text
+
+    def migrate_css_for_gold_level(self):
+        self.css = ""

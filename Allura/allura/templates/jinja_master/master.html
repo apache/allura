@@ -83,7 +83,7 @@
           {% set inner_width = outer_width %}
         {% endif %}
         <div class="grid-{{outer_width}} pad">
-          <h2 class="dark title">{% block header %}{% endblock %}
+          <h2 class="dark title{% block header_classes %}{% endblock %}">{% block header %}{% endblock %}
             <!-- actions -->
             <small>
             {% block actions %}{% endblock %}
