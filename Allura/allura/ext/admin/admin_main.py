@@ -125,8 +125,8 @@ class AdminApp(Application):
                      SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
                      SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
         admin_url = c.project.url()+'admin/'
-        if len(links):
-            links.append(SitemapEntry('Project'))
+        #if len(links):
+        #    links.append(SitemapEntry('Project'))
         links += [
             SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
             SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),

@@ -93,17 +93,13 @@ class Neighborhood(MappedClass):
         setattr(controller, controller_attr, NeighborhoodController(
                 self.name, self.shortname_prefix))
 
-    def set_custom_css(self):
+    def get_custom_css(self):
         if self.level in ["gold", "platinum"]:
             return self.css
         return ""
 
-    def is_show_icon(self):
-        if self.level is not None and \
-          self.level in ["silver", "gold", "platinum"]:
-           return True
-        else:
-           return False
+    def should_show_icon(self):
+        return self.level in ('silver', 'gold', 'platinum')
 
     @property
     def icon(self):
