@@ -8,7 +8,7 @@
 
 {% block actions %}
 {% if allow_edit %}
-  <a href="{{tg.url('edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
 {% endblock %}
 
