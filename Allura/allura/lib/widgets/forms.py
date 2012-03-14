@@ -187,6 +187,7 @@ class NeighborhoodOverviewForm(ForgeForm):
     def resources(self):
         for r in super(NeighborhoodOverviewForm, self).resources(): yield r
         yield ew.CSSLink('css/colorPicker.css')
+        yield ew.CSSLink('css/jqfontselector.css')
         yield ew.CSSScript('''
 table.table_class{
   margin: 0;
@@ -201,10 +202,14 @@ table.table_class tbody tr td { border: none; }
 
         ''')
         yield ew.JSLink('js/jquery.colorPicker.js')
+        yield ew.JSLink('js/jqfontselector.js')
         yield ew.JSScript('''
             $(function(){
               $('.table_class').find('input.color').each(function(index, element) {
                 $(element).colorPicker();
+              });
+              $('.table_class').find('input.font').each(function(index, element) {
+                $(element).fontSelector();
               });
             });
         ''')

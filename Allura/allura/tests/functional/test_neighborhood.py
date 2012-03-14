@@ -111,14 +111,14 @@ class TestNeighborhood(TestController):
                           params={'name': 'Adobe', 
                                   'css': '', 
                                   'homepage': '', 
-                                  'css-projecttitlefont': '20px arial,sans-serif',
+                                  'css-projecttitlefont': 'arial,sans-serif',
                                   'css-projecttitlecolor': 'green',
                                   'css-barontop': '#555555',
                                   'css-titlebarbackground': '#333',
                                   'css-titlebarcolor': '#444'},
                           extra_environ=dict(username='root'), upload_files=[])
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        assert '/*projecttitlefont*/.project_title{font:20px arial,sans-serif;}' in neighborhood.css
+        assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
         assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
         assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css

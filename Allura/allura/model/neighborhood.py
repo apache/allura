@@ -31,7 +31,7 @@ NEIGHBORHOOD_PROJECT_LIMITS = {
 }
 
 re_gold_css_type = re.compile('^/\*(.+)\*/')
-re_font_project_title = re.compile('font:(.+);\}')
+re_font_project_title = re.compile('font-family:(.+);\}')
 re_color_project_title = re.compile('color:(.+);\}')
 re_bgcolor_barontop = re.compile('background\-color:([^;}]+);')
 re_bgcolor_titlebar = re.compile('background\-color:([^;}]+);')
@@ -183,7 +183,7 @@ class Neighborhood(MappedClass):
 
         css_text = ""
         if 'projecttitlefont' in css_form_dict and css_form_dict['projecttitlefont'] != '':
-           css_text += "/*projecttitlefont*/.project_title{font:%s;}\n" % (css_form_dict['projecttitlefont'])
+           css_text += "/*projecttitlefont*/.project_title{font-family:%s;}\n" % (css_form_dict['projecttitlefont'])
 
         if 'projecttitlecolor' in css_form_dict and css_form_dict['projecttitlecolor'] != '':
            css_text += "/*projecttitlecolor*/.project_title{color:%s;}\n" % (css_form_dict['projecttitlecolor'])

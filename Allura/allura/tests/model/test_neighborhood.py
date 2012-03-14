@@ -51,7 +51,7 @@ def test_neighborhood():
     # Check gold level css styles
     test_css_dict = {'barontop': u'#444',
                      'titlebarbackground': u'#555',
-                     'projecttitlefont': u'30px arial,sans-serif',
+                     'projecttitlefont': u'arial,sans-serif',
                      'projecttitlecolor': u'#333',
                      'titlebarcolor': u'#666'}
     css_text = neighborhood.compile_css_for_gold_level(test_css_dict)
@@ -59,7 +59,7 @@ def test_neighborhood():
     assert '#444' in css_text
     assert '#555' in css_text
     assert '#666' in css_text
-    assert '30px arial,sans-serif' in css_text
+    assert 'arial,sans-serif' in css_text
     neighborhood.css = css_text
     styles_list = neighborhood.get_css_for_gold_level()
     for style in styles_list:
