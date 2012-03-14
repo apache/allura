@@ -145,19 +145,23 @@ class NeighborhoodOverviewForm(ForgeForm):
             self.color_inputs = value.get_css_for_gold_level()
         else:
             self.list_color_inputs = False
+            self.color_inputs = []
         return super(NeighborhoodOverviewForm, self).from_python(value, state)
 
     def display_field(self, field, ignore_errors=False):
         if field.name == "css" and self.list_color_inputs:
-            display = ""
+            display = '<table class="table_class">'
             ctx = self.context_for(field)
             for inp in self.color_inputs:
-                display += '<input id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
-                          'rendered_name="%(ctx_name)s-%(inp_name)s" '\
-                          'value="%(inp_value)s"/><br/>' % {'ctx_id': ctx['id'],
+                display += '<tr><td class="left"><label>%(label)s<label/></td>'\
+                           '<td class="right"><input id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           'rendered_name="%(ctx_name)s-%(inp_name)s" '\
+                           'value="%(inp_value)s"/></td></tr>' % {'ctx_id': ctx['id'],
                                                             'ctx_name': ctx['name'],
                                                             'inp_name': inp['name'],
-                                                            'inp_value': inp['value']}
+                                                            'inp_value': inp['value'],
+                                                            'label': inp['label']}
+            display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
                 display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
@@ -172,25 +176,28 @@ class NeighborhoodOverviewForm(ForgeForm):
         neighborhood = M.Neighborhood.query.get(name=d['name'])
         if neighborhood.level == "gold":
             css_form_dict = {}
-            for key in d.keys():
+            for key in value.keys():
                 if key[:4] == "css-":
-                    css_form_dict[key[4:]] = d[key]
+                    css_form_dict[key[4:]] = value[key]
             d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
-            log.info("D: %s %s" % (d, css_form_dict))
         return d
 
-class NeighborhoodGoldOverviewForm(ForgeForm):
-    template='jinja:allura:templates/widgets/neighborhood_gold_overview_form.html'
+    def resources(self):
+        # TODO add here color widget
+        for r in super(NeighborhoodOverviewForm, self).resources(): yield r
+        yield ew.CSSScript('''
+table.table_class{
+  margin: 0;
+  padding: 0;
+  width: 99%;
+}
 
-    class fields(ew_core.NameList):
-        name = ew.TextField()
-        redirect = ew.TextField()
-        homepage = ffw.AutoResizeTextarea()
-        allow_browse = ew.Checkbox(label='')
-        css = ffw.AutoResizeTextarea()
-        project_template = ffw.AutoResizeTextarea(
-                validator=V.JsonValidator(if_empty=''))
-        icon = ew.FileField()
+table.table_class .left{ text-align: left; }
+table.table_class .right{ text-align: right; }
+
+table.table_class tbody tr td { border: none; }
+
+        ''')
 
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'
