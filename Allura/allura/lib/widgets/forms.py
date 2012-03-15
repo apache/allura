@@ -175,8 +175,8 @@ class NeighborhoodOverviewForm(ForgeForm):
     @ew_core.core.validator
     def to_python(self, value, state):
         d = super(NeighborhoodOverviewForm, self).to_python(value, state)
-        neighborhood = M.Neighborhood.query.get(name=d['name'])
-        if neighborhood.level == "gold":
+        neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
+        if neighborhood and neighborhood.level == "gold":
             css_form_dict = {}
             for key in value.keys():
                 if key[:4] == "css-":
