@@ -19,20 +19,6 @@ class ZarkovClient(object):
             type=type, context=context, extra=extra)
         self._sock.send(bson.BSON.encode(obj))
 
-    def event_noval(self, type, context, extra=None):
-        from zarkov import model
-        obj = model.event.make(dict(
-                type=type,
-                context=context,
-                extra=extra))
-        obj['$command'] = 'event_noval'
-        self._sock.send(bson.BSON.encode(obj))
-
-    def _command(self, cmd, **kw):
-        d = dict(kw)
-        d['$command'] = cmd
-        self._sock.send(bson.BSON.encode(d))
-
 def zero_fill_zarkov_result(zarkov_data, period, start_date, end_date):
     """Return a new copy of zarkov_data (a dict returned from a zarkov
     query) with the timeseries data zero-filled for missing dates.
@@ -68,10 +54,8 @@ def zero_fill_time_series(time_series, period, start_date, end_date):
         time_series (list): A list of [timestamp, value] pairs, e.g.:
             [[1306886400000.0, 1], [1309478400000.0, 0]]
         period (str): 'month' or 'date' for monthly or daily timestamps
-        start_date (datetime or str): Start of the date range. If a str is
-            passed, it must be in %Y-%m-%d format.
-        end_date (datetime or str): End of the date range. If a str is
-            passed, it must be in %Y-%m-%d format.
+        start_date (datetime): Start of the date range.
+        end_date (datetime or str): End of the date range.
 
     Returns:
         list. A new copy of time_series, zero-filled.
