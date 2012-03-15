@@ -5,14 +5,15 @@ from allura import model as M
 from allura.lib import plugin
 from ming.orm import session
 
+
 # Example usage:
 # paster set-neighborhood-level development.ini 4f50c898610b270c92000286 silver
 class SetNeighborhoodLevelCommand(base.Command):
-    min_args=3
-    max_args=3
-    usage = '<ini file> <neighborhood> <level>'  #not sure if we need ini file
-    summary = 'Change neighborhood level. <neighgborhood> - '
-              'should neightborhood\'s name or id'
+    min_args = 3
+    max_args = 3
+    usage = "<ini file> <neighborhood> <level>"  # not sure if we need ini file
+    summary = "Change neighborhood level. <neighgborhood> - " \
+              "should neightborhood's name or id"
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
