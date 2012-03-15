@@ -26,9 +26,9 @@ You'll also need additional development packages in order to compile some of the
     ~$ sudo aptitude install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
 
-And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.  Note that RabbitMQ is optional, but will make messages flow faster through our asynchronous processors.  By default, rabbitmq is disabled in development.ini.
+And finally our document-oriented database, MongoDB
 
-    ~$ sudo aptitude install mongodb-server rabbitmq-server
+    ~$ sudo aptitude install mongodb-server
 
 ## Setting up a virtual python environment
 
@@ -58,8 +58,6 @@ Although the application setup.py files define a number of dependencies, the `re
     (anvil)~/src$ cd forge
     (anvil)~/src/forge$ easy_install pip
     (anvil)~/src/forge$ pip install -r requirements-dev.txt
-
-If you want to use RabbitMQ for faster message processing (optional), also pip install 'amqplib' and 'kombu'.
 
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
@@ -95,15 +93,6 @@ We have a custom config ready for use.
     (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/forge/solr_config/conf
     (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/forge/solr_config/conf/
     (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
-
-
-### RabbitMQ message queue (optional)
-
-We'll need to setup some development users and privileges.
-
-    (anvil)~$ sudo rabbitmqctl add_user testuser testpw
-    (anvil)~$ sudo rabbitmqctl add_vhost testvhost
-    (anvil)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
 
 
 ### Forge task processing
@@ -145,6 +134,7 @@ register a new project in your own forge, visit /p/add_project
 ## Extra
 
 * Read more documentation: http://allura.sourceforge.net/
+    * Including how to enable extra features: http://allura.sourceforge.net/installation.html
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
 * Contribute code according to this guide: <http://sourceforge.net/p/allura/wiki/Contributing%20Code/>
