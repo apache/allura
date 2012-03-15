@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
+from allura.lib import helpers as h
 
 class TestRestHome(TestRestApiBase):
 
@@ -44,4 +46,17 @@ class TestRestHome(TestRestApiBase):
     def test_project_code(self):
         r = self.api_get('/rest/p/test/')
         assert r.status_int == 200
+
+    def test_unicode(self):
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title':'tést',
+                'text':'sometext',
+                'labels':'',
+                'labels_old':'',
+                'viewable_by-0.id':'all'})
+        r = self.api_get('/rest/p/test/wiki/tést/')
+        assert r.status_int == 200
+        assert r.json['title'].encode('utf-8') == 'tést', r.json
 

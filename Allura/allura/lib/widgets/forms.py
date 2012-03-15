@@ -139,6 +139,81 @@ class NeighborhoodOverviewForm(ForgeForm):
                 validator=V.JsonValidator(if_empty=''))
         icon = ew.FileField()
 
+    def from_python(self, value, state):
+        if value.level == "gold":
+            self.list_color_inputs = True
+            self.color_inputs = value.get_css_for_gold_level()
+        else:
+            self.list_color_inputs = False
+            self.color_inputs = []
+        return super(NeighborhoodOverviewForm, self).from_python(value, state)
+
+    def display_field(self, field, ignore_errors=False):
+        if field.name == "css" and self.list_color_inputs:
+            display = '<table class="table_class">'
+            ctx = self.context_for(field)
+            for inp in self.color_inputs:
+                display += '<tr><td class="left"><label>%(label)s<label/></td>'\
+                           '<td class="right"><input type="text" class="%(inp_type)s '\
+                           '"id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           'rendered_name="%(ctx_name)s-%(inp_name)s" '\
+                           'value="%(inp_value)s"/></td></tr>' % {'ctx_id': ctx['id'],
+                                                            'ctx_name': ctx['name'],
+                                                            'inp_name': inp['name'],
+                                                            'inp_value': inp['value'],
+                                                            'label': inp['label'],
+                                                            'inp_type': inp['type']}
+            display += '</table>'
+
+            if ctx['errors'] and field.show_errors and not ignore_errors:
+                display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+
+            return h.html.literal(display)
+        else:
+            return super(NeighborhoodOverviewForm, self).display_field(field, ignore_errors)
+
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(NeighborhoodOverviewForm, self).to_python(value, state)
+        neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
+        if neighborhood and neighborhood.level == "gold":
+            css_form_dict = {}
+            for key in value.keys():
+                if key[:4] == "css-":
+                    css_form_dict[key[4:]] = value[key]
+            d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
+        return d
+
+    def resources(self):
+        for r in super(NeighborhoodOverviewForm, self).resources(): yield r
+        yield ew.CSSLink('css/colorPicker.css')
+        yield ew.CSSLink('css/jqfontselector.css')
+        yield ew.CSSScript('''
+table.table_class{
+  margin: 0;
+  padding: 0;
+  width: 99%;
+}
+
+table.table_class .left{ text-align: left; }
+table.table_class .right{ text-align: right; }
+
+table.table_class tbody tr td { border: none; }
+
+        ''')
+        yield ew.JSLink('js/jquery.colorPicker.js')
+        yield ew.JSLink('js/jqfontselector.js')
+        yield ew.JSScript('''
+            $(function(){
+              $('.table_class').find('input.color').each(function(index, element) {
+                $(element).colorPicker();
+              });
+              $('.table_class').find('input.font').each(function(index, element) {
+                $(element).fontSelector();
+              });
+            });
+        ''')
+
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'
     antispam=True

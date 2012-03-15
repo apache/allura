@@ -96,6 +96,34 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/')
         assert test_css in r
 
+    def test_goldlevel_custom_css(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.level = 'gold'
+
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Project title, font' in r
+        assert 'Project title, color' in r
+        assert 'Bar on top' in r
+        assert 'Title bar, background' in r
+        assert 'Title bar, foreground' in r
+
+        r = self.app.post('/adobe/_admin/update',
+                          params={'name': 'Adobe', 
+                                  'css': '', 
+                                  'homepage': '', 
+                                  'css-projecttitlefont': 'arial,sans-serif',
+                                  'css-projecttitlecolor': 'green',
+                                  'css-barontop': '#555555',
+                                  'css-titlebarbackground': '#333',
+                                  'css-titlebarcolor': '#444'},
+                          extra_environ=dict(username='root'), upload_files=[])
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
+        assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
+        assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
+        assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
+        assert '/*titlebarcolor*/.pad h2.title{color:#444;}' in neighborhood.css
+
     def test_max_projects(self):
         # Set max value to unlimit
         neighborhood = M.Neighborhood.query.get(name='Projects')
