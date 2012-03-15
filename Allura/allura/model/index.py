@@ -3,6 +3,7 @@ import logging
 from itertools import groupby
 from cPickle import dumps, loads
 from collections import defaultdict
+from urllib import unquote
 
 import bson
 import pymongo
@@ -136,7 +137,7 @@ class Shortlink(object):
             project_ids = set()
             for link, d in parsed_links.iteritems():
                 project_ids.add(d['project_id'])
-                links_by_artifact[d['artifact']].append(d)
+                links_by_artifact[unquote(d['artifact'])].append(d)
             q = cls.query.find(dict(
                     link={'$in': links_by_artifact.keys()},
                     project_id={'$in': list(project_ids)}
@@ -144,10 +145,10 @@ class Shortlink(object):
             result = {}
             matches_by_artifact = dict(
                 (link, list(matches))
-                for link, matches in groupby(q, key=lambda s:s.link))
+                for link, matches in groupby(q, key=lambda s:unquote(s.link)))
             result = {}
             for link, d in parsed_links.iteritems():
-                matches = matches_by_artifact.get(d['artifact'], [])
+                matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
                     m for m in matches
                     if m.project.shortname == d['project'] and 
