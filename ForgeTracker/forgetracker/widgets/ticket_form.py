@@ -51,7 +51,7 @@ class GenericTicketForm(ew.SimpleForm):
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ew.Checkbox(name='private', label='Mark as Private', attrs={'class':'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
-            ew.TextArea(name='comment', label='Comment',
+            ffw.MarkdownEdit(name='comment', label='Comment',
                         attrs={'style':'min-height:7em; width:97%'}),
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
@@ -85,6 +85,14 @@ class TicketForm(GenericTicketForm):
             });
             $('form').submit(function() {
                 $('input[type=submit]', this).attr('disabled', 'disabled');
+            });
+            $('div.reply.discussion-post a.markdown_preview').click(function(){
+                var arrow = $(this).closest('.discussion-post').find('span.arw');
+                arrow.hide();
+            });
+            $('div.reply.discussion-post a.markdown_edit').click(function(){
+                var arrow = $(this).closest('.discussion-post').find('span.arw');
+                arrow.show();
             });
         });''')
 

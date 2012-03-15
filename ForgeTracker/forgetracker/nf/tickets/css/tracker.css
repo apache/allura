@@ -8,5 +8,5 @@ th[data-sort], .nav-button{ cursor: pointer; }
 th[data-sort]:hover, .nav-button:hover{ text-decoration: underline; }
 .nav-button.disabled{ color: gray; }
 .nav-button.disabled:hover{ text-decoration: none; }
-.open{ color: green; }
-.closed{ color: red; }
+.open{ color: #050; }
+.closed{ color: #f33; }

@@ -592,6 +592,42 @@ class TestForum(TestController):
         #assert 'topic2' in str(rows[0])
         #assert 'topic1' in str(rows[1])
 
+    def test_move_thread(self):
+        # make the topic
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'aaa aaa'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'topic1'
+        thread = self.app.post('/discussion/save_new_topic', params=params).follow()
+        url = thread.request.url
+        # make a reply
+        f = thread.html.find('div',{'class':'row reply_post_form'}).find('form')
+        rep_url = f.get('action')
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'bbb'
+        thread = self.app.post(str(rep_url), params=params)
+        thread = self.app.get(url)
+        # make sure the posts are in the original thread
+        posts = thread.html.find('div',{'id':'comment'}).findAll('div',{'class':'discussion-post'})
+        assert_equal(len(posts), 2)
+        # move the thread
+        r = self.app.post(url + 'moderate', params=dict(
+                flags='',
+                discussion='general')).follow()
+        # make sure all the posts got moved
+        posts = r.html.find('div',{'id':'comment'}).findAll('div',{'class':'discussion-post'})
+        assert_equal(len(posts), 2)
+
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
