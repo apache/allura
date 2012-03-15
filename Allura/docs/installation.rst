@@ -8,6 +8,19 @@ Our easy setup instructions are in our README.rst file.  You can read it online 
 
 You should be able to get Allura up and running in well under an hour by following those instructions.
 
+Enabling inbound email
+----------------------
+
+Allura can listen for email messages and update tools and artifacts.  For example, every ticket has an email address, and
+emails sent to that address will be added as comments on the ticket.  To set up the SMTP listener, run::
+
+(anvil)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
+
+By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
+And if the port is in use, this command will fail.  You can check the log file for any errors.
+To change the port number, edit `development.ini` and change `forgemail.port` to the appropriate port number for your environment.
+
+
 Enabling RabbitMQ
 -----------------
 
@@ -26,4 +39,3 @@ If your `paster taskd` process is still running, restart it::
 
 (anvil)~/src/forge/Allura$ ps -ef | grep taskd | grep -v grep | awk '{print $2}' | xargs kill   # FIXME: make more elegant
 (anvil)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
-
