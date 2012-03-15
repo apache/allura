@@ -52,7 +52,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     {% if type != 'removed' %}
         <script type="text/javascript">
             $(document).ready(function() {
-                $('#diff-{{loop.index}}').load('{{commit.url()}}tree{{h.really_unicode(file)}}?barediff');
+                $('#diff-{{loop.index}}').load('{{commit.url()}}tree{{h.really_unicode(file)}}?barediff={{prev[0].object_id}}');
             });
         </script>
     {% endif %}
