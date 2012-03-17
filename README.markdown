@@ -60,6 +60,8 @@ Although the application setup.py files define a number of dependencies, the `re
     (anvil)~/src$ cd forge
     (anvil)~/src/forge$ pip install -r requirements-dev.txt
 
+This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
+
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
     for APP in Allura* Forge* NoWarnings
