@@ -36,14 +36,14 @@ If you are using a different base system, make sure you have Mongo 1.8 or better
 
 The first step to installing the Forge platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
 
-    ~$ sudo aptitude install python-setuptools
-    ~$ sudo easy_install -U virtualenv
+    ~$ sudo aptitude install python-pip
+    ~$ sudo pip install virtualenv
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
 
     ~$ virtualenv --system-site-packages anvil
 
-This gives us a nice, clean environment into which we can install all the forge dependencies.  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
+This gives us a nice, clean environment into which we can install all the forge dependencies.  (The site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
 
     ~$ . anvil/bin/activate
 
@@ -58,7 +58,6 @@ Now we can get down to actually getting the Forge code and dependencies download
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
     (anvil)~/src$ cd forge
-    (anvil)~/src/forge$ easy_install pip
     (anvil)~/src/forge$ pip install -r requirements-dev.txt
 
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
