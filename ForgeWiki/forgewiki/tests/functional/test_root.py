@@ -407,14 +407,26 @@ class TestRootController(TestController):
         assert r.form['mount_label'].value == 'Tricky Wiki'
 
     def test_page_links_are_colored(self):
+        self.app.get('/wiki/space%20page/')
+        params = {
+            'title':'space page',
+            'text':'''There is a space in the title!''',
+            'labels':'',
+            'labels_old':'',
+            'viewable_by-0.id':'all'}
+        self.app.post('/wiki/space%20page/update', params=params)
         self.app.get('/wiki/TEST/')
         params = {
             'title':'TEST',
             'text':'''
 * Here is a link to [this page](TEST)
 * Here is a link to [another page](Some page which does not exist)
+* Here is a link to [space page space](space page)
+* Here is a link to [space page escape](space%20page)
 * Here is a link to [TEST]
 * Here is a link to [Some page which does not exist]
+* Here is a link to [space page]
+* Here is a link to [space%20page]
 ''',
             'labels':'',
             'labels_old':'',
@@ -429,13 +441,25 @@ class TestRootController(TestController):
             if link.contents == ['another page']:
                 assert 'notfound' in link.get('class', '')
                 found_links +=1
+            if link.contents == ['space page space']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+            if link.contents == ['space page escape']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
             if link.contents == ['[TEST]']:
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
             if link.contents == ['[Some page which does not exist]']:
                 assert 'notfound' in link.get('class', '')
                 found_links +=1
-        assert found_links == 4, 'Wrong number of links found'
+            if link.contents == ['[space page]']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+            if link.contents == ['[space%20page]']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+        assert found_links == 8, 'Wrong number of links found'
 
     def test_home_rename(self):
         assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get('/p/test/wiki/')
