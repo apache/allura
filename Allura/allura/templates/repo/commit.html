@@ -36,7 +36,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 <a class="commit-diff-link" href="{{commit.url()}}tree{{h.really_unicode(file)}}?diff={{prev[0].object_id}}">Diff</a>
             {% elif type == 'removed' %}
                 <a href="{{prev[0].url()}}tree{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
-                <a class="commit-diff-link" href="{{commit.url()}}tree{{h.really_unicode(file)}}?diff={{prev[0].object_id}}">Diff</a>
             {% elif type == 'copied' %}
                 <a href="{{prev[0].url()}}tree{{h.really_unicode(file.old)}}">{{h.really_unicode(file.old)}}</a>
                 to
@@ -47,7 +46,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% if type != 'removed' %}
                 <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                 {% else %}
-                <span class="empty-diff">Content was removed.</span>
+                <span class="empty-diff">File was removed.</span>
                 {% endif %}
             </div>
         </div>
