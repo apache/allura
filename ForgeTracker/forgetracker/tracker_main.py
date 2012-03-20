@@ -379,10 +379,26 @@ class RootController(BaseController):
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
 
+    def _mongo_col_to_solr_col(self, name):
+        if name == 'ticket_num':
+            return 'ticket_num_i'
+        elif name == 'summary':
+            return 'snippet_s'
+        elif name == '_milestone':
+            return 'milestone_s'
+        elif name == 'status':
+            return 'status_s'
+        elif name == 'assigned_to':
+            return 'assigned_to_s'
+        else:
+            for field in c.app.globals.sortable_custom_fields_shown_in_search():
+                if name == field['name']:
+                    return field['sortable_name']
+
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num_i asc', **kw):
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', **kw):
         kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
@@ -392,6 +408,11 @@ class RootController(BaseController):
         result['allow_edit'] = has_access(c.app, 'write')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         result['url_q'] = c.app.globals.not_closed_query
+        result['url_sort'] = ''
+        if sort:
+            sort_split = sort.split(' ')
+            solr_col = self._mongo_col_to_solr_col(sort_split[0])
+            result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.ticket_search_results = W.ticket_search_results
         return result
 
