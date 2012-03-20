@@ -169,15 +169,15 @@ class StatsMiddleware(object):
 
     def instrument_pymongo(self):
         import pymongo.collection
-        import ming.orm
+        import ming.odm
         timing('mongo').decorate(pymongo.collection.Collection,
                                  'count find find_one')
         timing('mongo').decorate(pymongo.cursor.Cursor,
                                  'count distinct explain hint limit next rewind'
                                  ' skip sort where')
-        timing('ming').decorate(ming.orm.ormsession.ORMSession,
+        timing('ming').decorate(ming.odm.odmsession.ODMSession,
                                 'flush find get')
-        timing('ming').decorate(ming.orm.ormsession.ORMCursor,
+        timing('ming').decorate(ming.odm.odmsession.ODMCursor,
                                 'next')
 
     def instrument_template(self):
