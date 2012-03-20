@@ -62,6 +62,17 @@ class SiteAdminController(object):
             agg_timings=agg_timings,
             stats=stats[:int(limit)])
 
+    @expose('jinja:allura:templates/site_admin_graph.html')
+    @without_trailing_slash
+    def graph(self, limit=25):
+        for doc in M.Stats.m.find():
+            #log.info(doc)
+            pass
+
+        log.info("Graph")
+        g.zarkov_event('graph', extra=12)
+        return {}
+
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
     def api_tickets(self, **data):
         import json
