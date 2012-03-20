@@ -152,8 +152,6 @@ class NeighborhoodController(object):
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
                  private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
-        if self.neighborhood.allow_private == False:
-            private_project = False
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)

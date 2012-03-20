@@ -337,6 +337,10 @@ class ProjectRegistrationProvider(object):
         '''
         from allura import model as M
 
+        # Check for private project rights
+        if neighborhood.allow_private == False and private_project:
+            raise ValueError("You can't create private projects for %s neighborhood" % neighborhood.name)
+
         # Check for project limit creation
         pq = M.Project.query.find(dict(
                 neighborhood_id=neighborhood._id,
