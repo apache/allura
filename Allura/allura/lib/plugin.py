@@ -336,6 +336,20 @@ class ProjectRegistrationProvider(object):
         become the project's superuser.
         '''
         from allura import model as M
+
+        # Check for project limit creation
+        pq = M.Project.query.find(dict(
+                neighborhood_id=neighborhood._id,
+                deleted=False,
+                shortname={'$ne':'--init--'}
+                ))
+        count = pq.count()
+        nb_max_projects = neighborhood.get_max_projects()
+        
+        if nb_max_projects is not None and count >= nb_max_projects:
+            log.exception('Error registering project %s' % project_name)
+            raise forge_exc.ProjectOverlimitError()
+
         if not h.re_path_portion.match(shortname.replace('/', '')):
             raise ValueError('Invalid project shortname: %s' % shortname)
         try:
