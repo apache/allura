@@ -64,3 +64,11 @@ def test_neighborhood():
     styles_list = neighborhood.get_css_for_gold_level()
     for style in styles_list:
         assert test_css_dict[style['name']] == style['value']
+
+    # Check neighborhood custom css showing
+    neighborhood.level = 'silver'
+    assert not neighborhood.allow_custom_css
+    neighborhood.level = 'gold'
+    assert neighborhood.allow_custom_css
+    neighborhood.level = 'platinum'
+    assert neighborhood.allow_custom_css
