@@ -4,7 +4,7 @@
       {{s.label}}
       {% if s.label == 'Home' %}
         {% set url_length = s.url|length %}
-        {% if request.url.rfind(s.url, -url_length) != -1 or c.project.neighborhood.url() + 'browse' in request.url %}
+        {% if request.url.rfind(s.url, -url_length) != -1 %}
           <span class="diamond"></span>
         {% endif %}
       {% elif s.label == 'Admin' %}
