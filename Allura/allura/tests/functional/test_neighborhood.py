@@ -282,8 +282,7 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='root'),
-            status=403)
+            extra_environ=dict(username='root'))
 
         proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
         assert not proj.private
