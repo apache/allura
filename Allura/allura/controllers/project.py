@@ -479,6 +479,7 @@ class NeighborhoodModerateController(object):
 
     @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):
+        c.project = self.neighborhood.neighborhood_project
         other_nbhds = list(M.Neighborhood.query.find(dict(_id={'$ne':self.neighborhood._id})).sort('name'))
         return dict(neighborhood=self.neighborhood,
                     neighborhoods=other_nbhds)
