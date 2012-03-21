@@ -113,6 +113,10 @@ class Neighborhood(MappedClass):
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)
 
+    @property
+    def allow_custom_css(self):
+        return self.level in ('gold', 'platinum')
+
     def get_project_template(self):
         if self.project_template:
             return json.loads(self.project_template)

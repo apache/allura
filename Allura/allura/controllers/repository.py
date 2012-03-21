@@ -384,6 +384,8 @@ class CommitBrowser(BaseController):
         result = dict(commit=self._commit)
         if self._commit:
             result.update(self._commit.context())
+        result['artifacts'] = [(t,f) for t in ('added', 'removed', 'changed', 'copied')
+                                     for f in self._commit.diffs[t]]
         return result
 
     @expose('jinja:allura:templates/repo/commit_basic.html')
@@ -473,6 +475,9 @@ class FileBrowser(BaseController):
         elif 'diff' in kw:
             tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/diff.html')
             return self.diff(kw['diff'])
+        elif 'barediff' in kw:
+            tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/barediff.html')
+            return self.diff(kw['barediff'])
         else:
             force_display = 'force' in kw
             context = self._blob.context()

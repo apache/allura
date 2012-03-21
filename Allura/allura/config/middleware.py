@@ -87,10 +87,10 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     if config.get('zarkov.host'):
         try:    
-            from zarkov import client as zclient
-        except ImportError, e:
-            raise ImportError, "Unable to import the zarkov library. Please"\
-                               " check that zarkov is installed or comment out"\
+            import zmq
+        except ImportError:
+            raise ImportError, "Unable to import the zmq library. Please"\
+                               " check that zeromq is installed or comment out"\
                                " the zarkov.host setting in your ini file."
 
     app = tg.TGApp()

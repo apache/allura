@@ -172,8 +172,10 @@ class Thread(Artifact):
         Feed.post(self, title=p.subject, description=p.text)
         return p
 
-    def post(self, text, message_id=None, parent_id=None, timestamp=None, **kw):
-        require_access(self, 'post')
+    def post(self, text, message_id=None, parent_id=None,
+             timestamp=None, ignore_security=False, **kw):
+        if not ignore_security:
+            require_access(self, 'post')
         if self.ref_id and self.artifact:
             self.artifact.subscribe()
         if message_id is None: message_id = h.gen_message_id()
@@ -190,7 +192,7 @@ class Thread(Artifact):
         if timestamp is not None: kwargs['timestamp'] = timestamp
         if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if has_access(self, 'unmoderated_post')():
+        if ignore_security or has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             post.approve()
         else:
