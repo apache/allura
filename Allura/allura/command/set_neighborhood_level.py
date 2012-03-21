@@ -12,8 +12,9 @@ class SetNeighborhoodLevelCommand(base.Command):
     min_args = 3
     max_args = 3
     usage = "<ini file> <neighborhood> <level>"  # not sure if we need ini file
-    summary = "Change neighborhood level. <neighgborhood> - " \
-              "should neightborhood's name or id"
+    summary = "Change the neighborhood level\r\n" \
+        "\t<neighgborhood> - the neightborhood name or object id\r\n" \
+        "\t<level> - silver, gold or platinum"
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
