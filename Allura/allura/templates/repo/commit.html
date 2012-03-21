@@ -15,38 +15,47 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% endblock %}
 
 {% block content %}
-  {{ clone_info(c.app.repo) }}
+{{ clone_info(c.app.repo) }}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}
 <table>
   <tbody>
-    {% for diff in commit.diffs.added %}
+    {% for type, file in artifacts %}
     <tr>
-      <td>add</td>
-      <td><a href="{{commit.url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
-    </tr>
-    {% endfor %}{% for diff in commit.diffs.removed %}
-    <tr>
-      <td>remove</td>
-      <td><a href="{{prev[0].url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a></td>
-    </tr>
-    {% endfor %}{% for diff in commit.diffs.changed %}
-    <tr>
-      <td>change</td>
-      <td>
-        <a href="{{commit.url()}}tree{{h.really_unicode(diff)}}">{{h.really_unicode(diff)}}</a>
-        <a href="{{commit.url()}}tree{{h.really_unicode(diff)}}?diff={{prev[0].object_id}}">(diff)</a>
-      </td>
-    </tr>
-    {% endfor %}{% for diff in commit.diffs.copied %}
-    <tr>
-      <td>copy</td>
-      <td>
-        <a href="{{prev[0].url()}}tree{{h.really_unicode(diff.old)}}">{{h.really_unicode(diff.old)}}</a>
-        <br/>to<br/>
-        <a href="{{commit.url()}}tree{{h.really_unicode(diff.new)}}">{{h.really_unicode(diff.new)}}</a>
-      </td>
+        <td>{{ type }}</td>
+        <td><a href="#diff-{{loop.index}}">{{h.really_unicode(file)}}</a></td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+
+{% for type, file in artifacts %}
+        <div class="inline-diff">
+            <h6>
+            {% if type in ('added', 'changed') %}
+                <a href="{{commit.url()}}tree{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
+                <a class="commit-diff-link" href="{{commit.url()}}tree{{h.really_unicode(file)}}?diff={{prev[0].object_id}}">Diff</a>
+            {% elif type == 'removed' %}
+                <a href="{{prev[0].url()}}tree{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
+            {% elif type == 'copied' %}
+                <a href="{{prev[0].url()}}tree{{h.really_unicode(file.old)}}">{{h.really_unicode(file.old)}}</a>
+                to
+                <a href="{{commit.url()}}tree{{h.really_unicode(file.new)}}">{{h.really_unicode(file.new)}}</a>
+            {% endif %}
+            </h6>
+            <div id="diff-{{loop.index}}" class="inline-diff-body">
+                {% if type != 'removed' %}
+                <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
+                {% else %}
+                <span class="empty-diff">File was removed.</span>
+                {% endif %}
+            </div>
+        </div>
+    {% if type != 'removed' %}
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#diff-{{loop.index}}').load('{{commit.url()}}tree{{h.really_unicode(file)}}?barediff={{prev[0].object_id}}');
+            });
+        </script>
+    {% endif %}
+{% endfor %}
 {% endblock %}
