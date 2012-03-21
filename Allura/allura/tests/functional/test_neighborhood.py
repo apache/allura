@@ -74,27 +74,36 @@ class TestNeighborhood(TestController):
 
     def test_custom_css(self):
         test_css = '.test{color:red;}'
+        custom_css = 'Custom CSS'
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.css = test_css
         neighborhood.level = None
         r = self.app.get('/adobe/')
         assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'silver'
         r = self.app.get('/adobe/')
         assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'gold'
         r = self.app.get('/adobe/')
         assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'platinum'
         r = self.app.get('/adobe/')
         assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
 
     def test_goldlevel_custom_css(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
