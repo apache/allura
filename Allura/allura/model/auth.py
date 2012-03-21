@@ -101,7 +101,7 @@ class ApiAuthMixIn(object):
         if not has_api_timestamp:
             params.append(('api_timestamp', datetime.utcnow().isoformat()))
         if not has_api_signature:
-            string_to_sign = path + '?' + urlencode(sorted(params))
+            string_to_sign = urllib.quote(path) + '?' + urlencode(sorted(params))
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             params.append(('api_signature', digest.hexdigest()))
         return params

@@ -673,7 +673,7 @@ class RootRestController(RestController):
 
     @expose('json:')
     def get_one(self, title, **kw):
-        page = WM.Page.query.get(app_config_id=c.app.config._id, title=title, deleted=False)
+        page = WM.Page.query.get(app_config_id=c.app.config._id, title=h.really_unicode(title), deleted=False)
         if page is None:
             raise exc.HTTPNotFound, title
         require_access(page, 'read')
