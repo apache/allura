@@ -4,7 +4,7 @@ from datadiff.tools import assert_equal
 import pylons
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_level
+from allura.command import script, set_neighborhood_level, set_neighborhood_private
 from allura import model as M
 
 
@@ -34,3 +34,19 @@ def test_set_neighborhood_level():
 
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.level == 'gold'
+
+def test_set_neighborhood_private():
+    neighborhood = M.Neighborhood.query.find().first()
+    n_id = neighborhood._id
+
+    cmd = set_neighborhood_private.SetNeighborhoodPrivateCommand('setnbprivate')
+    cmd.run([test_config, str(n_id), '1'])
+    cmd.command()
+    neighborhood = M.Neighborhood.query.get(_id=n_id)
+    assert neighborhood.allow_private
+
+    cmd = set_neighborhood_private.SetNeighborhoodPrivateCommand('setnbprivate')
+    cmd.run([test_config, str(n_id), '0'])
+    cmd.command()
+    neighborhood = M.Neighborhood.query.get(_id=n_id)
+    assert not neighborhood.allow_private
