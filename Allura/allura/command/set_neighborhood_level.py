@@ -21,14 +21,17 @@ class SetNeighborhoodLevelCommand(base.Command):
         n_id = self.args[1]
         n_level = self.args[2]
         if n_level not in ["silver", "gold", "platinum"]:
-            raise exceptions.NoSuchNBLevelError("You must select one of three level types (silver, gold, or platinum)")
+            raise exceptions.NoSuchNBLevelError("%s is not a valid " \
+                "neighborhood level. The valid levels are \"silver\", " \
+                "\"gold\" and \"platinum\"" % n_level)
 
         n = M.Neighborhood.query.get(name=n_id)
         if not n:
             n = M.Neighborhood.query.get(_id=ObjectId(n_id))
 
         if not n:
-            raise exceptions.NoSuchNeighborhoodError("The neighborhood % should not be found" % n_id)
+            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s " \
+                "could not be found in the database" % n_id)
         else:
             n.level = n_level
             if n_level == "gold":
