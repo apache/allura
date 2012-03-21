@@ -370,8 +370,18 @@ class Project(MappedClass):
         from allura.app import SitemapEntry
         sitemap = SitemapEntry('root')
         entries = []
+
+        # Set menu mode
+        delta_ordinal = 0
+        neighborhood_admin_mode = False
+        if self == self.neighborhood.neighborhood_project:
+            delta_ordinal = 1
+            neighborhood_admin_mode = True
+            entries.append({'ordinal':0,'entry':SitemapEntry('Home', self.neighborhood.url(), ui_icon="tool-home")})
+
+
         for sub in self.direct_subprojects:
-            entries.append({'ordinal':sub.ordinal,'entry':SitemapEntry(sub.name, sub.url())})
+            entries.append({'ordinal':sub.ordinal + delta_ordinal,'entry':SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
@@ -381,8 +391,12 @@ class Project(MappedClass):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
-                    ordinal = ac.options.get('ordinal', 0)
+                    ordinal = ac.options.get('ordinal', 0) + delta_ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
+
+        if neighborhood_admin_mode and h.has_access(self.neighborhood, 'admin'):
+            entries.append({'ordinal': len(entries),'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
+
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
             sitemap.children.append(e['entry'])

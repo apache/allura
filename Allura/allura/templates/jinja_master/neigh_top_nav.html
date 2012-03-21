@@ -1,26 +1,22 @@
-{% if neighborhood %}
-  <a href="{{neighborhood.url()}}" class="ui-icon-tool-home">
-    Home
-    {% set url_length = neighborhood.url()|length %}
-    {% if request.url.rfind(neighborhood.url(), -url_length) != -1 %}
-      <span class="diamond"></span>
-    {% endif %}
-  </a>
-  {% if h.has_access(neighborhood, 'admin')() %}
-  <a href="{{neighborhood.url()}}_admin/" class="ui-icon-tool-admin">
-    Admin
-    {% if neighborhood.url()+'_admin' in request.url %}
-      <span class="diamond"></span>
-    {% endif %}
-  </a>
-  {% endif %}
-  {% if h.has_access(neighborhood, 'admin')() %}
-  <a href="{{neighborhood.url()}}_moderate/" class="ui-icon-tool-admin">
-    Moderate
-    {% if neighborhood.url()+'_moderate' in request.url %}
-      <span class="diamond"></span>
-    {% endif %}
-  </a>
-  {% endif %}
-	<div style="clear:both"></div>
+{% if neighborhood and neighborhood.neighborhood_project %}
+  {% for s in neighborhood.neighborhood_project.sitemap() %}
+    <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
+      {{s.label}}
+      {% if s.label == 'Home' %}
+        {% set url_length = s.url|length %}
+        {% if request.url.rfind(s.url, -url_length) != -1 %}
+          <span class="diamond"></span>
+        {% endif %}
+      {% elif s.label == 'Admin' %}
+        {% if s.url in request.url or c.project.neighborhood.url()+'_admin' in request.url %}
+          <span class="diamond"></span>
+        {% endif %}
+      {% else %}
+        {% if s.url in request.url %}
+          <span class="diamond"></span>
+        {% endif %}
+      {% endif %}
+    </a>
+        {% endfor %}
+        <div style="clear:both"></div>
 {% endif %}

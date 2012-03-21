@@ -86,6 +86,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
+        c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
@@ -123,6 +124,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
+        c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
         form_data['tools'] = ['Wiki','Git','Tickets','Downloads','Discussion']
@@ -201,6 +203,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose()
     def _lookup(self, category_name, *remainder):
+        c.project = self.neighborhood.neighborhood_project
         category_name=unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
