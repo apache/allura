@@ -28,7 +28,8 @@ class SetNeighborhoodPrivateCommand(base.Command):
             n = M.Neighborhood.query.get(_id=ObjectId(n_id))
 
         if not n:
-            raise exceptions.NoSuchNeighborhoodError("The neighborhood % should not be found" % n_id)
+            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s "\
+                "could not be found in the database" % n_id)
         else:
             n.allow_private = private_val
             session(M.Neighborhood).flush()
