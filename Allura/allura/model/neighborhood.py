@@ -106,6 +106,7 @@ class Neighborhood(MappedClass):
             return self.css
         return ""
 
+    @property
     def should_show_icon(self):
         return self.level in ('silver', 'gold', 'platinum')
 
