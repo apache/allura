@@ -33,7 +33,9 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             <h6>
             {% if type in ('added', 'changed') %}
                 <a href="{{commit.url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
-                <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.really_unicode(file)}}?diff={{prev[0]._id}}">Diff</a>
+                {% if prev %}
+                    <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.really_unicode(file)}}?diff={{prev[0]._id}}">Diff</a>
+                {% endif %}
             {% elif type == 'removed' %}
                 <a href="{{prev[0].url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
             {% elif type == 'copied' %}
@@ -44,18 +46,18 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             </h6>
             <div id="diff-{{loop.index}}" class="inline-diff-body">
                 {% if type != 'removed' %}
-                <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
+                    {% if prev %}
+                    <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
+                    <script type="text/javascript">
+                        $(document).ready(function() {
+                            $('#diff-{{loop.index}}').load('{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id}}');
+                        });
+                    </script>
+                    {% endif %}
                 {% else %}
                 <span class="empty-diff">File was removed.</span>
                 {% endif %}
             </div>
         </div>
-    {% if type != 'removed' %}
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $('#diff-{{loop.index}}').load('{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id}}');
-            });
-        </script>
-    {% endif %}
 {% endfor %}
 {% endblock %}
