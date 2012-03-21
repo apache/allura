@@ -16,7 +16,7 @@
     {{c.subscribe_form.display(value=subscribed, action='subscribe', style='icon')}}
   {% endif %}
   {% if allow_edit %}
-    <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    <a href="{{tg.url(c.app.url+'edit/', dict(q=url_q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
   {% endif %}
 {% endblock %}
 

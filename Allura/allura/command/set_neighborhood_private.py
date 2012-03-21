@@ -2,11 +2,11 @@ from . import base
 
 from bson import ObjectId
 from allura import model as M
-from allura.lib import plugin
+from allura.lib import plugin, exceptions
 from ming.orm import session
 
 # Example usage:
-# paster set-neighborhood-private development.ini 4f50c898610b270c92000286 1
+# paster set-neighborhood-private development.ini <neighborhood_id> 1
 class SetNeighborhoodPrivateCommand(base.Command):
     min_args=3
     max_args=3
@@ -22,6 +22,14 @@ class SetNeighborhoodPrivateCommand(base.Command):
             private_val = True
         else:
             private_val = False
-        n = M.Neighborhood.query.get(_id = ObjectId(n_id))
-        n.allow_private = private_val
-        session(M.Neighborhood).flush()
+
+        n = M.Neighborhood.query.get(name=n_id)
+        if not n:
+            n = M.Neighborhood.query.get(_id=ObjectId(n_id))
+
+        if not n:
+            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s "\
+                "could not be found in the database" % n_id)
+        else:
+            n.allow_private = private_val
+            session(M.Neighborhood).flush()
