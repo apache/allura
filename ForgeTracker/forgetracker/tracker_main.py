@@ -57,6 +57,22 @@ search_validators = dict(
     page=validators.Int(if_empty=0),
     sort=validators.UnicodeString(if_empty=None))
 
+def _mongo_col_to_solr_col(name):
+    if name == 'ticket_num':
+        return 'ticket_num_i'
+    elif name == 'summary':
+        return 'snippet_s'
+    elif name == '_milestone':
+        return 'milestone_s'
+    elif name == 'status':
+        return 'status_s'
+    elif name == 'assigned_to':
+        return 'assigned_to_s'
+    else:
+        for field in c.app.globals.sortable_custom_fields_shown_in_search():
+            if name == field['name']:
+                return field['sortable_name']
+
 class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
@@ -379,22 +395,6 @@ class RootController(BaseController):
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
 
-    def _mongo_col_to_solr_col(self, name):
-        if name == 'ticket_num':
-            return 'ticket_num_i'
-        elif name == 'summary':
-            return 'snippet_s'
-        elif name == '_milestone':
-            return 'milestone_s'
-        elif name == 'status':
-            return 'status_s'
-        elif name == 'assigned_to':
-            return 'assigned_to_s'
-        else:
-            for field in c.app.globals.sortable_custom_fields_shown_in_search():
-                if name == field['name']:
-                    return field['sortable_name']
-
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
@@ -411,7 +411,7 @@ class RootController(BaseController):
         result['url_sort'] = ''
         if sort:
             sort_split = sort.split(' ')
-            solr_col = self._mongo_col_to_solr_col(sort_split[0])
+            solr_col = _mongo_col_to_solr_col(sort_split[0])
             result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.ticket_search_results = W.ticket_search_results
         return result
@@ -1434,7 +1434,13 @@ class MilestoneController(BaseController):
             field=self.field,
             milestone=self.milestone,
             total=progress['hits'],
-            closed=progress['closed'])
+            closed=progress['closed'],
+            q=self.progress_key)
+        result['url_sort'] = ''
+        if sort:
+            sort_split = sort.split(' ')
+            solr_col = _mongo_col_to_solr_col(sort_split[0])
+            result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
