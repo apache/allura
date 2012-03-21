@@ -32,10 +32,10 @@ class TicketSearchResults(ew_core.SimpleForm):
         for r in super(TicketSearchResults, self).resources():
             yield r
 
-class MassEdit(ew_core.Widget):
+class MassEdit(ew_core.SimpleForm):
     template='jinja:forgetracker:templates/tracker_widgets/mass_edit.html'
     defaults=dict(
-        ew_core.Widget.defaults,
+        ew_core.SimpleForm.defaults,
         count=None,
         limit=None,
         query=None,
@@ -43,8 +43,16 @@ class MassEdit(ew_core.Widget):
         page=1,
         sort=None)
 
+    class fields(ew_core.NameList):
+        page_list=ffw.PageList()
+        page_size=ffw.PageSize()
+        lightbox=ffw.Lightbox(name='col_list',trigger='#col_menu')
+
     def resources(self):
         yield ew.JSLink('tracker_js/ticket-list.js')
+        yield ew.CSSLink('tracker_css/ticket-list.css')
+        for r in super(MassEdit, self).resources():
+            yield r
 
 class MassEditForm(ew_core.Widget):
     template='jinja:forgetracker:templates/tracker_widgets/mass_edit_form.html'
