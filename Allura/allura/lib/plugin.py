@@ -345,7 +345,7 @@ class ProjectRegistrationProvider(object):
                 ))
         count = pq.count()
         nb_max_projects = neighborhood.get_max_projects()
-        
+
         if nb_max_projects is not None and count >= nb_max_projects:
             log.exception('Error registering project %s' % project_name)
             raise forge_exc.ProjectOverlimitError()
