@@ -275,19 +275,19 @@ class TestNeighborhood(TestController):
         assert 'private_project' not in r
 
         assert_raises(ValueError,
-            self.app.post(
-                '/p/register',
-                params=dict(
-                    project_unixname='myprivate1',
-                    project_name='My Priv1',
-                    project_description='',
-                    neighborhood='Projects',
-                    private_project='on'),
-                antispam=True,
-                extra_environ=dict(username='root')))
+            self.app.post,
+            '/p/register',
+            params=dict(
+                project_unixname='myprivate1',
+                project_name='My Priv1',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='root'))
 
         proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
-        assert not proj.private
+        assert proj is None
 
         # Turn on private
         neighborhood = M.Neighborhood.query.get(name='Projects')
