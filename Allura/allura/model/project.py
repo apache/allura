@@ -373,6 +373,7 @@ class Project(MappedClass):
 
         # Set menu mode
         delta_ordinal = 0
+        max_ordinal = 0
         neighborhood_admin_mode = False
         if self == self.neighborhood.neighborhood_project:
             delta_ordinal = 1
@@ -381,6 +382,9 @@ class Project(MappedClass):
 
 
         for sub in self.direct_subprojects:
+            ordinal = sub.ordinal + delta_ordinal
+            if ordinal > max_ordinal:
+                max_ordinal = ordinal
             entries.append({'ordinal':sub.ordinal + delta_ordinal,'entry':SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs:
             if excluded_tools and ac.tool_name in excluded_tools:
@@ -392,14 +396,17 @@ class Project(MappedClass):
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
                     ordinal = ac.options.get('ordinal', 0) + delta_ordinal
+                    if ordinal > max_ordinal:
+                        max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
 
         if neighborhood_admin_mode and h.has_access(self.neighborhood, 'admin'):
-            entries.append({'ordinal': len(entries),'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
+            entries.append({'ordinal': max_ordinal + 1,'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
             sitemap.children.append(e['entry'])
+            log.info("ENTRY: %s %s" % (e['entry'].label, e['ordinal']))
         return sitemap.children
 
     def parent_iter(self):
