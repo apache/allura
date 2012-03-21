@@ -7,9 +7,9 @@
           <th style="width:20px">
             <input type="checkbox" id="select_all">
           </th>
-          <th>#</th>
-          <th data-sort="ticket_num_i">Summary</th>
-          <th>Milestone</th>
+          <th data-sort="ticket_num_i">#</th>
+          <th data-sort="snippet_s">Summary</th>
+          <th data-sort="milestone_s">Milestone</th>
           <th data-sort="status_s">Status</th>
           <th data-sort="assigned_to_s">Owner</th>
         </tr>
@@ -30,7 +30,7 @@
     {{widget.fields['lightbox'].display()}}
     {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
     <script type="text/javascript">
-      var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
+      var q="{{query and h.urlquoteplus(query) or ''}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
     </script>
   {% else %}
     No tickets found.
