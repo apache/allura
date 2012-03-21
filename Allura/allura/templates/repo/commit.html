@@ -32,14 +32,14 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         <div class="inline-diff">
             <h6>
             {% if type in ('added', 'changed') %}
-                <a href="{{commit.url()}}tree{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
-                <a class="commit-diff-link" href="{{commit.url()}}tree{{h.really_unicode(file)}}?diff={{prev[0].object_id}}">Diff</a>
+                <a href="{{commit.url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
+                <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.really_unicode(file)}}?diff={{prev[0]._id}}">Diff</a>
             {% elif type == 'removed' %}
-                <a href="{{prev[0].url()}}tree{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
+                <a href="{{prev[0].url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
             {% elif type == 'copied' %}
-                <a href="{{prev[0].url()}}tree{{h.really_unicode(file.old)}}">{{h.really_unicode(file.old)}}</a>
+                <a href="{{prev[0].url()}}tree/{{h.really_unicode(file.old)}}">{{h.really_unicode(file.old)}}</a>
                 to
-                <a href="{{commit.url()}}tree{{h.really_unicode(file.new)}}">{{h.really_unicode(file.new)}}</a>
+                <a href="{{commit.url()}}tree/{{h.really_unicode(file.new)}}">{{h.really_unicode(file.new)}}</a>
             {% endif %}
             </h6>
             <div id="diff-{{loop.index}}" class="inline-diff-body">
@@ -53,7 +53,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     {% if type != 'removed' %}
         <script type="text/javascript">
             $(document).ready(function() {
-                $('#diff-{{loop.index}}').load('{{commit.url()}}tree{{h.really_unicode(file)}}?barediff={{prev[0].object_id}}');
+                $('#diff-{{loop.index}}').load('{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id}}');
             });
         </script>
     {% endif %}
