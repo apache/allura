@@ -117,9 +117,9 @@ class TestNeighborhood(TestController):
         assert 'Title bar, foreground' in r
 
         r = self.app.post('/adobe/_admin/update',
-                          params={'name': 'Adobe', 
-                                  'css': '', 
-                                  'homepage': '', 
+                          params={'name': 'Adobe',
+                                  'css': '',
+                                  'homepage': '',
                                   'css-projecttitlefont': 'arial,sans-serif',
                                   'css-projecttitlecolor': 'green',
                                   'css-barontop': '#555555',
@@ -282,7 +282,8 @@ class TestNeighborhood(TestController):
                 neighborhood='Projects',
                 private_project='on'),
             antispam=True,
-            extra_environ=dict(username='root'))
+            extra_environ=dict(username='root'),
+            status=403)
 
         proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
         assert not proj.private
