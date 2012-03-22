@@ -153,16 +153,20 @@ class NeighborhoodOverviewForm(ForgeForm):
             display = '<table class="table_class">'
             ctx = self.context_for(field)
             for inp in self.color_inputs:
+                empty_val = False
+                if inp['value'] is None or inp['value'] == '':
+                    empty_val = True
                 display += '<tr><td class="left"><label>%(label)s<label/></td>'\
-                           '<td class="right"><input type="text" class="%(inp_type)s '\
-                           '"id="%(ctx_id)s-%(inp_name)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s/>default</td>'\
+                           '<td class="right"><span class="%(ctx_name)s-%(inp_name)s-inp"><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '\
                            'rendered_name="%(ctx_name)s-%(inp_name)s" '\
-                           'value="%(inp_value)s"/></td></tr>' % {'ctx_id': ctx['id'],
+                           'value="%(inp_value)s"/></span></td></tr>\n' % {'ctx_id': ctx['id'],
                                                             'ctx_name': ctx['name'],
                                                             'inp_name': inp['name'],
                                                             'inp_value': inp['value'],
                                                             'label': inp['label'],
-                                                            'inp_type': inp['type']}
+                                                            'inp_type': inp['type'],
+                                                            'def_checked': 'checked="checked"' if empty_val else ''}
             display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
@@ -179,7 +183,8 @@ class NeighborhoodOverviewForm(ForgeForm):
         if neighborhood and neighborhood.level == "gold":
             css_form_dict = {}
             for key in value.keys():
-                if key[:4] == "css-":
+                def_key = "%s-def" % (key)
+                if key[:4] == "css-" and def_key not in value:
                     css_form_dict[key[4:]] = value[key]
             d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
         return d
@@ -196,15 +201,31 @@ table.table_class{
 }
 
 table.table_class .left{ text-align: left; }
-table.table_class .right{ text-align: right; }
-
+table.table_class .right{ text-align: right; width: 50%;}
 table.table_class tbody tr td { border: none; }
-
         ''')
         yield ew.JSLink('js/jquery.colorPicker.js')
         yield ew.JSLink('js/jqfontselector.js')
         yield ew.JSScript('''
             $(function(){
+              $('.table_class').find('input[type="checkbox"]').each(function(index, element) {
+                var cb_name = $(this).attr('name');
+                var inp_name = cb_name.substr(0, cb_name.length-4);
+                var inp_el = $('span[class="'+inp_name+'-inp"]');
+
+                if ($(this).attr('checked')) {
+                  inp_el.hide();
+                }
+
+                $(element).click(function(e) {
+                  if ($(this).attr('checked')) {
+                    inp_el.hide();
+                  } else {
+                    inp_el.show();
+                  }
+                });
+              });
+
               $('.table_class').find('input.color').each(function(index, element) {
                 $(element).colorPicker();
               });
