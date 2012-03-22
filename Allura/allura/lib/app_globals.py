@@ -4,14 +4,11 @@
 
 __all__ = ['Globals']
 import logging
-import socket
 import cgi
 import json
 import shlex
 import datetime
 from urllib import urlencode
-from ConfigParser import RawConfigParser
-from collections import defaultdict
 
 import pkg_resources
 
@@ -21,7 +18,6 @@ import pygments
 import pygments.lexers
 import pygments.formatters
 import pygments.util
-import webob.exc
 from tg import config, session
 from pylons import c, request
 from paste.deploy.converters import asbool, asint
@@ -30,11 +26,6 @@ from pypeline.markup import markup as pypeline_markup
 import ew as ew_core
 import ew.jinja2_ew as ew
 from ming.utils import LazyProperty
-
-try:
-    from zarkov import client as zclient
-except ImportError:
-    zclient = None
 
 import allura.tasks.event_tasks
 from allura import model as M
@@ -45,6 +36,7 @@ from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.async import Connection, MockAMQ
+from allura.lib.zarkov_helpers import ZarkovClient, zmq
 
 log = logging.getLogger(__name__)
 
@@ -173,7 +165,7 @@ class Globals(object):
             mount_point=None,
             is_project_member=False)
 
-        if not zclient:
+        if not zmq:
             return
 
         user = user or getattr(c, 'user', None)
@@ -197,7 +189,7 @@ class Globals(object):
 
         try:
             if self._zarkov is None:
-                self._zarkov = zclient.ZarkovClient(
+                self._zarkov = ZarkovClient(
                     config.get('zarkov.host', 'tcp://127.0.0.1:6543'))
             self._zarkov.event(event_type, context, extra)
         except Exception, ex:

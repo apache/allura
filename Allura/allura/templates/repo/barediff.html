@@ -1,0 +1,10 @@
+{% if a.has_image_view and b.has_image_view %}
+  <img src="{{a.url()}}?format=raw"
+       alt="{{h.text.truncate(a._commit._id, 10)}}"
+       title="{{h.text.truncate(a._commit._id, 10)}}"/>
+  <img src="{{b.url()}}?format=raw"
+       alt="{{h.text.truncate(b._commit._id, 10)}}"
+       title="{{h.text.truncate(b._commit._id, 10)}}"/>
+{% else %}
+  {{g.highlight(diff, lexer='diff')}}
+{% endif %}
