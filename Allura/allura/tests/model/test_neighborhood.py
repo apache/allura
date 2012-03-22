@@ -35,10 +35,10 @@ def test_neighborhood():
     assert neighborhood.get_custom_css() == test_css
     # Check neighborhood icon showing
     neighborhood.level = ''
-    assert neighborhood.should_show_icon() is False
+    assert neighborhood.should_show_icon is False
     for n_level in neighborhood_levels:
         neighborhood.level = n_level
-        assert neighborhood.should_show_icon() is True
+        assert neighborhood.should_show_icon is True
     # Check max projects
     neighborhood.level = ''
     assert neighborhood.get_max_projects() is None
