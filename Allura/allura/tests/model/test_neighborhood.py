@@ -35,10 +35,10 @@ def test_neighborhood():
     assert neighborhood.get_custom_css() == test_css
     # Check neighborhood icon showing
     neighborhood.level = ''
-    assert neighborhood.should_show_icon() is False
+    assert neighborhood.should_show_icon is False
     for n_level in neighborhood_levels:
         neighborhood.level = n_level
-        assert neighborhood.should_show_icon() is True
+        assert neighborhood.should_show_icon is True
     # Check max projects
     neighborhood.level = ''
     assert neighborhood.get_max_projects() is None
@@ -64,3 +64,11 @@ def test_neighborhood():
     styles_list = neighborhood.get_css_for_gold_level()
     for style in styles_list:
         assert test_css_dict[style['name']] == style['value']
+
+    # Check neighborhood custom css showing
+    neighborhood.level = 'silver'
+    assert not neighborhood.allow_custom_css
+    neighborhood.level = 'gold'
+    assert neighborhood.allow_custom_css
+    neighborhood.level = 'platinum'
+    assert neighborhood.allow_custom_css

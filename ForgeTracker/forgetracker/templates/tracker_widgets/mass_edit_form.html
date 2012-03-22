@@ -1,7 +1,7 @@
 <form id="update-values">
     {% for field in globals.custom_fields %}
       {% if field.name == '_milestone' %}
-      <div class="grid-4">{{milestones}}
+      <div class="grid-6">{{milestones}}
         <label for="{{field.name}}" class="cr">{{field.label}}:</label>
         <select name="{{field.name}}" class="wide">
           <option value="" selected="selected">no change</option>
@@ -14,7 +14,7 @@
       </div>
       {% endif %}
     {% endfor %}
-    <div class="grid-4">
+    <div class="grid-6">
       <label for="status" class="cr">Status:</label>
       <select name="status" class="wide">
         <option value="" selected="selected">no change</option>
@@ -23,17 +23,17 @@
         {% endfor %}
       </select>
     </div>
-    <div class="grid-4">
+    <div class="grid-6">
       <label for="assigned_to" class="cr">Owner:</label>
       {{c.user_select.display(name='assigned_to', value='', className='wide')}}
     </div>
-    {% set cf_count = -1 %}
+    {% set cf_count = 0 %}
     {% for field in globals.custom_fields %}
       {% if field.type != 'sum' and field.name != '_milestone' %}
-        {% if cf_count%4 == 0 %}
+        {% if cf_count%3 == 0 %}
           <div style="clear: both"></div>
         {% endif %}
-        <div class="grid-4">
+        <div class="grid-6">
           <label for="{{field.id}}" class="cr">{{field.label}}:</label>
           {% if field.type == 'boolean' %}
             <input name="{{field.name}}" type="checkbox" value="True"/>
@@ -64,7 +64,7 @@
         {% set cf_count=cf_count+1 %}
       {% endif %}
     {% endfor %}
-    <div class="grid-16">
+    <div class="grid-18">
       <input type="button" onclick="update_tickets()" value="Save"/>
       <a href="{{cancel_href}}" class="btn link">Cancel</a>
       <!-- tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>-->

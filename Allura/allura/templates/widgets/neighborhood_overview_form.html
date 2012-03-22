@@ -9,11 +9,13 @@
     <div class="grid-14">{{widget.display_field(widget.fields.homepage)}}</div>
     <label class="grid-4">Allow Browsing</label>
     <div class="grid-14">{{widget.display_field(widget.fields.allow_browse)}}</div>
+  {% if value.allow_custom_css %}
     <label class="grid-4">Custom CSS</label>
     <div class="grid-14">{{widget.display_field(widget.fields.css)}}</div>
+  {% endif %}
     <label class="grid-4">Project Template</label>
     <div class="grid-14">{{widget.display_field(widget.fields.project_template)}}</div>
-  {% if value.icon and value.should_show_icon() %}
+  {% if value.should_show_icon %}
     <label class="grid-4">Icon</label>
     <div class="grid-14">
       {% if value.icon %}

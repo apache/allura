@@ -382,7 +382,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', **kw):
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num_i asc', **kw):
         kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
@@ -391,6 +391,7 @@ class RootController(BaseController):
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_access(c.app, 'write')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
+        result['url_q'] = c.app.globals.not_closed_query
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -584,7 +585,7 @@ class RootController(BaseController):
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'write')
-        result = self.paged_query(q, sort=sort, **kw)
+        result = self.paged_query(q, sort=sort, limit=limit, page=page, **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         result['globals'] = c.app.globals

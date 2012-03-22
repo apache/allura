@@ -1,5 +1,6 @@
 <div>
-  {% if tickets.__len__() %}
+  {% if tickets|length %}
+  {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
     <table>
       <thead>
         <tr>
@@ -26,6 +27,8 @@
         {% endfor %}
       </tbody>
     </table>
+    {{widget.fields['lightbox'].display()}}
+    {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
     <script type="text/javascript">
       var q="{{query}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
     </script>

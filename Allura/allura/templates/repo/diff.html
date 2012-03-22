@@ -2,12 +2,16 @@
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
 {% block title %}
-  {{c.project.name}} / {{c.app.config.options.mount_label}} / Diff of {{h.really_unicode(a.path())}}
+  {{c.project.name}} / {{c.app.config.options.mount_label}} / Diff of {{h.really_unicode(b.path())}}
 {% endblock %}
 
 {% block header %}Diff of
 <a href="{{b.url()}}">{{b.path()}}</a>
+{% if a %}
 <a href="{{a.url()}}">{{a.commit.shorthand_id()}}</a>
+{% else %}
+[000000]
+{% endif %}
 ..
 <a href="{{b.url()}}">{{b.commit.shorthand_id()}}</a>
 {% endblock %}

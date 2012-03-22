@@ -1,6 +1,7 @@
 import json
 import os
 from cStringIO import StringIO
+from nose.tools import assert_raises
 
 import Image
 from tg import config
@@ -74,27 +75,36 @@ class TestNeighborhood(TestController):
 
     def test_custom_css(self):
         test_css = '.test{color:red;}'
+        custom_css = 'Custom CSS'
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.css = test_css
         neighborhood.level = None
         r = self.app.get('/adobe/')
         assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'silver'
         r = self.app.get('/adobe/')
         assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'gold'
         r = self.app.get('/adobe/')
         assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.level = 'platinum'
         r = self.app.get('/adobe/')
         assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
 
     def test_goldlevel_custom_css(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
@@ -108,9 +118,9 @@ class TestNeighborhood(TestController):
         assert 'Title bar, foreground' in r
 
         r = self.app.post('/adobe/_admin/update',
-                          params={'name': 'Adobe', 
-                                  'css': '', 
-                                  'homepage': '', 
+                          params={'name': 'Adobe',
+                                  'css': '',
+                                  'homepage': '',
                                   'css-projecttitlefont': 'arial,sans-serif',
                                   'css-projecttitlecolor': 'green',
                                   'css-barontop': '#555555',
@@ -264,7 +274,8 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' not in r
 
-        self.app.post(
+        assert_raises(ValueError,
+            self.app.post,
             '/p/register',
             params=dict(
                 project_unixname='myprivate1',
@@ -276,7 +287,7 @@ class TestNeighborhood(TestController):
             extra_environ=dict(username='root'))
 
         proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
-        assert not proj.private
+        assert proj is None
 
         # Turn on private
         neighborhood = M.Neighborhood.query.get(name='Projects')
