@@ -14,7 +14,7 @@ def id(email):
     match = _wrapped_email.match(email)
     if match:
         email = match.group(1)
-    return hashlib.md5(email.strip().lower()).hexdigest()
+    return hashlib.md5(email.strip().lower().encode('utf8')).hexdigest()
 
 def url(email=None, gravatar_id=None, **kw):
     """Build a complete gravatar URL with our favorite defaults.
