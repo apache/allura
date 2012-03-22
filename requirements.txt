@@ -9,10 +9,6 @@ phpserialize==1.2
 psycopg2==2.2.2
 sf.phpsession==0.1
 pyzmq==2.1.7
-Zarkov==0.1.0dev-20110815
-gevent==0.13.6
-greenlet==0.3.1
-gevent-zeromq==0.2.0
 Pygments==1.4sf1-20110601
 
 # for the migration scripts only

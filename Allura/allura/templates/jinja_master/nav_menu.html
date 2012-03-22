@@ -2,7 +2,7 @@
 {% if not c.project %}
   <div id="nav_menu_missing"></div>
 {% else %}
-  {% if c.project.neighborhood.should_show_icon() and c.project.neighborhood.icon %}
+  {% if c.project.neighborhood.should_show_icon and c.project.neighborhood.icon %}
     <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon"
        alt="Return to {{c.project.neighborhood.name}} Neighborhood" title="Return to {{c.project.neighborhood.name}} Neighborhood"></a>
   {% endif %}
