@@ -96,7 +96,7 @@ class AlluraUser(S.FancySchemaItem):
         self.warnings = warnings
         super(AlluraUser, self).__init__(**kw)
 
-    def _validate(self, value):
+    def _validate(self, value, **kw):
         value = S.String().validate(value)
         sf_username = self.mapping.get(value, value)
         result = M.User.by_username(sf_username)
@@ -116,7 +116,7 @@ class AlluraUser(S.FancySchemaItem):
 
 class TimeStamp(S.FancySchemaItem):
 
-    def _validate(self, value):
+    def _validate(self, value, **kwargs):
         try:
             value = int(value)
         except TypeError:
