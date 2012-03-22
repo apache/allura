@@ -11,7 +11,7 @@ from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 
 from ming.orm.ormsession import ThreadLocalORMSession
-from webob import Request, Response
+from webob import Request, Response, exc
 
 from allura import model as M
 from allura.lib.app_globals import Globals
@@ -192,4 +192,14 @@ def test_post_delete():
     ThreadLocalORMSession.flush_all()
     p.delete()
 
-
+@with_setup(setUp, tearDown)
+def test_post_permission_check():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    c.user = M.User.anonymous()
+    try:
+        p1 = t.post('This post will fail the check.')
+        assert False, "Expected an anonymous post to fail."
+    except exc.HTTPUnauthorized:
+        pass
+    p2 = t.post('This post will pass the check.', ignore_security=True)
