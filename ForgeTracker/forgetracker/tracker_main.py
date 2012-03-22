@@ -66,8 +66,10 @@ def _mongo_col_to_solr_col(name):
         return 'milestone_s'
     elif name == 'status':
         return 'status_s'
-    elif name == 'assigned_to':
+    elif name == 'assigned_to_username':
         return 'assigned_to_s'
+    elif name == 'custom_fields._milestone':
+        return 'milestone_s'
     else:
         for field in c.app.globals.sortable_custom_fields_shown_in_search():
             if name == field['name']:
