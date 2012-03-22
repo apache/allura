@@ -24,8 +24,8 @@ Mako==0.3.2
 Markdown==2.0.3
 MarkupSafe==0.15
 mercurial==1.4.3
-Ming==0.2.2dev-20120305
-mock==0.7.2
+Ming==0.3.1dev-20120322
+mock==0.8.0
 nose==1.1.2
 oauth2==1.5.170
 Paste==1.7.5.1
