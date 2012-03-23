@@ -11,10 +11,6 @@ sf.phpsession==0.1
 SQLAlchemy==0.7.2
 sqlalchemy-migrate==0.7.1
 pyzmq==2.1.7
-Zarkov==0.1.0dev-20110815
-gevent==0.13.6
-greenlet==0.3.1
-gevent-zeromq==0.2.0
 
 # for the migration scripts only
 html2text==3.101
