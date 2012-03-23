@@ -164,6 +164,10 @@ def projects(category=None, display_mode='grid', sort='last_updated',
         sort_key, sort_dir = 'name', pymongo.ASCENDING
     elif sort == 'random':
         sort_key, sort_dir = None, None
+    elif sort == 'last_registred':
+        sort_key, sort_dir = '_id', pymongo.DESCENDING
+    elif sort == '_id':
+        sort_key, sort_dir = '_id', pymongo.DESCENDING
 
     projects = []
     if private:
