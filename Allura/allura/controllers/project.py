@@ -26,7 +26,7 @@ from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
-from allura.lib import plugin
+from allura.lib import plugin, exceptions
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
@@ -86,6 +86,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_project_list.html')
     @with_trailing_slash
     def index(self, sort='alpha', limit=25, page=0, **kw):
+        c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         c.project_summary = W.project_summary
@@ -123,6 +124,7 @@ class NeighborhoodController(object):
     @expose('jinja:allura:templates/neighborhood_add_project.html')
     @without_trailing_slash
     def add_project(self, **form_data):
+        c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
         form_data['tools'] = ['Wiki','Git','Tickets','Downloads','Discussion']
@@ -152,29 +154,20 @@ class NeighborhoodController(object):
     def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
                  private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
-        if self.neighborhood.allow_private == False:
-            private_project = False
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
 
-        pq = M.Project.query.find(dict(
-                neighborhood_id=neighborhood._id,
-                deleted=False,
-                shortname={'$ne':'--init--'}
-                ))
-        count = pq.count()
-        nb_max_projects = neighborhood.get_max_projects()
-        if nb_max_projects is not None and count >= nb_max_projects:
-            flash("You have exceeded the maximum number of projects you are allowed to create"\
-                  "(%s of %s projects)" % (count, nb_max_projects), 'error')
-            redirect('.')
-
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
-        c.project = neighborhood.register_project(project_unixname,
-                project_name=project_name, private_project=private_project)
+        try:
+            c.project = neighborhood.register_project(project_unixname,
+                    project_name=project_name, private_project=private_project)
+        except exceptions.ProjectOverlimitError:
+            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
+            redirect('.')
+
         if project_description:
             c.project.short_description = project_description
         offset = c.project.next_mount_point(include_search=True)
@@ -201,6 +194,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 
     @expose()
     def _lookup(self, category_name, *remainder):
+        c.project = self.neighborhood.neighborhood_project
         category_name=unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
@@ -472,8 +466,8 @@ class NeighborhoodAdminController(object):
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
-        self.neighborhood.allow_browse = kw['allow_browse'] if 'allow_browse' in kw else False
-        if self.neighborhood.should_show_icon() and icon is not None and icon != '':
+        self.neighborhood.allow_browse = kw.get('allow_browse', False)
+        if self.neighborhood.should_show_icon and icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
             M.NeighborhoodFile.save_image(
@@ -493,6 +487,7 @@ class NeighborhoodModerateController(object):
 
     @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):
+        c.project = self.neighborhood.neighborhood_project
         other_nbhds = list(M.Neighborhood.query.find(dict(_id={'$ne':self.neighborhood._id})).sort('name'))
         return dict(neighborhood=self.neighborhood,
                     neighborhoods=other_nbhds)

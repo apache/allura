@@ -106,6 +106,7 @@ class Neighborhood(MappedClass):
             return self.css
         return ""
 
+    @property
     def should_show_icon(self):
         return self.level in ('silver', 'gold', 'platinum')
 
@@ -123,11 +124,10 @@ class Neighborhood(MappedClass):
         return {}
 
     def get_max_projects(self):
+        # Do not remove this condition. We must check here if level was set
         if self.level is not None and self.level != '':
-            if self.level in NEIGHBORHOOD_PROJECT_LIMITS:
-                return NEIGHBORHOOD_PROJECT_LIMITS[self.level]
-            else:
-                return 0
+            return NEIGHBORHOOD_PROJECT_LIMITS.get(self.level, 0)
+        # If level is undefined - we can create unlimited amount of projects
         return None
 
     def get_css_for_gold_level(self):

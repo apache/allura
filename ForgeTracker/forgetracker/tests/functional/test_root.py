@@ -4,7 +4,7 @@ import Image, StringIO
 import allura
 
 from mock import patch
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_true, assert_false, assert_equal, assert_in
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController
@@ -691,6 +691,67 @@ class TestFunctionalController(TrackerTestController):
                   headers={'Referer': '/bugs/1/'.encode("utf-8")})
         r = self.app.get('/bugs/1/', dict(page=1, limit=2))
         assert_true('Page 2 of 2' in r)
+
+    def test_bulk_edit_index(self):
+        self.new_ticket(summary='test first ticket', status='open')
+        self.new_ticket(summary='test second ticket', status='accepted')
+        self.new_ticket(summary='test third ticket', status='closed')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/?sort=summary+asc')
+        ticket_rows = response.html.find('table', {'class':'ticket-list'}).find('tbody')
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        expected_link = "/p/test/bugs/edit/?q=%21status%3Awont-fix+%26%26+%21status%3Aclosed&sort=snippet_s+asc&limit=25&page=0"
+        assert_equal(expected_link, edit_link['href'])
+        response = self.app.get(edit_link['href'])
+        ticket_rows = response.html.find('tbody', {'class':'ticket-list'})
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+
+    def test_bulk_edit_milestone(self):
+        self.new_ticket(summary='test first ticket', status='open', _milestone='1.0')
+        self.new_ticket(summary='test second ticket', status='accepted', _milestone='1.0')
+        self.new_ticket(summary='test third ticket', status='closed', _milestone='1.0')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/milestone/1.0/?sort=ticket_num+asc')
+        ticket_rows = response.html.find('table', {'class':'ticket-list'}).find('tbody')
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+        assert_in('test third ticket', str(ticket_rows))
+        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        expected_link = "/p/test/bugs/edit/?q=_milestone%3A1.0&sort=ticket_num_i+asc&limit=25&page=0"
+        assert_equal(expected_link, edit_link['href'])
+        response = self.app.get(edit_link['href'])
+        ticket_rows = response.html.find('tbody', {'class':'ticket-list'})
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+        assert_in('test third ticket', str(ticket_rows))
+
+    def test_bulk_edit_search(self):
+        self.new_ticket(summary='test first ticket', status='open')
+        self.new_ticket(summary='test second ticket', status='open')
+        self.new_ticket(summary='test third ticket', status='closed', _milestone='1.0')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/search/?q=status%3Aopen')
+        ticket_rows = response.html.find('table', {'class':'ticket-list'}).find('tbody')
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+        assert_false('test third ticket' in str(ticket_rows))
+        edit_link = response.html.find('a',{'title':'Bulk Edit'})
+        expected_link = "/p/test/bugs/edit/?q=status%3Aopen&limit=25&page=0"
+        assert_equal(expected_link, edit_link['href'])
+        response = self.app.get(edit_link['href'])
+        ticket_rows = response.html.find('tbody', {'class':'ticket-list'})
+        assert_in('test first ticket', str(ticket_rows))
+        assert_in('test second ticket', str(ticket_rows))
+        assert_false('test third ticket' in str(ticket_rows))
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):

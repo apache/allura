@@ -4,42 +4,53 @@
         <div class="first-line">{{g.markdown.convert(h.really_unicode(value.message.split('\n')[0]))}}</div>
         {{g.markdown.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])))}}
     </div>
-    <h2 class="commit-details">
-        <ul class="commit-links">
-            <li><a class="commit-tree-link" href="{{value.url()}}tree/">Tree</a></li>
-            {% if prev %}
-            <li class="commit-parents">
-              Parent(s):
-              {% for ci in prev %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
-            </li>
-            {% endif %}
-            {% if next %}
-            <li class="commit-children">
-              Child(ren):
-              {% for ci in next %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
-            </li>
-            {% endif %}
-        </ul>
+    <div class="commit-details">
 
-        Authored by
-        {% if value.author_url %}
-            <a href="{{value.author_url}}">{{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}}</a>
-            <a href="{{value.author_url}}">{{h.really_unicode(value.authored.name)}}</a>
-        {% else %}
-            {{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}} {{h.really_unicode(value.authored.name)}}
-        {% endif %}
-
-        {% if value.authored.date %}{{abbr_date(value.authored.date)}}{% endif %}
-
-        {% if value.committed.email != value.authored.email %}
-            Committed by
-            {% if value.committer_url %}
-                <a href="{{value.committer_url}}">{{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}}</a>
-                <a href="{{value.committer_url}}">{{h.really_unicode(value.committed.name)}}</a>
+        <div class="commit-authorship">
+            <p>
+            <label>Authored by:</label>
+            {% if value.author_url %}
+                <a href="{{value.author_url}}">{{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}}</a>
+                <a href="{{value.author_url}}">{{h.really_unicode(value.authored.name)}}</a>
             {% else %}
-                {{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}} {{h.really_unicode(value.committed.name)}}
+                {{email_gravatar(value.authored.email, title=h.really_unicode(value.authored.name), size=16)}} {{h.really_unicode(value.authored.name)}}
             {% endif %}
-            {% if value.committed.date %}{{abbr_date(value.committed.date)}}{% endif %}
-        {% endif %}
-    </h2>
+
+            {% if value.authored.date %}{{abbr_date(value.authored.date)}}{% endif %}
+            </p>
+
+            {% if value.committed.email != value.authored.email %}
+                <p>
+                <label>Committed by:</label>
+                {% if value.committer_url %}
+                    <a href="{{value.committer_url}}">{{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}}</a>
+                    <a href="{{value.committer_url}}">{{h.really_unicode(value.committed.name)}}</a>
+                {% else %}
+                    {{email_gravatar(value.committed.email, title=h.really_unicode(value.committed.name), size=16)}} {{h.really_unicode(value.committed.name)}}
+                {% endif %}
+                {% if value.committed.date %}{{abbr_date(value.committed.date)}}{% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="commit-links">
+            <a class="commit-tree-link" href="{{value.url()}}tree/">Tree</a>
+            <div class="commit-ancestry">
+                {% if prev %}
+                <p class="commit-parents">
+                  Parent(s):
+                  {% for ci in prev %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
+                </p>
+                {% endif %}
+                {% if next %}
+                <p class="commit-children">
+                  Child(ren):
+                  {% for ci in next %}<a href="{{ci.url()}}">{{ci.shorthand_id()}}</a>{% endfor %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
 </div>
