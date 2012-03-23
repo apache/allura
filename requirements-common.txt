@@ -19,7 +19,7 @@ iso8601==0.1.4
 Jinja2==2.6
 Markdown==2.0.3
 mercurial==1.4.3
-Ming==0.3.1dev-20120322
+Ming==0.3.1dev-20120323
 oauth2==1.5.170
 PasteScript==1.7.4.2
 PIL==1.1.7
