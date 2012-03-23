@@ -2266,7 +2266,6 @@ div.attachment_thumb .file_type span {
   box-shadow: rgba(0, 0, 0, 0.4) 0 1px 5px 0;
   background-color: #f5f5f5;
   border: 1px solid #cccccc;
-  width: 220px;
   display: inline;
   float: left;
   overflow: hidden;
@@ -2283,6 +2282,9 @@ div.attachment_thumb .file_type span {
   background-image: -moz-linear-gradient(100% 100% 90deg, #e5e5e5, white, white 25%);
   margin: 0 0 10px 10px;
 }
+.twocol { width: 330px; }
+.threecol { width: 220px; }
+
 .card .box {
   border: none;
   -moz-border-radius: 8px;
