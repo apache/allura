@@ -134,7 +134,8 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
-        show_total=False, limit=100, labels='', award='', private=False):
+        show_total=False, limit=100, labels='', award='', private=False,
+        columns=3, skip_proj_icon='off'):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
@@ -208,7 +209,8 @@ def projects(category=None, display_mode='grid', sort='last_updated',
 
     pl = ProjectList()
     g.resource_manager.register(pl)
-    response = pl.display(projects=projects, display_mode=display_mode)
+    response = pl.display(projects=projects, display_mode=display_mode,
+                          columns=columns, skip_proj_icon=skip_proj_icon)
     if show_total:
         if total is None:
             total = 0

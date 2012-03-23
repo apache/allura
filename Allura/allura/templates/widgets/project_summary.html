@@ -1,30 +1,34 @@
 {% if display_mode == 'list' %}
-<div class="list card">
-  {% if accolades %}
+<div class="list card {% if columns == '2' %}twocol{% else %}threecol{% endif %}">
+  {% if skip_proj_icon == 'off' %}
+   {% if accolades %}
     <div class="box notch sponsor">
       <div class="feature">{{accolades[0].award.short}}</div>
       <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
     </div>
-  {% else %}
+   {% else %}
     <div class="box">
       <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
     </div>
+   {% endif %}
   {% endif %}
-  <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
+  <h2><a href="{{value.url()}}">{{value.name}}{{ skip_proj_icon }}</a></h2>
   <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
   {{g.markdown_wiki.convert('[[download_button]]')}}
 </div>
 {% else %}
   <div class="border card">
-    {% if accolades %}
+    {% if skip_proj_icon == 'off' %}
+     {% if accolades %}
       <div class="box notch sponsor">
         <div class="feature">{{accolades[0].award.short}}</div>
         <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
       </div>
-    {% else %}
+     {% else %}
       <div class="box">
         <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
       </div>
+     {% endif %}
     {% endif %}
     <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
     <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
