@@ -85,7 +85,7 @@ class Globals(MappedClass):
     @property
     def not_closed_mongo_query(self):
         return dict(
-            status={'$in': list(self.set_of_open_status_names)})
+            status={'$nin': list(self.set_of_closed_status_names)})
 
     @property
     def closed_query(self):
