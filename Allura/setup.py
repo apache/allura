@@ -39,7 +39,6 @@ setup(
         ],
     install_requires=[
         "TurboGears2",
-        "tg.devtools",
         "pypeline",
         "datadiff",
         "BeautifulSoup",
@@ -47,15 +46,9 @@ setup(
         "Babel >= 0.9.4",
         "jinja2",
         "pysolr",
-        "repoze.what-quickstart",
-        "sqlalchemy-migrate",
         "Markdown >= 2.0.3",
         "Pygments >= 1.1.1",
-        "PyYAML >= 3.09",
         "python-openid >= 2.2.4",
-        "python-dateutil >= 1.4.1",
-        "WebOb >= 0.9.8",
-        "WebTest >= 1.2",
         "EasyWidgets >= 0.1.1",
         "PIL >= 1.1.7",
         "iso8601",
@@ -65,7 +58,7 @@ setup(
         "Ming >= 0.2.2dev-20110930",
         ],
     setup_requires=["PasteScript >= 1.7"],
-    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'Ming'],
+    paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'Ming'],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
@@ -121,7 +114,7 @@ setup(
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-level = allura.command:SetNeighborhoodLevelCommand
     set-neighborhood-private = allura.command:SetNeighborhoodPrivateCommand
-   
+
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
 
@@ -130,4 +123,3 @@ setup(
 
     """,
 )
-

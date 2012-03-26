@@ -1,7 +1,4 @@
 # requirements for local development, or other deployment instances
 
-python-ldap>=2.3.9
-Pygments==1.4
-
 # Include our common requirements
 -r requirements-common.txt
