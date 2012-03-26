@@ -139,6 +139,8 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
+    # 'trove' is internal substitution for 'category' filter in wiki macro
+    trove = category
     limit = int(limit)
     q = dict(
         neighborhood_id=c.project.neighborhood_id,
@@ -147,8 +149,8 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     if labels:
         or_labels = labels.split('|')
         q['$or'] = [{'labels': {'$all': l.split(',')}} for l in or_labels]
-    if category is not None:
-        category = M.ProjectCategory.query.get(name=category)
+    if trove is not None:
+        trove = M.TroveCategory.query.get(fullpath=trove)
     if award:
         aw = M.Award.query.find(dict(
             created_by_neighborhood_id=c.project.neighborhood_id,
@@ -158,8 +160,8 @@ def projects(category=None, display_mode='grid', sort='last_updated',
                 M.AwardGrant.query.find(dict(
                     granted_by_neighborhood_id=c.project.neighborhood_id,
                     award_id=aw._id))]}
-    if category is not None:
-        q['category_id'] = category._id
+    if trove is not None:
+        q['trove_' + trove.type] = trove._id
     sort_key, sort_dir = 'last_updated', pymongo.DESCENDING
     if sort == 'alpha':
         sort_key, sort_dir = 'name', pymongo.ASCENDING

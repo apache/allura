@@ -1,8 +1,14 @@
+import logging
+
+from ming.orm.ormsession import ThreadLocalORMSession
+
 from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
 
-class TestNeighborhood(TestController):
+log = logging.getLogger(__name__)
+
+class TestWikiMacro(TestController):
 
     @staticmethod
     def get_project_names(r):
@@ -24,43 +30,63 @@ class TestNeighborhood(TestController):
         projects_dict = dict([(p['name'],p[prop]) for p in projects])
         return [projects_dict[name] for name in names]
 
+    # @td.with_wiki
+    # def test_sort_alpha(self):
+    #     r = self.app.post('/p/wiki/Home/update',
+    #                       params={
+    #                               'title': 'Home',
+    #                               'text': '[[projects sort=alpha]]'
+    #                               },
+    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
+    #     project_list = self.get_project_names(r)
+    #     assert project_list == sorted(project_list)
+
+    # @td.with_wiki
+    # def test_sort_registered(self):
+    #     r = self.app.post('/p/wiki/Home/update',
+    #                       params={
+    #                               'title': 'Home',
+    #                               'text': '[[projects sort=last_registred]]'
+    #                               },
+    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
+    #     project_names = self.get_project_names(r)
+    #     ids = self.get_projects_property_in_the_same_order(project_names, '_id')
+    #     assert ids == sorted(ids, reverse=True)
+
+    # @td.with_wiki
+    # def test_sort_updated(self):
+    #     r = self.app.post('/p/wiki/Home/update',
+    #                       params={
+    #                               'title': 'Home',
+    #                               'text': '[[projects sort=last_updated]]'
+    #                               },
+    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
+    #     project_names = self.get_project_names(r)
+    #     updated_at = self.get_projects_property_in_the_same_order(project_names, 'last_updated')
+    #     assert updated_at == sorted(updated_at, reverse=True)
+
     @td.with_wiki
-    def test_sort_alpha(self):
+    def test_filtering(self):
+        # set up for test
+        from random import choice
+        trove_count = M.TroveCategory.query.find().count()
+        random_trove = M.TroveCategory.query.get(trove_cat_id=choice(range(trove_count)) + 1)
+        test_project = M.Project.query.get(name='test')
+        test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
+        test_project_troves.append(random_trove._id)
+        ThreadLocalORMSession.flush_all()
+        # test itself
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects sort=alpha]]'
-                                  },
-                          extra_environ=dict(username='root'), upload_files=[]).follow()
-        project_list = self.get_project_names(r)
-        assert project_list == sorted(project_list)
-    
-    @td.with_wiki
-    def test_sort_registered(self):
-        r = self.app.post('/p/wiki/Home/update',
-                          params={
-                                  'title': 'Home',
-                                  'text': '[[projects sort=last_registred]]'
+                                  'text': '[[projects category="' + random_trove.fullpath + '"]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         project_names = self.get_project_names(r)
-        ids = self.get_projects_property_in_the_same_order(project_names, '_id')
-        assert ids == sorted(ids, reverse=True)
+        assert [test_project.name, ] == project_names
 
     @td.with_wiki
-    def test_sort_updated(self):
-        r = self.app.post('/p/wiki/Home/update',
-                          params={
-                                  'title': 'Home',
-                                  'text': '[[projects sort=last_updated]]'
-                                  },
-                          extra_environ=dict(username='root'), upload_files=[]).follow()
-        project_names = self.get_project_names(r)
-        updated_at = self.get_projects_property_in_the_same_order(project_names, 'last_updated') 
-        assert updated_at == sorted(updated_at, reverse=True)
-
-    @td.with_wiki
-    def test_projects_makro(self):
+    def test_projects_macro(self):
         # test columns
         two_column_style = 'width: 330px;'
         r = self.app.post('/p/wiki/Home/update',
@@ -111,3 +137,4 @@ class TestNeighborhood(TestController):
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'download-button' not in r
+
