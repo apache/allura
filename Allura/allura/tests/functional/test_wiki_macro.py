@@ -1,12 +1,8 @@
-import logging
-
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
-
-log = logging.getLogger(__name__)
 
 class TestWikiMacro(TestController):
 
