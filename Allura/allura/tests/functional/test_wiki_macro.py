@@ -81,6 +81,7 @@ class TestWikiMacro(TestController):
         project_names = self.get_project_names(r)
         assert [test_project.name, ] == project_names
 
+
     @td.with_wiki
     def test_projects_macro(self):
         # test columns
@@ -133,4 +134,3 @@ class TestWikiMacro(TestController):
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'download-button' not in r
-
