@@ -1,77 +1,69 @@
 # requirements for all deployment environments
 
-async==0.6.1
-Babel==0.9.6
-Beaker==1.5.4
 BeautifulSoup==3.2.0
 chardet==1.0.1
 colander==0.9.3
+# dep of pypeline
 Creoleparser==0.7.3
-datadiff==1.1.3
 decorator==3.3.2
+# dep of pypeline
 docutils==0.8.1
 EasyWidgets==0.2dev-20110726
 feedparser==5.0.1
 FormEncode==1.2.4
+# dep of Creoleparser
 Genshi==0.6
-gitdb==0.5.4
-GitPython==0.3.0-beta2
+# dep of oauth2
 httplib2==0.7.4
 iso8601==0.1.4
 Jinja2==2.6
-# Mako is not used directly
-Mako==0.3.2
 Markdown==2.0.3
-MarkupSafe==0.15
 mercurial==1.4.3
-Ming==0.2.2dev-20120305
-mock==0.7.2
-nose==1.1.2
+Ming==0.3.1dev-20120323
 oauth2==1.5.170
-Paste==1.7.5.1
-PasteDeploy==1.5.0
 PasteScript==1.7.4.2
 PIL==1.1.7
 poster==0.8.1
-pyflakes==0.4.0
-Pylons==1.0
+Pygments==1.5
 pymongo==2.1.1
 Pypeline==0.1dev
-pyprof2calltree==1.1.0
 pysolr==2.1.0-beta
 python-dateutil==1.5
 python-openid==2.2.5
 pytidylib==0.2.1
-PyYAML==3.10
-# needed for profiling
-repoze.profile==1.3
-repoze.tm2==1.0a5
-repoze.what==1.0.9
-repoze.what.plugins.sql==1.0.1
-repoze.what-quickstart==1.0.8
-repoze.who==1.0.19
-repoze.who-friendlyform==1.0.8
-repoze.who.plugins.sa==1.0
-repoze.who-testutil==1.0.1
-Routes==1.12.3
-simplejson==2.2.1
-# used by gitdb
-smmap==0.8.1
-SQLAlchemy==0.7.2
-sqlalchemy-migrate==0.7.1
-# suds needed for teamforge import script
-suds==0.4
-Tempita==0.5.1
+# dep of pypeline
 textile==2.1.5
-tg.devtools==2.1.3
-ToscaWidgets==0.9.12
+# dep of colander
 translationstring==0.4
 TurboGears2==2.1.3
-tw.forms==0.9.9
+# part of the stdlib, but with a version number.  see http://guide.python-distribute.org/pip.html#listing-installed-packages
+wsgiref==0.1.2
+
+# tg2 deps (not used directly)
+Babel==0.9.6
+Beaker==1.5.4
+Mako==0.3.2
+MarkupSafe==0.15
+Paste==1.7.5.1
+PasteDeploy==1.5.0
+Pylons==1.0
+simplejson==2.2.1
+Tempita==0.5.1
+Routes==1.12.3
 WebError==0.10.3
 WebFlash==0.1a9
 WebHelpers==1.3
 WebOb==1.1.1
+
+# git deps
+async==0.6.1
+gitdb==0.5.4
+GitPython==0.3.0-beta2
+smmap==0.8.1
+
+# testing & development
+datadiff==1.1.3
+mock==0.8.0
+nose==1.1.2
+pyflakes==0.5.0
 WebTest==1.3.1
-wsgiref==0.1.2
-zope.interface==3.8.0

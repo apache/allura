@@ -17,6 +17,7 @@ Getting Started
 .. toctree::
    :maxdepth: 2
 
+   installation
    platform_tour
    scm_host
    migration
