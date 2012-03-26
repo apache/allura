@@ -26,40 +26,40 @@ class TestWikiMacro(TestController):
         projects_dict = dict([(p['name'],p[prop]) for p in projects])
         return [projects_dict[name] for name in names]
 
-    # @td.with_wiki
-    # def test_sort_alpha(self):
-    #     r = self.app.post('/p/wiki/Home/update',
-    #                       params={
-    #                               'title': 'Home',
-    #                               'text': '[[projects sort=alpha]]'
-    #                               },
-    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
-    #     project_list = self.get_project_names(r)
-    #     assert project_list == sorted(project_list)
+    @td.with_wiki
+    def test_sort_alpha(self):
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects sort=alpha]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        project_list = self.get_project_names(r)
+        assert project_list == sorted(project_list)
     
-    # @td.with_wiki
-    # def test_sort_registered(self):
-    #     r = self.app.post('/p/wiki/Home/update',
-    #                       params={
-    #                               'title': 'Home',
-    #                               'text': '[[projects sort=last_registred]]'
-    #                               },
-    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
-    #     project_names = self.get_project_names(r)
-    #     ids = self.get_projects_property_in_the_same_order(project_names, '_id')
-    #     assert ids == sorted(ids, reverse=True)
+    @td.with_wiki
+    def test_sort_registered(self):
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects sort=last_registred]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        project_names = self.get_project_names(r)
+        ids = self.get_projects_property_in_the_same_order(project_names, '_id')
+        assert ids == sorted(ids, reverse=True)
 
-    # @td.with_wiki
-    # def test_sort_updated(self):
-    #     r = self.app.post('/p/wiki/Home/update',
-    #                       params={
-    #                               'title': 'Home',
-    #                               'text': '[[projects sort=last_updated]]'
-    #                               },
-    #                       extra_environ=dict(username='root'), upload_files=[]).follow()
-    #     project_names = self.get_project_names(r)
-    #     updated_at = self.get_projects_property_in_the_same_order(project_names, 'last_updated') 
-    #     assert updated_at == sorted(updated_at, reverse=True)
+    @td.with_wiki
+    def test_sort_updated(self):
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects sort=last_updated]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        project_names = self.get_project_names(r)
+        updated_at = self.get_projects_property_in_the_same_order(project_names, 'last_updated') 
+        assert updated_at == sorted(updated_at, reverse=True)
 
     @td.with_wiki
     def test_filtering(self):
