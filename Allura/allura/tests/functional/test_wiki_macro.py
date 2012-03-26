@@ -81,3 +81,56 @@ class TestWikiMacro(TestController):
         project_names = self.get_project_names(r)
         assert [test_project.name, ] == project_names
 
+
+    @td.with_wiki
+    def test_projects_makro(self):
+        # test columns
+        two_column_style = 'width: 330px;'
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list columns=2]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert two_column_style in r
+
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list columns=3]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert two_column_style not in r
+
+        # test project icon
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list show_proj_icon=on]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert 'test Logo' in r
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list show_proj_icon=off]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert 'test Logo' not in r
+
+        # test project download button
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list show_download_button=on]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert 'download-button' in r
+
+        r = self.app.post('/p/wiki/Home/update',
+                          params={
+                                  'title': 'Home',
+                                  'text': '[[projects display_mode=list show_download_button=off]]'
+                                  },
+                          extra_environ=dict(username='root'), upload_files=[]).follow()
+        assert 'download-button' not in r

@@ -14,7 +14,8 @@
             sitemap=sitemaps[project._id],
             display_mode=display_mode,
             columns=columns,
-            skip_proj_icon=skip_proj_icon)}}
+            show_proj_icon=show_proj_icon,
+            show_download_button=show_download_button)}}
       {% endif %}
     {% endfor %}
     {% do g.set_project(old_project) %}

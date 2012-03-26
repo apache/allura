@@ -1,6 +1,6 @@
 {% if display_mode == 'list' %}
-<div class="list card {% if columns == '2' %}twocol{% else %}threecol{% endif %}">
-  {% if skip_proj_icon == 'off' %}
+<div class="list card"{% if columns == '2' %} style="width: 330px"{% endif %}>
+  {% if show_proj_icon == 'on' %}
    {% if accolades %}
     <div class="box notch sponsor">
       <div class="feature">{{accolades[0].award.short}}</div>
@@ -12,13 +12,13 @@
     </div>
    {% endif %}
   {% endif %}
-  <h2><a href="{{value.url()}}">{{value.name}}{{ skip_proj_icon }}</a></h2>
+  <h2><a href="{{value.url()}}">{{value.name}}</a></h2>
   <p class="desc">{% if value.summary %}{{value.summary}}{% else %}{{h.text.truncate(value.short_description, 50)}}{% endif %}</p>
-  {{g.markdown_wiki.convert('[[download_button]]')}}
+  {% if show_download_button == 'on' %}{{g.markdown_wiki.convert('[[download_button]]')}}{% endif %}
 </div>
 {% else %}
   <div class="border card">
-    {% if skip_proj_icon == 'off' %}
+    {% if show_proj_icon == 'on' %}
      {% if accolades %}
       <div class="box notch sponsor">
         <div class="feature">{{accolades[0].award.short}}</div>
