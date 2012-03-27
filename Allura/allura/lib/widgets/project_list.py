@@ -14,7 +14,10 @@ class ProjectSummary(ew_core.Widget):
         icon=None,
         value=None,
         icon_url=None,
-        accolades=None)
+        accolades=None,
+        columns=3,
+        show_proj_icon='on',
+        show_download_button='on')
 
     def prepare_context(self, context):
         response = super(ProjectSummary, self).prepare_context(context)
