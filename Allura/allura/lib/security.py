@@ -193,9 +193,10 @@ class RoleCache(object):
                 if rid in visited: continue
                 yield role
                 pr_index = self.cred.project_roles(role.project_id).index
-                for i in pr_index[rid].roles:
-                    if i in pr_index:
-                        to_visit.append((i, pr_index[i]))
+                if rid in pr_index:
+                    for i in pr_index[rid].roles:
+                        if i in pr_index:
+                            to_visit.append((i, pr_index[i]))
         return RoleCache(self.cred, _iter())
 
     @LazyProperty
