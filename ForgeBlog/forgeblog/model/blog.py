@@ -11,7 +11,7 @@ from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session, state
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib import utils, patience, htmltruncate
+from allura.lib import utils, patience
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
