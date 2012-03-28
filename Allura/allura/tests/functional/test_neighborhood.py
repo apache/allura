@@ -7,11 +7,13 @@ from datetime import datetime, timedelta
 import Image
 from tg import config
 from ming.orm.ormsession import ThreadLocalORMSession
+from nose.tools import assert_equal
 
 import allura
 from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
+
 
 class TestNeighborhood(TestController):
 
@@ -407,7 +409,8 @@ class TestNeighborhood(TestController):
                         "mount_point":"wiki",
                         "options":{
                             "show_right_bar":false,
-                            "show_discussion":false
+                            "show_discussion":false,
+                            "some_url": "http://foo.com/$shortname/"
                         },
                         "home_text":"My home text!"
                     },
@@ -438,6 +441,7 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username='root'),
             status=302).follow()
+        p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div',{'id':'top_nav'})
         assert top_nav.contents[1]['href'] == '/adobe/testtemp/wiki/'
@@ -464,8 +468,11 @@ class TestNeighborhood(TestController):
         # check the wiki text
         r = self.app.get('/adobe/testtemp/wiki/').follow()
         assert "My home text!" in r
+        # check tool options
+        opts = p.app_config('wiki').options
+        assert_equal(False, opts.show_discussion)
+        assert_equal("http://foo.com/testtemp/", opts.some_url)
         # check that custom groups/perms/users were setup correctly
-        p = M.Project.query.get(shortname='testtemp')
         roles = p.named_roles
         for group in test_groups:
             name = group.get('name')
