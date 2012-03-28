@@ -174,7 +174,7 @@ class NeighborhoodController(object):
         if tools and not neighborhood.project_template:
             for i, tool in enumerate(tools):
                 c.project.install_app(tool, ordinal=i+offset)
-        flash('Welcome to the SourceForge Beta System! '
+        flash('Welcome to the SourceForge Project System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')
 
