@@ -58,7 +58,7 @@ Now we can get down to actually getting the Forge code and dependencies download
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
     (anvil)~/src$ cd forge
-    (anvil)~/src/forge$ pip install -r requirements-dev.txt
+    (anvil)~/src/forge$ pip install -r requirements.txt
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
