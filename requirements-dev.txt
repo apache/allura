@@ -1,4 +1,0 @@
-# requirements for local development, or other deployment instances
-
-# Include our common requirements
--r requirements-common.txt
