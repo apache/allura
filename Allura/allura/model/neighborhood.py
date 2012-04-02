@@ -180,9 +180,9 @@ class Neighborhood(MappedClass):
                         if m:
                             icon_theme = m.group(1)
                             if icon_theme == "ffffff":
-                                titlebarcolor_dark = 'selected="selected"'
+                                titlebarcolor_dark = ' selected="selected"'
                             elif icon_theme == "454545":
-                                titlebarcolor_white = 'selected="selected"'
+                                titlebarcolor_white = ' selected="selected"'
 
         titlebarcolor['additional'] = titlebarcolor['additional'] % {'titlebarcolor_dark': titlebarcolor_dark,
                                                                      'titlebarcolor_white': titlebarcolor_white}
