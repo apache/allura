@@ -406,7 +406,6 @@ class Project(MappedClass):
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
             sitemap.children.append(e['entry'])
-            log.info("ENTRY: %s %s" % (e['entry'].label, e['ordinal']))
         return sitemap.children
 
     def parent_iter(self):
