@@ -135,7 +135,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=2, show_proj_icon='on', show_download_button='on'):
+        columns=2, show_proj_icon=True, show_download_button=True):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
