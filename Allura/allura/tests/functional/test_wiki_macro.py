@@ -42,7 +42,7 @@ class TestWikiMacro(TestController):
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects sort=last_registred]]'
+                                  'text': '[[projects sort=last_registered]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         project_names = self.get_project_names(r)
@@ -83,7 +83,7 @@ class TestWikiMacro(TestController):
 
 
     @td.with_wiki
-    def test_projects_makro(self):
+    def test_projects_macro(self):
         # test columns
         two_column_style = 'width: 330px;'
         r = self.app.post('/p/wiki/Home/update',
