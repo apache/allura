@@ -1,5 +1,5 @@
 {% if display_mode == 'list' %}
-<div class="list card"{% if columns == '2' %} style="width: 330px"{% endif %}>
+<div class="list card"{% if columns == 2 %} style="width: 330px"{% elif columns == 1 %} style="width: 660px"{% endif %}>
   {% if show_proj_icon == True %}
    {% if accolades %}
     <div class="box notch sponsor">
