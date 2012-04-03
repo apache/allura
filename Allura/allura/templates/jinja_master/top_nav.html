@@ -8,7 +8,7 @@
           <span class="diamond"></span>
         {% endif %}
       {% else %}
-        {% if s.url in request.url or c.project.neighborhood.url()+'_admin' in request.url %}
+        {% if s.url in request.upath_info or c.project.neighborhood.url()+'_admin' in request.upath_info %}
           <span class="diamond"></span>
         {% endif %}
       {% endif %}

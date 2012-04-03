@@ -288,12 +288,14 @@ class PreferencesController(BaseController):
         subscriptions = []
         mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
         mailboxes = list(mailboxes.ming_cursor)
+        project_collection = M.Project.query.mapper.collection
+        app_collection = M.AppConfig.query.mapper.collection
         projects = dict(
-            (p._id, p) for p in M.Project.query.find(dict(
-                    _id={'$in': [mb.project_id for mb in mailboxes ]})).ming_cursor)
+            (p._id, p) for p in project_collection.m.find(dict(
+                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
         app_index = dict(
-            (ac._id, ac) for ac in M.AppConfig.query.find(dict(
-                    _id={'$in': [ mb.app_config_id for mb in mailboxes ] })).ming_cursor)
+            (ac._id, ac) for ac in app_collection.m.find(dict(
+                    _id={'$in': [mb.project_id for mb in mailboxes]})))
 
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)

@@ -125,14 +125,17 @@ class TestNeighborhood(TestController):
                                   'css-projecttitlecolor': 'green',
                                   'css-barontop': '#555555',
                                   'css-titlebarbackground': '#333',
-                                  'css-titlebarcolor': '#444'},
+                                  'css-titlebarcolor': '#444',
+                                  'css-addopt-icon-theme': 'dark'},
                           extra_environ=dict(username='root'), upload_files=[])
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
         assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
         assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
-        assert '/*titlebarcolor*/.pad h2.title{color:#444;}' in neighborhood.css
+        assert "/*titlebarcolor*/.pad h2.title{color:#444;} "\
+               ".pad h2.dark small b.ico {background-image: "\
+               "url('/nf/_ew_/theme/allura/images/neo-icon-set-ffffff-256x350.png');}" in neighborhood.css
 
     def test_max_projects(self):
         # Set max value to unlimit

@@ -85,7 +85,7 @@ class Globals(MappedClass):
     @property
     def not_closed_mongo_query(self):
         return dict(
-            status={'$in': list(self.set_of_open_status_names)})
+            status={'$nin': list(self.set_of_closed_status_names)})
 
     @property
     def closed_query(self):
@@ -181,7 +181,7 @@ class Bin(Artifact):
 
     type_s = 'Bin'
     _id = FieldProperty(schema.ObjectId)
-    summary = FieldProperty(str, required=True)
+    summary = FieldProperty(str, required=True, allow_none=False)
     terms = FieldProperty(str, if_missing='')
     sort = FieldProperty(str, if_missing='')
 
@@ -222,7 +222,7 @@ class Ticket(VersionedArtifact):
 
     super_id = FieldProperty(schema.ObjectId, if_missing=None)
     sub_ids = FieldProperty([schema.ObjectId])
-    ticket_num = FieldProperty(int, required=True)
+    ticket_num = FieldProperty(int, required=True, allow_none=False)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     reported_by_id = ForeignIdProperty(User, if_missing=lambda:c.user._id)

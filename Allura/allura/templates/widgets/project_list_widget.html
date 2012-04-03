@@ -12,7 +12,10 @@
             icon_url=icon_urls[project._id], 
             accolades=accolades_index[project._id],
             sitemap=sitemaps[project._id],
-            display_mode=display_mode)}}
+            display_mode=display_mode,
+            columns=columns,
+            show_proj_icon=show_proj_icon,
+            show_download_button=show_download_button)}}
       {% endif %}
     {% endfor %}
     {% do g.set_project(old_project) %}

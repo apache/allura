@@ -153,20 +153,22 @@ class NeighborhoodOverviewForm(ForgeForm):
             display = '<table class="table_class">'
             ctx = self.context_for(field)
             for inp in self.color_inputs:
+                additional_inputs = inp.get('additional', '')
                 empty_val = False
                 if inp['value'] is None or inp['value'] == '':
                     empty_val = True
-                display += '<tr><td class="left"><label>%(label)s<label/></td>'\
-                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s/>default</td>'\
-                           '<td class="right"><span class="%(ctx_name)s-%(inp_name)s-inp"><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '\
-                           'rendered_name="%(ctx_name)s-%(inp_name)s" '\
-                           'value="%(inp_value)s"/></span></td></tr>\n' % {'ctx_id': ctx['id'],
+                display += '<tr><td class="left"><label>%(label)s</label></td>'\
+                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'\
+                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'\
+                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {'ctx_id': ctx['id'],
                                                             'ctx_name': ctx['name'],
                                                             'inp_name': inp['name'],
                                                             'inp_value': inp['value'],
                                                             'label': inp['label'],
                                                             'inp_type': inp['type'],
-                                                            'def_checked': 'checked="checked"' if empty_val else ''}
+                                                            'def_checked': 'checked="checked"' if empty_val else '',
+                                                            'inp_additional': additional_inputs}
             display += '</table>'
 
             if ctx['errors'] and field.show_errors and not ignore_errors:
@@ -194,7 +196,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         yield ew.CSSLink('css/colorPicker.css')
         yield ew.CSSLink('css/jqfontselector.css')
         yield ew.CSSScript('''
-table.table_class{
+table.table_class, table.input_inner{
   margin: 0;
   padding: 0;
   width: 99%;
@@ -203,6 +205,7 @@ table.table_class{
 table.table_class .left{ text-align: left; }
 table.table_class .right{ text-align: right; width: 50%;}
 table.table_class tbody tr td { border: none; }
+table.table_class select.add_opt {width: 5em; margin:0; padding: 0;}
         ''')
         yield ew.JSLink('js/jquery.colorPicker.js')
         yield ew.JSLink('js/jqfontselector.js')
@@ -211,7 +214,7 @@ table.table_class tbody tr td { border: none; }
               $('.table_class').find('input[type="checkbox"]').each(function(index, element) {
                 var cb_name = $(this).attr('name');
                 var inp_name = cb_name.substr(0, cb_name.length-4);
-                var inp_el = $('span[class="'+inp_name+'-inp"]');
+                var inp_el = $('div[class="'+inp_name+'-inp"]');
 
                 if ($(this).attr('checked')) {
                   inp_el.hide();

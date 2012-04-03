@@ -3,7 +3,7 @@
       {% if field.name == '_milestone' %}
       <div class="grid-6">{{milestones}}
         <label for="{{field.name}}" class="cr">{{field.label}}:</label>
-        <select name="{{field.name}}" class="wide">
+        <select name="{{field.name}}" id="{{field.name}}" class="wide">
           <option value="" selected="selected">no change</option>
           {% for m in field.milestones %}
             {% if not m.complete %}
@@ -16,7 +16,7 @@
     {% endfor %}
     <div class="grid-6">
       <label for="status" class="cr">Status:</label>
-      <select name="status" class="wide">
+      <select name="status" id="status" class="wide">
         <option value="" selected="selected">no change</option>
         {% for option in globals.all_status_names.split() %}
           <option value="{{option}}">{{option}}</option>
@@ -25,7 +25,7 @@
     </div>
     <div class="grid-6">
       <label for="assigned_to" class="cr">Owner:</label>
-      {{c.user_select.display(name='assigned_to', value='', className='wide')}}
+      {{c.user_select.display(name='assigned_to', id='assigned_to', value='', className='wide')}}
     </div>
     {% set cf_count = 0 %}
     {% for field in globals.custom_fields %}
@@ -36,7 +36,7 @@
         <div class="grid-6">
           <label for="{{field.id}}" class="cr">{{field.label}}:</label>
           {% if field.type == 'boolean' %}
-            <input name="{{field.name}}" type="checkbox" value="True"/>
+            <input name="{{field.name}}" id="{{field.name}}" type="checkbox" value="True"/>
           {% elif field.type == 'select' %}
             <select name="{{field.name}}" class="wide">
               <option value="" selected="selected">no change</option>
@@ -65,7 +65,7 @@
       {% endif %}
     {% endfor %}
     <div class="grid-18">
-      <input type="button" onclick="update_tickets()" value="Save"/>
+      <input type="button" class="update_tickets" value="Save"/>
       <a href="{{cancel_href}}" class="btn link">Cancel</a>
       <!-- tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>-->
     </div>

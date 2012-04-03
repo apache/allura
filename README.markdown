@@ -26,22 +26,24 @@ You'll also need additional development packages in order to compile some of the
     ~$ sudo aptitude install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
 
-And finally our document-oriented database, MongoDB, and our messaging server, RabbitMQ.  Note that RabbitMQ is optional, but will make messages flow faster through our asynchronous processors.  By default, rabbitmq is disabled in development.ini.
+And finally our document-oriented database, MongoDB
 
-    ~$ sudo aptitude install mongodb-server rabbitmq-server
+    ~$ sudo aptitude install mongodb-server
+
+If you are using a different base system, make sure you have Mongo 1.8 or better.  If you need to upgrade, you can download the latest from <http://www.mongodb.org/downloads>
 
 ## Setting up a virtual python environment
 
 The first step to installing the Forge platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
 
-    ~$ sudo aptitude install python-setuptools
-    ~$ sudo easy_install -U virtualenv
+    ~$ sudo aptitude install python-pip
+    ~$ sudo pip install virtualenv
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
 
     ~$ virtualenv --system-site-packages anvil
 
-This gives us a nice, clean environment into which we can install all the forge dependencies.  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
+This gives us a nice, clean environment into which we can install all the forge dependencies.  (The site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
 
     ~$ . anvil/bin/activate
 
@@ -56,10 +58,9 @@ Now we can get down to actually getting the Forge code and dependencies download
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
     (anvil)~/src$ cd forge
-    (anvil)~/src/forge$ easy_install pip
-    (anvil)~/src/forge$ pip install -r requirements-dev.txt
+    (anvil)~/src/forge$ pip install -r requirements.txt
 
-If you want to use RabbitMQ for faster message processing (optional), also pip install 'amqplib' and 'kombu'.
+This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
 And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
@@ -84,18 +85,6 @@ Hopefully everything completed without errors.  We'll also need to create a plac
 
 The forge consists of several components, all of which need to be running to have full functionality.
 
-
-### MongoDB database server
-
-Generally set up with its own directory, we'll use ~/var/mongodata to keep our installation localized.  We also need to disable the default distribution server.
-
-    (anvil)~$ sudo service mongodb stop
-    (anvil)~$ sudo update-rc.d mongodb remove
-
-    (anvil)~$ mkdir -p ~/var/mongodata ~/logs
-    (anvil)~$ nohup mongod --dbpath ~/var/mongodata > ~/logs/mongodb.log &
-
-
 ### SOLR search and indexing server
 
 We have a custom config ready for use.
@@ -109,29 +98,12 @@ We have a custom config ready for use.
     (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
 
 
-### RabbitMQ message queue (optional)
-
-We'll need to setup some development users and privileges.
-
-    (anvil)~$ sudo rabbitmqctl add_user testuser testpw
-    (anvil)~$ sudo rabbitmqctl add_vhost testvhost
-    (anvil)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
-
-
 ### Forge task processing
 
 Responds to asynchronous task requests.
 
     (anvil)~$ cd ~/src/forge/Allura
     (anvil)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
-
-
-### Forge SMTP for inbound mail
-
-Routes messages from email addresses to tools in the forge.
-
-    (anvil)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
-
 
 ### TurboGears application server
 
@@ -143,26 +115,19 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
 
     (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
-And now you should be able to visit the server running on your [local machine](http://localhost:8080/).
+## Next Steps
+
+Go to the server running on your [local machine](http://localhost:8080/) port 8080.
 You can log in with username admin1, test-user or root.  They all have password "foo".  (For more details
 on the default data, see bootstrap.py)
 
+There are a few default projects (like "test") and neighborhoods.  Feel free to experiment with them.  If you want to
+register a new project in your own forge, visit /p/add_project
 
-## Next Steps
+## Extra
 
-
-### Generate the documentation
-
-Forge documentation currently lives in the `Allura/docs` directory and can be converted to HTML using `Sphinx`:
-
-    (anvil)~$ cd ~/src/forge/Allura/docs
-    (anvil)~/src/forge/Allura/docs$ easy_install sphinx
-    (anvil)~/src/forge/Allura/docs$ make html
-
-You will also want to give the test suite a run, to verify there were no problems with the installation.
-
-    (anvil)~$ cd ~/src/forge
-    (anvil)~/src/forge$ export ALLURA_VALIDATION=none
-    (anvil)~/src/forge$ ./run_tests
-
-Happy hacking!
+* Read more documentation: http://allura.sourceforge.net/
+    * Including how to enable extra features: http://allura.sourceforge.net/installation.html
+* Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
+* File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
+* Contribute code according to this guide: <http://sourceforge.net/p/allura/wiki/Contributing%20Code/>

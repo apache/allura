@@ -36,6 +36,7 @@ re_color_project_title = re.compile('color:(.+);\}')
 re_bgcolor_barontop = re.compile('background\-color:([^;}]+);')
 re_bgcolor_titlebar = re.compile('background\-color:([^;}]+);')
 re_color_titlebar = re.compile('color:([^;}]+);')
+re_icon_theme = re.compile('neo-icon-set-(ffffff|454545)-256x350.png')
 
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
@@ -135,7 +136,14 @@ class Neighborhood(MappedClass):
         projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
         barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
         titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
-        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color'}
+        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color', 
+                         'additional': """<label>Icons theme:</label> <select name="css-addopt-icon-theme" class="add_opt">
+                        <option value="default">default</option>
+                        <option value="dark"%(titlebarcolor_dark)s>dark</option>
+                        <option value="white"%(titlebarcolor_white)s>white</option>
+                      </select>"""}
+        titlebarcolor_dark = ''
+        titlebarcolor_white = ''
 
         if self.css is not None:
             for css_line in self.css.split('\n'):
@@ -168,7 +176,16 @@ class Neighborhood(MappedClass):
                     m = re_color_titlebar.search(css_line)
                     if m:
                         titlebarcolor['value'] = m.group(1)
+                        m = re_icon_theme.search(css_line)
+                        if m:
+                            icon_theme = m.group(1)
+                            if icon_theme == "ffffff":
+                                titlebarcolor_dark = ' selected="selected"'
+                            elif icon_theme == "454545":
+                                titlebarcolor_white = ' selected="selected"'
 
+        titlebarcolor['additional'] = titlebarcolor['additional'] % {'titlebarcolor_dark': titlebarcolor_dark,
+                                                                     'titlebarcolor_white': titlebarcolor_white}
 
         styles_list = []
         styles_list.append(projecttitlefont)
@@ -201,7 +218,18 @@ class Neighborhood(MappedClass):
                        {'bgcolor': css_form_dict['titlebarbackground']}
 
         if 'titlebarcolor' in css_form_dict and css_form_dict['titlebarcolor'] != '':
-           css_text += "/*titlebarcolor*/.pad h2.title{color:%s;}\n" % (css_form_dict['titlebarcolor'])
+           icon_theme = ''
+           if 'addopt-icon-theme' in css_form_dict:
+               if css_form_dict['addopt-icon-theme'] == "dark":
+                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                               pylons.g.theme_href(''),
+                               'images/neo-icon-set-ffffff-256x350.png')
+               elif css_form_dict['addopt-icon-theme'] == "white":
+                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                               pylons.g.theme_href(''),
+                               'images/neo-icon-set-454545-256x350.png')
+
+           css_text += "/*titlebarcolor*/.pad h2.title{color:%s;} %s\n" % (css_form_dict['titlebarcolor'], icon_theme)
 
         return css_text
 

@@ -157,7 +157,7 @@ class Object(object):
 
 def trove_ids(orig, new_):
     if new_ is None: return orig
-    return set(t._id for t in list(new_))
+    return list(set(t._id for t in list(new_)))
 
 def create_project(p, nbhd, user, options):
     worker_name = multiprocessing.current_process().name

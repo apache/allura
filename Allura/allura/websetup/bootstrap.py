@@ -64,9 +64,10 @@ def bootstrap(command, conf, vars):
     log.info('Initializing search')
 
     log.info('Registering root user & default neighborhoods')
-    anonymous = M.User(_id=None,
-                       username='*anonymous',
-                       display_name='Anonymous')
+    anonymous = M.User(
+        _id=None,
+        username='*anonymous',
+        display_name='Anonymous')
     root = create_user('Root')
 
     n_projects = M.Neighborhood(name='Projects', url_prefix='/p/')

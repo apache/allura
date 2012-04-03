@@ -91,7 +91,7 @@ class TroveCategory(MappedClass):
         return result
 
 class ProjectMapperExtension(MapperExtension):
-    def after_insert(self, obj, st):
+    def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)
 
 class Project(MappedClass):
@@ -406,7 +406,6 @@ class Project(MappedClass):
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
             sitemap.children.append(e['entry'])
-            log.info("ENTRY: %s %s" % (e['entry'].label, e['ordinal']))
         return sitemap.children
 
     def parent_iter(self):
