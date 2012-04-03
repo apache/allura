@@ -16,8 +16,8 @@ class ProjectSummary(ew_core.Widget):
         icon_url=None,
         accolades=None,
         columns=3,
-        show_proj_icon='on',
-        show_download_button='on')
+        show_proj_icon=True,
+        show_download_button=True)
 
     def prepare_context(self, context):
         response = super(ProjectSummary, self).prepare_context(context)
@@ -31,6 +31,19 @@ class ProjectSummary(ew_core.Widget):
                 response['icon_url'] = g.forge_static('images/project_default.png')
         if response['accolades'] is None:
             response['accolades'] = value.accolades
+
+        true_list = ['true', 't', '1', 'yes', 'y']
+        if type(response['show_proj_icon']) == unicode:
+            if response['show_proj_icon'].lower() in true_list:
+                response['show_proj_icon'] = True
+            else:
+                response['show_proj_icon'] = False
+        if type(response['show_download_button']) == unicode:
+            if response['show_download_button'].lower() in true_list:
+                response['show_download_button'] = True
+            else:
+                response['show_download_button'] = False
+
         return response
 
     def resources(self):

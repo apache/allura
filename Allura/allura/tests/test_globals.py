@@ -1,3 +1,4 @@
+import re
 from urllib import quote
 
 from nose.tools import with_setup, assert_equal
@@ -154,3 +155,93 @@ Some text in a regular paragraph
 ~~~~
 def foo(): pass
 ~~~~''')
+
+@with_setup(setUp)
+def test_sort_alpha():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects sort=alpha]]')
+        project_list = get_project_names(r)
+        assert project_list == sorted(project_list)
+
+@with_setup(setUp)
+def test_sort_registered():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects sort=last_registered]]')
+        project_names = get_project_names(r)
+        ids = get_projects_property_in_the_same_order(project_names, '_id')
+        assert ids == sorted(ids, reverse=True)
+
+@with_setup(setUp)
+def test_sort_updated():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects sort=last_updated]]')
+        project_names = get_project_names(r)
+        updated_at = get_projects_property_in_the_same_order(project_names, 'last_updated')
+        assert updated_at == sorted(updated_at, reverse=True)
+
+@with_setup(setUp)
+def test_filtering():
+    # set up for test
+    from random import choice
+    trove_count = M.TroveCategory.query.find().count()
+    random_trove = M.TroveCategory.query.get(trove_cat_id=choice(range(trove_count)) + 1)
+    test_project = M.Project.query.get(name='test')
+    test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
+    test_project_troves.append(random_trove._id)
+    ThreadLocalORMSession.flush_all()
+
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects category="%s"]]' % random_trove.fullpath)
+        project_names = get_project_names(r)
+        assert [test_project.name, ] == project_names
+
+@with_setup(setUp)
+def test_projects_macro():
+    two_column_style = 'width: 330px;'
+
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        # test columns
+        r = g.markdown_wiki.convert('[[projects display_mode=list columns=2]]')
+        assert two_column_style in r
+        r = g.markdown_wiki.convert('[[projects display_mode=list columns=3]]')
+        assert two_column_style not in r
+
+        # test project icon
+        r = g.markdown_wiki.convert('[[projects display_mode=list show_proj_icon=True]]')
+        assert 'test Logo' in r
+        r = g.markdown_wiki.convert('[[projects display_mode=list show_proj_icon=False]]')
+        assert 'test Logo' not in r
+
+        # test project download button
+        r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=True]]')
+        assert 'download-button' in r
+        r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
+        assert 'download-button' not in r
+
+def get_project_names(r):
+    """
+    Extracts a list of project names from a wiki page HTML.
+    """
+    # projects short names are in h2 elements without any attributes
+    # there is one more h2 element, but it has `class` attribute
+    #re_proj_names = re.compile('<h2><a[^>]>(.+)<\/a><\/h2>')
+    re_proj_names = re.compile('<h2><a[^>]+>(.+)<\/a><\/h2>')
+    return [e for e in re_proj_names.findall(r)]
+
+def get_projects_property_in_the_same_order(names, prop):
+    """
+    Returns a list of projects properties `prop` in the same order as
+    project `names`.
+    It is required because results of the query are not in the same order as names.
+    """
+    projects = M.Project.query.find(dict(name={'$in': names})).all()
+    projects_dict = dict([(p['name'],p[prop]) for p in projects])
+    return [projects_dict[name] for name in names]
