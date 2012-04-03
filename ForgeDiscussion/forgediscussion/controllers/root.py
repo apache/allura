@@ -108,7 +108,7 @@ class RootController(BaseController):
             redirect(request.referrer)
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
-                headers=dict(Subject=subject)))
+                headers=dict(Subject=subject)))[0]
         post = thd.post(subject, text)
         flash('Message posted')
         redirect(thd.url())
