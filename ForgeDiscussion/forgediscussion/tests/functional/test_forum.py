@@ -138,12 +138,14 @@ class TestForumAsync(TestController):
         self._post('testforum', 'Test Thread', 'Nothing here',
                    message_id='test_reply@sf.net')
         assert_equal(FM.ForumThread.query.find().count(), 1)
-        assert_equal(FM.ForumPost.query.find().count(), 1)
+        posts = FM.ForumPost.query.find()
+        assert_equal(posts.count(), 1)
         assert_equal(FM.ForumThread.query.get().num_replies, 1)
         assert_equal(FM.ForumThread.query.get().first_post_id, 'test_reply@sf.net')
 
+        post = posts.first()
         self._post('testforum', 'Test Reply', 'Nothing here, either',
-                   message_id='test_reply1@sf.net',
+                   message_id=post.thread.url()+post._id,
                    in_reply_to=[ 'test_reply@sf.net' ])
         assert_equal(FM.ForumThread.query.find().count(), 1)
         assert_equal(FM.ForumPost.query.find().count(), 2)

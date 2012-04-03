@@ -253,11 +253,16 @@ class Artifact(MappedClass):
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
                 subject='%s discussion' % idx['title_s'])
-        return t
+        parent_id = None
+        if data:
+            in_reply_to = data.get('in_reply_to', [])
+            if in_reply_to:
+                parent_id = in_reply_to[0]
+        return t, parent_id
 
     @LazyProperty
     def discussion_thread(self):
-        return self.get_discussion_thread()
+        return self.get_discussion_thread()[0]
 
     def attach(self, filename, fp, **kw):
         att = self.attachment_class().save_attachment(
