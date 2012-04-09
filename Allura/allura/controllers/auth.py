@@ -295,7 +295,7 @@ class PreferencesController(BaseController):
                     _id={'$in': [mb.project_id for mb in mailboxes ]})))
         app_index = dict(
             (ac._id, ac) for ac in app_collection.m.find(dict(
-                    _id={'$in': [mb.project_id for mb in mailboxes]})))
+                    _id={'$in': [mb.app_config_id for mb in mailboxes]})))
 
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)
@@ -311,7 +311,7 @@ class PreferencesController(BaseController):
             subscriptions.append(dict(
                     _id=mb._id,
                     project_name=project.name,
-                    mount_point=app_config.options.mount_point,
+                    mount_point=app_config.options['mount_point'],
                     artifact_title=title,
                     topic=mb.topic,
                     type=mb.type,
