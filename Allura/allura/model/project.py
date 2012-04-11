@@ -159,6 +159,7 @@ class Project(MappedClass):
     trove_topic=FieldProperty([S.ObjectId])
     trove_natlanguage=FieldProperty([S.ObjectId])
     trove_environment=FieldProperty([S.ObjectId])
+    tracking_id = FieldProperty(str, if_missing='')
 
     @property
     def permissions(self):
