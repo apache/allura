@@ -177,7 +177,7 @@ class StatsMiddleware(object):
                                  ' skip sort where')
         timing('ming').decorate(ming.orm.ormsession.ORMSession,
                                 'flush find get')
-        timing('ming').decorate(ming.orm.ormsession.ORMCursor,
+        timing('ming').decorate(ming.orm.ormsession.ODMCursor,
                                 'next')
 
     def instrument_template(self):
