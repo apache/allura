@@ -1,7 +1,8 @@
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
+import Image
 import pkg_resources
 from pylons import c, g, request
 from paste.deploy.converters import asbool
@@ -138,6 +139,7 @@ class AdminApp(Application):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
         links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
         if c.project.shortname == '--init--':
+            links.append(SitemapEntry('Statistics', nbhd_admin_url+ 'stats/'))
             links.append(None)
             links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
         return links
@@ -211,6 +213,47 @@ class ProjectAdminController(BaseController):
             installable_tools=AdminApp.installable_tools_for(c.project),
             roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
+
+    @without_trailing_slash
+    @expose('jinja:allura.ext.admin:templates/project_stats.html')
+    def stats(self, **kw):
+        if c.project.shortname != '--init--':
+             redirect('index')
+        
+        # public private deleted
+        delete_count = M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=True)).count()
+        public_count = 0
+        private_count = 0
+        last_updated_30 = 0
+        last_updated_60 = 0
+        last_updated_90 = 0
+        today_date = datetime.today()
+        for p in M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)).all():
+             if p.private:
+                 private_count = private_count + 1
+             else:
+                 public_count = public_count + 1
+                 if today_date - p.last_updated < timedelta(days=30):
+                     last_updated_30 = last_updated_30 + 1
+                 if today_date - p.last_updated < timedelta(days=60):
+                     last_updated_60 = last_updated_60 + 1
+                 if today_date - p.last_updated < timedelta(days=90):
+                     last_updated_90 = last_updated_90 + 1
+
+        c.delete_count = delete_count
+        c.public_count = public_count
+        c.private_count = private_count
+        c.last_updated_30 = last_updated_30
+        c.last_updated_60 = last_updated_60
+        c.last_updated_90 = last_updated_90
+
+        c.markdown_editor = W.markdown_editor
+        c.label_edit = W.label_edit
+        c.mount_delete = W.mount_delete
+        c.admin_modal = W.admin_modal
+        c.install_modal = W.install_modal
+        mounts = c.project.ordered_mounts()
+        return dict()
 
     @expose()
     @require_post()
