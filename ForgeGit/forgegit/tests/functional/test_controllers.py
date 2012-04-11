@@ -198,6 +198,13 @@ class TestFork(_TestCase):
         assert 'Clone of' in r
         assert 'Test forked repository' in r
 
+    def test_fork_links_go_to_fork(self):
+        r = self._fork_page()
+        hrefs = ( a.get('href') for a in r.html('a') )
+        hrefs = ( href for href in hrefs if href and '/ci/' in href )
+        for href in hrefs:
+            assert href.startswith('/p/test2/code/'), href
+
     def test_merge_request_visible_to_admin(self):
         assert 'Request Merge' in self._fork_page()
 
