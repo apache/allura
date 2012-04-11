@@ -279,6 +279,7 @@ class ProjectAdminController(BaseController):
                removal='',
                moved_to_url='',
                export_controlled=False,
+               tracking_id='',
                **kw):
         require_access(c.project, 'update')
 
@@ -342,6 +343,10 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project export controlled status').info('')
             M.AuditLog.log('change project export controlled status to %s', export_controlled)
             c.project.export_controlled = not not export_controlled
+        if tracking_id != c.project.tracking_id:
+            h.log_action(log, 'change project tracking ID').info('')
+            M.AuditLog.log('change project tracking ID to %s', tracking_id)
+            c.project.tracking_id = tracking_id
 
         if icon is not None and icon != '':
             if c.project.icon:
