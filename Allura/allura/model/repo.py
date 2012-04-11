@@ -57,18 +57,15 @@ TreeDoc = collection(
 LastCommitDoc = collection(
     'repo_last_commit', project_doc_session,
     Field('_id', str),
-    Field('repo_id', S.ObjectId()),
-    Field('object_id', str),
+    Field('object_id', str, index=True),
     Field('commit_info', dict(
         id=str,
         date=datetime,
         author=str,
         author_email=str,
         author_url=str,
-        href=str,
         shortlink=str,
-        summary=str)),
-    Index('repo_id', 'object_id'))
+        summary=str)))
 
 # List of all trees contained within a commit
 TreesDoc = collection(
@@ -329,6 +326,8 @@ class Tree(RepoObject):
                     href=None,
                     shortlink=None,
                     summary=None)
+            if 'href' not in lc:
+                lc['href'] = self.repo.url_for_commit(lc['id'])
             return lc
         for x in sorted(self.tree_ids, key=lambda x:x.name):
             results.append(dict(

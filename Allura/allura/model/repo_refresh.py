@@ -423,7 +423,6 @@ def get_commit_info(commit):
         author_email=commit.authored.email,
         date=commit.authored.date,
         author_url=commit.author_url,
-        href=commit.url(),
         shortlink=commit.shorthand_id(),
         summary=commit.summary
         )

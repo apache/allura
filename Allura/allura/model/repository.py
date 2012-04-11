@@ -338,7 +338,6 @@ class Repository(Artifact):
                 author_url=None,
                 date=None,
                 id=None,
-                href=None,
                 shortlink=None,
                 summary=None)
         return lc.commit_info
