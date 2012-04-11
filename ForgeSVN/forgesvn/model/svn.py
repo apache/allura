@@ -208,7 +208,7 @@ class SVNImplementation(M.RepositoryImplementation):
             oid for oid in oids if oid not in seen_oids ]
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
-        from allura.model.repo import CommitDoc
+        from allura.model.repo import CommitDoc, DiffInfoDoc
         ci_doc = CommitDoc.m.get(_id=oid)
         if ci_doc and lazy: return False
         revno = self._revno(oid)
@@ -247,6 +247,30 @@ class SVNImplementation(M.RepositoryImplementation):
                 ci_doc.m.insert(safe=True)
             except DuplicateKeyError:
                 if lazy: return False
+        # Save diff info
+        di = DiffInfoDoc.make(dict(_id=ci_doc._id, differences=[]))
+        for path in log_entry.changed_paths:
+            if path.action in ('A', 'M', 'R'):
+                rhs_info = self._svn.info2(
+                    self._url + path.path,
+                    revision=self._revision(ci_doc._id),
+                    recurse=False)[0][1]
+                rhs_id = self._obj_oid(ci_doc._id, rhs_info)
+            else:
+                rhs_id = None
+            if path.action in ('D', 'M', 'R'):
+                lhs_info = self._svn.info2(
+                    self._url + path.path,
+                    revision=self._revision(ci_doc.parent_ids[0]),
+                    recurse=False)[0][1]
+                lhs_id = self._obj_oid(ci_doc._id, lhs_info)
+            else:
+                lhs_id = None
+            di.differences.append(dict(
+                    name=h.really_unicode(path.path),
+                    lhs_id=lhs_id,
+                    rhs_id=rhs_id))
+        di.m.save()
         return True
 
     def compute_tree_new(self, commit, tree_path='/'):
@@ -296,6 +320,13 @@ class SVNImplementation(M.RepositoryImplementation):
     def _blob_oid(self, commit_id, path):
         data = 'blob\n%s\n%s' % (commit_id, h.really_unicode(path))
         return sha1(data.encode('utf-8')).hexdigest()
+
+    def _obj_oid(self, commit_id, info):
+        path = info.URL[len(info.repos_root_URL):]
+        if info.kind == pysvn.node_kind.dir:
+            return self._tree_oid(commit_id, path)
+        else:
+            return self._blob_oid(commit_id, path)
 
     def log(self, object_id, skip, count):
         revno = self._revno(object_id)
