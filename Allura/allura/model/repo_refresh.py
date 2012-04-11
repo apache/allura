@@ -431,7 +431,6 @@ def get_commit_info(commit):
 def set_last_commit(repo_id, oid, commit_info):
     lc = LastCommitDoc(dict(
             _id='%s:%s' % (repo_id, oid),
-            repo_id=repo_id,
             object_id=oid,
             commit_info=commit_info))
     lc.m.save(safe=False, upsert=True)
