@@ -38,7 +38,9 @@ class TestAuth(TestController):
         assert 'test@example.com' not in r
         mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
         # make sure page actually lists all the user's subscriptions
-        for m in list(mailboxes.ming_cursor):
+        subscriptions = list(mailboxes.ming_cursor)
+        assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
+        for m in subscriptions:
             assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
         r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
