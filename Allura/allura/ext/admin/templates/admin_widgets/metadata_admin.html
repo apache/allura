@@ -59,26 +59,40 @@
     </div>
     <div style="clear:both">&nbsp;</div>
 
-    Removal:
-    <br>
-    <input name="removal" type="radio" value="" id="removal_active_cb"
-           {% if value.removal == '' %} checked{% endif %}>
-    <label for="removal_active_cb">Active Project</label>
-    <br>
-    <input name="removal" type="radio" value="moved" id="removal_moved_cb"
-           {% if value.removal == 'moved' %} checked{% endif %}>
-    <label for="removal_moved_cb">Moved Project to: </label>
-    <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 50%">
-    <br>
-    <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
-           {% if value.removal == 'abandoned' %} checked{% endif %}>
-    <label for="removal_abandoned_cb">Abandoned Project</label>
-    {% if allow_project_delete or not value.is_root %}
-    <br>
-    <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
-           {% if value.removal == 'deleted' %} checked{% endif %}>
-    <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} Project</label>
-    {% endif %}
+    <div id="project-status">
+        Project Status:
+        {% if value.removal == '' %}
+            Active
+        {% elif value.removal == 'moved' %}
+            Moved to: {{value.moved_to_url}}
+        {% elif value.removal == 'abandoned' -%}
+            Abandoned
+        {% elif value.removal == 'deleted' -%}
+            Deleted
+        {% endif %}
+        <a href="#">[edit]</a>
+        <div id="project-status-edit" class="hidden">
+            <br>
+            <input name="removal" type="radio" value="" id="removal_active_cb"
+                   {% if value.removal == '' %} checked{% endif %}>
+            <label for="removal_active_cb">Active Project</label>
+            <br>
+            <input name="removal" type="radio" value="moved" id="removal_moved_cb"
+                   {% if value.removal == 'moved' %} checked{% endif %}>
+            <label for="removal_moved_cb">Moved Project to: </label>
+            <input type="text" name="moved_to_url" value="{{value.moved_to_url}}" style="width: 50%">
+            <br>
+            <input name="removal" type="radio" value="abandoned" id="removal_abandoned_cb"
+                   {% if value.removal == 'abandoned' %} checked{% endif %}>
+            <label for="removal_abandoned_cb">Abandoned Project</label>
+            {% if allow_project_delete or not value.is_root %}
+            <br>
+            <input name="removal" type="radio" value="deleted" id="removal_delete_cb"
+                   {% if value.removal == 'deleted' %} checked{% endif %}>
+            <label for="removal_delete_cb">Delete{% if value.removal == 'deleted' %}d{% endif %} Project</label>
+            {% endif %}
+        </div>
+    </div>
 
     {% if show_export_control %}
       <div style="clear:both">&nbsp;</div>
