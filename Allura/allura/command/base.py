@@ -17,7 +17,7 @@ log = None
 class EmptyClass(object): pass
 
 class Command(command.Command):
-    min_args = 0
+    min_args = 1
     max_args = 1
     usage = '[<ini file>]'
     group_name = 'Allura'

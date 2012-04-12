@@ -28,7 +28,7 @@ class ShowModelsCommand(base.Command):
                 print line
 
 class ReindexCommand(base.Command):
-    min_args=0
+    min_args=1
     max_args=1
     usage = '<ini file>'
     summary = 'Reindex and re-shortlink all artifacts'
@@ -102,7 +102,7 @@ class ReindexCommand(base.Command):
         base.log.info('Reindex done')
 
 class EnsureIndexCommand(base.Command):
-    min_args=0
+    min_args=1
     max_args=1
     usage = '[<ini file>]'
     summary = 'Run ensure_index on all mongo objects'
