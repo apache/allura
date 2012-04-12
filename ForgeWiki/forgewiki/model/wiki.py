@@ -130,7 +130,8 @@ class Page(VersionedArtifact):
             title_s='WikiPage %s' % self.title,
             version_i=self.version,
             type_s='WikiPage',
-            text=self.text)
+            text=self.text,
+            deleted_b=self.deleted)
         return result
 
     @property
