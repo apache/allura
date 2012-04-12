@@ -61,7 +61,7 @@ class TestNeighborhood(TestController):
                           params=dict(project_template='{'),
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
-    
+
     def test_admin_stats_del_count(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
