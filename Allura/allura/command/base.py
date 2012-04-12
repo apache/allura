@@ -38,7 +38,7 @@ class Command(command.Command):
 
     def basic_setup(self):
         global log, M
-        if self.args:
+        if self.args[0]:
             # Probably being called from the command line - load the config file
             self.config = conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
             # Configure logging
