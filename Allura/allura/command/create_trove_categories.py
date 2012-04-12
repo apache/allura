@@ -10,7 +10,7 @@ from allura.lib import helpers as h
 log = logging.getLogger(__name__)
 
 class CreateTroveCategoriesCommand(base.Command):
-    min_args=None
+    min_args=1
     max_args=None
     usage = '<ini file>'
     summary = 'Remove any existing trove categories and load new ones'
