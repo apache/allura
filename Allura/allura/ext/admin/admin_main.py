@@ -848,7 +848,6 @@ class AuditController(BaseController):
             page=page,
             count=count)
 
-
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''
     pass
