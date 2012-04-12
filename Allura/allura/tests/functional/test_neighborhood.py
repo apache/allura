@@ -2,9 +2,11 @@ import json
 import os
 from cStringIO import StringIO
 from nose.tools import assert_raises
+from datetime import datetime, timedelta
 
 import Image
 from tg import config
+from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
 from allura import model as M
@@ -43,6 +45,40 @@ class TestNeighborhood(TestController):
                           params=dict(project_template='{'),
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
+        # Test admin stats
+        today_date = datetime.today()
+        neighborhood = M.Neighborhood.query.get(name='Mozq1')
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.deleted = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/admin/stats', extra_environ=dict(username='root'))
+        assert 'Deleted: 1' in r
+        assert 'Private: 0' in r
+
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.deleted = False
+        proj.private = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/admin/stats', extra_environ=dict(username='root'))
+        assert 'Deleted: 0' in r
+        assert 'Private: 1' in r
+
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.private = False
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/admin/stats/adminlist', extra_environ=dict(username='root'))
+        pq = M.Project.query.find(dict(neighborhood_id=neighborhood._id, deleted=False))
+        pq.sort('name')
+        projects = pq.skip(0).limit(int(25)).all()
+        for proj in projects:
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            if admin_role is None:
+                continue
+            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
+            for ur in user_role_list:
+                if ur.user is not None and admin_role._id in ur.roles:
+                    assert proj.name in r
+                    assert ur.user.username in r
 
     def test_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
