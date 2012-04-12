@@ -30,8 +30,12 @@
     <span class="grid-prefix-1 grid-9 installable_tool">
       Private: {{ c.private_count }}
     </span>
-    <span class=" grid-9 installable_tool">
+    <span class="grid-9 installable_tool">
       Last 90 days: {{ c.last_updated_90 }}
+    </span>
+    <br style="clear:both"/>
+    <span class="grid-prefix-1 grid-9 installable_tool">
+      <a href="{{ c.project.url() }}admin/stats/adminlist">Admins list</a>
     </span>
   </div>
 
