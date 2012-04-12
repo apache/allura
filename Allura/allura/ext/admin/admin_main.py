@@ -791,14 +791,15 @@ class StatsController(BaseController):
         count = pq.count()
         projects = pq.skip(start).limit(int(limit)).all()
 
-        role_admin = M.ProjectRole.by_name('Admin')._id
-
         entries = []
         for proj in projects:
-            admin_role = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')
-            for user_role in admin_role.users_with_role():
-                log.info("User role: %s" % user_role.user)
-                entries.append({'project': proj, 'user': user_role.user})
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            if admin_role is None:
+                continue
+            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
+            for ur in user_role_list:
+                if ur.user is not None and admin_role._id in ur.roles:
+                    entries.append({'project': proj, 'user': ur.user})
 
         return dict(entries=entries,
                     sort=sort,
