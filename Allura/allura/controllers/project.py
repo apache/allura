@@ -465,7 +465,10 @@ class NeighborhoodAdminController(object):
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = kw.get('allow_browse', False)
-        self.neighborhood.tracking_id = kw.get('tracking_id', '')
+        tracking_id = kw.get('tracking_id', '')
+        if tracking_id != self.neighborhood.tracking_id:
+            M.AuditLog.log('update neighborhood tracking_id')
+            self.neighborhood.tracking_id = tracking_id
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
