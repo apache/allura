@@ -23,7 +23,7 @@ jQuery.fn.fontSelector = function() {
 'Times New Roman,Times,serif',
 'Trebuchet MS,Helvetica,sans-serif',
 'Verdana,Geneva,sans-serif' );
- 
+
   return this.each(function(){
 
     // Get input field
@@ -35,7 +35,7 @@ jQuery.fn.fontSelector = function() {
     $(ul).hide();
 
     jQuery.each(fonts, function(i, item) {
-      
+
       $(ul).append('<li><a href="#" class="font_' + i + '" style="font-family: ' + item + '">' + item.split(',')[0] + '</a></li>');
 
       // Prevent real select from working
@@ -45,7 +45,7 @@ jQuery.fn.fontSelector = function() {
 
         // Show font list
         $(ul).show();
-        
+
         // Position font list
         $(ul).css({ top:  $(sel).offset().top + $(sel).height() + 4,
                     left: $(sel).offset().left});
@@ -64,6 +64,18 @@ jQuery.fn.fontSelector = function() {
       });
     });
 
+    var cust_input = $('<input type="text" name="custom_font">').attr('value', $(sel).val()).bind('keydown', function (event) {
+      if (event.keyCode === 13) {
+        $(sel).val($(this).val());
+        $(ul).hide();
+      }
+      if (event.keyCode === 27) {
+        $(ul).hide();
+      }
+    });
+    var li = $('<li>');
+    li.append(cust_input);
+    $(ul).append(li);
   });
 
 }
