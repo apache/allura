@@ -1,90 +1,109 @@
 {% extends g.theme.master %}
 
 {% do g.register_forge_css('css/forge/deck.css') %}
+{% do g.register_forge_js('js/project_groups.js', location='body_js_tail') %}
 
-{% block title %}{{c.project.name}} / Usergroups {% endblock %}
+{% block title %}{{c.project.name}} / User Permissions {% endblock %}
 
-{% block header %}Usergroups{% endblock %}
+{% block header %}User Permissions{% endblock %}
 
-{% block extra_css %}
-<style>
-button.linklike {
-border: 0;
-background: transparent;
-}
-button.linklike:hover {
-border: 0 !important;
-background: transparent !important;
-}
-</style>
-{% endblock %}
+{% macro show_perms_for_role(role) %}
+  <ul class="permissions">
+    {% for perm in permissions_by_role[role._id.__str__()] %}
+    <li class="{{perm['has']}}" data-permission="{{perm['name']}}">
+      <a href="#" title="{{perm['text']}}">
+        <b data-icon="{{g.icons['perm_has_%s'%perm['has']].char}}"
+           class="ico {{g.icons['perm_has_%s'%perm['has']].css}}">
+        </b> {{perm['name']}}</a>
+    </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+{% macro group_icon(icon) %}
+<p style="padding-bottom: 0"><b
+  data-icon="{{g.icons[icon].char}}"
+  class="ico x48 {{g.icons[icon].css}}"></b>
+</p>
+{% endmacro %}
 
 {% block content %}
-<form method="POST" action="update">
-  {% set index=0 %}
-  {% for row in roles|batch(4) %}
-  {% set i0=loop.index0  %}
-  <div class="fourcol">
-    {% for role in row %}
-    {% set i1 = i0*4 + loop.index0 %}
-    {% if role == None %}
-    <div class="fleft tcenter">
-      <a href="new" class="admin_modal" title="Add Group">
-        <h3>Add a Group</h3>
-        <p>
-          <b data-icon="{{g.icons['plus'].char}}"
-             class="ico x48 {{g.icons['plus'].css}}">
-          </b>
-        </p>
-      </a>
-    </div>
-    {% else %}
-    {{c.card.display(
-        index=i1,
-        id=role._id,
-        name=role.name,
-        roles=role.parent_roles(),
-        items=role.users_with_role(),
-        settings_href=role.settings_href,
-    )}}
-    {% endif %}
+<p>Project permissions are assigned to groups of users. Add users to a group appropriate to the role they fill in your project. <a href="#" id="show_help">more...</a></p>
+<div id="help_text" style="display:none">
+<p>By default, your project has three groups of progressively more privileged users (Member, Developer, and Admin groups). There are also catch alls for any logged in user (Authenticated) and any user even if they aren't logged in (Anonymous). Permissions allowed to a less privileged group are inherited by more privileged ones.</p>
+<p>Group permissions can be toggled on and off by clicking on them. A permission with a barred circle icon is not granted to the group. A check icon means the permission is granted to the group. A check in a circle indicates that the permission is inherited from another group. To see where the permission is inherited from, hover over the permission and a tooltip will appear. <a href="#" id="hide_help">less...</a></p>
+</div>
+<table id="usergroup_admin">
+  <thead>
+    <tr>
+      <th>Group</th>
+      <th>Users</th>
+      <th>Permissions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for role in c.project.named_roles %}
+    <tr data-group="{{role._id}}">
+      <td class="group">
+        {{role.name}}{{group_icon('group')}}
+        {% if role.name not in ['Admin', 'Developer', 'Member'] %}
+        <small><a href="delete_group?group_name={{role.name}}" class="delete_group">Remove</a></small>
+        {% endif %}
+      </td>
+      <td>
+        <ul class="users">
+          {% for r in role.parent_roles() if r.name %}
+          <li class="parent_users">All users in {{ r.name }} group</li>
+          {% endfor %}
+          {% for r in role.users_with_role() %}
+          <li class="deleter" data-user="{{r.user.username}}">
+            <b data-icon="{{g.icons['perm_delete'].char}}"
+               class="ico {{g.icons['perm_delete'].css}}"></b>
+            {{ r.user.display_name }}
+          </li>
+          {% endfor %}
+          <li class="new-item">
+            <form class="add_user">
+              <input type="text" placeholder="type a username">
+            </form>
+          </li>
+          <li class="adder">
+            <b data-icon="{{g.icons['plus'].char}}"
+               class="ico {{g.icons['plus'].css}}"></b>
+            Add
+          </li>
+        </ul>
+      </td>
+      <td>{{show_perms_for_role(role)}}</td>
+    </tr>
     {% endfor %}
-    <br style="clear:both"/>
-  </div>
-  {% endfor %}
-  <hr/>
-  <p class="clearfix">
-    <input type="submit" value="Save">
-    <a href="" class="btn link cancel">Cancel</a>
-  </p>
-</form>
-
+    <tr data-group="{{auth_role._id}}">
+      <td class="group">Authenticated{{group_icon('secure')}}</td>
+      <td><div class="parent_users">Any logged in user</div></td>
+      <td>{{show_perms_for_role(auth_role)}}</td>
+    </tr>
+    <tr data-group="{{anon_role._id}}">
+      <td class="group">Anonymous{{group_icon('unsecure')}}</td>
+      <td><div class="parent_users">Any user including those not logged in</div></td>
+      <td>{{show_perms_for_role(anon_role)}}</td>
+    </tr>
+    <tr>
+      <td colspan="3" class="new_group">
+        <a href="new" class="admin_modal" title="Add Group">
+          <b data-icon="{{g.icons['plus'].char}}"
+             class="ico x48 {{g.icons['plus'].css}}"></b>
+          Add a new group
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 {{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
 {% endblock %}
 
 {% block extra_js %}
-<script type="text/javascript">(function() {
-var cval = $.cookie('_session_id');
-var csrf_input = $('<input name="_session_id" type="hidden" value="'+cval+'">');
-var $popup_title = $('#popup_title');
-var $popup_contents = $('#popup_contents');
-$('a.admin_modal').click(function(evt){
-  evt.preventDefault();
-  evt.stopPropagation();
-  var link = this;
-  $popup_title.html('');
-  $popup_contents.html('Loading...');
-  $.get(link.href, function (data) {
-    $popup_title.html(link.title);
-    $popup_contents.html(data);
-    $popup_contents.find('form').append(csrf_input);
-    $('.btn.link.close').click(function(){
-        $(this).trigger('close');
-        return false;
-    });
-  });
-});
-$('#sortable').sortable({items: ".fleft"});
-}());
+<script type="text/javascript">
+  // these icons are used in the js, so set them up now
+  var spinner_img = '<img src="{{g.forge_static('images/spinner.gif')}}">';
+  var perm_delete_ico = '<b data-icon="{{g.icons['perm_delete'].char}}" class="ico {{g.icons['perm_delete'].css}}"></b>';
 </script>
 {% endblock %}
