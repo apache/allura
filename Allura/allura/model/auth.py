@@ -580,6 +580,9 @@ class ProjectRole(MappedClass):
     def parent_roles(self):
         return self.query.find({'roles': self._id}).all()
 
+    def child_roles(self):
+        return self.query.find({'_id': {'$in':self.roles}}).all()
+
     def users_with_role(self, project=None):
         if not project:
             project = c.project
