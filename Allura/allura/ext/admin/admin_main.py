@@ -132,11 +132,11 @@ class AdminApp(Application):
                 SitemapEntry('Screenshots', admin_url+'screenshots'),
                 SitemapEntry('Categorization', admin_url+'trove')
                 ]
-        if has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Permissions', admin_url+'permissions/'))
         links.append(SitemapEntry('Tools', admin_url+'tools'))
         if c.project.is_root and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Usergroups', admin_url+'groups/'))
+            links.append(SitemapEntry('User Permissions', admin_url+'groups/'))
+        if not c.project.is_root and has_access(c.project, 'admin')():
+            links.append(SitemapEntry('Permissions', admin_url+'permissions/'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
         links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
@@ -599,14 +599,123 @@ class GroupsController(BaseController):
     def _check_security(self):
         require_access(c.project, 'admin')
 
+    def _index_permissions(self):
+        permissions = dict(
+            (p,[]) for p in c.project.permissions)
+        for ace in c.project.acl:
+            if ace.access == M.ACE.ALLOW:
+                permissions[ace.permission].append(ace.role_id)
+        return permissions
+
+    def _map_group_permissions(self):
+        roles = c.project.named_roles
+        permissions=self._index_permissions()
+        permissions_by_role = dict()
+        auth_role = M.ProjectRole.authenticated()
+        anon_role = M.ProjectRole.anonymous()
+        for role in roles+[auth_role, anon_role]:
+            permissions_by_role[str(role._id)] = []
+            for perm in permissions:
+                perm_info = dict(has="no", text="Does not have permission %s" % perm, name=perm)
+                role_ids = permissions[perm]
+                for r in role.child_roles():
+                    if r._id in role_ids:
+                        perm_info['text'] = "Inherited permission %s from %s" % (perm, r.name)
+                        perm_info['has'] = "inherit"
+                        break
+                if perm_info['has'] == "no":
+                    if role._id in role_ids:
+                        perm_info['text'] = "Has permission %s" % perm
+                        perm_info['has'] = "yes"
+                    elif anon_role._id in role_ids:
+                        perm_info['text'] = "Inherited permission %s from Anonymous" % perm
+                        perm_info['has'] = "inherit"
+                    elif auth_role._id in role_ids and role != anon_role:
+                        perm_info['text'] = "Inherited permission %s from Authenticated" % perm
+                        perm_info['has'] = "inherit"
+                permissions_by_role[str(role._id)].append(perm_info)
+        return permissions_by_role
+
+    @without_trailing_slash
+    @expose()
+    @h.vardec
+    def delete_group(self, group_name, **kw):
+        role = M.ProjectRole.by_name(group_name)
+        if not role:
+            flash('Group "%s" does not exist.' % group_name, 'error')
+        else:
+            role.delete()
+            M.AuditLog.log('delete group %s', group_name)
+            flash('Group "%s" deleted successfully.' % group_name)
+            g.post_event('project_updated')
+        redirect('.')
+
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_groups.html')
     def index(self, **kw):
         c.admin_modal = W.admin_modal
         c.card = W.group_card
+        permissions_by_role = self._map_group_permissions()
+        auth_role = M.ProjectRole.authenticated()
+        anon_role = M.ProjectRole.anonymous()
         roles = c.project.named_roles
         roles.append(None)
-        return dict(roles=roles)
+        return dict(roles=roles, permissions_by_role=permissions_by_role,
+                    auth_role=auth_role, anon_role=anon_role)
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    @h.vardec
+    def change_perm(self, role_id, permission, allow="true", **kw):
+        if allow=="true":
+            M.AuditLog.log('granted permission %s to group with id %s', permission, role_id)
+            c.project.acl.append(M.ACE.allow(ObjectId(role_id), permission))
+        else:
+            admin_group_id = str(M.ProjectRole.by_name('Admin')._id)
+            if admin_group_id == role_id and permission == 'admin':
+                return dict(error='You cannot remove the admin permission from the admin group.')
+            M.AuditLog.log('revoked permission %s from group with id %s', permission, role_id)
+            c.project.acl.remove(M.ACE.allow(ObjectId(role_id), permission))
+        return self._map_group_permissions()
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    @h.vardec
+    def add_user(self, role_id, username, **kw):
+        if not username or username=='*anonymous':
+            return dict(error='You must choose a user to add.')
+        group = M.ProjectRole.query.get(_id=ObjectId(role_id))
+        user = M.User.by_username(username.strip())
+        if not group:
+            return dict(error='Could not find group with id %s' % role_id)
+        if not user:
+            return dict(error='User %s not found' % username)
+        if group._id in user.project_role().roles:
+            return dict(error='%s (%s) is already in the group %s.' % (user.display_name, username, group.name))
+        M.AuditLog.log('add user %s to %s', username, group.name)
+        user.project_role().roles.append(group._id)
+        return dict(username=username, displayname=user.display_name)
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    @h.vardec
+    def remove_user(self, role_id, username, **kw):
+        group = M.ProjectRole.query.get(_id=ObjectId(role_id))
+        user = M.User.by_username(username.strip())
+        if group.name == 'Admin' and len(group.users_with_role()) == 1:
+            return dict(error='You must have at least one user with the Admin role.')
+        if not group:
+            return dict(error='Could not find group with id %s' % role_id)
+        if not user:
+            return dict(error='User %s not found' % username)
+        if group._id not in user.project_role().roles:
+            return dict(error='%s (%s) is not in the group %s.' % (user.display_name, username, group.name))
+        M.AuditLog.log('remove user %s from %s', username, group.name)
+        user.project_role().roles.remove(group._id)
+        return dict()
 
     @without_trailing_slash
     @expose()
