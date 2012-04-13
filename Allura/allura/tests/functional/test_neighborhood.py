@@ -1,6 +1,7 @@
 import json
 import os
 from cStringIO import StringIO
+from nose.tools import assert_raises
 
 import Image
 from tg import config
@@ -57,6 +58,90 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/icon')
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
+
+    def test_custom_css(self):
+        test_css = '.test{color:red;}'
+        custom_css = 'Custom CSS'
+
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.css = test_css
+        neighborhood.level = None
+        r = self.app.get('/adobe/')
+        assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
+
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.level = 'silver'
+        r = self.app.get('/adobe/')
+        assert test_css not in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css not in r
+
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.level = 'gold'
+        r = self.app.get('/adobe/')
+        assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
+
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.level = 'platinum'
+        r = self.app.get('/adobe/')
+        assert test_css in r
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert custom_css in r
+
+    def test_goldlevel_custom_css(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.level = 'gold'
+
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Project title, font' in r
+        assert 'Project title, color' in r
+        assert 'Bar on top' in r
+        assert 'Title bar, background' in r
+        assert 'Title bar, foreground' in r
+
+        r = self.app.post('/adobe/_admin/update',
+                          params={'name': 'Adobe',
+                                  'css': '',
+                                  'homepage': '',
+                                  'css-projecttitlefont': 'arial,sans-serif',
+                                  'css-projecttitlecolor': 'green',
+                                  'css-barontop': '#555555',
+                                  'css-titlebarbackground': '#333',
+                                  'css-titlebarcolor': '#444',
+                                  'css-addopt-icon-theme': 'dark'},
+                          extra_environ=dict(username='root'), upload_files=[])
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
+        assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
+        assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
+        assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
+        assert "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:#444;} "\
+               ".pad h2.dark small b.ico {background-image: "\
+               "url('/nf/_ew_/theme/allura/images/neo-icon-set-ffffff-256x350.png');}" in neighborhood.css
+
+    def test_max_projects(self):
+        # Set max value to unlimit
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.level = ''
+        r = self.app.post('/p/register',
+                          params=dict(project_unixname='maxproject1', project_name='Max project1', project_description='', neighborhood='Projects'),
+                          antispam=True,
+                          extra_environ=dict(username='root'), status=302)
+        assert '/p/maxproject1/admin' in r.location
+
+        # Set max value to 0
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.level = 'noexists'
+        r = self.app.post('/p/register',
+                          params=dict(project_unixname='maxproject2', project_name='Max project2', project_description='', neighborhood='Projects'),
+                          antispam=True,
+                          extra_environ=dict(username='root'))
+        r = r.follow()
+        assert 'You have exceeded the maximum number of projects' in r
 
     def test_invite(self):
         p_nbhd_id = str(M.Neighborhood.query.get(name='Projects')._id)
@@ -170,6 +255,48 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username='test-user'),
             status=403)
+
+    def test_register_private_fails_for_non_private_neighborhood(self):
+        # Turn off private
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.allow_private = False
+        r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
+        assert 'private_project' not in r
+
+        assert_raises(ValueError,
+            self.app.post,
+            '/p/register',
+            params=dict(
+                project_unixname='myprivate1',
+                project_name='My Priv1',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='root'))
+
+        proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
+        assert proj is None
+
+        # Turn on private
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+        neighborhood.allow_private = True
+        r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
+        assert 'private_project' in r
+
+        self.app.post(
+            '/p/register',
+            params=dict(
+                project_unixname='myprivate2',
+                project_name='My Priv2',
+                project_description='',
+                neighborhood='Projects',
+                private_project='on'),
+            antispam=True,
+            extra_environ=dict(username='root'))
+
+        proj = M.Project.query.get(shortname='myprivate2', neighborhood_id=neighborhood._id)
+        assert proj.private
 
     def test_register_private_ok(self):
         r = self.app.post(

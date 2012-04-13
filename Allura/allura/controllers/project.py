@@ -26,7 +26,7 @@ from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
-from allura.lib import plugin
+from allura.lib import plugin, exceptions
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
@@ -102,10 +102,11 @@ class NeighborhoodController(object):
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
         count = pq.count()
+        nb_max_projects = self.neighborhood.get_max_projects()
         projects = pq.skip(start).limit(int(limit)).all()
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = []
-        if h.has_access(self.neighborhood, 'register')():
+        if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
                 SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
@@ -156,11 +157,17 @@ class NeighborhoodController(object):
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
+
         project_description = h.really_unicode(project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
         project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
-        c.project = neighborhood.register_project(project_unixname,
-                project_name=project_name, private_project=private_project)
+        try:
+            c.project = neighborhood.register_project(project_unixname,
+                    project_name=project_name, private_project=private_project)
+        except exceptions.ProjectOverlimitError:
+            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
+            redirect('.')
+
         if project_description:
             c.project.short_description = project_description
         offset = c.project.next_mount_point(include_search=True)
@@ -248,6 +255,7 @@ class ProjectController(object):
         c.app = app
         if not app.root:
             raise exc.HTTPNotFound, name
+
         return app.root, remainder
 
     def _check_security(self):
@@ -458,7 +466,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.homepage = homepage
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
-        self.neighborhood.allow_browse = 'allow_browse' in kw
+        self.neighborhood.allow_browse = kw.get('allow_browse', False)
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()

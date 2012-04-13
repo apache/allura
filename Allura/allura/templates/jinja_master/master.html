@@ -33,14 +33,14 @@
       {{ blob }}
     {% endfor %}
     {% endif %}
-      
+
     {% if c.project and c.project.neighborhood.css %}
       <style type="text/css">
-        {{c.project.neighborhood.css}}
+        {{c.project.neighborhood.get_custom_css()|safe}}
       </style>
     {% elif neighborhood and neighborhood.css %}
       <style type="text/css">
-        {{neighborhood.css}}
+        {{neighborhood.get_custom_css()}}
       </style>
     {% endif %}
     {% block extra_css %}{% endblock %}
@@ -83,7 +83,7 @@
           {% set inner_width = outer_width %}
         {% endif %}
         <div class="grid-{{outer_width}} pad">
-          <h2 class="dark title">{% block header %}{% endblock %}
+          <h2 class="dark{% block header_classes %} title{% endblock %}">{% block header %}{% endblock %}
             <!-- actions -->
             <small>
             {% block actions %}{% endblock %}

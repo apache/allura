@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 
@@ -23,6 +24,20 @@ class NeighborhoodFile(File):
         session = main_orm_session
     neighborhood_id=FieldProperty(S.ObjectId)
 
+NEIGHBORHOOD_PROJECT_LIMITS = {
+  "silver": 100,
+  "gold": 500,
+  "platinum": 1000,
+}
+
+re_gold_css_type = re.compile('^/\*(.+)\*/')
+re_font_project_title = re.compile('font-family:(.+);\}')
+re_color_project_title = re.compile('color:(.+);\}')
+re_bgcolor_barontop = re.compile('background\-color:([^;}]+);')
+re_bgcolor_titlebar = re.compile('background\-color:([^;}]+);')
+re_color_titlebar = re.compile('color:([^;}]+);')
+re_icon_theme = re.compile('neo-icon-set-(ffffff|454545)-256x350.png')
+
 class Neighborhood(MappedClass):
     '''Provide a grouping of related projects.
 
@@ -44,6 +59,8 @@ class Neighborhood(MappedClass):
     allow_browse = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
+    level = FieldProperty(str, if_missing='')
+    allow_private = FieldProperty(bool, if_missing=True)
 
     def parent_security_context(self):
         return None
@@ -85,11 +102,132 @@ class Neighborhood(MappedClass):
         setattr(controller, controller_attr, NeighborhoodController(
                 self.name, self.shortname_prefix))
 
+    def get_custom_css(self):
+        if self.allow_custom_css:
+            return self.css
+        return ""
+
     @property
     def icon(self):
         return NeighborhoodFile.query.get(neighborhood_id=self._id)
+
+    @property
+    def allow_custom_css(self):
+        return self.level in ('gold', 'platinum')
 
     def get_project_template(self):
         if self.project_template:
             return json.loads(self.project_template)
         return {}
+
+    def get_max_projects(self):
+        # Do not remove this condition. We must check here if level was set
+        if self.level is not None and self.level != '':
+            return NEIGHBORHOOD_PROJECT_LIMITS.get(self.level, 0)
+        # If level is undefined - we can create unlimited amount of projects
+        return None
+
+    def get_css_for_gold_level(self):
+        projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':'', 'type': 'font'}
+        projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
+        barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
+        titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
+        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color', 
+                         'additional': """<label>Icons theme:</label> <select name="css-addopt-icon-theme" class="add_opt">
+                        <option value="default">default</option>
+                        <option value="dark"%(titlebarcolor_dark)s>dark</option>
+                        <option value="white"%(titlebarcolor_white)s>white</option>
+                      </select>"""}
+        titlebarcolor_dark = ''
+        titlebarcolor_white = ''
+
+        if self.css is not None:
+            for css_line in self.css.split('\n'):
+                m = re_gold_css_type.search(css_line)
+                if not m:
+                    continue
+
+                css_type = m.group(1)
+                if css_type == "projecttitlefont":
+                    m = re_font_project_title.search(css_line)
+                    if m:
+                        projecttitlefont['value'] = m.group(1)
+
+                elif css_type == "projecttitlecolor":
+                    m = re_color_project_title.search(css_line)
+                    if m:
+                        projecttitlecolor['value'] = m.group(1)
+
+                elif css_type == "barontop":
+                    m = re_bgcolor_barontop.search(css_line)
+                    if m:
+                        barontop['value'] = m.group(1)
+
+                elif css_type == "titlebarbackground":
+                    m = re_bgcolor_titlebar.search(css_line)
+                    if m:
+                        titlebarbackground['value'] = m.group(1)
+
+                elif css_type == "titlebarcolor":
+                    m = re_color_titlebar.search(css_line)
+                    if m:
+                        titlebarcolor['value'] = m.group(1)
+                        m = re_icon_theme.search(css_line)
+                        if m:
+                            icon_theme = m.group(1)
+                            if icon_theme == "ffffff":
+                                titlebarcolor_dark = ' selected="selected"'
+                            elif icon_theme == "454545":
+                                titlebarcolor_white = ' selected="selected"'
+
+        titlebarcolor['additional'] = titlebarcolor['additional'] % {'titlebarcolor_dark': titlebarcolor_dark,
+                                                                     'titlebarcolor_white': titlebarcolor_white}
+
+        styles_list = []
+        styles_list.append(projecttitlefont)
+        styles_list.append(projecttitlecolor)
+        styles_list.append(barontop)
+        styles_list.append(titlebarbackground)
+        styles_list.append(titlebarcolor)
+        return styles_list
+
+    @staticmethod
+    def compile_css_for_gold_level(css_form_dict):
+        # Check css values
+        for key in css_form_dict.keys():
+            if ';' in css_form_dict[key] or '}' in css_form_dict[key]:
+                css_form_dict[key] = ''
+
+        css_text = ""
+        if 'projecttitlefont' in css_form_dict and css_form_dict['projecttitlefont'] != '':
+           css_text += "/*projecttitlefont*/.project_title{font-family:%s;}\n" % (css_form_dict['projecttitlefont'])
+
+        if 'projecttitlecolor' in css_form_dict and css_form_dict['projecttitlecolor'] != '':
+           css_text += "/*projecttitlecolor*/.project_title{color:%s;}\n" % (css_form_dict['projecttitlecolor'])
+
+        if 'barontop' in css_form_dict and css_form_dict['barontop'] != '':
+           css_text += "/*barontop*/.pad h2.colored {background-color:%(bgcolor)s; background-image: none;}\n" % \
+                       {'bgcolor': css_form_dict['barontop']}
+
+        if 'titlebarbackground' in css_form_dict and css_form_dict['titlebarbackground'] != '':
+           css_text += "/*titlebarbackground*/.pad h2.title{background-color:%(bgcolor)s; background-image: none;}\n" % \
+                       {'bgcolor': css_form_dict['titlebarbackground']}
+
+        if 'titlebarcolor' in css_form_dict and css_form_dict['titlebarcolor'] != '':
+           icon_theme = ''
+           if 'addopt-icon-theme' in css_form_dict:
+               if css_form_dict['addopt-icon-theme'] == "dark":
+                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                               pylons.g.theme_href(''),
+                               'images/neo-icon-set-ffffff-256x350.png')
+               elif css_form_dict['addopt-icon-theme'] == "white":
+                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                               pylons.g.theme_href(''),
+                               'images/neo-icon-set-454545-256x350.png')
+
+           css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;} %s\n" % (css_form_dict['titlebarcolor'], icon_theme)
+
+        return css_text
+
+    def migrate_css_for_gold_level(self):
+        self.css = ""

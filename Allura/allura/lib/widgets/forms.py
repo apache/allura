@@ -139,6 +139,105 @@ class NeighborhoodOverviewForm(ForgeForm):
                 validator=V.JsonValidator(if_empty=''))
         icon = ew.FileField()
 
+    def from_python(self, value, state):
+        if value.level == "gold":
+            self.list_color_inputs = True
+            self.color_inputs = value.get_css_for_gold_level()
+        else:
+            self.list_color_inputs = False
+            self.color_inputs = []
+        return super(NeighborhoodOverviewForm, self).from_python(value, state)
+
+    def display_field(self, field, ignore_errors=False):
+        if field.name == "css" and self.list_color_inputs:
+            display = '<table class="table_class">'
+            ctx = self.context_for(field)
+            for inp in self.color_inputs:
+                additional_inputs = inp.get('additional', '')
+                empty_val = False
+                if inp['value'] is None or inp['value'] == '':
+                    empty_val = True
+                display += '<tr><td class="left"><label>%(label)s</label></td>'\
+                           '<td><input type="checkbox" name="%(ctx_name)s-%(inp_name)s-def" %(def_checked)s>default</td>'\
+                           '<td class="right"><div class="%(ctx_name)s-%(inp_name)s-inp"><table class="input_inner">'\
+                           '<tr><td><input type="text" class="%(inp_type)s" name="%(ctx_name)s-%(inp_name)s" '\
+                           'value="%(inp_value)s"></td><td>%(inp_additional)s</td></tr></table></div></td></tr>\n' % {'ctx_id': ctx['id'],
+                                                            'ctx_name': ctx['name'],
+                                                            'inp_name': inp['name'],
+                                                            'inp_value': inp['value'],
+                                                            'label': inp['label'],
+                                                            'inp_type': inp['type'],
+                                                            'def_checked': 'checked="checked"' if empty_val else '',
+                                                            'inp_additional': additional_inputs}
+            display += '</table>'
+
+            if ctx['errors'] and field.show_errors and not ignore_errors:
+                display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+
+            return h.html.literal(display)
+        else:
+            return super(NeighborhoodOverviewForm, self).display_field(field, ignore_errors)
+
+    @ew_core.core.validator
+    def to_python(self, value, state):
+        d = super(NeighborhoodOverviewForm, self).to_python(value, state)
+        neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
+        if neighborhood and neighborhood.level == "gold":
+            css_form_dict = {}
+            for key in value.keys():
+                def_key = "%s-def" % (key)
+                if key[:4] == "css-" and def_key not in value:
+                    css_form_dict[key[4:]] = value[key]
+            d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
+        return d
+
+    def resources(self):
+        for r in super(NeighborhoodOverviewForm, self).resources(): yield r
+        yield ew.CSSLink('css/colorPicker.css')
+        yield ew.CSSLink('css/jqfontselector.css')
+        yield ew.CSSScript('''
+table.table_class, table.input_inner{
+  margin: 0;
+  padding: 0;
+  width: 99%;
+}
+
+table.table_class .left{ text-align: left; }
+table.table_class .right{ text-align: right; width: 50%;}
+table.table_class tbody tr td { border: none; }
+table.table_class select.add_opt {width: 5em; margin:0; padding: 0;}
+        ''')
+        yield ew.JSLink('js/jquery.colorPicker.js')
+        yield ew.JSLink('js/jqfontselector.js')
+        yield ew.JSScript('''
+            $(function(){
+              $('.table_class').find('input[type="checkbox"]').each(function(index, element) {
+                var cb_name = $(this).attr('name');
+                var inp_name = cb_name.substr(0, cb_name.length-4);
+                var inp_el = $('div[class="'+inp_name+'-inp"]');
+
+                if ($(this).attr('checked')) {
+                  inp_el.hide();
+                }
+
+                $(element).click(function(e) {
+                  if ($(this).attr('checked')) {
+                    inp_el.hide();
+                  } else {
+                    inp_el.show();
+                  }
+                });
+              });
+
+              $('.table_class').find('input.color').each(function(index, element) {
+                $(element).colorPicker();
+              });
+              $('.table_class').find('input.font').each(function(index, element) {
+                $(element).fontSelector();
+              });
+            });
+        ''')
+
 class NeighborhoodAddProjectForm(ForgeForm):
     template='jinja:allura:templates/widgets/neighborhood_add_project.html'
     antispam=True

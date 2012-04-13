@@ -112,6 +112,8 @@ setup(
     smtp_server=allura.command:SMTPServerCommand
     create-neighborhood = allura.command:CreateNeighborhoodCommand
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
+    set-neighborhood-level = allura.command:SetNeighborhoodLevelCommand
+    set-neighborhood-private = allura.command:SetNeighborhoodPrivateCommand
 
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
