@@ -109,6 +109,8 @@ class Globals(object):
             conversation = Icon('q', 'ico-conversation'),
             group = Icon('g', 'ico-group'),
             user = Icon('U', 'ico-user'),
+            secure = Icon('(', 'ico-lock'),
+            unsecure = Icon(')', 'ico-unlock'),
             # Permissions
             perm_read = Icon('E', 'ico-focus'),
             perm_update = Icon('0', 'ico-sync'),
@@ -117,6 +119,9 @@ class Globals(object):
             perm_delete = Icon('-', 'ico-minuscirc'),
             perm_tool = Icon('x', 'ico-config'),
             perm_admin = Icon('(', 'ico-lock'),
+            perm_has_yes = Icon('3', 'ico-check'),
+            perm_has_no = Icon('d', 'ico-noentry'),
+            perm_has_inherit = Icon('2', 'ico-checkcircle'),
         )
 
         # Cache some loaded entry points
