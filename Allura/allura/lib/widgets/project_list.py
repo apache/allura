@@ -15,7 +15,7 @@ class ProjectSummary(ew_core.Widget):
         value=None,
         icon_url=None,
         accolades=None,
-        columns=3,
+        columns=1,
         show_proj_icon=True,
         show_download_button=True)
 
@@ -80,7 +80,7 @@ class ProjectList(ew_core.Widget):
         sitemaps=None,
         icon_urls=None,
         accolades_index=None,
-        columns=3,
+        columns=1,
         show_proj_icon=True,
         show_download_button=True)
 
