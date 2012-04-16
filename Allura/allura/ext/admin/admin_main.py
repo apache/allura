@@ -118,20 +118,22 @@ class AdminApp(Application):
     @h.exceptionless([], log)
     def sidebar_menu(self):
         links = []
+        admin_url = c.project.url()+'admin/'
+
+
         if c.project.shortname == '--init--':
-            admin_url = c.project.neighborhood.url()+'_admin/'
+            links.append(SitemapEntry('Add Project', c.project.url()+'add_project', ui_icon=g.icons['plus']))
+            nbhd_admin_url = c.project.neighborhood.url()+'_admin/'
             links = links + [
                      SitemapEntry('Neighborhood'),
-                     SitemapEntry('Overview', admin_url+'overview', className='nav_child'),
-                     SitemapEntry('Awards', admin_url+'accolades', className='nav_child')]
-        admin_url = c.project.url()+'admin/'
-        #if len(links):
-        #    links.append(SitemapEntry('Project'))
-        links += [
-            SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
-            SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),
-            SitemapEntry('Categorization', admin_url+'trove', className='nav_child')
-            ]
+                     SitemapEntry('Overview', nbhd_admin_url+'overview', className='nav_child'),
+                     SitemapEntry('Awards', nbhd_admin_url+'accolades', className='nav_child')]
+        else:
+            links += [
+                SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
+                SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),
+                SitemapEntry('Categorization', admin_url+'trove', className='nav_child')
+                ]
         if has_access(c.project, 'admin')():
             links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
         links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
