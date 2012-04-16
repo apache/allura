@@ -558,7 +558,6 @@ class NeighborhoodStatsController(object):
                     neighborhood=self.neighborhood,
                     )
 
-
 class NeighborhoodModerateController(object):
 
     def __init__(self, neighborhood):

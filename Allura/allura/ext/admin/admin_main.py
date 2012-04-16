@@ -1,9 +1,7 @@
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import Image
-import pymongo
 import pkg_resources
 from pylons import c, g, request
 from paste.deploy.converters import asbool
