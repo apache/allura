@@ -68,6 +68,7 @@ class Artifact(MappedClass):
     app_config = RelationProperty('AppConfig')
     # Not null if artifact originated from external import, then API ticket id
     import_id = FieldProperty(str, if_missing=None)
+    deleted=FieldProperty(bool, if_missing=False)
 
     def __json__(self):
         return dict(
@@ -219,7 +220,8 @@ class Artifact(MappedClass):
             url_s=self.url(),
             type_s=self.type_s,
             labels_t=' '.join(l for l in self.labels),
-            snippet_s='')
+            snippet_s='',
+            deleted_b=self.deleted)
 
     def url(self):
         """
