@@ -76,7 +76,6 @@ class Page(VersionedArtifact):
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
     viewable_by=FieldProperty([str])
-    deleted=FieldProperty(bool, if_missing=False)
     type_s = 'Wiki'
 
     def commit(self):
@@ -130,8 +129,7 @@ class Page(VersionedArtifact):
             title_s='WikiPage %s' % self.title,
             version_i=self.version,
             type_s='WikiPage',
-            text=self.text,
-            deleted_b=self.deleted)
+            text=self.text)
         return result
 
     @property

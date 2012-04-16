@@ -58,7 +58,7 @@ class SearchController(BaseController):
             project_match = ' OR '.join(
                 'project_id_s:%s' % pid
                 for pid in pids )
-            search_query = '%s AND is_history_b:%s AND (%s)' % (
+            search_query = '%s AND is_history_b:%s AND (%s) AND -deleted_b:true' % (
                 q, history, project_match)
             results = search.search(search_query, is_history_b=history)
             if results: count=results.hits
