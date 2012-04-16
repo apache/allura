@@ -614,3 +614,7 @@ class TestNeighborhood(TestController):
     def test_profile_topnav_menu(self):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
         assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
+
+    def test_help(self):
+        r = self.app.get('/p/_admin/help/', extra_environ=dict(username='root'))
+        assert 'macro' in r
