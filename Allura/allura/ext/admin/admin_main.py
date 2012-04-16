@@ -1,9 +1,5 @@
-import difflib
 import logging
-from pprint import pformat
 from collections import defaultdict
-import Image
-from bson import ObjectId
 from datetime import datetime
 
 import pkg_resources
@@ -13,7 +9,6 @@ from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
-from formencode.validators import UnicodeString
 
 from allura.app import Application, WidgetController, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
@@ -140,8 +135,11 @@ class AdminApp(Application):
         if c.project.is_root and has_access(c.project, 'admin')():
             links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
         if len(c.project.neighborhood_invitations):
-            links.append(SitemapEntry('Invitation(s)', admin_url+'invitations', className='nav_child'))
-        links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/', className='nav_child'))
+            links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
+        links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
+        if c.project.shortname == '--init--':
+            links.append(None)
+            links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/', className='nav_child'))
         return links
 
     def admin_menu(self):
