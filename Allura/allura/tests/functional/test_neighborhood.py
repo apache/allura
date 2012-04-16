@@ -529,3 +529,7 @@ class TestNeighborhood(TestController):
         assert 'Add a Project' in r
         r = self.app.get('/adobe/', extra_environ=dict(username='root'))
         assert 'Add a Project' in r
+
+    def test_help(self):
+        r = self.app.get('/p/_admin/help/', extra_environ=dict(username='root'))
+        assert 'macro' in r

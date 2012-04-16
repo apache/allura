@@ -476,6 +476,14 @@ class NeighborhoodAdminController(object):
                 thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
 
+    @expose('jinja:allura:templates/neighborhood_help.html')
+    @with_trailing_slash
+    def help(self, **kw):
+        require_access(self.neighborhood, 'admin')
+        set_nav(self.neighborhood)
+        return dict(
+            neighborhood=self.neighborhood,
+        )
 
 class NeighborhoodModerateController(object):
 
