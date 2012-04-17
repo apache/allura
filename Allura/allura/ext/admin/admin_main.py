@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 import Image
+import pymongo
 import pkg_resources
 from pylons import c, g, request
 from paste.deploy.converters import asbool
@@ -742,7 +743,7 @@ class StatsController(BaseController):
     def index(self, **kw):
         if c.project.shortname != '--init--':
              redirect('index')
-        
+
         # public private deleted
         delete_count = M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=True)).count()
         public_count = 0
