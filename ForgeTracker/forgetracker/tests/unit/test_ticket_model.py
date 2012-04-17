@@ -1,3 +1,5 @@
+from pylons import c
+
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming import schema
 from nose.tools import raises, assert_raises
@@ -7,6 +9,30 @@ from forgetracker.tests.unit import TrackerTestWithModel
 
 
 class TestTicketModel(TrackerTestWithModel):
+    def test_that_label_counts_are_local_to_tool(self):
+        """Test that label queries return only artifacts from the specified
+        tool.
+        """
+        # create a ticket in two different tools, with the same label
+        from allura.tests import decorators as td
+        @td.with_tool('test', 'Tickets', 'bugs', username='test user')
+        def _test_ticket():
+            return Ticket(ticket_num=1, summary="ticket1", labels=["mylabel"])
+
+        @td.with_tool('test', 'Tickets', 'bugs2', username='test user')
+        def _test_ticket2():
+            return Ticket(ticket_num=2, summary="ticket2", labels=["mylabel"])
+
+        # create and save the tickets
+        t1 = _test_ticket()
+        t2 = _test_ticket2()
+        ThreadLocalORMSession.flush_all()
+
+        # test label query results
+        label_count1 = t1.artifacts_labeled_with("mylabel", t1.app_config).count()
+        label_count2 = t2.artifacts_labeled_with("mylabel", t2.app_config).count()
+        assert 1 == label_count1 == label_count2
+
     def test_that_it_has_ordered_custom_fields(self):
         custom_fields = dict(my_field='my value')
         Ticket(summary='my ticket', custom_fields=custom_fields, ticket_num=3)
