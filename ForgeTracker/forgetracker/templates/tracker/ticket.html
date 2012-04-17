@@ -54,7 +54,7 @@
         <label class="simple">Labels: </label>
         {% for label in ticket.labels %}
           <span class="ui-corner-all tag">
-            <a href="../search?q=labels:{{h.urlquoteplus(label)}}">{{label}} ({{ticket.artifacts_labeled_with(label).count()}})</a>
+              <a href="../search?q=labels:{{h.urlquoteplus(label)}}">{{label}} ({{ticket.artifacts_labeled_with(label, ticket.app_config).count()}})</a>
           </span>
         {% else %}
           None
