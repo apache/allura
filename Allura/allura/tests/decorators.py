@@ -8,11 +8,12 @@ from pylons import c
 
 
 def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
-        ordinal=None, post_install_hook=None, **override_options):
+        ordinal=None, post_install_hook=None, username='test-admin',
+        **override_options):
     def _with_tool(func):
         @wraps(func)
         def wrapped(*args, **kw):
-            c.user = M.User.by_username('test-admin')
+            c.user = M.User.by_username(username)
             p = M.Project.query.get(shortname=project_shortname)
             c.project = p
             if mount_point and not p.app_instance(mount_point):
