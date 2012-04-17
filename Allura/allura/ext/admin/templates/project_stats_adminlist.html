@@ -21,7 +21,7 @@
       <tbody>
         {% for entry in entries %}
         <tr>
-          <td style="white-space: nowrap">{{ entry.project.name }}</td>
+          <td style="white-space: nowrap"><a href="{{entry.project.url()}}">{{ entry.project.name }}</a></td>
           <td>{{ entry.user.username }}</td>
           <td>{{ entry.user.preferences.email_address or 'Unknown' }}</td>
           <td>{{ entry.user.display_name }}</td>
