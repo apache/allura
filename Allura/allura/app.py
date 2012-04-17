@@ -241,7 +241,7 @@ class Application(object):
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
         if self.permissions and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions', className='nav_child'))
+            links.append(SitemapEntry('Permissions', admin_url + 'permissions'))
         if force_options or len(self.config_options) > 3:
             links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
         links.append(SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
