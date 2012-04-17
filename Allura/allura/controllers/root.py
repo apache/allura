@@ -90,7 +90,7 @@ class RootController(WsgiDispatchController):
                   for n in neighborhoods ]
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [
-            SitemapEntry(cat.label, '/browse/'+cat.name, className='nav_child') for cat in categories
+            SitemapEntry(cat.label, '/browse/'+cat.name) for cat in categories
         ]
         return dict(projects=psort,title="All Projects",text=None)
 
