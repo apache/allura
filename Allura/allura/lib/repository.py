@@ -71,7 +71,7 @@ class RepositoryApp(Application):
         links = [SitemapEntry('Viewable Files', admin_url + 'extensions', className='admin_modal')]
         links.append(SitemapEntry('Refresh Repository',
                                   c.project.url() + self.config.options.mount_point + '/refresh',
-                                  className='nav_child'))
+                                  ))
         links += super(RepositoryApp, self).admin_menu()
         [links.remove(l) for l in links[:] if l.label == 'Options']
         return links
@@ -96,7 +96,6 @@ class RepositoryApp(Application):
             links += [
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
-                    className='nav_child',
                     small=merge_request_count) ]
         if self.repo.upstream_repo.name:
             repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
@@ -104,26 +103,23 @@ class RepositoryApp(Application):
                 SitemapEntry('Clone of'),
                 SitemapEntry('%s / <strong>%s</strong>' %
                     (repo_path_parts[1], repo_path_parts[-1]),
-                    self.repo.upstream_repo.name,
-                    className='nav_child')
+                    self.repo.upstream_repo.name)
                 ]
             if len(c.app.repo.branches) and has_access(c.app.repo, 'admin'):
                 links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
                              ui_icon=g.icons['merge'],
-                             className='nav_child'))
+                             ))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
                         'Pending Merges',
                         self.repo.upstream_repo.name + 'merge-requests/',
-                        className='nav_child',
                         small=pending_upstream_merges))
         if self.repo.branches:
             links.append(SitemapEntry('Branches'))
             for b in self.repo.branches:
                 links.append(SitemapEntry(
                         b.name, url(c.app.url, dict(branch='ref/' + b.name)),
-                        className='nav_child',
                         small=b.count))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
@@ -132,14 +128,13 @@ class RepositoryApp(Application):
                 if i < max_tags:
                     links.append(SitemapEntry(
                             b.name, url(c.app.url, dict(branch='ref/' + b.name)),
-                            className='nav_child',
                             small=b.count))
                 elif i == max_tags:
                     links.append(
                         SitemapEntry(
                             'More Tags',
                             default_branch_url+'tags/',
-                            className='nav_child'))
+                            ))
                     break
         if self.repo.forks:
             links.append(SitemapEntry('Forks'))
@@ -148,7 +143,7 @@ class RepositoryApp(Application):
                 links.append(SitemapEntry(
                     '%s / <strong>%s</strong>' %
                     (repo_path_parts[1], repo_path_parts[-1]),
-                    f.url(), className='nav_child'))
+                    f.url()))
         return links
 
     def install(self, project):
