@@ -752,17 +752,18 @@ class StatsController(BaseController):
         last_updated_60 = 0
         last_updated_90 = 0
         today_date = datetime.today()
-        for p in M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)).all():
-             if p.private:
-                 private_count = private_count + 1
-             else:
-                 public_count = public_count + 1
-                 if today_date - p.last_updated < timedelta(days=30):
-                     last_updated_30 = last_updated_30 + 1
-                 if today_date - p.last_updated < timedelta(days=60):
-                     last_updated_60 = last_updated_60 + 1
-                 if today_date - p.last_updated < timedelta(days=90):
-                     last_updated_90 = last_updated_90 + 1
+        if M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)).count() < 20000: # arbitrary limit for efficiency
+            for p in M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)):
+                if p.private:
+                    private_count = private_count + 1
+                else:
+                    public_count = public_count + 1
+                    if today_date - p.last_updated < timedelta(days=30):
+                        last_updated_30 = last_updated_30 + 1
+                    if today_date - p.last_updated < timedelta(days=60):
+                        last_updated_60 = last_updated_60 + 1
+                    if today_date - p.last_updated < timedelta(days=90):
+                        last_updated_90 = last_updated_90 + 1
 
         c.delete_count = delete_count
         c.public_count = public_count
