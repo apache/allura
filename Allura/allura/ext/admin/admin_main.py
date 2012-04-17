@@ -121,25 +121,25 @@ class AdminApp(Application):
             nbhd_admin_url = c.project.neighborhood.url()+'_admin/'
             links = links + [
                      SitemapEntry('Neighborhood'),
-                     SitemapEntry('Overview', nbhd_admin_url+'overview', className='nav_child'),
-                     SitemapEntry('Awards', nbhd_admin_url+'accolades', className='nav_child')]
+                     SitemapEntry('Overview', nbhd_admin_url+'overview'),
+                     SitemapEntry('Awards', nbhd_admin_url+'accolades')]
         else:
             links += [
-                SitemapEntry('Metadata', admin_url+'overview', className='nav_child'),
-                SitemapEntry('Screenshots', admin_url+'screenshots', className='nav_child'),
-                SitemapEntry('Categorization', admin_url+'trove', className='nav_child')
+                SitemapEntry('Metadata', admin_url+'overview'),
+                SitemapEntry('Screenshots', admin_url+'screenshots'),
+                SitemapEntry('Categorization', admin_url+'trove')
                 ]
         if has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Permissions', admin_url+'permissions/', className='nav_child'))
-        links.append(SitemapEntry('Tools', admin_url+'tools', className='nav_child'))
+            links.append(SitemapEntry('Permissions', admin_url+'permissions/'))
+        links.append(SitemapEntry('Tools', admin_url+'tools'))
         if c.project.is_root and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Usergroups', admin_url+'groups/', className='nav_child'))
+            links.append(SitemapEntry('Usergroups', admin_url+'groups/'))
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
         links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
         if c.project.shortname == '--init--':
             links.append(None)
-            links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/', className='nav_child'))
+            links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
         return links
 
     def admin_menu(self):

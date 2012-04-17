@@ -164,9 +164,6 @@ class ForgeTrackerApp(Application):
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
         links += super(ForgeTrackerApp, self).admin_menu()
-        # make the options link non-modal
-        options_link = [l for l in links if l.label == 'Options'][0]
-        options_link.className = 'nav_child'
         return links
 
     @h.exceptionless([], log)
@@ -177,7 +174,7 @@ class ForgeTrackerApp(Application):
         for bin in self.bins:
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
-                    h.text.truncate(label, 72), bin.url(), className='nav_child search_bin'))
+                    h.text.truncate(label, 72), bin.url(), className='search_bin'))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
@@ -186,7 +183,6 @@ class ForgeTrackerApp(Application):
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
-                        className='nav_child',
                         small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
@@ -210,13 +206,13 @@ class ForgeTrackerApp(Application):
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
                 super = TM.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url(), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url()))
             if ticket.sub_ids:
                 links.append(SitemapEntry('Subtasks'))
             for sub_id in ticket.sub_ids or []:
                 sub = TM.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url(), className='nav_child'))
-            #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url()))
+            #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
 
         links += milestones
 
@@ -224,7 +220,7 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         links.append(SitemapEntry('Help'))
-        links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax', className='nav_child'))
+        links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax'))
         return links
 
     def sidebar_menu_js(self):
