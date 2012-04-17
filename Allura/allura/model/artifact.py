@@ -150,8 +150,11 @@ class Artifact(MappedClass):
         return self
 
     @classmethod
-    def artifacts_labeled_with(cls, label):
-        return cls.query.find({'labels':label})
+    def artifacts_labeled_with(cls, label, app_config):
+        """Return all artifacts of type `cls` that have the label `label` and
+        are in the tool denoted by `app_config`.
+        """
+        return cls.query.find({'labels':label, 'app_config_id': app_config._id})
 
     def email_link(self, subject='artifact'):
         if subject:
