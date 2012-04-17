@@ -317,11 +317,11 @@ def diff_text(t1, t2, differ=None):
     return ' '.join(result).replace('\n', '<br/>\n')
 
 def gen_message_id():
-    if c.project:
+    if getattr(c, 'project', None):
         parts = c.project.url().split('/')[1:-1]
     else:
         parts = ['mail']
-    if c.app:
+    if getattr(c, 'app', None):
         addr = '%s.%s' % (nonce(40), c.app.config.options['mount_point'])
     else:
         addr = nonce(40)
