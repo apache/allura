@@ -37,7 +37,6 @@ class TestRootController(TestController):
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
-        assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_strange_accept_headers(self):
@@ -70,7 +69,6 @@ class TestRootController(TestController):
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
-        assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_neighborhood_project_browse(self):
