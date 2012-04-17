@@ -61,14 +61,14 @@ class ProjectBrowseController(BaseController):
             nav.append(SitemapEntry(
                 cat.label,
                 self.nav_stub+cat.name,
-                className='nav_child'))
+                ))
             if (self.category and self.category._id == cat._id and cat.subcategories) or (
                 self.parent_category and self.parent_category._id == cat._id):
                 for subcat in cat.subcategories:
                     nav.append(SitemapEntry(
                         subcat.label,
                         self.nav_stub+cat.name+'/'+subcat.name,
-                        className='nav_child2'))
+                        ))
         return nav
 
     def _find_projects(self,sort='alpha', limit=None, start=0):
