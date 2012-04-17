@@ -130,7 +130,7 @@ class ForgeDiscussionApp(Application):
                     if f.url() in request.url and h.has_access(f, 'moderate')():
                         moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
                         small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
-                    forum_links.append(SitemapEntry(f.name, f.url(), className='nav_child', small=f.num_topics))
+                    forum_links.append(SitemapEntry(f.name, f.url(), small=f.num_topics))
             l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
                 l.append(SitemapEntry('Add Forum', c.app.url + 'new_forum', ui_icon=g.icons['conversation']))
@@ -146,7 +146,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
             l.append(SitemapEntry('Help'))
-            l.append(SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax', className='nav_child'))
+            l.append(SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax'))
             return l
         except: # pragma no cover
             log.exception('sidebar_menu')
