@@ -112,7 +112,7 @@ class NeighborhoodController(object):
                 SitemapEntry('')
             ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
-            SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name, className='nav_child') for cat in categories
+            SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name) for cat in categories
         ]
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to "+self.neighborhood.name,
@@ -393,8 +393,8 @@ def set_nav(neighborhood):
     else:
         admin_url = neighborhood.url() + '_admin/'
         c.custom_sidebar_menu = [
-            SitemapEntry('Overview', admin_url + 'overview', className='nav_child'),
-            SitemapEntry('Awards', admin_url + 'accolades', className='nav_child')]
+            SitemapEntry('Overview', admin_url + 'overview'),
+            SitemapEntry('Awards', admin_url + 'accolades')]
 
 class NeighborhoodAdminController(object):
     def __init__(self, neighborhood):
