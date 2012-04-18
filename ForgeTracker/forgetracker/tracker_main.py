@@ -43,7 +43,7 @@ from forgetracker import version
 from forgetracker.widgets.admin import OptionsAdmin
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
-from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
+from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, SearchHelp
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 from forgetracker.import_support import ImportSupport
 
@@ -96,7 +96,7 @@ class W:
     field_display = TrackerFieldDisplay()
     ticket_custom_field = TicketCustomField
     options_admin = OptionsAdmin()
-    search_help_modal = ffw.Lightbox(name='search_help_modal',trigger='a.search_help_modal')
+    search_help_modal = SearchHelp()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -776,12 +776,14 @@ class BinController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     def index(self, **kw):
         count = len(self.app.bins)
+        c.search_help_modal = W.search_help_modal
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     def bins(self):
         count = len(self.app.bins)
+        c.search_help_modal = W.search_help_modal
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
@@ -806,6 +808,7 @@ class BinController(BaseController):
         so the user can fix.
         """
         # New search bin that the user is attempting to create
+        c.search_help_modal = W.search_help_modal
         new_bin = None
         bin = bin_form['_id']
         if bin is None:
@@ -857,6 +860,7 @@ class BinController(BaseController):
         page and display the error(s) so the user can fix.
         """
         require_access(self.app, 'save_searches')
+        c.search_help_modal = W.search_help_modal
         # Have any of the updated searches thrown an error?
         errors = False
         # Persistent search bins - will need this if we encounter errors
