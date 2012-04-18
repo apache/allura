@@ -52,7 +52,7 @@ class TestNeighborhood(TestController):
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.deleted = True
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/adobe/admin/stats', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/stats/', extra_environ=dict(username='root'))
         assert 'Deleted: 1' in r
         assert 'Private: 0' in r
 
@@ -60,14 +60,14 @@ class TestNeighborhood(TestController):
         proj.deleted = False
         proj.private = True
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/adobe/admin/stats', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/stats/', extra_environ=dict(username='root'))
         assert 'Deleted: 0' in r
         assert 'Private: 1' in r
 
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.private = False
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/adobe/admin/stats/adminlist', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/stats/adminlist', extra_environ=dict(username='root'))
         pq = M.Project.query.find(dict(neighborhood_id=neighborhood._id, deleted=False))
         pq.sort('name')
         projects = pq.skip(0).limit(int(25)).all()
