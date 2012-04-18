@@ -407,7 +407,7 @@ class Ticket(VersionedArtifact):
             Thread(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
             n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
-            if monitoring_email:
+            if monitoring_email and n:
                 n.send_simple(monitoring_email)
         Feed.post(self, description)
 
