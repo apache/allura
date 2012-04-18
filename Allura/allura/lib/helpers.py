@@ -26,6 +26,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
+from paste.deploy.converters import asbool
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 
