@@ -1,7 +1,5 @@
 {% extends g.theme.master %}
 
-{% do g.register_forge_css('css/forge/deck.css') %}
-
 {% block title %}{{c.project.name}} / Statistics / Admins list{% endblock %}
 
 {% block header %}Admins list{% endblock %}
@@ -11,30 +9,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="nested-grid-container">
-  <div style="overflow:auto">
-    <table>
-      <thead>
-        <tr>
-          <th>Project</th>
-          <th>Username</th>
-          <th>E-mail</th>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in entries %}
-        <tr>
-          <td style="white-space: nowrap"><a href="{{entry.project.url()}}">{{ entry.project.name }}</a></td>
-          <td>{{ entry.user.username }}</td>
-          <td>{{ entry.user.preferences.email_address or 'Unknown' }}</td>
-          <td>{{ entry.user.display_name }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Username</th>
+      <th>E-mail</th>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <td style="white-space: nowrap"><a href="{{entry.project.url()}}">{{ entry.project.name }}</a></td>
+      <td>{{ entry.user.username }}</td>
+      <td>{{ entry.user.preferences.email_address or 'Unknown' }}</td>
+      <td>{{ entry.user.display_name }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 <div class="grid-15" style="clear:both">
   {{page_list.display(limit=limit, page=page, count=count)}}
