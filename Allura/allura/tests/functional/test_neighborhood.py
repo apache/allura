@@ -46,9 +46,9 @@ class TestNeighborhood(TestController):
                           params=dict(project_template='{'),
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
-        # Test admin stats
-        today_date = datetime.today()
-        neighborhood = M.Neighborhood.query.get(name='Mozq1')
+    
+    def test_admin_stats_del_count(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.deleted = True
         ThreadLocalORMSession.flush_all()
@@ -56,6 +56,8 @@ class TestNeighborhood(TestController):
         assert 'Deleted: 1' in r
         assert 'Private: 0' in r
 
+    def test_admin_stats_priv_count(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.deleted = False
         proj.private = True
@@ -64,6 +66,8 @@ class TestNeighborhood(TestController):
         assert 'Deleted: 0' in r
         assert 'Private: 1' in r
 
+    def test_admin_stats_adminlist(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
         proj.private = False
         ThreadLocalORMSession.flush_all()
