@@ -16,7 +16,9 @@
       <b>Last updated</b>
     </span>
     <span class="grid-prefix-1 grid-9 installable_tool">
+    {% if h.asbool(config.get('allow_project_delete', True)) %}
       Deleted: {{ c.delete_count }}
+    {% endif %}
     </span>
     <span class="grid-9 installable_tool">
       Last 30 days: {{ c.last_updated_30 }}
