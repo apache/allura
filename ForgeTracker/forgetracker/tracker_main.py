@@ -441,6 +441,14 @@ class RootController(BaseController):
     def update_milestones(self, field_name=None, milestones=None, **kw):
         require_access(c.app, 'configure')
         update_counts = False
+        # If the default milestone field doesn't exist, create it.
+        # TODO: This is a temporary fix for migrated projects, until we make
+        # the Edit Milestones page capable of editing any/all milestone fields
+        # instead of just the default "_milestone" field.
+        if field_name == '_milestone' and \
+            field_name not in c.app.globals.milestone_fields:
+            c.app.globals.custom_fields.append(dict(name='_milestone',
+                label='Milestone', type='milestone', milestones=[]))
         for fld in c.app.globals.milestone_fields:
             if fld.name == field_name:
                 for new in milestones:
