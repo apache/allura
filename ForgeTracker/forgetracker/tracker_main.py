@@ -96,6 +96,7 @@ class W:
     field_display = TrackerFieldDisplay()
     ticket_custom_field = TicketCustomField
     options_admin = OptionsAdmin()
+    search_help_modal = ffw.Lightbox(name='search_help_modal',trigger='a.search_help_modal')
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -489,6 +490,7 @@ class RootController(BaseController):
         if query and not q:
             q = query
         c.bin_form = W.bin_form
+        c.search_help_modal = W.search_help_modal
         bin = None
         if q:
             bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
