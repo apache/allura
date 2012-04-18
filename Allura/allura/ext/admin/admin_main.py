@@ -1,7 +1,9 @@
 import logging
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
+import Image
+import pymongo
 import pkg_resources
 from pylons import c, g, request
 from paste.deploy.converters import asbool
@@ -40,6 +42,7 @@ class W:
     screenshot_list = ProjectScreenshots()
     metadata_admin = aw.MetadataAdmin()
     audit = aw.AuditLog()
+    page_list=ffw.PageList()
 
 class AdminWidgets(WidgetController):
     widgets=['users', 'tool_status']
@@ -138,6 +141,7 @@ class AdminApp(Application):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
         links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
         if c.project.shortname == '--init--':
+            links.append(SitemapEntry('Statistics', nbhd_admin_url+ 'stats/'))
             links.append(None)
             links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
         return links
@@ -727,6 +731,7 @@ class AuditController(BaseController):
             limit=limit,
             page=page,
             count=count)
+
 
 class AdminAppAdminController(DefaultAdminController):
     '''Administer the admin app'''

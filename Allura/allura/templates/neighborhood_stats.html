@@ -1,0 +1,33 @@
+{% extends g.theme.master %}
+
+{% block top_nav %}
+    {% include 'allura:templates/jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block title %}Neighborhood Statistics{% endblock %}
+
+{% block header %}Neighborhood Statistics{% endblock %}
+
+{% block content %}
+  <div class="grid-9">
+    <b>Number of projects that are...</b>
+    <ul>
+      <li>Public: {{ public_count }}</li>
+      <li>Private: {{ private_count }}</li>
+      {% if h.asbool(config.get('allow_project_delete', True)) %}
+      <li>Deleted: {{ delete_count }}</li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="grid-10">
+    <b>Number of projects updated in the last...</b>
+    <ul>
+    <li>30 days: {{ last_updated_30 }}</li>
+    <li>60 days: {{ last_updated_60 }}</li>
+    <li>90 days: {{ last_updated_90 }}</li>
+    </ul>
+  </div>
+  <div class="grid-19">
+    <a href="adminlist">View a list of project admins</a>
+  </div>
+{% endblock %}
