@@ -226,6 +226,23 @@ def test_projects_macro():
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
 
+@with_setup(setUp)
+def test_myprojects_macro():
+    h.set_context('test', 'wiki', neighborhood='Projects')
+
+    r = g.markdown_wiki.convert('[[my_projects]]')
+    for p in c.user.my_projects():
+        if p.neighborhood.name == 'Projects':
+            proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+            assert proj_title in r
+
+    h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
+    user = M.User.query.get(username='test-user-1')
+    r = g.markdown_wiki.convert('[[my_projects]]')
+    for p in user.my_projects():
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        assert proj_title in r
+
 def get_project_names(r):
     """
     Extracts a list of project names from a wiki page HTML.

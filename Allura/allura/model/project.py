@@ -309,7 +309,7 @@ class Project(MappedClass):
         roles = set()
         for p in self.parent_iter():
             for ace in p.acl:
-                if ace.permission == name and ace.access == ACE.alllow:
+                if ace.permission == name and ace.access == ACE.allow:
                     roles.add(ace.role_id)
         return list(roles)
 
