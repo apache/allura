@@ -1,10 +1,10 @@
 import re
 import logging
-
-from bson import ObjectId
+from datetime import datetime, timedelta
 from urllib import unquote
 from itertools import chain, islice
 
+from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
@@ -400,17 +400,19 @@ class NeighborhoodAdminController(object):
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
+        self.stats = NeighborhoodStatsController(self.neighborhood)
+
+    def _check_security(self):
+        require_access(self.neighborhood, 'admin')
 
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        require_access(self.neighborhood, 'admin')
         utils.permanent_redirect('overview')
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_overview.html')
     def overview(self, **kw):
-        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         c.overview_form = W.neighborhood_overview_form
         return dict(neighborhood=self.neighborhood)
@@ -418,13 +420,11 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_permissions.html')
     def permissions(self):
-        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         return dict(neighborhood=self.neighborhood)
 
     @expose('json:')
     def project_search(self, term=''):
-        require_access(self.neighborhood, 'admin')
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
         project_regex = re.compile('(?i)%s' % re.escape(term))
@@ -442,7 +442,6 @@ class NeighborhoodAdminController(object):
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_accolades.html')
     def accolades(self):
-        require_access(self.neighborhood, 'admin')
         set_nav(self.neighborhood)
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         awards_count = len(awards)
@@ -460,7 +459,6 @@ class NeighborhoodAdminController(object):
     @require_post()
     @validate(W.neighborhood_overview_form, error_handler=overview)
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
-        require_access(self.neighborhood, 'admin')
         self.neighborhood.name = name
         self.neighborhood.redirect = kw.pop('redirect', '')
         self.neighborhood.homepage = homepage
@@ -475,6 +473,76 @@ class NeighborhoodAdminController(object):
                 square=True, thumbnail_size=(48,48),
                 thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
+
+class NeighborhoodStatsController(object):
+
+    def __init__(self, neighborhood):
+        self.neighborhood = neighborhood
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/neighborhood_stats.html')
+    def index(self, **kw):
+        delete_count = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=True)).count()
+        public_count = 0
+        private_count = 0
+        last_updated_30 = 0
+        last_updated_60 = 0
+        last_updated_90 = 0
+        today_date = datetime.today()
+        if M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)).count() < 20000: # arbitrary limit for efficiency
+            for p in M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)):
+                if p.private:
+                    private_count = private_count + 1
+                else:
+                    public_count = public_count + 1
+                    if today_date - p.last_updated < timedelta(days=30):
+                        last_updated_30 = last_updated_30 + 1
+                    if today_date - p.last_updated < timedelta(days=60):
+                        last_updated_60 = last_updated_60 + 1
+                    if today_date - p.last_updated < timedelta(days=90):
+                        last_updated_90 = last_updated_90 + 1
+    
+        set_nav(self.neighborhood)
+        return dict(
+            delete_count = delete_count,
+            public_count = public_count,
+            private_count = private_count,
+            last_updated_30 = last_updated_30,
+            last_updated_60 = last_updated_60,
+            last_updated_90 = last_updated_90,
+            neighborhood = self.neighborhood,
+        )
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/neighborhood_stats_adminlist.html')
+    def adminlist(self, sort='alpha', limit=25, page=0, **kw):
+        limit, page, start = g.handle_paging(limit, page)
+
+        pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
+        if sort=='alpha':
+            pq.sort('name')
+        else:
+            pq.sort('last_updated', pymongo.DESCENDING)
+        count = pq.count()
+        projects = pq.skip(start).limit(int(limit)).all()
+
+        entries = []
+        for proj in projects:
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            if admin_role is None:
+                continue
+            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
+            for ur in user_role_list:
+                if ur.user is not None and admin_role._id in ur.roles:
+                    entries.append({'project': proj, 'user': ur.user})
+
+        set_nav(self.neighborhood)
+        return dict(entries=entries,
+                    sort=sort,
+                    limit=limit, page=page, count=count,
+                    page_list=W.page_list,
+                    neighborhood=self.neighborhood,
+                    )
 
 
 class NeighborhoodModerateController(object):
