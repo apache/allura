@@ -2,12 +2,15 @@
 
 {% do g.register_forge_css('css/forge/deck.css') %}
 
-{% block title %}{{c.project.name}} / Statistics{% endblock %}
+{% block top_nav %}
+    {% include 'allura:templates/jinja_master/neigh_top_nav.html' %}
+{% endblock %}
 
-{% block header %}Statistics{% endblock %}
+{% block title %}Neighborhood Statistics{% endblock %}
+
+{% block header %}Neighborhood Statistics{% endblock %}
 
 {% block content %}
-  <h3>Neighborhood statistics</h3>
   <div class="nested-grid-container">
     <span class="grid-prefix-1 grid-9 installable_tool">
       <b>Projects</b>
@@ -17,27 +20,27 @@
     </span>
     <span class="grid-prefix-1 grid-9 installable_tool">
     {% if h.asbool(config.get('allow_project_delete', True)) %}
-      Deleted: {{ c.delete_count }}
+      Deleted: {{ delete_count }}
     {% endif %}
     </span>
     <span class="grid-9 installable_tool">
-      Last 30 days: {{ c.last_updated_30 }}
+      Last 30 days: {{ last_updated_30 }}
     </span>
     <span class="grid-prefix-1 grid-9 installable_tool">
-      Public: {{ c.public_count }}
+      Public: {{ public_count }}
     </span>
     <span class="grid-9 installable_tool">
-      Last 60 days: {{ c.last_updated_60 }}
+      Last 60 days: {{ last_updated_60 }}
     </span>
     <span class="grid-prefix-1 grid-9 installable_tool">
-      Private: {{ c.private_count }}
+      Private: {{ private_count }}
     </span>
     <span class="grid-9 installable_tool">
-      Last 90 days: {{ c.last_updated_90 }}
+      Last 90 days: {{ last_updated_90 }}
     </span>
     <br style="clear:both"/>
     <span class="grid-prefix-1 grid-9 installable_tool">
-      <a href="{{ c.project.url() }}admin/stats/adminlist">Admins list</a>
+      <a href="adminlist">Admins list</a>
     </span>
   </div>
 
