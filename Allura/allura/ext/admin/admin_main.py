@@ -164,7 +164,6 @@ class ProjectAdminController(BaseController):
         self.permissions = PermissionsController()
         self.groups = GroupsController()
         self.audit = AuditController()
-        self.stats = StatsController()
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')
@@ -732,81 +731,6 @@ class AuditController(BaseController):
             limit=limit,
             page=page,
             count=count)
-
-class StatsController(BaseController):
-
-    def _check_security(self):
-        require_access(c.project, 'admin')
-
-    @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_stats.html')
-    def index(self, **kw):
-        if c.project.shortname != '--init--':
-             redirect('index')
-
-        # public private deleted
-        delete_count = M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=True)).count()
-        public_count = 0
-        private_count = 0
-        last_updated_30 = 0
-        last_updated_60 = 0
-        last_updated_90 = 0
-        today_date = datetime.today()
-        if M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)).count() < 20000: # arbitrary limit for efficiency
-            for p in M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False)):
-                if p.private:
-                    private_count = private_count + 1
-                else:
-                    public_count = public_count + 1
-                    if today_date - p.last_updated < timedelta(days=30):
-                        last_updated_30 = last_updated_30 + 1
-                    if today_date - p.last_updated < timedelta(days=60):
-                        last_updated_60 = last_updated_60 + 1
-                    if today_date - p.last_updated < timedelta(days=90):
-                        last_updated_90 = last_updated_90 + 1
-
-        c.delete_count = delete_count
-        c.public_count = public_count
-        c.private_count = private_count
-        c.last_updated_30 = last_updated_30
-        c.last_updated_60 = last_updated_60
-        c.last_updated_90 = last_updated_90
-
-        c.markdown_editor = W.markdown_editor
-        c.label_edit = W.label_edit
-        c.mount_delete = W.mount_delete
-        c.admin_modal = W.admin_modal
-        c.install_modal = W.install_modal
-        mounts = c.project.ordered_mounts()
-        return dict()
-
-    @without_trailing_slash
-    @expose('jinja:allura.ext.admin:templates/project_stats_adminlist.html')
-    def adminlist(self, sort='alpha', limit=25, page=0, **kw):
-        limit, page, start = g.handle_paging(limit, page)
-
-        pq = M.Project.query.find(dict(neighborhood_id=c.project.neighborhood._id, deleted=False))
-        if sort=='alpha':
-            pq.sort('name')
-        else:
-            pq.sort('last_updated', pymongo.DESCENDING)
-        count = pq.count()
-        projects = pq.skip(start).limit(int(limit)).all()
-
-        entries = []
-        for proj in projects:
-            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
-            if admin_role is None:
-                continue
-            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
-            for ur in user_role_list:
-                if ur.user is not None and admin_role._id in ur.roles:
-                    entries.append({'project': proj, 'user': ur.user})
-
-        return dict(entries=entries,
-                    sort=sort,
-                    limit=limit, page=page, count=count,
-                    page_list=W.page_list)
 
 
 class AdminAppAdminController(DefaultAdminController):
