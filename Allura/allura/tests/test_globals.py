@@ -228,18 +228,20 @@ def test_projects_macro():
 
 @with_setup(setUp)
 def test_myprojects_macro():
-    h.set_context('test', 'wiki', neighborhood='Projects')
-
+    h.set_context('u/%s' % (c.user.username), 'wiki', neighborhood='Users')
     r = g.markdown_wiki.convert('[[my_projects]]')
     for p in c.user.my_projects():
-        if p.neighborhood.name == 'Projects':
-            proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
-            assert proj_title in r
+        if p.deleted or p.shortname == '--init--':
+            continue
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        assert proj_title in r
 
     h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
     user = M.User.query.get(username='test-user-1')
     r = g.markdown_wiki.convert('[[my_projects]]')
     for p in user.my_projects():
+        if p.deleted or p.shortname == '--init--':
+            continue
         proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
         assert proj_title in r
 
