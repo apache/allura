@@ -145,6 +145,7 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('... DB: %s', db)
                 for name, indexes in project_indexes.iteritems():
                     self._update_indexes(db[name], indexes)
+        base.log.info('Done updating indexes')
 
     def _update_indexes(self, collection, indexes):
         prev_indexes = {}
