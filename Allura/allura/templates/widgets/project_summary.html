@@ -2,7 +2,7 @@
 <div class="list card{% if show_proj_icon%} proj_icon{% endif %}"
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
   {% if show_proj_icon == True %}
-   {% if accolades %}
+   {% if accolades and show_awards_banner == True %}
     <div class="box notch sponsor">
       <div class="feature">{{accolades[0].award.short}}</div>
       <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
@@ -20,7 +20,7 @@
 {% else %}
   <div class="border card">
     {% if show_proj_icon == True %}
-     {% if accolades %}
+     {% if accolades and show_awards_banner == True %}
       <div class="box notch sponsor">
         <div class="feature">{{accolades[0].award.short}}</div>
         <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
