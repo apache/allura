@@ -446,7 +446,7 @@ class RootController(BaseController):
         # the Edit Milestones page capable of editing any/all milestone fields
         # instead of just the default "_milestone" field.
         if field_name == '_milestone' and \
-            field_name not in c.app.globals.milestone_fields:
+            field_name not in [m.name for m in c.app.globals.milestone_fields]:
             c.app.globals.custom_fields.append(dict(name='_milestone',
                 label='Milestone', type='milestone', milestones=[]))
         for fld in c.app.globals.milestone_fields:
