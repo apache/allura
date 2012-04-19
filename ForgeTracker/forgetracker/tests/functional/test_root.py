@@ -50,16 +50,22 @@ class TestMilestones(TrackerTestController):
         app = p.app_instance('bugs')
         app.globals.custom_fields = []
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/bugs/update_milestones',{
+        d = {
             'field_name':'_milestone',
             'milestones-0.old_name':'',
             'milestones-0.new_name':'1.0',
             'milestones-0.description':'Version 1',
             'milestones-0.complete':'Open',
             'milestones-0.due_date':''
-        })
+        }
+        r = self.app.post('/bugs/update_milestones', d)
         r = self.app.get('/bugs/milestones')
         assert 'Version 1' in r
+        # make sure _milestone doesn't get created again if it already exists
+        r = self.app.post('/bugs/update_milestones', d)
+        p = M.Project.query.get(shortname='test')
+        app = p.app_instance('bugs')
+        assert len(app.globals.custom_fields) == 1, len(app.globals.custom_fields)
 
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
