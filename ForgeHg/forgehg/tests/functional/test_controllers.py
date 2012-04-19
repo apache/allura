@@ -139,9 +139,9 @@ class TestRootController(TestController):
         resp = self.app.get(ci + 'tree/READMEz', status=404)
 
     def test_diff(self):
-        ci = self._get_ci()
-        #ci = '/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/'
-        resp = self.app.get(ci + 'tree/README')
-        resp = resp.click(description='diff')
+        ci = '/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/'
+        parent = '773d2f8e3a94d0d5872988b16533d67e1a7f5462'
+        resp = self.app.get(ci + 'tree/README?barediff=' + parent)
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
+        assert '+Another line' in resp, resp.showbrowser()
