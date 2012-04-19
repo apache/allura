@@ -135,7 +135,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
-        macro_type='projects'):
+        initial_q={}):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
@@ -143,9 +143,10 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
     trove = category
     limit = int(limit)
     q = dict(
-        neighborhood_id=c.project.neighborhood_id,
         deleted=False,
         shortname={'$ne':'--init--'})
+    q.update(initial_q)
+
     if labels:
         or_labels = labels.split('|')
         q['$or'] = [{'labels': {'$all': l.split(',')}} for l in or_labels]
@@ -156,10 +157,14 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
             created_by_neighborhood_id=c.project.neighborhood_id,
             short=award)).first()
         if aw:
-            q['_id'] = {'$in': [grant.granted_to_project_id for grant in
+            ids = [grant.granted_to_project_id for grant in
                 M.AwardGrant.query.find(dict(
                     granted_by_neighborhood_id=c.project.neighborhood_id,
-                    award_id=aw._id))]}
+                    award_id=aw._id))]
+            if '_id' in q:
+                ids = list(set(q['_id']['$in']).intersection(ids))
+            q['_id'] = {'$in': ids}
+
     if trove is not None:
         q['trove_' + trove.type] = trove._id
     sort_key, sort_dir = 'last_updated', pymongo.DESCENDING
@@ -172,77 +177,40 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
     elif sort == '_id':
         sort_key, sort_dir = '_id', pymongo.DESCENDING
 
-    if macro_type == 'projects':
-        projects = []
-        if private:
-            # Only return private projects.
-            # Can't filter these with a mongo query directly - have to iterate
-            # through and check the ACL of each project.
-            for chunk in utils.chunked_find(M.Project, q, sort_key=sort_key,
-                    sort_dir=sort_dir):
-                projects.extend([p for p in chunk if p.private])
-            total = len(projects)
-            if sort == 'random':
-                projects = random.sample(projects, min(limit, total))
-            else:
-                projects = projects[:limit]
-        else:
-            total = None
-            if sort == 'random':
-                # MongoDB doesn't have a random sort built in, so...
-                # 1. Do a direct pymongo query (faster than ORM) to fetch just the
-                #    _ids of objects that match our criteria
-                # 2. Choose a random sample of those _ids
-                # 3. Do an ORM query to fetch the objects with those _ids
-                # 4. Shuffle the results
-                from ming.orm import mapper
-                m = mapper(M.Project)
-                collection = M.main_doc_session.db[m.collection.m.collection_name]
-                docs = list(collection.find(q, {'_id': 1}))
-                if docs:
-                    ids = [doc['_id'] for doc in
-                            random.sample(docs, min(limit, len(docs)))]
-                    if '_id' in q:
-                        ids = list(set(q['_id']['$in']).intersection(ids))
-                    q['_id'] = {'$in': ids}
-                    projects = M.Project.query.find(q).all()
-                    random.shuffle(projects)
-            else:
-                projects = M.Project.query.find(q).limit(limit).sort(sort_key,
-                    sort_dir).all()
-
-    elif macro_type == 'my_projects':
-        projects = []
-        myproj_user = c.user.anonymous()
-
-        if c.project.neighborhood.name == "Users" and c.project.name[:2] == u"u/":
-            username = c.project.name[2:]
-            myproj_user = M.User.query.get(username=username)
-            if 'neighborhood_id' in q:
-                del q['neighborhood_id']
-        else:
-            admin_role_id = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')._id
-            if c.user is None or c.user == c.user.anonymous():
-                project_users_roles = M.ProjectRole.query.find(dict(name=None, project_id=c.project._id)).all()
-                for ur in project_users_roles:
-                    if admin_role_id in ur.roles:
-                        myproj_user = ur.user
-                        break
-            else:
-                myproj_user = c.user
-
-        # Get projects ids
-        ids = []
-        for p in myproj_user.my_projects():
-            ids.append(p._id)
-        if '_id' in q:
-            ids = list(set(q['_id']['$in']).intersection(ids))
-        q['_id'] = {'$in': ids}
-
+    projects = []
+    if private:
+        # Only return private projects.
+        # Can't filter these with a mongo query directly - have to iterate
+        # through and check the ACL of each project.
+        for chunk in utils.chunked_find(M.Project, q, sort_key=sort_key,
+                sort_dir=sort_dir):
+            projects.extend([p for p in chunk if p.private])
+        total = len(projects)
         if sort == 'random':
-            ids = random.sample(ids, min(limit, len(ids)))
-            projects = M.Project.query.find(q).all()
-            random.shuffle(projects)
+            projects = random.sample(projects, min(limit, total))
+        else:
+            projects = projects[:limit]
+    else:
+        total = None
+        if sort == 'random':
+            # MongoDB doesn't have a random sort built in, so...
+            # 1. Do a direct pymongo query (faster than ORM) to fetch just the
+            #    _ids of objects that match our criteria
+            # 2. Choose a random sample of those _ids
+            # 3. Do an ORM query to fetch the objects with those _ids
+            # 4. Shuffle the results
+            from ming.orm import mapper
+            m = mapper(M.Project)
+            collection = M.main_doc_session.db[m.collection.m.collection_name]
+            docs = list(collection.find(q, {'_id': 1}))
+            if docs:
+                ids = [doc['_id'] for doc in
+                        random.sample(docs, min(limit, len(docs)))]
+                if '_id' in q:
+                    ids = list(set(q['_id']['$in']).intersection(ids))
+                q['_id'] = {'$in': ids}
+                projects = M.Project.query.find(q).all()
+                random.shuffle(projects)
         else:
             projects = M.Project.query.find(q).limit(limit).sort(sort_key,
                 sort_dir).all()
@@ -268,19 +236,32 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
 def projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+    initial_q = dict(neighborhood_id=c.project.neighborhood_id)
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner, macro_type='projects')
+                   show_awards_banner=show_awards_banner,
+                   initial_q=initial_q)
 
 @macro()
 def my_projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+
+    myproj_user = c.project.private_project_of()
+    if myproj_user is None:
+        myproj_user = c.user.anonymous()
+
+    ids = []
+    for p in myproj_user.my_projects():
+        ids.append(p._id)
+
+    initial_q = dict(_id={'$in': ids})
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner, macro_type='my_projects')
+                   show_awards_banner=show_awards_banner,
+                   initial_q=initial_q)
 
 @macro()
 def project_screenshots():
