@@ -3,12 +3,15 @@ import time
 import Queue
 from datetime import datetime, timedelta
 
+import faulthandler
 import pylons
 from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
 
 import base
+
+faulthandler.enable()
 
 class TaskdCommand(base.Command):
     summary = 'Task server'
