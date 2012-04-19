@@ -17,7 +17,8 @@ class ProjectSummary(ew_core.Widget):
         accolades=None,
         columns=1,
         show_proj_icon=True,
-        show_download_button=True)
+        show_download_button=True,
+        show_awards_banner=True)
 
     def prepare_context(self, context):
         response = super(ProjectSummary, self).prepare_context(context)
@@ -46,6 +47,11 @@ class ProjectSummary(ew_core.Widget):
                 response['show_download_button'] = True
             else:
                 response['show_download_button'] = False
+        if type(response['show_awards_banner']) == unicode:
+            if response['show_awards_banner'].lower() in true_list:
+                response['show_awards_banner'] = True
+            else:
+                response['show_awards_banner'] = False
 
         return response
 
@@ -82,7 +88,8 @@ class ProjectList(ew_core.Widget):
         accolades_index=None,
         columns=1,
         show_proj_icon=True,
-        show_download_button=True)
+        show_download_button=True,
+        show_awards_banner=True)
 
     def prepare_context(self, context):
         response = super(ProjectList, self).prepare_context(context)
@@ -111,6 +118,11 @@ class ProjectList(ew_core.Widget):
                 response['show_download_button'] = True
             else:
                 response['show_download_button'] = False
+        if type(response['show_awards_banner']) == unicode:
+            if response['show_awards_banner'].lower() in true_list:
+                response['show_awards_banner'] = True
+            else:
+                response['show_awards_banner'] = False
 
         return response
 
