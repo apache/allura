@@ -42,7 +42,7 @@ class Artifact(MappedClass):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
-        indexes = [ 'app_config_id', 'labels' ]
+        indexes = [ 'app_config_id', ('labels', 'app_config_id') ]
         def before_save(data):
             if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
                 data['mod_date'] = datetime.utcnow()
