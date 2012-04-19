@@ -134,7 +134,8 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 
 def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, macro_type='projects'):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        macro_type='projects'):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
@@ -250,7 +251,8 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
     g.resource_manager.register(pl)
     response = pl.display(projects=projects, display_mode=display_mode,
                           columns=columns, show_proj_icon=show_proj_icon,
-                          show_download_button=show_download_button)
+                          show_download_button=show_download_button,
+                          show_awards_banner=show_awards_banner)
     if show_total:
         if total is None:
             total = 0
@@ -265,20 +267,20 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   macro_type='projects')
+                   show_awards_banner=show_awards_banner, macro_type='projects')
 
 @macro()
 def my_projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   macro_type='my_projects')
+                   show_awards_banner=show_awards_banner, macro_type='my_projects')
 
 @macro()
 def project_screenshots():
