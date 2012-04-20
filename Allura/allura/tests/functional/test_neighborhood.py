@@ -16,6 +16,19 @@ from allura.tests import decorators as td
 
 class TestNeighborhood(TestController):
 
+    def setUp(self):
+        # change the override_root config value to change which root controller the test uses
+        self._make_app = allura.config.middleware.make_app
+        def make_app(global_conf, full_stack=True, **app_conf):
+            app_conf['override_root'] = 'test_neighborhood_root'
+            return self._make_app(global_conf, full_stack, **app_conf)
+        allura.config.middleware.make_app = make_app
+        super(TestNeighborhood, self).setUp()
+
+    def tearDown(self):
+        super(TestNeighborhood, self).tearDown()
+        allura.config.middleware.make_app = self._make_app
+
     def test_home_project(self):
         r = self.app.get('/adobe/wiki/')
         assert r.location.endswith('/adobe/wiki/Home/')
@@ -36,7 +49,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/accolades', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update',
-                          params=dict(name='Mozq1', css='', homepage='# MozQ1!'),
+                          params=dict(name='Mozq1', css='', homepage='# MozQ1!', tracking_id='U-123456'),
                           extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]'),
