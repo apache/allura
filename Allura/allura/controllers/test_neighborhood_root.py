@@ -5,9 +5,9 @@ import logging
 from urllib import unquote
 
 import pkg_resources
-from pylons import c, request, response
+from pylons import c, g, request, response
 from webob import exc
-from tg import expose
+from tg import expose, redirect
 from tg.decorators import without_trailing_slash
 
 import  ming.orm.ormsession
@@ -19,7 +19,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura import model as M
 from .root import RootController
-from .project import ProjectController
+from .project import NeighborhoodController, ProjectController
 from .auth import AuthController
 from .static import NewForgeController
 from .search import SearchController
@@ -30,18 +30,23 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-class TestController(WsgiDispatchController, ProjectController):
+class TestNeighborhoodRootController(WsgiDispatchController, NeighborhoodController):
     '''Root controller for testing -- it behaves just like a
-    ProjectController for test/ except that all tools are mounted,
+    NeighborhoodController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
     name.
 
     Also, the test-admin is perpetually logged in here.
+
+    The name of this controller is dictated by the override_root setting
+    in development.ini and the magical import rules of TurboGears.  The
+    override_root setting has to match the name of this file, which has
+    to match (less underscores, case changes, and the addition of
+    "Controller") the name of this class.  It will then be registered
+    as the root controller instead of allura.controllers.root.RootController.
     '''
 
     def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
@@ -53,50 +58,42 @@ class TestController(WsgiDispatchController, ProjectController):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
-        super(TestController, self).__init__()
+        super(TestNeighborhoodRootController, self).__init__()
 
     def _setup_request(self):
-        # This code fixes a race condition in our tests
-        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
-        c.memoize_cache = {}
-        count = 20
-        while c.project is None:
-            import sys, time
-            time.sleep(0.5)
-            log.warning('Project "test" not found, retrying...')
-            c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
-            count -= 1
-            assert count > 0, 'Timeout waiting for test project to appear'
+        pass
 
     def _cleanup_request(self):
         pass
 
     @expose()
-    def _lookup(self, name, *remainder):
-        if not h.re_path_portion.match(name):
-            raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
-                                         neighborhood_id=self.p_nbhd._id)
-        if subproject:
-            c.project = subproject
-            c.app = None
-            return ProjectController(), remainder
-        app = c.project.app_instance(name)
-        if app is None:
-            prefix = 'test-app-'
-            ep_name = name
-            if name.startswith('test-app-'):
-                ep_name = name[len(prefix):]
-            c.project.install_app(ep_name, name)
-            app = c.project.app_instance(name)
-            if app is None:
-                raise exc.HTTPNotFound, name
-        c.app = app
-        return app.root, remainder
+    def _lookup(self, pname, *remainder):
+        pname = unquote(pname)
+        if not h.re_path_portion.match(pname):
+            raise exc.HTTPNotFound, pname
+        project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
+        if project is None:
+            project = self.neighborhood.neighborhood_project
+            c.project = project
+            return ProjectController()._lookup(pname, *remainder)
+        if project.database_configured == False:
+            if remainder == ('user_icon',):
+                redirect(g.forge_static('images/user.png'))
+            elif c.user.username == pname:
+                log.info('Configuring %s database for access to %r',
+                         pname, remainder)
+                project.configure_project(is_user_project=True)
+            else:
+                raise exc.HTTPNotFound, pname
+        c.project = project
+        if project is None or (project.deleted and not has_access(c.project, 'update')()):
+            raise exc.HTTPNotFound, pname
+        if project.neighborhood.name != self.neighborhood_name:
+            redirect(project.url())
+        return ProjectController(), remainder
 
     def __call__(self, environ, start_response):
         c.app = None
-        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
         c.user = plugin.AuthenticationProvider.get(request).by_username(
             environ.get('username', 'test-admin'))
         return WsgiDispatchController.__call__(self, environ, start_response)
