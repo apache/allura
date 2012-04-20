@@ -622,7 +622,10 @@ class AuditLog(object):
             message = message % args
         elif kwargs:
             message = message % kwargs
-        return cls(project_id=project._id, user_id=user._id, url=url, message=message)
+        if project:
+            return cls(project_id=project._id, user_id=user._id, url=url, message=message)
+        else:
+            return cls(user_id=user._id, url=url, message=message)
 
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
         project_id=ForeignIdProperty('Project'),
