@@ -16,7 +16,6 @@ setup(name='AlluraTesting',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        'pytidylib',
         "poster",
           # -*- Extra requirements: -*-
       ]
