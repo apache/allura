@@ -20,7 +20,6 @@ from paste.script.appinstall import SetupCommand
 from pylons import c, g, url, request, response, session
 from webtest import TestApp
 from webob import Request, Response
-from tidylib import tidy_document
 from nose.tools import ok_, assert_true, assert_false
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
@@ -110,69 +109,10 @@ def validate_html(html_or_response):
 
         html = html.lstrip()
 
-        if html.startswith('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"'):
-            return validate_xhtml(html)
-        elif html.startswith('<!DOCTYPE html>'):
+        if html.startswith('<!DOCTYPE html>'):
             return validate_html5(html)
         else:
             assert False, 'Non-valid HTML: ' + html[:100] + '...'
-
-def validate_xhtml(html):
-        ok_warnings = ('inserting implicit <span>',
-                       'replacing unexpected button by </button>',
-                       'missing </button>',
-                       'trimming empty <',
-                       '<form> lacks "action" attribute',
-                       'replacing invalid character code',
-                       'discarding invalid character code',
-                       '<a> proprietary attribute "alt"', # event RSS feed generated this
-                       '<table> lacks "summary" attribute',
-
-                       # parser appears to get mightily confused
-                       # see also http://sourceforge.net/tracker/?func=detail&atid=390963&aid=1986717&group_id=27659
-                       '<span> anchor "login_openid" already defined',
-        )
-
-        doc_tidied, errors = tidy_document(html)
-        if errors:
-            lines = html.split('\n')
-            #print html
-            errors_prettified = ""
-            for e in errors.split('\n'):
-                if not e:
-                    continue
-                if '- Warning: ' in e:
-                    ok = False
-                    for ok_warning in ok_warnings:
-                        if ok_warning in e:
-                            ok = True
-                            continue
-                    if ok:
-                        continue
-                if '- Info:' in e:
-                    continue
-                if '- Info:' in e:
-                    continue
-                line_num = int(e.split(' ',2)[1])
-                errors_prettified += e + "\n"
-                for offset in range(-2,2+1):
-                    try:
-                        errors_prettified += "%s: %s\n" % (line_num+offset, lines[line_num+offset-1])
-                    except IndexError as e:
-                        pass
-                #print lines[line_num-1]
-                errors_prettified += "\n"
-            assert_false(errors_prettified, "HTML Tidy errors:\n" + errors_prettified)
-
-def validate_xhtml_chunk(html):
-        """ When you don't have a html & body tags - this adds it"""
-        html = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml">
-        <head><title></title></head>
-        <body>
-        %s
-        </body></html>''' % html
-        return validate_xhtml(html)
 
 def validate_json(json_or_response):
         if hasattr(json_or_response, 'body'):
