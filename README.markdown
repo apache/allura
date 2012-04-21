@@ -19,7 +19,7 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 11.10](http://ubun
 
 Before we begin, you'll need the following additional packages in order to work with the Forge source code.
 
-    ~$ sudo aptitude install git-core subversion python-svn libtidy-0.99-0
+    ~$ sudo aptitude install git-core subversion python-svn
 
 You'll also need additional development packages in order to compile some of the modules.  [Use google for additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
 
