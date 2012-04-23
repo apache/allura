@@ -70,10 +70,22 @@ def bootstrap(command, conf, vars):
         display_name='Anonymous')
     root = create_user('Root')
 
-    n_projects = M.Neighborhood(name='Projects', url_prefix='/p/')
+    n_projects = M.Neighborhood(name='Projects', url_prefix='/p/',
+                                features=dict(private_projects = True,
+                                              max_projects = None,
+                                              css = 'none',
+                                              google_analytics = False))
     n_users = M.Neighborhood(name='Users', url_prefix='/u/',
-                             shortname_prefix='u/')
-    n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/')
+                             shortname_prefix='u/',
+                             features=dict(private_projects = True,
+                                           max_projects = None,
+                                           css = 'none',
+                                           google_analytics = False))
+    n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/'                                       ,
+                             features=dict(private_projects = True,
+                                           max_projects = None,
+                                           css = 'custom',
+                                           google_analytics = True))
     assert tg.config['auth.method'] == 'local'
     project_reg = plugin.ProjectRegistrationProvider.get()
     p_projects = project_reg.register_neighborhood_project(n_projects, [root], allow_register=True)
