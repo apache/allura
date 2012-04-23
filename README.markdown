@@ -25,6 +25,7 @@ You'll also need additional development packages in order to compile some of the
 
     ~$ sudo aptitude install default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
+    ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
 
 And finally our document-oriented database, MongoDB
 
