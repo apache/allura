@@ -467,6 +467,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.allow_browse = kw.get('allow_browse', False)
         tracking_id = kw.get('tracking_id', '')
         if tracking_id != self.neighborhood.tracking_id:
+            c.project = self.neighborhood.neighborhood_project
             M.AuditLog.log('update neighborhood tracking_id')
             self.neighborhood.tracking_id = tracking_id
         if icon is not None and icon != '':
