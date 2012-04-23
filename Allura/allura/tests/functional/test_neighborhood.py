@@ -105,36 +105,29 @@ class TestNeighborhood(TestController):
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.css = test_css
-        neighborhood.level = None
+        neighborhood.features['css'] = 'none'
         r = self.app.get('/adobe/')
         assert test_css not in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'silver'
-        r = self.app.get('/adobe/')
-        assert test_css not in r
-        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
-        assert custom_css not in r
-
-        neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'gold'
+        neighborhood.features['css'] = 'picker'
         r = self.app.get('/adobe/')
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'platinum'
+        neighborhood.features['css'] = 'custom'
         r = self.app.get('/adobe/')
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
 
-    def test_goldlevel_custom_css(self):
+    def test_picker_css(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'gold'
+        neighborhood.features['css'] = 'picker'
 
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert 'Project title, font' in r
@@ -166,7 +159,7 @@ class TestNeighborhood(TestController):
     def test_max_projects(self):
         # Set max value to unlimit
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.level = ''
+        neighborhood.features['max_projects'] = None
         r = self.app.post('/p/register',
                           params=dict(project_unixname='maxproject1', project_name='Max project1', project_description='', neighborhood='Projects'),
                           antispam=True,
@@ -175,7 +168,7 @@ class TestNeighborhood(TestController):
 
         # Set max value to 0
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.level = 'noexists'
+        neighborhood.features['max_projects'] = 0
         r = self.app.post('/p/register',
                           params=dict(project_unixname='maxproject2', project_name='Max project2', project_description='', neighborhood='Projects'),
                           antispam=True,
@@ -299,7 +292,7 @@ class TestNeighborhood(TestController):
     def test_register_private_fails_for_non_private_neighborhood(self):
         # Turn off private
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.allow_private = False
+        neighborhood.features['private_projects'] = False
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' not in r
 
@@ -320,7 +313,7 @@ class TestNeighborhood(TestController):
 
         # Turn on private
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.allow_private = True
+        neighborhood.features['private_projects'] = True
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' in r
 
