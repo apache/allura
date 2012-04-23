@@ -20,7 +20,11 @@ class TrackerTestWithModel(object):
         bootstrap.wipe_database()
         project_reg = plugin.ProjectRegistrationProvider.get()
         c.user = bootstrap.create_user('Test User')
-        neighborhood = M.Neighborhood(name='Projects', url_prefix='/p/')
+        neighborhood = M.Neighborhood(name='Projects', url_prefix='/p/',
+            features=dict(private_projects = False,
+                          max_projects = None,
+                          css = 'none',
+                          google_analytics = False))
         project_reg.register_neighborhood_project(neighborhood, [c.user])
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Tickets', 'bugs')

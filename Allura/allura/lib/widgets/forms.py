@@ -140,9 +140,9 @@ class NeighborhoodOverviewForm(ForgeForm):
         icon = ew.FileField()
 
     def from_python(self, value, state):
-        if value.level == "gold":
+        if value.features['css'] == "picker":
             self.list_color_inputs = True
-            self.color_inputs = value.get_css_for_gold_level()
+            self.color_inputs = value.get_css_for_picker()
         else:
             self.list_color_inputs = False
             self.color_inputs = []
@@ -182,13 +182,13 @@ class NeighborhoodOverviewForm(ForgeForm):
     def to_python(self, value, state):
         d = super(NeighborhoodOverviewForm, self).to_python(value, state)
         neighborhood = M.Neighborhood.query.get(name=d.get('name', None))
-        if neighborhood and neighborhood.level == "gold":
+        if neighborhood and neighborhood.features['css'] == "picker":
             css_form_dict = {}
             for key in value.keys():
                 def_key = "%s-def" % (key)
                 if key[:4] == "css-" and def_key not in value:
                     css_form_dict[key[4:]] = value[key]
-            d['css'] = M.Neighborhood.compile_css_for_gold_level(css_form_dict)
+            d['css'] = M.Neighborhood.compile_css_for_picker(css_form_dict)
         return d
 
     def resources(self):
