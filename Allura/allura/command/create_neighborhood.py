@@ -16,6 +16,10 @@ class CreateNeighborhoodCommand(base.Command):
         shortname = self.args[1]
         n = M.Neighborhood(
             name=shortname,
-            url_prefix='/' + shortname + '/')
+            url_prefix='/' + shortname + '/',
+            features=dict(private_projects = False,
+                          max_projects = 500,
+                          css = 'none',
+                          google_analytics = False))
         project_reg = plugin.ProjectRegistrationProvider.get()
         project_reg.register_neighborhood_project(n, admins)
