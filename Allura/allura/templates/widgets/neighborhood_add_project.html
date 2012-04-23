@@ -113,7 +113,7 @@
         <div style="clear:both"></div>
     </div>
     {% endif %}
-    {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.allow_private %}
+    {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}
     <div style="margin-top:20px">
         <div class="grid-1" style="text-align: right">
           {{widget.display_field(widget.fields.private_project)}}

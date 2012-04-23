@@ -6,7 +6,8 @@ class NoSuchProjectError(ForgeError): pass
 class NoSuchNeighborhoodError(ForgeError): pass
 class MailError(ForgeError): pass
 class AddressException(MailError): pass
-class NoSuchNBLevelError(ForgeError): pass
+class NoSuchNBFeatureError(ForgeError): pass
+class InvalidNBFeatureValueError(ForgeError): pass
 
 class CompoundError(ForgeError):
     def __repr__(self):
