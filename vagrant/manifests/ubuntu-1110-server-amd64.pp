@@ -1,6 +1,6 @@
 # create puppet group
-group { "puppet": 
-  ensure => "present", 
+group { "puppet":
+  ensure => "present",
 }
 
 # install required system packages
@@ -10,7 +10,6 @@ $packages = [
  "git-core",
  "subversion",
  "python-svn",
- "libtidy-0.99-0",
  "default-jre-headless",
  "python-dev",
  "libssl-dev",
@@ -28,6 +27,11 @@ file { '/usr/lib/libz.so':
   ensure => 'link',
   target => '/usr/lib/x86_64-linux-gnu/libz.so',
   require => Package[ "zlib1g-dev" ],
+}
+file { '/usr/lib/libjpeg.so':
+  ensure => 'link',
+  target => '/usr/lib/x86_64-linux-gnu/libjpeg.so',
+  require => Package[ "libjpeg8-dev" ],
 }
 
 # install python pip
@@ -117,5 +121,3 @@ file { '/svn':
   owner => "vagrant",
   group => "vagrant",
 }
-
-
