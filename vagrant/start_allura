@@ -1,0 +1,61 @@
+#!/bin/bash
+# Starts Allura platform services
+
+# Activate Allura virtualenv
+. /home/vagrant/anvil/bin/activate
+
+# Create log dir
+if [ ! -d /var/log/allura ]
+then
+    sudo mkdir -p /var/log/allura
+    sudo chown vagrant:vagrant /var/log/allura
+fi
+
+# Install Solr
+cd /home/vagrant/src
+if [ ! -d apache-solr-1.4.1 ]
+then
+    echo "Installing Solr..."
+    wget -q http://apache.mirrors.tds.net/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
+    tar xf apache-solr-1.4.1.tgz && rm -f apache-solr-1.4.1.tgz
+    cd apache-solr-1.4.1/example/
+    mkdir -p /home/vagrant/src/forge/solr_config/conf
+    cp solr/conf/solrconfig.xml /home/vagrant/src/forge/solr_config/conf/
+fi
+
+# Start solr
+if ps -ef | grep solr | grep -v grep >/dev/null
+then
+    echo "Solr is running."
+else
+    echo "Starting Solr..."
+    cd /home/vagrant/src/apache-solr-1.4.1/example
+    nohup java -Dsolr.solr.home=/home/vagrant/src/forge/solr_config -jar start.jar >/var/log/allura/solr.log 2>&1 &
+fi
+
+cd /home/vagrant/src/forge/Allura
+
+# Start taskd
+if ps -ef | grep "paster taskd" | grep -v grep >/dev/null
+then
+    echo "Taskd is running."
+else
+    echo "Starting taskd..."
+    nohup paster taskd development.ini >/var/log/allura/taskd.log 2>&1 &
+fi
+
+# Run setup-app
+if [ ! -f /var/lib/mongodb/allura.0 ]
+then
+    echo "Initializing database..."
+    paster setup-app development.ini >/var/log/allura/setup-app.log 2>&1
+fi
+
+# Start the web server
+if ps -ef | grep "paster serve" | grep -v grep >/dev/null
+then
+    echo "Web server is running."
+else
+    echo "Starting web server..."
+    nohup paster serve --reload development.ini >/var/log/allura/allura.log 2>&1 &
+fi
