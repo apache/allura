@@ -243,12 +243,12 @@ def projects(category=None, display_mode='grid', sort='last_updated',
                    show_awards_banner=show_awards_banner,
                    initial_q=initial_q)
 
-@macro()
+@macro('userproject-wiki')
 def my_projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
 
-    myproj_user = c.project.private_project_of()
+    myproj_user = c.project.user_project_of
     if myproj_user is None:
         myproj_user = c.user.anonymous()
 
