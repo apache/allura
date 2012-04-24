@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
 import sys
 import shutil
 import unittest
+from base64 import b64encode
 
 import mock
 from pylons import c, g
-
+from datadiff.tools import assert_equal
+from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -97,25 +100,56 @@ class TestMailTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
 
-    def test_send_email(self):
+    # these tests go down through the mail_util.SMTPClient.sendmail method
+    # since usage is generally through the task, and not using mail_util directly
+
+    def test_send_email_ascii_with_user_lookup(self):
         c.user = M.User.by_username('test-admin')
-        with mock.patch.object(mail_tasks.smtp_client, 'sendmail') as f:
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
-                str(c.user._id),
-                [ str(c.user._id) ],
-                'This is a test',
-                'noreply@sf.net',
-                'Test subject',
-                h.gen_message_id())
-            assert len(f.call_args_list)==3, f.call_args_list
-            args,kwargs  = f.call_args_list[0]
-            assert map(str, args[0]) == [ '"Test Admin" <None>' ]
-            assert str(args[1]) == '"Test Admin" <None>'
-            assert str(args[2]) == 'noreply@sf.net'
-            assert args[3] == 'Test subject'
-            assert '@' in args[4], args[4]
-            assert args[5] == None
-            assert 'This is a test' in str(args[6]), str(args[6])
+                fromaddr=str(c.user._id),
+                destinations=[ str(c.user._id) ],
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+
+            assert_equal(rcpts, [c.user.get_pref('email_address')])
+            assert_in('Reply-To: noreply@sf.net', body)
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+            assert_in('Subject: Test subject', body)
+            # plain
+            assert_in('This is a test', body)
+            # html
+            assert_in('<div class="markdown_content"><p>This is a test</p></div>', body)
+
+    def test_send_email_nonascii(self):
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendmail(
+                fromaddr=u'"По" <foo@bar.com>',
+                destinations=[ 'blah@blah.com' ],
+                text=u'Громады стройные теснятся',
+                reply_to=u'noreply@sf.net',
+                subject=u'По оживлённым берегам',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+
+            assert_equal(rcpts, ['blah@blah.com'])
+            assert_in('Reply-To: noreply@sf.net', body)
+
+            # The address portion must not be encoded, only the name portion can be.
+            # Also it is apparently not necessary to have the double-quote separators present
+            #   when the name portion is encoded.  That is, the encoding below is just По and not "По"
+            assert_in('From: =?utf-8?b?0J/Qvg==?= <foo@bar.com>', body)
+            assert_in('Subject: =?utf-8?b?0J/QviDQvtC20LjQstC70ZHQvdC90YvQvCDQsdC10YDQtdCz0LDQvA==?=', body)
+            assert_in('Content-Type: text/plain; charset="utf-8"', body)
+            assert_in('Content-Transfer-Encoding: base64', body)
+            assert_in(b64encode(u'Громады стройные теснятся'.encode('utf-8')), body)
 
     @td.with_wiki
     def test_receive_email_ok(self):
@@ -192,7 +226,7 @@ def raise_exc():
         except:
             errs.append(sys.exc_info())
     raise CompoundError(*errs)
-    
+
 class _TestArtifact(M.Artifact):
     _shorthand_id = FieldProperty(str)
     text = FieldProperty(str)

@@ -56,14 +56,8 @@ def route_email(
             log.exception('Error routing mail to %s', addr)
 
 @task
-def sendmail(
-    fromaddr,
-    destinations,
-    text,
-    reply_to,
-    subject,
-    message_id,
-    in_reply_to=None):
+def sendmail(fromaddr, destinations, text, reply_to, subject,
+             message_id, in_reply_to=None):
     from allura import model as M
     addrs_plain = []
     addrs_html = []
