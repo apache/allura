@@ -2,6 +2,7 @@
 import unittest
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email import header
 
 from nose.tools import raises, assert_equal
 from ming.orm import ThreadLocalORMSession
@@ -9,7 +10,7 @@ from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
 
-from allura.lib.mail_util import parse_address, parse_message
+from allura.lib.mail_util import parse_address, parse_message, Header
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
 
@@ -88,3 +89,22 @@ class TestReactor(unittest.TestCase):
             if part['payload'] is None: continue
             assert isinstance(part['payload'], unicode)
 
+
+class TestHeader(object):
+
+    @raises(TypeError)
+    def test_bytestring(self):
+        our_header = Header('[asdf2:wiki] Discussion for Home page')
+        assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
+
+    def test_ascii(self):
+        our_header = Header(u'[asdf2:wiki] Discussion for Home page')
+        assert_equal(str(our_header), '[asdf2:wiki] Discussion for Home page')
+
+    def test_utf8(self):
+        our_header = Header(u'теснятся')
+        assert_equal(str(our_header), '=?utf-8?b?0YLQtdGB0L3Rj9GC0YHRjw==?=')
+
+    def test_name_addr(self):
+        our_header = Header(u'"теснятся"', u'<dave@b.com>')
+        assert_equal(str(our_header), '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')

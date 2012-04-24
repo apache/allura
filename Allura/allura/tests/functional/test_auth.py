@@ -16,7 +16,8 @@ class TestAuth(TestController):
     def test_login(self):
         result = self.app.get('/auth/')
         r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
-        r = self.app.post('/auth/send_verification_link', params=dict(a='Beta@wiki.test.projects.sourceforge.net'))
+        email = M.User.query.get(username='test-admin').email_addresses[0]
+        r = self.app.post('/auth/send_verification_link', params=dict(a=email))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
