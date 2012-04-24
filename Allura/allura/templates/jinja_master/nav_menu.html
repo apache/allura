@@ -7,8 +7,8 @@
        alt="Return to {{c.project.neighborhood.name}} Neighborhood" title="Return to {{c.project.neighborhood.name}} Neighborhood"></a>
   {% endif %}
   <a href="{{c.project.url()}}">
-    {% if c.project.private_project_of() %}
-      {{lib.gravatar(c.project.private_project_of(), size=48, className='project_icon')}}
+    {% if c.project.user_project_of %}
+      {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
     {% elif c.project.icon %}
       <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
     {% else %}
