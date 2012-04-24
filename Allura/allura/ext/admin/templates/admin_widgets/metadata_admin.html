@@ -51,7 +51,7 @@
         </div>
       {% else %}
         <div class="viewer">
-          No icon has been created.{% if c.project.private_project_of() %} A gravatar image associated with your primary email
+          No icon has been created.{% if c.project.is_user_project %} A gravatar image associated with your primary email
           address will be used instead if you have created one at <a href="http://gravatar.com/">gravatar.com</a>.{% endif %}
         </div>
       {% endif %}
