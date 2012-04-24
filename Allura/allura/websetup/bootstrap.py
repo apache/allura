@@ -132,7 +132,10 @@ def bootstrap(command, conf, vars):
     # do the minimal needed
     if asbool(conf.get('load_test_data')):
         u_admin = make_user('Test Admin')
-        u_admin.claim_address('Beta@wiki.test.projects.sourceforge.net')
+        u_admin.preferences = dict(email_address='test-admin@users.localhost')
+        u_admin.email_addresses = ['test-admin@users.localhost']
+        u_admin.set_password('foo')
+        u_admin.claim_address('test-admin@users.localhost')
     else:
         u_admin = make_user('Admin 1', username='admin1')
         # Admin1 is almost root, with admin access for Users and Projects neighborhoods
