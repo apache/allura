@@ -23,16 +23,39 @@ config = ConfigProxy(
     return_path='forgemail.return_path')
 EMAIL_VALIDATOR=fev.Email(not_empty=True)
 
-def Header(text, charset):
-    '''Helper to make sure we don't over-encode headers
-
-    (gmail barfs with encoded email addresses.)'''
+def Header(text, *more_text):
+    '''Helper to make sure we encode headers properly'''
     if isinstance(text, header.Header):
         return text
-    hdr = header.Header('', charset)
-    for word in text.split(' '):
-        hdr.append(word)
-    return hdr
+    # email.header.Header handles str vs unicode differently
+    # see http://docs.python.org/library/email.header.html#email.header.Header.append
+    if type(text) != unicode:
+        raise TypeError('This must be unicode: %r' % text)
+    head = header.Header(text)
+    for m in more_text:
+        if type(m) != unicode:
+            raise TypeError('This must be unicode: %r' % text)
+        head.append(m)
+    return head
+
+def AddrHeader(fromaddr):
+    '''Accepts any of:
+        Header() instance
+        foo@bar.com
+        "Foo Bar" <foo@bar.com>
+    '''
+    if isinstance(fromaddr, basestring) and ' <' in fromaddr:
+        name, addr = fromaddr.rsplit(' <', 1)
+        addr = '<' + addr # restore the char we just split off
+        addrheader = Header(name, addr)
+        if str(addrheader).startswith('=?'): # encoding escape chars
+            # then quoting the name is no longer necessary
+            name = name.strip('"')
+            addrheader = Header(name, addr)
+    else:
+        addrheader = Header(fromaddr)
+    return addrheader
+
 
 def parse_address(addr):
     userpart, domain = addr.split('@')
@@ -103,7 +126,7 @@ def identify_sender(peer, email_address, headers, msg):
 
 def encode_email_part(content, content_type):
     try:
-        return MIMEText(content.encode('iso-8859-1'), content_type, 'iso-8859-1')
+        return MIMEText(content.encode('ascii'), content_type, 'ascii')
     except:
         return MIMEText(content.encode('utf-8'), content_type, 'utf-8')
 
@@ -142,21 +165,19 @@ class SMTPClient(object):
     def __init__(self):
         self._client = None
 
-    def sendmail(self, addrs, addrfrom, reply_to, subject, message_id, in_reply_to, message):
+    def sendmail(self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message):
         if not addrs: return
-        charset = message.get_charset()
-        if charset is None:
-            charset = 'iso-8859-1'
-        message['To'] = Header(reply_to, charset)
-        message['From'] = Header(addrfrom, charset)
-        message['Reply-To'] = Header(reply_to, charset)
-        message['Subject'] = Header(subject, charset)
-        message['Message-ID'] = Header('<' + message_id + '>', charset)
+        # We send one message with multiple envelope recipients, so use a generic To: addr
+        # It might be nice to refactor to send one message per recipient, and use the actual To: addr
+        message['To'] = Header(reply_to)
+        message['From'] = AddrHeader(fromaddr)
+        message['Reply-To'] = Header(reply_to)
+        message['Subject'] = Header(subject)
+        message['Message-ID'] = Header('<' + message_id + u'>')
         if in_reply_to:
-            if isinstance(in_reply_to, basestring):
-                in_reply_to = [ in_reply_to ]
-            in_reply_to = ','.join(('<' + irt + '>') for irt in in_reply_to)
-            message['In-Reply-To'] = Header(in_reply_to, charset)
+            if not isinstance(in_reply_to, basestring):
+                raise TypeError('Only strings are supported now, not lists')
+            message['In-Reply-To'] = Header(u'<%s>' % in_reply_to)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
         smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]
