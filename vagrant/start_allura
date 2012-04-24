@@ -10,6 +10,7 @@ then
     sudo mkdir -p /var/log/allura
     sudo chown vagrant:vagrant /var/log/allura
 fi
+echo "Logs are in /var/log/allura"
 
 # Install Solr
 cd /home/vagrant/src
@@ -24,7 +25,7 @@ then
 fi
 
 # Start solr
-if ps -ef | grep solr | grep -v grep >/dev/null
+if pgrep -f solr.*start.jar >/dev/null
 then
     echo "Solr is running."
 else
@@ -36,7 +37,7 @@ fi
 cd /home/vagrant/src/forge/Allura
 
 # Start taskd
-if ps -ef | grep "paster taskd" | grep -v grep >/dev/null
+if pgrep -f "paster taskd" >/dev/null
 then
     echo "Taskd is running."
 else
@@ -52,10 +53,10 @@ then
 fi
 
 # Start the web server
-if ps -ef | grep "paster serve" | grep -v grep >/dev/null
+if pgrep -f "paster serve" >/dev/null
 then
     echo "Web server is running."
 else
-    echo "Starting web server..."
+    echo "Starting web server (port 8080 by default) ..."
     nohup paster serve --reload development.ini >/var/log/allura/allura.log 2>&1 &
 fi
