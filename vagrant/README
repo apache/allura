@@ -1,0 +1,29 @@
+To build an Allura vagrant box:
+
+$ mkdir ~/vagrant_allura && cd ~/vagrant_allura
+
+# Get the base box
+$ vagrant box add ubuntu-1110-server-amd64 http://timhuegdon.com/vagrant-boxes/ubuntu-11.10.box
+$ vagrant init
+
+# Get a copy of the provisioning scripts
+$ cp /var/local/allura/vagrant/* .
+
+# At this point you can make whatever changes you want to the provisioning
+# scripts
+
+# Provision the box (this will take a while)
+$ vagrant up
+
+# Package the Allura box
+$ vagrant package --vagrantfile Vagrantfile.pkg
+
+# Test your new box
+$ mkdir ~/vagrant_allura_test and cd ~/vagrant_allura_test
+$ vagrant box add allura ~/vagrant_allura/package.box
+$ vagrant init
+$ vagrant ssh
+
+# Do whatever testing you want...
+
+# If everything checks out, you can rename your package.box and upload it 
