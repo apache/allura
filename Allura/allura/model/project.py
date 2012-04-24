@@ -272,13 +272,18 @@ class Project(MappedClass):
         else:
             self.acl.append(ace)
     private = property(_get_private, _set_private)
+    
+    @property
+    def is_user_project(self):
+        return self.shortname.startswith('u/')
 
-    def private_project_of(self):
+    @LazyProperty
+    def user_project_of(self):
         '''
         If this is a user-project, return the User, else None
         '''
         user = None
-        if self.shortname.startswith('u/'):
+        if self.is_user_project:
             from .auth import User
             user = User.query.get(username=self.shortname[2:])
         return user
@@ -528,7 +533,7 @@ class Project(MappedClass):
         which the user has the required access.'''
         from forgewiki.wiki_main import ForgeWikiApp
         mounts = self.ordered_mounts()
-        if self.private_project_of():
+        if self.is_user_project:
             for mount in mounts:
                 if 'ac' in mount and mount['ac'].tool_name == 'profile':
                     return mount
