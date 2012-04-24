@@ -43,19 +43,24 @@
 
     <label>Icon:</label>
     <br>
-    <div class="editable viewing">
+    <div id="project-icon" class="viewing">
       {% if value.icon %}
         <div class="viewer" style="overflow: auto">
           <img src="{{value.url()}}/icon" style="float:left; margin-right: 1em;" alt="">
-          <input type="submit" name="delete_icon" value="Delete Icon" style="margin-top: 10px;">
+          <a id="delete-icon" href="#" style="display:inline-block;margin-top:15px">[remove]</a>
+          <a id="edit-icon" href="#" style="display:inline-block;margin-top:15px">[edit]</a>
         </div>
       {% else %}
         <div class="viewer">
           No icon has been created.{% if c.project.is_user_project %} A gravatar image associated with your primary email
           address will be used instead if you have created one at <a href="http://gravatar.com/">gravatar.com</a>.{% endif %}
+          <a id="edit-icon" href="#" class="add">[add]</a>
         </div>
       {% endif %}
-      <div class="editor">{{widget.display_field(widget.fields.icon)}}</div>
+      <div class="hidden editor">
+          {{widget.display_field(widget.fields.icon)}}
+          <input type="submit" value="Save" name="save" style="float: none" />
+      </div>
     </div>
     <div style="clear:both">&nbsp;</div>
 
