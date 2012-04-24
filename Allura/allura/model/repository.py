@@ -36,6 +36,9 @@ config = utils.ConfigProxy(
     common_prefix='forgemail.url')
 
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
+VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
+    '.rb','.phtml','.txt','.bat','.ps1','.xhtml','.css','.cfm','.jsp','.jspx',
+    '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
 
 class RepositoryImplementation(object):
 
@@ -1008,6 +1011,8 @@ class Blob(RepoObject):
         self.commit = tree.commit
         self.tree = tree
         self.name = name
+        fn, ext = os.path.splitext(self.name)
+        self.extension = ext or fn
 
     @LazyProperty
     def _content_type_encoding(self):
@@ -1053,8 +1058,17 @@ class Blob(RepoObject):
         return self.tree.path() + h.really_unicode(self.name)
 
     @property
+    def has_pypeline_view(self):
+        if README_RE.match(self.name) or self.extension in ['.md', '.rst']:
+            return True
+        return False
+
+    @property
     def has_html_view(self):
-        return self.content_type.startswith('text/')
+        if self.content_type.startswith('text/') or self.extension in VIEWABLE_EXTENSIONS or \
+            self.extension in self._additional_viewable_extensions:
+            return True
+        return False
 
     @property
     def has_image_view(self):
