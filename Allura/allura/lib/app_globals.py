@@ -274,6 +274,8 @@ class Globals(object):
     def markdown_wiki(self):
         if c.project.shortname == '--init--':
             return self.forge_markdown(wiki=True, macro_context='neighborhood-wiki')
+        elif c.project.is_user_project:
+            return self.forge_markdown(wiki=True, macro_context='userproject-wiki')
         else:
             return self.forge_markdown(wiki=True)
 
