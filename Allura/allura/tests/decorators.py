@@ -6,6 +6,21 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 from pylons import c
 
+def with_user_project(username):
+    def _with_user_project(func):
+        @wraps(func)
+        def wrapped(*args, **kw):
+            user = M.User.by_username(username)
+            n = M.Neighborhood.query.get(name='Users')
+            shortname = 'u/' + username
+            p = M.Project.query.get(shortname=shortname, neighborhood_id=n._id)
+            if not p:
+                n.register_project(shortname, user=user, user_project=True)
+                ThreadLocalORMSession.flush_all()
+                ThreadLocalORMSession.close_all()
+            return func(*args, **kw)
+        return wrapped
+    return _with_user_project
 
 def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
         ordinal=None, post_install_hook=None, username='test-admin',
