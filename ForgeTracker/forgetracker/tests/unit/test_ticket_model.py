@@ -15,11 +15,11 @@ class TestTicketModel(TrackerTestWithModel):
         """
         # create a ticket in two different tools, with the same label
         from allura.tests import decorators as td
-        @td.with_tool('test', 'Tickets', 'bugs', username='test user')
+        @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
         def _test_ticket():
             return Ticket(ticket_num=1, summary="ticket1", labels=["mylabel"])
 
-        @td.with_tool('test', 'Tickets', 'bugs2', username='test user')
+        @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
         def _test_ticket2():
             return Ticket(ticket_num=2, summary="ticket2", labels=["mylabel"])
 
