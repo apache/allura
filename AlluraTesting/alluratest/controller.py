@@ -9,6 +9,7 @@ import mock
 import beaker.session
 from formencode import variabledecode
 from paste.deploy import loadapp
+from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
 from pylons import c, g, url, request, response, session
 import tg
@@ -97,10 +98,14 @@ class TestController(object):
         self.app = ValidatingTestApp(setup_functional_test(app_name=self.application_under_test))
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
+        if asbool(tg.config.get('smtp.mock')):
+            self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
+            self.smtp_mock.start()
 
     def tearDown(self):
         """Method called by nose after running each test"""
-        pass
+        if asbool(tg.config.get('smtp.mock')):
+            self.smtp_mock.stop()
 
     def webflash(self, response):
         "Extract webflash content from response."
