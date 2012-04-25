@@ -191,8 +191,7 @@ def test_sort_updated():
 def test_filtering():
     # set up for test
     from random import choice
-    trove_count = M.TroveCategory.query.find().count()
-    random_trove = M.TroveCategory.query.get(trove_cat_id=choice(range(trove_count)) + 1)
+    random_trove = choice(M.TroveCategory.query.find().all())
     test_project = M.Project.query.get(name='test')
     test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
     test_project_troves.append(random_trove._id)
@@ -228,6 +227,8 @@ def test_projects_macro():
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
 
+@td.with_user_project('test-admin')
+@td.with_user_project('test-user-1')
 @with_setup(setUp)
 def test_myprojects_macro():
     h.set_context('u/%s' % (c.user.username), 'wiki', neighborhood='Users')

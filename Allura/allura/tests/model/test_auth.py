@@ -2,20 +2,18 @@
 """
 Model tests for auth
 """
-import mock
 from nose.tools import with_setup
-from pylons import c, g, request
+from pylons import c, g
 from webob import Request
 
-from pymongo.errors import OperationFailure, DuplicateKeyError
+from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
-import allura.model.auth
-from allura.lib.app_globals import Globals
 from allura import model as M
 from allura.lib import plugin
-from allura.lib import security
+from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
+
 
 def setUp():
     setup_basic_test()
@@ -60,6 +58,7 @@ def test_openid():
     assert oid2._id in c.user.open_ids
     ThreadLocalORMSession.flush_all()
 
+@td.with_user_project('test-admin')
 @with_setup(setUp)
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
