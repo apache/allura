@@ -46,7 +46,7 @@
       });
       $('#delete-icon').click(function(e) {
         e.preventDefault();
-        if (confirm('Remove project icon (this cannot be undone)?')) {
+        if (confirm('Remove project icon?  This cannot be undone.')) {
             $(this).after('<input type="hidden" name="delete_icon" value="Delete Icon" />')
                 .closest('form').submit();
         }
@@ -55,15 +55,10 @@
         e.preventDefault();
         var $this = $(this);
         var $parent = $this.closest('#project-icon');
-        if ($parent.is('.viewing')) {
-            $this.text('[cancel]');
-            $parent.toggleClass('viewing editing').find('.editor').removeClass('hidden');
-        } else {
-            $this.text('['+($this.is('.add') ? 'add' : 'edit')+']');
-            $parent.toggleClass('viewing editing').find('.editor').addClass('hidden');
-        }
+        $('#project-icon-upload').removeClass('hidden');
       });
-      $('#project-status a').click(function() {
+      $('#project-status a').click(function(e) {
+        e.preventDefault();
         $('#project-status-edit').removeClass('hidden');
       });
       $('input[name=removal]').change(function(){

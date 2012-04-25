@@ -47,17 +47,17 @@
       {% if value.icon %}
         <div class="viewer" style="overflow: auto">
           <img src="{{value.url()}}/icon" style="float:left; margin-right: 1em;" alt="">
-          <a id="delete-icon" href="#" style="display:inline-block;margin-top:15px">[remove]</a>
-          <a id="edit-icon" href="#" style="display:inline-block;margin-top:15px">[edit]</a>
+          <a id="edit-icon" href="#" title="Edit" style="display:inline-block;margin-top:15px"><b data-icon="p" class="ico ico-pencil"></b></a>
+          <a id="delete-icon" href="#" title="Remove" style="display:inline-block;margin-top:15px"><b data-icon="d" class="ico ico-delete"></b></a>
         </div>
       {% else %}
         <div class="viewer">
           No icon has been created.{% if c.project.is_user_project %} A gravatar image associated with your primary email
           address will be used instead if you have created one at <a href="http://gravatar.com/">gravatar.com</a>.{% endif %}
-          <a id="edit-icon" href="#" class="add">[add]</a>
+          <a id="edit-icon" href="#" title="Edit"><b data-icon="p" class="ico ico-pencil"></b></a>
         </div>
       {% endif %}
-      <div class="hidden editor">
+      <div id="project-icon-upload" class="hidden">
           {{widget.display_field(widget.fields.icon)}}
           <input type="submit" value="Save" name="save" style="float: none" />
       </div>
@@ -75,7 +75,7 @@
         {% elif value.removal == 'deleted' -%}
             Deleted
         {% endif %}
-        <a href="#">[edit]</a>
+        <a href="#" title="Edit"><b data-icon="p" class="ico ico-pencil"></b></a>
         <div id="project-status-edit" class="hidden">
             <br>
             <input name="removal" type="radio" value="" id="removal_active_cb"
