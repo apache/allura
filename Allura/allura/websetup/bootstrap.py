@@ -40,6 +40,15 @@ def restore_test_data():
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup allura here"""
+    # are we being called by the test suite?
+    test_run = conf.get('__file__', '').endswith('test.ini')
+
+    # if this is a test_run, skip user project creation to save time
+    make_user_projects = not test_run
+    def make_user(*args, **kw):
+        kw.update(make_project=make_user_projects)
+        return create_user(*args, **kw)
+
     # Our bootstrap doesn't play nicely with SFX project and user APIs
     tg.config['auth.method'] = tg.config['registration.method'] = 'local'
     assert tg.config['auth.method'] == 'local'
@@ -68,7 +77,9 @@ def bootstrap(command, conf, vars):
         _id=None,
         username='*anonymous',
         display_name='Anonymous')
-    root = create_user('Root')
+
+    # never make a user project for the root user
+    root = create_user('Root', make_project=False)
 
     n_projects = M.Neighborhood(name='Projects', url_prefix='/p/',
                                 features=dict(private_projects = True,
@@ -101,9 +112,7 @@ def bootstrap(command, conf, vars):
 
     # Add some test users
     for unum in range(10):
-        u = M.User.register(dict(username='test-user-%d' % unum,
-                                  display_name='Test User %d' % unum))
-        u.set_password('foo')
+        make_user('Test User %d' % unum)
 
     log.info('Creating basic project categories')
     cat1 = M.ProjectCategory(name='clustering', label='Clustering')
@@ -122,22 +131,16 @@ def bootstrap(command, conf, vars):
     # since this runs a lot for tests, separate test and default users and
     # do the minimal needed
     if asbool(conf.get('load_test_data')):
-        u_admin = M.User.register(dict(username='test-admin',
-                                  display_name='Test Admin'))
-        u_admin.set_password('foo')
+        u_admin = make_user('Test Admin')
         u_admin.claim_address('Beta@wiki.test.projects.sourceforge.net')
     else:
-        u_admin = M.User.register(dict(username='admin1',
-                                        display_name='Admin 1'))
-        u_admin.set_password('foo')
+        u_admin = make_user('Admin 1', username='admin1')
         # Admin1 is almost root, with admin access for Users and Projects neighborhoods
         p_projects.add_user(u_admin, ['Admin'])
         p_users.add_user(u_admin, ['Admin'])
 
         p_allura = n_projects.register_project('allura', u_admin)
-    u1 = M.User.register(dict(username='test-user',
-                              display_name='Test User'))
-    u1.set_password('foo')
+    u1 = make_user('Test User')
     p_adobe1 = n_adobe.register_project('adobe-1', u_admin)
     p_adobe.add_user(u_admin, ['Admin'])
     p0 = n_projects.register_project('test', u_admin)
@@ -204,11 +207,13 @@ def clear_all_database_tables():
             db.drop_collection(coll)
 
 
-def create_user(display_name):
-    user = M.User.register(dict(username=display_name.lower(),
+def create_user(display_name, username=None, password='foo', make_project=False):
+    if not username:
+        username = display_name.lower().replace(' ', '-')
+    user = M.User.register(dict(username=username,
                                 display_name=display_name),
-                           make_project=False)
-    user.set_password('foo')
+                           make_project=make_project)
+    user.set_password(password)
     return user
 
 

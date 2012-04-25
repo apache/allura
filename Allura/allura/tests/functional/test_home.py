@@ -22,6 +22,7 @@ class TestProjectHome(TestController):
         self.app.get('/adobe/test/wiki/', status=404)
         self.app.get('/adobe/no_such_project/wiki/', status=404)
 
+    @td.with_user_project('test-admin')
     def test_user_subproject_home_not_profile(self):
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
