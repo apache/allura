@@ -1,10 +1,7 @@
-import mock
 from nose.tools import assert_raises
-from datadiff.tools import assert_equal
-import pylons
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_features, set_neighborhood_private
+from allura.command import script, set_neighborhood_features
 from allura import model as M
 from allura.lib.exceptions import InvalidNBFeatureValueError
 
@@ -41,7 +38,7 @@ def test_set_neighborhood_max_projects():
     cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['max_projects'] == None
-    
+
     # check validation
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'max_projects', 'string'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'max_projects', '2.8'])
@@ -50,7 +47,7 @@ def test_set_neighborhood_private():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
     cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
-    
+
     # allow private projects
     cmd.run([test_config, str(n_id), 'private_projects', 'True'])
     cmd.command()
@@ -62,7 +59,7 @@ def test_set_neighborhood_private():
     cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert not neighborhood.features['private_projects']
-    
+
     # check validation
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'private_projects', 'string'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'private_projects', '1'])
@@ -72,7 +69,7 @@ def test_set_neighborhood_google_analytics():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
     cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
-    
+
     # allow private projects
     cmd.run([test_config, str(n_id), 'google_analytics', 'True'])
     cmd.command()
@@ -84,7 +81,7 @@ def test_set_neighborhood_google_analytics():
     cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert not neighborhood.features['google_analytics']
-    
+
     # check validation
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'google_analytics', 'string'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'google_analytics', '1'])
@@ -112,7 +109,7 @@ def test_set_neighborhood_css():
     cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['css'] == 'custom'
-    
+
     # check validation
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'string'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', '1'])
