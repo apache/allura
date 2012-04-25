@@ -33,6 +33,7 @@ class TestAuth(TestController):
                 username='test-usera', password='foo'))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    @td.with_user_project('test-admin')
     def test_prefs(self):
         r = self.app.get('/auth/prefs/')
         assert 'test@example.com' not in r
