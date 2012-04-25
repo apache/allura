@@ -309,7 +309,7 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
         last_commits = set(
             d['object_id']
             for d in last_commit_collection.find(
-                dict(repo_id=repo_id, object_id={'$in': rhs_tree_ids}),
+                dict(object_id={'$in': rhs_tree_ids}),
                 { 'object_id': 1, '_id': 0 }))
         for tree_id in rhs_tree_ids:
             if tree_id not in last_commits:
@@ -324,7 +324,6 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
 def send_notifications(repo, commit_ids):
     '''Create appropriate notification and feed objects for a refresh'''
     from allura.model import Feed, Notification
-    from allura.model.repository import config
     commit_msgs = []
     base_url = tg.config.get('base_url', 'sourceforge.net')
     for oids in utils.chunked_iter(commit_ids, QSIZE):
