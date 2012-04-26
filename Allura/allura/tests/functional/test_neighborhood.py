@@ -48,6 +48,8 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/accolades', extra_environ=dict(username='root'))
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = True
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!', tracking_id='U-123456'),
                           extra_environ=dict(username='root'))
@@ -111,6 +113,34 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/icon')
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
+
+    def test_google_analytics(self):
+        # analytics allowed
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = True
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' in r
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(name='Adobe', css='', homepage='# MozQ1', tracking_id='U-123456'),
+                          extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/adobe-1/admin/update',
+                          params=dict(tracking_id='U-654321'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert "_add_tracking('nbhd', 'U-123456');" in r
+        assert "_add_tracking('proj', 'U-654321');" in r
+        # analytics not allowed
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = False
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' not in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' not in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert "_add_tracking('nbhd', 'U-123456');" not in r
+        assert "_add_tracking('proj', 'U-654321');" not in r
 
     def test_custom_css(self):
         test_css = '.test{color:red;}'
