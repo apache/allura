@@ -618,16 +618,17 @@ class GroupsController(BaseController):
             for perm in permissions:
                 perm_info = dict(has="no", text="Does not have permission %s" % perm, name=perm)
                 role_ids = permissions[perm]
-                for r in role.child_roles():
-                    if r._id in role_ids:
-                        perm_info['text'] = "Inherited permission %s from %s" % (perm, r.name)
-                        perm_info['has'] = "inherit"
-                        break
+                if role._id in role_ids:
+                    perm_info['text'] = "Has permission %s" % perm
+                    perm_info['has'] = "yes"
+                else:
+                    for r in role.child_roles():
+                        if r._id in role_ids:
+                            perm_info['text'] = "Inherited permission %s from %s" % (perm, r.name)
+                            perm_info['has'] = "inherit"
+                            break
                 if perm_info['has'] == "no":
-                    if role._id in role_ids:
-                        perm_info['text'] = "Has permission %s" % perm
-                        perm_info['has'] = "yes"
-                    elif anon_role._id in role_ids:
+                    if anon_role._id in role_ids:
                         perm_info['text'] = "Inherited permission %s from Anonymous" % perm
                         perm_info['has'] = "inherit"
                     elif auth_role._id in role_ids and role != anon_role:
