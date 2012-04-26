@@ -113,6 +113,8 @@ $(function() {
     $.post('change_perm', params, function(data){
       if(data.error){
         flash(data.error, 'error');
+        perm_holder.find('span').remove();
+        perm_holder.find('a').show();
       }
       else{
         show_permission_changes(data);
