@@ -97,5 +97,21 @@ class SearchHelp(ffw.Lightbox):
 <div class="codehilite"><pre>(summary:foo or text:foo) and ticket_num:[* TO 50]</pre></div>
 <p>Tickets last modified in April 2012</p>
 <div class="codehilite"><pre>mod_date_dt:[2012-04-01T00:00:00Z TO 2012-04-30T23:59:59Z]</pre></div>
-<h2>Saving Searches</h2>
-<p>Ticket searches may be saved for later use by project administrators. To save a search, click "Edit Searches" in the tracker sidebar. Click "Add Bin" then enter a summary and search terms for the saved search. Your search will now show up in the sidebar under "Searches" with a count of how many tickets match the query.</p>""")
+<h2>Saving searches</h2>
+<p>Ticket searches may be saved for later use by project administrators. To save a search, click "Edit Searches" in the tracker sidebar. Click "Add Bin" then enter a summary and search terms for the saved search. Your search will now show up in the sidebar under "Searches" with a count of how many tickets match the query.</p>
+<h2>Sorting search results</h2>
+<p>Ticket search results can be sorted by clicking the header of the column you want to sort by. The first click will sort the results in ascending order. Clicking the header again will sort the column in descending order. In addition to sorting by the column headers, you can manually sort on these properties:</p>
+<ul>
+<li>Labels assigned to the ticket - labels_s</li>
+<li>Milestone the ticket is assigned to - _milestone_s</li>
+<li>Last modified date - mod_date_dt</li>
+<li>Body of the ticket - text_s</li>
+<li>Number of ticket - ticket_num_i</li>
+<li>User who created the ticket - reported_by_s</li>
+<li>Status of the ticket - status_s</li>
+<li>Title of the ticket - snippet_s</li>
+<li>Custom field - the field name with an _ in front and _s at the end like _custom_s</li>
+</ul>
+<p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
+<div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&sort=snippet_s+asc</pre></div>
+""")
