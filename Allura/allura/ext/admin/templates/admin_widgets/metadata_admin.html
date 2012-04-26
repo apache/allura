@@ -38,9 +38,11 @@
            {% if value.support_page == '_url' %} checked{% endif %}>
     <label for="support_page_url_cb">URL: </label>
     <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%">
+    {% if value.neighborhood.features['google_analytics'] %}
     {{ widget.display_label(widget.fields.tracking_id) }}
     <br>
     {{widget.display_field(widget.fields.tracking_id) }}
+    {% endif %}
   </div>
   <div class="grid-9">
 

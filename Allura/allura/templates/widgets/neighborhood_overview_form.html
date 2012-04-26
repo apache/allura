@@ -22,8 +22,10 @@
       {% endif %}
       {{widget.display_field(widget.fields.icon)}}
     </div>
+    {% if value.features and value.features['google_analytics'] %}
     <label class="grid-4">Analytics Tracking ID</label>
     <div class="grid-14">{{widget.display_field(widget.fields.tracking_id)}}</div>
+    {% endif %}
     <label class="grid-4">&nbsp;</label>
     <div class="grid-14"><input type="submit" value="Save"/></div>
   </form>
