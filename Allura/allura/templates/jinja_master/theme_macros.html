@@ -42,11 +42,13 @@
     {% if account -%}
         _add_tracking('sfnt', '{{account}}');
     {%- endif %}
-    {% if project and project.neighborhood.tracking_id -%}
-        _add_tracking('nbhd', '{{project.neighborhood.tracking_id}}');
-    {%- endif %}
-    {% if project and project.tracking_id -%}
-        _add_tracking('proj', '{{project.tracking_id}}');
+    {% if project and project.neighborhood.features['google_analytics'] -%}
+      {% if project.neighborhood.tracking_id -%}
+          _add_tracking('nbhd', '{{project.neighborhood.tracking_id}}');
+      {%- endif %}
+      {% if project.tracking_id -%}
+          _add_tracking('proj', '{{project.tracking_id}}');
+      {%- endif %}
     {%- endif %}
 
     (function() {
