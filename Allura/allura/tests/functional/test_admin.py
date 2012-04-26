@@ -578,3 +578,47 @@ class TestProjectAdmin(TestController):
         # neither group has update permission
         assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
         assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+
+    def test_permission_inherit(self):
+        r = self.app.get('/admin/groups/')
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
+        mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+        mem_id = mem_holder['data-group']
+        anon_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[5]
+        anon_id = anon_holder['data-group']
+        #first remove create from Admin so we can see it inherit
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': admin_id,
+                'permission': 'create',
+                'allow': 'false'})
+        # updates to anon inherit up
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': anon_id,
+                'permission': 'create',
+                'allow': 'true'})
+        assert {u'text': u'Inherited permission create from Anonymous', u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Inherited permission create from Anonymous', u'has': u'inherit', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Has permission create', u'has': u'yes', u'name': u'create'} in r.json[anon_id]
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': anon_id,
+                'permission': 'create',
+                'allow': 'false'})
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        # updates to Member inherit up
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'true'})
+        assert {u'text': u'Inherited permission create from Member', u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Has permission create', u'has': u'yes', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'false'})
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
