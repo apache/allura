@@ -22,7 +22,6 @@
   {% if user.preferences.email_address %}
     <p>{{lib.gravatar(user)}}</p>
   {% endif %}
-  {{c.project.description_html|safe}}
   <div class="project-list grid-18">
     <b>Projects</b>
     <ul>
