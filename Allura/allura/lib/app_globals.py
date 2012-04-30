@@ -286,16 +286,9 @@ class Globals(object):
 
     @LazyProperty
     def server_name(self):
-        if config.get('soghost_file'):
-            try:
-                f = open(config['soghost_file'])
-                server_name = f.read().strip()
-            except IOError:
-                server_name = os.getenv('SF_SYSTEM_FUNC').strip()
-        else:
-            p1 = Popen('hostname', stdout=PIPE)
-            server_name = p1.communicate()[0].strip()
-            p1.wait()
+        p1 = Popen(['hostname', '-s'], stdout=PIPE)
+        server_name = p1.communicate()[0].strip()
+        p1.wait()
         return server_name
 
     @property
