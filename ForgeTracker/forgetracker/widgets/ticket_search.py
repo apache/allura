@@ -72,7 +72,7 @@ class SearchHelp(ffw.Lightbox):
         ffw.Lightbox.defaults,
         name='search_help_modal',
         trigger='a.search_help_modal',
-        content="""<h1>Searching for tickets</h1>
+        content="""<div style="height:400px; overflow:auto;"><h1>Searching for tickets</h1>
 <p>Searches use <a href="http://www.solrtutorial.com/solr-query-syntax.html" target="_blank">solr lucene query syntax</a>. Use the following fields in tracker ticket searches:</p>
 <ul>
 <li>User who owns the ticket - assigned_to_s</li>
@@ -113,5 +113,5 @@ class SearchHelp(ffw.Lightbox):
 <li>Custom field - the field name with an _ in front and _s at the end like _custom_s</li>
 </ul>
 <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
-<div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&sort=snippet_s+asc</pre></div>
+<div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&sort=snippet_s+asc</pre></div></div>
 """)
