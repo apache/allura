@@ -78,7 +78,7 @@ Hopefully everything completed without errors.  We'll also need to create a plac
     do
         mkdir -p ~/var/scm/$SCM
         chmod 777 ~/var/scm/$SCM
-        sudo ln -s ~/var/scm/$SCM /
+        sudo ln -s ~/var/scm/$SCM /tmp
     done
 
 
