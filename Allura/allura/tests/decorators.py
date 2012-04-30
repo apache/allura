@@ -11,6 +11,7 @@ def with_user_project(username):
         @wraps(func)
         def wrapped(*args, **kw):
             user = M.User.by_username(username)
+            c.user = user
             n = M.Neighborhood.query.get(name='Users')
             shortname = 'u/' + username
             p = M.Project.query.get(shortname=shortname, neighborhood_id=n._id)
