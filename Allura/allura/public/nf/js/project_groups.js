@@ -70,9 +70,6 @@ $(function() {
       }
     });
   });
-  $('#usergroup_admin tr').delegate("form.add_user input", "blur", function(evt){
-    $(this).closest('form').submit();
-  });
   // add/remove permissions for a group
   var show_permission_changes = function(data){
     for(k in data){
