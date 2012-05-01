@@ -141,4 +141,9 @@ $(function() {
           newitem.clone().insertBefore(adder.closest('li')).find('input').focus();
       });
   });
+  // cancel adding user
+  $('#usergroup_admin').delegate(".cancel_link", "click", function(evt){
+    evt.preventDefault();
+    $(this).closest('li').remove();
+  });
 });
