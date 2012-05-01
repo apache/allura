@@ -113,5 +113,5 @@ class SearchHelp(ffw.Lightbox):
 <li>Custom field - the field name with an _ in front and _s at the end like _custom_s</li>
 </ul>
 <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
-<div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&sort=snippet_s+asc</pre></div></div>
+<div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&amp;sort=snippet_s+asc</pre></div></div>
 """)
