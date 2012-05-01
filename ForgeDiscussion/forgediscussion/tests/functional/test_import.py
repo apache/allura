@@ -4,7 +4,10 @@ from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
 import ming
-from pylons import c, g
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
+from pylons import g, c
 
 from allura import model as M
 from alluratest.controller import TestController, TestRestApiBase
@@ -49,14 +52,14 @@ class TestImportController(TestRestApiBase):#TestController):
                           doc=self.json_text)
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
         for link in r.html.findAll('a'):
             if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
-        assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
-        assert 'Anonymous' in str(r), r.showbrowser()
+        assert '2009-11-19' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
+        assert 'Anonymous' in str(r)
 
     def test_import_map(self):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
@@ -69,15 +72,15 @@ class TestImportController(TestRestApiBase):#TestController):
                           username_mapping=json.dumps(dict(rick446='test-user')))
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
         for link in r.html.findAll('a'):
             if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
-        assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
-        assert 'Test User' in str(r), r.showbrowser()
-        assert 'Anonymous' not in str(r), r.showbrowser()
+        assert '2009-11-19' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
+        assert 'Test User' in str(r)
+        assert 'Anonymous' not in str(r)
 
     def test_import_create(self):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
@@ -89,15 +92,15 @@ class TestImportController(TestRestApiBase):#TestController):
                           doc=self.json_text, create_users='True')
         assert not r.json['errors'], r.json['errors']
         r = self.app.get('/p/test/discussion/')
-        assert 'Open Discussion' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
+        assert 'Open Discussion' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
         for link in r.html.findAll('a'):
             if 'Welcome to Open Discussion' in str(link): break
         r = self.app.get(link.get('href'))
-        assert '2009-11-19' in str(r), r.showbrowser()
-        assert 'Welcome to Open Discussion' in str(r), r.showbrowser()
-        assert 'Anonymous' not in str(r), r.showbrowser()
-        assert 'test-rick446' in str(r), r.showbrowser()
+        assert '2009-11-19' in str(r)
+        assert 'Welcome to Open Discussion' in str(r)
+        assert 'Anonymous' not in str(r)
+        assert 'test-rick446' in str(r)
 
     def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities=caps,
