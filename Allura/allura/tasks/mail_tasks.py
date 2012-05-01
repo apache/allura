@@ -25,35 +25,36 @@ def route_email(
     except: # pragma no cover
         log.exception('Parse Error: (%r,%r,%r)', peer, mailfrom, rcpttos)
         return
-    c.user = mail_util.identify_sender(peer, mailfrom, msg['headers'], msg)
-    log.info('Received email from %s', c.user.username)
-    # For each of the addrs, determine the project/app and route appropriately
-    for addr in rcpttos:
-        try:
-            userpart, project, app = mail_util.parse_address(addr)
-            with h.push_config(c, project=project, app=app):
-                if not app.has_access(c.user, userpart):
-                    log.info('Access denied for %s to mailbox %s', c.user, userpart)
-                else:
-                    if msg['multipart']:
-                        msg_hdrs = msg['headers']
-                        for part in msg['parts']:
-                            if part.get('content_type', '').startswith('multipart/'): continue
-                            msg = dict(
-                                headers=dict(msg_hdrs, **part['headers']),
-                                message_id=part['message_id'],
-                                in_reply_to=part['in_reply_to'],
-                                references=part['references'],
-                                filename=part['filename'],
-                                content_type=part['content_type'],
-                                payload=part['payload'])
-                            c.app.handle_message(userpart, msg)
+    mail_user = mail_util.identify_sender(peer, mailfrom, msg['headers'], msg)
+    with h.push_config(c, user=mail_user):
+        log.info('Received email from %s', c.user.username)
+        # For each of the addrs, determine the project/app and route appropriately
+        for addr in rcpttos:
+            try:
+                userpart, project, app = mail_util.parse_address(addr)
+                with h.push_config(c, project=project, app=app):
+                    if not app.has_access(c.user, userpart):
+                        log.info('Access denied for %s to mailbox %s', c.user, userpart)
                     else:
-                        c.app.handle_message(userpart, msg)
-        except exc.MailError, e:
-            log.error('Error routing email to %s: %s', addr, e)
-        except:
-            log.exception('Error routing mail to %s', addr)
+                        if msg['multipart']:
+                            msg_hdrs = msg['headers']
+                            for part in msg['parts']:
+                                if part.get('content_type', '').startswith('multipart/'): continue
+                                msg = dict(
+                                    headers=dict(msg_hdrs, **part['headers']),
+                                    message_id=part['message_id'],
+                                    in_reply_to=part['in_reply_to'],
+                                    references=part['references'],
+                                    filename=part['filename'],
+                                    content_type=part['content_type'],
+                                    payload=part['payload'])
+                                c.app.handle_message(userpart, msg)
+                        else:
+                            c.app.handle_message(userpart, msg)
+            except exc.MailError, e:
+                log.error('Error routing email to %s: %s', addr, e)
+            except:
+                log.exception('Error routing mail to %s', addr)
 
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
