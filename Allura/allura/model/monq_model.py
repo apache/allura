@@ -74,16 +74,16 @@ class MonQTask(MappedClass):
 
     def __repr__(self):
         from allura import model as M
-        c.project = M.Project.query.get(_id=self.context.project_id)
-        c.app = None
-        if c.project:
+        project = M.Project.query.get(_id=self.context.project_id)
+        app = None
+        if project:
             app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
             if app_config:
-                c.app = c.project.app_instance(app_config)
-        c.user = M.User.query.get(_id=self.context.user_id)
-        project_url = c.project and c.project.url() or None
-        app_mount = c.app and c.app.config.options.mount_point or None
-        username = c.user and c.user.username or None
+                app = project.app_instance(app_config)
+        user = M.User.query.get(_id=self.context.user_id)
+        project_url = project and project.url() or None
+        app_mount = app and app.config.options.mount_point or None
+        username = user and user.username or None
         return '<%s %s (%s) P:%d %s %s project:%s app:%s user:%s>' % (
             self.__class__.__name__,
             self._id,
