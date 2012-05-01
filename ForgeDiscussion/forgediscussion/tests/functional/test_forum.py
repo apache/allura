@@ -25,6 +25,7 @@ class TestForumEmail(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        c.user = M.User.by_username('test-admin')
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
         r.forms[1]['add_forum.shortname'] = 'testforum'
@@ -32,7 +33,7 @@ class TestForumEmail(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
-        self.email_address='Beta@wiki.test.projects.sourceforge.net'
+        self.email_address=c.user.email_addresses[0]
         h.set_context('test', 'discussion', neighborhood='Projects')
         self.forum = FM.Forum.query.get(shortname='testforum')
 
@@ -44,7 +45,7 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
+        assert 'Test Simple Thread' in str(r)
 
     def test_html_email(self):
         msg = MIMEMultipart(
@@ -58,11 +59,11 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
-        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        assert 'Test Simple Thread' in str(r), r
+        assert len(r.html.findAll('tr')) == 2
         href = r.html.findAll('tr')[1].find('a')['href']
         r = self.app.get(href)
-        assert 'alternate' in str(r), r.showbrowser()
+        assert 'alternate' in str(r)
 
     def test_html_email_with_images(self):
         msg = MIMEMultipart(
@@ -85,12 +86,12 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
-        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        assert 'Test Simple Thread' in str(r)
+        assert len(r.html.findAll('tr')) == 2
         href = r.html.findAll('tr')[1].find('a')['href']
         r = self.app.get(href)
-        assert 'alternate' in str(r), r.showbrowser()
-        assert 'python-logo.png' in str(r), r.showbrowser()
+        assert 'alternate' in str(r)
+        assert 'python-logo.png' in str(r)
 
     def _post_email(self, mailfrom, rcpttos, subject, msg):
         '''msg is MIME message object'''
@@ -171,6 +172,7 @@ class TestForumAsync(TestController):
         self.app.get('/discussion/testforum/thread/foobar/', status=404)
 
     def test_posts(self):
+        c.user = M.User.by_username('test-admin') # not sure why this fails when set to root (to match self.user_id)
         self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
