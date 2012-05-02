@@ -20,6 +20,7 @@ from pylons import tmpl_context as c
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc
+from pygments.formatters import HtmlFormatter
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
@@ -393,3 +394,20 @@ def postmortem_hook(etype, value, tb): # pragma no cover
         sys.stderr.write('Entering post-mortem PDB shell\n')
         traceback.print_exception(etype, value, tb)
         pdb.post_mortem(tb)
+
+class LineAnchorCodeHtmlFormatter(HtmlFormatter):
+    def _wrap_pre(self, inner):
+        style = []
+        if self.prestyles:
+            style.append(self.prestyles)
+        if self.noclasses:
+            style.append('line-height: 125%')
+        style = '; '.join(style)
+
+        num = self.linenostart
+        yield 0, ('<pre' + (style and ' style="%s"' % style) + '>')
+        for tup in inner:
+            yield (tup[0], '<a class="linelink" href="#codeline_%s">'\
+                           '<div id="codeline_%s" class="code_block">%s</div></a>' % (num, num, tup[1]))
+            num += 1
+        yield 0, '</pre>'
