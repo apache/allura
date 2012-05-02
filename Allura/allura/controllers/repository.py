@@ -18,6 +18,7 @@ from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
 from allura.lib import security
+from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib import widgets as w
 from allura.lib.decorators import require_post
@@ -487,8 +488,10 @@ class FileBrowser(BaseController):
         else:
             force_display = 'force' in kw
             context = self._blob.context()
+            stats = utils.generate_code_stats(self._blob.text)
             return dict(
                 blob=self._blob,
+                stats=stats,
                 prev=context.get('prev', None),
                 next=context.get('next', None),
                 force_display=force_display

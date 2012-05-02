@@ -410,3 +410,14 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
             yield (tup[0], '<div id="l%s" class="code_block">%s</div>' % (num, tup[1]))
             num += 1
         yield 0, '</pre>'
+
+def generate_code_stats(code):
+    stats = {'line_count': 0,
+             'code_size': 0,
+             'data_line_count': 0}
+
+    lines = code.split('\n')
+    stats['code_size'] = len(code)
+    stats['line_count'] = len(lines)
+    stats['data_line_count'] = sum([1 for l in lines if l !=''])
+    return stats

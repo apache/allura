@@ -462,3 +462,21 @@ class Icon(object):
 
 def connect_amqp(config):
     return
+
+"""
+In jinja2 was buggy filter function do_filesizeformat
+"""
+def cust_filesizeformat(value):
+    # fail silently
+    try:
+        bytes = float(value)
+    except TypeError:
+        bytes = 0
+
+    if bytes < 1024:
+        return "%d Byte%s" % (bytes, bytes != 1 and 's' or '')
+    elif bytes < 1024 * 1024:
+        return "%.1f KB" % (bytes / 1024)
+    elif bytes < 1024 * 1024 * 1024:
+        return "%.1f MB" % (bytes / (1024 * 1024))
+    return "%.1f GB" % (bytes / (1024 * 1024 * 1024))

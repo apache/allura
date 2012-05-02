@@ -62,6 +62,7 @@ class ForgeConfig(AppConfig):
             autoescape=True,
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(pylons.i18n)
+        jinja2_env.filters['cust_filesizeformat'] = app_globals.cust_filesizeformat
         config['pylons.app_globals'].jinja2_env = jinja2_env
         # Jinja's unable to request c's attributes without strict_c
         config['pylons.strict_c'] = True
