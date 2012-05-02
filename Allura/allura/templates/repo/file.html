@@ -18,6 +18,27 @@
 </a>
 {% endblock %}
 
+{% block extra_js %}
+{{ super() }}
+<script type="text/javascript">(function() {
+  var hash = window.location.hash.substring(1);
+  if (hash != '' && hash.substring(0, 9) == 'codeline_') {
+    $('#' + hash).css('background-color', '#ffff99');
+  }
+
+  $('.code_block').each(function(index, element) {
+    $(element).bind('click', function() {
+      var hash = window.location.hash.substring(1);
+      if (hash != '' && hash.substring(0, 9) == 'codeline_') {
+        $('#' + hash).css('background-color', 'transparent');
+      }
+      $(element).css('background-color', '#ffff99');
+    });
+  });
+}());
+</script>
+{% endblock %}
+
 {% block content %}
   {{ clone_info(c.app.repo) }}
   {% if prev %}
