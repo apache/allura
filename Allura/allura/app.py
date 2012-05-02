@@ -252,13 +252,8 @@ class Application(object):
         pass
 
     def handle_artifact_message(self, artifact, message):
-        # Find ancestor comment
-        in_reply_to = message.get('in_reply_to', [])
-        if in_reply_to:
-            parent_id = in_reply_to[0]
-        else:
-            parent_id = None
-        thd = artifact.get_discussion_thread(message)
+        # Find ancestor comment and thread
+        thd, parent_id = artifact.get_discussion_thread(message)
         # Handle attachments
         message_id = message['message_id']
         if message.get('filename'):

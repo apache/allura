@@ -44,6 +44,9 @@
       $('input[name=support_page]').change(function(){
         update_url($support_page_url_cb, $support_page_url);
       });
+      $('#project-status a').click(function() {
+        $('#project-status-edit').removeClass('hidden');
+      });
       $('input[name=removal]').change(function(){
         update_url($removal_moved_cb, $moved_to_url);
         // confirmation for delete

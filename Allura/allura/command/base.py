@@ -17,7 +17,7 @@ log = None
 class EmptyClass(object): pass
 
 class Command(command.Command):
-    min_args = 0
+    min_args = 1
     max_args = 1
     usage = '[<ini file>]'
     group_name = 'Allura'
@@ -38,7 +38,7 @@ class Command(command.Command):
 
     def basic_setup(self):
         global log, M
-        if self.args:
+        if self.args[0]:
             # Probably being called from the command line - load the config file
             self.config = conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
             # Configure logging

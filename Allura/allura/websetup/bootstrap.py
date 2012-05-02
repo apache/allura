@@ -177,8 +177,8 @@ def wipe_database():
                     db.drop_collection(coll)
                 except:
                     pass
-    create_trove_categories.run([])
-    index.run([])
+    create_trove_categories.run([''])
+    index.run([''])
 
 
 

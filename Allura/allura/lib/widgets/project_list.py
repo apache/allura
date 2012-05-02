@@ -14,7 +14,10 @@ class ProjectSummary(ew_core.Widget):
         icon=None,
         value=None,
         icon_url=None,
-        accolades=None)
+        accolades=None,
+        columns=1,
+        show_proj_icon=True,
+        show_download_button=True)
 
     def prepare_context(self, context):
         response = super(ProjectSummary, self).prepare_context(context)
@@ -28,6 +31,22 @@ class ProjectSummary(ew_core.Widget):
                 response['icon_url'] = g.forge_static('images/project_default.png')
         if response['accolades'] is None:
             response['accolades'] = value.accolades
+
+        if type(response['columns']) == unicode:
+            response['columns'] = int(response['columns'])
+
+        true_list = ['true', 't', '1', 'yes', 'y']
+        if type(response['show_proj_icon']) == unicode:
+            if response['show_proj_icon'].lower() in true_list:
+                response['show_proj_icon'] = True
+            else:
+                response['show_proj_icon'] = False
+        if type(response['show_download_button']) == unicode:
+            if response['show_download_button'].lower() in true_list:
+                response['show_download_button'] = True
+            else:
+                response['show_download_button'] = False
+
         return response
 
     def resources(self):
@@ -60,7 +79,10 @@ class ProjectList(ew_core.Widget):
         display_mode='list',
         sitemaps=None,
         icon_urls=None,
-        accolades_index=None)
+        accolades_index=None,
+        columns=1,
+        show_proj_icon=True,
+        show_download_button=True)
 
     def prepare_context(self, context):
         response = super(ProjectList, self).prepare_context(context)
@@ -74,6 +96,22 @@ class ProjectList(ew_core.Widget):
             response['icon_urls'] = M.Project.icon_urls(projects)
         if response['accolades_index'] is None:
             response['accolades_index'] = M.Project.accolades_index(projects)
+
+        if type(response['columns']) == unicode:
+            response['columns'] = int(response['columns'])
+
+        true_list = ['true', 't', '1', 'yes', 'y']
+        if type(response['show_proj_icon']) == unicode:
+            if response['show_proj_icon'].lower() in true_list:
+                response['show_proj_icon'] = True
+            else:
+                response['show_proj_icon'] = False
+        if type(response['show_download_button']) == unicode:
+            if response['show_download_button'].lower() in true_list:
+                response['show_download_button'] = True
+            else:
+                response['show_download_button'] = False
+
         return response
 
     def resources(self):

@@ -63,11 +63,13 @@ def _mongo_col_to_solr_col(name):
     elif name == 'summary':
         return 'snippet_s'
     elif name == '_milestone':
-        return 'milestone_s'
+        return '_milestone_s'
     elif name == 'status':
         return 'status_s'
-    elif name == 'assigned_to':
+    elif name == 'assigned_to_username':
         return 'assigned_to_s'
+    elif name == 'custom_fields._milestone':
+        return '_milestone_s'
     else:
         for field in c.app.globals.sortable_custom_fields_shown_in_search():
             if name == field['name']:
@@ -384,7 +386,7 @@ class RootController(BaseController):
         if not columns:
             columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
                        dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
-                       dict(name='_milestone', sort_name='milestone_s', label='Milestone', active=True),
+                       dict(name='_milestone', sort_name='_milestone_s', label='Milestone', active=True),
                        dict(name='status', sort_name='status_s', label='Status', active=True),
                        dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
             for field in sortable_custom_fields:

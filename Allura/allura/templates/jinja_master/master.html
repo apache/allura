@@ -36,7 +36,7 @@
 
     {% if c.project and c.project.neighborhood.css %}
       <style type="text/css">
-        {{c.project.neighborhood.get_custom_css()}} 
+        {{c.project.neighborhood.get_custom_css()|safe}}
       </style>
     {% elif neighborhood and neighborhood.css %}
       <style type="text/css">

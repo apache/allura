@@ -5,7 +5,7 @@ import re
 import os
 import logging
 import subprocess
-
+import string
 from urllib2 import urlopen
 from cStringIO import StringIO
 from random import randint
@@ -409,11 +409,12 @@ class ProjectRegistrationProvider(object):
                         mount_point=tool_config['mount_point'],
                         ordinal=i+offset)
                     if 'options' in tool_config:
-                        from string import Template
                         for option in tool_config['options']:
-                            s = Template(str(tool_config['options'][option]))
-                            app.config.options[option] = s.safe_substitute(
-                                    p.__dict__.get('root_project', {}))
+                            value = tool_config['options'][option]
+                            if isinstance(value, basestring):
+                                value = string.Template(value).safe_substitute(
+                                        p.__dict__.get('root_project', {}))
+                            app.config.options[option] = value
                     if tool == 'wiki':
                         from forgewiki import model as WM
                         text = tool_config.get('home_text',

@@ -64,6 +64,18 @@ jQuery.fn.fontSelector = function() {
       });
     });
 
+    var cust_input = $('<input type="text" name="custom_font">').attr('value', $(sel).val()).bind('keydown', function (event) {
+      if (event.keyCode === 13) {
+        $(sel).val($(this).val());
+        $(ul).hide();
+      }
+      if (event.keyCode === 27) {
+        $(ul).hide();
+      }
+    });
+    var li = $('<li>');
+    li.append(cust_input);
+    $(ul).append(li);
   });
 
 }

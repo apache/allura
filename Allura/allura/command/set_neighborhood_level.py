@@ -11,7 +11,7 @@ from ming.orm import session
 class SetNeighborhoodLevelCommand(base.Command):
     min_args = 3
     max_args = 3
-    usage = "<ini file> <neighborhood> <level>"  # not sure if we need ini file
+    usage = "<ini file> <neighborhood> <level>"
     summary = "Change the neighborhood level\r\n" \
         "\t<neighgborhood> - the neighborhood name or object id\r\n" \
         "\t<level> - silver, gold or platinum"

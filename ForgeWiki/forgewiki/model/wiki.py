@@ -80,7 +80,6 @@ class Page(VersionedArtifact):
     type_s = 'Wiki'
 
     def commit(self):
-        self.subscribe()
         VersionedArtifact.commit(self)
         session(self).flush()
         if self.version > 1:

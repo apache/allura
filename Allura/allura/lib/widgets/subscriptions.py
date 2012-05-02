@@ -22,7 +22,7 @@ class _SubscriptionTable(ew.TableField):
         frequency = ew.HTMLField(label='Frequency', show_label=True)
         artifact_title = ew.HTMLField(label='Artifact', show_label=True)
         # unsubscribe = SubmitButton()
-        unsubscribe = ew.Checkbox(suppress_label=True, show_label=True)
+        unsubscribe = ew.Checkbox(suppress_label=True)
 
 class SubscriptionForm(ew.SimpleForm):
     defaults=dict(

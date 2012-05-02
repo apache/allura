@@ -1,7 +1,7 @@
 import json
 
 from datadiff.tools import assert_equal
-
+from pylons import c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
@@ -34,17 +34,23 @@ class TestAuth(TestController):
         assert 'Invalid login' in str(r), r.showbrowser()
 
     def test_prefs(self):
-         r = self.app.get('/auth/prefs/')
-         assert 'test@example.com' not in r
-         r = self.app.post('/auth/prefs/update', params={
+        r = self.app.get('/auth/prefs/')
+        assert 'test@example.com' not in r
+        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
+        # make sure page actually lists all the user's subscriptions
+        subscriptions = list(mailboxes.ming_cursor)
+        assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
+        for m in subscriptions:
+            assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
+        r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
                  'new_addr.addr':'test@example.com',
                  'new_addr.claim':'Claim Address',
                  'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
                  'preferences.email_format':'plain'})
-         r = self.app.get('/auth/prefs/')
-         assert 'test@example.com' in r
-         r = self.app.post('/auth/prefs/update', params={
+        r = self.app.get('/auth/prefs/')
+        assert 'test@example.com' in r
+        r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
                  'addr-1.ord':'1',
                  'addr-2.ord':'1',
@@ -52,12 +58,12 @@ class TestAuth(TestController):
                  'new_addr.addr':'',
                  'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
                  'preferences.email_format':'plain'})
-         r = self.app.get('/auth/prefs/')
-         assert 'test@example.com' not in r
-         ea = M.EmailAddress.query.get(_id='Beta@wiki.test.projects.sourceforge.net')
-         ea.confirmed = True
-         ThreadLocalORMSession.flush_all()
-         r = self.app.post('/auth/prefs/update', params={
+        r = self.app.get('/auth/prefs/')
+        assert 'test@example.com' not in r
+        ea = M.EmailAddress.query.get(_id='Beta@wiki.test.projects.sourceforge.net')
+        ea.confirmed = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
                  'new_addr.addr':'Beta@wiki.test.projects.sourceforge.net',
                  'new_addr.claim':'Claim Address',

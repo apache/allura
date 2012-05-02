@@ -90,6 +90,13 @@ class TroveCategory(MappedClass):
         result.sort(key=lambda x:x.fullpath)
         return result
 
+    @property
+    def type(self):
+        trove = self
+        while trove.trove_parent_id != 0:
+            trove = trove.parent_category
+        return trove.shortname
+
 class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)

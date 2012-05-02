@@ -40,7 +40,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects sort=last_registred]]'
+                                  'text': '[[projects sort=last_registered]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         project_names = self.get_project_names(r)
@@ -83,14 +83,14 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects display_mode=list show_proj_icon=on]]'
+                                  'text': '[[projects display_mode=list show_proj_icon=True]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'test Logo' in r
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects display_mode=list show_proj_icon=off]]'
+                                  'text': '[[projects display_mode=list show_proj_icon=False]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'test Logo' not in r
@@ -99,7 +99,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects display_mode=list show_download_button=on]]'
+                                  'text': '[[projects display_mode=list show_download_button=True]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'download-button' in r
@@ -107,7 +107,7 @@ class TestNeighborhood(TestController):
         r = self.app.post('/p/wiki/Home/update',
                           params={
                                   'title': 'Home',
-                                  'text': '[[projects display_mode=list show_download_button=off]]'
+                                  'text': '[[projects display_mode=list show_download_button=False]]'
                                   },
                           extra_environ=dict(username='root'), upload_files=[]).follow()
         assert 'download-button' not in r

@@ -10,7 +10,7 @@ from ming.orm import session
 class SetNeighborhoodPrivateCommand(base.Command):
     min_args=3
     max_args=3
-    usage = '<ini file> <neighborhood_id> <private(1|0)>'  #not sure if we need ini file
+    usage = '<ini file> <neighborhood_id> <private(1|0)>'
     summary = 'Set neighborhood private projects availability'
     parser = base.Command.standard_parser(verbose=True)
 

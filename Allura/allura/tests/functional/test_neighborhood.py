@@ -5,6 +5,7 @@ from nose.tools import assert_raises
 
 import Image
 from tg import config
+from nose.tools import assert_equal
 
 import allura
 from allura import model as M
@@ -58,21 +59,6 @@ class TestNeighborhood(TestController):
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
-        # Check neighborhood icon showing
-        neighborhood = M.Neighborhood.query.get(name='Mozq1')
-        neighborhood.level = 'gold'
-        r = self.app.get('/adobe/wiki/Home/')
-        assert 'neighborhood_icon' in r
-        r = self.app.get('/adobe/')
-        assert 'icon" class="project_icon"' in r
-
-        neighborhood = M.Neighborhood.query.get(name='Mozq1')
-        neighborhood.level = None
-        r = self.app.get('/adobe/wiki/Home/')
-        assert 'neighborhood_icon' not in r
-        r = self.app.get('/adobe/')
-        assert 'project_default.png" class="project_icon"' in r
-
     def test_custom_css(self):
         test_css = '.test{color:red;}'
         custom_css = 'Custom CSS'
@@ -125,14 +111,17 @@ class TestNeighborhood(TestController):
                                   'css-projecttitlecolor': 'green',
                                   'css-barontop': '#555555',
                                   'css-titlebarbackground': '#333',
-                                  'css-titlebarcolor': '#444'},
+                                  'css-titlebarcolor': '#444',
+                                  'css-addopt-icon-theme': 'dark'},
                           extra_environ=dict(username='root'), upload_files=[])
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         assert '/*projecttitlefont*/.project_title{font-family:arial,sans-serif;}' in neighborhood.css
         assert '/*projecttitlecolor*/.project_title{color:green;}' in neighborhood.css
         assert '/*barontop*/.pad h2.colored {background-color:#555555; background-image: none;}' in neighborhood.css
         assert '/*titlebarbackground*/.pad h2.title{background-color:#333; background-image: none;}' in neighborhood.css
-        assert '/*titlebarcolor*/.pad h2.title{color:#444;}' in neighborhood.css
+        assert "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:#444;} "\
+               ".pad h2.dark small b.ico {background-image: "\
+               "url('/nf/_ew_/theme/allura/images/neo-icon-set-ffffff-256x350.png');}" in neighborhood.css
 
     def test_max_projects(self):
         # Set max value to unlimit
@@ -371,7 +360,8 @@ class TestNeighborhood(TestController):
                         "mount_point":"wiki",
                         "options":{
                             "show_right_bar":false,
-                            "show_discussion":false
+                            "show_discussion":false,
+                            "some_url": "http://foo.com/$shortname/"
                         },
                         "home_text":"My home text!"
                     },
@@ -402,6 +392,7 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username='root'),
             status=302).follow()
+        p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div',{'id':'top_nav'})
         assert top_nav.contents[1]['href'] == '/adobe/testtemp/wiki/'
@@ -428,8 +419,11 @@ class TestNeighborhood(TestController):
         # check the wiki text
         r = self.app.get('/adobe/testtemp/wiki/').follow()
         assert "My home text!" in r
+        # check tool options
+        opts = p.app_config('wiki').options
+        assert_equal(False, opts.show_discussion)
+        assert_equal("http://foo.com/testtemp/", opts.some_url)
         # check that custom groups/perms/users were setup correctly
-        p = M.Project.query.get(shortname='testtemp')
         roles = p.named_roles
         for group in test_groups:
             name = group.get('name')
