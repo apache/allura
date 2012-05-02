@@ -77,10 +77,12 @@ $(function() {
       for(var i=0, len=data[k].length; i<len; ++i){
         var item = data[k][i];
         var perm_holder = group_holder.find('li[data-permission='+item.name+']');
+        var perm_link = perm_holder.find('a');
         if(!perm_holder.hasClass(item.has)){
           perm_holder.effect('highlight', {}, 2000);
           var icon = perm_holder.find('b');
-          perm_holder.attr('class',item.has).find('a').attr('title',item.text);
+          perm_holder.attr('class',item.has);
+          perm_link.attr('title',item.text);
           if(item.has=="yes"){
             icon.attr('class','ico ico-check').attr('data-icon','3');
           }
@@ -91,7 +93,11 @@ $(function() {
             icon.attr('class','ico ico-noentry').attr('data-icon','d');
           }
           perm_holder.find('span').remove();
-          perm_holder.find('a').show();
+          perm_link.show();
+        }
+        // inherited permissions may change where they're inherited from
+        else if(item.has=="inherit"){
+          perm_link.attr('title',item.text);
         }
       }
     }
