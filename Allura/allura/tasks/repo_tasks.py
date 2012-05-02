@@ -1,10 +1,13 @@
 import shutil
 import logging
+import traceback
 
 from pylons import c
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
+from allura.lib import helpers as h
+from allura.tasks.mail_tasks import sendmail
 
 @task
 def init(**kwargs):
@@ -20,15 +23,28 @@ def clone(
     cloned_from_path,
     cloned_from_name,
     cloned_from_url):
-    from allura import model as M
-    c.app.repo.init_as_clone(
-        cloned_from_path,
-        cloned_from_name,
-        cloned_from_url)
-    M.Notification.post_user(
-        c.user, c.app.repo, 'created',
-        text='Repository %s/%s created' % (
-            c.project.shortname, c.app.config.options.mount_point))
+    try:
+        from allura import model as M
+        c.app.repo.init_as_clone(
+            cloned_from_path,
+            cloned_from_name,
+            cloned_from_url)
+        M.Notification.post_user(
+            c.user, c.app.repo, 'created',
+            text='Repository %s/%s created' % (
+                c.project.shortname, c.app.config.options.mount_point))
+    except:
+        sendmail(
+            destinations=['sfengineers@geek.net'],
+            fromaddr=u'SourceForge.net <noreply+project-upgrade@in.sf.net>',
+            reply_to=u'noreply@in.sf.net',
+            subject=u'SourceForge Repo Clone Failure',
+            message_id=h.gen_message_id(),
+            text=u''.join([
+                u'Clone of repo %s from %s failed.\n',
+                u'\n',
+                u'%s',
+            ]) % (cloned_from_name, cloned_from_url, traceback.format_exc()))
 
 @task
 def reclone(*args, **kwargs):
