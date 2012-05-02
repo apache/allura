@@ -75,7 +75,7 @@ class Globals(object):
         self.oid_store = M.OpenIdStore()
 
         # Setup pygments
-        self.pygments_formatter = pygments.formatters.HtmlFormatter(
+        self.pygments_formatter = utils.LineAnchorCodeHtmlFormatter(
             cssclass='codehilite',
             linenos='inline')
 
