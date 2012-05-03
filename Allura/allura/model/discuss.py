@@ -194,7 +194,8 @@ class Thread(Artifact):
         post = self.post_class()(**kwargs)
         if ignore_security or has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
-            post.approve()
+            file_info = kw.get('file_info', None)
+            post.approve(file_info)
         else:
             self.notify_moderators(post)
         return post
@@ -461,7 +462,7 @@ class Post(Message, VersionedArtifact):
         super(Post, self).delete()
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
-    def approve(self):
+    def approve(self, file_info=None):
         from allura.model.notification import Notification
         if self.status == 'ok': return
         self.status = 'ok'
@@ -478,7 +479,7 @@ class Post(Message, VersionedArtifact):
                 self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
-        n = Notification.post(artifact, 'message', post=self)
+        n = Notification.post(artifact, 'message', post=self, file_info=file_info)
         if hasattr(self.discussion,"monitoring_email") and self.discussion.monitoring_email:
             n.send_simple(self.discussion.monitoring_email)
         session(self).flush()

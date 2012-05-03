@@ -183,7 +183,7 @@ class ThreadController(BaseController):
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')
             redirect(request.referer)
-        file_info = kw.pop('file_info', None)
+        file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
         if hasattr(file_info, 'file'):
             p.attach(
