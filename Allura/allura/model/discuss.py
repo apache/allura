@@ -397,7 +397,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     @property
     def activity_name(self):
-        return 'post %s' % self.subject
+        return 'a comment'
 
     def index(self):
         result = super(Post, self).index()
@@ -502,6 +502,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             self.mod_date)
         self.thread.update_stats()
         self.discussion.update_stats()
+        g.director.create_activity(author, 'posted', self, target=artifact,
+                related_nodes=[self.app_config.project])
 
     def spam(self):
         self.status = 'spam'

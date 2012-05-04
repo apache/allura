@@ -18,8 +18,20 @@
     {% endif %}
 {% endblock %}
 
+{% macro activity_obj(o) %}
+  <a href="{{o['activity_url']}}">{{o['activity_name']}}</a>
+{% endmacro %}
+
 {% block content %}
-    <div class="grid-14">
-        Something happened.
-    </div>
+  <div class="grid-23">
+  {% if not timeline %}
+    No activity to display.
+  {% else %}
+    <ul>
+        {% for a in timeline %}
+        <li>{{activity_obj(a['actor'])}} {{a['verb']}} {{activity_obj(a['obj'])}} {% if a.get('target') %}on {{activity_obj(a['target'])}}{% endif %} {{h.ago(a['published'])}}</li>
+        {% endfor %}
+    </ul>
+  {% endif %}
+  </div>
 {% endblock %}

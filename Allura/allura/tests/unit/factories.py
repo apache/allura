@@ -44,7 +44,7 @@ def create_app_config(project, mount_point):
 def create_post(slug):
     discussion = create_discussion()
     thread = create_thread(discussion=discussion)
-    author = create_user()
+    author = create_user(username='someguy')
     return Post(slug=slug,
                 thread_id=thread._id,
                 full_slug='%s:%s' % (thread._id,slug),
@@ -63,6 +63,6 @@ def create_discussion():
 
 
 @flush_on_return
-def create_user():
-    return User()
+def create_user(**kw):
+    return User(**kw)
 

@@ -1,14 +1,12 @@
 import logging
 
-import pkg_resources
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, request, response
-from tg import expose, validate, config, redirect
+from pylons import c, g, request
+from tg import expose, validate, config
 from tg.decorators import with_trailing_slash
 from paste.deploy.converters import asbool
-from formencode import validators as fev
 from webob import exc
 
 from allura.app import Application
@@ -66,10 +64,15 @@ class ForgeActivityController(BaseController):
 
         c.follow_toggle = W.follow_toggle
         followee = c.project
+        timeline = []
         if c.project.is_user_project:
             followee = c.project.user_project_of
-        following = director().is_connected(c.user, followee)
-        return dict(followee=followee, following=following)
+            if followee == c.user:
+                # user is looking at his own activity stream
+                timeline = g.director.create_timeline(c.user)
+        following = g.director.is_connected(c.user, followee)
+
+        return dict(followee=followee, following=following, timeline=timeline)
 
     @expose('json:')
     @validate(W.follow_toggle)
@@ -90,9 +93,9 @@ class ForgeActivityController(BaseController):
                 message='Cannot follow yourself')
         try:
             if follow:
-                director().connect(c.user, followee)
+                g.director.connect(c.user, followee)
             else:
-                director().disconnect(c.user, followee)
+                g.director.disconnect(c.user, followee)
         except Exception as e:
             return dict(
                 success=False,

@@ -1,13 +1,10 @@
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import c
+from mock import patch
 from tg import config
 
 from nose.tools import assert_equal
 
 from alluratest.controller import TestController
-from allura.lib.helpers import push_config
+from allura.tests import decorators as td
 
 
 class TestActivityController(TestController):
@@ -22,7 +19,7 @@ class TestActivityController(TestController):
 
     def test_index(self):
         resp = self.app.get('/activity/')
-        assert 'Something happened.' in resp
+        assert 'No activity to display.' in resp
 
     def test_index_disabled(self):
         config['activitystream.enabled'] = 'false'
@@ -32,4 +29,12 @@ class TestActivityController(TestController):
         config['activitystream.enabled'] = 'false'
         self.app.cookies['activitystream.enabled'] = 'true'
         resp = self.app.get('/activity/')
-        assert 'Something happened.' in resp
+        assert 'No activity to display.' in resp
+
+    @td.with_tool('u/test-admin', 'activity')
+    @td.with_user_project('test-admin')
+    @patch('forgeactivity.main.g._director')
+    def test_viewing_own_user_project(self, director):
+        resp = self.app.get('/u/test-admin/activity/')
+        assert director.create_timeline.call_count == 1
+        assert director.create_timeline.call_args[0][0].username == 'test-admin'

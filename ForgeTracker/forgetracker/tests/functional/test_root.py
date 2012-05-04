@@ -96,6 +96,22 @@ class TestFunctionalController(TrackerTestController):
     def test_invalid_ticket(self):
         self.app.get('/bugs/2/', status=404)
 
+    @patch('forgetracker.tracker_main.g.director.create_activity')
+    def test_activity(self, create_activity):
+        self.new_ticket(summary='my ticket', description='my description')
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'created'
+        create_activity.reset_mock()
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'my ticket',
+            'description':'new description',
+        })
+        # create_activity is called twice here:
+        #   - once for the ticket modification
+        #   - once for the auto-comment that's created for the ticket diff
+        assert create_activity.call_count == 2
+        assert create_activity.call_args[0][1] == 'modified'
+
     def test_new_ticket(self):
         summary = 'test new ticket'
         ticket_view = self.new_ticket(summary=summary).follow()

@@ -6,6 +6,7 @@ import allura
 from nose.tools import assert_true
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from mock import patch
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -69,6 +70,23 @@ class TestRootController(TestController):
         self.app.get('/wiki/tést/index')
         response = self.app.post('/wiki/tést/edit')
         assert 'tést' in response
+
+    @patch('forgewiki.wiki_main.g.director.create_activity')
+    def test_activity(self, create_activity):
+        d = dict(title='foo', text='footext')
+        self.app.post('/wiki/foo/update', params=d)
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'created'
+        create_activity.reset_mock()
+        d = dict(title='foo', text='new footext')
+        self.app.post('/wiki/foo/update', params=d)
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'modified'
+        create_activity.reset_mock()
+        d = dict(title='new foo', text='footext')
+        self.app.post('/wiki/foo/update', params=d)
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'renamed'
 
     def test_title_slashes(self):
         # forward slash not allowed in wiki page title - converted to dash

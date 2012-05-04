@@ -1,5 +1,4 @@
-from pylons import g
-from formencode.variabledecode import variable_encode
+from mock import patch
 
 from allura.tests import TestController
 from allura import model as M
@@ -102,8 +101,12 @@ class TestDiscuss(TestController):
         # just make sure it doesn't 500
         r = self.app.get('%s?limit=50&page=0' % thread_link)
 
-    def test_edit_post(self):
+    @patch('allura.controllers.discuss.g.director.create_activity')
+    def test_edit_post(self, create_activity):
         r = self._make_post('This is a post')
+        assert create_activity.call_count == 1, create_activity.call_count
+        assert create_activity.call_args[0][1] == 'posted'
+        create_activity.reset_mock()
         thread_url = r.request.url
         reply_form = r.html.find('div',{'class':'edit_post_form reply'}).find('form')
         post_link = str(reply_form['action'])
@@ -116,6 +119,8 @@ class TestDiscuss(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
         self.app.post(post_link, params)
+        assert create_activity.call_count == 1, create_activity.call_count
+        assert create_activity.call_args[0][1] == 'modified'
         r = self.app.get(thread_url)
         assert 'zzz' in str(r.html.find('div',{'class':'display_post'}))
         assert 'Last edit: Test Admin less than 1 minute ago' in str(r.html.find('div',{'class':'display_post'}))

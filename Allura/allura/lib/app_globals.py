@@ -11,8 +11,8 @@ import datetime
 from urllib import urlencode
 from subprocess import Popen, PIPE
 
+import activitystream
 import pkg_resources
-
 import pysolr
 import markdown
 import pygments
@@ -148,6 +148,13 @@ class Globals(object):
 
         # Zarkov logger
         self._zarkov = None
+
+    @property
+    def director(self):
+        """Return activitystream director"""
+        if not hasattr(self, '_director'):
+            self._director = activitystream.director()
+        return self._director
 
     @LazyProperty
     def amq_conn(self):

@@ -1,5 +1,5 @@
 import difflib
-import hashlib
+import functools
 from datetime import datetime
 from random import randint
 
@@ -184,6 +184,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         return HC.query.find({'artifact_id':self._id, 'version':int(version)}).one()
 
     def commit(self):
+        activity = functools.partial(g.director.create_activity, c.user,
+                target=c.project)
         self.subscribe()
         super(BlogPost, self).commit()
         if self.version > 1:
@@ -197,14 +199,17 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     'v%d' % v2.version))
             description = diff
             if v1.state != 'published' and v2.state == 'published':
+                activity('created', self)
                 M.Feed.post(self, self.title, self.text, author=self.author())
                 description = self.text
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
             elif v1.title != v2.title:
+                activity('renamed', self)
                 subject = '%s renamed post %s to %s' % (
                     c.user.username, v2.title, v1.title)
             else:
+                activity('modified', self)
                 subject = '%s modified post %s' % (
                     c.user.username, self.title)
         else:
@@ -212,6 +217,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             subject = '%s created post %s' % (
                 c.user.username, self.title)
             if self.state == 'published':
+                activity('created', self)
                 M.Feed.post(self, self.title, self.text, author=self.author())
         if self.state == 'published':
             M.Notification.post(

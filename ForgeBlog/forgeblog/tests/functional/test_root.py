@@ -1,6 +1,7 @@
 import datetime
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from mock import patch
 
 from alluratest.controller import TestController
 from allura import model as M
@@ -27,6 +28,23 @@ class TestRootController(TestController):
 
     def _blog_date(self):
         return datetime.datetime.utcnow().strftime('%Y/%m')
+
+    @patch('forgeblog.model.blog.g.director.create_activity')
+    def test_activity(self, create_activity):
+        self._post(state='draft')
+        assert create_activity.call_count == 0
+        slug = '/%s/my-post' % self._blog_date()
+        self._post(slug)
+        assert create_activity.call_count == 1, create_activity.call_count
+        assert create_activity.call_args[0][1] == 'created'
+        create_activity.reset_mock()
+        self._post(slug, text='new text')
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'modified'
+        create_activity.reset_mock()
+        self._post(slug, title='new title')
+        assert create_activity.call_count == 1
+        assert create_activity.call_args[0][1] == 'renamed'
 
     def test_root_index(self):
         self._post()

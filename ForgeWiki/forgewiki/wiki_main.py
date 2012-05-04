@@ -604,6 +604,7 @@ class PageController(BaseController):
                labels=None, labels_old=None,
                viewable_by=None,
                new_viewable_by=None,**kw):
+        activity_verb = 'created'
         if not title:
             flash('You must provide a title for the page.','error')
             redirect('edit')
@@ -614,6 +615,7 @@ class PageController(BaseController):
             self.page.viewable_by = ['all']
         else:
             require_access(self.page, 'edit')
+            activity_verb = 'modified'
         name_conflict = None
         if self.page.title != title:
             name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
@@ -623,12 +625,15 @@ class PageController(BaseController):
                 if self.page.title == c.app.root_page_name:
                     WM.Globals.query.get(app_config_id=c.app.config._id).root = title
                 self.page.title = title
+                activity_verb = 'renamed'
         self.page.text = text
         if labels:
             self.page.labels = labels.split(',')
         else:
             self.page.labels = []
         self.page.commit()
+        g.director.create_activity(c.user, activity_verb, self.page,
+                target=c.project)
         if new_viewable_by:
             if new_viewable_by == 'all':
                 self.page.viewable_by.append('all')

@@ -19,7 +19,6 @@ def setup_schema(command, conf, vars):
     REGISTRY.register(pylons.g, config['pylons.app_globals'])
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     ming.configure(**conf)
-    from allura import model
     # Nothing to do
     log.info('setup_schema called')
 
