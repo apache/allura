@@ -407,7 +407,6 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
         num = self.linenostart
         yield 0, ('<pre' + (style and ' style="%s"' % style) + '>')
         for tup in inner:
-            yield (tup[0], '<a class="linelink" href="#codeline_%s">'\
-                           '<div id="codeline_%s" class="code_block">%s</div></a>' % (num, num, tup[1]))
+            yield (tup[0], '<div id="l%s" class="code_block">%s</div>' % (num, tup[1]))
             num += 1
         yield 0, '</pre>'
