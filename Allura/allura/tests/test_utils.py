@@ -5,6 +5,10 @@ import unittest
 import pylons
 from webob import Request
 
+from pygments import highlight
+from pygments.lexers import PythonLexer, get_lexer_for_filename
+from pygments.formatters import HtmlFormatter
+
 from ming.orm import state
 from alluratest.controller import setup_unit_test
 
@@ -115,3 +119,16 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == dict(foo=1, bar=2)
         assert d != dict(Foo=1, bar=2)
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
+
+class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
+    def test_render(self):
+        code = '#!/usr/bin/env python\n'\
+               'print "Hello, world!"'
+
+        formatter = utils.LineAnchorCodeHtmlFormatter(cssclass='codehilite',
+                                                      linenos='inline')
+        lexer = get_lexer_for_filename("some.py", encoding='chardet')
+        hl_code = highlight(code, lexer, formatter)
+        assert '<div class="codehilite">' in hl_code
+        assert '<div id="l1" class="code_block">' in hl_code
+        assert '<span class="lineno">1</span>' in hl_code
