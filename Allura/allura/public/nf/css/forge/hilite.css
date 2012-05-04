@@ -64,7 +64,6 @@
 
 .codehilite pre { margin:0; }
 .codehilite div { margin:0; padding: 0; }
-.codehilite a.linelink { text-decoration: none; }
-.codehilite a.linelink .code_block { width:100%; }
-.codehilite a.linelink .code_block:hover { background-color: #ffff99; }
+.codehilite .code_block { width:100%; }
+.codehilite .code_block:hover { background-color: #ffff99; }
 .codehilite .lineno { background-color: #ebebeb; display:inline-block; padding:0 .5em; border-width: 0 1px 0 0; border-style: solid; border-color: #ddd; }
