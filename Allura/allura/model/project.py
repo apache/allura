@@ -25,6 +25,7 @@ from .session import main_orm_session
 from .session import project_doc_session, project_orm_session
 from .neighborhood import Neighborhood
 from .auth import ProjectRole
+from .timeline import ActivityObject
 from .types import ACL, ACE
 
 from filesystem import File
@@ -102,7 +103,7 @@ class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)
 
-class Project(MappedClass):
+class Project(MappedClass, ActivityObject):
     _perms_base = [ 'read', 'update', 'admin', 'create']
     _perms_init = _perms_base + [ 'register' ]
     class __mongometa__:

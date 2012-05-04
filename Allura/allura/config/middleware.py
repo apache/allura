@@ -71,6 +71,10 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Configure MongoDB
     ming.configure(**app_conf)
 
+    # Configure ActivityStream
+    import activitystream
+    activitystream.configure(**app_conf)
+
     # Configure EW variable provider
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
 

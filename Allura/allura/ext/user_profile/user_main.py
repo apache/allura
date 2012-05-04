@@ -1,18 +1,18 @@
-import os
 import logging
 from pprint import pformat
 
+from activitystream import director
 import pkg_resources
 from pylons import c, request
 from formencode import validators
-from tg import expose, redirect, validate, response
+from tg import expose, flash, redirect, validate, response
 
 from allura import version
 from allura.app import Application, WidgetController, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
-from allura.lib.security import require, has_access, require_access
+from allura.lib.security import require_access
 from allura.model import User, Notification, ACE
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
@@ -149,3 +149,20 @@ class UserProfileController(BaseController):
                     name=div['name'],
                     content=content))
         redirect('configuration')
+
+    @expose()
+    def follow(self, username=None, **kw):
+        user = User.by_username(username)
+        if not user:
+            flash('Invalid username.', 'error')
+            redirect('.')
+        director.connect(c.user, user)
+        flash('You are now following %s.' % username)
+        redirect('.')
+
+    @expose()
+    def timeline(self, **kw):
+        username = c.project.shortname.split('/')[1]
+        user = User.by_username(username)
+        timeline = director.create_timeline(user)
+        return str(timeline)

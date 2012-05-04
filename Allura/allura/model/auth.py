@@ -15,7 +15,7 @@ import pymongo
 from pylons import c, g, request
 
 from ming import schema as S
-from ming import Field, Index, collection
+from ming import Field, collection
 from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
@@ -26,6 +26,7 @@ from allura.lib import plugin
 
 from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
+from .timeline import Node, ActivityObject
 
 log = logging.getLogger(__name__)
 
@@ -270,7 +271,7 @@ class AuthGlobals(MappedClass):
             new=True)
         return g.next_uid
 
-class User(MappedClass):
+class User(MappedClass, Node, ActivityObject):
     SALT_LEN=8
     class __mongometa__:
         name='user'

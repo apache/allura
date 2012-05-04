@@ -8,6 +8,7 @@ from webob import exc
 import json
 
 # Non-stdlib imports
+from activitystream import director
 import pkg_resources
 from tg import expose, validate, redirect, flash, url, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -609,6 +610,7 @@ class RootController(BaseController):
             require_access(c.app, 'write')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
+        director.create_activity(c.user, 'created', ticket, target=c.project)
         redirect(str(ticket.ticket_num)+'/')
 
     @with_trailing_slash

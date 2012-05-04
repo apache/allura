@@ -21,6 +21,8 @@ from ming.orm.declarative import MappedClass
 from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
+from allura.model.timeline import ActivityObject
+
 from allura.lib import security
 from allura.lib.search import search_artifact
 from allura.lib import utils
@@ -203,7 +205,7 @@ class Bin(Artifact):
             terms_s=self.terms)
         return result
 
-class Ticket(VersionedArtifact):
+class Ticket(VersionedArtifact, ActivityObject):
     class __mongometa__:
         name = 'ticket'
         history_class = TicketHistory
@@ -233,6 +235,10 @@ class Ticket(VersionedArtifact):
     custom_fields = FieldProperty({str:None})
 
     reported_by = RelationProperty(User, via='reported_by_id')
+
+    @property
+    def activity_name(self):
+        return 'Ticket #%s' % self.ticket_num
 
     @classmethod
     def new(cls):
