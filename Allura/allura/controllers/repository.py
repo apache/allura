@@ -61,7 +61,7 @@ class RepoRootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/fork.html')
-    def fork(self, to_name=None, project_id=None, mount_label=None):
+    def fork(self, project_id=None, mount_label=None):
         # this shows the form and handles the submission
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
@@ -71,16 +71,16 @@ class RepoRootController(BaseController):
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
         mount_label = mount_label or '%s - Code' % c.project.name
-        if request.method != 'POST' or not to_name:
+        if request.method != 'POST':
             return dict(from_repo=from_repo,
                         user_project=c.user.private_project(),
-                        to_name=to_name or '',
                         mount_label=mount_label)
         else:
             with h.push_config(c, project=to_project):
                 if not to_project.database_configured:
                     to_project.configure_project(is_user_project=True)
                 security.require(security.has_access(to_project, 'admin'))
+                to_name = from_project.shortname
                 try:
                     to_project.install_app(
                         ep_name=from_repo.tool_name,
