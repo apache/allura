@@ -160,9 +160,9 @@ class UserProfileController(BaseController):
         flash('You are now following %s.' % username)
         redirect('.')
 
-    @expose()
+    @expose('jinja:allura.ext.user_profile:templates/user_timeline.html')
     def timeline(self, **kw):
         username = c.project.shortname.split('/')[1]
         user = User.by_username(username)
         timeline = director.create_timeline(user)
-        return str(timeline)
+        return dict(timeline=timeline, user=user)

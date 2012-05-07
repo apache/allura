@@ -1,0 +1,31 @@
+{% extends g.theme.master %}
+
+{% block title %}{{user.display_name}} / Profile{% endblock %}
+
+{% block header %}{{c.project.homepage_title}}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css"
+        href="{{g.app_static('css/user_profile.css')}}"/>
+{% endblock %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
+{% endblock %}
+
+{% block actions %}
+  <a href="{{c.app.url}}feed.rss" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% endblock %}
+
+{% macro activity_obj(o) %}
+  <a href="{{o['activity_url']}}">{{o['activity_name']}}</a>
+{% endmacro %}
+
+{% block content %}
+  <ul>
+  {% for a in timeline %}
+    <li>{{activity_obj(a['actor'])}} {{a['verb']}} {{activity_obj(a['obj'])}} {{h.ago(a['published'])}}</li>
+  {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,12 +1,8 @@
-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from tg import config
 from pylons import c, g, request
-import pkg_resources
-from webob import exc
-from bson import ObjectId
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -22,7 +18,7 @@ from allura.lib import security
 from allura.lib.security import has_access
 
 from .session import main_orm_session
-from .session import project_doc_session, project_orm_session
+from .session import project_orm_session
 from .neighborhood import Neighborhood
 from .auth import ProjectRole
 from .timeline import ActivityObject
@@ -165,6 +161,10 @@ class Project(MappedClass, ActivityObject):
     trove_environment=FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project=FieldProperty(bool, if_missing=False)
+
+    @property
+    def activity_name(self):
+        return self.shortname
 
     @property
     def permissions(self):

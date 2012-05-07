@@ -238,7 +238,7 @@ class Ticket(VersionedArtifact, ActivityObject):
 
     @property
     def activity_name(self):
-        return 'Ticket #%s' % self.ticket_num
+        return 'ticket #%s' % self.ticket_num
 
     @classmethod
     def new(cls):

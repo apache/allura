@@ -295,6 +295,10 @@ class User(MappedClass, Node, ActivityObject):
             email_address=str,
             email_format=str))
 
+    @property
+    def activity_name(self):
+        return self.username
+
     def get_pref(self, pref_name):
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
 
