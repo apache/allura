@@ -529,3 +529,7 @@ class TestNeighborhood(TestController):
         assert 'Add a Project' in r
         r = self.app.get('/adobe/', extra_environ=dict(username='root'))
         assert 'Add a Project' in r
+
+    def test_profile_topnav_menu(self):
+        r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
+        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
