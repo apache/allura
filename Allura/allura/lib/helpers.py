@@ -551,7 +551,7 @@ def render_any_markup(name, text, code_mode=False):
         text = '<p><em>Empty File</em></p>'
     else:
         text = pylons.g.pypeline_markup.render(name, text)
-        if not pylons.g.pypeline_markup.can_render(name) or True:
+        if not pylons.g.pypeline_markup.can_render(name):
             if code_mode:
                 markup_text = '<div class="codehilite"><pre>'
                 line_num = 1
