@@ -556,7 +556,7 @@ def render_any_markup(name, text, code_mode=False):
                 markup_text = '<div class="codehilite"><pre>'
                 line_num = 1
                 for line in text.splitlines():
-                    markup_text = markup_text + '<div id="l%s" class="code_block"><span class="lineno">%s</span> %s</div>' % (line_num, line_num, line)
+                    markup_text = markup_text + '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (line_num, line_num, line)
                     line_num += 1
                 markup_text = markup_text + '</pre></div>'
                 text = markup_text
