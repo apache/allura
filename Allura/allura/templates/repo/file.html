@@ -26,7 +26,7 @@
 	if ('originalEvent' in e && 'oldURL' in e.originalEvent) {
       $('#' + e.originalEvent.oldURL.split('#')[1]).css('background-color', 'transparent');
 	}
-    if (hash != '' && hash.substring(0, 1) == 'l' && !isNaN(hash.substring(1))) {
+    if (hash !== '' && hash.substring(0, 1) === 'l' && !isNaN(hash.substring(1))) {
       $('#' + hash).css('background-color', '#ffff99');
     }
   }).trigger('hashchange');
@@ -34,7 +34,7 @@
   $('.code_block').each(function(index, element) {
     $(element).bind('click', function() {
       var hash = window.location.hash.substring(1);
-      if (hash != '' && hash.substring(0, 1) == 'l' && !isNaN(hash.substring(1))) {
+      if (hash !== '' && hash.substring(0, 1) === 'l' && !isNaN(hash.substring(1))) {
         $('#' + hash).css('background-color', 'transparent');
       }
       $(element).css('background-color', '#ffff99');
