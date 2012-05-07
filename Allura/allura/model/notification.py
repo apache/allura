@@ -118,12 +118,9 @@ class Notification(MappedClass):
             text = post.text
             file_info = kwargs.pop('file_info', None)
             if file_info is not None:
-                MAX_READ = 1024 * 32
-                bytecount= 0
-                while 1:
-                    data = file_info.file.read(MAX_READ)
-                    if not data: break
-                    bytecount += len(data)
+                file_info.file.seek(0, 2)
+                bytecount = file_info.file.tell()
+                file_info.file.seek(0)
                 text = "%s\n%s (%s bytes in %s)" % (text, file_info.filename, bytecount, file_info.type)
 
             subject = post.subject or ''
