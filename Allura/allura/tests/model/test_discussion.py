@@ -5,6 +5,7 @@ Model tests for artifact
 from cStringIO import StringIO
 import time
 from datetime import datetime
+from cgi import FieldStorage
 
 from pylons import c, g, request, response
 from nose.tools import assert_raises, assert_equals, with_setup
@@ -155,6 +156,18 @@ def test_attachment_methods():
     for att in (p_att, t_att, d_att):
         assert 'wiki/_discuss' in att.url()
         assert 'attachment/' in att.url()
+
+    # Test notification in mail
+    t = M.Thread(discussion_id=d._id, subject='Test comment notification')
+    fs = FieldStorage()
+    fs.name='file_info'
+    fs.filename='fake.txt'
+    fs.type = 'text/plain'
+    fs.file=StringIO('this is the content of the fake file\n')
+    p = t.post(text=u'test message', forum= None, subject= '', file_info=fs)
+    ThreadLocalORMSession.flush_all()
+    n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
+    assert u'test message\nfake.txt (37 bytes in text/plain)'==n.text
 
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
