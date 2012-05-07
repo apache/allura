@@ -1,4 +1,5 @@
 import json
+import re
 
 import tg
 import pkg_resources
@@ -174,5 +175,5 @@ class TestRootController(TestController):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')
         content = str(resp.html.find('div',{'class':'clip grid-19'}))
-        assert '<pre>This is readme' in content, content
+        assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content
