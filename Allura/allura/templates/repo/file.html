@@ -63,13 +63,9 @@
   </p>
   {% endif %}
 
-  {% if blob.has_image_view %}<img src="?format=raw" alt=""/>{% endif %}
-  {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
-    <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
-    Try to <a href="?force=True">display it</a> anyway or
-    <a href="?format=raw">download it</a> instead.</p>
-  {% endif %}
-  {% if (blob.has_html_view or blob.has_pypeline_view) and not blob.has_image_view or force_display %}
+  {% if blob.has_image_view %}
+    <img src="?format=raw" alt=""/>
+  {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
     <p><a href="?format=raw">Download this file</a></p>
     <div class="clip grid-19">
       <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(blob.name)}}</span></h3>
@@ -79,5 +75,9 @@
         {{g.highlight(blob.text, filename=blob.name)}}
       {% endif %}
     </div>
+  {% else %}
+    <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
+    Try to <a href="?force=True">display it</a> anyway or
+    <a href="?format=raw">download it</a> instead.</p>
   {% endif %}
 {% endblock %}
