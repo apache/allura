@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import logging
@@ -6,10 +7,10 @@ from itertools import izip, chain
 from datetime import datetime
 from collections import defaultdict
 
-from pylons import g, c
+from pylons import c
 import pymongo.errors
 
-from ming import Field, Index, collection
+from ming import Field, collection
 from ming import schema as S
 from ming.base import Object
 from ming.utils import LazyProperty
@@ -32,6 +33,9 @@ SObjType=S.OneOf('blob', 'tree', 'submodule')
 # Used for when we're going to batch queries using $in
 QSIZE = 100
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
+VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
+    '.rb','.phtml','.txt','.bat','.ps1','.xhtml','.css','.cfm','.jsp','.jspx',
+    '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
 
 # Basic commit information
 CommitDoc = collection(
@@ -386,6 +390,8 @@ class Blob(object):
         self.name = name
         self.repo = tree.repo
         self.commit = tree.commit
+        fn, ext = os.path.splitext(self.name)
+        self.extension = ext or fn
 
     def path(self):
         return self.tree.path() + h.really_unicode(self.name)
@@ -431,8 +437,17 @@ class Blob(object):
         return self._content_type_encoding[1]
 
     @property
+    def has_pypeline_view(self):
+        if README_RE.match(self.name) or self.extension in ['.md', '.rst']:
+            return True
+        return False
+
+    @property
     def has_html_view(self):
-        return self.content_type.startswith('text/')
+        if self.content_type.startswith('text/') or self.extension in VIEWABLE_EXTENSIONS or \
+            self.extension in self._additional_viewable_extensions:
+            return True
+        return False
 
     @property
     def has_image_view(self):
