@@ -199,7 +199,6 @@ class RepoRootController(BaseController):
             for p_oid in ci.parent_ids:
                 children[p_oid].append(oid)
         result = []
-
         for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
             ci = commits_by_id[oid]
             url=c.app.repo.url_for_commit(Object(_id=oid))
@@ -534,11 +533,10 @@ class FileBrowser(BaseController):
             diff=diff)
 
 def topo_sort(children, parents, dates, head_ids):
-    to_visit = set(head_ids)
+    to_visit = sorted(list(set(head_ids)), key=lambda x: dates[x])
     visited = set()
     while to_visit:
-        next = max(to_visit, key=lambda x: dates[x])
-        to_visit.remove(next)
+        next = to_visit.pop()
         if next in visited: continue
         visited.add(next)
         yield next
@@ -546,6 +544,6 @@ def topo_sort(children, parents, dates, head_ids):
             for c in children[p]:
                 if c not in visited: break
             else:
-                to_visit.add(p)
+                to_visit.append(p)
 
 on_import()

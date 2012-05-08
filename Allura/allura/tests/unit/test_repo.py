@@ -1,6 +1,8 @@
+import datetime
 import unittest
 
 from allura import model as M
+from allura.controllers.repository import topo_sort
 from alluratest.controller import setup_unit_test
 
 class TestCommitRunBuilder(unittest.TestCase):
@@ -48,3 +50,34 @@ class TestCommitRunBuilder(unittest.TestCase):
             crb.run()
             crb.cleanup()
         self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
+
+class TestTopoSort(unittest.TestCase):
+    def test_commit_dates_out_of_order(self):
+        """Commits should be sorted by their parent/child relationships,
+        regardless of the date on the commit.
+        """
+        head_ids = ['dev', 'master']
+        parents = {
+            'dev':        ['dev@{1}'],
+            'dev@{1}':    ['master'],
+            'master':     ['master@{1}'],
+            'master@{1}': ['master@{2}'],
+            'master@{2}': ['master@{3}'],
+            'master@{3}': []}
+        children = {
+            'master@{3}': ['master@{2}'],
+            'master@{2}': ['master@{1}'],
+            'master@{1}': ['master'],
+            'master':     ['dev@{1}'],
+            'dev@{1}':    ['dev'],
+            'dev':        []}
+        dates = {
+            'dev@{1}':    datetime.datetime(2012, 1, 1),
+            'master@{3}': datetime.datetime(2012, 2, 1),
+            'master@{2}': datetime.datetime(2012, 3, 1),
+            'master@{1}': datetime.datetime(2012, 4, 1),
+            'master':     datetime.datetime(2012, 5, 1),
+            'dev':        datetime.datetime(2012, 6, 1)}
+        result = topo_sort(children, parents, dates, head_ids)
+        self.assertEqual(list(result), ['dev', 'dev@{1}', 'master',
+            'master@{1}', 'master@{2}', 'master@{3}'])
