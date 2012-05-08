@@ -678,6 +678,7 @@ class GroupsController(BaseController):
                 return dict(error='You cannot remove the admin permission from the admin group.')
             M.AuditLog.log('revoked permission %s from group with id %s', permission, role_id)
             c.project.acl.remove(M.ACE.allow(ObjectId(role_id), permission))
+        g.post_event('project_updated')
         return self._map_group_permissions()
 
     @without_trailing_slash
@@ -697,6 +698,7 @@ class GroupsController(BaseController):
             return dict(error='%s (%s) is already in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('add user %s to %s', username, group.name)
         user.project_role().roles.append(group._id)
+        g.post_event('project_updated')
         return dict(username=username, displayname=user.display_name)
 
     @without_trailing_slash
@@ -716,6 +718,7 @@ class GroupsController(BaseController):
             return dict(error='%s (%s) is not in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('remove user %s from %s', username, group.name)
         user.project_role().roles.remove(group._id)
+        g.post_event('project_updated')
         return dict()
 
     @without_trailing_slash
