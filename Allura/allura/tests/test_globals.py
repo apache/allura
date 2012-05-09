@@ -123,9 +123,9 @@ def test_markdown():
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     tgt = 'http://everything2.com/?node=nate+oostendorp'
-    url = '/nf/redirect/?path=%s' % quote(tgt)
     s = g.markdown.convert('This is %s' % tgt)
-    assert s == '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (url, tgt), s
+    assert_equal(
+        s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
