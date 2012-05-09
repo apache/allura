@@ -37,18 +37,26 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
 
     def test_fork(self):
+        r = self.app.get('%sfork/' % c.app.repo.url())
+        assert '<input type="text" name="to_name" value="test"/>' in r
+        assert '<input type="text" name="mount_label" value="test - Code"/>' \
+                in r
+
         to_project = M.Project.query.get(shortname='test2', neighborhood_id=c.project.neighborhood_id)
+        to_name = 'reponame'
         r = self.app.post('/src-git/fork', params=dict(
             project_id=str(to_project._id),
-            to_name='code'))
+            to_name=to_name,
+            mount_label='Test forked repository'))
         cloned_from = c.app.repo
-        with h.push_context('test2', 'code', neighborhood='Projects'):
+        with h.push_context('test2', to_name, neighborhood='Projects'):
             c.app.repo.init_as_clone(
                     cloned_from.full_fs_path,
                     cloned_from.app.config.script_name(),
                     cloned_from.full_fs_path)
-        r = self.app.get('/p/test2/code').follow().follow().follow()
+        r = self.app.get('/p/test2/%s' % to_name).follow().follow().follow()
         assert 'Clone of' in r
+        assert 'Test forked repository' in r
         r = self.app.get('/src-git/').follow().follow()
         assert 'Forks' in r
 
