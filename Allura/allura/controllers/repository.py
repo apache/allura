@@ -74,7 +74,7 @@ class RepoRootController(BaseController):
         mount_label = mount_label or '%s - Code' % c.project.name
         try:
             to_name = (to_name or
-                    re.search('\w+$', from_project.shortname).group(0))
+                    re.search('[a-z]+$', from_project.shortname).group(0))
         except AttributeError:
             to_name = ''
         if request.method != 'POST' or not to_name:
@@ -87,7 +87,6 @@ class RepoRootController(BaseController):
                 if not to_project.database_configured:
                     to_project.configure_project(is_user_project=True)
                 security.require(security.has_access(to_project, 'admin'))
-                to_name = from_project.shortname
                 try:
                     to_project.install_app(
                         ep_name=from_repo.tool_name,
