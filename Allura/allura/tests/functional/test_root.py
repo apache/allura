@@ -92,15 +92,6 @@ class TestRootController(TestController):
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
-    def test_redirect_external(self):
-        r = self.app.get('/nf/redirect/?path=%s' % quote('http://en.wikipedia.org/wiki/Aho–Corasick_string_matching_algorithm'))
-        assert r.status_int == 302
-        assert r.location == 'http://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_string_matching_algorithm'
-
-        r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
-        assert r.status_int == 302
-        assert r.location == 'http://google.com'
-
     def test_slash_redirect(self):
         r = self.app.get('/p',status=301)
         r = self.app.get('/p/',status=200)
