@@ -272,6 +272,15 @@ class TestForum(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert u'téstforum'.encode('utf-8') in r
 
+    def test_markdown_description(self):
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'tester'
+        r.forms[1]['add_forum.name'] = 'Tester'
+        r.forms[1]['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
+        r.forms[1].submit()
+        r = self.app.get('/discussion/')
+        assert_equal(len(r.html.findAll('a', rel='nofollow')), 1)
+
     def test_forum_search(self):
         r = self.app.get('/discussion/search')
         r = self.app.get('/discussion/search', params=dict(q='foo'))
