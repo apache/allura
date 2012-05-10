@@ -4,6 +4,8 @@ from cPickle import dumps
 
 import bson
 
+import tg
+
 from ming.base import Object
 
 from allura.lib import utils
@@ -308,6 +310,7 @@ def send_notifications(repo, commit_ids):
     from allura.model import Feed, Notification
     from allura.model.repository import config
     commit_msgs = []
+    base_url = tg.config.get('base_url', 'sourceforge.net')
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
         index = dict(
@@ -323,8 +326,10 @@ def send_notifications(repo, commit_ids):
                     summary, href),
                 author_link=ci.author_url,
                 author_name=ci.authored.name)
-            commit_msgs.append('%s by %s <%s>' % (
-                    summary, ci.authored.name, href))
+            branches = repo.symbolics_for_commit(ci.legacy)[0]
+            commit_msgs.append('[%s] %s by %s %s%s' % (
+                    ",".join(b for b in branches),
+                    summary, ci.authored.name, base_url, ci.url()))
     if commit_msgs:
         if len(commit_msgs) > 1:
             subject = '%d new commits to %s %s' % (

@@ -150,6 +150,7 @@ class TestRepo(_TestWithRepo):
         Commit_upsert.return_value=(ci,True)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
+        self.repo.symbolics_for_commit = mock.Mock(return_value=[['master', 'branch'], []])
         def refresh_commit_info(oid, seen, lazy=False):
             M.repo.CommitDoc(dict(
                     authored=dict(
@@ -167,7 +168,9 @@ class TestRepo(_TestWithRepo):
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
-            if '100 new commits' in n.subject: break
+            if '100 new commits' in n.subject:
+                assert "[master,branch]  by Test Committer http://localhost/#" in n.text
+                break
         else:
             assert False, 'Did not find notification'
         assert M.Feed.query.find(dict(
