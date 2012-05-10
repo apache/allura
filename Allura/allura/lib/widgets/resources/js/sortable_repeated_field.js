@@ -82,9 +82,11 @@
                 .find(':input[name^='+tpl_name+']').each(function() {
                     var $this = $(this);
                     var name = $this.attr('name');
-                    $this.attr('name', name.replace(
-                        tpl_name,
-                        self.fld_name() + '-0'));
+                    if(name){
+                      $this.attr('name', name.replace(
+                          tpl_name,
+                          self.fld_name() + '-0'));
+                    }
                 }).end();
             $new_field
                 .find('[data-name*="' + tpl_name + '"]')
