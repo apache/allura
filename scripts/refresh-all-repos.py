@@ -1,40 +1,25 @@
 import logging
-import optparse
 
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
-from allura.lib import utils
+from allura.lib.utils import chunked_find
 
 log = logging.getLogger(__name__)
 
-PAGESIZE=1024
+def main(options):
+    q_project = {}
+    if options.nbhd:
+        nbhd = M.Neighborhood.query.get(url_prefix=options.nbhd)
+        if not nbhd:
+            return "Invalid neighborhood url prefix."
+        q_project['neighborhood_id'] = nbhd._id
+    if options.project:
+        q_project['shortname'] = options.project
+    elif options.project_regex:
+        q_project['shortname'] = {'$regex': options.project_regex}
 
-def main():
-    parser = optparse.OptionParser(usage="""%prog -- [options] [/p/ someproject/optional-subproj mount-point]\n\n
-        Specify a neighborhood url-prefix, project shortname, and mountpoint to run for just one repo.  Omit that
-        to run for all repos.
-    """)
-    parser.add_option(
-        '--clean', action='store_true', dest='clean', default=False,
-        help='remove all RepoObjects before refresh')
-    parser.add_option(
-        '--all', action='store_true', dest='all', default=False,
-        help='refresh all commits (not just the ones that are new')
-    parser.add_option(
-        '--notify', action='store_true', dest='notify', default=False,
-        help='send email notifications of new commits')
-    options, args = parser.parse_args()
-    if args:
-        nbhd = M.Neighborhood.query.get(url_prefix=args[0])
-        shortname = args[1]
-        mount_point = args[2]
-        q_project = {'shortname': shortname, 'neighborhood_id': nbhd._id}
-        projects = {shortname:[mount_point]}
-    else:
-        projects = {}
-        q_project = {}
     log.info('Refreshing repositories')
     if options.clean:
         log.info('Removing all repository objects')
@@ -43,14 +28,18 @@ def main():
         M.repo.TreesDoc.m.remove({})
         M.repo.DiffInfoDoc.m.remove({})
         M.repo.CommitRunDoc.m.remove({})
-    for chunk in utils.chunked_find(M.Project, q_project):
+
+    for chunk in chunked_find(M.Project, q_project):
         for p in chunk:
+            log.info("Refreshing repos for project '%s'." % p.shortname)
+            if options.dry_run:
+                continue
             c.project = p
-            if projects:
-                mount_points = projects[p.shortname]
+            if options.mount_point:
+                mount_points = [options.mount_point]
             else:
-                mount_points = [ ac.options.mount_point
-                                 for ac in M.AppConfig.query.find(dict(project_id=p._id)) ]
+                mount_points = [ac.options.mount_point for ac in
+                                M.AppConfig.query.find(dict(project_id=p._id))]
             for app in (p.app_instance(mp) for mp in mount_points):
                 c.app = app
                 if not hasattr(app, 'repo'): continue
@@ -69,5 +58,34 @@ def main():
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+def parse_options():
+    import argparse
+    parser = argparse.ArgumentParser(description='Scan repos on filesytem and '
+            'update repo metadata in MongoDB. Run for all repos (no args), '
+            'or restrict by neighborhood, project, or code tool mount point.')
+    parser.add_argument('--nbhd', action='store', default='', dest='nbhd',
+            help='Restrict update to a particular neighborhood, e.g. /p/.')
+    parser.add_argument('--project', action='store', default='', dest='project',
+            help='Restrict update to a particular project. To specify a '
+            'subproject, use a slash: project/subproject.')
+    parser.add_argument('--project-regex', action='store', default='',
+            dest='project_regex',
+            help='Restrict update to projects for which the shortname matches '
+            'the provided regex.')
+    parser.add_argument('--mount_point', default='', dest='mount_point',
+            help='Restrict update to repos at the given tool mount point. ')
+    parser.add_argument('--clean', action='store_true', dest='clean',
+            default=False, help='Remove all repo-related mongo docs before '
+            'refresh.')
+    parser.add_argument('--all', action='store_true', dest='all', default=False,
+            help='Refresh all commits (not just the ones that are new).')
+    parser.add_argument('--notify', action='store_true', dest='notify',
+            default=False, help='Send email notifications of new commits.')
+    parser.add_argument('--dry-run', action='store_true', dest='dry_run',
+            default=False, help='Log names of projects that would have their '
+            'repos refreshed, but do not perform the actual refresh.')
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    main()
+    import sys
+    sys.exit(main(parse_options()))
