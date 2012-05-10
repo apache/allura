@@ -144,7 +144,7 @@ class ForumThread(M.Thread):
         return self
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
-        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
+        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id, **kw)
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
