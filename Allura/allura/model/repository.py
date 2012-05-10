@@ -332,6 +332,7 @@ class Repository(Artifact):
         # Refresh history
         seen_object_ids = set()
         commit_msgs = []
+        base_url = tg.config.get('base_url', 'sourceforge.net')
         i=0
         for i, oid in enumerate(commit_ids):
             if len(seen_object_ids) > 10000: # pragma no cover
@@ -357,8 +358,10 @@ class Repository(Artifact):
                     author_link = ci.author_url,
                     author_name = ci.authored.name,
                 )
-                commit_msgs.append('%s by %s <%s%s>' % (
-                        h.really_unicode(ci.summary), h.really_unicode(ci.committed.name), config.common_prefix,ci.url()))
+                branches = ci.symbolic_ids[0]
+                commit_msgs.append('[%s] %s by %s %s%s' % (
+                        ",".join(b for b in branches),
+                        h.really_unicode(ci.summary), h.really_unicode(ci.committed.name), base_url, ci.url()))
         if commit_msgs:
             if len(commit_msgs) > 1:
                 subject = '%d new commits to %s %s' % (
