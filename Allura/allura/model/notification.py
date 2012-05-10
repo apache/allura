@@ -26,11 +26,13 @@ from pylons import c, g
 from tg import config
 import pymongo
 import jinja2
+import markdown
 
 from ming import schema as S
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
 from ming.orm.declarative import MappedClass
 
+from allura.lib.markdown_extensions import ForgeExtension
 from allura.lib import helpers as h
 from allura.lib import security
 import allura.tasks.mail_tasks
@@ -139,7 +141,6 @@ class Notification(MappedClass):
                 from_address=reply_to,
                 reply_to_address=reply_to,
                 subject=subject_prefix + subject,
-                text=kwargs.pop('text', subject),
                 author_id=c.user._id,
                 pubdate=datetime.utcnow())
             if c.user.get_pref('email_address'):
@@ -150,6 +151,19 @@ class Notification(MappedClass):
                 d['from_address'] = '"%s" <%s>' % (
                     c.user.get_pref('display_name'),
                     c.user.email_addresses[0])
+
+            email_format = 'plain'
+            if c.user.get_pref('email_format'):
+                email_format = c.user.get_pref('email_format')
+            email_text = kwargs.pop('text', subject)
+            if email_format == 'plain':
+                # Here we render text message
+                d['text'] = email_text
+            else:
+                # For html or both we render html text
+                md = g.forge_markdown(email=True)
+                d['text'] = md.convert(email_text)
+
         if not d.get('text'):
             d['text'] = ''
         try:
