@@ -122,16 +122,16 @@ class TestRootController(TestController):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.findAll('tr')) ==2, resp.showbrowser()
+        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
         assert 'README' in resp, resp.showbrowser()
 
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div',{'class':'clip grid-19'}))
+        assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
+        content = str(resp.html.find('div', {'class':'clip grid-19'}))
         assert 'This is readme' in content, content
-        assert '<span id="l1" class="code_block">' in resp
+        assert '<div id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
 
     def test_invalid_file(self):
