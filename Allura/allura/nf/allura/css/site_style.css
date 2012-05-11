@@ -2718,6 +2718,10 @@ table.codehilitetable {
 td.linenos {
     width:auto;
     padding: 0;
+    
+}
+div.linenodiv {
+    
 }
 td.linenos pre {
     font-size: 100%;
