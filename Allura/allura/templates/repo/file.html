@@ -70,7 +70,7 @@
     <div class="clip grid-19">
       <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(blob.name)}}</span></h3>
       {% if blob.has_pypeline_view %}
-        {{h.render_any_markup(blob.name, blob.text, code_mode=True)}}
+        {{h.render_any_markup(blob.name, blob.text, code_mode=True, linenumbers_style=h.TABLE)}}
       {% else %}
         {{g.highlight(blob.text, filename=blob.name)}}
       {% endif %}

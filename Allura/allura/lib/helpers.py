@@ -142,8 +142,8 @@ def _make_xs(X, ids):
     results = dict(
         (r._id, r)
         for r in X.query.find(dict(_id={'$in':ids})))
-    result = ( results.get(i) for i in ids )
-    return ( r for r in result if r is not None )
+    result = (results.get(i) for i in ids)
+    return (r for r in result if r is not None)
 
 @contextmanager
 def push_config(obj, **kw):
@@ -158,14 +158,14 @@ def push_config(obj, **kw):
     try:
         yield obj
     finally:
-        for k,v in saved_attrs.iteritems():
+        for k, v in saved_attrs.iteritems():
             setattr(obj, k, v)
         for k in new_attrs:
             delattr(obj, k)
 
 def sharded_path(name, num_parts=2):
     parts = [
-        name[:i+1]
+        name[:i + 1]
         for i in range(num_parts) ]
     return '/'.join(parts)
 
@@ -227,12 +227,12 @@ def encode_keys(d):
     a valid kwargs argument'''
     return dict(
         (k.encode('utf-8'), v)
-        for k,v in d.iteritems())
+        for k, v in d.iteritems())
 
 def vardec(fun):
     def vardec_hook(remainder, params):
         new_params = variable_decode(dict(
-                (k,v) for k,v in params.items()
+                (k, v) for k, v in params.items()
                 if re_clean_vardec_key.match(k)))
         params.update(new_params)
     before_validate(vardec_hook)(fun)
@@ -276,7 +276,7 @@ class DateTimeConverter(FancyValidator):
         try:
             return parse(value)
         except ValueError:
-            if self.if_invalid!=formencode.api.NoDefault:
+            if self.if_invalid != formencode.api.NoDefault:
                 return self.if_invalid
             else:
                 raise
@@ -336,7 +336,7 @@ class ProxiedAttrMeta(type):
                 v.cls = cls
 
 class attrproxy(object):
-    cls=None
+    cls = None
     def __init__(self, *attrs):
         self.attrs = attrs
 
@@ -413,7 +413,7 @@ def json_validation_error(controller, **kwargs):
                 errors=c.validation_exception.unpack_errors(),
                 value=c.validation_exception.value,
                 params=kwargs)
-    response.status=400
+    response.status = 400
     return json.dumps(result, indent=2)
 
 def pop_user_notifications(user=None):
@@ -429,8 +429,8 @@ def config_with_prefix(d, prefix):
     '''Return a subdictionary keys with a given prefix,
     with the prefix stripped
     '''
-    plen=len(prefix)
-    return dict((k[plen:], v) for k,v in d.iteritems()
+    plen = len(prefix)
+    return dict((k[plen:], v) for k, v in d.iteritems()
                 if k.startswith(prefix))
 
 @contextmanager
@@ -478,7 +478,7 @@ class log_action(object):
         extra = kwargs.setdefault('extra', {})
         meta = kwargs.pop('meta', {})
         kwpairs = extra.setdefault('kwpairs', {})
-        for k,v in meta.iteritems():
+        for k, v in meta.iteritems():
             kwpairs['meta_%s' % k] = v
         extra.update(self._make_extra())
         self._logger.log(level, self._action + ': ' + message, *args, **kwargs)
@@ -500,7 +500,7 @@ class log_action(object):
 
     def warning(self, message, *args, **kwargs):
         self.log(logging.EXCEPTION, message, *args, **kwargs)
-    warn=warning
+    warn = warning
 
     def _make_extra(self):
         result = dict(self.extra_proto, action=self._action)
@@ -542,7 +542,37 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     page = min(max(int(page), (0 if zero_based_pages else 1)), max_page)
     return limit, page
 
-def render_any_markup(name, text, code_mode=False):
+
+def _add_inline_line_numbers_to_text(text):
+    markup_text = '<div class="codehilite"><pre>'
+    for line_num, line in enumerate(text.splitlines(), 1):
+        markup_text = markup_text + '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (line_num, line_num, line)
+    markup_text = markup_text + '</pre></div>'
+    return markup_text
+
+
+def _add_table_line_numbers_to_text(text):
+    def _prepend_whitespaces(num, max_num):
+        num, max_num = str(num), str(max_num)
+        diff = len(max_num) - len(num)
+        return ' ' * diff + num
+
+    def _len_to_str_column(l, start=1):
+        max_num = l + start
+        return '\n'.join(map(_prepend_whitespaces, range(start, max_num), [max_num] * l))
+
+    lines = text.splitlines(True)
+    linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + _len_to_str_column(len(lines)) + '</pre></div></td>'
+    markup_text = '<table class="codehilitetable"><tbody><tr>' + linenumbers + '<td class="code"><div class="codehilite"><pre>'
+    for line_num, line in enumerate(lines, 1):
+        markup_text = markup_text + '<div id="l%s" class="code_block">%s</div>' % (line_num, line)
+    markup_text = markup_text + '</pre></div></td></tbody></table>'
+    return markup_text
+
+
+INLINE = 'inline'
+TABLE = 'table'
+def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
     """
     renders any markup format using the pypeline
     Returns jinja-safe text
@@ -552,14 +582,10 @@ def render_any_markup(name, text, code_mode=False):
     else:
         text = pylons.g.pypeline_markup.render(name, text)
         if not pylons.g.pypeline_markup.can_render(name):
-            if code_mode:
-                markup_text = '<div class="codehilite"><pre>'
-                line_num = 1
-                for line in text.splitlines():
-                    markup_text = markup_text + '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (line_num, line_num, line)
-                    line_num += 1
-                markup_text = markup_text + '</pre></div>'
-                text = markup_text
+            if code_mode and linenumbers_style == INLINE:
+                text = _add_inline_line_numbers_to_text(text)
+            elif code_mode and linenumbers_style == TABLE:
+                text = _add_table_line_numbers_to_text(text)
             else:
                 text = '<pre>%s</pre>' % text
     return Markup(text)
