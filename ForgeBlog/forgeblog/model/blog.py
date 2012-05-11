@@ -9,12 +9,27 @@ from pymongo.errors import DuplicateKeyError
 
 from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session, state
+from ming.orm.declarative import MappedClass
+
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils, patience
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
+
+class Globals(MappedClass):
+
+    class __mongometa__:
+        name = 'blog-globals'
+        session = M.project_orm_session
+        indexes = [ 'app_config_id' ]
+
+    type_s = 'BlogGlobals'
+    _id = FieldProperty(schema.ObjectId)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:context.app.config._id)
+    external_feeds=FieldProperty([str])
+
 
 class BlogPostSnapshot(M.Snapshot):
     class __mongometa__:
