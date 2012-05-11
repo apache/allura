@@ -100,7 +100,7 @@ class TestFile(TestCase):
         self._assert_content(f, 'test2')
 
     def test_serve(self):
-        f = File.from_data('test1.txt', 'test1')
+        f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
         assert [ 'test1' ] == list(f.serve())
         assert response.content_type == f.content_type
@@ -108,7 +108,7 @@ class TestFile(TestCase):
         assert [ 'test1' ] == list(f.serve(False))
         assert response.content_type == f.content_type
         assert response.headers['Content-Disposition'] == \
-            'attachment;filename=test1.txt'
+            'attachment;filename="te s\xe0\xad\xae1.txt"'
 
     def test_image(self):
         path = os.path.join(

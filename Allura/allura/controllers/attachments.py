@@ -51,7 +51,7 @@ class AttachmentController(BaseController):
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
-        
+
     @expose()
     def index(self, delete=False, **kw):
         if request.method == 'POST':
@@ -64,8 +64,8 @@ class AttachmentController(BaseController):
                 except exc.HTTPNotFound:
                     pass
             redirect(request.referer)
-        return self.attachment.serve(False)
+        return self.attachment.serve(embed=False)
 
     @expose()
-    def thumb(self, embed=True):
-        return self.thumbnail.serve(embed)
+    def thumb(self):
+        return self.thumbnail.serve(embed=True)
