@@ -60,7 +60,7 @@ class Globals(object):
         if asbool(config.get('solr.mock')):
             self.solr = MockSOLR()
         elif self.solr_server:
-            self.solr =  pysolr.Solr(self.solr_server)
+            self.solr = pysolr.Solr(self.solr_server)
         else: # pragma no cover
             self.solr = None
         self.use_queue = asbool(config.get('use_queue', False))
@@ -77,7 +77,7 @@ class Globals(object):
         # Setup pygments
         self.pygments_formatter = utils.LineAnchorCodeHtmlFormatter(
             cssclass='codehilite',
-            linenos='inline')
+            linenos='table')
 
         # Setup Pypeline
         self.pypeline_markup = pypeline_markup
@@ -86,42 +86,42 @@ class Globals(object):
         self.analytics = analytics.GoogleAnalytics(account=config.get('ga.account', 'UA-XXXXX-X'))
 
         self.icons = dict(
-            admin = Icon('x', 'ico-admin'),
-            pencil = Icon('p', 'ico-pencil'),
-            help = Icon('h', 'ico-help'),
-            search = Icon('s', 'ico-search'),
-            history = Icon('N', 'ico-history'),
-            feed = Icon('f', 'ico-feed'),
-            mail = Icon('M', 'ico-mail'),
-            reply = Icon('w', 'ico-reply'),
-            tag = Icon('z', 'ico-tag'),
-            flag = Icon('^', 'ico-flag'),
-            undelete = Icon('+', 'ico-undelete'),
-            delete = Icon('#', 'ico-delete'),
-            close = Icon('D', 'ico-close'),
-            table = Icon('n', 'ico-table'),
-            stats = Icon('Y', 'ico-stats'),
-            pin = Icon('@', 'ico-pin'),
-            folder = Icon('o', 'ico-folder'),
-            fork = Icon('R', 'ico-fork'),
-            merge = Icon('J', 'ico-merge'),
-            plus = Icon('+', 'ico-plus'),
-            conversation = Icon('q', 'ico-conversation'),
-            group = Icon('g', 'ico-group'),
-            user = Icon('U', 'ico-user'),
-            secure = Icon('(', 'ico-lock'),
-            unsecure = Icon(')', 'ico-unlock'),
+            admin=Icon('x', 'ico-admin'),
+            pencil=Icon('p', 'ico-pencil'),
+            help=Icon('h', 'ico-help'),
+            search=Icon('s', 'ico-search'),
+            history=Icon('N', 'ico-history'),
+            feed=Icon('f', 'ico-feed'),
+            mail=Icon('M', 'ico-mail'),
+            reply=Icon('w', 'ico-reply'),
+            tag=Icon('z', 'ico-tag'),
+            flag=Icon('^', 'ico-flag'),
+            undelete=Icon('+', 'ico-undelete'),
+            delete=Icon('#', 'ico-delete'),
+            close=Icon('D', 'ico-close'),
+            table=Icon('n', 'ico-table'),
+            stats=Icon('Y', 'ico-stats'),
+            pin=Icon('@', 'ico-pin'),
+            folder=Icon('o', 'ico-folder'),
+            fork=Icon('R', 'ico-fork'),
+            merge=Icon('J', 'ico-merge'),
+            plus=Icon('+', 'ico-plus'),
+            conversation=Icon('q', 'ico-conversation'),
+            group=Icon('g', 'ico-group'),
+            user=Icon('U', 'ico-user'),
+            secure=Icon('(', 'ico-lock'),
+            unsecure=Icon(')', 'ico-unlock'),
             # Permissions
-            perm_read = Icon('E', 'ico-focus'),
-            perm_update = Icon('0', 'ico-sync'),
-            perm_create = Icon('e', 'ico-config'),
-            perm_register = Icon('e', 'ico-config'),
-            perm_delete = Icon('-', 'ico-minuscirc'),
-            perm_tool = Icon('x', 'ico-config'),
-            perm_admin = Icon('(', 'ico-lock'),
-            perm_has_yes = Icon('3', 'ico-check'),
-            perm_has_no = Icon('d', 'ico-noentry'),
-            perm_has_inherit = Icon('2', 'ico-checkcircle'),
+            perm_read=Icon('E', 'ico-focus'),
+            perm_update=Icon('0', 'ico-sync'),
+            perm_create=Icon('e', 'ico-config'),
+            perm_register=Icon('e', 'ico-config'),
+            perm_delete=Icon('-', 'ico-minuscirc'),
+            perm_tool=Icon('x', 'ico-config'),
+            perm_admin=Icon('(', 'ico-lock'),
+            perm_has_yes=Icon('3', 'ico-check'),
+            perm_has_no=Icon('d', 'ico-noentry'),
+            perm_has_inherit=Icon('2', 'ico-checkcircle'),
         )
 
         # Cache some loaded entry points
