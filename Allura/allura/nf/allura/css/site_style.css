@@ -2707,3 +2707,38 @@ h1.title .viewer:hover {
 .neighborhood_feed_entry h3 {
   font-size: 1.1em;
 }
+
+/*linenumbers in codeblock viewer style*/
+
+table.codehilitetable {
+    background: #F8F8F8;
+    margin-left:0px;
+}
+
+td.linenos {
+    width:auto;
+    padding: 0;
+}
+td.linenos pre {
+    font-size: 100%;
+    padding: 1px;
+    padding-left: 5px;
+    margin-left: 15px;
+    background-color: #EBEBEB;
+    color: #555;
+    border-right: solid 1px #DDD;
+}
+td.code {
+    padding-left: 0px;
+}
+
+div.codehilite pre {
+    padding-left: 0px;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+div.codehilite pre div.code_block {
+    padding-left:10px;
+    width: 97%;
+}
+
