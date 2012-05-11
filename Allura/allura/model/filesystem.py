@@ -94,7 +94,7 @@ class File(MappedClass):
         if not embed:
             pylons.response.headers.add(
                 'Content-Disposition',
-                'attachment;filename=%s' % self.filename)
+                'attachment;filename="%s"' % self.filename.encode('utf-8'))
         return iter(fp)
 
     @classmethod

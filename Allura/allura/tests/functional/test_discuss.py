@@ -125,7 +125,7 @@ class TestAttachment(TestController):
         for f in thread.html.findAll('form'):
             if f.get('action', '').endswith('/post'):
                 break
-        self.post_form_link = f['action'].encode('utf-8')        
+        self.post_form_link = f['action'].encode('utf-8')
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
@@ -148,6 +148,7 @@ class TestAttachment(TestController):
         else:
             assert False, 'attachment link not found'
         r = self.app.get(alink)
+        assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
