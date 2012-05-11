@@ -81,6 +81,7 @@ class CustomFieldAdmin(ew.CompoundField):
         yield ew.JSLink('tracker_js/custom-fields.js')
 
     fields = [
+        ew.HiddenField(name='name'),
         ew.TextField(name='label'),
         ew.Checkbox(
             name='show_in_search',
