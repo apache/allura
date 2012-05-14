@@ -20,7 +20,7 @@ SEE: https://groups.google.com/group/compass-users/browse_thread/thread/df09f674
  * Color variables for the theme.
  *
  */
-/* 
+/*
  * Your run-of-the-mill reset CSS, inspired by:
  *
  *   yui.yahooapis.com/2.8.1/build/base/base.css
@@ -99,7 +99,7 @@ input, select {
   background: #fff;
 }
 
-/* 
+/*
  * Setup a minimal, baseline CSS, layered on top of a reset
  * to define the default styles we've come to expect. Inspired by:
  *
@@ -245,7 +245,7 @@ h2.title, #site-header nav {
   font-weight: normal;
 }
 
-/* 
+/*
  * General CSS rules governing high-level elements.
  *
  */
@@ -380,7 +380,7 @@ blockquote {
   padding-left: 1em;
 }
 
-/* 
+/*
  * Style elements in the main header and footer areas.
  *
  */
@@ -2718,15 +2718,15 @@ table.codehilitetable {
 td.linenos {
     width:auto;
     padding: 0;
-    
 }
 div.linenodiv {
-    
+
 }
 td.linenos pre {
     font-size: 100%;
     padding: 1px;
-    padding-left: 5px;
+    padding-left: 7px;
+    padding-right: 5px;
     margin-left: 15px;
     background-color: #EBEBEB;
     color: #555;
@@ -2734,6 +2734,7 @@ td.linenos pre {
 }
 td.code {
     padding-left: 0px;
+    width:100%;
 }
 
 div.codehilite pre {
