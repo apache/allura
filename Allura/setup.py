@@ -114,6 +114,7 @@ setup(
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-level = allura.command:SetNeighborhoodLevelCommand
     set-neighborhood-private = allura.command:SetNeighborhoodPrivateCommand
+    pull-rss-feeds = allura.command.rssfeeds:RssFeedsCommand
 
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
