@@ -7,7 +7,10 @@
             </label>
         </div>
         <div class="grid-10">{{widget.display_field(widget.fields.project_name)}}</div>
-        <div class="grid-9">&nbsp;</div>
+        <div class="grid-9" style="position:relative; overflow:visible">
+            <b data-icon="!" class="ico ico-caution error_icon" title="Caution"></b>
+            <b data-icon="2" class="ico ico-checkcircle success_icon" title="Check"></b>
+        </div>
         <div style="clear:both">&nbsp;</div>
         <div class="grid-4" style="text-align: right; padding-top: 7px;">
             <label for="{{ widget.context_for(widget.fields.project_unixname)['id'] }}">
@@ -18,9 +21,8 @@
             <br/><div id="project_url">http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url_fragment"></span></div>
         </div>
         <div class="grid-9" style="position:relative; overflow:visible">
-            <b id="error_icon" data-icon="!" class="allura" title="Caution">!</b>
-            <b id="success_icon" data-icon="2" class="allura" title="Check">&#x2713;</b>
-            <div id="name_availability" style="display:none"></div>
+            <b data-icon="!" class="ico ico-caution error_icon" title="Caution"></b>
+            <b data-icon="2" class="ico ico-checkcircle success_icon" title="Check"></b>
         </div>
         {{widget.display_field(widget.fields.neighborhood)}}
         <div style="clear:both">&nbsp;</div>

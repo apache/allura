@@ -10,7 +10,8 @@ div.content div.row > div.column {
 }
 div.welcome { margin: 2em 0 1em; }
 div.welcome input {
-    width: 95%;
+    width: 88%;
+    padding-right: 32px;
     line-height: 20px;
     font-size: 18px;
     -webkit-border-radius: 5px;
@@ -22,10 +23,10 @@ div.welcome .error, div.welcome .success {
     background: none;
     border: 0;
 }
-div.welcome .error, #error_icon {
+div.welcome .error, .error_icon {
     color: #D41326;
 }
-div.welcome .success, #success_icon {
+div.welcome .success, .success_icon {
     color: #373;
 }
 #name_availability {
@@ -33,14 +34,14 @@ div.welcome .success, #success_icon {
     left: -20px;
     font-weight: 500;
 }
-#error_icon, #success_icon {
+.error_icon, .success_icon {
     display: none;
     position: absolute;
     left: -50px;
     top: 10px;
     z-index: 2;
 }
-#error_icon.allura, #success_icon.allura {
+.error_icon.allura, .success_icon.allura {
     color: #fff;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
@@ -50,10 +51,10 @@ div.welcome .success, #success_icon {
     text-align: center;
     font-size: 14px;
 }
-#error_icon.allura {
+.error_icon.allura {
     background: #D41326;
 }
-#success_icon.allura {
+.success_icon.allura {
     background: #373;
 }
 div.welcome div.grid-9{
