@@ -1,4 +1,5 @@
 import pylons
+import difflib
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import g #g is a namespace for globally accessable app helpers
@@ -11,7 +12,6 @@ from ming.orm.declarative import MappedClass
 from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
 from allura.model import Notification, project_orm_session
 from allura.lib import helpers as h
-from allura.lib import patience
 from allura.lib import utils
 
 config = utils.ConfigProxy(
@@ -86,7 +86,7 @@ class Page(VersionedArtifact):
             v2 = self
             la = [ line + '\n'  for line in v1.text.splitlines() ]
             lb = [ line + '\n'  for line in v2.text.splitlines() ]
-            diff = ''.join(patience.unified_diff(
+            diff = ''.join(difflib.unified_diff(
                     la, lb,
                     'v%d' % v1.version,
                     'v%d' % v2.version))

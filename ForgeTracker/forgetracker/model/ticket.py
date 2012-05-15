@@ -1,6 +1,7 @@
 import logging
 import urllib
 import json
+import difflib
 from datetime import datetime, timedelta
 
 import bson
@@ -20,7 +21,6 @@ from ming.orm.declarative import MappedClass
 from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
-from allura.lib import patience
 from allura.lib import security
 from allura.lib.search import search_artifact
 from allura.lib import utils
@@ -392,7 +392,7 @@ class Ticket(VersionedArtifact):
             if old.description != self.description:
                 changes.append('Description updated:')
                 changes.append('\n'.join(
-                        patience.unified_diff(
+                        difflib.unified_diff(
                             a=old.description.split('\n'),
                             b=self.description.split('\n'),
                             fromfile='description-old',
