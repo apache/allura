@@ -26,9 +26,9 @@ class NeighborhoodProjectTakenValidator(fev.FancyValidator):
         return value
 
 class ForgeForm(ew.SimpleForm):
-    antispam=False
-    template='jinja:allura:templates/widgets/forge_form.html'
-    defaults=dict(
+    antispam = False
+    template = 'jinja:allura:templates/widgets/forge_form.html'
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text='Save',
         style='standard',
@@ -124,16 +124,17 @@ class RegistrationForm(ForgeForm):
         return d
 
 class AdminForm(ForgeForm):
-    template='jinja:allura:templates/widgets/admin_form.html'
+    template = 'jinja:allura:templates/widgets/admin_form.html'
 
 class NeighborhoodOverviewForm(ForgeForm):
-    template='jinja:allura:templates/widgets/neighborhood_overview_form.html'
+    template = 'jinja:allura:templates/widgets/neighborhood_overview_form.html'
 
     class fields(ew_core.NameList):
         name = ew.TextField()
         redirect = ew.TextField()
         homepage = ffw.AutoResizeTextarea()
         allow_browse = ew.Checkbox(label='')
+        show_title = ew.Checkbox(label='')
         css = ffw.AutoResizeTextarea()
         project_template = ffw.AutoResizeTextarea(
                 validator=V.JsonValidator(if_empty=''))
@@ -240,9 +241,9 @@ table.table_class select.add_opt {width: 5em; margin:0; padding: 0;}
         ''')
 
 class NeighborhoodAddProjectForm(ForgeForm):
-    template='jinja:allura:templates/widgets/neighborhood_add_project.html'
-    antispam=True
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/neighborhood_add_project.html'
+    antispam = True
+    defaults = dict(
         ForgeForm.defaults,
         method='post',
         submit_text='Start',

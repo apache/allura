@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 class NeighborhoodFile(File):
     class __mongometa__:
         session = main_orm_session
-    neighborhood_id=FieldProperty(S.ObjectId)
+    neighborhood_id = FieldProperty(S.ObjectId)
 
 re_picker_css_type = re.compile('^/\*(.+)\*/')
 re_font_project_title = re.compile('font-family:(.+);\}')
@@ -51,6 +51,7 @@ class Neighborhood(MappedClass):
     redirect = FieldProperty(str, if_missing='')
     projects = RelationProperty('Project')
     allow_browse = FieldProperty(bool, if_missing=True)
+    show_title = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
     tracking_id = FieldProperty(str, if_missing='')
@@ -94,7 +95,7 @@ class Neighborhood(MappedClass):
         if project_name is None:
             project_name = shortname
         return provider.register_project(
-            self, shortname, project_name, user or getattr(c,'user',None), user_project, private_project, apps)
+            self, shortname, project_name, user or getattr(c, 'user', None), user_project, private_project, apps)
 
     def bind_controller(self, controller):
         from allura.controllers.project import NeighborhoodController
@@ -128,7 +129,7 @@ class Neighborhood(MappedClass):
         projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
         barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
         titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
-        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color', 
+        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color',
                          'additional': """<label>Icons theme:</label> <select name="css-addopt-icon-theme" class="add_opt">
                         <option value="default">default</option>
                         <option value="dark"%(titlebarcolor_dark)s>dark</option>
