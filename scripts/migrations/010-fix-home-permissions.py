@@ -7,6 +7,7 @@ from ming.orm import session
 from bson import ObjectId
 
 from allura import model as M
+from allura.lib import utils
 from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger('fix-home-permissions')
@@ -22,8 +23,9 @@ def main():
     else:
         log.info('Fixing permissions for all Home Wikis')
 
-    for some_projects in chunked_project_iterator({'neighborhood_id': {'$nin': [ObjectId('4be2faf8898e33156f00003e'),       # /u
-                                                                                ObjectId('4dbf2563bfc09e6362000005')]}}):   # /motorola
+    for some_projects in utils.chunked_find(M.Project, {'neighborhood_id': {
+                '$nin': [ObjectId('4be2faf8898e33156f00003e'),      # /u
+                         ObjectId('4dbf2563bfc09e6362000005')]}}):  # /motorola
         for project in some_projects:
             c.project = project
             home_app = project.app_instance('home')
@@ -55,21 +57,6 @@ def main():
                     log.info('...updating acl for home app in project "%s".' % project.shortname)
                     home_app.config.acl = map(dict, new_acl.values())
                     session(home_app.config).flush()
-
-PAGESIZE=1024
-
-def chunked_project_iterator(q_project):
-    '''shamelessly copied from refresh-all-repos.py'''
-    page = 0
-    while True:
-        results = (M.Project.query
-                   .find(q_project)
-                   .skip(PAGESIZE*page)
-                   .limit(PAGESIZE)
-                   .all())
-        if not results: break
-        yield results
-        page += 1
 
 def project_role(project, name):
     role = M.ProjectRole.query.get(project_id=project._id, name=name)

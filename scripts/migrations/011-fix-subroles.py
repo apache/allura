@@ -12,11 +12,11 @@ For project.users:
 import sys
 import logging
 
-from pylons import c
 from ming.orm import session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
+from allura.lib import utils
 
 log = logging.getLogger('fix-subroles')
 log.addHandler(logging.StreamHandler(sys.stdout))
@@ -27,7 +27,7 @@ def main():
     log.info('Examining subroles in all non-user projects.')
     n_users = M.Neighborhood.query.get(name='Users')
     project_filter = dict(neighborhood_id={'$ne':n_users._id})
-    for some_projects in chunked_project_iterator(project_filter):
+    for some_projects in utils.chunked_find(M.Project, project_filter):
         for project in some_projects:
             project_name = '%s.%s' % (project.neighborhood.name, project.shortname)
             project_roles = {}
@@ -53,7 +53,7 @@ def main():
             for user in project.users():
                 pr = user.project_role(project=project)
                 if not pr.roles: continue
-                for parent, children in [('Admin', ('Developer', 'Member')), 
+                for parent, children in [('Admin', ('Developer', 'Member')),
                                          ('Developer', ('Member',))]:
                     if project_roles[parent]._id not in pr.roles: continue
                     for role_name in children:
@@ -72,22 +72,6 @@ def main():
             session(project).clear()
 
         log.info('%s projects examined.' % num_projects_examined)
-
-
-PAGESIZE=1024
-
-def chunked_project_iterator(q_project):
-    '''shamelessly copied from refresh-all-repos.py'''
-    page = 0
-    while True:
-        results = (M.Project.query
-                   .find(q_project)
-                   .skip(PAGESIZE*page)
-                   .limit(PAGESIZE)
-                   .all())
-        if not results: break
-        yield results
-        page += 1
 
 if __name__ == '__main__':
     main()
