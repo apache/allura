@@ -50,3 +50,6 @@ def test_set_neighborhood_private():
     cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert not neighborhood.allow_private
+
+def test_pull_rss_feeds():
+    print "123"

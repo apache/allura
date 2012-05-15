@@ -82,5 +82,3 @@ class RssFeedsCommand(base.Command):
             post.neighborhood_id=c.project.neighborhood_id
             post.make_slug()
             post.commit()
-            # TODO remove me
-            #print "TITLE: %s\nCONTENT: %s\n\n" % (title, content)

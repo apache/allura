@@ -27,7 +27,7 @@ class Globals(MappedClass):
 
     type_s = 'BlogGlobals'
     _id = FieldProperty(schema.ObjectId)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:context.app.config._id)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     external_feeds=FieldProperty([str])
 
 
