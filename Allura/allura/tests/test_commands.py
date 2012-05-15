@@ -3,10 +3,12 @@ from nose.tools import assert_raises
 from datadiff.tools import assert_equal
 import pylons
 
-from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_level, set_neighborhood_private
-from allura import model as M
+from ming.orm.ormsession import ThreadLocalORMSession
 
+from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.command import script, set_neighborhood_level, set_neighborhood_private, rssfeeds
+from allura import model as M
+from forgeblog import model as BM
 
 test_config = 'test.ini#main'
 
@@ -52,4 +54,19 @@ def test_set_neighborhood_private():
     assert not neighborhood.allow_private
 
 def test_pull_rss_feeds():
-    print "123"
+    base_app =  M.AppConfig.query.find().all()[0]
+    tmp_app = M.AppConfig(tool_name=u'Blog', discussion_id=base_app.discussion_id,
+                          project_id=base_app.project_id,
+                          options={u'ordinal': 0, u'show_right_bar': True,
+                                    u'project_name': base_app.project.name,
+                                    u'mount_point': u'blog',
+                                    u'mount_label': u'Blog'})
+    new_external_feeds = ['http://wordpress.org/news/feed/']
+    BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
+    ThreadLocalORMSession.flush_all()
+
+    cmd = rssfeeds.RssFeedsCommand('pull-rss-feeds')
+    cmd.run([test_config, '-a', tmp_app._id])
+    cmd.command()
+
+    assert len(BM.BlogPost.query.find({'app_config_id': tmp_app._id}).all()) > 0

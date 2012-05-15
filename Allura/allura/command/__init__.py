@@ -6,3 +6,4 @@ from create_neighborhood import CreateNeighborhoodCommand
 from create_trove_categories import CreateTroveCategoriesCommand
 from set_neighborhood_level import SetNeighborhoodLevelCommand
 from set_neighborhood_private import SetNeighborhoodPrivateCommand
+from rssfeeds import RssFeedsCommand

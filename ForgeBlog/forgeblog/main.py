@@ -84,7 +84,7 @@ class ForgeBlogApp(Application):
             if globals is not None:
                 globals.external_feeds = new_external_feeds
             elif len(new_external_feeds) > 0:
-                globals = BM.Globals(app_config_id=self.config._id, root=new_external_feeds)
+                globals = BM.Globals(app_config_id=self.config._id, external_feeds=new_external_feeds)
             if globals is not None:
                 session(globals).flush()
 
