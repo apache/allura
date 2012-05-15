@@ -78,7 +78,8 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         # no title now
         assert 'class="project_title"' not in str(r)
-
+        r = self.app.get('/adobe', extra_environ=dict(username='root'))
+        assert 'class="project_title"' not in str(r)
 
 
     def test_admin_stats_del_count(self):
