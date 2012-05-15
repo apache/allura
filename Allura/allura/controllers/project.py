@@ -97,7 +97,7 @@ class NeighborhoodController(object):
                 deleted=False,
                 shortname={'$ne':'--init--'}
                 ))
-        if sort=='alpha':
+        if sort == 'alpha':
             pq.sort('name')
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
@@ -108,14 +108,14 @@ class NeighborhoodController(object):
         c.custom_sidebar_menu = []
         if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
-                SitemapEntry('Add a Project', self.neighborhood.url()+'add_project', ui_icon=g.icons['plus']),
+                SitemapEntry('Add a Project', self.neighborhood.url() + 'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
             ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
-            SitemapEntry(cat.label, self.neighborhood.url()+'browse/'+cat.name) for cat in categories
+            SitemapEntry(cat.label, self.neighborhood.url() + 'browse/' + cat.name) for cat in categories
         ]
         return dict(neighborhood=self.neighborhood,
-                    title="Welcome to "+self.neighborhood.name,
+                    title="Welcome to " + self.neighborhood.name,
                     text=g.markdown.convert(self.neighborhood.homepage),
                     projects=projects,
                     sort=sort,
@@ -127,7 +127,7 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
-        form_data['tools'] = ['Wiki','Git','Tickets','Downloads','Discussion']
+        form_data['tools'] = ['Wiki', 'Git', 'Tickets', 'Downloads', 'Discussion']
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
@@ -173,7 +173,7 @@ class NeighborhoodController(object):
         offset = c.project.next_mount_point(include_search=True)
         if tools and not neighborhood.project_template:
             for i, tool in enumerate(tools):
-                c.project.install_app(tool, ordinal=i+offset)
+                c.project.install_app(tool, ordinal=i + offset)
         flash('Welcome to the SourceForge Project System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')
@@ -195,7 +195,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
     @expose()
     def _lookup(self, category_name, *remainder):
         c.project = self.neighborhood.neighborhood_project
-        category_name=unquote(category_name)
+        category_name = unquote(category_name)
         return NeighborhoodProjectBrowseController(neighborhood=self.neighborhood, category_name=category_name, parent_category=self.category), remainder
 
     @expose('jinja:allura:templates/neighborhood_project_list.html')
@@ -205,7 +205,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)
         projects, count = self._find_projects(sort=sort, limit=limit, start=start)
-        title=self._build_title()
+        title = self._build_title()
         c.custom_sidebar_menu = self._build_nav()
         return dict(projects=projects,
                     title=title,
@@ -240,7 +240,7 @@ class ProjectController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        name=unquote(name)
+        name = unquote(name)
         if not h.re_path_portion.match(name):
             raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
@@ -319,7 +319,7 @@ class ProjectController(object):
             redirect(g.forge_static('images/user.png'))
 
     @expose('json:')
-    def user_search(self,term=''):
+    def user_search(self, term=''):
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
         users = M.User.by_display_name(term)
@@ -349,7 +349,7 @@ class ScreenshotsController(object):
     @expose()
     def _lookup(self, filename, *args):
         if args:
-            filename=unquote(filename)
+            filename = unquote(filename)
         else:
             filename = unquote(request.path.rsplit('/', 1)[-1])
         return ScreenshotController(filename), args
@@ -465,6 +465,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.css = css
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = kw.get('allow_browse', False)
+        self.neighborhood.show_title = kw.get('show_title', False)
         tracking_id = kw.get('tracking_id', '')
         if tracking_id != self.neighborhood.tracking_id:
             c.project = self.neighborhood.neighborhood_project
@@ -475,7 +476,7 @@ class NeighborhoodAdminController(object):
                 self.neighborhood.icon.delete()
             M.NeighborhoodFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
-                square=True, thumbnail_size=(48,48),
+                square=True, thumbnail_size=(48, 48),
                 thumbnail_meta=dict(neighborhood_id=self.neighborhood._id))
         redirect('overview')
 
@@ -515,16 +516,16 @@ class NeighborhoodStatsController(object):
                         last_updated_60 = last_updated_60 + 1
                     if today_date - p.last_updated < timedelta(days=90):
                         last_updated_90 = last_updated_90 + 1
-    
+
         set_nav(self.neighborhood)
         return dict(
-            delete_count = delete_count,
-            public_count = public_count,
-            private_count = private_count,
-            last_updated_30 = last_updated_30,
-            last_updated_60 = last_updated_60,
-            last_updated_90 = last_updated_90,
-            neighborhood = self.neighborhood,
+            delete_count=delete_count,
+            public_count=public_count,
+            private_count=private_count,
+            last_updated_30=last_updated_30,
+            last_updated_60=last_updated_60,
+            last_updated_90=last_updated_90,
+            neighborhood=self.neighborhood,
         )
 
     @without_trailing_slash
@@ -533,7 +534,7 @@ class NeighborhoodStatsController(object):
         limit, page, start = g.handle_paging(limit, page)
 
         pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
-        if sort=='alpha':
+        if sort == 'alpha':
             pq.sort('name')
         else:
             pq.sort('last_updated', pymongo.DESCENDING)
@@ -542,7 +543,7 @@ class NeighborhoodStatsController(object):
 
         entries = []
         for proj in projects:
-            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id, name='Admin')
             if admin_role is None:
                 continue
             user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
@@ -658,7 +659,7 @@ class NeighborhoodAwardsController(object):
             if hasattr(icon, 'filename'):
                 M.AwardFile.save_image(
                     icon.filename, icon.file, content_type=icon.type,
-                    square=True, thumbnail_size=(48,48),
+                    square=True, thumbnail_size=(48, 48),
                     thumbnail_meta=dict(award_id=award._id))
         redirect(request.referer)
 
@@ -707,7 +708,7 @@ class AwardController(object):
 
     @expose()
     def _lookup(self, recipient, *remainder):
-        recipient=unquote(recipient)
+        recipient = unquote(recipient)
         return GrantController(self.neighborhood, self.award, recipient), remainder
 
     @expose()
@@ -728,7 +729,7 @@ class AwardController(object):
                 self.award.icon.delete()
             M.AwardFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
-                square=True, thumbnail_size=(48,48),
+                square=True, thumbnail_size=(48, 48),
                 thumbnail_meta=dict(award_id=self.award._id))
         for grant in M.AwardGrant.query.find(dict(award_id=self.award._id)):
             with h.push_context(grant.granted_to_project_id):

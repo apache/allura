@@ -60,9 +60,12 @@
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     <section id="page-body" class="{{g.document_class(neighborhood)}}">
 		<div class="grid-24">
-        {% block nav_menu %}
-        {% include g.theme.nav_menu %}
-        {% endblock %}
+		{% if neighborhood and neighborhood.show_title %}
+            {% block nav_menu %}
+            {% include g.theme.nav_menu %}
+            {% endblock %}
+        {% endif %}
+        
       </div>
       <div id="top_nav" class="">
         {% block top_nav %}
