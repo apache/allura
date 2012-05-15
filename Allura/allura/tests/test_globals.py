@@ -85,6 +85,9 @@ def test_macros():
         assert '<img alt="test2 Logo"' in r, r
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert("""  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="0"></project>""")
+        assert 'The markdown supplied could not be parsed correctly.' in r, r
 
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
