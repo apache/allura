@@ -62,6 +62,25 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
 
+    def test_show_title(self):
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        # if not set show_title must be True
+        assert neighborhood.show_title
+        # title should be present
+        assert 'class="project_title"' in str(r)
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(name='Mozq1', css='',
+                                      homepage='# MozQ1!',
+                                      tracking_id='U-123456',
+                                      show_title='false'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        # no title now
+        assert 'class="project_title"' not in str(r)
+
+
+
     def test_admin_stats_del_count(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         proj = M.Project.query.get(neighborhood_id=neighborhood._id)
@@ -91,7 +110,7 @@ class TestNeighborhood(TestController):
         pq.sort('name')
         projects = pq.skip(0).limit(int(25)).all()
         for proj in projects:
-            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id, name='Admin')
             if admin_role is None:
                 continue
             user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
@@ -102,7 +121,7 @@ class TestNeighborhood(TestController):
 
     def test_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+        file_path = os.path.join(allura.__path__[0], 'nf', 'allura', 'images', file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
@@ -112,7 +131,7 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'), upload_files=[upload])
         r = self.app.get('/adobe/icon')
         image = Image.open(StringIO(r.body))
-        assert image.size == (48,48)
+        assert image.size == (48, 48)
 
     def test_google_analytics(self):
         # analytics allowed
@@ -283,7 +302,7 @@ class TestNeighborhood(TestController):
                           params=dict(project_unixname='', project_name='Nothing', project_description='', neighborhood='Adobe'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'Please enter a value'
+        assert r.html.find('div', {'class':'error'}).string == 'Please enter a value'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           antispam=True,
@@ -293,12 +312,12 @@ class TestNeighborhood(TestController):
                           params=dict(project_unixname='foo.mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+        assert r.html.find('div', {'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/p/register',
                           params=dict(project_unixname='test', project_name='Tester', project_description='', neighborhood='Projects'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        assert r.html.find('div',{'class':'error'}).string == 'This project name is taken.'
+        assert r.html.find('div', {'class':'error'}).string == 'This project name is taken.'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           antispam=True,
@@ -402,24 +421,24 @@ class TestNeighborhood(TestController):
             status=403)
 
     def test_project_template(self):
-        icon_url = 'file://' + os.path.join(allura.__path__[0],'nf','allura','images','neo-icon-set-454545-256x350.png')
+        icon_url = 'file://' + os.path.join(allura.__path__[0], 'nf', 'allura', 'images', 'neo-icon-set-454545-256x350.png')
         test_groups = [{
             "name": "Viewer", # group will be created, all params are valid
             "permissions": ["read"],
             "usernames": ["user01"]
-        },{
+        }, {
             "name": "", # group won't be created - invalid name
             "permissions": ["read"],
             "usernames": ["user01"]
-        },{
+        }, {
             "name": "TestGroup1", # group won't be created - invalid perm name
             "permissions": ["foobar"],
             "usernames": ["user01"]
-        },{
+        }, {
             "name": "TestGroup2", # will be created; 'inspect' perm ignored
             "permissions": ["read", "inspect"],
             "usernames": ["user01", "user02"]
-        },{
+        }, {
             "name": "TestGroup3", # will be created with no users in group
             "permissions": ["admin"]
         }]
@@ -470,7 +489,7 @@ class TestNeighborhood(TestController):
             status=302).follow()
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
-        top_nav = r.html.find('div',{'id':'top_nav'})
+        top_nav = r.html.find('div', {'id':'top_nav'})
         assert top_nav.contents[1]['href'] == '/adobe/testtemp/wiki/'
         assert 'Wiki' in top_nav.contents[1].contents[0]
         assert top_nav.contents[3]['href'] == '/adobe/testtemp/discussion/'
@@ -558,12 +577,12 @@ class TestNeighborhood(TestController):
                           params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe', tools='Wiki'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        assert r.status_int==302, r.html.find('div',{'class':'error'}).string
+        assert r.status_int == 302, r.html.find('div', {'class':'error'}).string
         r = self.app.get('/adobe/test/wiki/').follow(status=200)
 
     def test_neighborhood_awards(self):
         file_name = 'adobe_icon.png'
-        file_path = os.path.join(allura.__path__[0],'public','nf','images',file_name)
+        file_path = os.path.join(allura.__path__[0], 'public', 'nf', 'images', file_name)
         file_data = file(file_path).read()
         upload = ('icon', file_name, file_data)
 
@@ -584,7 +603,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/awards/%s' % foo_id, extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/awards/%s/icon' % foo_id, extra_environ=dict(username='root'))
         image = Image.open(StringIO(r.body))
-        assert image.size == (48,48)
+        assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),
                           extra_environ=dict(username='root'))
