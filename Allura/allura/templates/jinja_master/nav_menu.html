@@ -11,8 +11,6 @@
       {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
     {% elif c.project.icon %}
       <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
-    {% else %}
-      <img src="{{g.forge_static('images/project_default.png')}}" class="project_icon" alt="Default Project Icon">
     {% endif %}
 	<h1 class="project_title">
       {% if c.project.shortname.endswith('--init--') %}
