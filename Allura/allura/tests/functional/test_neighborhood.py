@@ -1,7 +1,7 @@
 import json
 import os
 from cStringIO import StringIO
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_equal
 from datetime import datetime, timedelta
 
 import Image
@@ -548,21 +548,19 @@ class TestNeighborhood(TestController):
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
-        assert r.json['suggested_name'] == 'mymoz'
-        assert r.json['message'] == False
+        assert_equal(r.json, dict(suggested_name='mymoz'))
         r = self.app.get('/p/suggest_name?project_name=Te%st!')
-        assert r.json['suggested_name'] == 'test'
-        assert r.json['message'] == 'This project name is taken.'
+        assert_equal(r.json, dict(suggested_name='test'))
 
     def test_name_check(self):
-        r = self.app.get('/p/check_name?project_name=My+Moz')
-        assert r.json['message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        r = self.app.get('/p/check_name?project_name=Te%st!')
-        assert r.json['message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        r = self.app.get('/p/check_name?project_name=mymoz')
-        assert r.json['message'] == False
-        r = self.app.get('/p/check_name?project_name=test')
-        assert r.json['message'] == 'This project name is taken.'
+        r = self.app.get('/p/check_names?unix_name=My+Moz')
+        assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+        r = self.app.get('/p/check_names?unix_name=Te%st!')
+        assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+        r = self.app.get('/p/check_names?unix_name=mymoz')
+        assert_equal(r.json['unixname_message'], False)
+        r = self.app.get('/p/check_names?unix_name=test')
+        assert r.json['unixname_message'] == 'This project name is taken.'
 
     @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_neighborhood_project(self):

@@ -292,33 +292,30 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
                 var $url_fragment = $('#url_fragment');
-                var $error_icon = $('#error_icon');
-                var $success_icon = $('#success_icon');
                 var delay = (function(){
-                  var timer = 0;
+                  var timers = {};
                   return function(callback, ms){
-                    clearTimeout (timer);
-                    timer = setTimeout(callback, ms);
+                    clearTimeout (timers[callback]);
+                    timers[callback] = setTimeout(callback, ms);
                   };
                 })();
                 $name_input.focus();
-                var handle_name_taken = function(message){
-                    if(message){
-                        $success_icon.hide();
-                        $error_icon.show();
-                        $name_avail_message.html(message);
-                        $name_avail_message.removeClass('success');
-                        $name_avail_message.addClass('error');
+                var update_icon = function($input) {
+                    var $success_icon = $input.parent().next().find('.success_icon');
+                    var $error_icon = $input.parent().next().find('.error_icon');
+                    var is_error = $input.nextAll('.error').is(':visible');
+                    $success_icon.toggle(!is_error);
+                    $error_icon.toggle(is_error);
+                };
+                if ($name_input.val() != '') update_icon($name_input);
+                if ($unixname_input.val() != '') update_icon($unixname_input);
+                var handle_error = function($input, message) {
+                    var $error_field = $input.nextAll('.error');
+                    if ($error_field.length === 0) {
+                        $error_field = $('<div class="error" style="display: none"></div>').insertAfter($input);
                     }
-                    else{
-                        $error_icon.hide();
-                        $success_icon.show();
-                        $name_avail_message.html('This name is available.');
-                        $name_avail_message.removeClass('error');
-                        $name_avail_message.addClass('success');
-                    }
-                    $('div.error').hide();
-                    $name_avail_message.show();
+                    $error_field.text(message).toggle(!!message);
+                    update_icon($input);
                 };
                 $scms.change(function(){
                     if ( $(this).attr('checked') ) {
@@ -330,22 +327,40 @@ class NeighborhoodAddProjectForm(ForgeForm):
                         });
                     }
                 });
-                $name_input.blur(function(){
-                    if ($unixname_input.val() === "" || $name_avail_message.hasClass('error')) {
-                        $.getJSON('suggest_name',{'project_name':$name_input.val()},function(result){
-                            $unixname_input.val(result.suggested_name);
-                            $url_fragment.html(result.suggested_name);
-                            handle_name_taken(result.message);
-                        });
-                    }
+                var check_names = function() {
+                    var data = {
+                        'project_name':$name_input.val(),
+                        'unix_name': $unixname_input.val()
+                    };
+                    $.getJSON('check_names', data, function(result){
+                        handle_error($name_input, result.name_message);
+                        handle_error($unixname_input, result.unixname_message);
+                    });
+                };
+                var manual = false;
+                $name_input.keyup(function(){
+                    delay(function() {
+                        if (!manual) {
+                            var data = {
+                                'project_name':$name_input.val()
+                            };
+                            $.getJSON('suggest_name', data, function(result){
+                                old_val = result.suggested_name;
+                                $unixname_input.val(result.suggested_name);
+                                $url_fragment.html(result.suggested_name);
+                                check_names();
+                            });
+                        } else {
+                            check_names();
+                        }
+                    }, 500);
+                });
+                $unixname_input.change(function() {
+                    manual = true;
                 });
                 $unixname_input.keyup(function(){
                     $url_fragment.html($unixname_input.val());
-                    delay(function(){
-                        $.getJSON('check_name',{'project_name':$unixname_input.val()},function(result){
-                            handle_name_taken(result.message);
-                        });
-                    }, 500 );
+                    delay(check_names, 500);
                 });
             });
         ''' % dict(project_name=project_name, project_unixname=project_unixname))

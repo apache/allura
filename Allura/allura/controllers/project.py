@@ -11,6 +11,7 @@ from pylons import c, g
 from webob import exc
 import pymongo
 from formencode import validators
+from formencode.api import Invalid
 
 from ming.utils import LazyProperty
 
@@ -127,24 +128,28 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
-        form_data['tools'] = ['Wiki', 'Git', 'Tickets', 'Downloads', 'Discussion']
+        form_data.setdefault('tools', [u'Wiki',u'Git',u'Tickets',u'Downloads',u'Discussion'])
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
     @expose('json:')
-    def suggest_name(self, project_name=None):
-        new_name = re.sub("[^A-Za-z0-9]", "", project_name).lower()
-        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(new_name, self.neighborhood)
-        if len(new_name) < 3 or len(new_name) > 15:
-            name_taken_message = "Name must be 3-15 characters long."
-        return dict(suggested_name=new_name, message=name_taken_message)
+    def suggest_name(self, project_name=''):
+        result = dict()
+        result['suggested_name'] = re.sub("[^A-Za-z0-9]", "", project_name).lower()[:15]
+        return result
 
     @expose('json:')
-    def check_name(self, project_name=None):
-        name_taken_message = plugin.ProjectRegistrationProvider.get().name_taken(project_name, self.neighborhood)
-        if not name_taken_message and not h.re_path_portion.match(project_name):
-            name_taken_message = 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        return dict(message=name_taken_message)
+    def check_names(self, project_name='', unix_name=''):
+        result = dict()
+        try:
+            W.add_project.fields['project_name'].validate(project_name, '')
+        except Invalid as e:
+            result['name_message'] = str(e)
+        if not h.re_path_portion.match(unix_name) or not (3 <= len(unix_name) <= 15):
+            result['unixname_message'] = 'Please use only letters, numbers, and dashes 3-15 characters long.'
+        else:
+            result['unixname_message'] = plugin.ProjectRegistrationProvider.get().name_taken(unix_name, self.neighborhood)
+        return result
 
     @h.vardec
     @expose()
