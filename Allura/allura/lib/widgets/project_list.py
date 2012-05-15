@@ -28,8 +28,6 @@ class ProjectSummary(ew_core.Widget):
         if response['icon_url'] is None:
             if value.icon:
                 response['icon_url'] = value.url()+'icon'
-            else:
-                response['icon_url'] = g.forge_static('images/project_default.png')
         if response['accolades'] is None:
             response['accolades'] = value.accolades
 
