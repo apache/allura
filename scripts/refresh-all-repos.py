@@ -1,11 +1,11 @@
 import logging
 import optparse
-from collections import defaultdict
 
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
+from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def main():
         M.repo.DiffInfoDoc.m.remove({})
         M.repo.LastCommitDoc.m.remove({})
         M.repo.CommitRunDoc.m.remove({})
-    for chunk in chunked_project_iterator(q_project):
+    for chunk in utils.chunked_find(M.Project, q_project):
         for p in chunk:
             c.project = p
             if projects:
@@ -72,19 +72,6 @@ def main():
                     log.exception('Error refreshing %r', c.app.repo)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-
-def chunked_project_iterator(q_project):
-    page = 0
-    while True:
-        results = (M.Project.query
-                   .find(q_project)
-                   .skip(PAGESIZE*page)
-                   .limit(PAGESIZE)
-                   .all())
-        if not results: break
-        yield results
-        page += 1
-
 
 if __name__ == '__main__':
     main()

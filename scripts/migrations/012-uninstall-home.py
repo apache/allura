@@ -7,6 +7,7 @@ from bson import ObjectId
 from mock import Mock, patch
 
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura import model as M
 from forgewiki import model as WM
 from allura.ext.project_home import ProjectHomeApp
@@ -21,7 +22,8 @@ def main():
     possibly_orphaned_projects = 0
     solr_delete = Mock()
     notification_post = Mock()
-    for some_projects in chunked_project_iterator({'neighborhood_id': {'$ne': ObjectId("4be2faf8898e33156f00003e")}}):
+    for some_projects in utils.chunked_find(M.Project, {'neighborhood_id': {
+            '$ne': ObjectId("4be2faf8898e33156f00003e")}}):
         for project in some_projects:
             c.project = project
             old_home_app = project.app_instance('home')
@@ -101,21 +103,6 @@ def main():
     if not test:
         assert solr_delete.call_count == affected_projects, solr_delete.call_count
         assert notification_post.call_count == 2 * affected_projects, notification_post.call_count
-
-PAGESIZE=1024
-
-def chunked_project_iterator(q_project):
-    '''shamelessly copied from refresh-all-repos.py'''
-    page = 0
-    while True:
-        results = (M.Project.query
-                   .find(q_project)
-                   .skip(PAGESIZE*page)
-                   .limit(PAGESIZE)
-                   .all())
-        if not results: break
-        yield results
-        page += 1
 
 if __name__ == '__main__':
     main()

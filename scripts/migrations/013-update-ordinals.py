@@ -6,6 +6,7 @@ from ming.orm import session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
+from allura.lib import utils
 
 log = logging.getLogger('update-ordinals')
 log.addHandler(logging.StreamHandler(sys.stdout))
@@ -14,7 +15,7 @@ def main():
     test = sys.argv[-1] == 'test'
     num_projects_examined = 0
     log.info('Examining all projects for mount order.')
-    for some_projects in chunked_project_iterator({}):
+    for some_projects in utils.chunked_find(M.Project):
         for project in some_projects:
             c.project = project
             mounts = project.ordered_mounts(include_search=True)
@@ -46,22 +47,6 @@ def main():
         log.info('%s projects examined.' % num_projects_examined)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-
-
-PAGESIZE=1024
-
-def chunked_project_iterator(q_project):
-    '''shamelessly copied from refresh-all-repos.py'''
-    page = 0
-    while True:
-        results = (M.Project.query
-                   .find(q_project)
-                   .skip(PAGESIZE*page)
-                   .limit(PAGESIZE)
-                   .all())
-        if not results: break
-        yield results
-        page += 1
 
 if __name__ == '__main__':
     main()
