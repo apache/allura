@@ -41,6 +41,16 @@ from allura.lib.zarkov_helpers import ZarkovClient, zmq
 
 log = logging.getLogger(__name__)
 
+class ForgeMarkdown(markdown.Markdown):
+    def convert(self, source):
+        try:
+            return markdown.Markdown.convert(self, source)
+        except:    
+            escaped = h.really_unicode(source)
+            escaped = cgi.escape(escaped)
+            return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
+            Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
+
 class Globals(object):
     """Container for objects available throughout the life of the application.
 
@@ -268,7 +278,7 @@ class Globals(object):
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
-        return markdown.Markdown(
+        return ForgeMarkdown(
                 extensions=['codehilite', ForgeExtension(**kwargs), 'tables'],
                 output_format='html4')
 
