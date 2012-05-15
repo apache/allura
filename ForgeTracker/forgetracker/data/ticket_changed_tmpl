@@ -1,4 +1,4 @@
-{% python from allura.lib import patience %}\
+{% python import difflib %}\
 {% python from allura.model import User %}\
 {% for key, values in changelist %}\
 {% choose %}\
@@ -9,7 +9,7 @@ Diff:
 
 ~~~~
 
-${'\n'.join(patience.unified_diff(
+${'\n'.join(difflib.unified_diff(
                             a=values[0].splitlines(),
                             b=values[1].splitlines(),
                             fromfile='old',

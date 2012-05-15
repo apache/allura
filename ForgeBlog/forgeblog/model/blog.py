@@ -1,3 +1,4 @@
+import difflib
 from datetime import datetime
 from random import randint
 
@@ -11,7 +12,7 @@ from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session, state
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib import utils, patience
+from allura.lib import utils
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
@@ -166,7 +167,7 @@ class BlogPost(M.VersionedArtifact):
             v2 = self
             la = [ line + '\n'  for line in v1.text.splitlines() ]
             lb = [ line + '\n'  for line in v2.text.splitlines() ]
-            diff = ''.join(patience.unified_diff(
+            diff = ''.join(difflib.unified_diff(
                     la, lb,
                     'v%d' % v1.version,
                     'v%d' % v2.version))

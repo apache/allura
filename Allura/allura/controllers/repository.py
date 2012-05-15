@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import difflib
 from urllib import quote, unquote
 from collections import defaultdict
 
@@ -15,7 +16,6 @@ from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
-from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
 from allura.lib import widgets as w
@@ -514,7 +514,7 @@ class FileBrowser(BaseController):
         b = self._blob
         la = list(a)
         lb = list(b)
-        diff = ''.join(patience.unified_diff(
+        diff = ''.join(difflib.unified_diff(
                 la, lb,
                 ('a' + apath).encode('utf-8'),
                 ('b' + b.path()).encode('utf-8')))
