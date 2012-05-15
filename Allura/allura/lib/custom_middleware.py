@@ -1,21 +1,14 @@
 import os
 import re
 import logging
-from contextlib import contextmanager
-from threading import local
-from random import random
 
 import tg
-import pylons
 import pkg_resources
-import markdown
 from paste import fileapp
-from paste.deploy.converters import asbool
 from pylons.util import call_wsgi_application
-from tg.controllers import DecoratedController
+from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 
-from allura.lib.stats import timing, StatsRecord
 from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
@@ -151,57 +144,39 @@ class SSLMiddleware(object):
             resp = req.get_response(self.app)
         return resp(environ, start_response)
 
-class StatsMiddleware(object):
-
-    def __init__(self, app, config):
-        self.app = app
-        self.config = config
-        self.log = logging.getLogger('stats')
-        self.active = False
-        try:
-            self.sample_rate = config.get('stats.sample_rate', 0.25)
-            self.debug = asbool(config.get('debug', 'false'))
-            self.instrument_pymongo()
-            self.instrument_template()
-            self.active = True
-        except KeyError:
-            self.sample_rate = 0
-
-    def instrument_pymongo(self):
-        import pymongo.collection
-        import ming.odm
-        timing('mongo').decorate(pymongo.collection.Collection,
-                                 'count find find_one')
-        timing('mongo').decorate(pymongo.cursor.Cursor,
-                                 'count distinct explain hint limit next rewind'
-                                 ' skip sort where')
-        timing('ming').decorate(ming.odm.odmsession.ODMSession,
-                                'flush find get')
-        timing('ming').decorate(ming.odm.odmsession.ODMCursor,
-                                'next')
-
-    def instrument_template(self):
+class AlluraTimerMiddleware(TimerMiddleware):
+    def timers(self):
+        import genshi
         import jinja2
-        import genshi.template
-        timing('template').decorate(genshi.template.Template,
-                                    '_prepare _parse generate')
-        timing('render').decorate(genshi.Stream,
-                                  'render')
-        timing('render').decorate(jinja2.Template,
-                                  'render')
-        timing('markdown').decorate(markdown.Markdown,
-                                    'convert')
+        import markdown
+        import ming
+        import pymongo
+        import socket
+        import urllib2
 
-
-    def __call__(self, environ, start_response):
-        req = Request(environ)
-        req.environ['sf.stats'] = s = StatsRecord(req, random() < self.sample_rate)
-        with s.timing('total'):
-            resp = req.get_response(self.app, catch_exc_info=self.debug)
-            result = resp(environ, start_response)
-        if s.active:
-            self.log.info('Stats: %r', s)
-            from allura import model as M
-            M.Stats.make(s.asdict()).m.insert()
-        return result
-
+        return [
+            Timer('markdown', markdown.Markdown, 'convert'),
+            Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),
+            Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
+                'get'),
+            Timer('ming', ming.schema.Document, 'validate',
+                debug_each_call=False),
+            Timer('ming', ming.schema.FancySchemaItem, '_validate_required',
+                '_validate_fast_missing', '_validate_optional',
+                debug_each_call=False),
+            Timer('mongo', pymongo.collection.Collection, 'count', 'find',
+                'find_one'),
+            Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
+                'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
+                'sort', 'where'),
+            Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
+            # urlopen and socket io may or may not overlap partially
+            Timer('urlopen', urllib2, 'urlopen'),
+            Timer('render', genshi.Stream, 'render'),
+            Timer('socket_read', socket._fileobject, 'read', 'readline',
+                'readlines', debug_each_call=False),
+            Timer('socket_write', socket._fileobject, 'write', 'writelines',
+                'flush', debug_each_call=False),
+            Timer('template', genshi.template.Template, '_prepare', '_parse',
+                'generate'),
+        ]
