@@ -357,7 +357,7 @@ class Project(MappedClass):
     def icon_urls(cls, projects):
         '''Return a dict[project_id] = icon_url, efficiently'''
         project_index = dict((p._id, p) for p in projects)
-        result = dict((p._id, g.forge_static('images/project_default.png')) for p in projects)
+        result = dict((p._id, None) for p in projects)
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': result.keys()},
                 category='icon')):
