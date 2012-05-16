@@ -227,6 +227,18 @@ def test_projects_macro():
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
 
+@with_setup(setUp)
+def test_limit_tools_macro():
+    g.set_app('wiki')
+    p_nbhd = M.Neighborhood.query.get(name='Adobe')
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects]]')
+        assert '<span>Admin</span>' in r
+        r = g.markdown_wiki.convert('[[projects grid_view_tools=wiki]]')
+        assert '<span>Admin</span>' not in r
+        r = g.markdown_wiki.convert('[[projects grid_view_tools=wiki,admin]]')
+        assert '<span>Admin</span>' in r
+
 @td.with_user_project('test-admin')
 @td.with_user_project('test-user-1')
 @with_setup(setUp)

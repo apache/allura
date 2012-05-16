@@ -18,13 +18,24 @@ class ProjectSummary(ew_core.Widget):
         columns=1,
         show_proj_icon=True,
         show_download_button=True,
-        show_awards_banner=True)
+        show_awards_banner=True,
+        grid_view_tools='')
 
     def prepare_context(self, context):
         response = super(ProjectSummary, self).prepare_context(context)
         value = response['value']
         if response['sitemap'] is None:
             response['sitemap'] = [ s for s in value.sitemap() if s.url ]
+
+        if response['grid_view_tools'] != '':
+            view_tools_list = response['grid_view_tools'].split(',')
+            icon_tool_list = ["tool-%s" % vt.lower() for vt in view_tools_list]
+            old_sitemap = response['sitemap']
+            response['sitemap'] = []
+            for sm in old_sitemap:
+                if sm.ui_icon is not None and sm.ui_icon.lower() in icon_tool_list:
+                    response['sitemap'].append(sm)
+
         if response['icon_url'] is None:
             if value.icon:
                 response['icon_url'] = value.url()+'icon'
@@ -89,7 +100,8 @@ class ProjectList(ew_core.Widget):
         columns=1,
         show_proj_icon=True,
         show_download_button=True,
-        show_awards_banner=True)
+        show_awards_banner=True,
+        grid_view_tools='')
 
     def prepare_context(self, context):
         response = super(ProjectList, self).prepare_context(context)
