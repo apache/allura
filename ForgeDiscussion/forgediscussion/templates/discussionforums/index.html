@@ -35,7 +35,7 @@
       <tr>
         <td>
           <strong><a href="{{forum.url()}}">{{forum.name}}</a></strong><br>
-          {{forum.description}}
+          {{g.markdown.convert(forum.description)}}
           {% if forum.deleted %}
             <div class="notice">This forum has been deleted and is not visible to non-admin users</div>
           {% endif %}

@@ -1,10 +1,10 @@
 # Sandbox Creation
 
-We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 11.10](http://ubuntu.com) to create a disposable sandbox for Forge development/testing.
+We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Forge development/testing.
 
 * Download and install [VirtualBox](http://www.virtualbox.org/wiki/Downloads) for your platform.
 
-* Download a minimal [Ubuntu 11.10 64-bit ISO](https://help.ubuntu.com/community/Installation/MinimalCD).
+* Download a minimal [Ubuntu 12.04 64-bit ISO](https://help.ubuntu.com/community/Installation/MinimalCD).
 
 * Create a new virtual machine in Virtual Box, selecting Ubuntu (64 bit) as the OS type.  The rest of the wizards' defaults are fine.
 
@@ -19,12 +19,13 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 11.10](http://ubun
 
 Before we begin, you'll need the following additional packages in order to work with the Forge source code.
 
-    ~$ sudo aptitude install git-core subversion python-svn libtidy-0.99-0
+    ~$ sudo aptitude install git-core subversion python-svn
 
 You'll also need additional development packages in order to compile some of the modules.  [Use google for additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
 
-    ~$ sudo aptitude install default-jdk python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo aptitude install default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
+    ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
 
 And finally our document-oriented database, MongoDB
 
@@ -77,7 +78,7 @@ Hopefully everything completed without errors.  We'll also need to create a plac
     do
         mkdir -p ~/var/scm/$SCM
         chmod 777 ~/var/scm/$SCM
-        sudo ln -s ~/var/scm/$SCM /
+        sudo ln -s ~/var/scm/$SCM /tmp
     done
 
 
@@ -126,8 +127,8 @@ register a new project in your own forge, visit /p/add_project
 
 ## Extra
 
-* Read more documentation: http://allura.sourceforge.net/
-    * Including how to enable extra features: http://allura.sourceforge.net/installation.html
+* Read more documentation: <http://allura.sourceforge.net/>
+    * Including how to enable extra features: <http://allura.sourceforge.net/installation.html>
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
 * Contribute code according to this guide: <http://sourceforge.net/p/allura/wiki/Contributing%20Code/>

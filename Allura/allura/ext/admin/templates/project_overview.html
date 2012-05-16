@@ -44,7 +44,21 @@
       $('input[name=support_page]').change(function(){
         update_url($support_page_url_cb, $support_page_url);
       });
-      $('#project-status a').click(function() {
+      $('#delete-icon').click(function(e) {
+        e.preventDefault();
+        if (confirm('Remove project icon?  This cannot be undone.')) {
+            $(this).after('<input type="hidden" name="delete_icon" value="Delete Icon" />')
+                .closest('form').submit();
+        }
+      });
+      $('#edit-icon').click(function(e) {
+        e.preventDefault();
+        var $this = $(this);
+        var $parent = $this.closest('#project-icon');
+        $('#project-icon-upload').removeClass('hidden');
+      });
+      $('#project-status a').click(function(e) {
+        e.preventDefault();
         $('#project-status-edit').removeClass('hidden');
       });
       $('input[name=removal]').change(function(){

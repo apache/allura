@@ -43,7 +43,7 @@ from forgetracker import version
 from forgetracker.widgets.admin import OptionsAdmin
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
-from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm
+from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, SearchHelp
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 from forgetracker.import_support import ImportSupport
 
@@ -96,6 +96,7 @@ class W:
     field_display = TrackerFieldDisplay()
     ticket_custom_field = TicketCustomField
     options_admin = OptionsAdmin()
+    search_help_modal = SearchHelp()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -163,9 +164,6 @@ class ForgeTrackerApp(Application):
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
         links += super(ForgeTrackerApp, self).admin_menu()
-        # make the options link non-modal
-        options_link = [l for l in links if l.label == 'Options'][0]
-        options_link.className = 'nav_child'
         return links
 
     @h.exceptionless([], log)
@@ -176,7 +174,7 @@ class ForgeTrackerApp(Application):
         for bin in self.bins:
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
-                    h.text.truncate(label, 72), bin.url(), className='nav_child search_bin'))
+                    h.text.truncate(label, 72), bin.url(), className='search_bin'))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
@@ -185,7 +183,6 @@ class ForgeTrackerApp(Application):
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
-                        className='nav_child',
                         small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
         if ticket.isdigit():
             ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
@@ -209,13 +206,13 @@ class ForgeTrackerApp(Application):
             if ticket.super_id:
                 links.append(SitemapEntry('Supertask'))
                 super = TM.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url(), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url()))
             if ticket.sub_ids:
                 links.append(SitemapEntry('Subtasks'))
             for sub_id in ticket.sub_ids or []:
                 sub = TM.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url(), className='nav_child'))
-            #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id), className='nav_child'))
+                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url()))
+            #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
 
         links += milestones
 
@@ -223,7 +220,7 @@ class ForgeTrackerApp(Application):
             links.append(SitemapEntry('Searches'))
             links = links + search_bins
         links.append(SitemapEntry('Help'))
-        links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax', className='nav_child'))
+        links.append(SitemapEntry('Formatting Help', self.config.url() + 'markdown_syntax'))
         return links
 
     def sidebar_menu_js(self):
@@ -444,6 +441,14 @@ class RootController(BaseController):
     def update_milestones(self, field_name=None, milestones=None, **kw):
         require_access(c.app, 'configure')
         update_counts = False
+        # If the default milestone field doesn't exist, create it.
+        # TODO: This is a temporary fix for migrated projects, until we make
+        # the Edit Milestones page capable of editing any/all milestone fields
+        # instead of just the default "_milestone" field.
+        if field_name == '_milestone' and \
+            field_name not in [m.name for m in c.app.globals.milestone_fields]:
+            c.app.globals.custom_fields.append(dict(name='_milestone',
+                label='Milestone', type='milestone', milestones=[]))
         for fld in c.app.globals.milestone_fields:
             if fld.name == field_name:
                 for new in milestones:
@@ -489,6 +494,7 @@ class RootController(BaseController):
         if query and not q:
             q = query
         c.bin_form = W.bin_form
+        c.search_help_modal = W.search_help_modal
         bin = None
         if q:
             bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
@@ -774,12 +780,14 @@ class BinController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     def index(self, **kw):
         count = len(self.app.bins)
+        c.search_help_modal = W.search_help_modal
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/bin.html')
     def bins(self):
         count = len(self.app.bins)
+        c.search_help_modal = W.search_help_modal
         return dict(bins=self.app.bins, count=count, app=self.app)
 
     @with_trailing_slash
@@ -804,6 +812,7 @@ class BinController(BaseController):
         so the user can fix.
         """
         # New search bin that the user is attempting to create
+        c.search_help_modal = W.search_help_modal
         new_bin = None
         bin = bin_form['_id']
         if bin is None:
@@ -855,6 +864,7 @@ class BinController(BaseController):
         page and display the error(s) so the user can fix.
         """
         require_access(self.app, 'save_searches')
+        c.search_help_modal = W.search_help_modal
         # Have any of the updated searches thrown an error?
         errors = False
         # Persistent search bins - will need this if we encounter errors

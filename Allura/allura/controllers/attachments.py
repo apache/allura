@@ -51,9 +51,9 @@ class AttachmentController(BaseController):
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
-        
+
     @expose()
-    def index(self, delete=False, embed=True, **kw):
+    def index(self, delete=False, **kw):
         if request.method == 'POST':
             require_access(self.artifact, self.edit_perm)
             if delete:
@@ -64,8 +64,8 @@ class AttachmentController(BaseController):
                 except exc.HTTPNotFound:
                     pass
             redirect(request.referer)
-        return self.attachment.serve(embed)
+        return self.attachment.serve(embed=False)
 
     @expose()
-    def thumb(self, embed=True):
-        return self.thumbnail.serve(embed)
+    def thumb(self):
+        return self.thumbnail.serve(embed=True)

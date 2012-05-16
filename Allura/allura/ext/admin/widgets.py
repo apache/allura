@@ -142,7 +142,7 @@ class MetadataAdmin(ff.AdminForm):
                                         title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
         summary = ew.InputField(field_type="text", label='Short Summary',
                                 validator=formencode.All(
-                                   fev.UnicodeString(not_empty=True, max=70),
+                                   fev.UnicodeString(max=70),
                                    V.MaxBytesValidator(max=70)),
                                 attrs=dict(maxlength=70))
         short_description = ew.TextArea(label='Full Description',
@@ -160,6 +160,7 @@ class MetadataAdmin(ff.AdminForm):
         delete = ew.InputField(field_type="hidden", label='Delete')
         delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
         undelete = ew.InputField(field_type="hidden", label='Undelete')
+        tracking_id = ew.InputField(field_type="text", label="Analytics Tracking ID")
 
 class AuditLog(ew_core.Widget):
     template='jinja:allura.ext.admin:templates/widgets/audit.html'

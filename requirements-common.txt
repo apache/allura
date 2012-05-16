@@ -9,6 +9,7 @@ decorator==3.3.2
 # dep of pypeline
 docutils==0.8.1
 EasyWidgets==0.2dev-20110726
+faulthandler==2.1
 feedparser==5.0.1
 FormEncode==1.2.4
 # dep of Creoleparser
@@ -22,6 +23,9 @@ Markdown==2.0.3
 mercurial==1.4.3
 Ming==0.3.1dev-20120323
 oauth2==1.5.170
+# tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
+Paste==1.7.5.1
+PasteDeploy==1.5.0
 PasteScript==1.7.4.2
 PIL==1.1.7
 poster==0.8.1
@@ -45,8 +49,6 @@ Babel==0.9.6
 Beaker==1.5.4
 Mako==0.3.2
 MarkupSafe==0.15
-Paste==1.7.5.1
-PasteDeploy==1.5.0
 Pylons==1.0
 simplejson==2.2.1
 Tempita==0.5.1

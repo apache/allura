@@ -9,6 +9,7 @@ import json
 import shlex
 import datetime
 from urllib import urlencode
+from subprocess import Popen, PIPE
 
 import pkg_resources
 
@@ -74,7 +75,7 @@ class Globals(object):
         self.oid_store = M.OpenIdStore()
 
         # Setup pygments
-        self.pygments_formatter = pygments.formatters.HtmlFormatter(
+        self.pygments_formatter = utils.LineAnchorCodeHtmlFormatter(
             cssclass='codehilite',
             linenos='inline')
 
@@ -108,6 +109,8 @@ class Globals(object):
             conversation = Icon('q', 'ico-conversation'),
             group = Icon('g', 'ico-group'),
             user = Icon('U', 'ico-user'),
+            secure = Icon('(', 'ico-lock'),
+            unsecure = Icon(')', 'ico-unlock'),
             # Permissions
             perm_read = Icon('E', 'ico-focus'),
             perm_update = Icon('0', 'ico-sync'),
@@ -116,6 +119,9 @@ class Globals(object):
             perm_delete = Icon('-', 'ico-minuscirc'),
             perm_tool = Icon('x', 'ico-config'),
             perm_admin = Icon('(', 'ico-lock'),
+            perm_has_yes = Icon('3', 'ico-check'),
+            perm_has_no = Icon('d', 'ico-noentry'),
+            perm_has_inherit = Icon('2', 'ico-checkcircle'),
         )
 
         # Cache some loaded entry points
@@ -274,12 +280,21 @@ class Globals(object):
     def markdown_wiki(self):
         if c.project.shortname == '--init--':
             return self.forge_markdown(wiki=True, macro_context='neighborhood-wiki')
+        elif c.project.is_user_project:
+            return self.forge_markdown(wiki=True, macro_context='userproject-wiki')
         else:
             return self.forge_markdown(wiki=True)
 
     @property
     def production_mode(self):
         return asbool(config.get('debug')) == False
+
+    @LazyProperty
+    def server_name(self):
+        p1 = Popen(['hostname', '-s'], stdout=PIPE)
+        server_name = p1.communicate()[0].strip()
+        p1.wait()
+        return server_name
 
     @property
     def resource_manager(self):

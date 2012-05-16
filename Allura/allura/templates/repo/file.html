@@ -18,6 +18,33 @@
 </a>
 {% endblock %}
 
+{% block extra_js %}
+{{ super() }}
+<script type="text/javascript">(function() {
+  $(window).bind('hashchange', function(e) {
+    var hash = window.location.hash.substring(1);
+	if ('originalEvent' in e && 'oldURL' in e.originalEvent) {
+      $('#' + e.originalEvent.oldURL.split('#')[1]).css('background-color', 'transparent');
+	}
+    if (hash !== '' && hash.substring(0, 1) === 'l' && !isNaN(hash.substring(1))) {
+      $('#' + hash).css('background-color', '#ffff99');
+    }
+  }).trigger('hashchange');
+
+  $('.code_block').each(function(index, element) {
+    $(element).bind('click', function() {
+      var hash = window.location.hash.substring(1);
+      if (hash !== '' && hash.substring(0, 1) === 'l' && !isNaN(hash.substring(1))) {
+        $('#' + hash).css('background-color', 'transparent');
+      }
+      $(element).css('background-color', '#ffff99');
+      window.location.href = '#' + $(element).attr('id');
+    });
+  });
+}());
+</script>
+{% endblock %}
+
 {% block content %}
   {{ clone_info(c.app.repo) }}
   {% if prev %}
@@ -36,17 +63,21 @@
   </p>
   {% endif %}
 
-  {% if blob.has_image_view %}<img src="?format=raw" alt=""/>{% endif %}
-  {% if not blob.has_html_view and not blob.has_image_view and not force_display %}
-    <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
-    Try to <a href="?force=True">display it</a> anyway or
-    <a href="?format=raw">download it</a> instead.</p>
-  {% endif %}
-  {% if blob.has_html_view and not blob.has_image_view or force_display %}
+  {% if blob.has_image_view %}
+    <img src="?format=raw" alt=""/>
+  {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
     <p><a href="?format=raw">Download this file</a></p>
     <div class="clip grid-19">
       <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(blob.name)}}</span></h3>
-      {{g.highlight(blob.text, filename=blob.name)}}
+      {% if blob.has_pypeline_view %}
+        {{h.render_any_markup(blob.name, blob.text, code_mode=True)}}
+      {% else %}
+        {{g.highlight(blob.text, filename=blob.name)}}
+      {% endif %}
     </div>
+  {% else %}
+    <p>{{h.really_unicode(blob.name)}} is not known to be viewable in your browser.
+    Try to <a href="?force=True">display it</a> anyway or
+    <a href="?format=raw">download it</a> instead.</p>
   {% endif %}
 {% endblock %}

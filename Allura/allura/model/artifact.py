@@ -42,7 +42,7 @@ class Artifact(MappedClass):
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
-        indexes = [ 'app_config_id', 'labels' ]
+        indexes = [ 'app_config_id', ('labels', 'app_config_id') ]
         def before_save(data):
             if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
                 data['mod_date'] = datetime.utcnow()
@@ -68,6 +68,7 @@ class Artifact(MappedClass):
     app_config = RelationProperty('AppConfig')
     # Not null if artifact originated from external import, then API ticket id
     import_id = FieldProperty(str, if_missing=None)
+    deleted=FieldProperty(bool, if_missing=False)
 
     def __json__(self):
         return dict(
@@ -150,8 +151,11 @@ class Artifact(MappedClass):
         return self
 
     @classmethod
-    def artifacts_labeled_with(cls, label):
-        return cls.query.find({'labels':label})
+    def artifacts_labeled_with(cls, label, app_config):
+        """Return all artifacts of type `cls` that have the label `label` and
+        are in the tool denoted by `app_config`.
+        """
+        return cls.query.find({'labels':label, 'app_config_id': app_config._id})
 
     def email_link(self, subject='artifact'):
         if subject:
@@ -216,7 +220,8 @@ class Artifact(MappedClass):
             url_s=self.url(),
             type_s=self.type_s,
             labels_t=' '.join(l for l in self.labels),
-            snippet_s='')
+            snippet_s='',
+            deleted_b=self.deleted)
 
     def url(self):
         """

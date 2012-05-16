@@ -1,4 +1,5 @@
 import json
+import re
 
 import tg
 import pkg_resources
@@ -149,6 +150,8 @@ class TestRootController(TestController):
         assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
         content = str(resp.html.find('div',{'class':'clip grid-19'}))
         assert 'This is readme' in content, content
+        assert '<span id="l1" class="code_block">' in resp
+        assert 'var hash = window.location.hash.substring(1);' in resp
 
     def test_invalid_file(self):
         ci = self._get_ci()
@@ -172,5 +175,5 @@ class TestRootController(TestController):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')
         content = str(resp.html.find('div',{'class':'clip grid-19'}))
-        assert '<pre>This is readme' in content, content
+        assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content

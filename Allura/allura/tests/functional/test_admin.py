@@ -47,6 +47,8 @@ class TestProjectAdmin(TestController):
         assert 'A Test Project ?\xc2\xbf A' in r
         assert 'Test Subproject' not in r
         assert 'Milkshakes are for crazy monkeys' in r
+        sidebar = r.html.find(id='sidebar')
+        assert sidebar.find('a', href='/p/test/admin/tools'), sidebar
 
         # Add a subproject
         with audits('create subproject test-subproject'):
@@ -404,70 +406,74 @@ class TestProjectAdmin(TestController):
 
     def test_project_groups(self):
         r = self.app.get('/admin/groups/')
-        developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        developer_id = dev_holder['data-group']
         with audits('add user test-user to Developer'):
-            r = self.app.post('/admin/groups/update', params={
-                    'card-1.id': developer_id,
-                    'card-1.new': 'test-user'})
+            r = self.app.post('/admin/groups/add_user', params={
+                    'role_id': developer_id,
+                    'username': 'test-user'})
         r = self.app.get('/admin/groups/')
-        users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
-        assert 'test-user' in users
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        users = dev_holder.find('ul',{'class':'users'}).findAll('li',{'class':'deleter'})
+        assert 'test-user' in users[0]['data-user']
         # Make sure we can open role page for builtin role
         r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
 
     def test_subroles(self):
         """Make sure subroles are preserved during group updates."""
         def check_roles(r):
-            assert r.html.find('input', {'name': 'card-1.id'}).parent \
-                         .find(text='includes the Admin group')
-            assert r.html.find('input', {'name': 'card-2.id'}).parent \
-                         .find(text='includes the Developer group')
+            dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+            mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+            assert 'All users in Admin group' in str(dev_holder)
+            assert 'All users in Developer group' in str(mem_holder)
 
         r = self.app.get('/admin/groups/')
-        admin_card_id = r.html.find('input', {'name': 'card-0.id'})['value']
-        dev_card_id = r.html.find('input', {'name': 'card-1.id'})['value']
-        member_card_id = r.html.find('input', {'name': 'card-2.id'})['value']
-        admin_id = M.User.by_username('test-admin')._id
-        params = {
-            'card-0.id': admin_card_id,
-            'card-0.value': str(admin_id),
-            'card-0.new': 'test-user',
-            'card-1.id': dev_card_id,
-            'card-1.value': str(admin_id),
-            'card-2.id': member_card_id,
-            'card-2.value': str(admin_id)
-        }
+
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
         # test that subroles are intact after user added
         with audits('add user test-user to Admin'):
-            r = self.app.post('/admin/groups/update', params=params).follow()
+            r = self.app.post('/admin/groups/add_user', params={
+                    'role_id': admin_id,
+                    'username': 'test-user'})
+        r = self.app.get('/admin/groups/')
         check_roles(r)
         # test that subroles are intact after user deleted
-        del params['card-0.new']
         with audits('remove user test-user from Admin'):
-            r = self.app.post('/admin/groups/update', params=params).follow()
+            r = self.app.post('/admin/groups/remove_user', params={
+                    'role_id': admin_id,
+                    'username': 'test-user'})
+        r = self.app.get('/admin/groups/')
         check_roles(r)
 
     def test_cannot_remove_all_admins(self):
         """Must always have at least one user with the Admin role (and anon
         doesn't count)."""
         r = self.app.get('/admin/groups/')
-        admin_card_id = r.html.find('input', {'name': 'card-0.id'})['value']
-        r = self.app.post('/admin/groups/update', params={
-                'card-0.id': admin_card_id}).follow()
-        assert 'You must have at least one user with the Admin role.' in r
-        r = self.app.post('/admin/groups/update', params={
-                'card-0.id': admin_card_id,
-                'card-0.new': ''}).follow()
-        assert 'You must have at least one user with the Admin role.' in r
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
+        users = admin_holder.find('ul',{'class':'users'}).findAll('li',{'class':'deleter'})
+        assert len(users) == 1
+        r = self.app.post('/admin/groups/remove_user', params={
+                'role_id': admin_id,
+                'username': 'admin1'})
+        assert r.json['error'] == 'You must have at least one user with the Admin role.'
+        r = self.app.get('/admin/groups/')
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        users = admin_holder.find('ul',{'class':'users'}).findAll('li',{'class':'deleter'})
+        assert len(users) == 1
 
     def test_cannot_add_anon_to_group(self):
         r = self.app.get('/admin/groups/')
-        developer_id = r.html.find('input', {'name': 'card-1.id'})['value']
-        r = self.app.post('/admin/groups/update', params={
-                'card-1.id': developer_id,
-                'card-1.new': ''})
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        developer_id = dev_holder['data-group']
+        r = self.app.post('/admin/groups/add_user', params={
+                'role_id': developer_id,
+                'username': ''})
+        assert r.json['error'] == 'You must choose a user to add.'
         r = self.app.get('/admin/groups/')
-        users = [t.previous.strip() for t in r.html.findAll('input', {'name': 'card-1.value'})]
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        users = dev_holder.find('ul',{'class':'users'}).findAll('li',{'class':'deleter'})
         # no user was added
         assert len(users) == 0
         assert M.ProjectRole.query.find(dict(
@@ -477,18 +483,23 @@ class TestProjectAdmin(TestController):
     def test_project_multi_groups(self):
         r = self.app.get('/admin/groups/')
         user_id = M.User.by_username('test-admin')._id
-        admin_id = r.html.find('input', {'name': 'card-0.id'})['value']
-        for x in range(2):
-            form = r.forms[0]
-            form['card-0.new'].value = 'test-user'
-            with audits('add user test-user to Admin'):
-                r = form.submit().follow()
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
+        with audits('add user test-user to Admin'):
+            r = self.app.post('/admin/groups/add_user', params={
+                    'role_id': admin_id,
+                    'username': 'test-user'})
+            assert 'error' not in r.json
+        r = self.app.post('/admin/groups/add_user', params={
+                'role_id': admin_id,
+                'username': 'test-user'})
+        assert r.json['error'] == 'Test User (test-user) is already in the group Admin.'
         r = self.app.get('/admin/groups/')
         assert 'test-user' in str(r), r.showbrowser()
         with audits('remove user test-user from Admin'):
-            r = self.app.post('/admin/groups/update', params={
-                    'card-0.id':admin_id,
-                    'card-0.value':str(user_id)})
+            r = self.app.post('/admin/groups/remove_user', params={
+                    'role_id': admin_id,
+                    'username': 'test-user'})
         r = self.app.get('/admin/groups/')
         assert 'test-user' not in str(r), r.showbrowser()
 
@@ -501,10 +512,10 @@ class TestProjectAdmin(TestController):
         with audits('create group RoleNew1'):
             r = self.app.post('/admin/groups/create', params={'name': 'RoleNew1'})
         r = self.app.get('/admin/groups/')
-        assert 'RoleNew1' in r
-        role_id = r.html.find(text='RoleNew1').findPrevious('input', {'type': 'hidden'})['value']
+        role_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[4]
+        assert 'RoleNew1' in str(role_holder)
+        role_id = role_holder['data-group']
         r = self.app.get('/admin/groups/' + role_id + '/', validate_chunk=True)
-
         r = self.app.post('/admin/groups/'
                           + str(role_id) + '/update', params={'_id': role_id, 'name': 'Developer'})
         assert 'error' in self.webflash(r)
@@ -516,20 +527,98 @@ class TestProjectAdmin(TestController):
         assert 'rleNew2' in r
 
         # add test-user to role
-        rleNew2_id = r.html.find(text='rleNew2').findPrevious('input', {'type': 'hidden'})['value']
+        role_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[4]
+        rleNew2_id = role_holder['data-group']
         with audits('add user test-user to rleNew2'):
-            r = self.app.post('/admin/groups/update', params={
-                    'card-1.id': rleNew2_id,
-                    'card-1.new': 'test-user'})
+            r = self.app.post('/admin/groups/add_user', params={
+                    'role_id': rleNew2_id,
+                    'username': 'test-user'})
 
         with audits('delete group rleNew2'):
-            r = self.app.post('/admin/groups/' + str(role_id) + '/update', params={'_id': role_id, 'name': 'rleNew2', 'delete': 'delete'})
+            r = self.app.post('/admin/groups/delete_group', params={
+                    'group_name': 'rleNew2'})
         assert 'deleted' in self.webflash(r)
         r = self.app.get('/admin/groups/', status=200)
-        roles = [t.string for t in r.html.findAll('h3')]
+        roles = [str(t) for t in r.html.findAll('td',{'class':'group'})]
         assert 'RoleNew1' not in roles
         assert 'rleNew2' not in roles
 
         # make sure can still access homepage after one of user's roles were deleted
         r = self.app.get('/p/test/wiki/', extra_environ=dict(username='test-user')).follow()
         assert r.status == '200 OK'
+
+    def test_change_perms(self):
+        r = self.app.get('/admin/groups/')
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+        mem_id = mem_holder['data-group']
+        # neither group has update permission
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+        # add update permission to Member
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'true'})
+        r = self.app.get('/admin/groups/')
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+        # Member now has update permission
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "yes"
+        # Developer has inherited update permission from Member
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "inherit"
+        # remove update permission from Member
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'false'})
+        r = self.app.get('/admin/groups/')
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+        # neither group has update permission
+        assert dev_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+        assert mem_holder.findAll('ul')[1].findAll('li')[2]['class'] == "no"
+
+    def test_permission_inherit(self):
+        r = self.app.get('/admin/groups/')
+        admin_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
+        mem_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[3]
+        mem_id = mem_holder['data-group']
+        anon_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[5]
+        anon_id = anon_holder['data-group']
+        #first remove create from Admin so we can see it inherit
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': admin_id,
+                'permission': 'create',
+                'allow': 'false'})
+        # updates to anon inherit up
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': anon_id,
+                'permission': 'create',
+                'allow': 'true'})
+        assert {u'text': u'Inherited permission create from Anonymous', u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Inherited permission create from Anonymous', u'has': u'inherit', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Has permission create', u'has': u'yes', u'name': u'create'} in r.json[anon_id]
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': anon_id,
+                'permission': 'create',
+                'allow': 'false'})
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        # updates to Member inherit up
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'true'})
+        assert {u'text': u'Inherited permission create from Member', u'has': u'inherit', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Has permission create', u'has': u'yes', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
+        r = self.app.post('/admin/groups/change_perm', params={
+                'role_id': mem_id,
+                'permission': 'create',
+                'allow': 'false'})
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[admin_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[mem_id]
+        assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]

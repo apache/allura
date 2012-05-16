@@ -2,10 +2,12 @@ import json
 import os
 from cStringIO import StringIO
 from nose.tools import assert_raises
+from datetime import datetime, timedelta
 
 import Image
 from tg import config
 from nose.tools import assert_equal
+from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
 from allura import model as M
@@ -13,6 +15,19 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 
 class TestNeighborhood(TestController):
+
+    def setUp(self):
+        # change the override_root config value to change which root controller the test uses
+        self._make_app = allura.config.middleware.make_app
+        def make_app(global_conf, full_stack=True, **app_conf):
+            app_conf['override_root'] = 'test_neighborhood_root'
+            return self._make_app(global_conf, full_stack, **app_conf)
+        allura.config.middleware.make_app = make_app
+        super(TestNeighborhood, self).setUp()
+
+    def tearDown(self):
+        super(TestNeighborhood, self).tearDown()
+        allura.config.middleware.make_app = self._make_app
 
     def test_home_project(self):
         r = self.app.get('/adobe/wiki/')
@@ -33,8 +48,10 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/accolades', extra_environ=dict(username='root'))
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = True
         r = self.app.post('/adobe/_admin/update',
-                          params=dict(name='Mozq1', css='', homepage='# MozQ1!'),
+                          params=dict(name='Mozq1', css='', homepage='# MozQ1!', tracking_id='U-123456'),
                           extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/update',
                           params=dict(name='Mozq1', css='', homepage='# MozQ1!\n[Root]'),
@@ -44,6 +61,44 @@ class TestNeighborhood(TestController):
                           params=dict(project_template='{'),
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
+
+    def test_admin_stats_del_count(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.deleted = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/_admin/stats/', extra_environ=dict(username='root'))
+        assert 'Deleted: 1' in r
+        assert 'Private: 0' in r
+
+    def test_admin_stats_priv_count(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.deleted = False
+        proj.private = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/_admin/stats/', extra_environ=dict(username='root'))
+        assert 'Deleted: 0' in r
+        assert 'Private: 1' in r
+
+    def test_admin_stats_adminlist(self):
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        proj = M.Project.query.get(neighborhood_id=neighborhood._id)
+        proj.private = False
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/adobe/_admin/stats/adminlist', extra_environ=dict(username='root'))
+        pq = M.Project.query.find(dict(neighborhood_id=neighborhood._id, deleted=False))
+        pq.sort('name')
+        projects = pq.skip(0).limit(int(25)).all()
+        for proj in projects:
+            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id,name='Admin')
+            if admin_role is None:
+                continue
+            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
+            for ur in user_role_list:
+                if ur.user is not None and admin_role._id in ur.roles:
+                    assert proj.name in r
+                    assert ur.user.username in r
 
     def test_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
@@ -59,42 +114,63 @@ class TestNeighborhood(TestController):
         image = Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
+    def test_google_analytics(self):
+        # analytics allowed
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = True
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' in r
+        r = self.app.post('/adobe/_admin/update',
+                          params=dict(name='Adobe', css='', homepage='# MozQ1', tracking_id='U-123456'),
+                          extra_environ=dict(username='root'))
+        r = self.app.post('/adobe/adobe-1/admin/update',
+                          params=dict(tracking_id='U-654321'),
+                          extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert "_add_tracking('nbhd', 'U-123456');" in r
+        assert "_add_tracking('proj', 'U-654321');" in r
+        # analytics not allowed
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.features['google_analytics'] = False
+        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' not in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert 'Analytics Tracking ID' not in r
+        r = self.app.get('/adobe/adobe-1/admin/overview', extra_environ=dict(username='root'))
+        assert "_add_tracking('nbhd', 'U-123456');" not in r
+        assert "_add_tracking('proj', 'U-654321');" not in r
+
     def test_custom_css(self):
         test_css = '.test{color:red;}'
         custom_css = 'Custom CSS'
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.css = test_css
-        neighborhood.level = None
+        neighborhood.features['css'] = 'none'
         r = self.app.get('/adobe/')
         assert test_css not in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css not in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'silver'
-        r = self.app.get('/adobe/')
-        assert test_css not in r
-        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
-        assert custom_css not in r
-
-        neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'gold'
+        neighborhood.features['css'] = 'picker'
         r = self.app.get('/adobe/')
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
 
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'platinum'
+        neighborhood.features['css'] = 'custom'
         r = self.app.get('/adobe/')
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
 
-    def test_goldlevel_custom_css(self):
+    def test_picker_css(self):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
-        neighborhood.level = 'gold'
+        neighborhood.features['css'] = 'picker'
 
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert 'Project title, font' in r
@@ -126,7 +202,7 @@ class TestNeighborhood(TestController):
     def test_max_projects(self):
         # Set max value to unlimit
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.level = ''
+        neighborhood.features['max_projects'] = None
         r = self.app.post('/p/register',
                           params=dict(project_unixname='maxproject1', project_name='Max project1', project_description='', neighborhood='Projects'),
                           antispam=True,
@@ -135,7 +211,7 @@ class TestNeighborhood(TestController):
 
         # Set max value to 0
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.level = 'noexists'
+        neighborhood.features['max_projects'] = 0
         r = self.app.post('/p/register',
                           params=dict(project_unixname='maxproject2', project_name='Max project2', project_description='', neighborhood='Projects'),
                           antispam=True,
@@ -259,7 +335,7 @@ class TestNeighborhood(TestController):
     def test_register_private_fails_for_non_private_neighborhood(self):
         # Turn off private
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.allow_private = False
+        neighborhood.features['private_projects'] = False
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' not in r
 
@@ -280,7 +356,7 @@ class TestNeighborhood(TestController):
 
         # Turn on private
         neighborhood = M.Neighborhood.query.get(name='Projects')
-        neighborhood.allow_private = True
+        neighborhood.features['private_projects'] = True
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' in r
 
@@ -529,3 +605,12 @@ class TestNeighborhood(TestController):
         assert 'Add a Project' in r
         r = self.app.get('/adobe/', extra_environ=dict(username='root'))
         assert 'Add a Project' in r
+
+    def test_help(self):
+        r = self.app.get('/p/_admin/help/', extra_environ=dict(username='root'))
+        assert 'macro' in r
+
+    @td.with_user_project('test-user')
+    def test_profile_topnav_menu(self):
+        r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
+        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r

@@ -62,7 +62,7 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
-    tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'pytidylib', 'poster', 'nose'],
+    tests_require=['WebTest >= 1.2', 'BeautifulSoup', 'poster', 'nose'],
     package_data={'allura': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
                                  'public/*/*']},
@@ -112,8 +112,7 @@ setup(
     smtp_server=allura.command:SMTPServerCommand
     create-neighborhood = allura.command:CreateNeighborhoodCommand
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
-    set-neighborhood-level = allura.command:SetNeighborhoodLevelCommand
-    set-neighborhood-private = allura.command:SetNeighborhoodPrivateCommand
+    set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
     pull-rss-feeds = allura.command.rssfeeds:RssFeedsCommand
 
     [easy_widgets.resources]

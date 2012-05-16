@@ -37,7 +37,6 @@ class TestRootController(TestController):
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
-        assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_strange_accept_headers(self):
@@ -70,7 +69,6 @@ class TestRootController(TestController):
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
-        assert cat_links[0].find('a').get('class') == 'nav_child'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_neighborhood_project_browse(self):
@@ -93,15 +91,6 @@ class TestRootController(TestController):
         n = M.Neighborhood.query.get(name='Projects')
         r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
-
-    def test_redirect_external(self):
-        r = self.app.get('/nf/redirect/?path=%s' % quote('http://en.wikipedia.org/wiki/Aho–Corasick_string_matching_algorithm'))
-        assert r.status_int == 302
-        assert r.location == 'http://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_string_matching_algorithm'
-
-        r = self.app.get('/nf/redirect/?path=%s' % quote('http://google.com'))
-        assert r.status_int == 302
-        assert r.location == 'http://google.com'
 
     def test_slash_redirect(self):
         r = self.app.get('/p',status=301)

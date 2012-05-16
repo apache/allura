@@ -26,6 +26,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
+from paste.deploy.converters import asbool
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 
@@ -541,7 +542,7 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     page = min(max(int(page), (0 if zero_based_pages else 1)), max_page)
     return limit, page
 
-def render_any_markup(name, text):
+def render_any_markup(name, text, code_mode=False):
     """
     renders any markup format using the pypeline
     Returns jinja-safe text
@@ -551,5 +552,14 @@ def render_any_markup(name, text):
     else:
         text = pylons.g.pypeline_markup.render(name, text)
         if not pylons.g.pypeline_markup.can_render(name):
-            text = '<pre>%s</pre>' % text
+            if code_mode:
+                markup_text = '<div class="codehilite"><pre>'
+                line_num = 1
+                for line in text.splitlines():
+                    markup_text = markup_text + '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (line_num, line_num, line)
+                    line_num += 1
+                markup_text = markup_text + '</pre></div>'
+                text = markup_text
+            else:
+                text = '<pre>%s</pre>' % text
     return Markup(text)

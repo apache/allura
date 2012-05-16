@@ -23,7 +23,6 @@ class Forum(M.Discussion):
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
     threads = RelationProperty('ForumThread')
     posts = RelationProperty('ForumPost')
-    deleted = FieldProperty(bool, if_missing=False)
     members_only = FieldProperty(bool, if_missing=False)
     anon_posts = FieldProperty(bool, if_missing=False)
     monitoring_email = FieldProperty(str, if_missing=None)
@@ -145,7 +144,7 @@ class ForumThread(M.Thread):
         return self
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
-        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id)
+        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id, **kw)
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1

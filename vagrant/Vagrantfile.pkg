@@ -1,0 +1,5 @@
+Vagrant::Config.run do |config|
+  # Forward Allura web port so you can browse the site at
+  # http://localhost:8080 (local port is the second number)
+  config.vm.forward_port 8080, 8080
+end

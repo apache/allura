@@ -31,6 +31,11 @@ class UserProfileApp(Application):
     __version__ = version.__version__
     widget = UserWidgets
     installable = False
+    icons={
+        24:'images/sftheme/24x24/home_24.png',
+        32:'images/sftheme/32x32/home_32.png',
+        48:'images/sftheme/48x48/home_48.png'
+    }
 
     def __init__(self, user, config):
         Application.__init__(self, user, config)

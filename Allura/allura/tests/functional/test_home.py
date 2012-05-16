@@ -1,4 +1,5 @@
 import json
+import re
 
 from allura.tests import TestController
 from allura.tests import decorators as td
@@ -11,6 +12,7 @@ class TestProjectHome(TestController):
     def test_project_nav(self):
         response = self.app.get('/p/test/_nav.json')
         root = self.app.get('/p/test/wiki/').follow()
+        assert re.search(r'<!-- Server: \S+ -->', str(root.html)), 'Missing Server comment'
         nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
         assert len(nav_links) ==  len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
@@ -22,6 +24,7 @@ class TestProjectHome(TestController):
         self.app.get('/adobe/test/wiki/', status=404)
         self.app.get('/adobe/no_such_project/wiki/', status=404)
 
+    @td.with_user_project('test-admin')
     def test_user_subproject_home_not_profile(self):
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')

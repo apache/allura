@@ -132,10 +132,10 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
                              security.has_access(post.app.project, 'read', project=post.app.project)())
     return output
 
-@macro('neighborhood-wiki')
-def projects(category=None, display_mode='grid', sort='last_updated',
+def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        initial_q={}):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
     from allura import model as M
@@ -143,9 +143,10 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     trove = category
     limit = int(limit)
     q = dict(
-        neighborhood_id=c.project.neighborhood_id,
         deleted=False,
         shortname={'$ne':'--init--'})
+    q.update(initial_q)
+
     if labels:
         or_labels = labels.split('|')
         q['$or'] = [{'labels': {'$all': l.split(',')}} for l in or_labels]
@@ -156,10 +157,14 @@ def projects(category=None, display_mode='grid', sort='last_updated',
             created_by_neighborhood_id=c.project.neighborhood_id,
             short=award)).first()
         if aw:
-            q['_id'] = {'$in': [grant.granted_to_project_id for grant in
+            ids = [grant.granted_to_project_id for grant in
                 M.AwardGrant.query.find(dict(
                     granted_by_neighborhood_id=c.project.neighborhood_id,
-                    award_id=aw._id))]}
+                    award_id=aw._id))]
+            if '_id' in q:
+                ids = list(set(q['_id']['$in']).intersection(ids))
+            q['_id'] = {'$in': ids}
+
     if trove is not None:
         q['trove_' + trove.type] = trove._id
     sort_key, sort_dir = 'last_updated', pymongo.DESCENDING
@@ -201,7 +206,10 @@ def projects(category=None, display_mode='grid', sort='last_updated',
             if docs:
                 ids = [doc['_id'] for doc in
                         random.sample(docs, min(limit, len(docs)))]
-                projects = M.Project.query.find(dict(_id={'$in': ids})).all()
+                if '_id' in q:
+                    ids = list(set(q['_id']['$in']).intersection(ids))
+                q['_id'] = {'$in': ids}
+                projects = M.Project.query.find(q).all()
                 random.shuffle(projects)
         else:
             projects = M.Project.query.find(q).limit(limit).sort(sort_key,
@@ -211,7 +219,8 @@ def projects(category=None, display_mode='grid', sort='last_updated',
     g.resource_manager.register(pl)
     response = pl.display(projects=projects, display_mode=display_mode,
                           columns=columns, show_proj_icon=show_proj_icon,
-                          show_download_button=show_download_button)
+                          show_download_button=show_download_button,
+                          show_awards_banner=show_awards_banner)
     if show_total:
         if total is None:
             total = 0
@@ -221,6 +230,38 @@ def projects(category=None, display_mode='grid', sort='last_updated',
         response = '<p class="macro_projects_total">%s Projects</p>%s' % \
                 (total, response)
     return response
+
+
+@macro('neighborhood-wiki')
+def projects(category=None, display_mode='grid', sort='last_updated',
+        show_total=False, limit=100, labels='', award='', private=False,
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+    initial_q = dict(neighborhood_id=c.project.neighborhood_id)
+    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
+                   show_total=show_total, limit=limit, labels=labels, award=award, private=private,
+                   columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
+                   show_awards_banner=show_awards_banner,
+                   initial_q=initial_q)
+
+@macro('userproject-wiki')
+def my_projects(category=None, display_mode='grid', sort='last_updated',
+        show_total=False, limit=100, labels='', award='', private=False,
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+
+    myproj_user = c.project.user_project_of
+    if myproj_user is None:
+        myproj_user = c.user.anonymous()
+
+    ids = []
+    for p in myproj_user.my_projects():
+        ids.append(p._id)
+
+    initial_q = dict(_id={'$in': ids})
+    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
+                   show_total=show_total, limit=limit, labels=labels, award=award, private=private,
+                   columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
+                   show_awards_banner=show_awards_banner,
+                   initial_q=initial_q)
 
 @macro()
 def project_screenshots():

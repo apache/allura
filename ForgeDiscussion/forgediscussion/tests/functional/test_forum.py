@@ -25,6 +25,7 @@ class TestForumEmail(TestController):
 
     def setUp(self):
         TestController.setUp(self)
+        c.user = M.User.by_username('test-admin')
         self.app.get('/discussion/')
         r = self.app.get('/admin/discussion/forums')
         r.forms[1]['add_forum.shortname'] = 'testforum'
@@ -32,7 +33,7 @@ class TestForumEmail(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert 'testforum' in r
-        self.email_address='Beta@wiki.test.projects.sourceforge.net'
+        self.email_address=c.user.email_addresses[0]
         h.set_context('test', 'discussion', neighborhood='Projects')
         self.forum = FM.Forum.query.get(shortname='testforum')
 
@@ -44,7 +45,7 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
+        assert 'Test Simple Thread' in str(r)
 
     def test_html_email(self):
         msg = MIMEMultipart(
@@ -58,11 +59,11 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
-        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        assert 'Test Simple Thread' in str(r), r
+        assert len(r.html.findAll('tr')) == 2
         href = r.html.findAll('tr')[1].find('a')['href']
         r = self.app.get(href)
-        assert 'alternate' in str(r), r.showbrowser()
+        assert 'alternate' in str(r)
 
     def test_html_email_with_images(self):
         msg = MIMEMultipart(
@@ -85,12 +86,12 @@ class TestForumEmail(TestController):
             'Test Simple Thread',
             msg)
         r = self.app.get('/p/test/discussion/testforum/')
-        assert 'Test Simple Thread' in str(r), r.showbrowser()
-        assert len(r.html.findAll('tr')) == 2, r.showbrowser()
+        assert 'Test Simple Thread' in str(r)
+        assert len(r.html.findAll('tr')) == 2
         href = r.html.findAll('tr')[1].find('a')['href']
         r = self.app.get(href)
-        assert 'alternate' in str(r), r.showbrowser()
-        assert 'python-logo.png' in str(r), r.showbrowser()
+        assert 'alternate' in str(r)
+        assert 'python-logo.png' in str(r)
 
     def _post_email(self, mailfrom, rcpttos, subject, msg):
         '''msg is MIME message object'''
@@ -171,6 +172,7 @@ class TestForumAsync(TestController):
         self.app.get('/discussion/testforum/thread/foobar/', status=404)
 
     def test_posts(self):
+        c.user = M.User.by_username('test-admin') # not sure why this fails when set to root (to match self.user_id)
         self._post('testforum', 'Test', 'test')
         thd = FM.ForumThread.query.find().first()
         thd_url = str('/discussion/testforum/thread/%s/' % thd._id)
@@ -269,6 +271,15 @@ class TestForum(TestController):
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
         assert u'téstforum'.encode('utf-8') in r
+
+    def test_markdown_description(self):
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'tester'
+        r.forms[1]['add_forum.name'] = 'Tester'
+        r.forms[1]['add_forum.description'] = '<a href="http://cnn.com">This is CNN</a>'
+        r.forms[1].submit()
+        r = self.app.get('/discussion/')
+        assert_equal(len(r.html.findAll('a', rel='nofollow')), 1)
 
     def test_forum_search(self):
         r = self.app.get('/discussion/search')
@@ -636,7 +647,7 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Formatting Help</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
@@ -658,7 +669,7 @@ class TestForum(TestController):
         assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
-        assert '<a href="/p/test/discussion/markdown_syntax" class="nav_child"><span>Formatting Help</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in sidebarmenu
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})

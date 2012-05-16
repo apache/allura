@@ -115,6 +115,14 @@ class Notification(MappedClass):
             c.project.shortname, c.app.config.options.mount_point)
         if topic == 'message':
             post = kwargs.pop('post')
+            text = post.text
+            file_info = kwargs.pop('file_info', None)
+            if file_info is not None:
+                file_info.file.seek(0, 2)
+                bytecount = file_info.file.tell()
+                file_info.file.seek(0)
+                text = "%s\n%s (%s bytes in %s)" % (text, file_info.filename, bytecount, file_info.type)
+
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
@@ -125,7 +133,7 @@ class Notification(MappedClass):
                 reply_to_address='"%s" <%s>' % (
                     subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
-                text=post.text,
+                text=text,
                 in_reply_to=post.parent_id,
                 author_id=author._id,
                 pubdate=datetime.utcnow())

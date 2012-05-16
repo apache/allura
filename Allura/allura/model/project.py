@@ -159,6 +159,7 @@ class Project(MappedClass):
     trove_topic=FieldProperty([S.ObjectId])
     trove_natlanguage=FieldProperty([S.ObjectId])
     trove_environment=FieldProperty([S.ObjectId])
+    tracking_id = FieldProperty(str, if_missing='')
 
     @property
     def permissions(self):
@@ -272,13 +273,18 @@ class Project(MappedClass):
         else:
             self.acl.append(ace)
     private = property(_get_private, _set_private)
+    
+    @property
+    def is_user_project(self):
+        return self.shortname.startswith('u/')
 
-    def private_project_of(self):
+    @LazyProperty
+    def user_project_of(self):
         '''
         If this is a user-project, return the User, else None
         '''
         user = None
-        if self.shortname.startswith('u/'):
+        if self.is_user_project:
             from .auth import User
             user = User.query.get(username=self.shortname[2:])
         return user
@@ -309,7 +315,7 @@ class Project(MappedClass):
         roles = set()
         for p in self.parent_iter():
             for ace in p.acl:
-                if ace.permission == name and ace.access == ACE.alllow:
+                if ace.permission == name and ace.access == ACE.allow:
                     roles.add(ace.role_id)
         return list(roles)
 
@@ -409,6 +415,10 @@ class Project(MappedClass):
 
         if neighborhood_admin_mode and h.has_access(self.neighborhood, 'admin'):
             entries.append({'ordinal': max_ordinal + 1,'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
+            max_ordinal += 1
+
+        if self.is_user_project:
+            entries.append({'ordinal': max_ordinal + 1,'entry':SitemapEntry('Profile', "%sprofile/" % self.url(), ui_icon="tool-home")})
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
         for e in entries:
@@ -528,7 +538,7 @@ class Project(MappedClass):
         which the user has the required access.'''
         from forgewiki.wiki_main import ForgeWikiApp
         mounts = self.ordered_mounts()
-        if self.private_project_of():
+        if self.is_user_project:
             for mount in mounts:
                 if 'ac' in mount and mount['ac'].tool_name == 'profile':
                     return mount

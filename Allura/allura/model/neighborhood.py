@@ -24,13 +24,7 @@ class NeighborhoodFile(File):
         session = main_orm_session
     neighborhood_id=FieldProperty(S.ObjectId)
 
-NEIGHBORHOOD_PROJECT_LIMITS = {
-  "silver": 100,
-  "gold": 500,
-  "platinum": 1000,
-}
-
-re_gold_css_type = re.compile('^/\*(.+)\*/')
+re_picker_css_type = re.compile('^/\*(.+)\*/')
 re_font_project_title = re.compile('font-family:(.+);\}')
 re_color_project_title = re.compile('color:(.+);\}')
 re_bgcolor_barontop = re.compile('background\-color:([^;}]+);')
@@ -59,8 +53,14 @@ class Neighborhood(MappedClass):
     allow_browse = FieldProperty(bool, if_missing=True)
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
-    level = FieldProperty(str, if_missing='')
-    allow_private = FieldProperty(bool, if_missing=True)
+    tracking_id = FieldProperty(str, if_missing='')
+    level = FieldProperty(S.Deprecated)
+    allow_private = FieldProperty(S.Deprecated)
+    features = FieldProperty(dict(
+        private_projects=bool,
+        max_projects=S.Int,
+        css=str,
+        google_analytics=bool))
 
     def parent_security_context(self):
         return None
@@ -113,7 +113,7 @@ class Neighborhood(MappedClass):
 
     @property
     def allow_custom_css(self):
-        return self.level in ('gold', 'platinum')
+        return self.features['css'] == 'custom' or self.features['css'] == 'picker'
 
     def get_project_template(self):
         if self.project_template:
@@ -121,13 +121,9 @@ class Neighborhood(MappedClass):
         return {}
 
     def get_max_projects(self):
-        # Do not remove this condition. We must check here if level was set
-        if self.level is not None and self.level != '':
-            return NEIGHBORHOOD_PROJECT_LIMITS.get(self.level, 0)
-        # If level is undefined - we can create unlimited amount of projects
-        return None
+        return self.features['max_projects']
 
-    def get_css_for_gold_level(self):
+    def get_css_for_picker(self):
         projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':'', 'type': 'font'}
         projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
         barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
@@ -143,7 +139,7 @@ class Neighborhood(MappedClass):
 
         if self.css is not None:
             for css_line in self.css.split('\n'):
-                m = re_gold_css_type.search(css_line)
+                m = re_picker_css_type.search(css_line)
                 if not m:
                     continue
 
@@ -192,7 +188,7 @@ class Neighborhood(MappedClass):
         return styles_list
 
     @staticmethod
-    def compile_css_for_gold_level(css_form_dict):
+    def compile_css_for_picker(css_form_dict):
         # Check css values
         for key in css_form_dict.keys():
             if ';' in css_form_dict[key] or '}' in css_form_dict[key]:
@@ -229,5 +225,5 @@ class Neighborhood(MappedClass):
 
         return css_text
 
-    def migrate_css_for_gold_level(self):
+    def migrate_css_for_picker(self):
         self.css = ""

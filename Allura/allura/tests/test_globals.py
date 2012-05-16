@@ -1,6 +1,8 @@
 import re
 from urllib import quote
 
+from bson import ObjectId
+
 from nose.tools import with_setup, assert_equal
 from pylons import g, c
 
@@ -121,9 +123,9 @@ def test_markdown():
     assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     tgt = 'http://everything2.com/?node=nate+oostendorp'
-    url = '/nf/redirect/?path=%s' % quote(tgt)
     s = g.markdown.convert('This is %s' % tgt)
-    assert s == '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (url, tgt), s
+    assert_equal(
+        s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
     # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
     # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
@@ -189,8 +191,7 @@ def test_sort_updated():
 def test_filtering():
     # set up for test
     from random import choice
-    trove_count = M.TroveCategory.query.find().count()
-    random_trove = M.TroveCategory.query.get(trove_cat_id=choice(range(trove_count)) + 1)
+    random_trove = choice(M.TroveCategory.query.find().all())
     test_project = M.Project.query.get(name='test')
     test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
     test_project_troves.append(random_trove._id)
@@ -225,6 +226,52 @@ def test_projects_macro():
         assert 'download-button' in r
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
+
+@td.with_user_project('test-admin')
+@td.with_user_project('test-user-1')
+@with_setup(setUp)
+def test_myprojects_macro():
+    h.set_context('u/%s' % (c.user.username), 'wiki', neighborhood='Users')
+    r = g.markdown_wiki.convert('[[my_projects]]')
+    for p in c.user.my_projects():
+        if p.deleted or p.shortname == '--init--':
+            continue
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        assert proj_title in r
+
+    h.set_context('u/test-user-1', 'wiki', neighborhood='Users')
+    user = M.User.query.get(username='test-user-1')
+    r = g.markdown_wiki.convert('[[my_projects]]')
+    for p in user.my_projects():
+        if p.deleted or p.shortname == '--init--':
+            continue
+        proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
+        assert proj_title in r
+
+@with_setup(setUp)
+def test_hideawards_macro():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+
+    app_config_id = ObjectId()
+    tool_version = {'neighborhood': '0'}
+    award = M.Award(app_config_id=app_config_id, tool_version=tool_version)
+    award.short = u'Award short'
+    award.full = u'Award full'
+    award.created_by_neighborhood_id = p_nbhd._id
+
+    project = M.Project.query.get(neighborhood_id=p_nbhd._id, name=u'test')
+
+    award_grant = M.AwardGrant(award=award,
+                               granted_by_neighborhood=p_nbhd,
+                               granted_to_project=project)
+
+    ThreadLocalORMSession.flush_all()
+
+    with h.push_context(p_nbhd.neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects]]')
+        assert '<div class="feature">Award short</div>' in r
+        r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
+        assert '<div class="feature">Award short</div>' not in r
 
 def get_project_names(r):
     """

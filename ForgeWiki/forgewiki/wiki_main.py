@@ -175,7 +175,7 @@ class ForgeWikiApp(Application):
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
         links += [SitemapEntry(''),
-            SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/', className='nav_child')
+            SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/')
         ]
         return links
 
@@ -281,7 +281,8 @@ class RootController(BaseController):
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ])
+                    'mount_point_s:%s'% c.app.config.options.mount_point,
+                    '-deleted_b:true'])
             if results: count=results.hits
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],

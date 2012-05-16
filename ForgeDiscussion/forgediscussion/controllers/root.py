@@ -136,7 +136,7 @@ class RootController(BaseController):
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
                     'mount_point_s:%s'% c.app.config.options.mount_point,
-                    'deleted:false'])
+                    '-deleted_b:true'])
             if results: count=results.hits
         c.search_results = self.W.search_results
         return dict(q=q, history=history, results=results or [],

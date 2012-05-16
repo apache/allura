@@ -1,0 +1,37 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / Statistics / Admins list{% endblock %}
+
+{% block header %}Admins list{% endblock %}
+
+{% block top_nav %}
+    {% include 'allura:templates/jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<table>
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Username</th>
+      <th>E-mail</th>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <td style="white-space: nowrap"><a href="{{entry.project.url()}}">{{ entry.project.name }}</a></td>
+      <td>{{ entry.user.username }}</td>
+      <td>{{ entry.user.preferences.email_address or 'Unknown' }}</td>
+      <td>{{ entry.user.display_name }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="grid-15" style="clear:both">
+  {{page_list.display(limit=limit, page=page, count=count)}}
+</div>
+
+{% endblock %}

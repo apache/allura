@@ -12,7 +12,6 @@
 {% block header %}Saved Search Bins{% endblock %}
 
 {% block content %}
-  {% if bins.__len__() %}
   <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/bins/update_bins" method="post" class="update_bins">
     <table>
       <thead>
@@ -23,13 +22,17 @@
         </tr>
       </thead>
       <tbody class="bin-list">
+        {% if not bins %}
+          <tr><td colspan="3">No saved search bins have been created yet.</td></tr>
+        {% endif %}
         {% for bin in bins %}
           <tr{% if loop.index0 % 2 == 0 %} class="even"{% endif %}>
             <td class="view" {% if bin.error %}style="display:none"{% endif %}><a href="{{bin.url()}}">{{bin.summary}}</a></td>
             <td class="view" {% if bin.error %}style="display:none"{% endif %}>{{bin.terms}}</td>
             <td class="edit" style="{% if not bin.error %}display:none{% else %}vertical-align:top{% endif %}"><input type="text" name="bins-{{loop.index0}}.summary" value="{{bin.summary}}"></td>
             <td class="edit" {% if not bin.error %}style="display:none"{% endif %}>
-                <input type="text" name="bins-{{loop.index0}}.terms" value="{{bin.terms}}">
+                <input class="grid-8" type="text" name="bins-{{loop.index0}}.terms" value="{{bin.terms}}">
+                <span class="grid-3"><a href="#" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a></span>
                 {% if bin.error %}<br/><span style="color:red">{{bin.error}}</span>{% endif %}
             </td>
             <td style="width:40px;">
@@ -44,11 +47,12 @@
         <tr class="new_bin" {% if not (new_bin and new_bin.error) %}style="display:none"{% endif %}>
             <td {% if new_bin and new_bin.error %}style="vertical-align:top"{% endif %}>
             <input type="hidden" name="bins-{{num_bins}}.id">
-            <input type="hidden" name="bins-{{loop.index0}}.delete" value="False" class="delete_flag">
+            <input type="hidden" name="bins-{{num_bins}}.delete" value="False" class="delete_flag">
             <input type="text" name="bins-{{num_bins}}.summary" placeholder="Summary" {% if new_bin %}value="{{new_bin.summary}}"{% endif %}>
           </td>
           <td>
-            <input type="text" name="bins-{{num_bins}}.terms" placeholder="Terms" {% if new_bin %}value="{{new_bin.terms}}"{% endif %}>
+            <input class="grid-8" type="text" name="bins-{{num_bins}}.terms" placeholder="Terms" {% if new_bin %}value="{{new_bin.terms}}"{% endif %}>
+            <span class="grid-3"><a href="#" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a></span>
             {% if new_bin and new_bin.error %}<br/><span class="err" style="color:red">{{new_bin.error}}</span>{% endif %}
           </td>
           <td>&nbsp;</td>
@@ -65,9 +69,7 @@
       {% endif %}
     </div>
   </form>
-  {% else %}
-    No saved search bins have been created yet.
-  {% endif %}
+  {{c.search_help_modal.display()}}
 {% endblock %}
 
 {% block extra_js %}

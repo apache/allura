@@ -45,6 +45,28 @@ class TestMilestones(TrackerTestController):
         r = self.app.get('/bugs/milestones')
         assert '1 / 2' in r, r.showbrowser()
 
+    def test_default_milestone_created_if_missing(self):
+        p = M.Project.query.get(shortname='test')
+        app = p.app_instance('bugs')
+        app.globals.custom_fields = []
+        ThreadLocalORMSession.flush_all()
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'Version 1',
+            'milestones-0.complete':'Open',
+            'milestones-0.due_date':''
+        }
+        r = self.app.post('/bugs/update_milestones', d)
+        r = self.app.get('/bugs/milestones')
+        assert 'Version 1' in r
+        # make sure _milestone doesn't get created again if it already exists
+        r = self.app.post('/bugs/update_milestones', d)
+        p = M.Project.query.get(shortname='test')
+        app = p.app_instance('bugs')
+        assert len(app.globals.custom_fields) == 1, len(app.globals.custom_fields)
+
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
         self.app.get('/bugs/input.project_user_select', status=404)
@@ -911,6 +933,18 @@ class TestEmailMonitoring(TrackerTestController):
         })
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
+
+    @patch('forgetracker.tracker_main.M.Notification.send_simple')
+    def test_notifications_off(self, send_simple):
+        """Test that tracker notification email is not sent if notifications
+        are disabled at the project level.
+        """
+        p = M.Project.query.get(shortname='test')
+        p.notifications_disabled = True
+        ThreadLocalORMSession.flush_all()
+        self._set_options()
+        self.new_ticket(summary='test')
+        assert send_simple.call_count == 0, send_simple.call_count
 
 class TestCustomUserField(TrackerTestController):
     def setUp(self):

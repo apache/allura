@@ -16,7 +16,8 @@ class TestAuth(TestController):
     def test_login(self):
         result = self.app.get('/auth/')
         r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
-        r = self.app.post('/auth/send_verification_link', params=dict(a='Beta@wiki.test.projects.sourceforge.net'))
+        email = M.User.query.get(username='test-admin').email_addresses[0]
+        r = self.app.post('/auth/send_verification_link', params=dict(a=email))
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
@@ -33,12 +34,12 @@ class TestAuth(TestController):
                 username='test-usera', password='foo'))
         assert 'Invalid login' in str(r), r.showbrowser()
 
+    @td.with_user_project('test-admin')
     def test_prefs(self):
-        r = self.app.get('/auth/prefs/')
+        r = self.app.get('/auth/prefs/', extra_environ=dict(username='test-admin'))
         assert 'test@example.com' not in r
-        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
+        subscriptions = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False)).all()
         # make sure page actually lists all the user's subscriptions
-        subscriptions = list(mailboxes.ming_cursor)
         assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
         for m in subscriptions:
             assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
@@ -46,8 +47,9 @@ class TestAuth(TestController):
                  'display_name':'Test Admin',
                  'new_addr.addr':'test@example.com',
                  'new_addr.claim':'Claim Address',
-                 'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                 'preferences.email_format':'plain'})
+                 'primary_addr':'test-admin@users.localhost',
+                 'preferences.email_format':'plain'},
+                extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/prefs/')
         assert 'test@example.com' in r
         r = self.app.post('/auth/prefs/update', params={
@@ -56,19 +58,21 @@ class TestAuth(TestController):
                  'addr-2.ord':'1',
                  'addr-2.delete':'on',
                  'new_addr.addr':'',
-                 'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                 'preferences.email_format':'plain'})
+                 'primary_addr':'test-admin@users.localhost',
+                 'preferences.email_format':'plain'},
+                extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/prefs/')
         assert 'test@example.com' not in r
-        ea = M.EmailAddress.query.get(_id='Beta@wiki.test.projects.sourceforge.net')
+        ea = M.EmailAddress.query.get(_id='test-admin@users.localhost')
         ea.confirmed = True
         ThreadLocalORMSession.flush_all()
         r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
-                 'new_addr.addr':'Beta@wiki.test.projects.sourceforge.net',
+                 'new_addr.addr':'test-admin@users.localhost',
                  'new_addr.claim':'Claim Address',
-                 'primary_addr':'Beta@wiki.test.projects.sourceforge.net',
-                 'preferences.email_format':'plain'})
+                 'primary_addr':'test-admin@users.localhost',
+                 'preferences.email_format':'plain'},
+                extra_environ=dict(username='test-admin'))
 
     def test_api_key(self):
          r = self.app.get('/auth/prefs/')

@@ -2,7 +2,7 @@ import unittest
 from datetime import timedelta
 
 from pylons import g, c
-
+from nose.tools import assert_equal
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
@@ -103,7 +103,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        assert M.Notification.query.get()['from_address'].startswith('"Test Admin" <Beta')
+        assert_equal(M.Notification.query.get()['from_address'], '"Test Admin" <test-admin@users.localhost>')
         assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
@@ -232,4 +232,3 @@ def _clear_subscriptions():
 
 def _clear_notifications():
         M.Notification.query.remove({})
-

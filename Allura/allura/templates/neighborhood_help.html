@@ -1,0 +1,48 @@
+{% extends g.theme.master %}
+
+{% block title %}Neighborhood Help{% endblock %}
+
+{% block header %}Neighborhood Help{% endblock %}
+
+{% block nav_menu %}
+    {% include 'allura:templates/jinja_master/neigh_nav_menu.html' %}
+{% endblock %}
+
+{% block top_nav %}
+    {% include 'allura:templates/jinja_master/neigh_top_nav.html' %}
+{% endblock %}
+
+{% block content %}
+  <p>Welcome to your neighborhood!  We strive to make many neighborhood features easy to understand on their own,
+  but there's always room for some additional explanation.  Here's information on a few advanced features.</p>
+  <h2>The [[projects]] macro</h2>
+  <p>In any neighborhood tool (e.g. a wiki) you can use the <code>[[projects]]</code> macro
+  to list all the projects in your neighborhood.
+  </p>
+  <p>
+  Example: <code>[[projects display_mode=list columns=2 show_download_button=no limit=50]]</code>
+  </p>
+  <p>Display options:</p>
+  <ul>
+    <li><code>display_mode</code> = grid/list.  Default is 'grid'</li>
+    <li><code>show_proj_icon</code> = yes/no.  Default 'yes'</li>
+    <li><code>show_download_button</code> = yes/no.  Default 'yes'</li>
+	<li><code>show_awards_banner</code> = yes/no.  Default 'yes'</li>
+    <li><code>sort</code> = last_updated/alpha/random/last_registered.  Default 'last_updated'</li>
+    <li><code>show_total</code> = yes/no.  Adds a sentence with a total count of how many projects are listed. Default 'no'</li>
+    <li><code>columns</code> = 1, 2, or 3.  Works with 'list' display_mode.  Default 1</li>
+  </ul>
+  <p>Filter options:</p>
+  <ul>
+    <li><code>limit</code> = any number; default 100</li>
+    <li><code>labels</code> = project label(s) to include.  Separate multiple labels with "|" to match any label.  Separate with "," to require matching all labels listed.</li>
+    <li><code>award</code> = short name of award</li>
+    <li><code>category</code> = category, for example <code>"Programming Language :: Scala"</code> (include the quotes)</li>
+    <li><code>private</code> = yes.  Show only private projects.  Projects are always filtered by permissions of the logged in user.</li>
+  </ul>
+
+  <h2>Project Template</h2>
+  <p>On the <a href="../overview">Neighborhood Overview</a> form, the "Project Template" textbox allows you to specify a standard set of tools and options
+  for all new projects, instead of choosing tools when creating the project.  Please
+  contact Support for assistance setting up a project template.</p>
+{% endblock %}
