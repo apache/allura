@@ -135,6 +135,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        grid_view_tools='',
         initial_q={}):
     from allura.lib.widgets.project_list import ProjectList
     from allura.lib import utils
@@ -220,7 +221,8 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
     response = pl.display(projects=projects, display_mode=display_mode,
                           columns=columns, show_proj_icon=show_proj_icon,
                           show_download_button=show_download_button,
-                          show_awards_banner=show_awards_banner)
+                          show_awards_banner=show_awards_banner,
+                          grid_view_tools=grid_view_tools)
     if show_total:
         if total is None:
             total = 0
@@ -235,18 +237,20 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        grid_view_tools=''):
     initial_q = dict(neighborhood_id=c.project.neighborhood_id)
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner,
+                   show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
                    initial_q=initial_q)
 
 @macro('userproject-wiki')
 def my_projects(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True):
+        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        grid_view_tools=''):
 
     myproj_user = c.project.user_project_of
     if myproj_user is None:
@@ -260,7 +264,7 @@ def my_projects(category=None, display_mode='grid', sort='last_updated',
     return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner,
+                   show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
                    initial_q=initial_q)
 
 @macro()
