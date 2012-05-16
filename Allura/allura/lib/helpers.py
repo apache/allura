@@ -565,7 +565,7 @@ def _add_table_line_numbers_to_text(text):
     linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + _len_to_str_column(len(lines)) + '</pre></div></td>'
     markup_text = '<table class="codehilitetable"><tbody><tr>' + linenumbers + '<td class="code"><div class="codehilite"><pre>'
     for line_num, line in enumerate(lines, 1):
-        markup_text = markup_text + '<div id="l%s" class="code_block">%s</div>' % (line_num, line)
+        markup_text = markup_text + '<span id="l%s" class="code_block">%s</span>' % (line_num, line)
     markup_text = markup_text + '</pre></div></td></tbody></table>'
     return markup_text
 
