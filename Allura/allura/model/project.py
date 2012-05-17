@@ -123,6 +123,7 @@ class Project(MappedClass):
     shortname = FieldProperty(str)
     name=FieldProperty(str)
     notifications_disabled = FieldProperty(bool)
+    suppress_emails = FieldProperty(bool)
     show_download_button=FieldProperty(S.Deprecated)
     short_description=FieldProperty(str, if_missing='')
     summary=FieldProperty(str, if_missing='')
