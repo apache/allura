@@ -33,15 +33,16 @@ def clone(
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
-        sendmail(
-            destinations=[str(c.user._id)],
-            fromaddr=u'SourceForge.net <noreply+project-upgrade@in.sf.net>',
-            reply_to=u'noreply@in.sf.net',
-            subject=u'SourceForge Repo Clone Complete',
-            message_id=h.gen_message_id(),
-            text=u''.join([
-                u'Clone of repo %s in project %s from %s is complete. Your repo is now ready to use.\n'
-            ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
+        if not c.project.suppress_emails:
+            sendmail(
+                destinations=[str(c.user._id)],
+                fromaddr=u'SourceForge.net <noreply+project-upgrade@in.sf.net>',
+                reply_to=u'noreply@in.sf.net',
+                subject=u'SourceForge Repo Clone Complete',
+                message_id=h.gen_message_id(),
+                text=u''.join([
+                    u'Clone of repo %s in project %s from %s is complete. Your repo is now ready to use.\n'
+                ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
     except:
         sendmail(
             destinations=['sfengineers@geek.net'],
@@ -54,16 +55,17 @@ def clone(
                 u'\n',
                 u'%s',
             ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url, traceback.format_exc()))
-        sendmail(
-            destinations=[str(c.user._id)],
-            fromaddr=u'SourceForge.net <noreply+project-upgrade@in.sf.net>',
-            reply_to=u'noreply@in.sf.net',
-            subject=u'SourceForge Repo Clone Failed',
-            message_id=h.gen_message_id(),
-            text=u''.join([
-                u'Clone of repo %s in project %s from %s failed. ',
-                u'The SourceForge engineering team has been notified.\n',
-            ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
+        if not c.project.suppress_emails:
+            sendmail(
+                destinations=[str(c.user._id)],
+                fromaddr=u'SourceForge.net <noreply+project-upgrade@in.sf.net>',
+                reply_to=u'noreply@in.sf.net',
+                subject=u'SourceForge Repo Clone Failed',
+                message_id=h.gen_message_id(),
+                text=u''.join([
+                    u'Clone of repo %s in project %s from %s failed. ',
+                    u'The SourceForge engineering team has been notified.\n',
+                ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
 
 @task
 def reclone(*args, **kwargs):
