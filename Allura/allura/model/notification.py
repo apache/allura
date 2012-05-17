@@ -121,7 +121,7 @@ class Notification(MappedClass):
                 file_info.file.seek(0, 2)
                 bytecount = file_info.file.tell()
                 file_info.file.seek(0)
-                text = "%s\n%s (%s bytes in %s)" % (text, file_info.filename, bytecount, file_info.type)
+                text = "%s\n\n\nAttachment: %s (%s; %s)" % (text, file_info.filename, h.do_filesizeformat(bytecount), file_info.type)
 
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):
