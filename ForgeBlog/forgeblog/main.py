@@ -195,7 +195,7 @@ class RootController(BaseController):
         require_access(c.app, 'write')
         now = datetime.utcnow()
         post = dict(
-            state='draft')
+            state='published')
         c.form = W.new_post_form
         return dict(post=post)
 
