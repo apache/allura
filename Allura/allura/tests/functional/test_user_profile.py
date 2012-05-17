@@ -8,6 +8,7 @@ class TestUserProfile(TestController):
     @td.with_user_project('test-admin')
     def test_profile(self):
         response = self.app.get('/u/test-admin/profile/')
+        assert '<h2 class="dark title">Test Admin' in response
         assert 'OpenIDs' in response
         response = self.app.get('/u/test-admin/profile/configuration')
         assert 'Configure Dashboard' in response
