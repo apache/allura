@@ -396,9 +396,10 @@ class Project(MappedClass):
             delta_ordinal = delta_ordinal + 1
 
         if self == self.neighborhood.neighborhood_project:
-            entries.append({'ordinal':delta_ordinal, 'entry':SitemapEntry('Home', self.neighborhood.url(), ui_icon="tool-home")})
-            max_ordinal = delta_ordinal
-            delta_ordinal = delta_ordinal + 1
+            if self.neighborhood.home_tool_active:
+                entries.append({'ordinal':delta_ordinal, 'entry':SitemapEntry('Home', self.neighborhood.url(), ui_icon="tool-home")})
+                max_ordinal = delta_ordinal
+                delta_ordinal = delta_ordinal + 1
             neighborhood_admin_mode = True
 
         for sub in self.direct_subprojects:

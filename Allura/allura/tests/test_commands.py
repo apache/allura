@@ -3,7 +3,8 @@ from nose.tools import assert_raises
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_features, rssfeeds
+from allura.command import script, set_neighborhood_features, rssfeeds, \
+create_neighborhood
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
@@ -136,3 +137,16 @@ def test_pull_rss_feeds():
     cmd.command()
 
     assert len(BM.BlogPost.query.find({'app_config_id': tmp_app._id}).all()) > 0
+
+def test_update_neighborhood():
+    cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
+    cmd.run([test_config, 'Projects', 'True'])
+    cmd.command()
+    nb = M.Neighborhood.query.get(name='Projects')
+    assert nb.home_tool_active == True
+
+    cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
+    cmd.run([test_config, 'Projects', 'False'])
+    cmd.command()
+    nb = M.Neighborhood.query.get(name='Projects')
+    assert nb.home_tool_active == False
