@@ -58,6 +58,7 @@ class Neighborhood(MappedClass):
     project_list_url = FieldProperty(str, if_missing='')
     level = FieldProperty(S.Deprecated)
     allow_private = FieldProperty(S.Deprecated)
+    home_tool_active = FieldProperty(bool, if_missing=True)
     features = FieldProperty(dict(
         private_projects=bool,
         max_projects=S.Int,

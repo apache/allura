@@ -91,6 +91,8 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
+        if not self.neighborhood.home_tool_active:
+            redirect(c.project.script_name + 'wiki/')
         c.project_summary = W.project_summary
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)
