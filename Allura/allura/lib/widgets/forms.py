@@ -288,10 +288,10 @@ class NeighborhoodAddProjectForm(ForgeForm):
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('input[type=checkbox].scm');
-                var $name_avail_message = $('#name_availability');
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
                 var $url_fragment = $('#url_fragment');
+                var $form = $name_input.closest('form');
                 var delay = (function(){
                   var timers = {};
                   return function(callback, ms){
@@ -317,6 +317,14 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     $error_field.text(message).toggle(!!message);
                     update_icon($input);
                 };
+                $form.submit(function(e) {
+                    var has_errors = $name_input.add($unixname_input).nextAll('.error').is(':visible');
+                    if (has_errors || $name_input.val() == '' || $unixname_input.val() == '') {
+                        e.preventDefault();
+                        alert('You must resolve the issues with the project name.');
+                        return false;
+                    }
+                });
                 $scms.change(function(){
                     if ( $(this).attr('checked') ) {
                         var on = this;
