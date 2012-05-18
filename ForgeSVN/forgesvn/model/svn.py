@@ -259,12 +259,15 @@ class SVNImplementation(M.RepositoryImplementation):
             log.info('ClientError processing %r %r, treating as empty', ci, self._repo, exc_info=True)
             log_entry = Object(date=0, message='', changed_paths=[])
         # Save commit metadata
+        log_date = None
+        if hasattr(log_entry, 'date'):
+            log_date = datetime.utcfromtimestamp(log_entry.date)
         ci.committed = Object(
             name=log_entry.get('author', '--none--'),
             email='',
-            date=datetime.utcfromtimestamp(log_entry.date))
+            date=log_date)
         ci.authored=Object(ci.committed)
-        ci.message=log_entry.message
+        ci.message=log_entry.get("message", "--none--")
         if revno > 1:
             parent_oid = self._oid(revno - 1)
             ci.parent_ids = [ parent_oid ]
@@ -278,13 +281,14 @@ class SVNImplementation(M.RepositoryImplementation):
             D=ci.diffs.removed,
             M=ci.diffs.changed,
             R=ci.diffs.changed)
-        for path in log_entry.changed_paths:
-            if path.copyfrom_path:
-                ci.diffs.copied.append(dict(
-                        old=h.really_unicode(path.copyfrom_path),
-                        new=h.really_unicode(path.path)))
-                continue
-            lst[path.action].append(h.really_unicode(path.path))
+        if hasattr(log_entry, 'changed_paths'):
+            for path in log_entry.changed_paths:
+                if path.copyfrom_path:
+                    ci.diffs.copied.append(dict(
+                            old=h.really_unicode(path.copyfrom_path),
+                            new=h.really_unicode(path.path)))
+                    continue
+                lst[path.action].append(h.really_unicode(path.path))
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repo import CommitDoc
@@ -301,15 +305,18 @@ class SVNImplementation(M.RepositoryImplementation):
         except pysvn.ClientError:
             log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
             log_entry = Object(date='', message='', changed_paths=[])
+        log_date = None
+        if hasattr(log_entry, 'date'):
+            log_date = datetime.utcfromtimestamp(log_entry.date)
         user = Object(
             name=log_entry.get('author', '--none--'),
             email='',
-           date=datetime.utcfromtimestamp(log_entry.date))
+           date=log_date)
         args = dict(
             tree_id=None,
             committed=user,
             authored=user,
-            message=log_entry.message,
+            message=log_entry.get("message", "--none--"),
             parent_ids=[],
             child_ids=[])
         if revno > 1:

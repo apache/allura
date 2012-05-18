@@ -61,10 +61,9 @@ def clone(
             subject=u'SourceForge Repo Clone Failed',
             message_id=h.gen_message_id(),
             text=u''.join([
-                u'Clone of repo %s in project %s from %s failed. The SourceForge engineering team has been notified.\n',
-                u'\n',
-                u'%s',
-            ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url, traceback.format_exc()))
+                u'Clone of repo %s in project %s from %s failed. ',
+                u'The SourceForge engineering team has been notified.\n',
+            ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
 
 @task
 def reclone(*args, **kwargs):
