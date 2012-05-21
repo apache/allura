@@ -5,7 +5,7 @@
   <a href="{{c.app.url}}markdown_syntax_dialog" class="markdown_help btn" title="Formatting Help"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Formatting Help</a>
   <div style="clear:both"></div>
   <textarea id="{{id or rendered_name}}" name="{{rendered_name}}" class="auto_resize" {{widget.j2_attrs(attrs)}}>{{value or ''}}</textarea>
-  <div class="markdown_preview" style="display:none"></div>
+  <div class="markdown_preview nested-grid-container" style="display:none"></div>
   <a href="#" class="markdown_preview btn" title="Preview"><b data-icon="{{g.icons['search'].char}}" class="ico {{g.icons['search'].css}}"></b> Preview</a>
   <a href="#" class="markdown_edit btn" style="display:none" title="Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   <div class="modal markdown_help" style="display:none">
