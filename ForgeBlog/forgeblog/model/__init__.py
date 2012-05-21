@@ -1,1 +1,1 @@
-from blog import BlogPost, Attachment, BlogPostSnapshot
+from blog import Globals, BlogPost, Attachment, BlogPostSnapshot

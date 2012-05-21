@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+import re
+import difflib
 from urllib import quote, unquote
 from collections import defaultdict
 
@@ -15,7 +17,6 @@ from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 
 import allura.tasks
-from allura.lib import patience
 from allura.lib import security
 from allura.lib import helpers as h
 from allura.lib import widgets as w
@@ -61,7 +62,7 @@ class RepoRootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/fork.html')
-    def fork(self, to_name=None, project_id=None):
+    def fork(self, project_id=None, mount_point=None, mount_label=None):
         # this shows the form and handles the submission
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
@@ -70,10 +71,13 @@ class RepoRootController(BaseController):
         ThreadLocalORMSession.close_all()
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
-        if request.method != 'POST' or not to_name:
+        mount_label = mount_label or '%s - %s' % (c.project.name, from_repo.tool_name)
+        mount_point = (mount_point or from_project.shortname)
+        if request.method != 'POST' or not mount_point:
             return dict(from_repo=from_repo,
                         user_project=c.user.private_project(),
-                        to_name=to_name or '')
+                        mount_point=mount_point,
+                        mount_label=mount_label)
         else:
             with h.push_config(c, project=to_project):
                 if not to_project.database_configured:
@@ -81,10 +85,12 @@ class RepoRootController(BaseController):
                 security.require(security.has_access(to_project, 'admin'))
                 try:
                     to_project.install_app(
-                        from_repo.tool_name, to_name,
+                        ep_name=from_repo.tool_name,
+                        mount_point=mount_point,
+                        mount_label=mount_label,
                         cloned_from_project_id=from_project._id,
                         cloned_from_repo_id=from_repo._id)
-                    redirect(to_project.url()+to_name+'/')
+                    redirect(to_project.url()+mount_point+'/')
                 except exc.HTTPRedirection:
                     raise
                 except Exception, ex:
@@ -514,7 +520,7 @@ class FileBrowser(BaseController):
         b = self._blob
         la = list(a)
         lb = list(b)
-        diff = ''.join(patience.unified_diff(
+        diff = ''.join(difflib.unified_diff(
                 la, lb,
                 ('a' + apath).encode('utf-8'),
                 ('b' + b.path()).encode('utf-8')))

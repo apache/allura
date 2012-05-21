@@ -2,7 +2,7 @@
 
 {% block title %}{{user.display_name}} / Profile{% endblock %}
 
-{% block header %}{{c.project.homepage_title}}{% endblock %}
+{% block header %}{{ user.display_name|default(user.username) }}{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" type="text/css"

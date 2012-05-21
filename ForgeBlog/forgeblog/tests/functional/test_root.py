@@ -56,6 +56,7 @@ class TestRootController(TestController):
 
     def test_root_new_post(self):
         response = self.app.get('/blog/new')
+        assert '<option selected value="published">Published</option>' in response
         assert 'Enter your title here' in response
 
     def test_validation(self):

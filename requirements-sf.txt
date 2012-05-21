@@ -14,7 +14,6 @@ sqlalchemy-migrate==0.7.1
 pyzmq==2.1.7
 
 # for the migration scripts only
-html2text==3.101
 postmarkup==1.1.4
 # suds needed for teamforge import script
 suds==0.4

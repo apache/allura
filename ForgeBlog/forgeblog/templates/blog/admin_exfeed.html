@@ -1,0 +1,27 @@
+<form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_exfeed">
+  <label class="grid-13">Existing external feeds:</label>
+  <div class="grid-13">
+    <ul>
+    {% if allow_config %}
+     {% for feed in feeds_list %}
+     <li><input type="checkbox" name="exfeed" value="{{ feed }}" checked="checked"><span>{{ feed }}</span></li>
+     {% endfor %} 
+    {% else %}
+     {% for feed in feeds_list %}
+     <li><span>{{ feed.value }}</span></li>
+     {% endfor %} 
+    {% endif %}
+  </div>
+  {% if allow_config %}
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+       <input type="text" name="new_exfeed" id="new_exfeed" value=""/>
+    </div>
+    <div class="grid-13">&nbsp;</div>
+    <hr>
+    <div class="grid-13">&nbsp;</div>
+    <div class="grid-13">
+      <input type="submit" value="Save"/>
+    </div>
+  {% endif %}
+</form>

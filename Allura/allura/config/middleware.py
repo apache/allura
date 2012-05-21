@@ -23,7 +23,7 @@ from ming.orm.middleware import MingMiddleware
 from allura.config.app_cfg import base_config
 from allura.config.environment import load_environment
 from allura.config.app_cfg import ForgeConfig
-from allura.lib.custom_middleware import StatsMiddleware
+from allura.lib.custom_middleware import AlluraTimerMiddleware
 from allura.lib.custom_middleware import SSLMiddleware
 from allura.lib.custom_middleware import StaticFilesMiddleware
 from allura.lib.custom_middleware import CSRFMiddleware
@@ -33,8 +33,8 @@ from allura.lib import helpers as h
 
 __all__ = ['make_app']
 
-# Use base_config to setup the necessary PasteDeploy application factory. 
-# make_base_app will wrap the TG2 app with all the middleware it needs. 
+# Use base_config to setup the necessary PasteDeploy application factory.
+# make_base_app will wrap the TG2 app with all the middleware it needs.
 make_base_app = base_config.setup_tg_wsgi_app(load_environment)
 
 
@@ -55,13 +55,13 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     :type full_stack: str or bool
     :return: The allura application with all the relevant middleware
         loaded.
-    
+
     This is the PasteDeploy factory for the allura application.
-    
+
     ``app_conf`` contains all the application-specific settings (those defined
     under ``[app:main]``.
-    
-   
+
+
     """
     # Run all the initialization code here
     mimetypes.init(
@@ -73,7 +73,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Configure EW variable provider
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
-    
+
     # Create base app
     base_config = ForgeConfig(root)
     load_environment = base_config.make_load_environment()
@@ -86,7 +86,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     load_environment(global_conf, app_conf)
 
     if config.get('zarkov.host'):
-        try:    
+        try:
             import zmq
         except ImportError:
             raise ImportError, "Unable to import the zmq library. Please"\
@@ -113,9 +113,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Redirect 401 to the login page
     app = LoginRedirectMiddleware(app)
     # Add instrumentation
-    if app_conf.get('stats.sample_rate', '0.25') != '0':
-        stats_config = dict(global_conf, **app_conf)
-        app = StatsMiddleware(app, stats_config)
+    app = AlluraTimerMiddleware(app, app_conf)
     # Clear cookies when the CSRF field isn't posted
     if not app_conf.get('disable_csrf_protection'):
         app = CSRFMiddleware(app, '_session_id')
@@ -145,7 +143,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     #    the WSGI application's iterator is exhausted
     app = RegistryManager(app, streaming=True)
     return app
-    
+
 def set_scheme_middleware(app):
     def SchemeMiddleware(environ, start_response):
         if asbool(environ.get('HTTP_X_SFINC_SSL', 'false')):

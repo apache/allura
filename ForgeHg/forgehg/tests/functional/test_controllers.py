@@ -1,6 +1,9 @@
 import json
 
 import pkg_resources
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 from datadiff.tools import assert_equal
@@ -35,7 +38,8 @@ class TestRootController(TestController):
         to_project = M.Project.query.get(shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-hg/fork', params=dict(
             project_id=str(to_project._id),
-            to_name='code'))
+            mount_point='code'))
+        assert "{status: 'error'}" not in str(r.follow())
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
@@ -51,7 +55,8 @@ class TestRootController(TestController):
         to_project = M.Project.query.get(shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-hg/fork', params=dict(
             project_id=str(to_project._id),
-            to_name='code'))
+            mount_point='code'))
+        assert "{status: 'error'}" not in str(r.follow())
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
@@ -117,14 +122,14 @@ class TestRootController(TestController):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.findAll('tr')) ==2, resp.showbrowser()
+        assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
         assert 'README' in resp, resp.showbrowser()
 
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div',{'class':'clip grid-19'}))
+        assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
+        content = str(resp.html.find('div', {'class':'clip grid-19'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp

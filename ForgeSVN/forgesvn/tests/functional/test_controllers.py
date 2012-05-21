@@ -73,8 +73,8 @@ class TestRootController(TestController):
 
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
-        assert 'README' in resp.html.find('h2',{'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div',{'class':'clip grid-19'}))
+        assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
+        content = str(resp.html.find('div', {'class':'clip grid-19'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp

@@ -12,12 +12,14 @@ from pylons import g, c, request, response
 from formencode import validators
 from webob import exc
 
+from ming.orm import session
+
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
 from allura.lib.search import search
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, Property
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -56,6 +58,7 @@ class ForgeBlogApp(Application):
     ordinal=14
     installable=True
     config_options = Application.config_options
+    default_external_feeds = []
     icons={
         24:'images/blog_24.png',
         32:'images/blog_32.png',
@@ -66,6 +69,24 @@ class ForgeBlogApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = BlogAdminController(self)
+
+    @Property
+    def external_feeds_list():
+        def fget(self):
+            globals = BM.Globals.query.get(app_config_id=self.config._id)
+            if globals is not None:
+                external_feeds = globals.external_feeds
+            else:
+                external_feeds = self.default_external_feeds
+            return external_feeds
+        def fset(self, new_external_feeds):
+            globals = BM.Globals.query.get(app_config_id=self.config._id)
+            if globals is not None:
+                globals.external_feeds = new_external_feeds
+            elif len(new_external_feeds) > 0:
+                globals = BM.Globals(app_config_id=self.config._id, external_feeds=new_external_feeds)
+            if globals is not None:
+                session(globals).flush()
 
     @property
     @h.exceptionless([], log)
@@ -94,7 +115,12 @@ class ForgeBlogApp(Application):
         return links
 
     def admin_menu(self):
-        return super(ForgeBlogApp, self).admin_menu(force_options=True)
+        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
+        # temporarily disabled until some bugs are fixed
+        links = []#[SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal')]
+        links += super(ForgeBlogApp, self).admin_menu(force_options=True)
+        return links
+        #return super(ForgeBlogApp, self).admin_menu(force_options=True)
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -170,7 +196,7 @@ class RootController(BaseController):
         require_access(c.app, 'write')
         now = datetime.utcnow()
         post = dict(
-            state='draft')
+            state='published')
         c.form = W.new_post_form
         return dict(post=post)
 
@@ -359,3 +385,34 @@ class BlogAdminController(DefaultAdminController):
         self.app.config.options['show_discussion'] = show_discussion and True or False
         flash('Blog options updated')
         redirect(h.really_unicode(c.project.url()+'admin/tools').encode('utf-8'))
+
+    @without_trailing_slash
+    @expose('jinja:forgeblog:templates/blog/admin_exfeed.html')
+    def exfeed(self):
+        #self.app.external_feeds_list = ['feed1', 'feed2']
+        #log.info("EXFEED: %s" % self.app.external_feeds_list)
+        feeds_list = []
+        for feed in self.app.external_feeds_list:
+            feeds_list.append(feed)
+        return dict(app=self.app,
+                    feeds_list=feeds_list,
+                    allow_config=has_access(self.app, 'configure')())
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    def set_exfeed(self, **kw):
+        new_exfeed = kw.get('new_exfeed', None)
+        exfeed_val = kw.get('exfeed', [])
+        if type(exfeed_val) == unicode:
+            exfeed_list = []
+            exfeed_list.append(exfeed_val)
+        else:
+            exfeed_list = exfeed_val
+
+        if new_exfeed is not None and new_exfeed != '':
+            exfeed_list.append(new_exfeed)
+
+        self.app.external_feeds_list = exfeed_list
+        flash('External feeds updated')
+        redirect(c.project.url()+'admin/tools')

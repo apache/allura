@@ -5,6 +5,7 @@ import mimetypes
 import logging
 import string
 import re
+from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
@@ -20,7 +21,6 @@ from ming.utils import LazyProperty
 from ming.orm import FieldProperty, session, Mapper
 from ming.orm.declarative import MappedClass
 
-from allura.lib.patience import SequenceMatcher
 from allura.lib import helpers as h
 from allura.lib import utils
 

@@ -113,6 +113,7 @@ setup(
     create-neighborhood = allura.command:CreateNeighborhoodCommand
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
+    pull-rss-feeds = allura.command.rssfeeds:RssFeedsCommand
 
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
