@@ -33,7 +33,6 @@ class TestRootController(TestController):
         assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Projects')
         projects = response.html.findAll('div',{'class':'border card'})
         assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
-        assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
@@ -52,20 +51,19 @@ class TestRootController(TestController):
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         response = self.app.get('/browse')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
         response = self.app.get('/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
         response = self.app.get('/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 0
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
 
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')
         projects = response.html.findAll('div',{'class':'border card'})
         assert len(projects) == 2
-        assert projects[0].find('img').get('alt') == 'adobe-1 Logo'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
@@ -77,14 +75,14 @@ class TestRootController(TestController):
         M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
         M.Project.query.find(dict(name='adobe-2')).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 1
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
-        assert len(response.html.findAll('img',{'alt':'adobe-1 Logo'})) == 0
-        assert len(response.html.findAll('img',{'alt':'adobe-2 Logo'})) == 1
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
+        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
 
     @td.with_wiki
     def test_markdown_to_html(self):
