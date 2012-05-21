@@ -1,4 +1,5 @@
 import re
+import os, allura
 from urllib import quote
 
 from bson import ObjectId
@@ -37,10 +38,35 @@ def test_app_globals():
 
 @with_setup(setUp)
 def test_macros():
+    file_name = 'neo-icon-set-454545-256x350.png'
+    file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+    curr_project = c.project
+
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    c.project = p_test
+    icon_file = open(file_path)
+    M.ProjectFile.save_image(
+                file_name, icon_file, content_type='image/png',
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+    icon_file.close()
     p_test2 = M.Project.query.get(shortname='test2', neighborhood_id=p_nbhd._id)
+    c.project = p_test2
+    icon_file = open(file_path)
+    M.ProjectFile.save_image(
+                file_name, icon_file, content_type='image/png',
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+    icon_file.close()
     p_sub1 =  M.Project.query.get(shortname='test/sub1', neighborhood_id=p_nbhd._id)
+    c.project = p_sub1
+    icon_file = open(file_path)
+    M.ProjectFile.save_image(
+                file_name, icon_file, content_type='image/png',
+                square=True, thumbnail_size=(48,48),
+                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+    icon_file.close()
     p_test.labels = [ 'test', 'root' ]
     p_sub1.labels = [ 'test', 'sub1' ]
     # Make one project private
@@ -85,7 +111,12 @@ def test_macros():
         assert '<img alt="test2 Logo"' in r, r
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert('[[projects show_proj_icon=True]]')
+        assert '<img alt="test Logo"' in r
+        r = g.markdown_wiki.convert('[[projects show_proj_icon=False]]')
+        assert '<img alt="test Logo"' not in r
 
+    c.project = curr_project
     r = g.markdown_wiki.convert('[[project_admins]]')
     assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
@@ -214,12 +245,6 @@ def test_projects_macro():
         assert two_column_style in r
         r = g.markdown_wiki.convert('[[projects display_mode=list columns=3]]')
         assert two_column_style not in r
-
-        # test project icon
-        r = g.markdown_wiki.convert('[[projects display_mode=list show_proj_icon=True]]')
-        assert 'test Logo' in r
-        r = g.markdown_wiki.convert('[[projects display_mode=list show_proj_icon=False]]')
-        assert 'test Logo' not in r
 
         # test project download button
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=True]]')
