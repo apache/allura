@@ -116,7 +116,8 @@ class ForgeBlogApp(Application):
 
     def admin_menu(self):
         admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
-        links = [SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal')]
+        # temporarily disabled until some bugs are fixed
+        links = []#[SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal')]
         links += super(ForgeBlogApp, self).admin_menu(force_options=True)
         return links
         #return super(ForgeBlogApp, self).admin_menu(force_options=True)
