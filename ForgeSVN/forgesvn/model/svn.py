@@ -259,11 +259,19 @@ class SVNImplementation(M.RepositoryImplementation):
             else:
                 rhs_id = None
             if path.action in ('D', 'M', 'R'):
-                lhs_info = self._svn.info2(
-                    self._url + h.really_unicode(path.path),
-                    revision=self._revision(ci_doc.parent_ids[0]),
-                    recurse=False)[0][1]
-                lhs_id = self._obj_oid(ci_doc._id, lhs_info)
+                try:
+                    lhs_info = self._svn.info2(
+                        self._url + h.really_unicode(path.path),
+                        revision=self._revision(ci_doc.parent_ids[0]),
+                        recurse=False)[0][1]
+                    lhs_id = self._obj_oid(ci_doc._id, lhs_info)
+                except pysvn.ClientError, e:
+                    # pysvn will sometimes report new files as 'M'odified,
+                    # causing info2() to raise ClientError since the file
+                    # doesn't exist in the parent revision. Set lhs_id = None
+                    # to treat like a newly added file.
+                    log.debug(e)
+                    lhs_id = None
             else:
                 lhs_id = None
             di.differences.append(dict(
