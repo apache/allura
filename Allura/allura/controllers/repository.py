@@ -71,7 +71,7 @@ class RepoRootController(BaseController):
         ThreadLocalORMSession.close_all()
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
-        mount_label = mount_label or '%s - %s' % (c.project.name, from_repo.tool_name)
+        mount_label = mount_label or '%s - %s' % (c.project.name, c.app.config.options.mount_label)
         mount_point = (mount_point or from_project.shortname)
         if request.method != 'POST' or not mount_point:
             return dict(from_repo=from_repo,
