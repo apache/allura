@@ -6,6 +6,7 @@ from hashlib import sha1
 from itertools import izip, chain
 from datetime import datetime
 from collections import defaultdict
+from difflib import SequenceMatcher
 
 from pylons import c
 import pymongo.errors
@@ -18,7 +19,6 @@ from ming.orm import mapper, session
 
 from allura.lib import utils
 from allura.lib import helpers as h
-from allura.lib.patience import SequenceMatcher
 
 from .auth import User
 from .session import main_doc_session, project_doc_session
