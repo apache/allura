@@ -124,6 +124,7 @@ class TestAuth(TestController):
     @mock.patch('allura.lib.oid_helper.consumer.Consumer')
     def test_login_verify_oid_good_provider_no_redirect(self, Consumer):
         Consumer().begin().shouldSendRedirect.return_value = False
+        Consumer().begin().formMarkup.return_value = "<!-- I'm a mock object! -->"
         result = self.app.get('/auth/login_verify_oid', params=dict(
                 provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
                 status=200)
@@ -186,6 +187,7 @@ class TestAuth(TestController):
     @mock.patch('allura.lib.oid_helper.consumer.Consumer')
     def test_claim_verify_oid_good_provider_no_redirect(self, Consumer):
         Consumer().begin().shouldSendRedirect.return_value = False
+        Consumer().begin().formMarkup.return_value = "<!-- I'm a mock object! -->"
         result = self.app.get('/auth/claim_verify_oid', params=dict(
                 provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
                 status=200)
