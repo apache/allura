@@ -252,7 +252,7 @@ class SVNImplementation(M.RepositoryImplementation):
         for path in log_entry.changed_paths:
             if path.action in ('A', 'M', 'R'):
                 rhs_info = self._svn.info2(
-                    self._url + path.path,
+                    self._url + h.really_unicode(path.path),
                     revision=self._revision(ci_doc._id),
                     recurse=False)[0][1]
                 rhs_id = self._obj_oid(ci_doc._id, rhs_info)
@@ -260,7 +260,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 rhs_id = None
             if path.action in ('D', 'M', 'R'):
                 lhs_info = self._svn.info2(
-                    self._url + path.path,
+                    self._url + h.really_unicode(path.path),
                     revision=self._revision(ci_doc.parent_ids[0]),
                     recurse=False)[0][1]
                 lhs_id = self._obj_oid(ci_doc._id, lhs_info)
