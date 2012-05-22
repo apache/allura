@@ -307,8 +307,12 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     $success_icon.toggle(!is_error);
                     $error_icon.toggle(is_error);
                 };
-                if ($name_input.val() != '') update_icon($name_input);
-                if ($unixname_input.val() != '') update_icon($unixname_input);
+                if ($name_input.val() !== '') {
+                    update_icon($name_input);
+                }
+                if ($unixname_input.val() !== '') {
+                    update_icon($unixname_input);
+                }
                 var handle_error = function($input, message) {
                     var $error_field = $input.nextAll('.error');
                     if ($error_field.length === 0) {
@@ -319,7 +323,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 };
                 $form.submit(function(e) {
                     var has_errors = $name_input.add($unixname_input).nextAll('.error').is(':visible');
-                    if (has_errors || $name_input.val() == '' || $unixname_input.val() == '') {
+                    if (has_errors || $name_input.val() === '' || $unixname_input.val() === '') {
                         e.preventDefault();
                         alert('You must resolve the issues with the project name.');
                         return false;
@@ -353,7 +357,6 @@ class NeighborhoodAddProjectForm(ForgeForm):
                                 'project_name':$name_input.val()
                             };
                             $.getJSON('suggest_name', data, function(result){
-                                old_val = result.suggested_name;
                                 $unixname_input.val(result.suggested_name);
                                 $url_fragment.html(result.suggested_name);
                                 check_names();
