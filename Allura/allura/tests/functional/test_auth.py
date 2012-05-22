@@ -1,11 +1,15 @@
 import json
 
+import mock
+from nose.tools import assert_equal
+
 from datadiff.tools import assert_equal
 from pylons import c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession
+from allura.lib import oid_helper
 
 
 def unentity(s):
@@ -93,31 +97,150 @@ class TestAuth(TestController):
          r = self.app.post('/auth/oauth/delete').follow()
          assert 'Invalid app ID' in r
 
-    def test_openid(self):
+    @mock.patch('allura.controllers.auth.verify_oid')
+    def test_login_verify_oid_with_provider(self, verify_oid):
+        verify_oid.return_value = dict()
         result = self.app.get('/auth/login_verify_oid', params=dict(
-                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'))
-        assert '<form' in result.body
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=200)
+        verify_oid.assert_called_with('http://www.google.com/accounts/o8/id',
+                failure_redirect='.',
+                return_to='login_process_oid?return_to=None',
+                title='OpenID Login',
+                prompt='Click below to continue');
+
+    @mock.patch('allura.controllers.auth.verify_oid')
+    def test_login_verify_oid_without_provider(self, verify_oid):
+        verify_oid.return_value = dict()
+        result = self.app.get('/auth/login_verify_oid', params=dict(
+                provider='', username='rick446@usa.net'),
+                status=200)
+        verify_oid.assert_called_with('rick446@usa.net',
+                failure_redirect='.',
+                return_to='login_process_oid?return_to=None',
+                title='OpenID Login',
+                prompt='Click below to continue');
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_login_verify_oid_good_provider_no_redirect(self, Consumer):
+        Consumer().begin().shouldSendRedirect.return_value = False
+        result = self.app.get('/auth/login_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=200)
+        flash = self.webflash(result)
+        assert_equal(flash, '')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_login_verify_oid_good_provider_redirect(self, Consumer):
+        Consumer().begin().shouldSendRedirect.return_value = True
+        Consumer().begin().redirectURL.return_value = 'http://some.url/'
+        result = self.app.get('/auth/login_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=302)
+        assert_equal(result.headers['Location'], 'http://some.url/')
+        flash = self.webflash(result)
+        assert_equal(flash, '')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_login_verify_oid_bad_provider(self, Consumer):
+        Consumer().begin.side_effect = oid_helper.consumer.DiscoveryFailure('bad', mock.Mock('response'))
         result = self.app.get('/auth/login_verify_oid', params=dict(
                 provider='http://www.google.com/accounts/', username='rick446@usa.net'),
                               status=302)
-        assert json.loads(self.webflash(result))['status'] == 'error', self.webflash(result)
+        flash = self.webflash(result)
+        assert_equal(flash, '{"status": "error", "message": "bad"}')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_login_verify_oid_bad_provider2(self, Consumer):
+        Consumer().begin.return_value = None
         result = self.app.get('/auth/login_verify_oid', params=dict(
-                provider='', username='http://blog.pythonisito.com'))
-        assert result.status_int == 302
+                provider='http://www.google.com/accounts/', username='rick446@usa.net'),
+                              status=302)
+        flash = self.webflash(result)
+        assert_equal(flash, '{"status": "error", "message": "No openid services found for <code>http://www.google.com/accounts/</code>"}')
+
+    @mock.patch('allura.controllers.auth.verify_oid')
+    def test_claim_verify_oid_with_provider(self, verify_oid):
+        verify_oid.return_value = dict()
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=200)
+        verify_oid.assert_called_with('http://www.google.com/accounts/o8/id',
+                failure_redirect='claim_oid',
+                return_to='claim_process_oid',
+                title='Claim OpenID',
+                prompt='Click below to continue');
+
+    @mock.patch('allura.controllers.auth.verify_oid')
+    def test_claim_verify_oid_without_provider(self, verify_oid):
+        verify_oid.return_value = dict()
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='', username='rick446@usa.net'),
+                status=200)
+        verify_oid.assert_called_with('rick446@usa.net',
+                failure_redirect='claim_oid',
+                return_to='claim_process_oid',
+                title='Claim OpenID',
+                prompt='Click below to continue');
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_claim_verify_oid_good_provider_no_redirect(self, Consumer):
+        Consumer().begin().shouldSendRedirect.return_value = False
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=200)
+        flash = self.webflash(result)
+        assert_equal(flash, '')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_claim_verify_oid_good_provider_redirect(self, Consumer):
+        Consumer().begin().shouldSendRedirect.return_value = True
+        Consumer().begin().redirectURL.return_value = 'http://some.url/'
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'),
+                status=302)
+        assert_equal(result.headers['Location'], 'http://some.url/')
+        flash = self.webflash(result)
+        assert_equal(flash, '')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_claim_verify_oid_bad_provider(self, Consumer):
+        Consumer().begin.side_effect = oid_helper.consumer.DiscoveryFailure('bad', mock.Mock('response'))
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/', username='rick446@usa.net'),
+                              status=302)
+        flash = self.webflash(result)
+        assert_equal(flash, '{"status": "error", "message": "bad"}')
+
+    @mock.patch('allura.lib.oid_helper.consumer.Consumer')
+    def test_claim_verify_oid_bad_provider2(self, Consumer):
+        Consumer().begin.return_value = None
+        result = self.app.get('/auth/claim_verify_oid', params=dict(
+                provider='http://www.google.com/accounts/', username='rick446@usa.net'),
+                              status=302)
+        flash = self.webflash(result)
+        assert_equal(flash, '{"status": "error", "message": "No openid services found for <code>http://www.google.com/accounts/</code>"}')
+
+    def test_setup_openid_user_current_user(self):
         r = self.app.get('/auth/setup_openid_user')
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
                 username='test-admin', display_name='Test Admin'))
+        flash = self.webflash(r)
+        assert_equal(flash, '{"status": "ok", "message": "Your username has been set to test-admin."}')
+
+    def test_setup_openid_user_taken_user(self):
+        r = self.app.get('/auth/setup_openid_user')
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
                 username='test-user', display_name='Test User'))
+        flash = self.webflash(r)
+        assert_equal(flash, '{"status": "error", "message": "That username is already taken.  Please choose another."}')
+
+    def test_setup_openid_user_new_user(self):
+        r = self.app.get('/auth/setup_openid_user')
         r = self.app.post('/auth/do_setup_openid_user', params=dict(
-                username='test-admin', display_name='Test Admin'))
-        r = self.app.get('/auth/claim_oid')
-        result = self.app.get('/auth/claim_verify_oid', params=dict(
-                provider='http://www.google.com/accounts/o8/id', username='rick446@usa.net'))
-        assert '<form' in result.body
-        result = self.app.get('/auth/claim_verify_oid', params=dict(
-                provider='', username='http://blog.pythonisito.com'))
-        assert result.status_int == 302
+                username='test-alkajs', display_name='Test Alkajs'))
+        flash = self.webflash(r)
+        assert_equal(flash, '{"status": "ok", "message": "Your username has been set to test-alkajs."}')
 
     def test_create_account(self):
         r = self.app.get('/auth/create_account')
