@@ -25,4 +25,4 @@ This is a sample attachment:
 
 [[Image:MediaWikiSidebarLogo.png]]
 """
-    print ImportSupport.mediawiki2markdown(mediawiki_text)
+    markdown_text = ImportSupport.mediawiki2markdown(mediawiki_text)
