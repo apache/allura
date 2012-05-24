@@ -1,5 +1,6 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
-{% if not c.project or not c.project.neighborhood.show_title %}
+{% set n = c.project.neighborhood %}
+{% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
   <div id="nav_menu_missing"></div>
 {% else %}
   {% if c.project.neighborhood.icon %}
