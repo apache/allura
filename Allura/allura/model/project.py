@@ -164,6 +164,15 @@ class Project(MappedClass):
     tracking_id = FieldProperty(str, if_missing='')
 
     @property
+    def unix_group_or_shortname(self):
+        """Return ``self.unix_group_name`` if it's defined, else
+        return  ``self.shortname``.
+        """
+        return (self.tool_data and
+                self.get_tool_data('sfx', 'unix_group_name')) or \
+                self.shortname
+
+    @property
     def permissions(self):
         if self.shortname == '--init--':
             return self._perms_init
@@ -275,7 +284,7 @@ class Project(MappedClass):
         else:
             self.acl.append(ace)
     private = property(_get_private, _set_private)
-    
+
     @property
     def is_user_project(self):
         return self.shortname.startswith('u/')
