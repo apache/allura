@@ -20,6 +20,11 @@ from . import helpers as h
 
 log = logging.getLogger(__name__)
 
+PLAINTEXT_BLOCK_RE = re.compile( \
+    r'(?P<bplain>\[plain\])(?P<code>.*?)(?P<eplain>\[\/plain\])',
+    re.MULTILINE|re.DOTALL
+    )
+
 class ForgeExtension(markdown.Extension):
 
     def __init__(self, wiki=False, email=False, macro_context=None):
@@ -33,6 +38,7 @@ class ForgeExtension(markdown.Extension):
         self.forge_processor = ForgeProcessor(self._use_wiki, md, macro_context=self._macro_context)
         self.forge_processor.install()
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
+        md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
@@ -46,6 +52,29 @@ class ForgeExtension(markdown.Extension):
 
     def reset(self):
         self.forge_processor.reset()
+
+class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
+
+    def run(self, lines):
+        text = "\n".join(lines)
+        while 1:
+            res = PLAINTEXT_BLOCK_RE.finditer(text)
+            for m in res:
+                code = self._escape(m.group('code'))
+                placeholder = self.markdown.htmlStash.store(code, safe=True)
+                text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+                break
+            else:
+                break
+        return text.split("\n")
+
+    def _escape(self, txt):
+        """ basic html escaping """
+        txt = txt.replace('&', '&amp;')
+        txt = txt.replace('<', '&lt;')
+        txt = txt.replace('>', '&gt;')
+        txt = txt.replace('"', '&quot;')
+        return txt
 
 class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
     pattern = '~~~~'
