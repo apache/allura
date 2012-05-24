@@ -1,4 +1,5 @@
 import difflib
+import hashlib
 from datetime import datetime
 from random import randint
 
@@ -137,14 +138,27 @@ class BlogPost(M.VersionedArtifact):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
 
-    def make_slug(self):
+    @staticmethod
+    def make_base_slug(title, timestamp, source = None):
         slugsafe = ''.join(
             ch.lower()
-            for ch in self.title.replace(' ', '-')
+            for ch in title.replace(' ', '-')
             if ch.isalnum() or ch == '-')
-        base = '%s/%s' % (
-            self.timestamp.strftime('%Y/%m'),
-            slugsafe)
+        if source is None:
+            base = '%s/%s' % (
+                timestamp.strftime('%Y/%m'),
+                slugsafe)
+        else:
+            m = hashlib.md5()
+            m.update(source)
+            link_hash_key = m.hexdigest()[:16]
+            base = '%s/%s/%s' % (
+                timestamp.strftime('%Y/%m'),
+                link_hash_key, slugsafe)
+        return base
+
+    def make_slug(self, source = None):
+        base = BlogPost.make_base_slug(self.title, self.timestamp, source)
         self.slug = base
         while True:
             try:
