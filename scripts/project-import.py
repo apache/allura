@@ -4,6 +4,7 @@ import json
 import logging
 import multiprocessing
 import re
+import string
 import sys
 
 import colander as col
@@ -165,6 +166,7 @@ def create_project(p, nbhd, user, options):
     shortname = p.shortname or p.name.shortname
     project = M.Project.query.get(shortname=shortname,
             neighborhood_id=nbhd._id)
+    project_template = nbhd.get_project_template()
 
     if project and not (options.update and p.shortname):
         log.warning('[%s] Skipping existing project "%s". To update an existing '
@@ -186,6 +188,22 @@ def create_project(p, nbhd, user, options):
         log.info('[%s] Updating project "%s".' % (worker_name, shortname))
 
     project.notifications_disabled = True
+
+    if options.ensure_tools and 'tools' in project_template:
+        for i, tool in enumerate(project_template['tools'].iterkeys()):
+            tool_config = project_template['tools'][tool]
+            if project.app_instance(tool_config['mount_point']):
+                continue
+            tool_options = tool_config.get('options', {})
+            for k, v in tool_options:
+                if isinstance(v, basestring):
+                    tool_options[k] = string.Template(v).safe_substitute(
+                            project.__dict__.get('root_project', {}))
+            project.install_app(tool,
+                    mount_label=tool_config['label'],
+                    mount_point=tool_config['mount_point'],
+                    **tool_options)
+
     project.summary = p.summary
     project.short_description = p.description
     project.external_homepage = p.external_homepage
@@ -267,6 +285,10 @@ def parse_options():
             action='store_true',
             help='Update existing projects. Without this option, existing '
                  'projects will be skipped.')
+    parser.add_argument('--ensure-tools', dest='ensure_tools', default=False,
+            action='store_true',
+            help='Check nbhd project template for default tools, and install '
+                 'them on the project(s) if not already installed.')
     parser.add_argument('--nprocs', '-n', action='store', dest='nprocs', type=int,
             help='Number of processes to divide the work among.',
             default=multiprocessing.cpu_count())
