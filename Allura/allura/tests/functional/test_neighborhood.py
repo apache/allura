@@ -75,11 +75,13 @@ class TestNeighborhood(TestController):
                                       tracking_id='U-123456',
                                       show_title='false'),
                           extra_environ=dict(username='root'))
-        r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         # no title now
+        r = self.app.get('/adobe/', extra_environ=dict(username='root'))
         assert 'class="project_title"' not in str(r)
-        r = self.app.get('/adobe', extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/wiki/Home/',
+                         extra_environ=dict(username='root'))
         assert 'class="project_title"' not in str(r)
+
         # title must be present on project page
         r = self.app.get('/adobe/adobe-1/admin/',
                          extra_environ=dict(username='root'))
