@@ -1,5 +1,6 @@
 import logging
 
+import faulthandler
 from pylons import c
 from ming.orm import ThreadLocalORMSession
 
@@ -88,4 +89,5 @@ def parse_options():
 
 if __name__ == '__main__':
     import sys
+    faulthandler.enable()
     sys.exit(main(parse_options()))
