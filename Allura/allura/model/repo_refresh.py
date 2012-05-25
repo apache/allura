@@ -327,7 +327,7 @@ def send_notifications(repo, commit_ids):
                 author_link=ci.author_url,
                 author_name=ci.authored.name)
             branches = repo.symbolics_for_commit(ci.legacy)[0]
-            commit_msgs.append('[%s] %s by %s %s%s' % (
+            commit_msgs.append('%s: %s by %s %s%s' % (
                     ",".join(b for b in branches),
                     summary, ci.authored.name, base_url, ci.url()))
     if commit_msgs:
@@ -341,7 +341,11 @@ def send_notifications(repo, commit_ids):
                 repo.app.project.name,
                 repo.app.config.options.mount_label,
                 summary)
-            text = ci.message
+            branches = repo.symbolics_for_commit(ci.legacy)[0]
+            text = "%s: %s %s%s" % (",".join(b for b in branches),
+                               ci.message,
+                               base_url, ci.url())
+
         Notification.post(
             artifact=repo,
             topic='metadata',

@@ -359,7 +359,7 @@ class Repository(Artifact):
                     author_name = ci.authored.name,
                 )
                 branches = ci.symbolic_ids[0]
-                commit_msgs.append('[%s] %s by %s %s%s' % (
+                commit_msgs.append('%s: %s by %s %s%s' % (
                         ",".join(b for b in branches),
                         h.really_unicode(ci.summary), h.really_unicode(ci.committed.name), base_url, ci.url()))
         if commit_msgs:
@@ -373,7 +373,13 @@ class Repository(Artifact):
                     self.app.project.name,
                     self.app.config.options.mount_label,
                     h.really_unicode(ci.summary))
-                text = h.really_unicode(ci.message)
+                ci.set_context(self)
+                branches = ci.symbolic_ids[0]
+                message = "%s: %s %s%s" % (",".join(b for b in branches),
+                                           ci.message,
+                                           base_url, ci.url())
+                text = h.really_unicode(message)
+                log.info("SUBJ: %s MESSAGE: %s" % (subject, text))
             Notification.post(
                 artifact=self,
                 topic='metadata',
