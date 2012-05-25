@@ -17,6 +17,7 @@ from forgeblog import version
 from forgeblog.main import ForgeBlogApp 
 from allura.lib import exceptions
 
+html2text.BODY_WIDTH = 0
 
 class MDHTMLParser(HTMLParser):
     def __init__(self):
@@ -181,7 +182,6 @@ class RssFeedsCommand(base.Command):
             parser.feed(content)
             parser.close()
             content = html2text.html2text(parser.result_doc, e.link)
-            #print content
 
             updated = datetime.fromtimestamp(mktime(e.updated_parsed))
 
@@ -196,8 +196,6 @@ class RssFeedsCommand(base.Command):
                 post.make_slug(source=feed_url)
                 post.commit()
 
-            # TODO remove me
-            break
         session(BM.BlogPost).flush()
 
 # paster pull-rss-feeds development.ini -a 4facfec6610b271748000005
