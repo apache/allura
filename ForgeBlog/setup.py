@@ -25,5 +25,8 @@ setup(name='ForgeBlog',
       # -*- Entry points: -*-
       [allura]
       blog=forgeblog.main:ForgeBlogApp
+
+      [paste.paster_command]
+      pull-rss-feeds = forgeblog.command.rssfeeds:RssFeedsCommand
       """,
       )
