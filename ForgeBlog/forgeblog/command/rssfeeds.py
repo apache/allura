@@ -7,6 +7,7 @@ import html2text
 from bson import ObjectId
 
 import base
+from allura.command import base as allura_base
 
 from ming.orm import session
 from pylons import c
@@ -113,7 +114,7 @@ class MDHTMLParser(HTMLParser):
             self.custom_tag_opened = False
 
 
-class RssFeedsCommand(base.Command):
+class RssFeedsCommand(base.BlogCommand):
     summary = 'Rss feed client'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-a', '--appid', dest='appid', default='',
@@ -130,11 +131,7 @@ class RssFeedsCommand(base.Command):
         self.prepare_feeds()
         for appid in self.feed_dict:
             for feed_url in self.feed_dict[appid]:
-                # TODO remove me
-                feed_url = 'https://twitter.com/statuses/user_timeline/openatadobe.atom'
                 self.process_feed(appid, feed_url)
-                # TODO remove me
-                break
 
     def prepare_feeds(self):
         feed_dict = {}
@@ -160,7 +157,7 @@ class RssFeedsCommand(base.Command):
         app = ForgeBlogApp(c.project, appconf)
         c.app = app
 
-        base.log.info("Get feed: %s" % feed_url)
+        allura_base.log.info("Get feed: %s" % feed_url)
         f = feedparser.parse(feed_url)
         if f.bozo:
             base.log.exception("%s: %s" % (feed_url, f.bozo_exception))
@@ -183,7 +180,7 @@ class RssFeedsCommand(base.Command):
             parser.close()
             content = html2text.html2text(parser.result_doc, e.link)
 
-            updated = datetime.fromtimestamp(mktime(e.updated_parsed))
+            updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
 
             base_slug = BM.BlogPost.make_base_slug(title, updated, feed_url)
             b_count = BM.BlogPost.query.find(dict(slug=base_slug)).count()
@@ -197,5 +194,3 @@ class RssFeedsCommand(base.Command):
                 post.commit()
 
         session(BM.BlogPost).flush()
-
-# paster pull-rss-feeds development.ini -a 4facfec6610b271748000005
