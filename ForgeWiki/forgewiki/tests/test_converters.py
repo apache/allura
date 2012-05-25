@@ -6,14 +6,17 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from forgewiki import converters
 
+
 def setUp():
     setup_basic_test()
     setup_with_tools()
+
 
 @td.with_wiki
 def setup_with_tools():
     setup_global_objects()
     g.set_app('wiki')
+
 
 def test_mediawiki2markdown():
     bbcode_text = "[b]bolded text[/b][i]italicized text[/i]"
