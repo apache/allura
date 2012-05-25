@@ -169,7 +169,7 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "[master,branch]  by Test Committer http://localhost/#" in n.text
+                assert "master,branch:  by Test Committer http://localhost/#" in n.text
                 break
         else:
             assert False, 'Did not find notification'
