@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ -n "$SF_SYSTEM_FUNC" ]; then
+	if [ -z "$VIRTUAL_ENV" ]; then
+        source /var/local/env-allura/bin/activate
+	fi
+fi
+
+# main
+
+if [ "$TEST_MODULES"  == "" ]; then
+    TEST_MODULES="\
+    AlluraTesting \
+    Allura \
+    ForgeBlog \
+    ForgeLink \
+    ForgeChat \
+    ForgeDiscussion \
+    ForgeGit \
+    ForgeHg \
+    ForgeSVN \
+    ForgeTracker \
+    ForgeWiki \
+    ForgeDownloads \
+    "
+fi
+
+mkdir -p report.clonedigger
+for module in $TEST_MODULES; do
+    (
+        echo "Running clonedigger in module $module"
+        clonedigger --output="report.clonedigger/$module-$(date --rfc-3339=seconds).html" --language=python --ignore-dir="$module/tests" $module || exit
+    ) || exit
+done
