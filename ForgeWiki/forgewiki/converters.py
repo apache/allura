@@ -6,6 +6,7 @@ from mediawiki import *
 
 html2text.BODY_WIDTH = 0
 
+
 def mediawiki2markdown(source):
     p = bbcode.Parser(newline='\n', escape_html=False, replace_links=False, replace_cosmetic=False)
     cleanbb_text = p.format(source)
