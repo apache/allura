@@ -123,10 +123,10 @@ def test_update_neighborhood():
     cmd.run([test_config, 'Projects', 'True'])
     cmd.command()
     nb = M.Neighborhood.query.get(name='Projects')
-    assert nb.have_home_project() == True
+    assert nb.have_home_project == True
 
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'False'])
     cmd.command()
     nb = M.Neighborhood.query.get(name='Projects')
-    assert nb.have_home_project() == False
+    assert nb.have_home_project == False

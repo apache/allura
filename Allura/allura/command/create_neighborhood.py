@@ -48,7 +48,7 @@ class UpdateNeighborhoodCommand(base.Command):
         else:
             home_tool_active = False
 
-        if home_tool_active == nb.have_home_project():
+        if home_tool_active == nb.have_home_project:
             return
 
         p = nb.neighborhood_project
