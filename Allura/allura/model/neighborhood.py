@@ -108,6 +108,7 @@ class Neighborhood(MappedClass):
             return self.css
         return ""
 
+    @property
     def have_home_project(self):
         if self.neighborhood_project.app_config('home') is not None:
             return True

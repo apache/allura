@@ -8,6 +8,7 @@ import Image
 from tg import config
 from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
+from paste.httpexceptions import HTTPFound
 
 import allura
 from allura import model as M
@@ -183,6 +184,8 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'picker'
         r = self.app.get('/adobe/')
+        while isinstance(r.response, HTTPFound):
+            r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
@@ -190,6 +193,8 @@ class TestNeighborhood(TestController):
         neighborhood = M.Neighborhood.query.get(name='Adobe')
         neighborhood.features['css'] = 'custom'
         r = self.app.get('/adobe/')
+        while isinstance(r.response, HTTPFound):
+            r = r.follow()
         assert test_css in r
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         assert custom_css in r
@@ -242,7 +247,8 @@ class TestNeighborhood(TestController):
                           params=dict(project_unixname='maxproject2', project_name='Max project2', project_description='', neighborhood='Projects'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        r = r.follow()
+        while isinstance(r.response, HTTPFound):
+            r = r.follow()
         assert 'You have exceeded the maximum number of projects' in r
 
     def test_invite(self):
@@ -619,6 +625,10 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
 
     def test_add_a_project_link(self):
+        # Install Home tool for all neighborhoods
+        for nb in M.Neighborhood.query.find().all():
+            p = nb.neighborhood_project
+            p.install_app('home', 'home', 'Home', ordinal=0)
         r = self.app.get('/p/')
         assert 'Add a Project' in r
         r = self.app.get('/u/', extra_environ=dict(username='test-user'))
