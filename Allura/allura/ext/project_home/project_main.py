@@ -69,7 +69,7 @@ class ProjectHomeApp(Application):
     def sitemap(self):
         menu_id = 'Home'
         return [
-            SitemapEntry('Home', '.') ]
+            SitemapEntry('Home', c.project.url()) ]
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
@@ -79,6 +79,7 @@ class ProjectHomeApp(Application):
         return []
 
     def install(self, project):
+        super(ProjectHomeApp, self).install(project)
         pr = c.user.project_role()
         if pr:
             self.config.acl = [
