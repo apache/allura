@@ -58,7 +58,6 @@ class Neighborhood(MappedClass):
     project_list_url = FieldProperty(str, if_missing='')
     level = FieldProperty(S.Deprecated)
     allow_private = FieldProperty(S.Deprecated)
-    home_tool_active = FieldProperty(bool, if_missing=True)
     features = FieldProperty(dict(
         private_projects=bool,
         max_projects=S.Int,
@@ -108,6 +107,12 @@ class Neighborhood(MappedClass):
         if self.allow_custom_css:
             return self.css
         return ""
+
+    def have_home_project(self):
+        if self.neighborhood_project.app_config('home') is not None:
+            return True
+        else:
+            return False
 
     @property
     def icon(self):

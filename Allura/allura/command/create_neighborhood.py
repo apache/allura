@@ -19,7 +19,6 @@ class CreateNeighborhoodCommand(base.Command):
         n = M.Neighborhood(
             name=shortname,
             url_prefix='/' + shortname + '/',
-            home_tool_active=False,
             features=dict(private_projects = False,
                           max_projects = 500,
                           css = 'none',
@@ -48,5 +47,32 @@ class UpdateNeighborhoodCommand(base.Command):
             home_tool_active = True
         else:
             home_tool_active = False
-        nb.home_tool_active = home_tool_active
+
+        if home_tool_active == nb.have_home_project():
+            return
+
+        p = nb.neighborhood_project
+        if home_tool_active:
+            zero_position_exists = False
+            for ac in p.app_configs:
+                if ac.options['ordinal'] == 0:
+                    zero_position_exists = True
+                    break
+
+            if zero_position_exists:
+                for ac in p.app_configs:
+                    ac.options['ordinal'] = ac.options['ordinal'] + 1
+            p.install_app('home', 'home', 'Home', ordinal=0)
+        else:
+            app_config = p.app_config('home')
+            zero_position_exists = False
+            if app_config.options['ordinal'] == 0:
+                zero_position_exists = True
+
+            p.uninstall_app('home')
+            if zero_position_exists:
+                for ac in p.app_configs:
+                    ac.options['ordinal'] = ac.options['ordinal'] - 1
+
+        session(M.AppConfig).flush()
         session(M.Neighborhood).flush()
