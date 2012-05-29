@@ -8,6 +8,7 @@ import os.path
 import datetime
 import random
 import mimetypes
+import re
 from itertools import groupby
 
 import tg
@@ -419,5 +420,6 @@ def generate_code_stats(code):
     lines = code.split('\n')
     stats['code_size'] = len(code)
     stats['line_count'] = len(lines)
-    stats['data_line_count'] = sum([1 for l in lines if l !=''])
+    spaces = re.compile(r'^\s*$')
+    stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
     return stats
