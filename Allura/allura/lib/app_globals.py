@@ -45,7 +45,8 @@ class ForgeMarkdown(markdown.Markdown):
     def convert(self, source):
         try:
             return markdown.Markdown.convert(self, source)
-        except:    
+        except Exception as e:
+            log.info('Invalid markdown: %s %s', e, source)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
             return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
