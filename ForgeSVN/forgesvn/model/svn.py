@@ -431,6 +431,24 @@ class SVNImplementation(M.RepositoryImplementation):
             revision=self._revision(blob.commit.object_id))
         return StringIO(data)
 
+    def blob_size(self, blob):
+        try:
+            data = self._svn.list(
+                   self._url + blob.path(),
+                   revision=self._revision(blob.commit.object_id),
+                   dirent_fields=pysvn.SVN_DIRENT_SIZE)
+        except pysvn.ClientError:
+            log.info('ClientError getting filesize %r %r, returning 0', blob.path(), self._repo, exc_info=True)
+            return 0
+
+        try:
+            size = data[0][0]['size']
+        except (IndexError, KeyError):
+            log.info('Error getting filesize: bad data from svn client %r %r, returning 0', blob.path(), self._repo, exc_info=True)
+            size = 0
+        
+        return size
+
     def _setup_hooks(self):
         'Set up the post-commit and pre-revprop-change hooks'
         text = self.post_receive_template.substitute(

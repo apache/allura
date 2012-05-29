@@ -257,6 +257,10 @@ class HgImplementation(M.RepositoryImplementation):
         fctx = self._hg[blob.commit.object_id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return StringIO(fctx.data())
 
+    def blob_size(self, blob):
+        fctx = self._hg[blob.commit.object_id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
+        return fctx.size()
+
     def _setup_hooks(self):
         'Set up the hg changegroup hook'
         cp = ConfigParser()

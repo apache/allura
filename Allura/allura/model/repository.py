@@ -108,6 +108,10 @@ class RepositoryImplementation(object):
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
+    def blob_size(self, blob):
+        '''Return a blob size in bytes'''
+        raise NotImplementedError, 'blob_size'
+
     @classmethod
     def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
@@ -204,6 +208,8 @@ class Repository(Artifact):
         return self._impl.commit_context(commit)
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
+    def blob_size(self, blob):
+        return self._impl.blob_size(blob)
     def shorthand_for_commit(self, oid):
         return self._impl.shorthand_for_commit(oid)
     def symbolics_for_commit(self, commit):
@@ -1098,6 +1104,10 @@ class Blob(RepoObject):
 
     def __iter__(self):
         return iter(self.open())
+
+    @LazyProperty
+    def size(self):
+        return self.repo.blob_size(self)
 
     @LazyProperty
     def text(self):

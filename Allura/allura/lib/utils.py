@@ -412,13 +412,13 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
             num += 1
         yield 0, '</pre>'
 
-def generate_code_stats(code):
+def generate_code_stats(blob):
     stats = {'line_count': 0,
              'code_size': 0,
              'data_line_count': 0}
-
+    code = blob.text
     lines = code.split('\n')
-    stats['code_size'] = len(code)
+    stats['code_size'] = blob.size
     stats['line_count'] = len(lines)
     spaces = re.compile(r'^\s*$')
     stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])

@@ -488,7 +488,7 @@ class FileBrowser(BaseController):
         else:
             force_display = 'force' in kw
             context = self._blob.context()
-            stats = utils.generate_code_stats(self._blob.text)
+            stats = utils.generate_code_stats(self._blob)
             return dict(
                 blob=self._blob,
                 stats=stats,

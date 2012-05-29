@@ -21,6 +21,7 @@ install/*
 */.coverage
 solr_config/core0/data/
 solr_config/core1/data/
+solr_config/conf/
 var/
 .nose-stopwatch-times
 .noseids
