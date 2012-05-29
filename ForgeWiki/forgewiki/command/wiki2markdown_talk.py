@@ -5,7 +5,7 @@ class TalkImportUnit(BaseImportUnit):
         self.options = options
 
     def extract(self):
-        print "extract"
+        raise NotImplementedError('add here data extraction')
 
     def load(self):
-        print "load"
+        raise NotImplementedError('add here data loading')
