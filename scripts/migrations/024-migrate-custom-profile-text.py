@@ -34,7 +34,7 @@ def main():
             app = p.app_instance('wiki')
             if app is None:
                 try:
-                    p.install_app('wiki')
+                    app = p.install_app('wiki')
                 except Exception as e:
                     log.error("Unable to install wiki for user %s" % user.username)
                     continue
