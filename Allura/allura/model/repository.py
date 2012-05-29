@@ -385,7 +385,6 @@ class Repository(Artifact):
                                            ci.message,
                                            base_url, ci.url())
                 text = h.really_unicode(message)
-                log.info("SUBJ: %s MESSAGE: %s" % (subject, text))
             Notification.post(
                 artifact=self,
                 topic='metadata',
