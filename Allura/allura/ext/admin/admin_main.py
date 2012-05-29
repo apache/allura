@@ -42,37 +42,13 @@ class W:
     audit = aw.AuditLog()
     page_list=ffw.PageList()
 
-class AdminWidgets(WidgetController):
-    widgets=['users', 'tool_status']
 
-    def __init__(self, app): pass
-
-    @expose('jinja:allura.ext.admin:templates/widgets/users.html')
-    def users(self):
-        return dict(project_users=c.project.users())
-
-    @expose('jinja:allura.ext.admin:templates/widgets/tool_status.html')
-    def tool_status(self):
-        'Display # of Shortlinks for each (mounted) tool'
-        links = defaultdict(list)
-        for ac in c.project.app_configs:
-            mp = ac.options.mount_point
-            q = M.Shortlink.query.find(dict(
-                project_id=c.project._id,
-                app_config_id = ac._id))
-            ct = q.count()
-            if 0 < ct < 10:
-                links[mp] = q.all()
-            elif ct:
-                links[mp] = [ None ] * ct
-        return dict(links=links)
 
 class AdminApp(Application):
     '''This is the admin app.  It is pretty much required for
     a functioning allura project.
     '''
     __version__ = version.__version__
-    widget=AdminWidgets
     installable=False
     _installable_tools = None
     tool_label = 'admin'

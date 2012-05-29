@@ -1,9 +1,0 @@
-<div class="portlet">
-  <h4>Project Users</h4>
-  <ul>
-    {% for user in project_users %}
-    <li>
-    <a href="{{user.url()}}profile/">{{user.display_name}}</a></li>
-    {% endfor %}
-  </ul>
-</div>
