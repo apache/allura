@@ -6,18 +6,14 @@ from pylons import c
 from allura import model as M
 from allura.lib import exceptions
 
-class BaseImportUnit(object):
-    def __init__(self, options):
-        self.options = options
+from forgewiki.command.wiki2markdown_pages import PagesImportUnit
+from forgewiki.command.wiki2markdown_history import HistoryImportUnit
+from forgewiki.command.wiki2markdown_attachments import AttachmentsImportUnit
+from forgewiki.command.wiki2markdown_talk import TalkImportUnit
 
-    def extract(self):
-        raise NotImplementedError('subclass must override this method')
-
-    def load(self):
-        raise NotImplementedError('subclass must override this method')
 
 class Wiki2MarkDown(base.WikiCommand):
-    min_args=2
+    min_args=1
     max_args=None
     summary = 'Export mediawiki to markdown'
     all_import_units = [
@@ -56,19 +52,15 @@ class Wiki2MarkDown(base.WikiCommand):
 
         for uname in import_units:
             if uname == "pages":
-                from forgewiki.command.wiki2markdown_pages import PagesImportUnit
                 iu = PagesImportUnit(self.options)
 
             elif uname == "history":
-                from forgewiki.command.wiki2markdown_history import HistoryImportUnit
                 iu = HistoryImportUnit(self.options)
 
             elif uname == "attachments":
-                from forgewiki.command.wiki2markdown_attachments import AttachmentsImportUnit
                 iu = AttachmentsImportUnit(self.options)
 
             elif uname == "talk":
-                from forgewiki.command.wiki2markdown_talk import TalkImportUnit
                 iu = TalkImportUnit(self.options)
 
             if self.options.extract:
