@@ -133,7 +133,7 @@ class Notification(MappedClass):
                 _id=artifact.url()+post._id,
                 from_address=str(author._id) if author != User.anonymous() else None,
                 reply_to_address='"%s" <%s>' % (
-                    subject_prefix, getattr(artifact, 'email_address', 'noreply@in.sf.net')),
+                    subject_prefix, getattr(artifact, 'email_address', u'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
                 text=text,
                 in_reply_to=post.parent_id,
@@ -144,7 +144,7 @@ class Notification(MappedClass):
                     idx['title_s'],c.user.get_pref('display_name')))
             reply_to = '"%s" <%s>' % (
                 idx['title_s'],
-                getattr(artifact, 'email_address', 'noreply@in.sf.net'))
+                getattr(artifact, 'email_address', u'noreply@in.sf.net'))
             d = dict(
                 from_address=reply_to,
                 reply_to_address=reply_to,
@@ -509,9 +509,9 @@ class Mailbox(MappedClass):
                         self.user_id, from_address, subject, ns, reply_to_address)
         elif self.type == 'digest':
             Notification.send_digest(
-                self.user_id, 'noreply@in.sf.net', 'Digest Email',
+                self.user_id, u'noreply@in.sf.net', 'Digest Email',
                 notifications)
         elif self.type == 'summary':
             Notification.send_summary(
-                self.user_id, 'noreply@in.sf.net', 'Digest Email',
+                self.user_id, u'noreply@in.sf.net', 'Digest Email',
                 notifications)

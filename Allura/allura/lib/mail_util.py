@@ -149,7 +149,7 @@ def _parse_smtp_addr(addr):
     addrs = _parse_message_id(addr)
     if addrs and addrs[0]: return addrs[0]
     if '@' in addr: return addr
-    return 'noreply@in.sf.net'
+    return u'noreply@in.sf.net'
 
 def isvalid(addr):
     '''return True if addr is a (possibly) valid email address, false
