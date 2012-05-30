@@ -475,6 +475,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = kw.get('allow_browse', False)
         self.neighborhood.show_title = kw.get('show_title', False)
+        self.neighborhood.project_list_url = kw.get('project_list_url', '')
         tracking_id = kw.get('tracking_id', '')
         if tracking_id != self.neighborhood.tracking_id:
             c.project = self.neighborhood.neighborhood_project

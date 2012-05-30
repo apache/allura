@@ -5,7 +5,17 @@
 {% else %}
   {% if c.project.neighborhood.icon %}
     <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon"
-       alt="Return to {{c.project.neighborhood.name}} Neighborhood" title="Return to {{c.project.neighborhood.name}} Neighborhood"></a>
+       alt="Return to {{c.project.neighborhood.name}}" title="Return to {{c.project.neighborhood.name}}"></a>
+       <div class="neighborhood_title">
+         <h1><a href="{{c.project.neighborhood.url()}}">{{c.project.neighborhood.name}}</a></h1>
+         {% if c.project.neighborhood.project_list_url %}
+           <div class="neighborhood_title_link">
+           <a href="{{c.project.neighborhood.project_list_url}}">
+             View More Projects
+           </a>
+           </div>
+         {% endif %}
+      </div>
   {% endif %}
   <a href="{{c.project.url()}}">
     {% if c.project.user_project_of %}
