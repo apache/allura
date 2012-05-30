@@ -217,7 +217,7 @@ class Thread(Artifact):
                 link=artifact.url(),
                 _id=artifact.url()+post._id,
                 from_address=str(author._id) if author != User.anonymous() else None,
-                reply_to_address='noreply@in.sf.net',
+                reply_to_address=u'noreply@in.sf.net',
                 subject=subject,
                 text=text,
                 in_reply_to=post.parent_id,

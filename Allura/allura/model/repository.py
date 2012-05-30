@@ -255,7 +255,7 @@ class Repository(Artifact):
     @property
     def email_address(self):
         domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
-        return 'noreply@%s%s' % (domain, config.common_suffix)
+        return u'noreply@%s%s' % (domain, config.common_suffix)
 
     def index(self):
         result = Artifact.index(self)
