@@ -64,13 +64,13 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     addrs_html = []
     addrs_multi = []
     if fromaddr is None:
-        fromaddr = 'noreply@in.sf.net'
+        fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
             log.warning('Cannot find user with ID %s', fromaddr)
-            fromaddr = 'noreply@in.sf.net'
+            fromaddr = u'noreply@in.sf.net'
         else:
             fromaddr = user.email_address_header()
     # Divide addresses based on preferred email formats
@@ -126,13 +126,13 @@ def sendsimplemail(
     in_reply_to=None):
     from allura import model as M
     if fromaddr is None:
-        fromaddr = 'noreply@in.sf.net'
+        fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
             log.warning('Cannot find user with ID %s', fromaddr)
-            fromaddr = 'noreply@in.sf.net'
+            fromaddr = u'noreply@in.sf.net'
         else:
             fromaddr = user.email_address_header()
     plain_msg = mail_util.encode_email_part(text, 'plain')
