@@ -1,6 +1,6 @@
 from forgewiki.command.wiki2markdown_base import BaseImportUnit
 
-class TalkImportUnit(BaseImportUnit):
+class HistoryImportUnit(BaseImportUnit):
     def __init__(self, options):
         self.options = options
 
