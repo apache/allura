@@ -1,3 +1,4 @@
+import os
 import base
 from allura.command import base as allura_base
 
@@ -12,7 +13,7 @@ from forgewiki.command.wiki2markdown_attachments import AttachmentsImportUnit
 from forgewiki.command.wiki2markdown_talk import TalkImportUnit
 
 
-class Wiki2MarkDown(base.WikiCommand):
+class Wiki2MarkDownCommand(base.WikiCommand):
     min_args=1
     max_args=None
     summary = 'Export mediawiki to markdown'
@@ -49,6 +50,9 @@ class Wiki2MarkDown(base.WikiCommand):
                 if el not in self.all_import_units:
                     allura_base.log.error("%s import unit was not found" % el)
                     exit(2)
+
+        if not os.path.exists(self.options.output_dir):
+            os.makedirs(self.options.output_dir)
 
         for uname in import_units:
             if uname == "pages":

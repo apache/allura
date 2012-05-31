@@ -1,1 +1,1 @@
-from wiki2markdown import Wiki2MarkDown
+from wiki2markdown import Wiki2MarkDownCommand
