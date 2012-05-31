@@ -20,10 +20,6 @@ def setup_with_tools():
 
 
 def test_mediawiki2markdown():
-    bbcode_text = "[b]bolded text[/b][i]italicized text[/i]"
-    bbcode_output = converters.mediawiki2markdown(bbcode_text)
-    assert "**bolded text**_italicized text_" in bbcode_output
-
     mediawiki_text = """
 '''bold''' ''italics''
 == Getting started ==

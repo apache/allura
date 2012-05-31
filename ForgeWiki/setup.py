@@ -27,6 +27,6 @@ setup(name='ForgeWiki',
       Wiki=forgewiki.wiki_main:ForgeWikiApp
 
       [paste.paster_command]
-      wiki2markdown = forgewiki.command.wiki2markdown:Wiki2MarkDown
+      wiki2markdown = forgewiki.command.wiki2markdown:Wiki2MarkDownCommand
       """,
       )
