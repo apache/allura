@@ -6,6 +6,17 @@
 {% block header %}User Preferences for {{c.user.username}}{% endblock %}
 
 {% block content %}
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+   </ul>
+
   {% if g.theme.password_change_form %}
   <div class="grid-20">
     <h2>Change Password</h2>
