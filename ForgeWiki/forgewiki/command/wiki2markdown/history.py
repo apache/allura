@@ -1,6 +1,6 @@
-from forgewiki.command.wiki2markdown_base import BaseImportUnit
+from forgewiki.command.wiki2markdown.base import BaseImportUnit
 
-class TalkImportUnit(BaseImportUnit):
+class HistoryImportUnit(BaseImportUnit):
     def extract(self):
         raise NotImplementedError('add here data extraction')
 
