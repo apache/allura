@@ -129,6 +129,16 @@ class AuthenticationProvider(object):
         '''
         raise NotImplemented, 'upload_sshkey'
 
+    def account_navigation(self):
+        return [
+            {
+                'tabid': 'account_sfnet_beta_index',
+                'title': 'Subscriptions',
+                'target': "/auth/prefs",
+                'alt': 'Manage Subscription Preferences',
+            },
+        ]
+
 class LocalAuthenticationProvider(AuthenticationProvider):
     '''
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
