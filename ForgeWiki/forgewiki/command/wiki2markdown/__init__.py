@@ -1,5 +1,5 @@
 import os
-import base
+from forgewiki.command.base import WikiCommand
 from allura.command import base as allura_base
 
 from pylons import c
@@ -7,13 +7,13 @@ from pylons import c
 from allura import model as M
 from allura.lib import exceptions
 
-from forgewiki.command.wiki2markdown_pages import PagesImportUnit
-from forgewiki.command.wiki2markdown_history import HistoryImportUnit
-from forgewiki.command.wiki2markdown_attachments import AttachmentsImportUnit
-from forgewiki.command.wiki2markdown_talk import TalkImportUnit
+from forgewiki.command.wiki2markdown.pages import PagesImportUnit
+from forgewiki.command.wiki2markdown.history import HistoryImportUnit
+from forgewiki.command.wiki2markdown.attachments import AttachmentsImportUnit
+from forgewiki.command.wiki2markdown.talk import TalkImportUnit
 
 
-class Wiki2MarkDownCommand(base.WikiCommand):
+class Wiki2MarkDownCommand(WikiCommand):
     min_args=1
     max_args=None
     summary = 'Export mediawiki to markdown'
@@ -23,7 +23,7 @@ class Wiki2MarkDownCommand(base.WikiCommand):
         "attachments",
         "talk"
     ]
-    parser = base.Command.standard_parser(verbose=True)
+    parser = WikiCommand.standard_parser(verbose=True)
     parser.add_option('-e', '--extract-only', action='store_true', dest='extract',
                       help='Store data from the Allura mediawiki content on the local filesystem; not load into Allura')
     parser.add_option('-l', '--load-only', action='store_true', dest='load',

@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from forgewiki.command.wiki2markdown_base import BaseImportUnit
+from forgewiki.command.wiki2markdown.base import BaseImportUnit
 
 from allura.command import base as allura_base
 
