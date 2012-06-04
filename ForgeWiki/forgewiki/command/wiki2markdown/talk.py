@@ -1,9 +1,13 @@
 import os
 import json
 
+from ming.orm.ormsession import ThreadLocalORMSession
+
 from forgewiki.command.wiki2markdown.base import BaseImportUnit
 
 from allura.command import base as allura_base
+
+from pylons import c
 
 from allura import model as M
 from forgewiki import converters
@@ -38,7 +42,39 @@ class TalkImportUnit(BaseImportUnit):
                 json.dump(json_talk, talk_file)
 
     def _load_pages(self, p):
-        pass
+        if p.neighborhood is None:
+            return
+        discussion_app = p.app_instance('discussion')
+        if discussion_app is None:
+            return
+
+        pid = "%s" % p._id
+        file_path = os.path.join(self.options.output_dir, pid, "talk.json")
+        if not os.path.isfile(file_path):
+            return
+
+        json_talk = {}
+        with open(file_path, 'r') as talk_file:
+            json_talk = json.load(talk_file)
+
+        c.project = None
+
+        discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        for discuss in discussions:
+            for post in discuss.posts:
+                post_id = "%s" % post._id
+                if post_id not in json_talk:
+                    continue
+
+                post.text = json_talk[post_id]['text']
+                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                    hist_id = "%s" % hist._id
+                    if hist_id not in json_talk[post_id]['history']:
+                        continue
+                    hist.data['text'] = json_talk[post_id]['history'][hist_id]['text']
+
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
 
     def extract(self):
         projects = M.Project.query.find().all()
