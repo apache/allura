@@ -69,10 +69,10 @@ class HistoryImportUnit(BaseImportUnit):
         projects = M.Project.query.find().all()
         for p in projects:
             self._export_pages(p)
-        allura_base.log.info("Export history complete")
+        allura_base.log.info("Export pages complete")
 
     def load(self):
         projects = M.Project.query.find().all()
         for p in projects:
             self._load_pages(p)
-        allura_base.log.info("Load history complete")
+        allura_base.log.info("Load pages complete")
