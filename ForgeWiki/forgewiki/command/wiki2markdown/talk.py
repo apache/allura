@@ -27,13 +27,27 @@ class TalkImportUnit(BaseImportUnit):
         discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
         for discuss in discussions:
             for post in discuss.posts:
-                print post
+                post_id = "%s" % post._id
+                json_talk[post_id] = {'text': converters.mediawiki2markdown(post.text), 'history': {}}
+                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                    hist_id = "%s" % hist._id
+                    json_talk[post_id]['history'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
+
+        if len(json_talk) > 0:
+            with open(file_path, 'w') as talk_file:
+                json.dump(json_talk, talk_file)
+
+    def _load_pages(self, p):
+        pass
 
     def extract(self):
         projects = M.Project.query.find().all()
         for p in projects:
             self._export_pages(p)
-        allura_base.log.info("Export pages complete")
+        allura_base.log.info("Export talk complete")
 
     def load(self):
-        raise NotImplementedError('add here data loading')
+        projects = M.Project.query.find().all()
+        for p in projects:
+            self._load_pages(p)
+        allura_base.log.info("Load talk complete")
