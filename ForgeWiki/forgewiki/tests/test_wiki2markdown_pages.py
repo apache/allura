@@ -18,6 +18,9 @@ def test_wiki2markdown_pages():
     output_dir = u'/tmp/wiki2markdown'
     for p in WM.Page.query.find().all():
         p.text = "'''bold''' ''italics''"
+
+    for p in M.Post.query.find().all():
+        p.text = "'''bold''' ''italics''"
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     cmd = wiki2markdown.Wiki2MarkDownCommand('wiki2markdown')
@@ -38,4 +41,7 @@ def test_wiki2markdown_pages():
     cmd.run([test_config, '--load-only', '--output-dir', '/tmp/wiki2markdown', 'pages'])
     cmd.command()
     for p in WM.Page.query.find().all():
+        assert "**bold** _italics_" in p.text
+
+    for p in M.Post.query.find().all():
         assert "**bold** _italics_" in p.text
