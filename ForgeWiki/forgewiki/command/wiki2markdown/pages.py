@@ -15,6 +15,7 @@ from allura import model as M
 from forgewiki import model as WM
 from forgewiki import converters
 
+
 class PagesImportUnit(BaseImportUnit):
     def _export_pages(self, p):
         if p.neighborhood is None:
@@ -60,7 +61,7 @@ class PagesImportUnit(BaseImportUnit):
         for k in json_pages.keys():
             page = WM.Page.query.get(app_config_id=wiki_app.config._id, _id=ObjectId(k))
             if page is None:
-               continue
+                continue
             page.text = json_pages[k]['text']
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
