@@ -25,10 +25,17 @@ if [ "$TEST_MODULES"  == "" ]; then
     "
 fi
 
+if [ "$INCLUDE_TESTS" ]; then
+    ignore=""
+else
+    ignore="tests"
+fi
+
 mkdir -p report.clonedigger
+
 for module in $TEST_MODULES; do
     (
         echo "Running clonedigger in module $module"
-        clonedigger --output="report.clonedigger/$module-$(date --rfc-3339=seconds).html" --language=python --ignore-dir="$module/tests" $module || exit
+        clonedigger --output="report.clonedigger/$module-$(date --iso-8601=seconds).html" --language=python --ignore-dir="$ignore" $module || exit
     ) || exit
 done
