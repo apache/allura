@@ -173,8 +173,8 @@ class SVNImplementation(M.RepositoryImplementation):
         with open(fn, 'wb') as fp:
             fp.write('#!/bin/sh\n')
         os.chmod(fn, 0755)
-        subprocess.check_call(['svnsync', 'init', self._url, source_url])
-        subprocess.check_call(['svnsync', '--non-interactive', 'sync', self._url])
+        subprocess.check_call(['svnsync', '--non-interactive', '--trust-server-cert', 'init', self._url, source_url])
+        subprocess.check_call(['svnsync', '--non-interactive', '--trust-server-cert', 'sync', self._url])
         self._repo.status = 'analyzing'
         session(self._repo).flush()
         log.info('... %r cloned, analyzing', self._repo)
