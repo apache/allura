@@ -19,6 +19,9 @@ def test_wiki2markdown_history():
     for p in WM.Page.query.find().all():
         for hist in WM.PageHistory.query.find(dict(artifact_id=p._id)).all():
             hist.data['text'] = "'''bold''' ''italics''"
+    for p in M.Post.query.find().all():
+        for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+            hist.data['text'] = "'''bold''' ''italics''"
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     cmd = wiki2markdown.Wiki2MarkDownCommand('wiki2markdown')
@@ -40,4 +43,8 @@ def test_wiki2markdown_history():
     cmd.command()
     for p in WM.Page.query.find().all():
         for hist in WM.PageHistory.query.find(dict(artifact_id=p._id)).all():
+            assert "**bold** _italics_" in hist.data['text']
+
+    for p in M.Post.query.find().all():
+        for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
             assert "**bold** _italics_" in hist.data['text']

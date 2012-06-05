@@ -18,8 +18,7 @@ class HistoryImportUnit(BaseImportUnit):
         if p.neighborhood is None:
             return
         wiki_app = p.app_instance('wiki')
-        if wiki_app is None:
-            return
+        discussion_app = p.app_instance('discussion')
 
         pid = "%s" % p._id
         out_dir = os.path.join(self.options.output_dir, pid)
@@ -28,14 +27,28 @@ class HistoryImportUnit(BaseImportUnit):
 
         file_path = os.path.join(out_dir, "history.json")
 
-        json_history = {}
-        pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        json_history = {'pages': {}, 'discuss': {}}
+
+        if wiki_app is not None:
+            pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        else:
+            pages = []
         for page in pages:
             for hist in WM.PageHistory.query.find(dict(artifact_id=page._id)).all():
                 hist_id = "%s" % hist._id
-                json_history[hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
+                json_history['pages'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
 
-        if len(json_history) > 0:
+        if discussion_app is not None:
+            discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        else:
+            discussions = []
+        for discuss in discussions:
+            for post in discuss.posts:
+                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                    hist_id = "%s" % hist._id
+                    json_history['discuss'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
+
+        if len(json_history['pages']) > 0 or len(json_history['discuss']) > 0:
             with open(file_path, 'w') as history_file:
                 json.dump(json_history, history_file)
 
@@ -43,8 +56,7 @@ class HistoryImportUnit(BaseImportUnit):
         if p.neighborhood is None:
             return
         wiki_app = p.app_instance('wiki')
-        if wiki_app is None:
-            return
+        discussion_app = p.app_instance('discussion')
 
         pid = "%s" % p._id
         file_path = os.path.join(self.options.output_dir, pid, "history.json")
@@ -56,12 +68,27 @@ class HistoryImportUnit(BaseImportUnit):
             json_history = json.load(history_file)
 
         c.project = None
-        pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        if wiki_app is not None:
+            pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        else:
+            pages = []
         for page in pages:
             for hist in WM.PageHistory.query.find(dict(artifact_id=page._id)).all():
                 hist_id = "%s" % hist._id
-                if hist_id in json_history:
-                    hist.data['text'] = json_history[hist_id]['text']
+                if hist_id in json_history['pages']:
+                    hist.data['text'] = json_history['pages'][hist_id]['text']
+
+        if discussion_app is not None:
+            discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        else:
+            discussions = []
+        for discuss in discussions:
+            for post in discuss.posts:
+                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                    hist_id = "%s" % hist._id
+                    if hist_id in json_history['discuss']:
+                        hist.data['text'] = json_history['discuss'][hist_id]['text']
+
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

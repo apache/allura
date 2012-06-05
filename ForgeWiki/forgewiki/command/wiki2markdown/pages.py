@@ -21,8 +21,7 @@ class PagesImportUnit(BaseImportUnit):
         if p.neighborhood is None:
             return
         wiki_app = p.app_instance('wiki')
-        if wiki_app is None:
-            return
+        discussion_app = p.app_instance('discussion')
 
         pid = "%s" % p._id
         out_dir = os.path.join(self.options.output_dir, pid)
@@ -31,13 +30,25 @@ class PagesImportUnit(BaseImportUnit):
 
         file_path = os.path.join(out_dir, "pages.json")
 
-        json_pages = {}
-        pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        json_pages = {'pages': {}, 'discuss': {}}
+        if wiki_app is not None:
+            pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        else:
+            pages = []
         for page in pages:
             page_id = "%s" % page._id
-            json_pages[page_id] = {'text': converters.mediawiki2markdown(page.text)}
+            json_pages['pages'][page_id] = {'text': converters.mediawiki2markdown(page.text)}
 
-        if len(json_pages) > 0:
+        if discussion_app is not None:
+            discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        else:
+            discussions = []
+        for discuss in discussions:
+            for post in discuss.posts:
+                post_id = "%s" % post._id
+                json_pages['discuss'][post_id] = {'text': converters.mediawiki2markdown(post.text)}
+
+        if len(json_pages['pages']) > 0 or len(json_pages['discuss']) > 0:
             with open(file_path, 'w') as pages_file:
                 json.dump(json_pages, pages_file)
 
@@ -45,8 +56,7 @@ class PagesImportUnit(BaseImportUnit):
         if p.neighborhood is None:
             return
         wiki_app = p.app_instance('wiki')
-        if wiki_app is None:
-            return
+        discussion_app = p.app_instance('discussion')
 
         pid = "%s" % p._id
         file_path = os.path.join(self.options.output_dir, pid, "pages.json")
@@ -58,11 +68,26 @@ class PagesImportUnit(BaseImportUnit):
             json_pages = json.load(pages_file)
 
         c.project = None
-        for k in json_pages.keys():
-            page = WM.Page.query.get(app_config_id=wiki_app.config._id, _id=ObjectId(k))
-            if page is None:
-                continue
-            page.text = json_pages[k]['text']
+
+        if wiki_app is not None:
+            pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
+        else:
+            pages = []
+        for page in pages:
+            page_id = "%s" % page._id
+            if page_id in json_pages['pages']:
+                page.text = json_pages['pages'][page_id]['text']
+
+        if discussion_app is not None:
+            discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        else:
+            discussions = []
+        for discuss in discussions:
+            for post in discuss.posts:
+                post_id = "%s" % post._id
+                if post_id in json_pages['discuss']:
+                    post.text = json_pages['discuss'][post_id]['text']
+
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
