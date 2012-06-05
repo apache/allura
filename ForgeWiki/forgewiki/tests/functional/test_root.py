@@ -488,3 +488,31 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert '?deleted=True">bbb' in response
+
+    def test_mailto_links(self):
+        self.app.get('/wiki/test_mailto/')
+        params = {
+            'title':'test_mailto',
+            'text':'''
+* Automatic mailto #1 <darth.vader@deathstar.org>
+* Automatic mailto #2 <mailto:luke.skywalker@tatooine.org>
+* Handmaid mailto <a href="mailto:yoda@jedi.org">Email Yoda</a>
+''',
+            'labels':'',
+            'labels_old':'',
+            'viewable_by-0.id':'all'}
+        self.app.post('/wiki/test_mailto/update', params=params)
+        r = self.app.get('/wiki/test_mailto/')
+        mailto_links = 0
+        for link in r.html.findAll('a'):
+            if link.get('href') == 'mailto:darth.vader@deathstar.org':
+                assert 'notfound' not in link.get('class', '')
+                mailto_links +=1
+            if link.get('href') == 'mailto:luke.skywalker@tatooine.org':
+                assert 'notfound' not in link.get('class', '')
+                mailto_links += 1
+            if link.get('href') == 'mailto:yoda@jedi.org':
+                assert link.contents == ['Email Yoda']
+                assert 'notfound' not in link.get('class', '')
+                mailto_links += 1
+        assert mailto_links == 3, 'Wrong number of mailto links'
