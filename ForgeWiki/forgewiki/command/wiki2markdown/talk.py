@@ -10,6 +10,7 @@ from allura.command import base as allura_base
 from pylons import c
 
 from allura import model as M
+from forgediscussion import model as DM
 from forgewiki import converters
 
 class TalkImportUnit(BaseImportUnit):
@@ -28,12 +29,12 @@ class TalkImportUnit(BaseImportUnit):
         file_path = os.path.join(out_dir, "talk.json")
 
         json_talk = {}
-        discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        discussions = DM.Forum.query.find(app_config_id=discussion_app.config._id).all()
         for discuss in discussions:
             for post in discuss.posts:
                 post_id = "%s" % post._id
                 json_talk[post_id] = {'text': converters.mediawiki2markdown(post.text), 'history': {}}
-                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                for hist in post.history().all():
                     hist_id = "%s" % hist._id
                     json_talk[post_id]['history'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
 
@@ -59,7 +60,7 @@ class TalkImportUnit(BaseImportUnit):
 
         c.project = None
 
-        discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+        discussions = DM.Forum.query.find(app_config_id=discussion_app.config._id).all()
         for discuss in discussions:
             for post in discuss.posts:
                 post_id = "%s" % post._id
@@ -67,11 +68,10 @@ class TalkImportUnit(BaseImportUnit):
                     continue
 
                 post.text = json_talk[post_id]['text']
-                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                for hist in post.history().all():
                     hist_id = "%s" % hist._id
-                    if hist_id not in json_talk[post_id]['history']:
-                        continue
-                    hist.data['text'] = json_talk[post_id]['history'][hist_id]['text']
+                    if hist_id in json_talk[post_id]['history']:
+                        hist.data['text'] = json_talk[post_id]['history'][hist_id]['text']
 
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()

@@ -34,7 +34,7 @@ class HistoryImportUnit(BaseImportUnit):
         else:
             pages = []
         for page in pages:
-            for hist in WM.PageHistory.query.find(dict(artifact_id=page._id)).all():
+            for hist in page.history().all():
                 hist_id = "%s" % hist._id
                 json_history['pages'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
 
@@ -44,7 +44,7 @@ class HistoryImportUnit(BaseImportUnit):
             discussions = []
         for discuss in discussions:
             for post in discuss.posts:
-                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                for hist in post.history().all():
                     hist_id = "%s" % hist._id
                     json_history['discuss'][hist_id] = {'text': converters.mediawiki2markdown(hist.data['text'])}
 
@@ -73,7 +73,7 @@ class HistoryImportUnit(BaseImportUnit):
         else:
             pages = []
         for page in pages:
-            for hist in WM.PageHistory.query.find(dict(artifact_id=page._id)).all():
+            for hist in page.history().all():
                 hist_id = "%s" % hist._id
                 if hist_id in json_history['pages']:
                     hist.data['text'] = json_history['pages'][hist_id]['text']
@@ -84,7 +84,7 @@ class HistoryImportUnit(BaseImportUnit):
             discussions = []
         for discuss in discussions:
             for post in discuss.posts:
-                for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+                for hist in post.history().all():
                     hist_id = "%s" % hist._id
                     if hist_id in json_history['discuss']:
                         hist.data['text'] = json_history['discuss'][hist_id]['text']
