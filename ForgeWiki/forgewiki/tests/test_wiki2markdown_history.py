@@ -17,10 +17,10 @@ def setUp(self):
 def test_wiki2markdown_history():
     output_dir = u'/tmp/wiki2markdown'
     for p in WM.Page.query.find().all():
-        for hist in WM.PageHistory.query.find(dict(artifact_id=p._id)).all():
+        for hist in p.history().all():
             hist.data['text'] = "'''bold''' ''italics''"
-    for p in M.Post.query.find().all():
-        for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+    for post in M.Post.query.find().all():
+        for hist in post.history().all():
             hist.data['text'] = "'''bold''' ''italics''"
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
@@ -42,9 +42,9 @@ def test_wiki2markdown_history():
     cmd.run([test_config, '--load-only', '--output-dir', '/tmp/wiki2markdown', 'history'])
     cmd.command()
     for p in WM.Page.query.find().all():
-        for hist in WM.PageHistory.query.find(dict(artifact_id=p._id)).all():
+        for hist in p.history().all():
             assert "**bold** _italics_" in hist.data['text']
 
-    for p in M.Post.query.find().all():
-        for hist in M.PostHistory.query.find(dict(artifact_id=post._id)).all():
+    for post in M.Post.query.find().all():
+        for hist in post.history().all():
             assert "**bold** _italics_" in hist.data['text']

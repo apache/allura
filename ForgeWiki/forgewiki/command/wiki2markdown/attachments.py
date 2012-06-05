@@ -11,6 +11,7 @@ from pylons import c
 
 from allura import model as M
 from forgewiki import model as WM
+from forgediscussion import model as DM
 from forgewiki import converters
 
 class AttachmentsImportUnit(BaseImportUnit):
@@ -26,7 +27,7 @@ class AttachmentsImportUnit(BaseImportUnit):
             os.mkdir(out_dir)
 
         file_path = os.path.join(out_dir, "attachments.json")
-        json_attachments = {'pages': {}, 'discuss': {}}
+        json_attachments = {'pages': {}, 'discuss': {}, 'forums': {}}
 
         if wiki_app is not None:
             pages = WM.Page.query.find(dict(app_config_id=wiki_app.config._id)).all()
@@ -56,8 +57,10 @@ class AttachmentsImportUnit(BaseImportUnit):
 
         if discussion_app is not None:
             discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+            forums = DM.Forum.query.find(app_config_id=discussion_app.config._id).all()
         else:
             discussions = []
+            forums = []
         for discuss in discussions:
             for post in discuss.posts:
                 post_id = "%s" % post._id
@@ -81,7 +84,31 @@ class AttachmentsImportUnit(BaseImportUnit):
                                           )
                 json_attachments['discuss'][post_id] = {'text': post_text}
 
-        if len(json_attachments['pages']) > 0 or len(json_attachments['discuss']) > 0:
+        for f in forums:
+            for post in f.posts:
+                post_id = "%s" % post._id
+
+                attachments_list = post.attachments.all()
+                if len(attachments_list) == 0:
+                    continue
+
+                post_text = post.text
+                for att in attachments_list:
+                    if att.content_type[:5] == "image":
+                        post_text = '%s\n![%s](%s "%s")' % (post_text,
+                                          att.filename,
+                                          att.url(),
+                                          att.filename
+                                          )
+                    else:
+                        post_text = '%s\n[%s](%s)' % (post_text,
+                                          att.filename,
+                                          att.url()
+                                          )
+                json_attachments['forums'][post_id] = {'text': post_text}
+
+        if len(json_attachments['pages']) > 0 or len(json_attachments['discuss']) > 0 \
+          or len(json_attachments['forums']) > 0:
             with open(file_path, 'w') as attachments_file:
                 json.dump(json_attachments, attachments_file)
 
@@ -97,7 +124,7 @@ class AttachmentsImportUnit(BaseImportUnit):
             return
 
         c.project = None
-        json_attachments = {'pages': {}, 'discuss': {}}
+        json_attachments = {'pages': {}, 'discuss': {}, 'forums': {}}
         with open(file_path, 'r') as attachments_file:
             json_attachments = json.load(attachments_file)
 
@@ -113,14 +140,23 @@ class AttachmentsImportUnit(BaseImportUnit):
 
         if discussion_app is not None:
             discussions = M.Discussion.query.find(app_config_id=discussion_app.config._id).all()
+            forums = DM.Forum.query.find(app_config_id=discussion_app.config._id).all()
         else:
             discussions = []
+            forums = []
         for discuss in discussions:
             for post in discuss.posts:
                 post_id = "%s" % post._id
 
                 if post_id in json_attachments['discuss']:
                     post.text = json_attachments['discuss'][post_id]['text']
+
+        for f in forums:
+            for post in f.posts:
+                post_id = "%s" % post._id
+
+                if post_id in json_attachments['forums']:
+                    post.text = json_attachments['forums'][post_id]['text']
 
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
