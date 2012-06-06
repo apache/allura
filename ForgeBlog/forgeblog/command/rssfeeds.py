@@ -21,6 +21,12 @@ from allura.lib import exceptions
 html2text.BODY_WIDTH = 0
 
 class MDHTMLParser(HTMLParser):
+    """We need a custom HTMLParser implementation so that the "text"
+    part of the HTML doesn't have any Markdown syntax interpreted,
+    while still allowing the HTML tags to be converted to Markdown
+    and interpreted properly.
+    """
+
     def __init__(self):
         HTMLParser.__init__(self)
         self.NO_END_TAGS = ["area", "base", "basefont", "br", "col", "frame",
@@ -37,7 +43,7 @@ class MDHTMLParser(HTMLParser):
 
         tag_text = u"<%s" % tag
         for attr in attrs:
-            if attr[1].find('"'):
+            if attr[1].find('"') != -1:
                 tag_text = u"%s %s='%s'" % (tag_text, attr[0], attr[1])
             else:
                 tag_text = u'%s %s="%s"' % (tag_text, attr[0], attr[1])
@@ -97,7 +103,7 @@ class MDHTMLParser(HTMLParser):
             self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_OPEN)
             self.custom_tag_opened = True
 
-        self.result_doc = u"%s&%s;" % (self.result_doc, name)
+        self.result_doc = u"%s&#%s;" % (self.result_doc, name)
 
     def handle_decl(self, data):
         if self.custom_tag_opened:
