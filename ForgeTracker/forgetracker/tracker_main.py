@@ -101,7 +101,7 @@ class W:
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'write', 'save_searches',
+    permissions = ['configure', 'read', 'update', 'create', 'save_searches',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
         ConfigOption('TicketMonitoringEmail', str, ''),
@@ -195,7 +195,7 @@ class ForgeTrackerApp(Application):
             ticket = None
 
         links = []
-        if has_access(self, 'write')():
+        if has_access(self, 'create')():
             links.append(SitemapEntry('Create Ticket',
                 self.config.url() + 'new/', ui_icon=g.icons['plus']))
         if has_access(self, 'configure')():
@@ -265,7 +265,8 @@ class ForgeTrackerApp(Application):
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_auth, 'post'),
             M.ACE.allow(role_auth, 'unmoderated_post'),
-            M.ACE.allow(role_developer, 'write'),
+            M.ACE.allow(role_developer, 'update'),
+            M.ACE.allow(role_developer, 'create'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_developer, 'save_searches'),
             M.ACE.allow(role_admin, 'configure'),
@@ -409,7 +410,7 @@ class RootController(BaseController):
                                         columns=columns, page=page, **kw)
         c.subscribe_form = W.subscribe_form
         result['subscribed'] = M.Mailbox.subscribed()
-        result['allow_edit'] = has_access(c.app, 'write')()
+        result['allow_edit'] = has_access(c.app, 'update')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         result['url_q'] = c.app.globals.not_closed_query
         result['url_sort'] = ''
@@ -506,7 +507,7 @@ class RootController(BaseController):
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
         result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
-        result['allow_edit'] = has_access(c.app, 'write')()
+        result['allow_edit'] = has_access(c.app, 'update')()
         result['bin'] = bin
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         c.ticket_search_results = W.ticket_search_results
@@ -549,7 +550,7 @@ class RootController(BaseController):
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
     def new(self, super_id=None, description=None, summary=None, labels=None, **kw):
-        require_access(c.app, 'write')
+        require_access(c.app, 'create')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew')
         return dict(action=c.app.config.url()+'save_ticket',
@@ -605,9 +606,9 @@ class RootController(BaseController):
                 ticket_num=ticket_num)
             if not ticket:
                 raise Exception('Ticket number not found.')
-            require_access(ticket, 'write')
+            require_access(ticket, 'update')
         else:
-            require_access(c.app, 'write')
+            require_access(c.app, 'create')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
         director().create_activity(c.user, 'created', ticket, target=c.project)
@@ -620,7 +621,7 @@ class RootController(BaseController):
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
-        require_access(c.app, 'write')
+        require_access(c.app, 'update')
         result = self.paged_query(q, sort=sort, limit=limit, page=page, **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
@@ -641,7 +642,7 @@ class RootController(BaseController):
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
-            require_access(ticket, 'write')
+            require_access(ticket, 'update')
 
         fields = set(['status'])
         values = {}
@@ -1019,7 +1020,7 @@ class TicketController(BaseController):
             post_count = self.ticket.discussion_thread.post_count
             limit, page = h.paging_sanitizer(limit, page, post_count)
             return dict(ticket=self.ticket, globals=c.app.globals,
-                        allow_edit=has_access(self.ticket, 'write')(),
+                        allow_edit=has_access(self.ticket, 'update')(),
                         tool_subscribed=tool_subscribed,
                         subscribed=subscribed,
                         page=page, limit=limit, count=post_count)
@@ -1080,7 +1081,7 @@ class TicketController(BaseController):
 
     @require_post()
     def _update_ticket(self, post_data):
-        require_access(self.ticket, 'write')
+        require_access(self.ticket, 'update')
         changes = changelog()
         comment = post_data.pop('comment', None)
         labels = post_data.pop('labels', None) or []
@@ -1187,7 +1188,7 @@ class TicketController(BaseController):
 
 class AttachmentController(ac.AttachmentController):
     AttachmentClass = TM.TicketAttachment
-    edit_perm = 'write'
+    edit_perm = 'update'
 
 class AttachmentsController(ac.AttachmentsController):
     AttachmentControllerClass = AttachmentController
@@ -1347,7 +1348,7 @@ class RootRestController(BaseController):
     @require_post()
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
-        require_access(c.app, 'write')
+        require_access(c.app, 'create')
         c.app.globals.invalidate_bin_counts()
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
@@ -1410,7 +1411,7 @@ class TicketRestController(BaseController):
     @require_post()
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
-        require_access(self.ticket, 'write')
+        require_access(self.ticket, 'update')
         c.app.globals.invalidate_bin_counts()
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
@@ -1446,7 +1447,7 @@ class MilestoneController(BaseController):
         require(has_access(c.app, 'read'))
         result = TM.Ticket.paged_query(
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
-        result['allow_edit'] = has_access(c.app, 'write')()
+        result['allow_edit'] = has_access(c.app, 'update')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
         progress = c.app.globals.milestone_count(self.progress_key)
         result.pop('q')
@@ -1472,7 +1473,7 @@ class MilestoneController(BaseController):
                    page=validators.Int(if_empty=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, columns=None, **kw):
-        require_access(c.app, 'write')
+        require_access(c.app, 'update')
         result = TM.Ticket.paged_query(
             self.mongo_query, page=page, sort=sort, columns=columns, **kw)
         # if c.app.globals.milestone_names is None:
@@ -1493,7 +1494,7 @@ class MilestoneController(BaseController):
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
-            require_access(ticket, 'write')
+            require_access(ticket, 'update')
 
         fields = set(['status'])
         values = {}
