@@ -173,7 +173,7 @@ class TestFunctionalController(TrackerTestController):
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
         assert 'Create Ticket' in index_view
-        # No 'Create Ticket' button for user without 'write' perm
+        # No 'Create Ticket' button for user without 'create' perm
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
         assert 'Create Ticket' not in r
 
@@ -879,7 +879,8 @@ class TestMilestoneAdmin(TrackerTestController):
 def post_install_hook(app):
     role_anon = M.ProjectRole.by_name('*anonymous')._id
     app.config.acl.append(M.ACE.allow(role_anon, 'post'))
-    app.config.acl.append(M.ACE.allow(role_anon, 'write'))
+    app.config.acl.append(M.ACE.allow(role_anon, 'create'))
+    app.config.acl.append(M.ACE.allow(role_anon, 'update'))
 
 class TestEmailMonitoring(TrackerTestController):
     def __init__(self):

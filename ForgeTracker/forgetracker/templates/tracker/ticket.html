@@ -143,7 +143,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  {% if h.has_access(ticket, 'write')() %}
+  {% if h.has_access(ticket, 'update')() %}
     <script type="text/javascript">
         $(document).ready(function () {
           // show/hide form
