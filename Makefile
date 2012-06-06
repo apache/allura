@@ -9,6 +9,7 @@ PID_PATH?=.
 # Targets
 test:
 	ALLURA_VALIDATION=none ./run_tests
+	./run_clonedigger
 
 run:
-	paster serve --reload development.ini
+	paster serve --reload Allura/development.ini
