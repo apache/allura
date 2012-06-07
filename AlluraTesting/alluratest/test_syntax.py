@@ -1,7 +1,9 @@
 import os.path
+import shutil
 from glob import glob
 from subprocess import Popen, PIPE
 import sys
+import pkg_resources
 
 toplevel_dir = os.path.abspath(os.path.dirname(__file__) + "/../..")
 
@@ -12,6 +14,13 @@ def run(cmd):
     sys.stdout.write(stdout)
     sys.stderr.write(stderr)
     return proc.returncode
+
+def run_with_output(cmd):
+    proc = Popen(cmd, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
+    # must capture & reprint stdount, so that nosetests can capture it
+    (stdout, stderr) = proc.communicate()
+    sys.stderr.write(stderr)
+    return proc.returncode, stdout, stderr
 
 find_py = "find Allura Forge* -name '*.py'"
 
@@ -75,3 +84,86 @@ def test_no_prints():
 def test_no_tabs():
     if run(find_py + " | xargs grep '	' ") not in [1,123]:
         raise Exception('These should not use tab chars')
+
+def test_pep8():
+    samples_dir = pkg_resources.resource_filename(
+      'alluratest', 'data')
+    pep8_sample_path = os.path.join(samples_dir, 'pep8_sample.txt')
+    pep8_work_path = os.path.join(samples_dir, 'pep8_work.txt')
+
+    initialize_mode = True
+    if os.path.isfile(pep8_sample_path):
+        initialize_mode = False
+
+    if initialize_mode:
+        fsample = open(pep8_sample_path, "w")
+    else:
+        fsample = open(pep8_sample_path, "r")
+        sample_list = fsample.read().splitlines()
+        fsample.close()
+        fwork = open(pep8_work_path, "w")
+        work_list = []
+
+    proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
+    (find_stdout, stderr) = proc.communicate()
+    sys.stderr.write(stderr)
+    assert proc.returncode == 0, proc.returncode
+
+    all_files = [f for f in find_stdout.split('\n')
+                 if '/migrations/' not in f and f.strip()]
+    for files in grouper(20, all_files, fillvalue=''):
+        cmd = "pep8 " + ' '.join(files)
+        retval, stdout, stderr = run_with_output(cmd)
+
+        if initialize_mode:
+            fsample.write(stdout)
+        else:
+            fwork.write(stdout)
+            work_list = work_list + stdout.splitlines()
+
+    if initialize_mode:
+        fsample.close()
+    else:
+        fwork.close()
+
+        error = False
+        for l in work_list:
+            if l == '':
+                 continue
+
+            if l not in sample_list:
+                sys.stdout.write("%s\n" % l)
+                error = True
+        if error:
+            raise Exception('pep8 failure, see stdout')
+        else:
+            shutil.copyfile(pep8_work_path, pep8_sample_path)
+
+def test_pylint():
+    # TODO
+    return
+    samples_dir = pkg_resources.resource_filename(
+      'alluratest', 'tests/data')
+    pep8_sample_path = os.path.join(samples_dir, 'pep8_sample.txt')
+    run_with_output()
+    assert False
+    """
+    proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
+    (find_stdout, stderr) = proc.communicate()
+    sys.stderr.write(stderr)
+    assert proc.returncode == 0, proc.returncode
+
+    error = False
+    all_files = [f for f in find_stdout.split('\n')
+                 if '/migrations/' not in f and f.strip()]
+    for files in grouper(20, all_files, fillvalue=''):
+        cmd = "pylint -e " + ' '.join(files)
+        retval = run(cmd)
+        if retval == 1:
+            print
+            #print 'Command was: %s' % cmd
+            print 'Returned %s' % retval
+            error = True
+
+    assert False
+    """

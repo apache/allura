@@ -18,5 +18,9 @@ setup(name='AlluraTesting',
       install_requires=[
         "poster",
           # -*- Extra requirements: -*-
-      ]
+      ],
+      entry_points="""
+      [paste.paster_command]
+      clean-sample-data = alluratest.command.clean:CleanSampleData
+      """
       )
