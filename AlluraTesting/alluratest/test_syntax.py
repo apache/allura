@@ -85,11 +85,14 @@ def test_no_tabs():
     if run(find_py + " | xargs grep '	' ") not in [1,123]:
         raise Exception('These should not use tab chars')
 
-def test_pep8():
+def code_check(cmd_app, sample_file_name, work_file_name):
     samples_dir = pkg_resources.resource_filename(
       'alluratest', 'data')
-    pep8_sample_path = os.path.join(samples_dir, 'pep8_sample.txt')
-    pep8_work_path = os.path.join(samples_dir, 'pep8_work.txt')
+    if not os.path.exists(samples_dir):
+        os.makedirs(samples_dir)
+
+    pep8_sample_path = os.path.join(samples_dir, sample_file_name)
+    pep8_work_path = os.path.join(samples_dir, work_file_name)
 
     initialize_mode = True
     if os.path.isfile(pep8_sample_path):
@@ -112,7 +115,7 @@ def test_pep8():
     all_files = [f for f in find_stdout.split('\n')
                  if '/migrations/' not in f and f.strip()]
     for files in grouper(20, all_files, fillvalue=''):
-        cmd = "pep8 " + ' '.join(files)
+        cmd = cmd_app + " " + ' '.join(files)
         retval, stdout, stderr = run_with_output(cmd)
 
         if initialize_mode:
@@ -135,35 +138,12 @@ def test_pep8():
                 sys.stdout.write("%s\n" % l)
                 error = True
         if error:
-            raise Exception('pep8 failure, see stdout')
+            raise Exception('%s failure, see stdout' % cmd_app)
         else:
             shutil.copyfile(pep8_work_path, pep8_sample_path)
 
-def test_pylint():
-    # TODO
-    return
-    samples_dir = pkg_resources.resource_filename(
-      'alluratest', 'tests/data')
-    pep8_sample_path = os.path.join(samples_dir, 'pep8_sample.txt')
-    run_with_output()
-    assert False
-    """
-    proc = Popen(find_py, shell=True, cwd=toplevel_dir, stdout=PIPE, stderr=PIPE)
-    (find_stdout, stderr) = proc.communicate()
-    sys.stderr.write(stderr)
-    assert proc.returncode == 0, proc.returncode
+def test_pep8():
+    code_check('pep8', 'pep8_sample.txt', 'pep8_work.txt')
 
-    error = False
-    all_files = [f for f in find_stdout.split('\n')
-                 if '/migrations/' not in f and f.strip()]
-    for files in grouper(20, all_files, fillvalue=''):
-        cmd = "pylint -e " + ' '.join(files)
-        retval = run(cmd)
-        if retval == 1:
-            print
-            #print 'Command was: %s' % cmd
-            print 'Returned %s' % retval
-            error = True
-
-    assert False
-    """
+def test_pyflakes():
+    code_check('pyflakes', 'pyflakes_sample.txt', 'pyflakes_work.txt')
