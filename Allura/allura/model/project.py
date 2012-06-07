@@ -416,7 +416,7 @@ class Project(MappedClass):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
-                    ordinal = ac.options.get('ordinal', 0) + delta_ordinal
+                    ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
