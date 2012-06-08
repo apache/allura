@@ -211,6 +211,7 @@ class Ticket(VersionedArtifact):
             'ticket_num',
             'app_config_id',
             ('app_config_id', 'custom_fields._milestone'),
+            'import_id',
             ]
         unique_indexes = [
             ('app_config_id', 'ticket_num'),
