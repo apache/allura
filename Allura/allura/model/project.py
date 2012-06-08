@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 class ProjectFile(File):
     class __mongometa__:
         session = main_orm_session
+        indexes = [('project_id', 'category')]
 
     project_id=FieldProperty(S.ObjectId)
     category=FieldProperty(str)
