@@ -576,6 +576,9 @@ class Feed(MappedClass):
             'pubdate',
             ('artifact_ref.project_id', 'artifact_ref.mount_point'),
             (('ref_id', pymongo.ASCENDING),
+             ('pubdate', pymongo.DESCENDING)),
+            (('project_id', pymongo.ASCENDING),
+             ('app_config_id', pymongo.ASCENDING),
              ('pubdate', pymongo.DESCENDING))]
 
     _id = FieldProperty(S.ObjectId)
