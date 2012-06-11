@@ -71,7 +71,7 @@ class Neighborhood(MappedClass):
         from .project import Project
         return Project.query.get(
             neighborhood_id=self._id,
-            shortname='--init--')
+            is_nbhd_project=True)
 
     @property
     def acl(self):

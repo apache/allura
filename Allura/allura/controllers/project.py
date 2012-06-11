@@ -96,7 +96,7 @@ class NeighborhoodController(object):
         pq = M.Project.query.find(dict(
                 neighborhood_id=self.neighborhood._id,
                 deleted=False,
-                shortname={'$ne':'--init--'}
+                is_nbhd_project=False,
                 ))
         if sort == 'alpha':
             pq.sort('name')

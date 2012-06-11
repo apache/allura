@@ -323,6 +323,7 @@ class ProjectRegistrationProvider(object):
                     homepage_title = '# ' + name,
                     database_uri=database_uri,
                     last_updated = datetime.utcnow(),
+                    is_nbhd_project=True,
                     is_root=True)
         try:
             p.configure_project(
@@ -355,7 +356,7 @@ class ProjectRegistrationProvider(object):
         pq = M.Project.query.find(dict(
                 neighborhood_id=neighborhood._id,
                 deleted=False,
-                shortname={'$ne':'--init--'}
+                is_nbhd_project=False,
                 ))
         count = pq.count()
         nb_max_projects = neighborhood.get_max_projects()
@@ -379,6 +380,7 @@ class ProjectRegistrationProvider(object):
                         homepage_title=shortname,
                         database_uri=M.Project.default_database_uri(shortname),
                         last_updated = datetime.utcnow(),
+                        is_nbhd_project=False,
                         is_root=True)
             p.configure_project(
                 users=[user],

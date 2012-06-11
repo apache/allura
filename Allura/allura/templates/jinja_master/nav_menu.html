@@ -14,7 +14,7 @@
       <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
     {% endif %}
 	<h1 class="project_title">
-      {% if c.project.shortname.endswith('--init--') %}
+      {% if c.project.is_nbhd_project %}
         {{c.project.neighborhood.name}}
       {% else %}
         {{c.project.name}}

@@ -114,7 +114,8 @@ class Project(MappedClass):
             ('neighborhood_id', 'name'),
             'shortname',
             'parent_id',
-            ('deleted', 'shortname', 'neighborhood_id')]
+            ('deleted', 'shortname', 'neighborhood_id'),
+            ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         extensions = [ ProjectMapperExtension ]
 
     # Project schema
@@ -162,6 +163,7 @@ class Project(MappedClass):
     trove_natlanguage=FieldProperty([S.ObjectId])
     trove_environment=FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
+    is_nbhd_project=FieldProperty(bool, if_missing=False)
 
     @property
     def permissions(self):
@@ -223,7 +225,7 @@ class Project(MappedClass):
             return url
 
     def url(self):
-        if self.shortname.endswith('--init--'):
+        if self.is_nbhd_project:
             return self.neighborhood.url()
         shortname = self.shortname[len(self.neighborhood.shortname_prefix):]
         url = self.neighborhood.url_prefix + shortname + '/'
