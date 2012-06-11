@@ -182,7 +182,7 @@ class RssFeedsCommand(base.BlogCommand):
 
             updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
 
-            base_slug = BM.BlogPost.make_base_slug(title, updated, feed_url)
+            base_slug = BM.BlogPost.make_base_slug(title, updated)
             b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
             if b_count == 0:
                 post = BM.BlogPost(title=title, text=content, timestamp=updated,
@@ -190,7 +190,7 @@ class RssFeedsCommand(base.BlogCommand):
                                tool_version={'blog': version.__version__},
                                state='published')
                 post.neighborhood_id=c.project.neighborhood_id
-                post.make_slug(source=feed_url)
+                post.make_slug()
                 post.commit()
 
         session(BM.BlogPost).flush()

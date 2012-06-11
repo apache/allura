@@ -139,26 +139,17 @@ class BlogPost(M.VersionedArtifact):
         return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
 
     @staticmethod
-    def make_base_slug(title, timestamp, source = None):
+    def make_base_slug(title, timestamp):
         slugsafe = ''.join(
             ch.lower()
             for ch in title.replace(' ', '-')
             if ch.isalnum() or ch == '-')
-        if source is None:
-            base = '%s/%s' % (
+        return '%s/%s' % (
                 timestamp.strftime('%Y/%m'),
                 slugsafe)
-        else:
-            m = hashlib.md5()
-            m.update(source)
-            link_hash_key = m.hexdigest()[:16]
-            base = '%s/%s/%s' % (
-                timestamp.strftime('%Y/%m'),
-                link_hash_key, slugsafe)
-        return base
 
-    def make_slug(self, source = None):
-        base = BlogPost.make_base_slug(self.title, self.timestamp, source)
+    def make_slug(self):
+        base = BlogPost.make_base_slug(self.title, self.timestamp)
         self.slug = base
         while True:
             try:
@@ -166,7 +157,6 @@ class BlogPost(M.VersionedArtifact):
                 return self.slug
             except DuplicateKeyError:
                 self.slug = base + '-%.3d' % randint(0,999)
-                return self.slug
 
     def url(self):
         return self.app.url + self.slug + '/'
