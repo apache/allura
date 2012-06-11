@@ -168,17 +168,25 @@ class RssFeedsCommand(base.BlogCommand):
                 content = u''
                 for ct in e.content:
                     if ct.type != 'text/html':
-                        content = u"%s<p>%s</p>" % (content, ct.value)
+                        content += '[plain]%s[/plain]' % ct.value
                     else:
-                        content = content + ct.value
-            else:
-                content = e.summary
+                        if False:
+                            # FIXME: disabled until https://sourceforge.net/p/allura/tickets/4345
+                            # because the bad formatting from [plain] is worse than bad formatting from unintentional markdown syntax
+                            parser = MDHTMLParser()
+                            parser.feed(ct.value)
+                            parser.close() # must be before using the result_doc
+                            markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
+                        else:
+                            markdown_content = html2text.html2text(ct.value, baseurl=e.link)
 
-            content = u'%s <a href="%s">link</a>' % (content, e.link)
-            parser = MDHTMLParser()
-            parser.feed(content)
-            parser.close()
-            content = html2text.html2text(parser.result_doc, e.link)
+                        content += markdown_content
+            else:
+                content = '[plain]%s[/plain]' % getattr(e, 'summary',
+                                                    getattr(e, 'subtitle',
+                                                        getattr(e, 'title')))
+
+            content += u' [link](%s)' % e.link
 
             updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
 
