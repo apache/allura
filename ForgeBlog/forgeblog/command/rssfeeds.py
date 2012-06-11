@@ -15,7 +15,7 @@ from pylons import c
 from allura import model as M
 from forgeblog import model as BM
 from forgeblog import version
-from forgeblog.main import ForgeBlogApp 
+from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 
 html2text.BODY_WIDTH = 0
@@ -183,7 +183,7 @@ class RssFeedsCommand(base.BlogCommand):
             updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
 
             base_slug = BM.BlogPost.make_base_slug(title, updated, feed_url)
-            b_count = BM.BlogPost.query.find(dict(slug=base_slug)).count()
+            b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
             if b_count == 0:
                 post = BM.BlogPost(title=title, text=content, timestamp=updated,
                                app_config_id=appid,
