@@ -198,7 +198,7 @@ def create_project(p, nbhd, user, options):
             for k, v in tool_options.iteritems():
                 if isinstance(v, basestring):
                     tool_options[k] = string.Template(v).safe_substitute(
-                            project.__dict__.get('root_project', {}))
+                        project.root_project.__dict__.get('root_project', {}))
             project.install_app(tool,
                     mount_label=tool_config['label'],
                     mount_point=tool_config['mount_point'],
