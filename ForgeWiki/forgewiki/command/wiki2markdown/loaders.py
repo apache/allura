@@ -11,6 +11,7 @@ from allura.lib import helpers as h
 
 
 class MediawikiLoader(object):
+    """Load MediaWiki data from json to Allura wiki tool"""
 
     def __init__(self, options):
         self.options = options
@@ -38,8 +39,8 @@ class MediawikiLoader(object):
         self.load_talk()
         self.load_attachments()
 
-    def load_pages(self):
-        allura_base.log.info('Loading pages into allura...')
+    def _pages(self):
+        """Yield page_data for next wiki page"""
         h.set_context(self.project.shortname, 'wiki', neighborhood=self.nbhd)
         pages_dir = os.path.join(self.options.dump_dir, 'pages')
         page_files = []
@@ -48,11 +49,14 @@ class MediawikiLoader(object):
         for filename in page_files:
             file_path = os.path.join(pages_dir, filename)
             with open(file_path, 'r') as pages_file:
-                page = json.load(pages_file)
+                page_data = json.load(pages_file)
+            yield page_data
 
+    def load_pages(self):
+        allura_base.log.info('Loading pages into allura...')
+        for page in self._pages():
             if page['title'] == 'Main_Page':
-                gl = WM.Globals.query.get(
-                                     app_config_id=self.wiki.config._id)
+                gl = WM.Globals.query.get(app_config_id=self.wiki.config._id)
                 if gl is not None:
                     gl.root = page['title']
             p = WM.Page.upsert(page['title'])

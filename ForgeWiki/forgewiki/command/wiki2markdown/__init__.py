@@ -5,6 +5,7 @@ from allura.command import base as allura_base
 
 
 class Wiki2MarkDownCommand(WikiCommand):
+    """Import MediaWiki to Allura Wiki tool"""
     min_args = 1
     max_args = None
     summary = 'Import wiki from mediawiki-dump to allura wiki'

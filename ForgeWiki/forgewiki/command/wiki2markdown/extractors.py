@@ -6,6 +6,7 @@ from allura.command import base as allura_base
 
 
 class MediawikiExtractor(object):
+    """Base class for MediaWiki data provider"""
 
     def __init__(self, options):
         self.options = options
@@ -34,6 +35,10 @@ class MediawikiExtractor(object):
 
 
 class MySQLExtractor(MediawikiExtractor):
+    """Extract MediaWiki data to json.
+
+    Use connection to MySQL database as a data source.
+    """
 
     def __init__(self, options):
         super(MySQLExtractor, self).__init__(options)
@@ -52,14 +57,15 @@ class MySQLExtractor(MediawikiExtractor):
         return self._connection
 
     def _save(self, content, *paths):
+        """Save json to file in local filesystem"""
         out_file = os.path.join(self.options.dump_dir, *paths)
         if not os.path.exists(os.path.dirname(out_file)):
             os.makedirs(os.path.dirname(out_file))
         with open(out_file, 'w') as out:
             out.write(content.encode('utf-8'))
 
-    def extract_pages(self):
-        allura_base.log.info('Extracting pages...')
+    def _pages(self):
+        """Yield page_data for next wiki page"""
         c = self.connection().cursor()
         c.execute('select page.page_id, page.page_title, text.old_text '
                   'from page '
@@ -68,12 +74,16 @@ class MySQLExtractor(MediawikiExtractor):
                   'where page.page_namespace = 0')
         for row in c:
             _id, title, text = row
-            page = {
+            page_data = {
                 'title': title,
                 'text': text or ''
             }
-            self._save(json.dumps(page), 'pages', str(_id) + '.json')
+            yield _id, page_data
 
+    def extract_pages(self):
+        allura_base.log.info('Extracting pages...')
+        for _id, page_data in self._pages():
+            self._save(json.dumps(page_data), 'pages', str(_id) + '.json')
         allura_base.log.info('Extracting pages done')
 
     def extract_history(self):
