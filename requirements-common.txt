@@ -67,7 +67,7 @@ smmap==0.8.1
 
 # wiki deps
 -e git://github.com/zikzakmedia/python-mediawiki.git@dd59106d5d58559c83d17b5a7a7b6d577c41d209#egg=python-mediawiki
-MySQLdb
+MySQL-python
 
 # testing & development
 datadiff==1.1.3
