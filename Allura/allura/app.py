@@ -8,6 +8,7 @@ from pylons import request, app_globals as g, tmpl_context as c
 from bson import ObjectId
 
 from ming.orm import session, state
+from ming.utils import LazyProperty
 
 from allura.lib.helpers import push_config, vardec
 from allura.lib.security import require, has_access, require_access
@@ -137,9 +138,12 @@ class Application(object):
 
     def __init__(self, project, app_config_object):
         self.project = project
-        self.config = app_config_object # pragma: no cover
+        self.config = app_config_object
         self.admin = DefaultAdminController(self)
-        self.url = self.config.url()
+
+    @LazyProperty
+    def url(self):
+        return self.config.url(project=self.project)
 
     @property
     def acl(self):
