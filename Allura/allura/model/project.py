@@ -275,7 +275,7 @@ class Project(MappedClass):
         else:
             self.acl.append(ace)
     private = property(_get_private, _set_private)
-    
+
     @property
     def is_user_project(self):
         return self.shortname.startswith('u/')
@@ -714,8 +714,11 @@ class AppConfig(MappedClass):
     def script_name(self):
         return self.project.script_name + self.options.mount_point + '/'
 
-    def url(self):
-        return self.project.url() + self.options.mount_point + '/'
+    def url(self, project=None):
+        'return the URL for the app config.  project parameter is for optimization'
+        if not project:
+            project = self.project
+        return project.url() + self.options.mount_point + '/'
 
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
