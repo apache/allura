@@ -8,6 +8,7 @@ import os.path
 import datetime
 import random
 import mimetypes
+import re
 from itertools import groupby
 
 import tg
@@ -410,3 +411,15 @@ class LineAnchorCodeHtmlFormatter(HtmlFormatter):
             yield (tup[0], '<div id="l%s" class="code_block">%s</div>' % (num, tup[1]))
             num += 1
         yield 0, '</pre>'
+
+def generate_code_stats(blob):
+    stats = {'line_count': 0,
+             'code_size': 0,
+             'data_line_count': 0}
+    code = blob.text
+    lines = code.split('\n')
+    stats['code_size'] = blob.size
+    stats['line_count'] = len(lines)
+    spaces = re.compile(r'^\s*$')
+    stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
+    return stats
