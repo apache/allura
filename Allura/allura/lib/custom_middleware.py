@@ -8,6 +8,7 @@ from paste import fileapp
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
+import pysolr
 
 from allura.lib import helpers as h
 
@@ -179,4 +180,5 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'flush', debug_each_call=False),
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
+            Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
         ]
