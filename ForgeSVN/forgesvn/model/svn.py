@@ -188,9 +188,8 @@ class SVNImplementation(M.RepositoryImplementation):
 
         def check_call(cmd):
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            p.wait()
+            stdout, stderr = p.communicate()
             if p.returncode != 0:
-                stdout, stderr = p.communicate()
                 raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
 
         check_call(['svnsync', 'init', self._url, source_url])
