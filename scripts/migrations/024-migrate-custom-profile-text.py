@@ -33,7 +33,11 @@ def main():
 
             app = p.app_instance('wiki')
             if app is None:
-                p.install_app('wiki')
+                try:
+                    app = p.install_app('wiki')
+                except Exception as e:
+                    log.error("Unable to install wiki for user %s: %s" % (user.username, str(e)))
+                    continue
 
             page = WM.Page.query.get(app_config_id=app.config._id, title='Home')
             if page is None:

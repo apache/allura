@@ -129,6 +129,16 @@ class AuthenticationProvider(object):
         '''
         raise NotImplemented, 'upload_sshkey'
 
+    def account_navigation(self):
+        return [
+            {
+                'tabid': 'account_sfnet_beta_index',
+                'title': 'Subscriptions',
+                'target': "/auth/prefs",
+                'alt': 'Manage Subscription Preferences',
+            },
+        ]
+
 class LocalAuthenticationProvider(AuthenticationProvider):
     '''
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
@@ -404,17 +414,17 @@ class ProjectRegistrationProvider(object):
             if 'tools' in project_template:
                 for i, tool in enumerate(project_template['tools'].keys()):
                     tool_config = project_template['tools'][tool]
+                    tool_options = tool_config.get('options', {})
+                    for k, v in tool_options.iteritems():
+                        if isinstance(v, basestring):
+                            tool_options[k] = \
+                                    string.Template(v).safe_substitute(
+                                        p.__dict__.get('root_project', {}))
                     app = p.install_app(tool,
                         mount_label=tool_config['label'],
                         mount_point=tool_config['mount_point'],
-                        ordinal=i+offset)
-                    if 'options' in tool_config:
-                        for option in tool_config['options']:
-                            value = tool_config['options'][option]
-                            if isinstance(value, basestring):
-                                value = string.Template(value).safe_substitute(
-                                        p.__dict__.get('root_project', {}))
-                            app.config.options[option] = value
+                        ordinal=i + offset,
+                        **tool_options)
                     if tool == 'wiki':
                         from forgewiki import model as WM
                         text = tool_config.get('home_text',

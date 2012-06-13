@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 class ProjectFile(File):
     class __mongometa__:
         session = main_orm_session
+        indexes = [('project_id', 'category')]
 
     project_id=FieldProperty(S.ObjectId)
     category=FieldProperty(str)
@@ -274,7 +275,7 @@ class Project(MappedClass):
         else:
             self.acl.append(ace)
     private = property(_get_private, _set_private)
-    
+
     @property
     def is_user_project(self):
         return self.shortname.startswith('u/')
@@ -358,7 +359,7 @@ class Project(MappedClass):
     def icon_urls(cls, projects):
         '''Return a dict[project_id] = icon_url, efficiently'''
         project_index = dict((p._id, p) for p in projects)
-        result = dict((p._id, g.forge_static('images/project_default.png')) for p in projects)
+        result = dict((p._id, None) for p in projects)
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': result.keys()},
                 category='icon')):
@@ -415,7 +416,7 @@ class Project(MappedClass):
                 for sm in app.sitemap:
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
-                    ordinal = ac.options.get('ordinal', 0) + delta_ordinal
+                    ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})

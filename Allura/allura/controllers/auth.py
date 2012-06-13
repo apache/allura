@@ -318,10 +318,13 @@ class PreferencesController(BaseController):
                     frequency=mb.frequency.unit,
                     artifact=mb.artifact_index_id))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
         return dict(
             subscriptions=subscriptions,
             api_token=api_token,
-            authorized_applications=M.OAuthAccessToken.for_user(c.user))
+            authorized_applications=M.OAuthAccessToken.for_user(c.user),
+            menu=menu)
 
     @h.vardec
     @expose()
