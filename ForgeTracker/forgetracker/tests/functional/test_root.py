@@ -13,6 +13,7 @@ from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
 
+from allura.lib.security import has_access
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -171,6 +172,14 @@ class TestFunctionalController(TrackerTestController):
         ticket_view.mustcontain(summary, 'Discussion')
 
     def test_render_index(self):
+        admin = M.User.query.get(username='test-admin')
+        anon = M.User.query.get(username="*anonymous")
+        role_admin = M.ProjectRole.by_name('Admin')
+        for app in M.AppConfig.query.find().all():
+            if app.options['mount_point'] == "bugs":
+                assert has_access(app, 'create', admin)
+                assert not has_access(app, 'create', anon)
+     
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
         assert 'Create Ticket' in index_view
@@ -285,6 +294,12 @@ class TestFunctionalController(TrackerTestController):
         assert thumbnail.size == (100,100)
 
     def test_sidebar_static_page(self):
+        admin = M.User.query.get(username='test-admin')
+        role_admin = M.ProjectRole.by_name('Admin')
+        for app in M.AppConfig.query.find().all():
+            if app.options['mount_point'] == "bugs":
+                assert has_access(app, 'create', admin)
+
         response = self.app.get('/bugs/search/')
         assert 'Create Ticket' in response
         assert 'Related Pages' not in response
@@ -557,6 +572,12 @@ class TestFunctionalController(TrackerTestController):
         assert '6.5' in ticket_view
 
     def test_edit_all_button(self):
+        admin = M.User.query.get(username='test-admin')
+        role_admin = M.ProjectRole.by_name('Admin')
+        for app in M.AppConfig.query.find().all():
+            if app.options['mount_point'] == "bugs":
+                assert has_access(app, 'update', admin)
+
         response = self.app.get('/p/test/bugs/search/')
         assert 'Edit All' not in response
 
