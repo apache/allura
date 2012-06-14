@@ -192,6 +192,7 @@ class RssFeedsCommand(base.BlogCommand):
                                                     getattr(e, 'subtitle',
                                                         getattr(e, 'title')))
 
+            # plain tags fix
             content += u' [link](%s)' % e.link
 
             updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
