@@ -121,7 +121,7 @@ class MDHTMLParser(HTMLParser):
 
 class RssFeedsCommand(base.BlogCommand):
     summary = 'Rss feed client'
-    parser = base.Command.standard_parser(verbose=True)
+    parser = base.BlogCommand.standard_parser(verbose=True)
     parser.add_option('-a', '--appid', dest='appid', default='',
                       help='application id')
     parser.add_option('-u', '--username', dest='username', default='root',
@@ -165,7 +165,7 @@ class RssFeedsCommand(base.BlogCommand):
         allura_base.log.info("Get feed: %s" % feed_url)
         f = feedparser.parse(feed_url)
         if f.bozo:
-            base.log.exception("%s: %s" % (feed_url, f.bozo_exception))
+            allura_base.log.exception("%s: %s" % (feed_url, f.bozo_exception))
             return
         for e in f.entries:
             title = e.title

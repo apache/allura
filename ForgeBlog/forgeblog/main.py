@@ -9,6 +9,7 @@ import pymongo
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
+import formencode
 from formencode import validators
 from webob import exc
 
@@ -401,18 +402,30 @@ class BlogAdminController(DefaultAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
-    def set_exfeed(self, **kw):
-        new_exfeed = kw.get('new_exfeed', None)
+    def set_exfeed(self, new_exfeed=None, **kw):
         exfeed_val = kw.get('exfeed', [])
         if type(exfeed_val) == unicode:
-            exfeed_list = []
-            exfeed_list.append(exfeed_val)
+            tmp_exfeed_list = []
+            tmp_exfeed_list.append(exfeed_val)
         else:
-            exfeed_list = exfeed_val
+            tmp_exfeed_list = exfeed_val
 
         if new_exfeed is not None and new_exfeed != '':
-            exfeed_list.append(new_exfeed)
+            tmp_exfeed_list.append(new_exfeed)
+
+        exfeed_list = []
+        invalid_list = []
+        v = validators.URL()
+        for link in tmp_exfeed_list:
+            try:
+                v.to_python(link)
+                exfeed_list.append(link)
+            except formencode.api.Invalid:
+                invalid_list.append(link)
 
         self.app.external_feeds_list = exfeed_list
         flash('External feeds updated')
+        if len(invalid_list) > 0:
+            flash('Invalid link(s): %s' % ','.join(link for link in invalid_list))
+
         redirect(c.project.url()+'admin/tools')
