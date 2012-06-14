@@ -167,9 +167,9 @@ class ThreadController(BaseController):
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
-                    page=page,
-                    count=count,
-                    limit=limit,
+                    page=int(page),
+                    count=int(count),
+                    limit=int(limit),
                     show_moderate=kw.get('show_moderate'))
 
     @h.vardec
