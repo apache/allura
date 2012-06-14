@@ -13,7 +13,7 @@ class Wiki2MarkDownCommand(WikiCommand):
     parser = WikiCommand.standard_parser(verbose=True)
     parser.add_option('-e', '--extract-only', action='store_true',
                       dest='extract',
-                      help='Store data from the mediawiki-dump'
+                      help='Store data from the mediawiki-dump '
                       'on the local filesystem; not load into Allura')
     parser.add_option('-l', '--load-only', action='store_true', dest='load',
                 help='Load into Allura previously-extracted data')
@@ -35,6 +35,9 @@ class Wiki2MarkDownCommand(WikiCommand):
                 help='User for database connection')
     parser.add_option('--password', dest='password', default='',
                 help='Password for database connection')
+    parser.add_option('-a', '--attachments-dir', dest='attachments_dir',
+                help='Path to directory with mediawiki attachments dump',
+                default='')
 
     def command(self):
         self.basic_setup()
@@ -47,7 +50,7 @@ class Wiki2MarkDownCommand(WikiCommand):
             self.loader.load()
 
     def handle_options(self):
-        if self.options.dump_dir == '':
+        if not self.options.dump_dir:
             allura_base.log.error('You must specify directory for dump files')
             exit(2)
 
@@ -71,4 +74,9 @@ class Wiki2MarkDownCommand(WikiCommand):
                 exit(2)
             else:
                 allura_base.log.error('You must specify valid data source')
+                exit(2)
+
+            if not self.options.attachments_dir:
+                allura_base.log.error('You must specify path to directory '
+                                      'with mediawiki attachmets dump.')
                 exit(2)

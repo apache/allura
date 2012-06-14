@@ -30,3 +30,18 @@ def test_mediawiki2markdown():
     assert "**bold** _italics_" in mediawiki_output
     assert "## Getting started" in mediawiki_output
     assert "* [MediaWiki FAQ](http://www.mediawiki.org/wiki/Manual:FAQ)" in mediawiki_output
+
+
+def test_mediawiki_internal_links2markdown():
+    text = """Example page!
+Inline image: [[File:image.png]]
+Link to file: [[Media:attach.pdf|Att]]
+File: [[Media:attach.pdf]]
+Inline image in old format: [[Image:image.png]]
+"""
+    output = converters.mediawiki_internal_links2markdown(text, 'Example page')
+    assert 'Example page!' in output
+    assert 'Inline image: [[img src=image.png]]' in output
+    assert 'Link to file: [Att](Example page/attachment/attach.pdf)' in output
+    assert 'File: [attach.pdf](Example page/attachment/attach.pdf)' in output
+    assert 'Inline image in old format: [[img src=image.png]]' in output
