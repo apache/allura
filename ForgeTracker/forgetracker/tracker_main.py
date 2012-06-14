@@ -164,6 +164,7 @@ class ForgeTrackerApp(Application):
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
         links += super(ForgeTrackerApp, self).admin_menu()
+        # change Options menu html class
         for i in range(len(links)):
             if links[i].label == "Options":
                 links[i] = SitemapEntry('Options', admin_url + 'options', className=None)
