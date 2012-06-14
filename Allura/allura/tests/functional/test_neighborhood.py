@@ -638,3 +638,9 @@ class TestNeighborhood(TestController):
     def test_profile_topnav_menu(self):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
         assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
+
+    def test_more_projects_link(self):
+        r = self.app.get('/adobe/adobe-1/admin/')
+        link = r.html.find('div', {'class':'neighborhood_title_link'}).find('a')
+        assert 'View More Projects' in str(link)
+        assert link['href'] == '/adobe/'
