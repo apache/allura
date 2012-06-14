@@ -13,6 +13,7 @@ from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger(__name__)
 
+# migration script for change write permission to create + update
 def main():
     for a in M.AppConfig.query.find().all():
         if a.tool_name == "tickets":
