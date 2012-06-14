@@ -38,11 +38,12 @@ def scrub_project(p, options):
         ac.project = p
         c.app = p.app_instance(ac)
         mount_point = ac.options.get('mount_point')
-        if ac.tool_name in ('admin', 'search', 'profile'):
+        tool_name = ac.tool_name.lower()
+        if tool_name in ('admin', 'search', 'profile'):
             continue
         if not public(ac, project=p):
             log.info('%s tool %s/%s on project "%s"' % (
-                preamble, ac.tool_name, mount_point, p.shortname))
+                preamble, tool_name, mount_point, p.shortname))
             if not options.dry_run:
                 p.uninstall_app(mount_point)
             continue
@@ -50,7 +51,7 @@ def scrub_project(p, options):
         ace = dict(access='DENY', permission='*', role_id=None)
         q['acl'] = {'$in': [ace]}
         counter = 0
-        if ac.tool_name == 'Tickets':
+        if tool_name == 'tickets':
             for tickets in utils.chunked_find(TM.Ticket, q):
                 for t in tickets:
                     counter += 1
@@ -61,9 +62,9 @@ def scrub_project(p, options):
                 ThreadLocalORMSession.close_all()
             if counter > 0:
                 log.info('%s %s tickets from the %s/%s tool on '
-                         'project "%s"' % (preamble, counter, ac.tool_name,
+                         'project "%s"' % (preamble, counter, tool_name,
                              mount_point, p.shortname))
-        elif ac.tool_name == 'Discussion':
+        elif tool_name == 'discussion':
             for forums in utils.chunked_find(DM.Forum, q):
                 for f in forums:
                     counter += 1
@@ -71,7 +72,7 @@ def scrub_project(p, options):
                         f.delete()
             if counter > 0:
                 log.info('%s %s forums from the %s/%s tool on '
-                         'project "%s"' % (preamble, counter, ac.tool_name,
+                         'project "%s"' % (preamble, counter, tool_name,
                              mount_point, p.shortname))
 
 
