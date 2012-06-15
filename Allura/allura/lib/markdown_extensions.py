@@ -62,7 +62,7 @@ class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
             for m in res:
                 code = self._escape(m.group('code'))
                 placeholder = self.markdown.htmlStash.store(code, safe=True)
-                text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+                text = '%s%s%s'% (text[:m.start()], placeholder, text[m.end():])
                 break
             else:
                 break

@@ -61,16 +61,18 @@ class MDHTMLParser(HTMLParser):
             return
 
         res_data = ""
+        first_iter = True
         for line in data.split('\n'):
-            if self.custom_tag_opened:
-                res_data = u"%s%s" % (res_data, self.CUSTTAG_CLOSE)
+            if self.custom_tag_opened and not (first_iter and len(line.split()) > 0):
+                res_data = u"%s%s%s" % (res_data, self.CUSTTAG_CLOSE, '\n' if not first_iter else '')
                 self.custom_tag_opened = False
 
             if len(line.split()) > 0:
-                res_data = u"%s\n%s%s" % (res_data, self.CUSTTAG_OPEN, line)
+                res_data = u"%s%s%s" % (res_data, self.CUSTTAG_OPEN if not self.custom_tag_opened else '', line)
                 self.custom_tag_opened = True
             else:
                 res_data = u"%s\n" % res_data
+            first_iter = False
 
         if data[-1:] == "\n" and self.custom_tag_opened:
             res_data = u"%s%s" % (res_data, self.CUSTTAG_CLOSE)
