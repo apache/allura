@@ -52,6 +52,12 @@ def scrub_project(p, options):
         q['acl'] = {'$in': [ace]}
         counter = 0
         if tool_name == 'tickets':
+            if ac.options.get('TicketMonitoringEmail'):
+                log.info('%s options.TicketMonitoringEmail from the %s/%s '
+                         'tool on project "%s"' % (preamble, tool_name,
+                             mount_point, p.shortname))
+                if not options.dry_run:
+                    ac.options['TicketMonitoringEmail'] = None
             for tickets in utils.chunked_find(TM.Ticket, q):
                 for t in tickets:
                     counter += 1
@@ -96,10 +102,15 @@ def main(options):
             (preamble, M.EmailAddress.query.find().count()))
     log.info('%s email addresses from %s User documents' %
             (preamble, M.User.query.find().count()))
+    log.info('%s monitoring_email addresses from %s Forum documents' %
+            (preamble, DM.Forum.query.find({"monitoring_email":
+                    {"$nin": [None, ""]}}).count()))
+
     if not options.dry_run:
         M.EmailAddress.query.remove()
         M.User.query.update({}, {"$set": {"email_addresses": []}}, multi=True)
-
+        DM.Forum.query.update({"monitoring_email": {"$nin": [None, ""]}},
+                {"$set": {"monitoring_email": None}}, multi=True)
     return 0
 
 
