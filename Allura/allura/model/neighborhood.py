@@ -109,11 +109,8 @@ class Neighborhood(MappedClass):
         return ""
 
     @property
-    def have_home_project(self):
-        if self.neighborhood_project.app_config('home') is not None:
-            return True
-        else:
-            return False
+    def has_home_project(self):
+        return self.neighborhood_project.app_config('home') is not None
 
     @property
     def icon(self):
