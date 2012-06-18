@@ -156,6 +156,9 @@ class RootController(BaseController):
         setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
+    def _check_security(self):
+        require_access(c.app, 'read')
+
     @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
     def index(self, page=0, limit=10, **kw):
