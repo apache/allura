@@ -47,10 +47,10 @@ class NeighborhoodController(object):
     '''Manages a neighborhood of projects.
     '''
 
-    def __init__(self, neighborhood_name, prefix=''):
-        self.neighborhood_name = neighborhood_name
-        self.neighborhood = M.Neighborhood.query.get(name=self.neighborhood_name)
-        self.prefix = prefix
+    def __init__(self, neighborhood):
+        self.neighborhood = neighborhood
+        self.neighborhood_name = self.neighborhood.name
+        self.prefix = self.neighborhood.shortname_prefix
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)

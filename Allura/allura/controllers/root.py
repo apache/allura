@@ -58,14 +58,21 @@ class RootController(WsgiDispatchController):
     nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
+    neighborhoods_bound = False
 
     def __init__(self):
-        for n in M.Neighborhood.query.find():
-            if n.url_prefix.startswith('//'): continue
-            n.bind_controller(self)
+        if not self.neighborhoods_bound:
+            self.bind_controllers()
         self.browse = ProjectBrowseController()
         self.allura_sitemap = SitemapIndexController()
         super(RootController, self).__init__()
+
+    @classmethod
+    def bind_controllers(cls):
+        for n in M.Neighborhood.query.find():
+            if n.url_prefix.startswith('//'): continue
+            n.bind_controller(cls)
+        cls.neighborhoods_bound = True
 
     def _setup_request(self):
         c.project = c.app = None

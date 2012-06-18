@@ -100,8 +100,7 @@ class Neighborhood(MappedClass):
     def bind_controller(self, controller):
         from allura.controllers.project import NeighborhoodController
         controller_attr = self.url_prefix[1:-1]
-        setattr(controller, controller_attr, NeighborhoodController(
-                self.name, self.shortname_prefix))
+        setattr(controller, controller_attr, NeighborhoodController(self))
 
     def get_custom_css(self):
         if self.allow_custom_css:
