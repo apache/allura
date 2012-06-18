@@ -177,7 +177,7 @@ class TicketHistory(Snapshot):
             text=self.data.summary)
         return result
 
-class Bin(Artifact):
+class Bin(Artifact, ActivityObject):
     class __mongometa__:
         name = 'bin'
 
@@ -186,6 +186,10 @@ class Bin(Artifact):
     summary = FieldProperty(str, required=True, allow_none=False)
     terms = FieldProperty(str, if_missing='')
     sort = FieldProperty(str, if_missing='')
+
+    @property
+    def activity_name(self):
+        return 'search bin %s' % self.summary
 
     def url(self):
         base = self.app_config.url() + 'search/?'

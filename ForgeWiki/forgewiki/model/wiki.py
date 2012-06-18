@@ -11,6 +11,7 @@ from ming.orm.declarative import MappedClass
 
 from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
 from allura.model import Notification, project_orm_session
+from allura.model.timeline import ActivityObject
 from allura.lib import helpers as h
 from allura.lib import utils
 
@@ -39,7 +40,7 @@ class PageHistory(Snapshot):
 
     def authors(self):
         return self.original().authors()
-        
+
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
 
@@ -68,7 +69,7 @@ class PageHistory(Snapshot):
     def email_address(self):
         return self.original().email_address
 
-class Page(VersionedArtifact):
+class Page(VersionedArtifact, ActivityObject):
     class __mongometa__:
         name='page'
         history_class = PageHistory
@@ -77,6 +78,10 @@ class Page(VersionedArtifact):
     text=FieldProperty(schema.String, if_missing='')
     viewable_by=FieldProperty([str])
     type_s = 'Wiki'
+
+    @property
+    def activity_name(self):
+        return 'wiki page %s' % self.title
 
     def commit(self):
         VersionedArtifact.commit(self)
@@ -140,7 +145,7 @@ class Page(VersionedArtifact):
     def upsert(cls, title, version=None):
         """Update page with `title` or insert new page with that name"""
         if version is None:
-            #Check for existing page object    
+            #Check for existing page object
             obj = cls.query.get(
                 app_config_id=context.app.config._id,
                 title=title)

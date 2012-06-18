@@ -14,10 +14,11 @@ from allura.lib.security import require_access, has_access
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
+from .timeline import ActivityObject
 
 log = logging.getLogger(__name__)
 
-class Discussion(Artifact):
+class Discussion(Artifact, ActivityObject):
     class __mongometa__:
         name='discussion'
     type_s = 'Discussion'
@@ -41,6 +42,10 @@ class Discussion(Artifact):
             description=self.description,
             threads=[dict(_id=t._id, subject=t.subject)
                      for t in self.threads ])
+
+    @property
+    def activity_name(self):
+        return 'discussion %s' % self.name
 
     @classmethod
     def thread_class(cls):
@@ -94,7 +99,7 @@ class Discussion(Artifact):
         q = dict(kw, discussion_id=self._id)
         return self.post_class().query.find(q)
 
-class Thread(Artifact):
+class Thread(Artifact, ActivityObject):
     class __mongometa__:
         name='thread'
         indexes = [
@@ -130,6 +135,10 @@ class Thread(Artifact):
             subject=self.subject,
             posts=[dict(slug=p.slug, subject=p.subject)
                    for p in self.posts ])
+
+    @property
+    def activity_name(self):
+        return 'thread %s' % self.subject
 
     def parent_security_context(self):
         return self.discussion
@@ -351,7 +360,7 @@ class PostHistory(Snapshot):
             text=self.data.text)
         return result
 
-class Post(Message, VersionedArtifact):
+class Post(Message, VersionedArtifact, ActivityObject):
     class __mongometa__:
         name='post'
         history_class = PostHistory
@@ -384,6 +393,10 @@ class Post(Message, VersionedArtifact):
             timestamp=self.timestamp,
             author_id=str(author._id),
             author=author.username)
+
+    @property
+    def activity_name(self):
+        return 'post %s' % self.subject
 
     def index(self):
         result = super(Post, self).index()
