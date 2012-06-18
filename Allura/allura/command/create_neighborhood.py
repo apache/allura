@@ -32,7 +32,12 @@ class UpdateNeighborhoodCommand(base.Command):
     min_args=3
     max_args=None
     usage = '<ini file> <neighborhood_shortname> <home_tool_active>'
-    summary = 'Activate Home application for neighborhood'
+    summary = 'Activate Home application for neighborhood\r\n' \
+        '\t<neighborhood> - the neighborhood name\r\n' \
+        '\t<value> - boolean value to install/uninstall Home tool\r\n' \
+        '\t    must be True or False\r\n\r\n' \
+        '\tExample:\r\n' \
+        '\tpaster update-neighborhood-home-tool development.ini Projects True'
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
@@ -48,7 +53,7 @@ class UpdateNeighborhoodCommand(base.Command):
         else:
             home_tool_active = False
 
-        if home_tool_active == nb.have_home_project:
+        if home_tool_active == nb.has_home_project:
             return
 
         p = nb.neighborhood_project

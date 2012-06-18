@@ -115,7 +115,7 @@ setup(
     set-tool-access = allura.command:SetToolAccessCommand
     smtp_server=allura.command:SMTPServerCommand
     create-neighborhood = allura.command:CreateNeighborhoodCommand
-    update-neighborhood = allura.command:UpdateNeighborhoodCommand
+    update-neighborhood-home-tool = allura.command:UpdateNeighborhoodCommand
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
 
