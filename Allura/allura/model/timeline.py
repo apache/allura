@@ -1,6 +1,6 @@
 from activitystream import base
 
-class Node(base.NodeBase):
+class ActivityNode(base.NodeBase):
     @property
     def node_id(self):
         return "%s:%s" % (self.__mongometa__.name, self._id)

@@ -26,7 +26,7 @@ from allura.lib import plugin
 
 from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
-from .timeline import Node, ActivityObject
+from .timeline import ActivityNode, ActivityObject
 
 log = logging.getLogger(__name__)
 
@@ -271,7 +271,7 @@ class AuthGlobals(MappedClass):
             new=True)
         return g.next_uid
 
-class User(MappedClass, Node, ActivityObject):
+class User(MappedClass, ActivityNode, ActivityObject):
     SALT_LEN=8
     class __mongometa__:
         name='user'
