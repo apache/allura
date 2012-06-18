@@ -64,7 +64,10 @@ class AttachmentController(BaseController):
                 except exc.HTTPNotFound:
                     pass
             redirect(request.referer)
-        return self.attachment.serve(embed=False)
+        embed=False
+        if self.attachment.content_type and 'image/' in self.attachment.content_type:
+            embed = True
+        return self.attachment.serve(embed=embed)
 
     @expose()
     def thumb(self):
