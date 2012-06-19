@@ -175,7 +175,7 @@ class NeighborhoodController(object):
 
         if project_description:
             c.project.short_description = project_description
-        offset = c.project.next_mount_point(include_search=True)
+        offset = c.project.next_mount_point(include_hidden=True)
         if tools and not neighborhood.project_template:
             for i, tool in enumerate(tools):
                 c.project.install_app(tool, ordinal=i + offset)
