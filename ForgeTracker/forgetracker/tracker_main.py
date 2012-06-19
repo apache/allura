@@ -610,7 +610,7 @@ class RootController(BaseController):
             require_access(c.app, 'write')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
-        director.create_activity(c.user, 'created', ticket, target=c.project)
+        director().create_activity(c.user, 'created', ticket, target=c.project)
         redirect(str(ticket.ticket_num)+'/')
 
     @with_trailing_slash

@@ -16,6 +16,7 @@ from beaker.middleware import SessionMiddleware
 from routes.middleware import RoutesMiddleware
 from pylons.middleware import StatusCodeRedirect
 
+import activitystream
 import ew
 import ming
 from ming.orm.middleware import MingMiddleware
@@ -72,7 +73,6 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     ming.configure(**app_conf)
 
     # Configure ActivityStream
-    import activitystream
     activitystream.configure(**app_conf)
 
     # Configure EW variable provider
