@@ -622,10 +622,12 @@ class Project(MappedClass):
                 apps = [('Wiki', 'wiki', 'Wiki'),
                         ('profile', 'profile', 'Profile'),
                         ('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search')]
+                        ('search', 'search', 'Search'),
+                        ('activity', 'activity', 'Activity')]
             else:
                 apps = [('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search')]
+                        ('search', 'search', 'Search'),
+                        ('activity', 'activity', 'Activity')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id
