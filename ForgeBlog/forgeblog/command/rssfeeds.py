@@ -78,10 +78,6 @@ class MDHTMLParser(HTMLParser):
             else:
                 res_data = u"%s\n" % res_data
 
-        if data[-1:] == "\n" and self.custom_tag_opened:
-            res_data = u"%s%s" % (res_data, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
-
         self.result_doc = u"%s%s" % (self.result_doc, res_data)
 
     def handle_comment(self, data):
