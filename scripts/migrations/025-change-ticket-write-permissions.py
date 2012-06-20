@@ -26,6 +26,7 @@ def main():
                         a.acl.append(M.ACE.allow(a.acl[i].role_id, 'update'))
                         a.acl.append(M.ACE.allow(a.acl[i].role_id, 'create'))
                         is_deleted = True
+                        break
 
         ThreadLocalORMSession.flush_all()
 
