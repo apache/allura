@@ -178,7 +178,7 @@ class TestFunctionalController(TrackerTestController):
             if app.options['mount_point'] == "bugs":
                 assert has_access(app, 'create', admin)
                 assert not has_access(app, 'create', anon)
-     
+
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
         assert 'Create Ticket' in index_view
