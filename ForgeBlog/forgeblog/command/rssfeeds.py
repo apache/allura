@@ -56,29 +56,32 @@ class MDHTMLParser(HTMLParser):
             self.result_doc = u"%s</%s>" % (self.result_doc, tag)
 
     def handle_data(self, data):
-        if len(data.split()) == 0:
-            self.result_doc = u"%s%s" % (self.result_doc, data)
-            return
+        res_data = ''
 
-        res_data = ""
-        first_iter = True
-        for line in data.split('\n'):
-            if self.custom_tag_opened and not (first_iter and len(line.split()) > 0):
-                res_data = u"%s%s%s" % (res_data, self.CUSTTAG_CLOSE, '\n' if not first_iter else '')
-                self.custom_tag_opened = False
+        for line in data.splitlines(True):
+            # pre-emptive special case
+            if not line or line.isspace():
+                # don't wrap all whitespace lines
+                res_data += line
+                continue
 
-            if len(line.split()) > 0:
-                res_data = u"%s%s%s" % (res_data, self.CUSTTAG_OPEN if not self.custom_tag_opened else '', line)
+            # open custom tag
+            if not self.custom_tag_opened:
+                res_data += self.CUSTTAG_OPEN
                 self.custom_tag_opened = True
-            else:
-                res_data = u"%s\n" % res_data
-            first_iter = False
+            # else: cust tag might be open already from previous incomplete data block
 
-        if data[-1:] == "\n" and self.custom_tag_opened:
-            res_data = u"%s%s" % (res_data, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
+            # data
+            res_data += line.rstrip('\r\n')  # strip EOL (add close tag before)
 
-        self.result_doc = u"%s%s" % (self.result_doc, res_data)
+            # close custom tag
+            if line.endswith(('\r','\n')):
+                res_data += self.CUSTTAG_CLOSE + '\n'
+                self.custom_tag_opened = False
+            # else: no EOL could mean we're dealing with incomplete data block;
+                # leave it open for next handle_data, handle_starttag, or handle_endtag to clean up
+
+        self.result_doc += res_data
 
     def handle_comment(self, data):
         if self.custom_tag_opened:
