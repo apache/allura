@@ -1,6 +1,9 @@
 import logging
 
 import pkg_resources
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c, response
 from tg import expose, validate, config, redirect
 from tg.decorators import with_trailing_slash
