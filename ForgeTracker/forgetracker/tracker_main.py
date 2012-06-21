@@ -547,12 +547,13 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
-    def new(self, super_id=None, **kw):
+    def new(self, super_id=None, description=None, summary=None, labels=None, **kw):
         require_access(c.app, 'write')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew')
         return dict(action=c.app.config.url()+'save_ticket',
-                    super_id=super_id, help_msg=help_msg)
+                    super_id=super_id, help_msg=help_msg,
+                    description=description, summary=summary, labels=labels)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
