@@ -164,6 +164,10 @@ class ForgeTrackerApp(Application):
         links = [SitemapEntry('Field Management', admin_url + 'fields'),
                  SitemapEntry('Edit Searches', admin_url + 'bins/')]
         links += super(ForgeTrackerApp, self).admin_menu()
+        # change Options menu html class
+        for link in links:
+            if link.label == 'Options':
+                link.className = None
         return links
 
     @h.exceptionless([], log)

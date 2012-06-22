@@ -22,7 +22,7 @@ def main(options):
     log.info('Making updates as neighborhood admin "%s"' % nbhd_admin.username)
 
     q = {'neighborhood_id': nbhd._id,
-            'shortname': {'$ne':'--init--'}, 'deleted':False}
+            'is_nbhd_project': False, 'deleted':False}
     private_count = public_count = 0
     for projects in utils.chunked_find(M.Project, q):
         for p in projects:

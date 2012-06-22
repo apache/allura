@@ -63,7 +63,8 @@ class UserProfileApp(Application):
                 for perm in self.permissions ]
 
     def uninstall(self, project): # pragma no cover
-        raise NotImplementedError, "uninstall"
+        pass
+
 
 class UserProfileController(BaseController):
 

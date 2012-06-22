@@ -93,7 +93,7 @@ class AdminApp(Application):
         admin_url = c.project.url()+'admin/'
 
 
-        if c.project.shortname == '--init--':
+        if c.project.is_nbhd_project:
             links.append(SitemapEntry('Add Project', c.project.url()+'add_project', ui_icon=g.icons['plus']))
             nbhd_admin_url = c.project.neighborhood.url()+'_admin/'
             links = links + [
@@ -114,7 +114,7 @@ class AdminApp(Application):
         if len(c.project.neighborhood_invitations):
             links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
         links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
-        if c.project.shortname == '--init--':
+        if c.project.is_nbhd_project:
             links.append(SitemapEntry('Statistics', nbhd_admin_url+ 'stats/'))
             links.append(None)
             links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))

@@ -95,6 +95,13 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
 
+    def test_post_paging(self):
+        home = self.app.get('/wiki/_discuss/')
+        thread_link = [ a for a in home.html.findAll('a')
+                 if 'thread' in a['href'] ][0]['href']
+        # just make sure it doesn't 500
+        r = self.app.get('%s?limit=50&page=0' % thread_link)
+
     def test_edit_post(self):
         r = self._make_post('This is a post')
         thread_url = r.request.url

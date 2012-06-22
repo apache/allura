@@ -289,7 +289,7 @@ class Globals(object):
 
     @property
     def markdown_wiki(self):
-        if c.project.shortname == '--init--':
+        if c.project.is_nbhd_project:
             return self.forge_markdown(wiki=True, macro_context='neighborhood-wiki')
         elif c.project.is_user_project:
             return self.forge_markdown(wiki=True, macro_context='userproject-wiki')

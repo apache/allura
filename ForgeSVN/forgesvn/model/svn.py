@@ -3,6 +3,7 @@ import shutil
 import string
 import logging
 import subprocess
+from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
@@ -79,6 +80,19 @@ class Repository(M.Repository):
             allura.tasks.repo_tasks.refresh.post()
         return self._impl.commit(last_id)
 
+
+class SVNCalledProcessError(Exception):
+    def __init__(self, cmd, returncode, stdout, stderr):
+        self.cmd = cmd
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def __str__(self):
+        return "Command: '%s' returned non-zero exit status %s\nSTDOUT: %s\nSTDERR: %s" % \
+            (self.cmd, self.returncode, self.stdout, self.stderr)
+
+
 class SVNImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
@@ -145,8 +159,15 @@ class SVNImplementation(M.RepositoryImplementation):
         with open(fn, 'wb') as fp:
             fp.write('#!/bin/sh\n')
         os.chmod(fn, 0755)
-        subprocess.check_call(['svnsync', 'init', self._url, source_url])
-        subprocess.check_call(['svnsync', '--non-interactive', 'sync', self._url])
+
+        def check_call(cmd):
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
+            if p.returncode != 0:
+                raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
+
+        check_call(['svnsync', 'init', self._url, source_url])
+        check_call(['svnsync', '--non-interactive', 'sync', self._url])
         self._repo.status = 'analyzing'
         session(self._repo).flush()
         log.info('... %r cloned, analyzing', self._repo)

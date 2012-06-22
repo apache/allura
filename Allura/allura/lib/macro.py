@@ -145,7 +145,7 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
     limit = int(limit)
     q = dict(
         deleted=False,
-        shortname={'$ne':'--init--'})
+        is_nbhd_project=False)
     q.update(initial_q)
 
     if labels:
