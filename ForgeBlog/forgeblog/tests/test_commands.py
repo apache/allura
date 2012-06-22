@@ -41,7 +41,7 @@ def _mock_feed(*entries):
             subtitle='',
             summary='',
             link='http://example.com/',
-            updated=datetime.now()+timedelta(days=_mock_feed.i - 100))
+            updated=datetime.utcnow()+timedelta(days=_mock_feed.i - 100))
         entry.update(e)
         entry['updated_parsed'] = entry['updated'].timetuple()
         if 'content' in entry:
