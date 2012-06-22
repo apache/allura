@@ -175,15 +175,10 @@ class RssFeedsCommand(base.BlogCommand):
                     if ct.type != 'text/html':
                         content += '[plain]%s[/plain]' % ct.value
                     else:
-                        if False:
-                            # FIXME: disabled until https://sourceforge.net/p/allura/tickets/4345
-                            # because the bad formatting from [plain] is worse than bad formatting from unintentional markdown syntax
-                            parser = MDHTMLParser()
-                            parser.feed(ct.value)
-                            parser.close() # must be before using the result_doc
-                            markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
-                        else:
-                            markdown_content = html2text.html2text(ct.value, baseurl=e.link)
+                        parser = MDHTMLParser()
+                        parser.feed(ct.value)
+                        parser.close() # must be before using the result_doc
+                        markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
 
                         content += markdown_content
             else:
