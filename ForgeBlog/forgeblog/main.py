@@ -426,6 +426,6 @@ class BlogAdminController(DefaultAdminController):
         self.app.external_feeds_list = exfeed_list
         flash('External feeds updated')
         if len(invalid_list) > 0:
-            flash('Invalid link(s): %s' % ','.join(link for link in invalid_list))
+            flash('Invalid link(s): %s' % ','.join(link for link in invalid_list), 'error')
 
         redirect(c.project.url()+'admin/tools')
