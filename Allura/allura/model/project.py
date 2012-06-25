@@ -479,7 +479,7 @@ class Project(MappedClass):
                 'Mount point "%s" is already in use' % mount_point)
         assert self.app_instance(mount_point) is None
         if ordinal is None:
-            ordinal = int(self.ordered_mounts(include_search=True)[-1]['ordinal']) + 1
+            ordinal = int(self.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
         options = App.default_options()
         options['mount_point'] = mount_point
         options['mount_label'] = mount_label or App.default_mount_label or mount_point
@@ -527,14 +527,15 @@ class Project(MappedClass):
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.register_subproject(self, name, user or c.user, install_apps)
 
-    def ordered_mounts(self, include_search=False):
+    def ordered_mounts(self, include_hidden=False):
         '''Returns an array of a projects mounts (tools and sub-projects) in
         toolbar order.'''
         result = []
         for sub in self.direct_subprojects:
             result.append({'ordinal':int(sub.ordinal), 'sub':sub, 'rank':1})
         for ac in self.app_configs:
-            if include_search or ac.tool_name != 'search':
+            App = g.entry_points['tool'][ac.tool_name]
+            if include_hidden or not App.hidden:
                 ordinal = ac.options.get('ordinal', 0)
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
                 result.append({'ordinal':int(ordinal), 'ac':ac, 'rank':rank})
@@ -562,10 +563,10 @@ class Project(MappedClass):
                 return mount
         return None
 
-    def next_mount_point(self, include_search=False):
+    def next_mount_point(self, include_hidden=False):
         '''Return the ordinal of the next open toolbar mount point for this
         project.'''
-        ordered_mounts = self.ordered_mounts(include_search=include_search)
+        ordered_mounts = self.ordered_mounts(include_hidden=include_hidden)
         return int(ordered_mounts[-1]['ordinal']) + 1 \
                if ordered_mounts else 0
 
@@ -621,10 +622,12 @@ class Project(MappedClass):
                 apps = [('Wiki', 'wiki', 'Wiki'),
                         ('profile', 'profile', 'Profile'),
                         ('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search')]
+                        ('search', 'search', 'Search'),
+                        ('activity', 'activity', 'Activity')]
             else:
                 apps = [('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search')]
+                        ('search', 'search', 'Search'),
+                        ('activity', 'activity', 'Activity')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id

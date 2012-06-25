@@ -22,6 +22,7 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeTracker \
     ForgeWiki \
     ForgeDownloads \
+    ForgeActivity \
     "
 fi
 
