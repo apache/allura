@@ -5,9 +5,10 @@ from urllib import unquote
 from itertools import chain, islice
 
 from bson import ObjectId
-from tg import expose, flash, redirect, validate, request, response
+from tg import expose, flash, redirect, validate, request, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import c, g
+from paste.deploy.converters import asbool
 from webob import exc
 import pymongo
 from formencode import validators
@@ -175,7 +176,7 @@ class NeighborhoodController(object):
 
         if project_description:
             c.project.short_description = project_description
-        offset = c.project.next_mount_point(include_search=True)
+        offset = c.project.next_mount_point(include_hidden=True)
         if tools and not neighborhood.project_template:
             for i, tool in enumerate(tools):
                 c.project.install_app(tool, ordinal=i + offset)
@@ -270,7 +271,10 @@ class ProjectController(object):
     @with_trailing_slash
     def index(self, **kw):
         mount = c.project.first_mount('read')
-        if mount is not None:
+        activity_enabled = asbool(config.get('activity_stream.enabled', False))
+        if activity_enabled and c.project.app_instance('activity'):
+            redirect('activity/')
+        elif mount is not None:
             if 'ac' in mount:
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:
@@ -471,6 +475,7 @@ class NeighborhoodAdminController(object):
         self.neighborhood.project_template = project_template
         self.neighborhood.allow_browse = kw.get('allow_browse', False)
         self.neighborhood.show_title = kw.get('show_title', False)
+        self.neighborhood.project_list_url = kw.get('project_list_url', '')
         tracking_id = kw.get('tracking_id', '')
         if tracking_id != self.neighborhood.tracking_id:
             c.project = self.neighborhood.neighborhood_project

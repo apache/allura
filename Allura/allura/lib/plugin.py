@@ -389,7 +389,7 @@ class ProjectRegistrationProvider(object):
                 apps=apps or [] if 'tools' in project_template else None)
 
             # Setup defaults from neighborhood project template if applicable
-            offset = p.next_mount_point(include_search=True)
+            offset = p.next_mount_point(include_hidden=True)
             if 'groups' in project_template:
                 for obj in project_template['groups']:
                     name = obj.get('name')

@@ -12,11 +12,14 @@ Please read http://pythonpaste.org/webtest/ for more information.
 """
 from urllib import quote
 
+from tg import config
 from nose.tools import assert_equal
 
 from allura.tests import decorators as td
 from allura.tests import TestController
 from allura import model as M
+from allura.lib.helpers import push_config
+
 
 class TestRootController(TestController):
 
@@ -59,6 +62,17 @@ class TestRootController(TestController):
         response = self.app.get('/browse/communications/fax')
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
+
+    def test_project_redirect(self):
+        with push_config(config, **{'activity_stream.enabled': 'false'}):
+            resp = self.app.get('/p/test2/')
+            assert_equal(resp.status_int, 302)
+            assert_equal(resp.location, 'http://localhost/p/test2/admin/')
+
+        with push_config(config, **{'activity_stream.enabled': 'true'}):
+            resp = self.app.get('/p/test2/')
+            assert_equal(resp.status_int, 302)
+            assert_equal(resp.location, 'http://localhost/p/test2/activity/')
 
     def test_neighborhood_index(self):
         response = self.app.get('/adobe/')

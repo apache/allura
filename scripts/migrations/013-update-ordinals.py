@@ -18,7 +18,7 @@ def main():
     for some_projects in utils.chunked_find(M.Project):
         for project in some_projects:
             c.project = project
-            mounts = project.ordered_mounts(include_search=True)
+            mounts = project.ordered_mounts(include_hidden=True)
 
             # ordered_mounts() means duplicate ordinals (if any) will be next to each other
             duplicates_found = False

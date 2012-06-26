@@ -7,8 +7,8 @@
 {% block edit_box %}
 <div class="editbox">
   <div class="form_holder">
-      {{c.ticket_form.display(action=action, value=dict(super_id=super_id),
-                              help_msg=help_msg)}}
+      {{c.ticket_form.display(action=action, value=dict(super_id=super_id, description=description, 
+                              summary=summary, labels=labels), help_msg=help_msg)}}
   </div>
 </div>
 {% endblock %}

@@ -55,6 +55,7 @@ class Neighborhood(MappedClass):
     site_specific_html = FieldProperty(str, if_missing='')
     project_template = FieldProperty(str, if_missing='')
     tracking_id = FieldProperty(str, if_missing='')
+    project_list_url = FieldProperty(str, if_missing='')
     level = FieldProperty(S.Deprecated)
     allow_private = FieldProperty(S.Deprecated)
     features = FieldProperty(dict(

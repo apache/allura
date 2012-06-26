@@ -19,8 +19,9 @@ class SearchApp(Application):
     '''
     __version__ = version.__version__
     installable = False
+    hidden = True
     sitemap=[]
-    
+
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()

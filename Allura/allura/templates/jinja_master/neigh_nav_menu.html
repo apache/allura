@@ -1,11 +1,15 @@
 {% if not neighborhood or not neighborhood.show_title %}
   <div id="nav_menu_missing"></div>
 {% else %}
-
-  <a href="{{neighborhood.url()}}">
     {% if neighborhood.icon %}
-      <img src="{{neighborhood.url()}}/icon" class="project_icon" alt="{{neighborhood.name}} Logo"/>
+      <a href="{{neighborhood.url()}}"><img src="{{neighborhood.url()}}/icon" class="project_icon" alt="{{neighborhood.name}} Logo"/></a>
     {% endif %}
-	<h1 class="project_title">{{neighborhood.name}}</h1>
-	</a>
+	<h1 class="project_title"><a href="{{neighborhood.url()}}">{{neighborhood.name}}</a></h1>
+  {% if neighborhood.project_list_url %}
+    <div class="project_title_link">
+    <a href="{{neighborhood.project_list_url}}">
+      View Projects
+    </a>
+    </div>
+  {% endif %}
 {% endif %}
