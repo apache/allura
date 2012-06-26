@@ -27,8 +27,10 @@ class TrackerTestController(TestController):
     def setup_with_tools(self):
         pass
 
-    def new_ticket(self, mount_point='/bugs/', **kw):
-        response = self.app.get(mount_point + 'new/')
+    def new_ticket(self, mount_point='/bugs/', extra_environ=None, **kw):
+        extra_environ = extra_environ or {}
+        response = self.app.get(mount_point + 'new/',
+                                extra_environ=extra_environ)
         form = response.forms[1]
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
@@ -68,6 +70,23 @@ class TestMilestones(TrackerTestController):
         p = M.Project.query.get(shortname='test')
         app = p.app_instance('bugs')
         assert len(app.globals.custom_fields) == 1, len(app.globals.custom_fields)
+
+def post_install_create_ticket_permission(app):
+    """Set to authenticated permission to create tickets but not update"""
+    role = M.ProjectRole.by_name('*authenticated')._id
+    create_permission = M.ACE.allow(role, 'create')
+    update_permission = M.ACE.allow(role, 'update')
+    acl = app.config.acl
+    acl.append(create_permission)
+    if update_permission in acl:
+        acl.remove(update_permission)
+
+def post_install_update_ticket_permission(app):
+    """Set to anonymous permission to create and update tickets"""
+    role = M.ProjectRole.by_name('*anonymous')._id
+    app.config.acl.append(M.ACE.allow(role, 'create'))
+    app.config.acl.append(M.ACE.allow(role, 'update'))
+
 
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
@@ -174,11 +193,9 @@ class TestFunctionalController(TrackerTestController):
     def test_render_index(self):
         admin = M.User.query.get(username='test-admin')
         anon = M.User.query.get(username="*anonymous")
-        role_admin = M.ProjectRole.by_name('Admin')
-        for app in M.AppConfig.query.find().all():
-            if app.options['mount_point'] == "bugs":
-                assert has_access(app, 'create', admin)
-                assert not has_access(app, 'create', anon)
+        for app in M.AppConfig.query.find({'options.mount_point': 'bugs'}):
+            assert has_access(app, 'create', admin)
+            assert not has_access(app, 'create', anon)
 
         index_view = self.app.get('/bugs/')
         assert 'No open tickets found.' in index_view
@@ -295,10 +312,8 @@ class TestFunctionalController(TrackerTestController):
 
     def test_sidebar_static_page(self):
         admin = M.User.query.get(username='test-admin')
-        role_admin = M.ProjectRole.by_name('Admin')
-        for app in M.AppConfig.query.find().all():
-            if app.options['mount_point'] == "bugs":
-                assert has_access(app, 'create', admin)
+        for app in M.AppConfig.query.find({'options.mount_point': 'bugs'}):
+            assert has_access(app, 'create', admin)
 
         response = self.app.get('/bugs/search/')
         assert 'Create Ticket' in response
@@ -573,10 +588,8 @@ class TestFunctionalController(TrackerTestController):
 
     def test_edit_all_button(self):
         admin = M.User.query.get(username='test-admin')
-        role_admin = M.ProjectRole.by_name('Admin')
-        for app in M.AppConfig.query.find().all():
-            if app.options['mount_point'] == "bugs":
-                assert has_access(app, 'update', admin)
+        for app in M.AppConfig.query.find({'options.mount_point': 'bugs'}):
+            assert has_access(app, 'update', admin)
 
         response = self.app.get('/p/test/bugs/search/')
         assert 'Edit All' not in response
@@ -797,6 +810,39 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
+
+    @td.with_tool('test', 'Tickets', 'tracker',
+            post_install_hook=post_install_create_ticket_permission)
+    def test_create_permission(self):
+        """Test that user with `create` permission can create ticket,
+        but can't edit it without `update` permission.
+        """
+        response = self.app.get('/p/test/tracker/',
+                                extra_environ=dict(username='test-user-0'))
+        assert 'Create Ticket' in response
+
+        response = self.new_ticket(summary='test create, not update',
+                                   mount_point='/tracker/',
+                                   extra_environ=dict(username='test-user-0'))
+        ticket_url = response.headers['Location']
+        response = self.app.get(ticket_url,
+                                extra_environ=dict(username='test-user-0'))
+        assert not response.html.find('a', {'class': 'edit_ticket'})
+
+    @td.with_tool('test', 'Tickets', 'tracker',
+            post_install_hook=post_install_update_ticket_permission)
+    def test_update_permission(self):
+        r = self.app.get('/p/test/tracker/',
+                         extra_environ=dict(username='*anonymous'))
+        assert 'Create Ticket' in r
+
+        r = self.new_ticket(summary='test', mount_point='/tracker/',
+                            extra_environ=dict(username='*anonymous'))
+        ticket_url = r.headers['Location']
+        r = self.app.get(ticket_url, extra_environ=dict(username='*anonymous'))
+        a = r.html.find('a', {'class': 'edit_ticket'})
+        assert a.text == 'Edit'
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
