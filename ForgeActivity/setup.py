@@ -1,10 +1,7 @@
 from setuptools import setup, find_packages
-import sys, os
-
-from forgeblog.version import __version__
 
 setup(name='ForgeActivity',
-      version=__version__,
+      version="0.1",
       description="",
       long_description="""\
 """,
