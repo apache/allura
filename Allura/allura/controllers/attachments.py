@@ -65,7 +65,7 @@ class AttachmentController(BaseController):
                     pass
             redirect(request.referer)
         embed=False
-        if self.attachment.content_type and 'image/' in self.attachment.content_type:
+        if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
             embed = True
         return self.attachment.serve(embed=embed)
 

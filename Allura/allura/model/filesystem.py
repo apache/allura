@@ -90,7 +90,7 @@ class File(MappedClass):
         '''Sets the response headers and serves as a wsgi iter'''
         fp = self.rfile()
         pylons.response.headers['Content-Type'] = ''
-        pylons.response.content_type = fp.content_type.encode('utf-8')
+        pylons.response.content_type = self.content_type.encode('utf-8')
         if not embed:
             pylons.response.headers.add(
                 'Content-Disposition',
