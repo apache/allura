@@ -109,7 +109,7 @@ class Neighborhood(MappedClass):
         return ""
 
     @property
-    def has_home_project(self):
+    def has_home_tool(self):
         return self.neighborhood_project.app_config('home') is not None
 
     @property

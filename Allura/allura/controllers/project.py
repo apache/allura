@@ -91,7 +91,7 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
-        if not self.neighborhood.has_home_project:
+        if not self.neighborhood.has_home_tool:
             mount = c.project.first_mount()
             if mount is not None:
                 if 'ac' in mount:
