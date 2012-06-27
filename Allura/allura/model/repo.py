@@ -470,6 +470,10 @@ class Blob(object):
         return iter(self.open())
 
     @LazyProperty
+    def size(self):
+        return self.repo.blob_size(self)
+
+    @LazyProperty
     def text(self):
         return self.open().read()
 

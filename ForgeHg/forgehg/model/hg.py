@@ -230,7 +230,7 @@ class HgImplementation(M.RepositoryImplementation):
         return StringIO(fctx.data())
 
     def blob_size(self, blob):
-        fctx = self._hg[blob.commit.object_id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
+        fctx = self._hg[blob.commit._id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return fctx.size()
 
     def _setup_hooks(self):

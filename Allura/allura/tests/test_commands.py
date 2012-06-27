@@ -1,8 +1,8 @@
 from nose.tools import assert_raises
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_features, rssfeeds, \
-create_neighborhood
+from allura.command import script, set_neighborhood_features, \
+                           create_neighborhood
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError

@@ -382,7 +382,7 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             data = self._svn.list(
                    self._url + blob.path(),
-                   revision=self._revision(blob.commit.object_id),
+                   revision=self._revision(blob.commit._id),
                    dirent_fields=pysvn.SVN_DIRENT_SIZE)
         except pysvn.ClientError:
             log.info('ClientError getting filesize %r %r, returning 0', blob.path(), self._repo, exc_info=True)
@@ -393,7 +393,7 @@ class SVNImplementation(M.RepositoryImplementation):
         except (IndexError, KeyError):
             log.info('Error getting filesize: bad data from svn client %r %r, returning 0', blob.path(), self._repo, exc_info=True)
             size = 0
-        
+
         return size
 
     def _setup_hooks(self):

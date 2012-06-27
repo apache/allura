@@ -240,7 +240,7 @@ class GitImplementation(M.RepositoryImplementation):
             self._object(blob._id).data_stream)
 
     def blob_size(self, blob):
-        return self._object(blob.object_id).data_stream.size
+        return self._object(blob._id).data_stream.size
 
     def _setup_hooks(self):
         'Set up the git post-commit hook'
