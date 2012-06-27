@@ -58,7 +58,7 @@
           <li class="deleter" data-user="{{r.user.username}}">
             <b data-icon="{{g.icons['perm_delete'].char}}"
                class="ico {{g.icons['perm_delete'].css}}"></b>
-            {{ r.user.display_name }}
+            {{ r.user.display_name }} ({{r.user.username}})
           </li>
           {% endfor %}
           <li class="new-item">
