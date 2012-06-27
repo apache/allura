@@ -1,7 +1,8 @@
 from nose.tools import assert_raises
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_features
+from allura.command import script, set_neighborhood_features, rssfeeds, \
+create_neighborhood
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
@@ -116,3 +117,16 @@ def test_set_neighborhood_css():
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', '2.8'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'None'])
     assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'True'])
+
+def test_update_neighborhood():
+    cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
+    cmd.run([test_config, 'Projects', 'True'])
+    cmd.command()
+    nb = M.Neighborhood.query.get(name='Projects')
+    assert nb.has_home_tool == True
+
+    cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
+    cmd.run([test_config, 'Projects', 'False'])
+    cmd.command()
+    nb = M.Neighborhood.query.get(name='Projects')
+    assert nb.has_home_tool == False

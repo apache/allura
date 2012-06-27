@@ -74,7 +74,12 @@ class TestRootController(TestController):
             assert_equal(resp.status_int, 302)
             assert_equal(resp.location, 'http://localhost/p/test2/activity/')
 
-    def test_neighborhood_index(self):
+    def test_neighborhood_home(self):
+        # Install home app
+        nb = M.Neighborhood.query.get(name='Adobe')
+        p = nb.neighborhood_project
+        p.install_app('home', 'home', 'Home', ordinal=0)
+
         response = self.app.get('/adobe/')
         projects = response.html.findAll('div',{'class':'border card'})
         assert len(projects) == 2
@@ -106,4 +111,4 @@ class TestRootController(TestController):
 
     def test_slash_redirect(self):
         r = self.app.get('/p',status=301)
-        r = self.app.get('/p/',status=200)
+        r = self.app.get('/p/',status=302)

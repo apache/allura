@@ -41,6 +41,7 @@ class Neighborhood(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'neighborhood'
+        unique_indexes = [ 'url_prefix' ]
 
     _id = FieldProperty(S.ObjectId)
     name = FieldProperty(str)
@@ -107,6 +108,10 @@ class Neighborhood(MappedClass):
         if self.allow_custom_css:
             return self.css
         return ""
+
+    @property
+    def has_home_tool(self):
+        return self.neighborhood_project.app_config('home') is not None
 
     @property
     def icon(self):

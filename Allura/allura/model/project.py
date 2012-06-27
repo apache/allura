@@ -391,18 +391,11 @@ class Project(MappedClass):
         # Set menu mode
         delta_ordinal = 0
         max_ordinal = 0
-        neighborhood_admin_mode = False
 
         if self.is_user_project:
             entries.append({'ordinal': delta_ordinal, 'entry':SitemapEntry('Profile', "%sprofile/" % self.url(), ui_icon="tool-home")})
             max_ordinal = delta_ordinal
             delta_ordinal = delta_ordinal + 1
-
-        if self == self.neighborhood.neighborhood_project:
-            entries.append({'ordinal':delta_ordinal, 'entry':SitemapEntry('Home', self.neighborhood.url(), ui_icon="tool-home")})
-            max_ordinal = delta_ordinal
-            delta_ordinal = delta_ordinal + 1
-            neighborhood_admin_mode = True
 
         for sub in self.direct_subprojects:
             ordinal = sub.ordinal + delta_ordinal
@@ -423,7 +416,7 @@ class Project(MappedClass):
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
 
-        if neighborhood_admin_mode and h.has_access(self.neighborhood, 'admin'):
+        if self == self.neighborhood.neighborhood_project and h.has_access(self.neighborhood, 'admin'):
             entries.append({'ordinal': max_ordinal + 1,'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
             max_ordinal += 1
 

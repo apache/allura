@@ -91,6 +91,15 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
+        if not self.neighborhood.has_home_tool:
+            mount = c.project.first_mount()
+            if mount is not None:
+                if 'ac' in mount:
+                    redirect(mount['ac'].options.mount_point + '/')
+                elif 'sub' in mount:
+                    redirect(mount['sub'].url())
+            else:
+                redirect(c.project.app_configs[0].options.mount_point + '/')
         c.project_summary = W.project_summary
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)

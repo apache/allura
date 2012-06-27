@@ -161,8 +161,8 @@ class SVNImplementation(M.RepositoryImplementation):
         os.chmod(fn, 0755)
 
         def check_call(cmd):
-            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate()
+            p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate(input='p\n')
             if p.returncode != 0:
                 raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
 
