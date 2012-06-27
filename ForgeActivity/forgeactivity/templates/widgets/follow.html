@@ -1,0 +1,5 @@
+<a  href="{{action}}?follow={{not following}}"
+    class="artifact_follow{{ ' active' if following }}"
+    title="{{'Stop %sing' % action_label if following else action_label|capitalize}} {{thing}}"><b
+        data-icon="{{g.icons[icon].char}}" class="ico {{g.icons[icon].css}}"
+        title="{{'Stop %sing' % action_label if following else action_label|capitalize}} {{thing}}"></b></a>

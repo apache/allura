@@ -22,5 +22,8 @@ setup(name='ForgeActivity',
       # -*- Entry points: -*-
       [allura]
       activity=forgeactivity.main:ForgeActivityApp
+
+      [easy_widgets.resources]
+      ew_resources=forgeactivity.config.resources:register_ew_resources
       """,
       )

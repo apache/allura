@@ -3,7 +3,20 @@
 
 {% block title %}{{c.project.name}} Activity{% endblock %}
 
-{% block header %}{{c.project.name}} Activity{% endblock %}
+{% block header %}
+    Activity for
+    {% if c.project.is_user_project %}
+        {{c.project.user_project_of.display_name}}
+    {% else %}
+        {{c.project.name}}
+    {% endif %}
+{% endblock %}
+
+{% block actions %}
+    {% if c.user and c.user != c.user.anonymous() %}
+        {{c.follow_toggle.display(following=following)}}
+    {% endif %}
+{% endblock %}
 
 {% block content %}
     <div class="grid-14">

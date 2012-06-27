@@ -122,6 +122,8 @@ class Globals(object):
             user=Icon('U', 'ico-user'),
             secure=Icon('(', 'ico-lock'),
             unsecure=Icon(')', 'ico-unlock'),
+            star=Icon('S', 'ico-star'),
+            watch=Icon('E', 'ico-watch'),
             # Permissions
             perm_read=Icon('E', 'ico-focus'),
             perm_update=Icon('0', 'ico-sync'),
