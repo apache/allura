@@ -141,7 +141,8 @@ class TestRootController(TestController):
     def test_diff(self):
         ci = '/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/'
         parent = '773d2f8e3a94d0d5872988b16533d67e1a7f5462'
-        resp = self.app.get(ci + 'tree/README?barediff=' + parent)
+        resp = self.app.get(ci + 'tree/README?barediff=' + parent,
+                validate_chunk=True)
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
         assert '+Another line' in resp, resp.showbrowser()
