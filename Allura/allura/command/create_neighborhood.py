@@ -25,7 +25,6 @@ class CreateNeighborhoodCommand(base.Command):
                           google_analytics = False))
         project_reg = plugin.ProjectRegistrationProvider.get()
         project_reg.register_neighborhood_project(n, admins)
-        print "WARNING! You must restart the webserver before you can use the new neighborhood."
 
 
 class UpdateNeighborhoodCommand(base.Command):

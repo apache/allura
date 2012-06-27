@@ -40,39 +40,33 @@ class W:
 class RootController(WsgiDispatchController):
     """
     The root controller for the allura application.
-    
+
     All the other controllers and WSGI applications should be mounted on this
     controller. For example::
-    
+
         panel = ControlPanelController()
         another_app = AnotherWSGIApplication()
-    
+
     Keep in mind that WSGI applications shouldn't be mounted directly: They
     must be wrapped around with :class:`tg.controllers.WSGIAppController`.
-    
+
     """
-    
+
     auth = AuthController()
     error = ErrorController()
     nf = NewForgeController()
     nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
-    neighborhoods_bound = False
 
     def __init__(self):
-        if not self.neighborhoods_bound:
-            self.bind_controllers()
+        n_url_prefix = '/%s/' % request.path.split('/')[1]
+        n = M.Neighborhood.query.get(url_prefix=n_url_prefix)
+        if n and not n.url_prefix.startswith('//'):
+            n.bind_controller(self)
         self.browse = ProjectBrowseController()
         self.allura_sitemap = SitemapIndexController()
         super(RootController, self).__init__()
-
-    @classmethod
-    def bind_controllers(cls):
-        for n in M.Neighborhood.query.find():
-            if n.url_prefix.startswith('//'): continue
-            n.bind_controller(cls)
-        cls.neighborhoods_bound = True
 
     def _setup_request(self):
         c.project = c.app = None
