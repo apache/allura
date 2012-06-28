@@ -3,6 +3,7 @@ import os
 import shutil
 import json
 import hashlib
+from MySQLdb import DatabaseError
 
 from allura.command import base as allura_base
 
@@ -41,7 +42,11 @@ class MySQLExtractor(MediawikiExtractor):
 
     def connection(self):
         if not self._connection:
-            self._connection = MySQLdb.connect(**self.db_options)
+            try:
+                self._connection = MySQLdb.connect(**self.db_options)
+            except DatabaseError, e:
+                allura_base.log.error("Can't connect to database: %s" % str(e))
+                exit(2)
         return self._connection
 
     def _save(self, content, *paths):

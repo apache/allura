@@ -23,13 +23,14 @@ def test_mediawiki2markdown():
     mediawiki_text = """
 '''bold''' ''italics''
 == Getting started ==
-* [http://www.mediawiki.org/wiki/Manual:Configuration_settings Configuration settings list]
+* [http://www.mediawiki.org/wiki/Manual:Configuration_settings Configuration]
 * [http://www.mediawiki.org/wiki/Manual:FAQ MediaWiki FAQ]
     """
     mediawiki_output = converters.mediawiki2markdown(mediawiki_text)
     assert "**bold** _italics_" in mediawiki_output
     assert "## Getting started" in mediawiki_output
-    assert "* [MediaWiki FAQ](http://www.mediawiki.org/wiki/Manual:FAQ)" in mediawiki_output
+    assert ("* [MediaWiki FAQ](http://www.mediawiki.org/wiki/Manual:FAQ)"
+            in mediawiki_output)
 
 
 def test_mediawiki_internal_links2markdown():
