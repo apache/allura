@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block actions %}
-    {% if c.user and c.user != c.user.anonymous() %}
+    {% if c.user and c.user != c.user.anonymous() and followee != c.user %}
         {{c.follow_toggle.display(following=following)}}
     {% endif %}
 {% endblock %}

@@ -67,7 +67,7 @@ class ForgeActivityController(BaseController):
         if c.project.is_user_project:
             followee = c.project.user_project_of
         following = director().is_connected(c.user, followee)
-        return dict(following=following)
+        return dict(followee=followee, following=following)
 
     @expose('json:')
     @validate(W.follow_toggle)
@@ -80,6 +80,10 @@ class ForgeActivityController(BaseController):
         followee = c.project
         if c.project.is_user_project:
             followee = c.project.user_project_of
+        if c.user == followee:
+            return dict(
+                success=False,
+                message='Cannot follow yourself')
         try:
             if follow:
                 director().connect(c.user, followee)
