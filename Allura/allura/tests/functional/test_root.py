@@ -64,12 +64,12 @@ class TestRootController(TestController):
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
 
     def test_project_redirect(self):
-        with push_config(config, **{'activity_stream.enabled': 'false'}):
+        with push_config(config, **{'activitystream.enabled': 'false'}):
             resp = self.app.get('/p/test2/')
             assert_equal(resp.status_int, 302)
             assert_equal(resp.location, 'http://localhost/p/test2/admin/')
 
-        with push_config(config, **{'activity_stream.enabled': 'true'}):
+        with push_config(config, **{'activitystream.enabled': 'true'}):
             resp = self.app.get('/p/test2/')
             assert_equal(resp.status_int, 302)
             assert_equal(resp.location, 'http://localhost/p/test2/activity/')

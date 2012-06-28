@@ -280,7 +280,7 @@ class ProjectController(object):
     @with_trailing_slash
     def index(self, **kw):
         mount = c.project.first_mount('read')
-        activity_enabled = asbool(config.get('activity_stream.enabled', False))
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if activity_enabled and c.project.app_instance('activity'):
             redirect('activity/')
         elif mount is not None:
