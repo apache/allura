@@ -49,7 +49,9 @@ class Notification(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'notification'
-        indexes = [ ('neighborhood_id', 'tool_name', 'pubdate') ]
+        indexes = [ ('neighborhood_id', 'tool_name', 'pubdate'),
+                    ('author_id',), # used in ext/user_profile/user_main.py for user feeds
+                  ]
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 
