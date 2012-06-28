@@ -61,8 +61,16 @@ class MediawikiLoader(object):
         pages.sort()  # ensure that history in right order
         for page in pages:
             fn = os.path.join(page_dir, page)
-            with open(fn, 'r') as pages_file:
-                page_data = json.load(pages_file)
+            try:
+                with open(fn, 'r') as pages_file:
+                    page_data = json.load(pages_file)
+            except IOError, e:
+                allura_base.log.error("Can't open file: %s" % str(e))
+                exit(2)
+            except ValueError, e:
+                allura_base.log.error("Can't load data from file %s: %s"
+                                      % (fn, str(e)))
+                exit(2)
             yield page_data
 
     def _talk(self, page_dir):
@@ -70,8 +78,16 @@ class MediawikiLoader(object):
         filename = os.path.join(page_dir, 'discussion.json')
         if not os.path.isfile(filename):
             return
-        with open(filename, 'r') as talk_file:
-            talk_data = json.load(talk_file)
+        try:
+            with open(filename, 'r') as talk_file:
+                talk_data = json.load(talk_file)
+        except IOError, e:
+            allura_base.log.error("Can't open file: %s" % str(e))
+            exit(2)
+        except ValueError, e:
+            allura_base.log.error("Can't load data from file %s: %s"
+                                  % (filename, str(e)))
+            exit(2)
         return talk_data
 
     def _attachments(self, page_dir):
@@ -142,7 +158,11 @@ class MediawikiLoader(object):
         page = WM.Page.query.get(app_config_id=self.wiki.config._id,
                                  title=page_title)
         for filename, path in self._attachments(page_dir):
-            with open(path) as fp:
-                page.attach(filename, fp,
-                            content_type=utils.guess_mime_type(filename))
+            try:
+                with open(path) as fp:
+                    page.attach(filename, fp,
+                                content_type=utils.guess_mime_type(filename))
+            except IOError, e:
+                allura_base.log.error("Can't open file: %s" % str(e))
+                exit(2)
         allura_base.log.info('Loaded attachments for page %s.' % page_title)
