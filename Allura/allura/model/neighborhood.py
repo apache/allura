@@ -111,7 +111,8 @@ class Neighborhood(MappedClass):
 
     @property
     def has_home_tool(self):
-        return self.neighborhood_project.app_config('home') is not None
+        return (self.neighborhood_project
+                    .app_config_by_tool_type('home') is not None)
 
     @property
     def icon(self):

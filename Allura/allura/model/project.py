@@ -514,6 +514,11 @@ class Project(MappedClass):
                 'project_id':self._id,
                 'options.mount_point':mount_point}).first()
 
+    def app_config_by_tool_type(self, tool_type):
+        return AppConfig.query.find({
+                'project_id': self._id,
+                'tool_name': tool_type}).first()
+
     def new_subproject(self, name, install_apps=True, user=None):
         if not h.re_path_portion.match(name):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
