@@ -60,7 +60,7 @@ class ForgeActivityController(BaseController):
     def index(self, **kw):
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
-            raise HTTPNotFound()
+            raise exc.HTTPNotFound()
 
         c.follow_toggle = W.follow_toggle
         followee = c.project
@@ -74,7 +74,7 @@ class ForgeActivityController(BaseController):
     def follow(self, follow, **kw):
         activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
-            raise HTTPNotFound()
+            raise exc.HTTPNotFound()
 
         require_authenticated()
         followee = c.project
