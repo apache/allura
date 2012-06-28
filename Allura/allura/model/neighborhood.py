@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 class NeighborhoodFile(File):
     class __mongometa__:
         session = main_orm_session
+        indexes = [ 'neighborhood_id' ]
+
     neighborhood_id = FieldProperty(S.ObjectId)
 
 re_picker_css_type = re.compile('^/\*(.+)\*/')
