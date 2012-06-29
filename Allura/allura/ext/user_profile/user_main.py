@@ -149,20 +149,3 @@ class UserProfileController(BaseController):
                     name=div['name'],
                     content=content))
         redirect('configuration')
-
-    @expose()
-    def follow(self, username=None, **kw):
-        user = User.by_username(username)
-        if not user:
-            flash('Invalid username.', 'error')
-            redirect('.')
-        director.connect(c.user, user)
-        flash('You are now following %s.' % username)
-        redirect('.')
-
-    @expose('jinja:allura.ext.user_profile:templates/user_timeline.html')
-    def timeline(self, **kw):
-        username = c.project.shortname.split('/')[1]
-        user = User.by_username(username)
-        timeline = director.create_timeline(user)
-        return dict(timeline=timeline, user=user)

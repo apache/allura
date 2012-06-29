@@ -58,9 +58,9 @@ class ForgeActivityController(BaseController):
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
     def index(self, **kw):
-        activity_enabled = asbool(config.get('activity_stream.enabled', False))
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
-            raise HTTPNotFound()
+            raise exc.HTTPNotFound()
 
         c.follow_toggle = W.follow_toggle
         followee = c.project
@@ -72,9 +72,9 @@ class ForgeActivityController(BaseController):
     @expose('json:')
     @validate(W.follow_toggle)
     def follow(self, follow, **kw):
-        activity_enabled = asbool(config.get('activity_stream.enabled', False))
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
-            raise HTTPNotFound()
+            raise exc.HTTPNotFound()
 
         require_authenticated()
         followee = c.project
