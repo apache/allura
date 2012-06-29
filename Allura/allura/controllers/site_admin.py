@@ -103,3 +103,14 @@ class SiteAdminController(object):
         data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data
+
+    @expose('jinja:allura:templates/site_admin_add_subscribers.html')
+    def add_subscribers(self, **data):
+        if request.method == 'POST':
+            ok = True
+            for_user = M.User.by_username(data['for_user'])
+            if not for_user:
+                ok = False
+                flash('User not found')
+
+        return data
