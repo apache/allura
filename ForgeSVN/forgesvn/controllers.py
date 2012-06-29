@@ -3,6 +3,7 @@ from tg.decorators import with_trailing_slash
 from pylons import c
 
 from allura.controllers import repository
+from allura.lib import helpers as h
 
 class BranchBrowser(repository.BranchBrowser):
 
@@ -13,7 +14,7 @@ class BranchBrowser(repository.BranchBrowser):
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
         latest = c.app.repo.latest(branch=self._branch)
-        if not latest:
+        if not latest or (latest.object_id.split(':')[1] == '1' and h.has_access(c.app, 'write')()):
             return dict(allow_fork=False, log=[])
         redirect(latest.url() + 'tree/')
 

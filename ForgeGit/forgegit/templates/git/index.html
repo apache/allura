@@ -20,6 +20,40 @@
       <a href="log?page=1">More</a>
     {% endif %}
   {% else %}
+    {% if h.has_access(c.app, 'write')() %}
+    <div class="message warning scm-learn-basics">
+      <div class="content">
+        Are you new to Git? <a href="http://git-scm.com/doc">Learn the basics</a>.
+      </div>
+    </div>
+
+    <p>It looks like this Git repository doesn't have any files in it. Let's commit your project code now.</p>
+
+    <h2>First time using Git</h2>
+
+    <div class="codehilite">
+      <pre>cd {{c.app.repo.suggested_clone_dest_path()}}
+git init
+git commit -a -m 'Initial commit'
+git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
+git push origin master</pre>
+    </div>
+
+    <h2>Existing Repository</h2>
+
+    <div class="codehilite">
+      <pre>cd {{c.app.repo.suggested_clone_dest_path()}}
+git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
+git push origin master</pre>
+    </div>
+    &nbsp;
+    <div class="message info scm-ssh-key">
+      <div class="content">
+        Did you get asked for your SourceForge password during this process? You can securely use your Git repository and avoid having to re-enter your password by <a href="https://sourceforge.net/account/ssh">setting up an ssh-key</a>.
+      </div>
+    </div>
+    {% else %}
     <p><b>No (more) commits</b></p>
+    {% endif %}
   {% endif %}
 {% endblock %}
