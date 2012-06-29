@@ -33,7 +33,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
     if not all_commits:
         # Skip commits that are already in the DB
         commit_ids = new_commit_ids
-    log.info('Refreshing %d commits', len(commit_ids))
+    log.info('Refreshing %d commits on %s', len(commit_ids), repo.full_fs_path)
 
     # Refresh commits
     seen = set()
@@ -71,6 +71,8 @@ def refresh_repo(repo, all_commits=False, notify=True):
         compute_diffs(repo._id, cache, ci)
         if (i+1) % 100 == 0:
             log.info('Compute diffs %d: %s', (i+1), ci._id)
+
+    log.info('Refresh complete for %s', repo.full_fs_path)
 
     # Send notifications
     if notify:
