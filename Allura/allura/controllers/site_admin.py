@@ -1,24 +1,23 @@
 import logging
-import os
-import mimetypes
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-import pkg_resources
-from tg import expose, redirect, flash, config, validate, request, response
+from tg import expose, flash, config, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from webob import exc
-from formencode import validators as fev
 from ming.orm import session
 import pymongo
-from pylons import c, g
+from pylons import c
 
 from allura.lib import helpers as h
 from allura.lib.security import require_access
 from allura import model as M
+from allura.command.show_models import dfs, build_model_inheritance_graph
+
+from urlparse import urlparse
 
 
 log = logging.getLogger(__name__)
+
 
 class SiteAdminController(object):
 
@@ -102,4 +101,66 @@ class SiteAdminController(object):
 
         data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
+        return data
+
+    def subscribe_artifact(self, url, user):
+        artifact_url = urlparse(url).path[1:-1].split("/")
+        neighborhood = M.Neighborhood.query.find({
+            "url_prefix": "/" + artifact_url[0] + "/"}).first()
+
+        if  artifact_url[0] == "u":
+            project = M.Project.query.find({
+                "shortname": artifact_url[0] + "/" + artifact_url[1],
+                "neighborhood_id": neighborhood._id}).first()
+        else:
+            project = M.Project.query.find({
+                "shortname": artifact_url[1],
+                "neighborhood_id": neighborhood._id}).first()
+
+        appconf = M.AppConfig.query.find({
+            "options.mount_point": artifact_url[2],
+            "project_id": project._id}).first()
+
+        if appconf.url() == urlparse(url).path:
+            M.Mailbox.subscribe(
+                user_id=user._id,
+                app_config_id=appconf._id,
+                project_id=project._id)
+            return True
+
+        classes = set()
+        for depth, cls in dfs(M.Artifact, build_model_inheritance_graph()):
+            classes.add(cls)
+        for cls in classes:
+            for artifact in cls.query.find({"app_config_id": appconf._id}):
+                if artifact.url() == urlparse(url).path:
+                    M.Mailbox.subscribe(
+                        user_id=user._id,
+                        app_config_id=appconf._id,
+                        project_id=project._id,
+                        artifact=artifact)
+                    return True
+        return False
+
+    @expose('jinja:allura:templates/site_admin_add_subscribers.html')
+    def add_subscribers(self, **data):
+        if request.method == 'POST':
+            url = data['artifact_url']
+            user = M.User.by_username(data['for_user'])
+            if not user or user == M.User.anonymous():
+                flash('Invalid login', 'error')
+                return data
+
+            try:
+                ok = self.subscribe_artifact(url, user)
+            except:
+                log.warn("Can't subscribe to artifact", exc_info=True)
+                ok = False
+
+            if ok:
+                flash('User successfully subscribed to the artifact')
+                return {}
+            else:
+                flash('Artifact not found', 'error')
+
         return data
