@@ -17,6 +17,14 @@ from allura.lib import helpers as h
 from allura.lib.security import require_access
 from allura import model as M
 
+from urlparse import urlparse
+from urllib2 import urlopen
+
+
+
+
+
+
 
 log = logging.getLogger(__name__)
 
@@ -107,10 +115,13 @@ class SiteAdminController(object):
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
         if request.method == 'POST':
-            ok = True
-            for_user = M.User.by_username(data['for_user'])
-            if not for_user:
-                ok = False
-                flash('User not found')
-
+            url = data['url']
+            artifact_url = urlparse(url).path
+            urlopen(url + "subscribe?subscribe=True")
+            subscribe = M.Mailbox.query.find({"user_id":None,"artifact_url":artifact_url,"type" :"direct",}).first()
+            if subscribe:
+                subscribe.user_id=M.User.by_username(data['for_user'])._id
         return data
+
+
+
