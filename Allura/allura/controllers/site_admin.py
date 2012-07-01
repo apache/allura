@@ -16,17 +16,17 @@ from pylons import c, g
 from allura.lib import helpers as h
 from allura.lib.security import require_access
 from allura import model as M
+from allura.lib.widgets import AddSubscribtionToUser
 
 from urlparse import urlparse
 from urllib2 import urlopen
 
 
 
-
-
-
-
 log = logging.getLogger(__name__)
+
+class F(object):
+    add_subscriber_form = AddSubscribtionToUser()
 
 class SiteAdminController(object):
 
@@ -114,13 +114,29 @@ class SiteAdminController(object):
 
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
+        c.form = F.add_subscriber_form
         if request.method == 'POST':
-            url = data['url']
+            url = data['artifact_url']
+            try :
+                user_id = M.User.by_username(data['for_user'])._id
+            except :
+                flash("Invalid login")
+                return data
+
             artifact_url = urlparse(url).path
-            urlopen(url + "subscribe?subscribe=True")
-            subscribe = M.Mailbox.query.find({"user_id":None,"artifact_url":artifact_url,"type" :"direct",}).first()
-            if subscribe:
-                subscribe.user_id=M.User.by_username(data['for_user'])._id
+            try :
+                urlopen(url + "subscribe?subscribe=True")
+            except :
+                flash("Invalid URL")
+                return data
+
+            already_subscribed = M.Mailbox.query.get(user_id = user_id,artifact_url = artifact_url,type = "direct")
+            if not already_subscribed:
+                subscribe = M.Mailbox.query.find({"user_id":None,"artifact_url":artifact_url,"type" :"direct",}).first()
+                if subscribe:
+                    subscribe.user_id=user_id
+            redirect("/nf/admin/")
+
         return data
 
 

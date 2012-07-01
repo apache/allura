@@ -7,6 +7,8 @@ from allura.lib import validators as V
 from allura import model as M
 
 from .form_fields import SubmitButton
+from forms import ForgeForm
+
 
 # Discussion forms
 class _SubscriptionTable(ew.TableField):
@@ -47,3 +49,16 @@ class SubscribeForm(ew.SimpleForm):
 
     def from_python(self, value, state):
         return value
+
+class AddSubscribtionToUser(ForgeForm):
+    submit_text='Save'
+    style='wide'
+    class fields(ew_core.NameList):
+        for_user = ew.TextField(label='Username')
+        artifact_url = ew.TextField(label='Url')
+
+
+
+
+
+

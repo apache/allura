@@ -3,18 +3,5 @@
 
 {% block content %}
 <h1>Add Subscribers</h1>
-
-<form name="add_subscribers_form" method="POST">
-<table>
-<tr>
-<td>Username:</td> <td><input name="for_user" type="text" value="{{for_user}}"></td>
-</tr>
-<tr>
-<td>URL:</td> <td><input name="url" type="text" value="{{caps}}"></td>
-</tr>
-<tr>
-<td><input type="submit" value="Save"><td>
-</tr>
-</table>
-</form>
+{{ c.form.display(action='/nf/admin/add_subscribers')}}
 {% endblock %}
