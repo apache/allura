@@ -22,11 +22,12 @@ from urlparse import urlparse
 from urllib2 import urlopen
 
 
-
 log = logging.getLogger(__name__)
+
 
 class F(object):
     add_subscriber_form = AddSubscribtionToUser()
+
 
 class SiteAdminController(object):
 
@@ -108,7 +109,9 @@ class SiteAdminController(object):
         elif request.method == 'GET':
             data = {'expires': datetime.utcnow() + timedelta(days=2)}
 
-        data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
+        data['token_list'] = M.ApiTicket.query.find().sort(
+            'mod_date',
+            pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data
 
@@ -117,27 +120,30 @@ class SiteAdminController(object):
         c.form = F.add_subscriber_form
         if request.method == 'POST':
             url = data['artifact_url']
-            try :
+            try:
                 user_id = M.User.by_username(data['for_user'])._id
-            except :
+            except:
                 flash("Invalid login")
                 return data
 
             artifact_url = urlparse(url).path
-            try :
+            try:
                 urlopen(url + "subscribe?subscribe=True")
-            except :
+            except:
                 flash("Invalid URL")
                 return data
 
-            already_subscribed = M.Mailbox.query.get(user_id = user_id,artifact_url = artifact_url,type = "direct")
+            already_subscribed = M.Mailbox.query.get(
+                user_id=user_id,
+                artifact_url=artifact_url,
+                type="direct")
             if not already_subscribed:
-                subscribe = M.Mailbox.query.find({"user_id":None,"artifact_url":artifact_url,"type" :"direct",}).first()
+                subscribe = M.Mailbox.query.find({
+                    "user_id": None,
+                    "artifact_url": artifact_url,
+                    "type": "direct", }).first()
                 if subscribe:
-                    subscribe.user_id=user_id
+                    subscribe.user_id = user_id
             redirect("/nf/admin/")
 
         return data
-
-
-

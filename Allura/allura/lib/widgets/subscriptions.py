@@ -50,15 +50,11 @@ class SubscribeForm(ew.SimpleForm):
     def from_python(self, value, state):
         return value
 
+
 class AddSubscribtionToUser(ForgeForm):
-    submit_text='Save'
-    style='wide'
+    submit_text = 'Save'
+    style = 'wide'
+
     class fields(ew_core.NameList):
         for_user = ew.TextField(label='Username')
         artifact_url = ew.TextField(label='Url')
-
-
-
-
-
-

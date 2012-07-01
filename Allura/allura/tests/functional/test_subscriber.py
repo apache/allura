@@ -1,5 +1,6 @@
 from allura.tests import TestController
 
+
 class TestSubscriber(TestController):
 
     def test_add_subscriber(self):
