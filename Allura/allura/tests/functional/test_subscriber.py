@@ -1,8 +1,7 @@
 from allura.tests import TestController
-from allura import model as M
 
 class TestSubscriber(TestController):
 
-    def test_access(self):
-        print M.Notification.query.find({"artifact_id":"/u/test-user/wiki/Home/"}).count()
-        assert 'Login' in "Login"
+    def test_add_subscriber(self):
+        response = self.app.get('/nf/admin/add_subscribers')
+        assert "<h1>Add Subscribers</h1>" in response
