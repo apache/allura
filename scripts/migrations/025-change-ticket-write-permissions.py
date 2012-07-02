@@ -19,21 +19,16 @@ def main():
     query = {'tool_name': {'$regex': '^tickets$', '$options': 'i'}}
     for chunk in utils.chunked_find(M.AppConfig, query):
         for a in chunk:
-            # change 'write' permission
-            it = (i for i, v in enumerate(a.acl) if v.permission == 'write')
-            for i in it:
-                role_id = a.acl[i].role_id
-                del a.acl[i]
-                a.acl.append(M.ACE.allow(role_id, 'create'))
-                a.acl.append(M.ACE.allow(role_id, 'update'))
-            # change 'deny write' permission
-            it = (i for i, v in enumerate(a.acl)
-                    if v.permission == 'deny write')
-            for i in it:
-                role_id = a.acl[i].role_id
-                del a.acl[i]
-                a.acl.append(M.ACE.allow(role_id, 'deny create'))
-                a.acl.append(M.ACE.allow(role_id, 'deny update'))
+            # change 'deny write' and 'write' permission
+            role_ids = [(p.role_id, p.access) for p in a.acl if p.permission == 'write']
+            a.acl = [p for p in a.acl if p.permission != 'write']
+            for role_id, access in role_ids:
+                if access == M.ACE.DENY:
+                    a.acl.append(M.ACE.deny(role_id, 'create'))
+                    a.acl.append(M.ACE.deny(role_id, 'update'))
+                else:
+                    a.acl.append(M.ACE.allow(role_id, 'create'))
+                    a.acl.append(M.ACE.allow(role_id, 'update'))
 
         ThreadLocalORMSession.flush_all()
 

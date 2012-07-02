@@ -827,6 +827,7 @@ class TestFunctionalController(TrackerTestController):
         ticket_url = response.headers['Location']
         response = self.app.get(ticket_url,
                                 extra_environ=dict(username='test-user-0'))
+        assert not response.html.find('div',{'class': 'error'})
         assert not response.html.find('a', {'class': 'edit_ticket'})
 
     @td.with_tool('test', 'Tickets', 'tracker',
