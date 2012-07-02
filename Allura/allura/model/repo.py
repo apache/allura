@@ -233,8 +233,12 @@ class Commit(RepoObject):
         result = dict(prev=None, next=None)
         if self.parent_ids:
             result['prev'] = self.query.find(dict(_id={'$in': self.parent_ids })).all()
+            for ci in result['prev']:
+                ci.set_context(self.repo)
         if self.child_ids:
             result['next'] = self.query.find(dict(_id={'$in': self.child_ids })).all()
+            for ci in result['next']:
+                ci.set_context(self.repo)
         return result
 
     @LazyProperty
