@@ -22,7 +22,7 @@ def main(options):
         q_project['shortname'] = {'$regex': options.project_regex}
 
     log.info('Refreshing repositories')
-    if options.clean:
+    if options.clean_all:
         log.info('Removing all repository objects')
         M.repo.CommitDoc.m.remove({})
         M.repo.TreeDoc.m.remove({})
@@ -48,6 +48,40 @@ def main(options):
                     c.app.repo._impl._setup_hooks()
                 except:
                     log.exception('Error setting up hooks for %r', c.app.repo)
+
+                if options.clean:
+                    ci_ids = list(c.app.repo.all_commit_ids())
+                    log.info("Deleting mongo data for %i commits...", len(ci_ids))
+                    tree_ids = [
+                            tree_id for doc in
+                            M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}},
+                                                   {"tree_ids": 1})
+                            for tree_id in doc.get("tree_ids", [])]
+
+                    i = M.repo.CommitDoc.m.find({"_id": {"$in": ci_ids}}).count()
+                    log.info("Deleting %i CommitDoc docs...", i)
+                    M.repo.CommitDoc.m.remove({"_id": {"$in": ci_ids}})
+
+                    i = M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}}).count()
+                    log.info("Deleting %i TreesDoc docs...", i)
+                    M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
+
+                    i = M.repo.TreeDoc.m.find({"_id": {"$in": tree_ids}}).count()
+                    log.info("Deleting %i TreeDoc docs...", i)
+                    M.repo.TreeDoc.m.remove({"_id": {"$in": tree_ids}})
+
+                    i = M.repo.LastCommitDoc.m.find({"object_id": {"$in": tree_ids}}).count()
+                    log.info("Deleting %i LastCommitDoc docs...", i)
+                    M.repo.LastCommitDoc.m.remove({"object_id": {"$in": tree_ids}})
+
+                    i = M.repo.DiffInfoDoc.m.find({"_id": {"$in": ci_ids}}).count()
+                    log.info("Deleting %i DiffInfoDoc docs...", i)
+                    M.repo.DiffInfoDoc.m.remove({"_id": {"$in": ci_ids}})
+
+                    i = M.repo.CommitRunDoc.m.find({"commit_ids": {"$in": ci_ids}}).count()
+                    log.info("Deleting %i CommitRunDoc docs...", i)
+                    M.repo.CommitRunDoc.m.remove({"commit_ids": {"$in": ci_ids}})
+
                 try:
                     if options.all:
                         log.info('Refreshing ALL commits in %r', c.app.repo)
@@ -76,7 +110,10 @@ def parse_options():
     parser.add_argument('--mount_point', default='', dest='mount_point',
             help='Restrict update to repos at the given tool mount point. ')
     parser.add_argument('--clean', action='store_true', dest='clean',
-            default=False, help='Remove all repo-related mongo docs before '
+            default=False, help='Remove repo-related mongo docs (for '
+            'project(s) being refreshed only) before doing the refresh.')
+    parser.add_argument('--clean-all', action='store_true', dest='clean_all',
+            default=False, help='Remove ALL repo-related mongo docs before '
             'refresh.')
     parser.add_argument('--all', action='store_true', dest='all', default=False,
             help='Refresh all commits (not just the ones that are new).')

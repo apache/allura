@@ -38,6 +38,8 @@ VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
     '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
 
 # Basic commit information
+# One of these for each commit in the physical repo on disk. The _id is the
+# hexsha of the commit (for Git and Hg).
 CommitDoc = collection(
     'repo_ci', main_doc_session,
     Field('_id', str),
@@ -49,7 +51,7 @@ CommitDoc = collection(
     Field('child_ids', [str], index=True),
     Field('repo_ids', [ S.ObjectId() ], index=True))
 
-# Basic tree information
+# Basic tree information (also see TreesDoc)
 TreeDoc = collection(
     'repo_tree', main_doc_session,
     Field('_id', str),
@@ -58,6 +60,7 @@ TreeDoc = collection(
     Field('other_ids', [dict(name=str, id=str, type=SObjType)]))
 
 # Information about the last commit to touch a tree/blob
+# LastCommitDoc.object_id = TreeDoc._id
 LastCommitDoc = collection(
     'repo_last_commit', project_doc_session,
     Field('_id', str),
@@ -72,12 +75,15 @@ LastCommitDoc = collection(
         summary=str)))
 
 # List of all trees contained within a commit
+# TreesDoc._id = CommitDoc._id
+# TreesDoc.tree_ids = [ TreeDoc._id, ... ]
 TreesDoc = collection(
     'repo_trees', main_doc_session,
     Field('_id', str),
     Field('tree_ids', [str]))
 
 # Information about which things were added/removed in  commit
+# DiffInfoDoc._id = CommitDoc._id
 DiffInfoDoc = collection(
     'repo_diffinfo', main_doc_session,
     Field('_id', str),
@@ -86,6 +92,7 @@ DiffInfoDoc = collection(
         [ dict(name=str, lhs_id=str, rhs_id=str)]))
 
 # List of commit runs (a run is a linear series of single-parent commits)
+# CommitRunDoc.commit_ids = [ CommitDoc._id, ... ]
 CommitRunDoc = collection(
     'repo_commitrun', main_doc_session,
     Field('_id', str),
@@ -226,8 +233,12 @@ class Commit(RepoObject):
         result = dict(prev=None, next=None)
         if self.parent_ids:
             result['prev'] = self.query.find(dict(_id={'$in': self.parent_ids })).all()
+            for ci in result['prev']:
+                ci.set_context(self.repo)
         if self.child_ids:
             result['next'] = self.query.find(dict(_id={'$in': self.child_ids })).all()
+            for ci in result['next']:
+                ci.set_context(self.repo)
         return result
 
     @LazyProperty
