@@ -74,7 +74,7 @@ class DiscussionController(BaseController):
     @expose()
     @validate(pass_validator, error_handler=index)
     def subscribe(self, **kw):
-        threads = kw.pop('threads')
+        threads = kw.pop('threads', [])
         for t in threads:
             thread = self.M.Thread.query.find(dict(_id=t['_id'])).first()
             if 'subscription' in t:
