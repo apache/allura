@@ -109,9 +109,7 @@ class SiteAdminController(object):
         elif request.method == 'GET':
             data = {'expires': datetime.utcnow() + timedelta(days=2)}
 
-        data['token_list'] = M.ApiTicket.query.find().sort(
-            'mod_date',
-            pymongo.DESCENDING).all()
+        data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data
 
