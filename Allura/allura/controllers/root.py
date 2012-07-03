@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Main Controller kfg jdlkfghjdlkfgj dlfkgj dlfgkjd""" 
+"""Main Controller"""
 import logging, string, os
 from datetime import datetime
 from collections import defaultdict
