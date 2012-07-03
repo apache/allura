@@ -116,6 +116,30 @@ class SiteAdminController(object):
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
         c.form = F.add_subscriber_form
+
+        #http://localhost:8080/p/test/wiki/Home/
+
+        neighborhood = M.Neighborhood.query.find({"url_prefix":"/p/"}).first()
+        project = M.Project.query.find({"shortname":"test","neighborhood_id":neighborhood._id}).first()
+        appconf = M.AppConfig.query.find({"options.mount_point":"wiki","project_id":project._id}).first()
+        print appconf._id
+        print "!!!!!!!!!!!!!!!!!"
+
+        for p in M.VersionedArtifact.__subclasses__():
+            print "--------------------------------------------------"
+            print p
+            for i in p.query.find({"app_config_id":appconf._id}).all():
+                print i
+                print i.type_s
+                print i.url()
+
+
+
+
+
+
+
+
         if request.method == 'POST':
             url = data['artifact_url']
             try:
