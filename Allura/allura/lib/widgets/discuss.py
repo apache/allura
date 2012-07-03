@@ -309,6 +309,9 @@ class Post(HierWidget):
                         evt.preventDefault();
                         popup.lightbox_me();
                         $('input', popup).select();
+                        $('input', popup).click(function() {
+                            this.select();
+                        });
                     });
                     $('.close', popup).bind('click', function() {
                         popup.hide();
