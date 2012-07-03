@@ -1,5 +1,14 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
+{% if page == 0 %}
+  {% set params = None %}
+{% else %}
+  {% set params = dict(page=page, limit=limit) %}
+{% endif %}
+{% set shortlink_url = tg.url(
+  request.scheme + '://' + request.host + url.current(), params)
+  + '#' + value.slug %}
+
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
@@ -67,7 +76,7 @@
           <a href="" class="reply_post btn"><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         {% endif %}
         <div style="clear:both">
-          <a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}" class="little_link shortlink"><span>Link</span></a><br/>
+          <a href="{{shortlink_url}}" class="little_link shortlink"><span>Link</span></a><br/>
           {% if c.user != c.user.anonymous() %}<a href="" class="edit_post little_link"><span>Edit</span></a><br/>{% endif %}
           {% if h.has_access(value, 'moderate')() %}
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
@@ -81,8 +90,7 @@
       <div class="shortlink_popup modal" style="display: none">
         <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
         If you would like to refer to this comment somewhere else in this project, copy and paste the following link:
-        <input type="text" style="width:100%"
-          value='{% filter forceescape %}<a href="{{tg.url(url.current(),dict(page=page,limit=limit))}}#{{value.slug}}">{{value.subject or "comment"}}</a>{% endfilter %}'>
+        <input type="text" style="width:100%" value="{{shortlink_url}}">
       </div>
     </div>
     <ul>
