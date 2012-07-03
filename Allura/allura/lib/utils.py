@@ -177,6 +177,11 @@ def lsub_utf8(s, n):
         return s[:k]
     return s
 
+def chunked_list(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
 
 def chunked_iter(iterable, max_size):
     '''return iterable 'chunks' from the iterable of max size max_size'''

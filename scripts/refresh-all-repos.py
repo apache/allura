@@ -5,9 +5,10 @@ from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
-from allura.lib.utils import chunked_find
+from allura.lib.utils import chunked_find, chunked_list
 
 log = logging.getLogger(__name__)
+
 
 def main(options):
     q_project = {}
@@ -66,13 +67,16 @@ def main(options):
                     log.info("Deleting %i TreesDoc docs...", i)
                     M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
 
-                    i = M.repo.TreeDoc.m.find({"_id": {"$in": tree_ids}}).count()
-                    log.info("Deleting %i TreeDoc docs...", i)
-                    M.repo.TreeDoc.m.remove({"_id": {"$in": tree_ids}})
-
-                    i = M.repo.LastCommitDoc.m.find({"object_id": {"$in": tree_ids}}).count()
-                    log.info("Deleting %i LastCommitDoc docs...", i)
-                    M.repo.LastCommitDoc.m.remove({"object_id": {"$in": tree_ids}})
+                    # delete these in chunks, otherwise the query doc can
+                    # exceed the max BSON size limit (16MB at the moment)
+                    for tree_ids_chunk in chunked_list(tree_ids, 300000):
+                        i = M.repo.TreeDoc.m.find({"_id": {"$in": tree_ids_chunk}}).count()
+                        log.info("Deleting %i TreeDoc docs...", i)
+                        M.repo.TreeDoc.m.remove({"_id": {"$in": tree_ids_chunk}})
+                        i = M.repo.LastCommitDoc.m.find({"object_id": {"$in": tree_ids_chunk}}).count()
+                        log.info("Deleting %i LastCommitDoc docs...", i)
+                        M.repo.LastCommitDoc.m.remove({"object_id": {"$in": tree_ids_chunk}})
+                    del tree_ids
 
                     i = M.repo.DiffInfoDoc.m.find({"_id": {"$in": ci_ids}}).count()
                     log.info("Deleting %i DiffInfoDoc docs...", i)
@@ -81,6 +85,7 @@ def main(options):
                     i = M.repo.CommitRunDoc.m.find({"commit_ids": {"$in": ci_ids}}).count()
                     log.info("Deleting %i CommitRunDoc docs...", i)
                     M.repo.CommitRunDoc.m.remove({"commit_ids": {"$in": ci_ids}})
+                    del ci_ids
 
                 try:
                     if options.all:

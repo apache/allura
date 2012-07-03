@@ -2,7 +2,7 @@ import unittest
 from mock import Mock
 
 from alluratest.controller import setup_unit_test
-from allura.lib.utils import generate_code_stats
+from allura.lib.utils import generate_code_stats, chunked_list
 
 class TestCodeStats(unittest.TestCase):
 
@@ -13,7 +13,7 @@ class TestCodeStats(unittest.TestCase):
         blob = Mock()
         blob.text = \
 """class Person(object):
-    
+
     def __init__(self, name='Alice'):
         self.name = name
 
@@ -26,3 +26,12 @@ class TestCodeStats(unittest.TestCase):
         assert stats['line_count'] == 8
         assert stats['data_line_count'] == 5
         assert stats['code_size'] == len(blob.text)
+
+
+class TestUtils(unittest.TestCase):
+    def test_chunked_list(self):
+        l = range(10)
+        chunks = list(chunked_list(l, 3))
+        self.assertEqual(len(chunks), 4)
+        self.assertEqual(len(chunks[0]), 3)
+        self.assertEqual([el for sublist in chunks for el in sublist], l)
