@@ -137,6 +137,7 @@ class SiteAdminController(object):
         appconf = M.AppConfig.query.find({
             "options.mount_point": artifact_url[2],
             "project_id": project._id}).first()
+
         if appconf.url() == urlparse(url).path:
             M.Mailbox.subscribe(
                 user_id=user._id,
