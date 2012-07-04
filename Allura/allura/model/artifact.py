@@ -666,7 +666,7 @@ class VotableArtifact(MappedClass):
     """Voting support for the Artifact. Use as a mixin."""
 
     class __mongometa__:
-        session = artifact_orm_session
+        session = main_orm_session
         name = 'vote'
 
     votes_up = FieldProperty(int, if_missing=0)
