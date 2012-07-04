@@ -16,17 +16,12 @@ from pylons import c, g
 from allura.lib import helpers as h
 from allura.lib.security import require_access
 from allura import model as M
-from allura.lib.widgets import AddSubscribtionToUser
 
 from urlparse import urlparse
 from urllib2 import urlopen
 
 
 log = logging.getLogger(__name__)
-
-
-class F(object):
-    add_subscriber_form = AddSubscribtionToUser()
 
 
 class SiteAdminController(object):
@@ -113,59 +108,51 @@ class SiteAdminController(object):
         log.info(data['token_list'])
         return data
 
+    def check_artifact(self,artifact,url,appconf,user,project):
+        for ar in artifact.__subclasses__():
+            for i in ar.query.find({"app_config_id": appconf._id}).all():
+                if i.url() == urlparse(url).path:
+                    M.Mailbox.subscribe(user_id=user._id,
+                        app_config_id=appconf._id,
+                        project_id=project._id,
+                        artifact=i)
+                    return
+            self.check_artifact(ar,url,appconf,user,project)
+
+    def subscribe_artifact(self, url, user):
+        artifact_url = urlparse(url).path[1:-1].split("/")
+
+        project = M.Project.query.find({
+            "shortname": artifact_url[1],
+            "neighborhood_id": M.Neighborhood.query.find({
+                "url_prefix": "/" + artifact_url[0] + "/"}
+            ).first()._id}).first()
+
+        appconf = M.AppConfig.query.find({
+            "options.mount_point": artifact_url[2],
+            "project_id": project._id}).first()
+
+        if appconf.url()==urlparse(url).path:
+            M.Mailbox.subscribe(user_id=user._id,
+                app_config_id=appconf._id,
+                project_id=project._id)
+            return
+
+
+        for art in M.Artifact.__subclasses__():
+            self.check_artifact(art,url,appconf,user,project)
+
+
+
+
+
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
-        c.form = F.add_subscriber_form
-
-        #http://localhost:8080/p/test/wiki/Home/
-
-        neighborhood = M.Neighborhood.query.find({"url_prefix":"/p/"}).first()
-        project = M.Project.query.find({"shortname":"test","neighborhood_id":neighborhood._id}).first()
-        appconf = M.AppConfig.query.find({"options.mount_point":"wiki","project_id":project._id}).first()
-        print appconf._id
-        print "!!!!!!!!!!!!!!!!!"
-
-        for p in M.VersionedArtifact.__subclasses__():
-            print "--------------------------------------------------"
-            print p
-            for i in p.query.find({"app_config_id":appconf._id}).all():
-                print i
-                print i.type_s
-                print i.url()
-
-
-
-
-
-
-
-
         if request.method == 'POST':
             url = data['artifact_url']
-            try:
-                user_id = M.User.by_username(data['for_user'])._id
-            except:
-                flash("Invalid login")
-                return data
-
-            artifact_url = urlparse(url).path
-            try:
-                urlopen(url + "subscribe?subscribe=True")
-            except:
-                flash("Invalid URL")
-                return data
-
-            already_subscribed = M.Mailbox.query.get(
-                user_id=user_id,
-                artifact_url=artifact_url,
-                type="direct")
-            if not already_subscribed:
-                subscribe = M.Mailbox.query.find({
-                    "user_id": None,
-                    "artifact_url": artifact_url,
-                    "type": "direct", }).first()
-                if subscribe:
-                    subscribe.user_id = user_id
-            redirect("/nf/admin/")
-
+            user = M.User.by_username(data['for_user'])
+            if user is None:
+                flash('Invalid login')
+            else:
+                self.subscribe_artifact(url, user)
         return data

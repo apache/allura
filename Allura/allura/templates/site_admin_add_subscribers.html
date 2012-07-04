@@ -1,7 +1,19 @@
-{% set page="api_tickets" %}
+{% set page="add_subscribers" %}
 {% extends 'allura:templates/site_admin.html' %}
 
 {% block content %}
 <h1>Add Subscribers</h1>
-{{ c.form.display(action='/nf/admin/add_subscribers')}}
+<form name="add_subscriber" method="POST">
+    <table>
+        <tr>
+            <td>Username:</td> <td><input name="for_user" type="text" value="{{for_user}}"></td>
+        </tr>
+        <tr>
+            <td>Url:</td> <td><input name="artifact_url" type="text" value="{{artifact_url}}"></td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="Save"><td>
+        </tr>
+    </table>
+</form>
 {% endblock %}
