@@ -4,7 +4,7 @@
 from .neighborhood import Neighborhood, NeighborhoodFile
 from .project import Project, ProjectCategory, TroveCategory, ProjectFile, AppConfig
 from .index import ArtifactReference, Shortlink
-from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant
+from .artifact import Artifact, Message, VersionedArtifact, Snapshot, Feed, AwardFile, Award, AwardGrant, VotableArtifact
 from .discuss import Discussion, Thread, PostHistory, Post, DiscussionAttachment
 from .attachments import BaseAttachment
 from .auth import AuthGlobals, User, ProjectRole, OpenId, EmailAddress, ApiToken, ApiTicket, OldProjectRole

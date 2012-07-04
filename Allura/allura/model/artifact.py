@@ -660,3 +660,35 @@ class Feed(MappedClass):
                           author_name=r.author_name,
                           author_link=h.absurl(r.author_link))
         return feed
+
+
+class VotableArtifact(object):
+    """Voting support for the Artifact. Use as a mixin."""
+    votes_up = FieldProperty(int, if_missing=0)
+    votes_down = FieldProperty(int, if_missing=0)
+    votes_up_users = FieldProperty([str])
+    votes_down_users = FieldProperty([str])
+
+    def vote_up(self, user):
+        if not self.votes_up_users:
+            self.votes_up_users = []
+        if user.username in self.votes_up_users:
+            return  # Can vote only once
+        if self.votes_down_users and user.username in self.votes_down_users:
+            # Change vote negative
+            self.votes_down_users.remove(user.username)
+            self.votes_down -= 1
+        self.votes_up_users.append(user.username)
+        self.votes_up += 1
+
+    def vote_down(self, user):
+        if not self.votes_down_users:
+            self.votes_down_users = []
+        if user.username in self.votes_down_users:
+            return  # Can vote only once
+        if self.votes_up_users and user.username in self.votes_up_users:
+            # Change vote to positive
+            self.votes_up_users.remove(user.username)
+            self.votes_up -= 1
+        self.votes_down_users.append(user.username)
+        self.votes_down += 1

@@ -18,7 +18,8 @@ from ming.orm import Mapper, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 
-from allura.model import Artifact, VersionedArtifact, Snapshot, project_orm_session, BaseAttachment
+from allura.model import (Artifact, VersionedArtifact, Snapshot,
+                          project_orm_session, BaseAttachment, VotableArtifact)
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.model.timeline import ActivityObject
@@ -209,7 +210,7 @@ class Bin(Artifact, ActivityObject):
             terms_s=self.terms)
         return result
 
-class Ticket(VersionedArtifact, ActivityObject):
+class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     class __mongometa__:
         name = 'ticket'
         history_class = TicketHistory
