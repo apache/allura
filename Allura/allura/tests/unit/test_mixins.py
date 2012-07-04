@@ -12,8 +12,8 @@ class TestVotableArtifact(object):
         # monkey-patch vote properties for test
         VotableArtifact.votes_up = 0
         VotableArtifact.votes_down = 0
-        VotableArtifact.votes_up_users = 0
-        VotableArtifact.votes_down_users = 0
+        VotableArtifact.votes_up_users = list()
+        VotableArtifact.votes_down_users = list()
 
     def test_vote_up(self):
         vote = VotableArtifact()
@@ -32,7 +32,7 @@ class TestVotableArtifact(object):
                                        self.user2.username]
 
         assert vote.votes_down == 0, 'vote_down must be 0 if we voted up only'
-        assert not vote.votes_down_users
+        assert len(vote.votes_down_users) == 0
 
     def test_vote_down(self):
         vote = VotableArtifact()
@@ -51,7 +51,7 @@ class TestVotableArtifact(object):
                                         self.user2.username]
 
         assert vote.votes_up == 0, 'vote_up must be 0 if we voted down only'
-        assert not vote.votes_up_users
+        assert len(vote.votes_up_users) == 0
 
     def test_change_vote(self):
         vote = VotableArtifact()
@@ -62,4 +62,4 @@ class TestVotableArtifact(object):
         assert vote.votes_down == 1
         assert vote.votes_down_users == [self.user1.username]
         assert vote.votes_up == 0
-        assert not vote.votes_up_users
+        assert len(vote.votes_up_users) == 0
