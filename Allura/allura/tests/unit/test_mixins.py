@@ -9,11 +9,6 @@ class TestVotableArtifact(object):
         self.user1.username = 'test-user'
         self.user2 = Mock()
         self.user2.username = 'user2'
-        # monkey-patch vote properties for test
-        VotableArtifact.votes_up = 0
-        VotableArtifact.votes_down = 0
-        VotableArtifact.votes_up_users = list()
-        VotableArtifact.votes_down_users = list()
 
     def test_vote_up(self):
         vote = VotableArtifact()
