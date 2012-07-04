@@ -121,37 +121,43 @@ class SiteAdminController(object):
 
     def subscribe_artifact(self, url, user):
         artifact_url = urlparse(url).path[1:-1].split("/")
+        log.error(artifact_url)
+        neighborhood = M.Neighborhood.query.find({"url_prefix": "/" + artifact_url[0] + "/"}).first()
+        if  artifact_url[0] == "u":
+            project = M.Project.query.find({"shortname": artifact_url[0]+"/"+artifact_url[1],"neighborhood_id": neighborhood._id}).first()
+        else:
+            project = M.Project.query.find({"shortname": artifact_url[1],"neighborhood_id": neighborhood._id}).first()
 
-        project = M.Project.query.find({
-            "shortname": artifact_url[1],
-            "neighborhood_id": M.Neighborhood.query.find({
-                "url_prefix": "/" + artifact_url[0] + "/"}
-            ).first()._id}).first()
+        log.error("project id:")
+        log.error(project._id)
+        for a in M.AppConfig.query.find().all():
+            log.error(a.options.mount_point)
+            log.error(a.project_id)
 
         appconf = M.AppConfig.query.find({
             "options.mount_point": artifact_url[2],
             "project_id": project._id}).first()
-
+        log.error(appconf._id)
+        log.error(appconf.url())
         if appconf.url()==urlparse(url).path:
+            log.error("if appconf")
             M.Mailbox.subscribe(user_id=user._id,
                 app_config_id=appconf._id,
                 project_id=project._id)
             return
 
-
         for art in M.Artifact.__subclasses__():
             self.check_artifact(art,url,appconf,user,project)
 
-
-
-
-
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
+        log.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if request.method == 'POST':
+            log.error("POST")
             url = data['artifact_url']
             user = M.User.by_username(data['for_user'])
             if user is None:
+                log.error("user none")
                 flash('Invalid login')
             else:
                 self.subscribe_artifact(url, user)
