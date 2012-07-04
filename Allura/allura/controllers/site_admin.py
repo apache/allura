@@ -108,56 +108,52 @@ class SiteAdminController(object):
         log.info(data['token_list'])
         return data
 
-    def check_artifact(self,artifact,url,appconf,user,project):
+    def check_artifact(self, artifact, url, appconf, user, project):
         for ar in artifact.__subclasses__():
             for i in ar.query.find({"app_config_id": appconf._id}).all():
                 if i.url() == urlparse(url).path:
-                    M.Mailbox.subscribe(user_id=user._id,
+                    M.Mailbox.subscribe(
+                        user_id=user._id,
                         app_config_id=appconf._id,
                         project_id=project._id,
                         artifact=i)
                     return
-            self.check_artifact(ar,url,appconf,user,project)
+            self.check_artifact(ar, url, appconf, user, project)
 
     def subscribe_artifact(self, url, user):
         artifact_url = urlparse(url).path[1:-1].split("/")
-        log.error(artifact_url)
-        neighborhood = M.Neighborhood.query.find({"url_prefix": "/" + artifact_url[0] + "/"}).first()
-        if  artifact_url[0] == "u":
-            project = M.Project.query.find({"shortname": artifact_url[0]+"/"+artifact_url[1],"neighborhood_id": neighborhood._id}).first()
-        else:
-            project = M.Project.query.find({"shortname": artifact_url[1],"neighborhood_id": neighborhood._id}).first()
+        neighborhood = M.Neighborhood.query.find({
+            "url_prefix": "/" + artifact_url[0] + "/"}).first()
 
-        log.error("project id:")
-        log.error(project._id)
-        for a in M.AppConfig.query.find().all():
-            log.error(a.options.mount_point)
-            log.error(a.project_id)
+        if  artifact_url[0] == "u":
+            project = M.Project.query.find({
+                "shortname": artifact_url[0] + "/" + artifact_url[1],
+                "neighborhood_id": neighborhood._id}).first()
+        else:
+            project = M.Project.query.find({
+                "shortname": artifact_url[1],
+                "neighborhood_id": neighborhood._id}).first()
 
         appconf = M.AppConfig.query.find({
             "options.mount_point": artifact_url[2],
             "project_id": project._id}).first()
-        log.error(appconf._id)
-        log.error(appconf.url())
-        if appconf.url()==urlparse(url).path:
+        if appconf.url() == urlparse(url).path:
             log.error("if appconf")
-            M.Mailbox.subscribe(user_id=user._id,
+            M.Mailbox.subscribe(
+                user_id=user._id,
                 app_config_id=appconf._id,
                 project_id=project._id)
             return
 
         for art in M.Artifact.__subclasses__():
-            self.check_artifact(art,url,appconf,user,project)
+            self.check_artifact(art, url, appconf, user, project)
 
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
-        log.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if request.method == 'POST':
-            log.error("POST")
             url = data['artifact_url']
             user = M.User.by_username(data['for_user'])
             if user is None:
-                log.error("user none")
                 flash('Invalid login')
             else:
                 self.subscribe_artifact(url, user)
