@@ -23,11 +23,18 @@
     {% if h.has_access(c.app, 'write')() %}
     <div class="message warning scm-learn-basics">
       <div class="content">
-        Are you new to Subversion? <a href="http://svnbook.red-bean.com/">Learn the basics</a>.
+        <img src="{{g.app_static('images/svn.png')}}" style="float:left">
+        <h2>New to Subversion?</h2>
+        <a href="http://svnbook.red-bean.com/">Learn the basics</a>.
       </div>
     </div>
-
-    <p>It looks like this Subversion repository doesn't have any files in it. Let's commit your project code now.</p>
+    
+    <div class="message error scm-empty-repo">
+      <h6>Empty Repository</h6>
+      <div class="content">
+        It looks like this Subversion repository doesn't have any files in it. Let's commit your project code now.
+      </div>
+    </div>
 
     <h2>Import project to Subversion</h2>
 

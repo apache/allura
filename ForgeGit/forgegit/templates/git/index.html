@@ -23,11 +23,18 @@
     {% if h.has_access(c.app, 'write')() %}
     <div class="message warning scm-learn-basics">
       <div class="content">
-        Are you new to Git? <a href="http://git-scm.com/doc">Learn the basics</a>.
+        <img src="{{g.app_static('images/git.png')}}" style="float:left">
+        <h2>New to Git?</h2>
+        <a href="http://git-scm.com/doc">Learn the basics</a>.
       </div>
     </div>
-
-    <p>It looks like this Git repository doesn't have any files in it. Let's commit your project code now.</p>
+    
+    <div class="message error scm-empty-repo">
+      <h6>Empty Repository</h6>
+      <div class="content">
+        It looks like this Git repository doesn't have any files in it. Let's commit your project code now.
+      </div>
+    </div>
 
     <h2>First time using Git</h2>
 
