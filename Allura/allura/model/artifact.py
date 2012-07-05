@@ -693,3 +693,17 @@ class VotableArtifact(MappedClass):
             self.votes_up = self.votes_up - 1
         self.votes_down_users.append(user.username)
         self.votes_down += 1
+
+    def user_voted(self, user):
+        """Check that user voted for this artifact.
+
+        Return:
+        1 if user voted up
+        -1 if user voted down
+        0 if user doesn't vote
+        """
+        if user.username in self.votes_up_users:
+            return 1
+        if user.username in self.votes_down_users:
+            return -1
+        return 0
