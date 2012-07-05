@@ -108,6 +108,7 @@ class Thread(Artifact, ActivityObject):
             (('app_config_id', pymongo.ASCENDING),
              ('last_post_date', pymongo.DESCENDING),
              ('mod_date', pymongo.DESCENDING)) ,
+            ('discussion_id',),
             ]
     type_s = 'Thread'
 

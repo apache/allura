@@ -81,7 +81,7 @@ class ForumController(DiscussionController):
         limit, page, start = g.handle_paging(limit, page)
         c.subscribed=M.Mailbox.subscribed(artifact=self.discussion)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
-                                      .sort([('flags', pymongo.DESCENDING), ('mod_date', pymongo.DESCENDING)])
+                                      .sort([('flags', pymongo.DESCENDING), ('last_post_date', pymongo.DESCENDING)])
         return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
 
     @expose()
