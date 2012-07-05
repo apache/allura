@@ -283,7 +283,8 @@ class SVNImplementation(M.RepositoryImplementation):
                     # something else (like A), causing info2() to raise a
                     # ClientError since the file doesn't exist in this
                     # revision. Set lrhs_id = None to treat like a deleted file
-                    log.debug(e)
+                    log.info('This error was handled gracefully and logged '
+                             'for informational purposes only:\n' + str(e))
                     rhs_id = None
             else:
                 rhs_id = None
@@ -299,7 +300,8 @@ class SVNImplementation(M.RepositoryImplementation):
                     # causing info2() to raise ClientError since the file
                     # doesn't exist in the parent revision. Set lhs_id = None
                     # to treat like a newly added file.
-                    log.debug(e)
+                    log.info('This error was handled gracefully and logged '
+                             'for informational purposes only:\n' + str(e))
                     lhs_id = None
             else:
                 lhs_id = None
