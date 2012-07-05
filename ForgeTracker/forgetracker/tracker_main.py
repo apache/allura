@@ -27,7 +27,8 @@ from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_artifact
 from allura.lib.decorators import require_post
-from allura.lib.security import require_access, has_access, require
+from allura.lib.security import (require_access, has_access, require,
+                                 require_authenticated)
 from allura.lib import widgets as w
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
@@ -98,6 +99,7 @@ class W:
     ticket_custom_field = TicketCustomField
     options_admin = OptionsAdmin()
     search_help_modal = SearchHelp()
+    vote_form = w.VoteForm()
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -1011,6 +1013,7 @@ class TicketController(BaseController):
             c.attachment_list = W.attachment_list
             c.subscribe_form = W.ticket_subscribe_form
             c.ticket_custom_field = W.ticket_custom_field
+            c.vote_form = W.vote_form
             tool_subscribed = M.Mailbox.subscribed()
             if tool_subscribed:
                 subscribed = False
@@ -1184,6 +1187,24 @@ class TicketController(BaseController):
         elif unsubscribe:
             self.ticket.unsubscribe()
         redirect(request.referer)
+
+    @expose('json')
+    @require_post()
+    def vote(self, vote):
+        require_authenticated()
+        require_access(self.ticket, 'post')
+        status = 'ok'
+        if vote == 'u':
+            self.ticket.vote_up(c.user)
+        elif vote == 'd':
+            self.ticket.vote_down(c.user)
+        else:
+            status = 'error'
+        return dict(
+            status=status,
+            votes_up=self.ticket.votes_up,
+            votes_down=self.ticket.votes_down)
+
 
 class AttachmentController(ac.AttachmentController):
     AttachmentClass = TM.TicketAttachment
