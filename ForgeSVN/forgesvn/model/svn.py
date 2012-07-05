@@ -279,7 +279,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 rhs_id = self._obj_oid(ci_doc._id, rhs_info)
             else:
                 rhs_id = None
-            if path.action in ('D', 'M', 'R'):
+            if ci_doc.parent_ids and path.action in ('D', 'M', 'R'):
                 try:
                     lhs_info = self._svn.info2(
                         self._url + h.really_unicode(path.path),
