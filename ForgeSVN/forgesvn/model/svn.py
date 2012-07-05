@@ -272,11 +272,19 @@ class SVNImplementation(M.RepositoryImplementation):
         di = DiffInfoDoc.make(dict(_id=ci_doc._id, differences=[]))
         for path in log_entry.changed_paths:
             if path.action in ('A', 'M', 'R'):
-                rhs_info = self._svn.info2(
-                    self._url + h.really_unicode(path.path),
-                    revision=self._revision(ci_doc._id),
-                    recurse=False)[0][1]
-                rhs_id = self._obj_oid(ci_doc._id, rhs_info)
+                try:
+                    rhs_info = self._svn.info2(
+                        self._url + h.really_unicode(path.path),
+                        revision=self._revision(ci_doc._id),
+                        recurse=False)[0][1]
+                    rhs_id = self._obj_oid(ci_doc._id, rhs_info)
+                except pysvn.ClientError, e:
+                    # pysvn will sometimes misreport deleted files (D) as
+                    # something else (like A), causing info2() to raise a
+                    # ClientError since the file doesn't exist in this
+                    # revision. Set lrhs_id = None to treat like a deleted file
+                    log.debug(e)
+                    rhs_id = None
             else:
                 rhs_id = None
             if ci_doc.parent_ids and path.action in ('D', 'M', 'R'):
