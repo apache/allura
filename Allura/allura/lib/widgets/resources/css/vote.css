@@ -1,0 +1,22 @@
+#vote {
+	display: block;
+	float: right;
+	margin-right: .5em
+	padding: .5em;
+	text-align: center;
+	width: 12em;
+}
+
+#vote .vote-uparrow {
+	color: red;
+	cursor: pointer;
+}
+
+#vote .vote-downarrow {
+	color: blue;
+	cursor: pointer;
+}
+
+#vote .voted {
+	color: red;
+}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import time
+import json
 import Image, StringIO
 import allura
 
@@ -829,6 +830,39 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test first ticket', str(ticket_rows))
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
+
+    def test_vote(self):
+        r = self.new_ticket(summary='test vote').follow()
+        vote = r.html.find('div', {'id': 'vote'})
+        assert_in('0 up', str(vote))
+        assert_in('0 down', str(vote))
+
+        # invalid vote
+        r = self.app.post('/bugs/1/vote', dict(vote='invalid'))
+        expected_resp = json.dumps(
+                            dict(status='error', votes_up=0, votes_down=0))
+        assert r.response.content == expected_resp
+
+        # vote up
+        r = self.app.post('/bugs/1/vote', dict(vote='u'))
+        expected_resp = json.dumps(
+                            dict(status='ok', votes_up=1, votes_down=0))
+        assert r.response.content == expected_resp
+
+        # vote down by another user
+        r = self.app.post('/bugs/1/vote', dict(vote='d'),
+                          extra_environ=dict(username='test-user-0'))
+
+        expected_resp = json.dumps(
+                            dict(status='ok', votes_up=1, votes_down=1))
+        assert r.response.content == expected_resp
+
+        # make sure that on the page we see the same result
+        r = self.app.get('/bugs/1/')
+        vote = r.html.find('div', {'id': 'vote'})
+        assert_in('1 up', str(vote))
+        assert_in('1 down', str(vote))
+
 
     @td.with_tool('test', 'Tickets', 'tracker',
             post_install_hook=post_install_create_ticket_permission)

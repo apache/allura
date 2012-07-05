@@ -110,6 +110,7 @@
 {% endblock %}
 
 {% block content %}
+{{ c.vote_form.display(artifact=ticket) }}
 <div id="ticket_content">
   {{g.markdown.convert(ticket.description)|safe}}
   {% if ticket.attachments %}
