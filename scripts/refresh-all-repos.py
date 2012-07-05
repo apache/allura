@@ -92,7 +92,12 @@ def main(options):
                         log.info('Refreshing ALL commits in %r', c.app.repo)
                     else:
                         log.info('Refreshing NEW commits in %r', c.app.repo)
-                    c.app.repo.refresh(options.all, notify=options.notify)
+                    if options.profile:
+                        import cProfile
+                        cProfile.runctx('c.app.repo.refresh(options.all, notify=options.notify)',
+                                globals(), locals(), 'refresh.profile')
+                    else:
+                        c.app.repo.refresh(options.all, notify=options.notify)
                 except:
                     log.exception('Error refreshing %r', c.app.repo)
         ThreadLocalORMSession.flush_all()
@@ -127,6 +132,9 @@ def parse_options():
     parser.add_argument('--dry-run', action='store_true', dest='dry_run',
             default=False, help='Log names of projects that would have their '
             'repos refreshed, but do not perform the actual refresh.')
+    parser.add_argument('--profile', action='store_true', dest='profile',
+            default=False, help='Enable the profiler (slow). Will log '
+            'profiling output to ./refresh.profile')
     return parser.parse_args()
 
 if __name__ == '__main__':
