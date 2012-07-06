@@ -30,11 +30,11 @@ $(document).ready(function() {
     }
   }
 
-  $('#vote .votes-up').click(function() {
+  $('#vote .vote-up').click(function() {
     vote('u');
     set_voted('u')
   });
-  $('#vote .votes-down').click(function() {
+  $('#vote .vote-down').click(function() {
     vote('d');
     set_voted('d');
   });
