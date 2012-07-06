@@ -276,6 +276,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             milestone_s=self.milestone,
             status_s=self.status,
             text=self.description,
+            votes_i=self.votes,
             snippet_s=self.summary)
         for k,v in self.custom_fields.iteritems():
             result[k + '_s'] = unicode(v)
@@ -575,6 +576,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
             status=self.status,
             private=self.private,
+            votes=self.votes,
             custom_fields=self.custom_fields)
 
     @classmethod
@@ -604,6 +606,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 tickets.append(t)
             else:
                 count = count -1
+            if c.app.config.options.get('EnableVoting'):
+                columns.append(dict(name='votes', sort_name='votes', label='Votes', active=True))
+
         return dict(
             tickets=tickets,
             count=count, q=json.dumps(query), limit=limit, page=page, sort=sort,

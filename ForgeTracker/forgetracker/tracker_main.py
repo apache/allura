@@ -324,6 +324,8 @@ def mongo_columns():
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(
             dict(name=field['name'], sort_name=field['name'], label=field['label'], active=True))
+    if c.app.config.options.get('EnableVoting'):
+        columns.append(dict(name='votes', sort_name='votes', label='Votes', active=True))
     return columns
 
 def solr_columns():
@@ -334,6 +336,8 @@ def solr_columns():
                dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
+    if c.app.config.options.get('EnableVoting'):
+        columns.append(dict(name='votes', sort_name='votes_i', label='Votes', active=True))
     return columns
 
 class RootController(BaseController):
