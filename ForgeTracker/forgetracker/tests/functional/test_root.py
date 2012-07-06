@@ -833,9 +833,10 @@ class TestFunctionalController(TrackerTestController):
 
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
-        vote = r.html.find('div', {'id': 'vote'})
-        assert_in('0 up', str(vote))
-        assert_in('0 down', str(vote))
+        votes_up = r.html.find('span', {'id': 'votes-up'})
+        votes_down = r.html.find('span', {'id': 'votes-down'})
+        assert_in('0', str(votes_up))
+        assert_in('0', str(votes_down))
 
         # invalid vote
         r = self.app.post('/bugs/1/vote', dict(vote='invalid'))
@@ -859,9 +860,10 @@ class TestFunctionalController(TrackerTestController):
 
         # make sure that on the page we see the same result
         r = self.app.get('/bugs/1/')
-        vote = r.html.find('div', {'id': 'vote'})
-        assert_in('1 up', str(vote))
-        assert_in('1 down', str(vote))
+        votes_up = r.html.find('span', {'id': 'votes-up'})
+        votes_down = r.html.find('span', {'id': 'votes-down'})
+        assert_in('1', str(votes_up))
+        assert_in('1', str(votes_down))
 
 
     @td.with_tool('test', 'Tickets', 'tracker',
