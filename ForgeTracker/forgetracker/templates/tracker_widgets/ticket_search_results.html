@@ -32,7 +32,7 @@
               {% elif col['name'] == 'assigned_to' %}
                 <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
               {% elif col['name'] == 'votes' %}
-                <td>{{ t.votes }}</td>
+                <td><div style="color:{%if t.votes>0 %}green{%endif%}{%if t.votes<0 %}red{%endif%}">{{ t.votes }}</div></td>
               {% else %}
                 {% set fld = c.app.globals.get_custom_field(col['name']) %}
                 {% if fld and fld.type == 'user' %}

@@ -683,7 +683,7 @@ class VotableArtifact(MappedClass):
             self.votes_down = self.votes_down - 1
         self.votes_up_users.append(user.username)
         self.votes_up += 1
-        self.votes += 1
+        self.votes = self.votes_up - self.votes_down
 
     def vote_down(self, user):
         if user.username in self.votes_down_users:
@@ -694,7 +694,7 @@ class VotableArtifact(MappedClass):
             self.votes_up = self.votes_up - 1
         self.votes_down_users.append(user.username)
         self.votes_down += 1
-        self.votes -= 1
+        self.votes = self.votes_up - self.votes_down
 
     def user_voted(self, user):
         """Check that user voted for this artifact.
