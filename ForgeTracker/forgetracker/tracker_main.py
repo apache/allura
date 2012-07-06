@@ -1465,8 +1465,7 @@ class MilestoneController(BaseController):
             milestone=self.milestone,
             total=progress['hits'],
             closed=progress['closed'],
-            q=self.progress_key,
-            voting_enabled=True,)
+            q=self.progress_key)
         result['url_sort'] = ''
         if sort:
             sort_split = sort.split(' ')
