@@ -64,6 +64,8 @@ def _mongo_col_to_solr_col(name):
         return 'ticket_num_i'
     elif name == 'summary':
         return 'snippet_s'
+    elif name == 'votes':
+        return 'votes_i'
     elif name == '_milestone':
         return '_milestone_s'
     elif name == 'status':
@@ -393,6 +395,7 @@ class RootController(BaseController):
                        dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
                        dict(name='_milestone', sort_name='_milestone_s', label='Milestone', active=True),
                        dict(name='status', sort_name='status_s', label='Status', active=True),
+                       dict(name='votes', sort_name='votes_s', label='Votes', active=True),
                        dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
             for field in sortable_custom_fields:
                 columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
@@ -1479,7 +1482,8 @@ class MilestoneController(BaseController):
             milestone=self.milestone,
             total=progress['hits'],
             closed=progress['closed'],
-            q=self.progress_key)
+            q=self.progress_key,
+            voting_enabled=True,)
         result['url_sort'] = ''
         if sort:
             sort_split = sort.split(' ')

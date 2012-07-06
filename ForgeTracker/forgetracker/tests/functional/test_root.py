@@ -819,6 +819,14 @@ class TestFunctionalController(TrackerTestController):
         assert_in('1', str(votes_up))
         assert_in('1', str(votes_down))
 
+        r = self.app.get('/bugs/')
+        assert "Votes" in r
+        self.app.post(
+            '/admin/bugs/set_options',
+            params={'EnableVoting': 'false'})
+        r = self.app.get('/bugs/')
+        assert "Votes" not in r
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
