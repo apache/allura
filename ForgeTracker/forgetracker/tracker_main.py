@@ -1155,7 +1155,7 @@ class TicketController(BaseController):
             self.ticket.unsubscribe()
         redirect(request.referer)
 
-    @expose('json')
+    @expose('json:')
     @require_post()
     def vote(self, vote):
         require_authenticated()
