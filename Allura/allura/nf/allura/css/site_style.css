@@ -2747,6 +2747,6 @@ div.codehilite pre div.code_block {
     width: 97%;
 }
 
-.nofloat {
-  float: none;
+input.nofloat {
+    float: none;
 }
