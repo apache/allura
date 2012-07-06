@@ -576,7 +576,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
             status=self.status,
             private=self.private,
-            votes=self.votes,
             custom_fields=self.custom_fields)
 
     @classmethod

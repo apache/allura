@@ -64,6 +64,8 @@ def _mongo_col_to_solr_col(name):
         return 'ticket_num_i'
     elif name == 'summary':
         return 'snippet_s'
+    elif name == 'votes':
+        return 'votes_i'
     elif name == '_milestone':
         return '_milestone_s'
     elif name == 'status':
@@ -1463,7 +1465,8 @@ class MilestoneController(BaseController):
             milestone=self.milestone,
             total=progress['hits'],
             closed=progress['closed'],
-            q=self.progress_key)
+            q=self.progress_key,
+            voting_enabled=True,)
         result['url_sort'] = ''
         if sort:
             sort_split = sort.split(' ')

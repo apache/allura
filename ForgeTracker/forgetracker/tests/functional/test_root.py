@@ -872,6 +872,14 @@ class TestFunctionalController(TrackerTestController):
         assert_in('1', str(votes_up))
         assert_in('1', str(votes_down))
 
+        r = self.app.get('/bugs/')
+        assert "Votes" in r
+        self.app.post(
+            '/admin/bugs/set_options',
+            params={'EnableVoting': 'false'})
+        r = self.app.get('/bugs/')
+        assert "Votes" not in r
+
 
     @td.with_tool('test', 'Tickets', 'tracker',
             post_install_hook=post_install_create_ticket_permission)
