@@ -6,9 +6,9 @@
   Vote for this ticket:
   <br />
   <span class='vote-uparrow {% if can_vote %}vote-up{% endif %}'>&uArr;</span>
-  <span class='votes-up {% if voted == 1 %}voted{% endif %}'>{{artifact.votes_up}}</span> up&nbsp;
+  <span id='votes-up' class='votes-up {% if voted == 1 %}voted{% endif %}'>{{artifact.votes_up}}</span> up&nbsp;
   <span class='vote-downarrow {% if can_vote %}vote-down{% endif %}'>&dArr;</span>
-  <span class='votes-down {% if voted == -1 %}voted{% endif %}'>{{artifact.votes_down}}</span> down
+  <span id='votes-down' class='votes-down {% if voted == -1 %}voted{% endif %}'>{{artifact.votes_down}}</span> down
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
     {# csrf protection will be automatically inserted here (_session_id field) #}
