@@ -833,6 +833,13 @@ class TestFunctionalController(TrackerTestController):
 
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
+        assert_false(r.html.find('div', {'id': 'vote'}))
+
+        # enable voting
+        self.app.post('/admin/bugs/set_options',
+                      params={'EnableVoting': 'true'})
+
+        r = self.app.get('/bugs/1/')
         votes_up = r.html.find('span', {'id': 'votes-up'})
         votes_down = r.html.find('span', {'id': 'votes-down'})
         assert_in('0', str(votes_up))
