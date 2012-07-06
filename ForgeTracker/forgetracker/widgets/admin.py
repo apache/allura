@@ -13,6 +13,9 @@ class OptionsAdmin(ff.AdminForm):
     @property
     def fields(self):
         fields = [
+            ew.Checkbox(
+                name='EnableVoting',
+                label='Enable voting on tickets'),
             ew.TextField(
                 name='TicketMonitoringEmail',
                 label='Email ticket notifications to',

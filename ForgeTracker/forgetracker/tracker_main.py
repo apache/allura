@@ -106,6 +106,7 @@ class ForgeTrackerApp(Application):
     permissions = ['configure', 'read', 'write', 'save_searches',
                     'unmoderated_post', 'post', 'moderate', 'admin']
     config_options = Application.config_options + [
+        ConfigOption('EnableVoting', bool, False),
         ConfigOption('TicketMonitoringEmail', str, ''),
         ConfigOption('TicketMonitoringType',
             schema.OneOf('NewTicketsOnly', 'AllTicketChanges'), None)
@@ -1021,10 +1022,11 @@ class TicketController(BaseController):
                 subscribed = M.Mailbox.subscribed(artifact=self.ticket)
             post_count = self.ticket.discussion_thread.post_count
             limit, page = h.paging_sanitizer(limit, page, post_count)
+            voting_enabled = self.ticket.app.config.options.get('EnableVoting')
             return dict(ticket=self.ticket, globals=c.app.globals,
                         allow_edit=has_access(self.ticket, 'write')(),
                         tool_subscribed=tool_subscribed,
-                        subscribed=subscribed,
+                        subscribed=subscribed, voting_enabled=voting_enabled,
                         page=page, limit=limit, count=post_count)
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
@@ -1240,6 +1242,7 @@ class TrackerAdminController(DefaultAdminController):
     def options(self, **kw):
         c.options_admin = W.options_admin
         return dict(app=self.app, form_value=dict(
+            EnableVoting=self.app.config.options.get('EnableVoting'),
             TicketMonitoringType=self.app.config.options.get('TicketMonitoringType'),
             TicketMonitoringEmail=self.app.config.options.get('TicketMonitoringEmail'),
             TicketHelpNew=self.app.config.options.get('TicketHelpNew'),
