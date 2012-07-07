@@ -1,7 +1,7 @@
 for APP in Allura* *Forge* NoWarnings
 do
-	echo "# installing $APP dependencies"
-	pushd $APP
-	python setup.py develop || exit
-	popd
+	echo "# setting up $APP dependencies"
+	pushd $APP > /dev/null
+	python setup.py -q develop || exit
+	popd > /dev/null
 done
