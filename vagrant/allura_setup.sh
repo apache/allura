@@ -24,27 +24,30 @@ then
     chown vagrant:vagrant /home/vagrant/.bash_profile
 fi
 
-. /home/vagrant/anvil/bin/activate
-
-cd /home/vagrant/src/forge
-
 # Setup Allura python packages
-echo "Setting up Allura python packages..."
-for APP in Allura* Forge* NoWarnings
-do
-    pushd $APP
-    python setup.py develop
-    popd
-done
+cd /home/vagrant/src/forge
+sudo -u vagrant bash -c '. /home/vagrant/anvil/bin/activate; ./rebuild.bash'
 
 echo "Purging unneeded packages..."
 aptitude clean
 aptitude -y -q purge ri
-aptitude -y -q purge installation-report landscape-common wireless-tools wpasupplicant ubuntu-serverguide
-aptitude -y -q purge python-dbus libnl1 python-smartpm linux-headers-2.6.32-21-generic python-twisted-core libiw30
-aptitude -y -q purge python-twisted-bin libdbus-glib-1-2 python-pexpect python-pycurl python-serial python-gobject python-pam libffi5
+aptitude -y -q purge installation-report landscape-common wireless-tools wpasupplicant
+aptitude -y -q purge python-dbus libnl1 python-smartpm linux-headers-server python-twisted-core libiw30 language-selector-common
+aptitude -y -q purge python-twisted-bin libdbus-glib-1-2 python-pexpect python-pycurl python-serial python-gobject python-pam accountsservice libaccountsservice0
 
 echo "Zeroing free space to aid VM compression..."
-cat /dev/zero > zero.fill;sync;sleep 1;sync;rm -f zero.fill
+cat /dev/zero > zero.fill;
+echo "Errors about 'No space left' are ok; carrying on..."
+sync;sleep 1;sync;rm -f zero.fill
 dd if=/dev/zero of=/EMPTY bs=1M
 rm -f /EMPTY
+echo "Done with allura_setup.sh"
+
+# sometimes mongo ends up stopped
+# maybe due to that disk-filling exercise
+# make sure it's still running
+service mongodb status
+if [ "$?" -ne "0" ]; then
+	rm /var/lib/mongodb/mongod.lock
+	service mongodb start
+fi
