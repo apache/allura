@@ -276,8 +276,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             milestone_s=self.milestone,
             status_s=self.status,
             text=self.description,
-            votes_i=self.votes,
-            snippet_s=self.summary)
+            snippet_s=self.summary,
+            votes_up_i=self.votes_up,
+            votes_down_i=self.votes_down,
+            votes_total_i=self.votes)
+
         for k,v in self.custom_fields.iteritems():
             result[k + '_s'] = unicode(v)
         if self.reported_by:
