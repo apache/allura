@@ -307,8 +307,11 @@ class Post(HierWidget):
                     var popup = $('.shortlink_popup', post);
                     $('.shortlink', post).click(function(evt){
                         evt.preventDefault();
-                        popup.lightbox_me();
-                        $('input', popup).select();
+                        popup.lightbox_me({
+                            onLoad: function() {
+                                $('input', popup).select();
+                            }
+                        });
                     });
                     $('.close', popup).bind('click', function() {
                         popup.hide();
