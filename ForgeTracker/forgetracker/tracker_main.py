@@ -65,7 +65,11 @@ def _mongo_col_to_solr_col(name):
     elif name == 'summary':
         return 'snippet_s'
     elif name == 'votes':
-        return 'votes_i'
+        return 'votes_total_i'
+    elif name == 'votes_up':
+        return 'votes_up_i'
+    elif name == 'votes_down':
+        return 'votes_down_i'
     elif name == '_milestone':
         return '_milestone_s'
     elif name == 'status':
