@@ -399,7 +399,7 @@ class RootController(BaseController):
                        dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
                        dict(name='_milestone', sort_name='_milestone_s', label='Milestone', active=True),
                        dict(name='status', sort_name='status_s', label='Status', active=True),
-                       dict(name='votes', sort_name='votes_s', label='Votes', active=True),
+                       dict(name='votes', sort_name='votes_total_i', label='Votes', active=True),
                        dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
             for field in sortable_custom_fields:
                 columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
