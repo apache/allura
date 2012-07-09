@@ -21,7 +21,6 @@ def main():
         for a in chunk:
             # change 'deny write' and 'write' permission
             role_ids = [(p.role_id, p.access) for p in a.acl if p.permission == 'write']
-            a.acl = [p for p in a.acl if p.permission != 'write']
             for role_id, access in role_ids:
                 if access == M.ACE.DENY:
                     a.acl.append(M.ACE.deny(role_id, 'create'))
