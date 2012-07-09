@@ -515,6 +515,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 'project_id':self._id,
                 'options.mount_point':mount_point}).first()
 
+    def app_config_by_tool_type(self, tool_type):
+        for ac in self.app_configs:
+            if ac.tool_name == tool_type:
+                return ac
+
     def new_subproject(self, name, install_apps=True, user=None):
         if not h.re_path_portion.match(name):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name

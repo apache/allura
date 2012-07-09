@@ -1,4 +1,5 @@
 from nose.tools import assert_raises
+from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import script, set_neighborhood_features, \
@@ -20,7 +21,6 @@ def setUp(self):
 def test_script():
     cmd = script.ScriptCommand('script')
     cmd.run([test_config, 'allura/tests/tscript.py' ])
-    cmd.command()
     assert_raises(ValueError, cmd.run, [test_config, 'allura/tests/tscript_error.py' ])
 
 def test_set_neighborhood_max_projects():
@@ -30,13 +30,11 @@ def test_set_neighborhood_max_projects():
 
     # a valid number
     cmd.run([test_config, str(n_id), 'max_projects', '50'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['max_projects'] == 50
 
     # none is also valid
     cmd.run([test_config, str(n_id), 'max_projects', 'None'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['max_projects'] == None
 
@@ -51,13 +49,11 @@ def test_set_neighborhood_private():
 
     # allow private projects
     cmd.run([test_config, str(n_id), 'private_projects', 'True'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['private_projects']
 
     # disallow private projects
     cmd.run([test_config, str(n_id), 'private_projects', 'False'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert not neighborhood.features['private_projects']
 
@@ -73,13 +69,11 @@ def test_set_neighborhood_google_analytics():
 
     # allow private projects
     cmd.run([test_config, str(n_id), 'google_analytics', 'True'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['google_analytics']
 
     # disallow private projects
     cmd.run([test_config, str(n_id), 'google_analytics', 'False'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert not neighborhood.features['google_analytics']
 
@@ -95,19 +89,16 @@ def test_set_neighborhood_css():
 
     # none
     cmd.run([test_config, str(n_id), 'css', 'none'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['css'] == 'none'
 
     # picker
     cmd.run([test_config, str(n_id), 'css', 'picker'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['css'] == 'picker'
 
     # custom
     cmd.run([test_config, str(n_id), 'css', 'custom'])
-    cmd.command()
     neighborhood = M.Neighborhood.query.get(_id=n_id)
     assert neighborhood.features['css'] == 'custom'
 
@@ -121,12 +112,12 @@ def test_set_neighborhood_css():
 def test_update_neighborhood():
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'True'])
-    cmd.command()
+    ThreadLocalORMSession.close_all() # make sure the app_configs get freshly queried
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool == True
 
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'False'])
-    cmd.command()
+    ThreadLocalORMSession.close_all() # make sure the app_configs get freshly queried
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool == False
