@@ -92,6 +92,10 @@ class HgImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
+        for ref in self._repo.heads + self._repo.branches + self._repo.repo_tags:
+            if ref.name == rev:
+                rev = ref.object_id
+                break
         result = M.repo.Commit.query.get(_id=rev)
         if result is None:
             try:

@@ -105,6 +105,10 @@ class GitImplementation(M.RepositoryImplementation):
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''
+        for ref in self._repo.heads + self._repo.branches + self._repo.repo_tags:
+            if ref.name == rev:
+                rev = ref.object_id
+                break
         result = M.repo.Commit.query.get(_id=rev)
         if result is None:
             # find the id by branch/tag name
