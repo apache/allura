@@ -126,7 +126,7 @@ class SiteAdminController(object):
                 user_id=user._id,
                 app_config_id=appconf._id,
                 project_id=project._id)
-            return
+            return True
 
         classes = set()
         for depth, cls in dfs(M.Artifact, build_model_inheritance_graph()):
@@ -139,21 +139,28 @@ class SiteAdminController(object):
                         app_config_id=appconf._id,
                         project_id=project._id,
                         artifact=artifact)
-                    return
+                    return True
+        return False
 
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
     def add_subscribers(self, **data):
         if request.method == 'POST':
             url = data['artifact_url']
             user = M.User.by_username(data['for_user'])
-            if user is None:
+            if not user or user == M.User.anonymous():
                 flash('Invalid login', 'error')
                 return data
+
             try:
-                self.subscribe_artifact(url, user)
+                ok = self.subscribe_artifact(url, user)
             except:
                 log.warn("Can't subscribe to artifact", exc_info=True)
+                ok = False
+
+            if ok:
+                flash('User successfully subscribed to the artifact')
+                return {}
+            else:
                 flash('Artifact not found', 'error')
-                return data
-            flash('User successfully subscribed to the artifact')
-        return {}
+
+        return data
