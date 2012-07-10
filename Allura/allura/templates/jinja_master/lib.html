@@ -249,21 +249,16 @@ You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</
 <p>Output:</p>
 {{g.markdown.convert("""<s>this is strike through text</s>""")}}
 
-<div class="codehilite"><pre>Just write paragraphs like in a text file and they will display how
-you would expect.  A blank line separates paragraphs.
+<div class="codehilite"><pre>A carriage return
+makes a line break.
 
-So this is a new paragraph. But any text on adjacent lines
-will all end up
-in the same paragraph.
-</pre></div>
+Two carriage returns make a new paragraph.</pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert("""Just write paragraphs like in a text file and they will display how
-you would expect.  A blank line separates paragraphs.
+{{g.markdown.convert("""A carriage return
+makes a line break.
 
-So this is a new paragraph. But any text on adjacent lines
-will all end up
-in the same paragraph.""")}}
+Two carriage returns make a new paragraph.""")}}
 </div>
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_bq{{id}}">
