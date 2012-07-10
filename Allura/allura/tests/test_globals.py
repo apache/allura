@@ -111,6 +111,12 @@ def test_macros():
         assert '<img alt="test2 Logo"' in r, r
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' not in r, r
+        r = g.markdown_wiki.convert("""[TOC]
+
+# Header 1
+
+## Header 2""")
+        assert '<a class="" href="#header-1">Header 1</a>' in r, r
 
         r = g.markdown_wiki.convert("""  <?xml version="1.0" encoding="UTF-8"?>
   <project xmlns="0"></project>""")

@@ -282,7 +282,7 @@ class Globals(object):
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
-                extensions=['codehilite', ForgeExtension(**kwargs), 'tables'],
+                extensions=['codehilite', ForgeExtension(**kwargs), 'tables', 'toc'],
                 output_format='html4')
 
     @property

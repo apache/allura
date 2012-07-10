@@ -171,7 +171,7 @@ class ForgeProcessor(object):
     def _expand_link(self, link):
         reference = self.alinks.get(link)
         mailto = u'\x02amp\x03#109;\x02amp\x03#97;\x02amp\x03#105;\x02amp\x03#108;\x02amp\x03#116;\x02amp\x03#111;\x02amp\x03#58;'
-        if not reference and not link.startswith(mailto):
+        if not reference and not link.startswith(mailto) and '#' not in link:
             return 'notfound'
         else:
             return ''
@@ -263,6 +263,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         if val.startswith('/'): return
         if val.startswith('.'): return
         if val.startswith('mailto:'): return
+        if val.startswith('#'): return
         tag[attr] = '../' + val
 
     def _rewrite_abs(self, tag, attr):
