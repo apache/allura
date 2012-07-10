@@ -3,10 +3,12 @@ import shutil
 import unittest
 import pkg_resources
 
+import mock
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c, g
+from ming.base import Object
 from ming.orm import ThreadLocalORMSession
 from nose.tools import assert_equal
 
@@ -156,6 +158,12 @@ class TestGitRepo(unittest.TestCase):
         entry = self.repo.commit('HEAD')
         assert str(entry.authored.name) == 'Rick Copeland', entry.authored
         assert entry.message
+        # Test that sha1s for named refs are looked up in cache first, instead
+        # of from disk.
+        with mock.patch('forgegit.model.git_repo.M.repo.Commit.query') as q:
+            self.repo.heads.append(Object(name='HEAD', object_id='deadbeef'))
+            self.repo.commit('HEAD')
+            q.get.assert_called_with(_id='deadbeef')
 
     def test_commit_run(self):
         commit_ids = self.repo.all_commit_ids()

@@ -3,6 +3,8 @@ import shutil
 import unittest
 import pkg_resources
 
+import mock
+from ming.base import Object
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -142,6 +144,12 @@ class TestHgRepo(unittest.TestCase):
         entry = self.repo.commit('tip')
         assert entry.committed.email == 'rick446@usa.net'
         assert entry.message
+        # Test that sha1s for named refs are looked up in cache first, instead
+        # of from disk.
+        with mock.patch('forgehg.model.hg.M.repo.Commit.query') as q:
+            self.repo.heads.append(Object(name='HEAD', object_id='deadbeef'))
+            self.repo.commit('HEAD')
+            q.get.assert_called_with(_id='deadbeef')
 
     def test_commit_run(self):
         commit_ids = self.repo.all_commit_ids()

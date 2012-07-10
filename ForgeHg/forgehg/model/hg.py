@@ -92,6 +92,10 @@ class HgImplementation(M.RepositoryImplementation):
         session(self._repo).flush()
 
     def commit(self, rev):
+        '''Return a Commit object.  rev can be _id or a branch/tag name'''
+        # See if the rev is a named ref that we have cached, and use the sha1
+        # from the cache. This ensures that we don't return a sha1 that we
+        # don't have indexed into mongo yet.
         for ref in self._repo.heads + self._repo.branches + self._repo.repo_tags:
             if ref.name == rev:
                 rev = ref.object_id
