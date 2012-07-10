@@ -77,8 +77,8 @@
         {% endif %}
         <div style="clear:both">
           <a href="{{shortlink_url}}" class="little_link shortlink"><span>Link</span></a><br/>
-          {% if c.user != c.user.anonymous() %}<a href="" class="edit_post little_link"><span>Edit</span></a><br/>{% endif %}
           {% if h.has_access(value, 'moderate')() %}
+            <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
           {% endif %}
           {% if h.has_access(value.thread, 'post')() %}
