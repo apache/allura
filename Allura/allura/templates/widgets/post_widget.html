@@ -36,7 +36,7 @@
             {% endif %}
           {% endif %}
         </div>
-        {% if h.has_access(value.thread, 'post')() %}
+        {% if h.has_access(value, 'moderate')() %}
         <div class="edit_post_form reply" style="display:none">
             {{widgets.edit_post.display(value=value, submit_text='Post', action=value.url())}}
         </div>
