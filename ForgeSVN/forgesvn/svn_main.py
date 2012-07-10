@@ -124,5 +124,6 @@ class SVNImportController(BaseController):
                 cloned_from_url=checkout_url)
         M.Notification.post_user(
             c.user, self.app.repo, 'importing',
-            text='Repository import scheduled')
+            text='''Repository import scheduled,
+                   an email notification will be sent when complete.''')
         redirect(c.project.url() + 'admin/tools')

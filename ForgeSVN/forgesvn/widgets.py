@@ -7,6 +7,7 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets.forms import ForgeForm
 
+
 class ValidateSvnUrl(fev.URL):
     url_re = re.compile(r'''
         ^(http|https|svn)://
@@ -19,8 +20,11 @@ class ValidateSvnUrl(fev.URL):
         $
     ''', re.I | re.VERBOSE)
 
+
 class ImportForm(ForgeForm):
-    submit_text='Import'
+    submit_text = 'Import'
+
     class fields(ew_core.NameList):
-        checkout_url = ew.TextField(label='Checkout URL',
-                                    validator=ValidateSvnUrl(not_empty=True))
+        checkout_url = ew.TextField(
+            label='Checkout URL',
+            validator=ValidateSvnUrl(not_empty=True), attrs=dict(size=80))
