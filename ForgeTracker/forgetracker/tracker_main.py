@@ -332,7 +332,7 @@ class RootController(BaseController):
         return dict(bin_counts=bin_counts)
 
     def paged_query(self, q, limit=None, page=0, sort=None, columns=None, **kw):
-        """Query tickets, sorting and paginating the result.
+        """Query tickets, filtering for 'read' permission, sorting and paginating the result.
 
         We do the sorting and skipping right in SOLR, before we ever ask
         Mongo for the actual tickets.  Other keywords for
@@ -523,17 +523,18 @@ class RootController(BaseController):
         result = self.paged_query(q, page=page, sort=sort, columns=columns, **kw)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
-        d = dict(title='Ticket search results', link=c.app.url, description='You searched for %s' % q, language=u'en')
+        d = dict(title='Ticket search results', link=h.absurl(c.app.url), description='You searched for %s' % q, language=u'en')
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
             feed = FG.Rss201rev2Feed(**d)
         for t in result['tickets']:
+            url = h.absurl(t.url().encode('utf-8'))
             feed.add_item(title=t.summary,
-                          link=h.absurl(t.url().encode('utf-8')),
+                          link=url,
                           pubdate=t.mod_date,
                           description=t.description,
-                          unique_id=str(t._id),
+                          unique_id=url,
                           author_name=t.reported_by.display_name,
                           author_link=h.absurl(t.reported_by.url()))
         return feed.writeString('utf-8')
