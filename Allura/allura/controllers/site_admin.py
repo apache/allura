@@ -1,24 +1,27 @@
 import logging
-import os
-import mimetypes
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-import pkg_resources
-from tg import expose, redirect, flash, config, validate, request, response
+from tg import expose, validate, flash, config, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from webob import exc
-from formencode import validators as fev
 from ming.orm import session
 import pymongo
 from pylons import c, g
+from formencode import validators
 
 from allura.lib import helpers as h
 from allura.lib.security import require_access
+from allura.lib.widgets import form_fields as ffw
 from allura import model as M
 
 
 log = logging.getLogger(__name__)
+
+
+class W:
+    page_list = ffw.PageList()
+    page_size = ffw.PageSize()
+
 
 class SiteAdminController(object):
 
@@ -103,3 +106,22 @@ class SiteAdminController(object):
         data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data
+
+    @expose('jinja:allura:templates/site_admin_new_projects.html')
+    @validate(dict(page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=100)))
+    def new_projects(self, page=0, limit=100, **kwargs):
+        c.page_list = W.page_list
+        c.page_size = W.page_size
+        limit, pagenum, start = g.handle_paging(limit, page, default=100)
+        count = 0
+        projects = (M.Project.query.find({'name': {'$regex': '^[^u][^/]'}})
+                                   .sort('_id', -1))
+        count = projects.count()
+        projects = projects.skip(start).limit(limit)
+        return {
+            'projects': projects,
+            'limit': limit,
+            'pagenum': pagenum,
+            'count': count
+        }

@@ -40,3 +40,10 @@ class TestSiteAdmin(TestController):
     def test_tickets_access(self):
         r = self.app.get('/nf/admin/api_tickets', extra_environ=dict(
                 username='test-user'), status=403)
+
+    def test_new_projects_access(self):
+        self.app.get('/nf/admin/new_projects', extra_environ=dict(
+            username='test_user'), status=403)
+        r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
+            username='*anonymous'), status=302).follow()
+        assert 'Login' in r

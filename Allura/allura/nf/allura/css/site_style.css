@@ -2746,7 +2746,13 @@ div.codehilite pre div.code_block {
     padding-left:10px;
     width: 97%;
 }
-
 input.nofloat {
     float: none;
+}
+table thead tr th.tiny.narrow, table tr td.narrow {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+#selected-projects {
+  padding: 10px 10px;
 }
