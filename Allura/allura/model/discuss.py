@@ -263,7 +263,7 @@ class Thread(Artifact, ActivityObject):
 
     def query_posts(self, page=None, limit=None, timestamp=None, style='threaded'):
         if limit is None:
-            limit = 25
+            limit = 50
         limit = int(limit)
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
