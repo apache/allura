@@ -1304,10 +1304,14 @@ class RootRestController(BaseController):
         require_access(c.app, 'read')
 
     @expose('json:')
-    def index(self, **kw):
-        return dict(tickets=[
-            dict(ticket_num=t.ticket_num, summary=t.summary)
-            for t in TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).sort('ticket_num') ])
+    def index(self, limit=100, page=0, **kw):
+        results = TM.Ticket.paged_query(c.app.config, c.user, query={},
+                                        limit=int(limit), page=int(page))
+        results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
+                              for t in results['tickets']]
+        results.pop('q', None)
+        results.pop('sort', None)
+        return results
 
     @expose()
     @h.vardec
