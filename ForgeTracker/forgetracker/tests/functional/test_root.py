@@ -163,11 +163,20 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/search/?q=ticket', extra_environ=env)
         assert '1 results' in r
         assert 'Private Ticket' not in r
+        # ... or in search feed...
+        r = self.app.get('/p/test/bugs/search_feed?q=ticket', extra_environ=env)
+        assert 'Private Ticket' not in r
         # ...and can't get to the private ticket directly.
         r = self.app.get(ticket_view.request.url, extra_environ=env)
         assert 'Private Ticket' not in r
         # ... and it doesn't appear in the feed
         r = self.app.get('/p/test/bugs/feed.atom')
+        assert 'Private Ticket' not in r
+        # ... or in the API ...
+        r = self.app.get('/rest/p/test/bugs/2/')
+        assert 'Private Ticket' not in r
+        assert '/auth/?return_to' in r.headers['Location']
+        r = self.app.get('/rest/p/test/bugs/')
         assert 'Private Ticket' not in r
 
     @td.with_tool('test', 'Tickets', 'doc-bugs')
@@ -658,6 +667,16 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search/?q=test')
         assert '3 results' in response, response.showbrowser()
         assert 'test third ticket' in response, response.showbrowser()
+
+    def test_search_feed(self):
+        self.new_ticket(summary='test first ticket')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/search_feed?q=test')
+        assert '<title>test first ticket</title>' in response
+        response = self.app.get('/p/test/bugs/search_feed.atom?q=test')
+        assert '<title>test first ticket</title>' in response
 
     def test_touch(self):
         self.new_ticket(summary='test touch')

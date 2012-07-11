@@ -49,7 +49,7 @@ def solr_search_returning_colors_are_wrong_ticket():
     matches = Mock()
     matches.docs = [dict(ticket_num_i=ticket.ticket_num)]
     search_artifact.return_value = matches
-    return patch('forgetracker.tracker_main.search_artifact', search_artifact)
+    return patch('forgetracker.model.ticket.search_artifact', search_artifact)
 
 def mongo_search_returning_colors_are_wrong_ticket():
     ticket = create_colors_are_wrong_ticket()
@@ -82,4 +82,3 @@ def create_ticket(summary, custom_fields):
                     custom_fields=custom_fields)
     session(ticket).flush()
     return ticket
-
