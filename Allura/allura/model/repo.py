@@ -326,7 +326,7 @@ class Tree(RepoObject):
         lc_index = dict(
             (lc.object_id, lc.commit_info)
             for lc in LastCommitDoc.m.find(dict(
-                    _id={"$regex": "^{}:".format(self.repo._id)},
+                    _id=re.compile("^{}:".format(self.repo._id)),
                     object_id={'$in': oids})))
         results = []
         def _get_last_commit(oid):
