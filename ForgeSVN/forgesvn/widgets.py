@@ -27,4 +27,4 @@ class ImportForm(ForgeForm):
     class fields(ew_core.NameList):
         checkout_url = ew.TextField(
             label='Checkout URL',
-            validator=ValidateSvnUrl(not_empty=True), attrs=dict(size=80))
+            validator=ValidateSvnUrl(not_empty=True), attrs=dict(size=65))
