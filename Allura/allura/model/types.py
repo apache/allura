@@ -44,4 +44,8 @@ class ACL(S.Array):
         super(ACL, self).__init__(
             field_type=ACE(permissions), **kwargs)
 
+    def add(self, role):
+        if role not in self:
+            self.append(role)
+
 DENY_ALL = ACE.deny(EVERYONE, ALL_PERMISSIONS)

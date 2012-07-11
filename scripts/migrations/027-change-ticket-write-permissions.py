@@ -23,11 +23,11 @@ def main():
             role_ids = [(p.role_id, p.access) for p in a.acl if p.permission == 'write']
             for role_id, access in role_ids:
                 if access == M.ACE.DENY:
-                    a.acl.append(M.ACE.deny(role_id, 'create'))
-                    a.acl.append(M.ACE.deny(role_id, 'update'))
+                    a.acl.add(M.ACE.deny(role_id, 'create'))
+                    a.acl.add(M.ACE.deny(role_id, 'update'))
                 else:
-                    a.acl.append(M.ACE.allow(role_id, 'create'))
-                    a.acl.append(M.ACE.allow(role_id, 'update'))
+                    a.acl.add(M.ACE.allow(role_id, 'create'))
+                    a.acl.add(M.ACE.allow(role_id, 'update'))
 
         ThreadLocalORMSession.flush_all()
 
