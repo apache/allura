@@ -1,3 +1,4 @@
+import argparse
 import logging
 
 import faulthandler
@@ -44,7 +45,12 @@ def main(options):
                                 M.AppConfig.query.find(dict(project_id=p._id))]
             for app in (p.app_instance(mp) for mp in mount_points):
                 c.app = app
-                if not hasattr(app, 'repo'): continue
+                if not hasattr(app, 'repo'):
+                    continue
+                if c.app.repo.tool.lower() not in options.repo_types:
+                    log.info("Skipping %r: wrong type (%s)", c.app.repo,
+                            c.app.repo.tool.lower())
+                    continue
                 try:
                     c.app.repo._impl._setup_hooks()
                 except:
@@ -103,8 +109,19 @@ def main(options):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
+
+def repo_type_list(s):
+    repo_types = []
+    for repo_type in s.split(','):
+        repo_type = repo_type.strip()
+        if repo_type not in ['svn', 'git', 'hg']:
+            raise argparse.ArgumentTypeError(
+                    '{} is not a valid repo type.'.format(repo_type))
+        repo_types.append(repo_type)
+    return repo_types
+
+
 def parse_options():
-    import argparse
     parser = argparse.ArgumentParser(description='Scan repos on filesytem and '
             'update repo metadata in MongoDB. Run for all repos (no args), '
             'or restrict by neighborhood, project, or code tool mount point.')
@@ -117,6 +134,10 @@ def parse_options():
             dest='project_regex',
             help='Restrict update to projects for which the shortname matches '
             'the provided regex.')
+    parser.add_argument('--repo-types', action='store', type=repo_type_list,
+            default=['svn', 'git', 'hg'], dest='repo_types',
+            help='Only refresh repos of the given type(s). Defaults to: '
+            'svn,git,hg. Example: --repo-types=git,hg')
     parser.add_argument('--mount_point', default='', dest='mount_point',
             help='Restrict update to repos at the given tool mount point. ')
     parser.add_argument('--clean', action='store_true', dest='clean',
