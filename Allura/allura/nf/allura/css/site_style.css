@@ -2749,7 +2749,7 @@ div.codehilite pre div.code_block {
 input.nofloat {
     float: none;
 }
-table thead tr th.tiny.narrow, table tr td.narrow {
+table thead tr th.narrow, table tr td.narrow {
   padding-left: 2px;
   padding-right: 2px;
 }
