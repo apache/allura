@@ -578,7 +578,11 @@ class Ticket(VersionedArtifact, ActivityObject):
 
     @classmethod
     def paged_query(cls, query, limit=None, page=0, sort=None, columns=None, **kw):
-        """Query tickets, sorting and paginating the result."""
+        """
+        Query tickets, filtering for 'read' permission, sorting and paginating the result.
+
+        See also paged_search which does a solr search
+        """
         limit, page, start = g.handle_paging(limit, page, default=25)
         q = cls.query.find(dict(query, app_config_id=c.app.config._id))
         q = q.sort('ticket_num')
@@ -615,6 +619,78 @@ class Ticket(VersionedArtifact, ActivityObject):
             columns=columns,
             count=count, q=json.dumps(query), limit=limit, page=page, sort=sort,
             **kw)
+
+    @classmethod
+    def paged_search(cls, q, limit=None, page=0, sort=None, columns=None, **kw):
+        """Query tickets from Solr, filtering for 'read' permission, sorting and paginating the result.
+
+        See also paged_query which does a mongo search.
+
+        We do the sorting and skipping right in SOLR, before we ever ask
+        Mongo for the actual tickets.  Other keywords for
+        search_artifact (e.g., history) or for SOLR are accepted through
+        kw.  The output is intended to be used directly in templates,
+        e.g., exposed controller methods can just:
+
+            return paged_query(q, ...)
+
+        If you want all the results at once instead of paged you have
+        these options:
+          - don't call this routine, search directly in mongo
+          - call this routine with a very high limit and TEST that
+            count<=limit in the result
+        limit=-1 is NOT recognized as 'all'.  500 is a reasonable limit.
+        """
+
+        limit, page, start = g.handle_paging(limit, page, default=25)
+        count = 0
+        tickets = []
+        refined_sort = sort if sort else 'ticket_num_i asc'
+        if  'ticket_num_i' not in refined_sort:
+            refined_sort += ',ticket_num_i asc'
+        try:
+            if q:
+                matches = search_artifact(
+                    cls, q,
+                    rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw)
+            else:
+                matches = None
+            solr_error = None
+        except ValueError, e:
+            solr_error = e.args[0]
+            matches = []
+        if matches:
+            count = matches.hits
+            # ticket_numbers is in sorted order
+            ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
+            # but query, unfortunately, returns results in arbitrary order
+            query = cls.query.find(dict(app_config_id=c.app.config._id, ticket_num={'$in':ticket_numbers}))
+            # so stick all the results in a dictionary...
+            ticket_for_num = {}
+            for t in query:
+                ticket_for_num[t.ticket_num] = t
+            # and pull them out in the order given by ticket_numbers
+            tickets = []
+            for tn in ticket_numbers:
+                if tn in ticket_for_num:
+                    if security.has_access(ticket_for_num[tn], 'read'):
+                        tickets.append(ticket_for_num[tn])
+                    else:
+                        count = count -1
+        sortable_custom_fields=c.app.globals.sortable_custom_fields_shown_in_search()
+        if not columns:
+            columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
+                       dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
+                       dict(name='_milestone', sort_name='_milestone_s', label='Milestone', active=True),
+                       dict(name='status', sort_name='status_s', label='Status', active=True),
+                       dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
+            for field in sortable_custom_fields:
+                columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
+        return dict(tickets=tickets,
+                    sortable_custom_fields=sortable_custom_fields,
+                    columns=columns,
+                    count=count, q=q, limit=limit, page=page, sort=sort,
+                    solr_error=solr_error, **kw)
 
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)

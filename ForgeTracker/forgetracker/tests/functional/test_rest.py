@@ -3,10 +3,14 @@ pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c
 
+from datadiff.tools import assert_equal
+from mock import patch
+
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 
+from forgetracker import model as TM
 
 class TestTrackerApiBase(TestRestApiBase):
 
@@ -113,3 +117,36 @@ class TestRestDiscussion(TestTrackerApiBase):
         assert reply.json['post']['text'] == 'This is a reply', reply.json
         thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % discussion['threads'][0]['_id'])
         assert len(thread.json['thread']['posts']) == 2, thread.json
+
+class TestRestSearch(TestTrackerApiBase):
+
+    @patch('forgetracker.model.Ticket.paged_search')
+    def test_no_criteria(self, paged_search):
+        paged_search.return_value = dict(tickets=[
+            TM.Ticket(ticket_num=5, summary='our test ticket'),
+        ])
+        r = self.api_get('/rest/p/test/bugs/search')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json, {'tickets':[
+            {'summary': 'our test ticket', 'ticket_num': 5},
+        ]})
+
+    @patch('forgetracker.model.Ticket.paged_search')
+    def test_some_criteria(self, paged_search):
+        q = 'labels:testing && status:open'
+        paged_search.return_value = dict(tickets=[
+                TM.Ticket(ticket_num=5, summary='our test ticket'),
+            ],
+            sort='status',
+            limit=2,
+            count=1,
+            page=0,
+            q=q,
+        )
+        r = self.api_get('/rest/p/test/bugs/search', q=q, sort='status', limit='2')
+        assert_equal(r.status_int, 200)
+        assert_equal(r.json, {'limit': 2, 'q': q, 'sort':'status', 'count': 1,
+                               'page': 0, 'tickets':[
+                {'summary': 'our test ticket', 'ticket_num': 5},
+            ]
+        })
