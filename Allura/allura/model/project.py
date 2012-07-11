@@ -597,6 +597,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             g.credentials.project_roles(project_id=self.root_project._id).named)
         return [ r.user for r in named_roles.roles_that_reach if r.user_id is not None ]
 
+    def admins(self):
+        """Find all the users who have 'Admin' role for this project"""
+        admin_role = ProjectRole.query.get(name='Admin', project_id=self._id)
+        if not admin_role:
+            return []
+        return [r.user.username for r in admin_role.users_with_role(self)]
+
     def user_in_project(self, username):
         from .auth import User
         u = User.by_username(username)

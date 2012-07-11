@@ -1,4 +1,7 @@
 {% set hide_left_bar=False %}
+{% if page == 'new_projects' %}
+  {% set hide_left_bar=True %}
+{% endif %}
 {% extends g.theme.master %}
 
 {% block title %}Forge Site Admin{% endblock %}
@@ -16,6 +19,7 @@
     <li class="{{page=='stats' and 'active' or ''}}"><a href="stats"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>Stats</a></li>
     <li class="{{page=='api_tickets' and 'active' or ''}}"><a href="api_tickets"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>API Tickets</a></li>
     <li class="{{page=='add_subscribers' and 'active' or ''}}"><a href="add_subscribers"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Add Subscribers</a></li>
+    <li class="{{page=='new_projects' and 'active' or ''}}"><a href="new_projects"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>New Projects</a></li>
   </ul>
 </div>
 {% endblock %}

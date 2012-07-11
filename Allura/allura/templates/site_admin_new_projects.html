@@ -1,0 +1,44 @@
+{% set page="new_projects" %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block content %}
+  {{ c.page_size.display(limit=limit, count=count, page=pagenum) }}
+  <table>
+    <thead>
+      <tr>
+        <th class="narrow"></th>
+        <th class="narrow">Created</th>
+        <th>Shortname</th>
+        <th>Name</th>
+        <th>Short description</th>
+        <th>Summary</th>
+        <th>Deleted?</th>
+        <th>Homepage</th>
+        <th>Admins</th>
+      </tr>
+    </thead>
+    {% for p in projects %}
+    <tr>
+      <td class="narrow">
+        <input type="checkbox" class="js-select-project" data-shortname="{{ p.shortname }}" />
+      </td>
+      <td class="narrow">
+        <small>{{ p._id.generation_time.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+      </td>
+      <td><small>{{ p.shortname }}</small></td>
+      <td><small>{{ p.name }}</small></td>
+      <td><small>{{ p.short_description }}</small></td>
+      <td><small>{{ p.summary }}</small></td>
+      <td><small>{{ 'Yes' if p.deleted else 'No' }}</small></td>
+      <td><small>{{ p.external_homepage|urlize(22) }}</small></td>
+      <td><small>{{ p.admins()|join(' ') }}</small></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {{ c.page_list.display(limit=limit, count=count, page=pagenum) }}
+  <div id="selected-projects"></div>
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="{{g.forge_static('js/site_admin_new_projects.js')}}"></script>
+{% endblock %}
