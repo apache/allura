@@ -49,6 +49,11 @@ class MonQTask(MappedClass):
                 ('time_queue', ming.ASCENDING)
                 ],
             [
+                ('state', ming.ASCENDING),
+                ('task_name', ming.DESCENDING),
+                ('time_queue', ming.ASCENDING)
+                ],
+            [
                 'state',
                 'time_queue'
                 ],
