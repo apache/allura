@@ -25,7 +25,7 @@
   <div class="project-list grid-18">
     <b>Projects</b>
     <ul>
-      {% for p in user.my_projects() %}
+      {% for p in user.my_projects(exclude_deleted=True) %}
         {% if h.has_access(p, 'read')() %}
           <li>
               <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
