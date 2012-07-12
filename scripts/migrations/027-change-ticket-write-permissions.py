@@ -14,6 +14,10 @@ from forgewiki.wiki_main import ForgeWikiApp
 log = logging.getLogger(__name__)
 
 
+def add(acl, role):
+    if role not in acl:
+        acl.append(role)
+
 # migration script for change write permission to create + update
 def main():
     query = {'tool_name': {'$regex': '^tickets$', '$options': 'i'}}
@@ -23,11 +27,11 @@ def main():
             role_ids = [(p.role_id, p.access) for p in a.acl if p.permission == 'write']
             for role_id, access in role_ids:
                 if access == M.ACE.DENY:
-                    a.acl.add(M.ACE.deny(role_id, 'create'))
-                    a.acl.add(M.ACE.deny(role_id, 'update'))
+                    add(a.acl, M.ACE.deny(role_id, 'create'))
+                    add(a.acl, M.ACE.deny(role_id, 'update'))
                 else:
-                    a.acl.add(M.ACE.allow(role_id, 'create'))
-                    a.acl.add(M.ACE.allow(role_id, 'update'))
+                    add(a.acl, M.ACE.allow(role_id, 'create'))
+                    add(a.acl, M.ACE.allow(role_id, 'update'))
 
         ThreadLocalORMSession.flush_all()
 
