@@ -433,7 +433,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
         '''Find the projects for which this user has a named role.'''
         reaching_role_ids = g.credentials.user_roles(user_id=self._id).reaching_ids_set
         reaching_roles = [ ProjectRole.query.get(_id=i) for i in reaching_role_ids ]
-        named_roles = [ r for r in reaching_roles if r.name ]
+        named_roles = [ r for r in reaching_roles
+                                if r.name and not r.project.deleted ]
         seen_project_ids = set()
         for r in named_roles:
             if r.project_id in seen_project_ids: continue
