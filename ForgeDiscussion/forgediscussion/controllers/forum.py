@@ -2,9 +2,10 @@ import logging
 import pymongo
 
 from tg import expose, validate, redirect
-from tg import request, response
+from tg import request
 from pylons import g, c
 from webob import exc
+from formencode import validators
 
 from allura.lib import helpers as h
 from allura.lib import utils
@@ -75,7 +76,9 @@ class ForumController(DiscussionController):
             raise exc.HTTPNotFound()
 
     @expose('jinja:allura:templates/discussion/index.html')
-    def index(self, threads=None, limit=None, page=0, count=0, **kw):
+    @validate(dict(page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=25)))
+    def index(self, threads=None, limit=10, page=0, count=0, **kw):
         if self.discussion.deleted:
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
@@ -105,7 +108,9 @@ class ForumController(DiscussionController):
 class ForumThreadController(ThreadController):
 
     @expose('jinja:forgediscussion:templates/discussionforums/thread.html')
-    def index(self, limit=None, page=0, count=0, **kw):
+    @validate(dict(page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=25)))
+    def index(self, limit=25, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
         return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)

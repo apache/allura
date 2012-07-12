@@ -18,7 +18,7 @@
     <div style="clear:both;"></div>
     {% if post.discussion_thread and c.app.show_discussion %}
     <div style="margin-top: 10px">
-      {{c.thread.display(value=post.discussion_thread)}}
+      {{c.thread.display(value=post.discussion_thread,page=page,limit=limit,count=count)}}
     </div>
     {% endif %}
 {% endblock %}

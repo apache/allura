@@ -272,16 +272,21 @@ class PostController(BaseController):
 
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
-    def index(self, **kw):
+    @validate(dict(page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=25)))
+    def index(self, page=0, limit=25, **kw):
         if self.post.state == 'draft':
             require_access(self.post, 'write')
         c.form = W.view_post_form
         c.subscribe_form = W.subscribe_form
         c.thread = W.thread
+        post_count = self.post.discussion_thread.post_count
+        limit, page = h.paging_sanitizer(limit, page, post_count)
         version = kw.pop('version', None)
         post = self._get_version(version)
         base_post = self.post
-        return dict(post=post, base_post=base_post)
+        return dict(post=post, base_post=base_post,
+                    page=page, limit=limit, count=post_count)
 
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash
