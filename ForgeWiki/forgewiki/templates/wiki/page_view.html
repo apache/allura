@@ -88,6 +88,6 @@
   {{lib.related_artifacts(page)}}
   {% if page.discussion_thread and c.app.show_discussion %}
     {% set thread = page.discussion_thread %}
-    <div>{{c.thread.display(value=thread)}}</div>
+    <div>{{c.thread.display(value=thread,page=pagenum,limit=limit,count=count)}}</div>
   {% endif %}
 {% endblock %}

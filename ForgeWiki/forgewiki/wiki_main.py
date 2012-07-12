@@ -436,13 +436,17 @@ class PageController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_view.html')
-    @validate(dict(version=validators.Int(if_empty=None)))
-    def index(self, version=None, **kw):
+    @validate(dict(version=validators.Int(if_empty=None),
+                   page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=25)))
+    def index(self, version=None, page=0, limit=25, **kw):
         if not self.page:
             redirect(c.app.url+h.urlquote(self.title)+'/edit')
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
+        post_count = self.page.discussion_thread.post_count
+        limit, pagenum = h.paging_sanitizer(limit, page, post_count)
         page = self.get_version(version)
         if page is None:
             if version: redirect('.?version=%d' % (version-1))
@@ -458,7 +462,8 @@ class PageController(BaseController):
             page=page,
             cur=cur, prev=prev, next=next,
             subscribed=M.Mailbox.subscribed(artifact=self.page),
-            hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar)
+            hide_left_bar=hide_left_bar, show_meta=c.app.show_right_bar,
+            pagenum=pagenum, limit=limit, count=post_count)
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_edit.html')
