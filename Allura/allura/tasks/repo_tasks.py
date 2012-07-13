@@ -41,8 +41,12 @@ def clone(
                 subject=u'SourceForge Repo Clone Complete',
                 message_id=h.gen_message_id(),
                 text=u''.join([
-                    u'Clone of repo %s in project %s from %s is complete. Your repo is now ready to use.\n'
-                ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url))
+                    u'Your cloned repository %s in project %s is now ready for use.\n\n',
+                    u'Old repository url: %s \n\n',
+                    u'New repository checkout command: %s \n\n',
+                    u'You and any other developers should do a fresh checkout using the ',
+                    u'new repository location.\n'
+                ]) % (c.app.config.options.mount_point, c.project.shortname, cloned_from_url, c.app.repo.clone_command('rw')))
     except:
         sendmail(
             destinations=['sfengineers@geek.net'],
