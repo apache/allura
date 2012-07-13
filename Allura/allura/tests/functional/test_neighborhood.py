@@ -63,6 +63,44 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
         assert 'Invalid JSON' in r
 
+    def test_admin_overview_audit_log(self):
+
+        def check_log(message):
+            return M.AuditLog.query.find({'message': message}).count() == 1
+
+        nbhd = M.Neighborhood.query.get(name='Projects')
+        nbhd.features['css'] = 'custom'
+        nbhd.features['google_analytics'] = True
+        params = {
+            'name': 'Pjs',
+            'redirect': 'http://fake.org/',
+            'show_title': 'false',
+            'allow_browse': 'false',
+            'css': '.class { border: 1px; }',
+            'tracking_id': 'U-123456',
+            'homepage': '[Homepage]',
+            'project_list_url': 'http://fake.org/project_list',
+            'project_template': '{"name": "template"}'
+
+        }
+        self.app.post('/p/_admin/update', params=params,
+                      extra_environ=dict(username='root'))
+        # must get as many log records as many values are updated
+        assert M.AuditLog.query.find().count() == len(params)
+
+        assert check_log('change neighborhood name to Pjs')
+        assert check_log('change neighborhood redirect to http://fake.org/')
+        assert check_log('change neighborhood show title to False')
+        assert check_log('change neighborhood allow browse to False')
+        assert check_log('change neighborhood css to .class { border: 1px; }')
+        assert check_log('change neighborhood homepage to [Homepage]')
+        assert check_log('change neighborhood project list url to '
+                         'http://fake.org/project_list')
+
+        assert check_log('change neighborhood project template to '
+                         '{"name": "template"}')
+        assert check_log('update neighborhood tracking_id')
+
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
         neighborhood = M.Neighborhood.query.get(name='Adobe')
