@@ -477,22 +477,48 @@ class NeighborhoodAdminController(object):
     @require_post()
     @validate(W.neighborhood_overview_form, error_handler=overview)
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
-        self.neighborhood.name = name
-        self.neighborhood.redirect = kw.pop('redirect', '')
-        self.neighborhood.homepage = homepage
-        self.neighborhood.css = css
-        self.neighborhood.project_template = project_template
-        self.neighborhood.allow_browse = kw.get('allow_browse', False)
-        self.neighborhood.show_title = kw.get('show_title', False)
-        self.neighborhood.project_list_url = kw.get('project_list_url', '')
+        nbhd = self.neighborhood
+        c.project = nbhd.neighborhood_project
+        if nbhd.name != name:
+            M.AuditLog.log('change neighborhood name to %s', name)
+            nbhd.name = name
+        nbhd_redirect = kw.pop('redirect', '')
+        if nbhd.redirect != nbhd_redirect:
+            M.AuditLog.log('change neighborhood redirect to %s', nbhd_redirect)
+            nbhd.redirect = nbhd_redirect
+        if nbhd.homepage != homepage:
+            M.AuditLog.log('change neighborhood homepage to %s', homepage)
+            nbhd.homepage = homepage
+        if nbhd.css != css:
+            M.AuditLog.log('change neighborhood css to %s', css)
+            nbhd.css = css
+        if nbhd.project_template != project_template:
+            M.AuditLog.log('change neighborhood project template to %s',
+                            project_template)
+            nbhd.project_template = project_template
+        allow_browse = kw.get('allow_browse', False)
+        if nbhd.allow_browse != allow_browse:
+            M.AuditLog.log('change neighborhood allow browse to %s',
+                            allow_browse)
+            nbhd.allow_browse = allow_browse
+        show_title = kw.get('show_title', False)
+        if nbhd.show_title != show_title:
+            M.AuditLog.log('change neighborhood show title to %s',
+                            show_title)
+            nbhd.show_title = show_title
+        project_list_url = kw.get('project_list_url', '')
+        if nbhd.project_list_url != project_list_url:
+            M.AuditLog.log('change neighborhood project list url to %s',
+                            project_list_url)
+            nbhd.project_list_url = project_list_url
         tracking_id = kw.get('tracking_id', '')
-        if tracking_id != self.neighborhood.tracking_id:
-            c.project = self.neighborhood.neighborhood_project
+        if tracking_id != nbhd.tracking_id:
             M.AuditLog.log('update neighborhood tracking_id')
-            self.neighborhood.tracking_id = tracking_id
+            nbhd.tracking_id = tracking_id
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()
+            M.AuditLog.log('update neighborhood icon')
             M.NeighborhoodFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
                 square=True, thumbnail_size=(48, 48),
