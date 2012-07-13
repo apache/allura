@@ -182,7 +182,6 @@ class ForgeWikiApp(Application):
     def install(self, project):
         'Set up any default permissions and roles here'
         self.config.options['project_name'] = project.name
-        self.config.options['show_right_bar'] = True
         super(ForgeWikiApp, self).install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id

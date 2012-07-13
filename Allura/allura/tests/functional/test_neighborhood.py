@@ -506,6 +506,7 @@ class TestNeighborhood(TestController):
                         "mount_point":"wiki",
                         "options":{
                             "show_right_bar":false,
+                            "show_left_bar":false,
                             "show_discussion":false,
                             "some_url": "http://foo.com/$shortname/"
                         },
@@ -568,6 +569,8 @@ class TestNeighborhood(TestController):
         # check tool options
         opts = p.app_config('wiki').options
         assert_equal(False, opts.show_discussion)
+        assert_equal(False, opts.show_left_bar)
+        assert_equal(False, opts.show_right_bar)
         assert_equal("http://foo.com/testtemp/", opts.some_url)
         # check that custom groups/perms/users were setup correctly
         roles = p.named_roles
