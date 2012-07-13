@@ -621,3 +621,13 @@ prefixes are used (Mebi, Gibi).
             if bytes < unit:
                 return '%.1f %s' % ((base * bytes / unit), prefix)
         return '%.1f %s' % ((base * bytes / unit), prefix)
+
+
+def log_if_changed(artifact, attr, new_val, message):
+    """Set `artifact.attr` to `new_val` if changed. Add AuditLog record."""
+    from allura import model as M
+    if not hasattr(artifact, attr):
+        return
+    if getattr(artifact, attr) != new_val:
+        M.AuditLog.log(message)
+        setattr(artifact, attr, new_val)

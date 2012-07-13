@@ -1,4 +1,5 @@
 from os import path
+from mock import Mock, patch
 
 from pylons import c
 from nose.tools import eq_, assert_equals
@@ -125,3 +126,27 @@ def test_render_any_markup_formatting():
     assert_equals(h.render_any_markup('README.md', '### foo\n<script>alert(1)</script> bar'),
                   '<h3>foo</h3>\n<p>&lt;script&gt;alert(1)&lt;/script&gt; bar</p>')
 
+
+class AuditLogMock(Mock):
+    logs = list()
+
+    @classmethod
+    def log(cls, message):
+        cls.logs.append(message)
+
+
+@patch('allura.model.AuditLog', new=AuditLogMock)
+def test_log_if_changed():
+    artifact = Mock()
+    artifact.value = 'test'
+    # change
+    h.log_if_changed(artifact, 'value', 'changed', 'updated value')
+    assert artifact.value == 'changed'
+    assert len(AuditLogMock.logs) == 1
+    assert AuditLogMock.logs[0] == 'updated value'
+
+    # don't change
+    h.log_if_changed(artifact, 'value', 'changed', 'updated value')
+    assert artifact.value == 'changed'
+    assert len(AuditLogMock.logs) == 1
+    assert AuditLogMock.logs[0] == 'updated value'
