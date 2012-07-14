@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Install Solr
+cd /home/vagrant/src
+if [ ! -d apache-solr-1.4.1 ]
+then
+    echo "Installing Solr..."
+    wget -q http://apache.mirrors.tds.net/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
+    tar xf apache-solr-1.4.1.tgz && rm -f apache-solr-1.4.1.tgz
+    cd apache-solr-1.4.1/example/
+    mkdir -p /home/vagrant/src/forge/solr_config/conf
+    cp solr/conf/solrconfig.xml /home/vagrant/src/forge/solr_config/conf/
+    chown -R vagrant:vagrant /home/vagrant/src/apache-solr* /home/vagrant/src/forge/solr_config/conf/
+fi
+
 # Create log dir
 if [ ! -d /var/log/allura ]
 then
