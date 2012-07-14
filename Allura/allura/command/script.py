@@ -6,7 +6,6 @@ import warnings
 from pylons import c
 import pylons
 import webob
-from sqlalchemy import exc
 
 from ming.orm import session
 from allura.lib import helpers as h
@@ -26,7 +25,12 @@ class ScriptCommand(base.Command):
 
     def command(self):
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=exc.SAWarning)
+            try:
+                from sqlalchemy import exc
+            except ImportError:
+                pass
+            else:
+                warnings.simplefilter("ignore", category=exc.SAWarning)
             self.basic_setup()
             request = webob.Request.blank('--script--', environ={
                     'paste.registry':self.registry})
