@@ -2,17 +2,17 @@
 {% extends 'allura:templates/site_admin.html' %}
 
 {% block content %}
-<h1>Add Subscribers</h1>
+<h1>Add Subscribers to Artifact</h1>
 <form name="add_subscriber" method="POST">
     <table>
         <tr>
             <td>Username:</td> <td><input name="for_user" type="text" value="{{for_user}}"></td>
         </tr>
         <tr>
-            <td>Url:</td> <td><input name="artifact_url" type="text" value="{{artifact_url}}"></td>
+            <td>Artifact Url:</td> <td><input name="artifact_url" type="text" value="{{artifact_url}}"></td>
         </tr>
         <tr>
-            <td><input type="submit" value="Save"><td>
+            <td><input type="submit" value="Save"></td>
         </tr>
     </table>
 </form>
