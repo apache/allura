@@ -78,7 +78,7 @@ class ForumController(DiscussionController):
     @expose('jinja:allura:templates/discussion/index.html')
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
-    def index(self, threads=None, limit=10, page=0, count=0, **kw):
+    def index(self, threads=None, limit=25, page=0, count=0, **kw):
         if self.discussion.deleted:
             redirect(self.discussion.url()+'deleted')
         limit, page, start = g.handle_paging(limit, page)
