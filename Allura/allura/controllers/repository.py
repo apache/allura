@@ -444,6 +444,12 @@ class TreeBrowser(BaseController):
 
     @expose()
     def _lookup(self, next, *rest):
+        if not rest and request.response_ext:
+            # Directory name may ends with file extension (e.g. `dir.rdf`)
+            # dispatching system will cut extension, so we need to restore it
+            next = "%s%s" % (next, request.response_ext)
+            request.response_ext = None
+            request.response_type = None
         next = h.really_unicode(unquote(next))
         if not rest:
             # Might be a file rather than a dir
