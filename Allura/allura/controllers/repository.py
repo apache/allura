@@ -444,7 +444,7 @@ class TreeBrowser(BaseController):
 
     @expose()
     def _lookup(self, next, *rest):
-        next=unquote(next)
+        next = h.really_unicode(unquote(next))
         if not rest:
             # Might be a file rather than a dir
             filename = h.really_unicode(
