@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 
 import faulthandler
 from pylons import c
@@ -69,10 +70,6 @@ def main(options):
                     log.info("Deleting %i CommitDoc docs...", i)
                     M.repo.CommitDoc.m.remove({"_id": {"$in": ci_ids}})
 
-                    i = M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}}).count()
-                    log.info("Deleting %i TreesDoc docs...", i)
-                    M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
-
                     # delete these in chunks, otherwise the query doc can
                     # exceed the max BSON size limit (16MB at the moment)
                     for tree_ids_chunk in chunked_list(tree_ids, 300000):
@@ -83,6 +80,18 @@ def main(options):
                         log.info("Deleting %i LastCommitDoc docs...", i)
                         M.repo.LastCommitDoc.m.remove({"object_id": {"$in": tree_ids_chunk}})
                     del tree_ids
+
+                    # delete these after TreeDoc and LastCommitDoc so that if
+                    # we crash, we don't lose the ability to delete those
+                    i = M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}}).count()
+                    log.info("Deleting %i TreesDoc docs...", i)
+                    M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
+
+                    # delete LastCommitDocs for non-trees
+                    repo_lastcommit_re = re.compile("^{}:".format(c.app.repo._id))
+                    i = M.repo.LastCommitDoc.m.find(dict(_id=repo_lastcommit_re)).count()
+                    log.info("Deleting %i remaining LastCommitDoc docs, by repo id...", i)
+                    M.repo.LastCommitDoc.m.remove(dict(_id=repo_lastcommit_re))
 
                     i = M.repo.DiffInfoDoc.m.find({"_id": {"$in": ci_ids}}).count()
                     log.info("Deleting %i DiffInfoDoc docs...", i)
