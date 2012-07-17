@@ -95,7 +95,7 @@ $(function(){
             }
         }).
         blur();
-    $('.selectText').focus(function(){this.select()});
+    $('.selectText').click(function(){this.select()});
 });
 
 function auto_close( o, timeout ){
