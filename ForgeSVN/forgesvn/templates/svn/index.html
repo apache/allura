@@ -36,18 +36,16 @@
       </div>
     </div>
 
-    <h2>Import project to Subversion</h2>
+    <h2>Import project on disk to Subversion</h2>
 
     <div class="codehilite">
       <pre>cd existing-{{c.app.repo.suggested_clone_dest_path()}}
 svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</pre>
     </div>
 
-    <h2>Check out a working directory</h2>
-
-    <div class="codehilite">
-      <pre>{{c.app.repo.clone_command('rw')}}</pre>
-    </div>
+    <h2>Import remote repository to Subversion</h2>
+    <p>Use the <a href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/importer/">repository clone tool</a>
+    then check out a working copy once you receive a completion email.</p>
     &nbsp;
     <div class="message info scm-ssh-key">
       <div class="content">
