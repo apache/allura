@@ -54,12 +54,11 @@ class ForgeHgApp(RepositoryApp):
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
         init_from_url = self.config.options.get('init_from_url')
         if cloned_from_project_id is not None:
-            with h.push_config(c, project=M.Project.query.get(_id=cloned_from_project_id)):
-                cloned_from = HM.Repository.query.get(_id=cloned_from_repo_id)
-                allura.tasks.repo_tasks.clone.post(
-                    cloned_from_path=cloned_from.full_fs_path,
-                    cloned_from_name=cloned_from.app.config.script_name(),
-                    cloned_from_url=cloned_from.full_fs_path)
+            cloned_from = HM.Repository.query.get(_id=cloned_from_repo_id)
+            allura.tasks.repo_tasks.clone.post(
+                cloned_from_path=cloned_from.full_fs_path,
+                cloned_from_name=cloned_from.app.config.script_name(),
+                cloned_from_url=cloned_from.full_fs_path)
         elif init_from_url:
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=None,
