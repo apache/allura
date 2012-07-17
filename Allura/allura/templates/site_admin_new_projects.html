@@ -26,7 +26,7 @@
         <small>{{ p._id.generation_time.strftime('%Y-%m-%d %H:%M:%S') }}</small>
       </td>
       <td><small>{{ p.shortname }}</small></td>
-      <td><small>{{ p.name }}</small></td>
+      <td><small><a href="{{ p.url() }}">{{ p.name }}</a></small></td>
       <td><small>{{ p.short_description }}</small></td>
       <td><small>{{ p.summary }}</small></td>
       <td><small>{{ 'Yes' if p.deleted else 'No' }}</small></td>
