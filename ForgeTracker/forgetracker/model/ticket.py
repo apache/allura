@@ -608,8 +608,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 tickets.append(t)
             else:
                 count = count -1
-            if c.app.config.options.get('EnableVoting'):
-                columns.append(dict(name='votes', sort_name='votes', label='Votes', active=True))
 
         return dict(
             tickets=tickets,
