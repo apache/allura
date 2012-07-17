@@ -1,14 +1,13 @@
 import logging
 from pprint import pformat
 
-from activitystream import director
 import pkg_resources
 from pylons import c, request
 from formencode import validators
-from tg import expose, flash, redirect, validate, response
+from tg import expose, redirect, validate, response
 
 from allura import version
-from allura.app import Application, WidgetController, SitemapEntry
+from allura.app import Application, WidgetController
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
@@ -47,10 +46,6 @@ class UserProfileApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         return []
-
-    @h.exceptionless([], log)
-    def sidebar_menu(self):
-        return [ SitemapEntry('Preferences', '/auth/prefs/')]
 
     def admin_menu(self):
         return []
