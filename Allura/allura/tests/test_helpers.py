@@ -150,3 +150,9 @@ def test_log_if_changed():
     assert artifact.value == 'changed'
     assert len(AuditLogMock.logs) == 1
     assert AuditLogMock.logs[0] == 'updated value'
+
+
+def test_get_tool_package():
+    assert h.get_tool_package('tickets') == 'forgetracker'
+    assert h.get_tool_package('Wiki') == 'forgewiki'
+    assert h.get_tool_package('wrong_tool') == ''
