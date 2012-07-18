@@ -68,13 +68,15 @@ def refresh_repo(repo, all_commits=False, notify=True):
     # Compute diffs
     cache = {}
     # Have to compute_diffs() for all commits to ensure that LastCommitDocs
-    # are set properly for forked repos. For SVN, compute_diffs() will return
-    # immediately, so no real work is done.
-    for i, oid in enumerate(reversed(all_commit_ids)):
-        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
-        compute_diffs(repo._id, cache, ci)
-        if (i+1) % 100 == 0:
-            log.info('Compute diffs %d: %s', (i+1), ci._id)
+    # are set properly for forked repos. For SVN, compute_diffs() we don't
+    # want to pre-compute the diffs because that would be too expensive, so
+    # we skip them here and do them on-demand with caching.
+    if repo.tool.lower() != 'svn':
+        for i, oid in enumerate(reversed(all_commit_ids)):
+            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            compute_diffs(repo._id, cache, ci)
+            if (i+1) % 100 == 0:
+                log.info('Compute diffs %d: %s', (i+1), ci._id)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
 
