@@ -1,0 +1,16 @@
+<script type="text/javascript">
+    $(function () {
+        $("form").submit(function () {
+            location.href = $('a.wiki_home').attr('href') +
+                    encodeURIComponent($('input[name=name]', $(this)).val().replace('/', '-')) + '/edit';
+            return false;
+        });
+    });
+</script>
+
+<form class="grid-10">
+    <label class="grid-2">Name</label>
+    <div class="grid-7"><input type="text" name="name"></div>
+    <label class="grid-2">&nbsp;</label>
+    <div class="grid-7"><input type="submit" value="Create page"></div>
+</form>
