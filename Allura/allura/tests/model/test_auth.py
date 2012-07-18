@@ -64,7 +64,7 @@ def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
     assert set(p.shortname for p in c.user.my_projects()) == set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--'])
-    # delete one of projects and make sure it's don't appear in my_projects()
+    # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
     assert set(p.shortname for p in c.user.my_projects()) == set(['test', 'u/test-admin', 'adobe-1', '--init--'])
