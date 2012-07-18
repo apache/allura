@@ -632,3 +632,23 @@ def log_if_changed(artifact, attr, new_val, message):
     if getattr(artifact, attr) != new_val:
         M.AuditLog.log(message)
         setattr(artifact, attr, new_val)
+
+
+tools = {
+    'tickets': 'forgetracker',
+    'wiki': 'forgewiki',
+    'discussion': 'forgediscussion',
+    'blog': 'forgeblog',
+    'git': 'forgegit',
+    'hg': 'forgehg',
+    'svn': 'forgesvn',
+    'downloads': 'forgedownloads',
+    'link': 'forgelink',
+    'chat': 'forgechat',
+    'activity': 'forgeactivity',
+}
+
+
+def get_tool_package(tool_name):
+    "Return package for given tool (e.g. 'forgetracker' for 'tickets')"
+    return tools.get(tool_name.lower(), '')
