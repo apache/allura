@@ -147,20 +147,28 @@ class ForgeWikiApp(Application):
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
     def admin_menu(self):
-        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
-        wiki_url = self.url
-
-        links = [SitemapEntry('Wiki Home', wiki_url,className="wiki_home"),
-                 SitemapEntry('Set Home', admin_url + 'home', className='admin_modal'),
-                 SitemapEntry('Create Page', admin_url + 'create_wiki_page', className='admin_modal'),
-                 SitemapEntry('Browse Pages', wiki_url + 'browse_pages/'),
-                 SitemapEntry('Browse Labels', wiki_url + 'browse_tags/')]
-        discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
-        if pending_mod_count and h.has_access(discussion, 'moderate')():
-            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
-                small = pending_mod_count))
-        links += [SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/')]
+        admin_url = c.project.url() + \
+                    'admin/' + \
+                    self.config.options.mount_point + '/'
+        links = [SitemapEntry('Set Home',
+                              admin_url + 'home',
+                              className='admin_modal')]
+        if not self.show_left_bar:
+            links = [SitemapEntry('Wiki Home',
+                                  self.url,
+                                  className="wiki_home"),
+                     SitemapEntry('Create Page',
+                                  admin_url + 'create_wiki_page',
+                                  className='admin_modal'),
+                     SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
+                     SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
+            discussion = c.app.config.discussion
+            pending_mod_count = M.Post.query.find({'discussion_id':discussion._id,
+                                                   'status':'pending'}).count() if discussion else 0
+            if pending_mod_count and h.has_access(discussion, 'moderate')():
+                links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                    small = pending_mod_count))
+            links += [SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/')]
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
@@ -739,7 +747,7 @@ class WikiAdminController(DefaultAdminController):
     @expose('jinja:forgewiki:templates/wiki/admin_add_page.html')
     def create_wiki_page(self):
         return dict(app=self.app,
-            allow_config=has_access(self.app, 'configure')())
+                    allow_config=has_access(self.app, 'configure')())
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/admin_options.html')

@@ -378,7 +378,7 @@ class TestRootController(TestController):
         wiki_page2 = self.app.get('/wiki/tést/',extra_environ=dict(username='*anonymous'))
         assert not wiki_page2.html.find('ul',{'class':'sidebarmenu'})
         wiki_page3 = self.app.get('/wiki/tést/')
-        assert wiki_page3.html.find('ul',{'class':'sidebarmenu'})
+        assert not wiki_page3.html.find('ul',{'class':'sidebarmenu'})
 
     def test_show_metadata(self):
         self.app.post('/wiki/tést/update', params={
