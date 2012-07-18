@@ -3,6 +3,10 @@ group { "puppet":
   ensure => "present",
 }
 
+exec { "package index update":
+    command => "/usr/bin/apt-get update",
+}
+
 # install required system packages
 Package { ensure => "installed" }
 
@@ -21,7 +25,9 @@ $packages = [
  "python-pip"
 ]
 
-package { $packages: }
+package { $packages:
+    require => Exec[ "package index update" ],
+}
 
 file { '/usr/lib/libz.so':
   ensure => 'link',
@@ -43,7 +49,7 @@ exec { "install venv":
 
 # create Allura virtualenv
 exec { "create allura venv":
-  command => "/usr/local/bin/virtualenv --system-site-packages anvil && chown -R vagrant:vagrant /home/vagrant/anvil",
+  command => "/usr/local/bin/virtualenv --system-site-packages anvil",
   cwd     => "/home/vagrant",
   creates => "/home/vagrant/anvil",
   user => "vagrant",
@@ -75,21 +81,13 @@ exec { "clone repo":
   require => [ File[ "/home/vagrant/src" ], Package[ "git-core" ] ],
 }
 
-# pre-install Paste and PasteDeploy to work around problem in TG2 install
-exec { "prereqs":
-  command => "/home/vagrant/anvil/bin/pip install Paste==1.7.5.1 PasteDeploy==1.5.0",
-  user => "vagrant",
-  group => "vagrant",
-  require => Exec[ "create allura venv" ],
-}
-
-# install remainder of Allura dependencies
-exec { "/usr/bin/sudo /home/vagrant/anvil/bin/pip install -r requirements.txt":
+# install Allura dependencies
+exec { "/home/vagrant/anvil/bin/pip install -r requirements.txt":
   cwd     => "/home/vagrant/src/forge",
   user => "vagrant",
   group => "vagrant",
   timeout => 0,
-  require => [ Exec[ "clone repo"], Exec[ "prereqs" ] ],
+  require => [ Exec[ "clone repo"], Exec[ "create allura venv" ] ],
 }
 
 # create SCM repo dirs
