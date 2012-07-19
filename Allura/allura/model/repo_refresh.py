@@ -60,7 +60,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
     # Refresh trees
     # Like diffs below, pre-computing trees for SVN repos is too expensive,
     # so we skip it here, then do it on-demand later.
-    if repo.tool.name.lower() != 'svn':
+    if repo.tool.lower() != 'svn':
         cache = {}
         for i, oid in enumerate(commit_ids):
             ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
