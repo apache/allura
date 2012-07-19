@@ -86,7 +86,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
 
 def refresh_commit_trees(ci, cache):
     '''Refresh the list of trees included withn a commit'''
-    if ci.tree_id is None: return
+    if ci.tree_id is None: return cache
     trees_doc = TreesDoc(dict(
             _id=ci._id,
             tree_ids = list(trees(ci.tree_id, cache))))
@@ -265,7 +265,7 @@ def unknown_commit_ids(all_commit_ids):
 
 def compute_diffs(repo_id, tree_cache, rhs_ci):
     '''compute simple differences between a commit and its first parent'''
-    if rhs_ci.tree_id is None: return
+    if rhs_ci.tree_id is None: return tree_cache
     def _walk_tree(tree, tree_index):
         for x in tree.blob_ids: yield x.id
         for x in tree.other_ids: yield x.id
