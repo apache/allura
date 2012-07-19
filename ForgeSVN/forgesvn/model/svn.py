@@ -139,7 +139,7 @@ class SVNImplementation(M.RepositoryImplementation):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init(default_dirs=False, skip_special_files=True)
         self._repo.status = 'importing'
-        session(self._repo).flush()
+        session(self._repo).flush(self._repo)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
         # Need a pre-revprop-change hook for cloning
@@ -158,12 +158,12 @@ class SVNImplementation(M.RepositoryImplementation):
         check_call(['svnsync', 'init', self._url, source_url])
         check_call(['svnsync', '--non-interactive', 'sync', self._url])
         self._repo.status = 'analyzing'
-        session(self._repo).flush()
+        session(self._repo).flush(self._repo)
         log.info('... %r cloned, analyzing', self._repo)
         self._repo.refresh(notify=False)
         self._repo.status = 'ready'
         log.info('... %s ready', self._repo)
-        session(self._repo).flush()
+        session(self._repo).flush(self._repo)
         self._setup_special_files()
 
     def refresh_heads(self):
@@ -176,7 +176,7 @@ class SVNImplementation(M.RepositoryImplementation):
         # Branches and tags aren't really supported in subversion
         self._repo.branches = []
         self._repo.repo_tags = []
-        session(self._repo).flush()
+        session(self._repo).flush(self._repo)
 
     def commit(self, rev):
         if rev in ('HEAD', None):
