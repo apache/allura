@@ -58,12 +58,15 @@ def refresh_repo(repo, all_commits=False, notify=True):
     rb.cleanup()
 
     # Refresh trees
-    cache = {}
-    for i, oid in enumerate(commit_ids):
-        ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
-        cache = refresh_commit_trees(ci, cache)
-        if (i+1) % 100 == 0:
-            log.info('Refresh commit trees %d: %s', (i+1), ci._id)
+    # Like diffs below, pre-computing trees for SVN repos is too expensive,
+    # so we skip it here, then do it on-demand later.
+    if repo.tool.name.lower() != 'svn':
+        cache = {}
+        for i, oid in enumerate(commit_ids):
+            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            cache = refresh_commit_trees(ci, cache)
+            if (i+1) % 100 == 0:
+                log.info('Refresh commit trees %d: %s', (i+1), ci._id)
 
     # Compute diffs
     cache = {}
