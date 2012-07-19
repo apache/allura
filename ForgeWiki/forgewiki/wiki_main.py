@@ -146,6 +146,26 @@ class ForgeWikiApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
+    def create_common_wiki_menu(self,has_create_access):
+        links =[]
+        if has_create_access:
+            links += [SitemapEntry('Create Page', self.url,
+                ui_icon=g.icons['plus'], className='add_wiki_page'),
+                      SitemapEntry('')]
+        links += [
+            SitemapEntry('Wiki Home', self.url),
+            SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
+            SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
+        discussion = c.app.config.discussion
+        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
+        if pending_mod_count and h.has_access(discussion, 'moderate')():
+            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                small = pending_mod_count))
+        links += [SitemapEntry(''),
+                  SitemapEntry('Formatting Help',self.url+'markdown_syntax/')
+        ]
+        return links
+
     def admin_menu(self):
         admin_url = c.project.url() + \
                     'admin/' + \
@@ -153,22 +173,9 @@ class ForgeWikiApp(Application):
         links = [SitemapEntry('Set Home',
                               admin_url + 'home',
                               className='admin_modal')]
+
         if not self.show_left_bar:
-            links = [SitemapEntry('Wiki Home',
-                                  self.url,
-                                  className="wiki_home"),
-                     SitemapEntry('Create Page',
-                                  admin_url + 'create_wiki_page',
-                                  className='admin_modal'),
-                     SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
-                     SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
-            discussion = c.app.config.discussion
-            pending_mod_count = M.Post.query.find({'discussion_id':discussion._id,
-                                                   'status':'pending'}).count() if discussion else 0
-            if pending_mod_count and h.has_access(discussion, 'moderate')():
-                links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
-                    small = pending_mod_count))
-            links += [SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/')]
+            links += self.create_common_wiki_menu(True)
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
@@ -181,24 +188,7 @@ class ForgeWikiApp(Application):
             page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         except:
             page = None
-        links = []
-        if has_access(self, 'create'):
-            links += [SitemapEntry('Create Page', c.app.url,
-                        ui_icon=g.icons['plus'], className='add_wiki_page'),
-                      SitemapEntry('')]
-        links += [
-            SitemapEntry('Wiki Home', c.app.url),
-            SitemapEntry('Browse Pages', c.app.url + 'browse_pages/'),
-            SitemapEntry('Browse Labels', c.app.url + 'browse_tags/')]
-        discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
-        if pending_mod_count and h.has_access(discussion, 'moderate')():
-            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
-                small = pending_mod_count))
-        links += [SitemapEntry(''),
-            SitemapEntry('Formatting Help',c.app.url+'markdown_syntax/')
-        ]
-        return links
+        return self.create_common_wiki_menu(has_access(self, 'create'))
 
     def install(self, project):
         'Set up any default permissions and roles here'
