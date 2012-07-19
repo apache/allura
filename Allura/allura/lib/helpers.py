@@ -76,27 +76,28 @@ def urlquoteplus(url, safe=""):
     except UnicodeEncodeError:
         return urllib.quote_plus(url.encode('utf-8'), safe=safe)
 
-def really_unicode(s):
+def _attempt_encodings(s, encodings):
     if s is None: return u''
-    # try naive conversion to unicode
-    try:
-        return unicode(s)
-    except UnicodeDecodeError:
-        pass
-    # Try to guess the encoding
-    encodings = [
-        lambda:'utf-8',
-        lambda:chardet.detect(s[:1024])['encoding'],
-        lambda:chardet.detect(s)['encoding'],
-        lambda:'latin-1',
-        ]
     for enc in encodings:
         try:
-            return unicode(s, enc())
-        except UnicodeDecodeError:
+            if enc is None:
+                return unicode(s)  # try default encoding
+            else:
+                return unicode(s, enc)
+        except (UnicodeDecodeError, LookupError):
             pass
     # Return the repr of the str -- should always be safe
     return unicode(repr(str(s)))[1:-1]
+
+def really_unicode(s):
+    # Try to guess the encoding
+    def encodings():
+        yield None
+        yield 'utf-8'
+        yield chardet.detect(s[:1024])['encoding']
+        yield chardet.detect(s)['encoding']
+        yield 'latin-1'
+    return _attempt_encodings(s, encodings())
 
 def find_project(url_path):
     from allura import model as M

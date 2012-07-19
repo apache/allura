@@ -22,6 +22,9 @@ def test_really_unicode():
     assert isinstance(s, unicode)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode(u'\u0410\u0401'.encode('cp1251'))
+    # ensure invalid encodings are handled gracefully
+    s = h._attempt_encodings('foo', ['LKDJFLDK'])
+    assert isinstance(s, unicode)
 
 def test_render_genshi_plaintext():
     here_dir = path.dirname(__file__)
