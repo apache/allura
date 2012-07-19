@@ -20,7 +20,6 @@ from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session
 from ming.utils import LazyProperty
 
-import allura.tasks
 from allura import model as M
 from allura.lib import helpers as h
 from allura.model.repository import GitLikeTree
@@ -68,17 +67,7 @@ class Repository(M.Repository):
     def latest(self, branch=None):
         if self._impl is None: return None
         if not self.heads: return None
-        last_id = self.heads[0].object_id
-        # check the latest revision on the real repo because sometimes the refresh gets stuck
-        info = self._impl._svn.info2(
-            self._impl._url,
-            revision=pysvn.Revision(pysvn.opt_revision_kind.head),
-            recurse=False)[0][1]
-        if info.rev.number > int(last_id.split(':')[1]):
-            last_id = self._impl._oid(info.rev.number)
-            # the repo is in a bad state, run a refresh
-            allura.tasks.repo_tasks.refresh.post()
-        return self._impl.commit(last_id)
+        return self._impl.commit(self.heads[0].object_id)
 
 
 class SVNCalledProcessError(Exception):
