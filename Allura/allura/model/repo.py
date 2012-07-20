@@ -65,6 +65,7 @@ LastCommitDoc = collection(
     'repo_last_commit', project_doc_session,
     Field('_id', str),
     Field('object_id', str, index=True),
+    Field('name', str),
     Field('commit_info', dict(
         id=str,
         date=datetime,
@@ -331,15 +332,13 @@ class Tree(RepoObject):
 
     def ls(self):
         # Load last commit info
-        oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
+        id_re = re.compile("{}:{}:".format(self.repo._id, self.path()))
         lc_index = dict(
-            (lc.object_id, lc.commit_info)
-            for lc in LastCommitDoc.m.find(dict(
-                    _id=re.compile("^{0}:".format(self.repo._id)),
-                    object_id={'$in': oids})))
+            (lc.name, lc.commit_info)
+            for lc in LastCommitDoc.m.find(dict(_id=id_re)))
         results = []
-        def _get_last_commit(oid):
-            lc = lc_index.get(oid)
+        def _get_last_commit(name):
+            lc = lc_index.get(name)
             if lc is None:
                 lc = dict(
                     author=None,
@@ -358,19 +357,19 @@ class Tree(RepoObject):
                     kind='DIR',
                     name=x.name,
                     href=x.name + '/',
-                    last_commit=_get_last_commit(x.id)))
+                    last_commit=_get_last_commit(x.name)))
         for x in sorted(self.blob_ids, key=lambda x:x.name):
             results.append(dict(
                     kind='FILE',
                     name=x.name,
                     href=x.name,
-                    last_commit=_get_last_commit(x.id)))
+                    last_commit=_get_last_commit(x.name)))
         for x in sorted(self.other_ids, key=lambda x:x.name):
             results.append(dict(
                     kind=x.type,
                     name=x.name,
                     href=None,
-                    last_commit=_get_last_commit(x.id)))
+                    last_commit=_get_last_commit(x.name)))
         return results
 
     def path(self):

@@ -327,27 +327,10 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
     for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
         differences.append(
             dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
-        # Set last commit info
-        if rhs_id is not None:
-            set_last_commit(repo_id, rhs_id, commit_info)
-        rhs_tree = tree_index.get(rhs_id, None)
-        if rhs_tree is not None:
-            for oid in _walk_tree(rhs_tree, tree_index):
-                set_last_commit(repo_id, oid, commit_info)
-    # Set last commit data for trees without it in the RHS
-    if True:
-        last_commit_collection = LastCommitDoc.m.session.db[
-            LastCommitDoc.m.collection_name]
-        last_commits = set(
-            d['object_id']
-            for d in last_commit_collection.find(
-                dict(object_id={'$in': rhs_tree_ids},
-                     _id=re.compile("^{0}:".format(repo_id))),
-                { 'object_id': 1, '_id': 0 }))
-        for tree_id in rhs_tree_ids:
-            if tree_id not in last_commits:
-                set_last_commit(repo_id, tree_id, commit_info)
-   # Build the diffinfo
+    # Set last commit data
+    rhs_tree = tree_index[rhs_ci.tree_id]
+    refresh_last_commit(repo_id, '/', rhs_tree, lhs_tree, None, commit_info)
+    # Build the diffinfo
     di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
             differences=differences))
@@ -459,10 +442,49 @@ def get_commit_info(commit):
         summary=commit.summary
         )
 
-def set_last_commit(repo_id, oid, commit_info):
+def refresh_last_commit(repo_id, path, tree, lhs_tree, parent_tree, commit_info):
+    '''Build the LastCommit info.
+
+    We only need to create LastCommit info for objects that are in the
+    RHS but not in the LHS, because only those objects are only ones
+    who have had anything changed in them.  (If file x/y/z.txt changes,
+    then it's hash will change, which also forces the hash for tree x/y
+    to change, as well as the hash for tree x.  So as long as an object's
+    hash isn't in the LHS, it means it's new or modified in this commit.)
+
+    In order to uniquely identify the tree or blob that a LastCommitDoc is
+    for, the tree or blob hash is not sufficient; we also need to know
+    either it's full path name, or it's parent tree and name.  Because of
+    this, we have to walk down the commit tree.'''
+    if lhs_tree is not None and tree._id == lhs_tree._id:
+        # tree was not changed in this commit (nor was anything under it)
+        return
+
+    # map LHS entries for easy lookup
+    lhs_map = {}
+    if lhs_tree:
+        for lhs_child in chain(lhs_tree.tree_ids, lhs_tree.blob_ids, lhs_tree.other_ids):
+            lhs_map[lhs_child.name] = lhs_child.id
+
+    # update our children
+    for child in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
+        if child.id != lhs_map.get(child.name, None):  # check if changed in this commit
+            lc = set_last_commit(repo_id, path, child.name, child.id, commit_info)
+
+    # (re)curse at our child trees
+    for child_tree in tree.tree_ids:
+        child_name = child_tree.name
+        child_tree = TreeDoc.m.get(_id=child_tree.id)
+        lhs_child = None
+        if child_name in lhs_map:
+            lhs_child = TreeDoc.m.get(_id=lhs_map[child_name])
+        refresh_last_commit(repo_id, path + child_name + '/', child_tree, lhs_child, tree, commit_info)
+
+def set_last_commit(repo_id, path, name, oid, commit_info):
     lc = LastCommitDoc(dict(
-            _id='%s:%s' % (repo_id, oid),
+            _id='%s:%s:%s' % (repo_id, path, name),
             object_id=oid,
+            name=name,
             commit_info=commit_info))
     lc.m.save(safe=False, upsert=True)
     return lc
