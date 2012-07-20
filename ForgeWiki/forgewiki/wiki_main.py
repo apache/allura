@@ -146,14 +146,18 @@ class ForgeWikiApp(Application):
             return [
                 SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
 
-    def create_common_wiki_menu(self,has_create_access):
+    def create_common_wiki_menu(self,
+                                has_create_access,
+                                create_page_url,
+                                create_page_class):
         links =[]
         if has_create_access:
-            links += [SitemapEntry('Create Page', self.url,
-                ui_icon=g.icons['plus'], className='add_wiki_page'),
-                      SitemapEntry('')]
+            links += [SitemapEntry('Create Page', create_page_url,
+                                    ui_icon=g.icons['plus'],
+                                    className=create_page_class),
+                                    SitemapEntry('')]
         links += [
-            SitemapEntry('Wiki Home', self.url),
+            SitemapEntry('Wiki Home', self.url,className='wiki_home'),
             SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
             SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
         discussion = c.app.config.discussion
@@ -175,7 +179,10 @@ class ForgeWikiApp(Application):
                               className='admin_modal')]
 
         if not self.show_left_bar:
-            links += self.create_common_wiki_menu(True)
+            links += self.create_common_wiki_menu(
+                            True,
+                            admin_url + 'create_wiki_page',
+                            'admin_modal')
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
@@ -188,7 +195,7 @@ class ForgeWikiApp(Application):
             page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
         except:
             page = None
-        return self.create_common_wiki_menu(has_access(self, 'create'))
+        return self.create_common_wiki_menu(has_access(self, 'create'),c.app.url,'add_wiki_page')
 
     def install(self, project):
         'Set up any default permissions and roles here'
