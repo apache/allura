@@ -225,7 +225,16 @@ class Commit(RepoObject):
         return list(self.log_iter(skip, count))
 
     def count_revisions(self):
+        from .repo_refresh import CommitRunBuilder
         result = 0
+        # If there's no CommitRunDoc for this commit, the call to
+        # commitlog() below will raise a KeyError. Repair the CommitRuns for
+        # this repo by rebuilding them entirely.
+        if self.repo and not CommitRunDoc.m.find(dict(commit_ids=self._id)).count():
+            log.info('CommitRun incomplete, rebuilding with all commits')
+            rb = CommitRunBuilder(list(self.repo.all_commit_ids()))
+            rb.run()
+            rb.cleanup()
         for oid in commitlog([self._id]): result += 1
         return result
 
@@ -497,7 +506,6 @@ mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
 
 def commitlog(commit_ids, skip=0, limit=sys.maxint):
-
     seen = set()
     def _visit(commit_id):
         if commit_id in seen: return

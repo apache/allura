@@ -23,6 +23,9 @@ QSIZE=100
 
 def refresh_repo(repo, all_commits=False, notify=True):
     all_commit_ids = commit_ids = list(repo.all_commit_ids())
+    if not commit_ids:
+        # the repo is empty, no need to continue
+        return
     new_commit_ids = unknown_commit_ids(commit_ids)
     stats_log = h.log_action(log, 'commit')
     for ci in new_commit_ids:
@@ -53,7 +56,17 @@ def refresh_repo(repo, all_commits=False, notify=True):
             log.info('Refresh child info %d for parents of %s', (i+1), ci._id)
 
     # Refresh commit runs
-    rb = CommitRunBuilder(commit_ids)
+    commit_run_ids = commit_ids
+    # Check if the CommitRuns for the repo are in a good state by checking for
+    # a CommitRunDoc that contains the last known commit. If there isn't one,
+    # the CommitRuns for this repo are in a bad state - rebuild them entirely.
+    if commit_run_ids != all_commit_ids:
+        last_commit = last_known_commit_id(all_commit_ids, new_commit_ids)
+        log.info('Last known commit id: %s', last_commit)
+        if not CommitRunDoc.m.find(dict(commit_ids=last_commit)).count():
+            log.info('CommitRun incomplete, rebuilding with all commits')
+            commit_run_ids = all_commit_ids
+    rb = CommitRunBuilder(commit_run_ids)
     rb.run()
     rb.cleanup()
 
@@ -209,6 +222,12 @@ class CommitRunBuilder(object):
             run.m.save()
             runs[p_cis[0]].m.delete()
         for run1 in self._all_runs():
+            # if run1 is a subset of another run, delete it
+            if CommitRunDoc.m.find(dict(commit_ids={'$all': run1.commit_ids},
+                    _id={'$ne': run1._id})).count():
+                log.info('... delete %r (subset of another run)', run1)
+                run1.m.delete()
+                continue
             for run2 in CommitRunDoc.m.find(dict(
                     commit_ids=run1.commit_ids[0])):
                 if run1._id == run2._id: continue
@@ -445,3 +464,17 @@ def set_last_commit(repo_id, oid, commit_info):
             commit_info=commit_info))
     lc.m.save(safe=False, upsert=True)
     return lc
+
+def last_known_commit_id(all_commit_ids, new_commit_ids):
+    """
+    Return the newest "known" (cached in mongo) commit id.
+
+    Params:
+        all_commit_ids: Every commit id from the repo on disk, sorted oldest to
+                        newest.
+        new_commit_ids: Commit ids that are not yet cached in mongo, sorted
+                        oldest to newest.
+    """
+    if not all_commit_ids: return None
+    if not new_commit_ids: return all_commit_ids[-1]
+    return all_commit_ids[all_commit_ids.index(new_commit_ids[0]) - 1]
