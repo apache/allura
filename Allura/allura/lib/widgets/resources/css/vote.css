@@ -1,22 +1,25 @@
-#vote {
-	display: block;
-	float: right;
-	margin-right: .5em;
-	padding: .5em;
-	text-align: center;
-	width: 12em;
+#vote { color: #aaa; }
+#vote ul {
+  display: inline-block;
+  margin: 0 10px 20px 10px;
 }
-
-#vote .vote-uparrow {
-	color: red;
-	cursor: pointer;
+#vote li {
+  list-style: none;
+  position: relative;
+  border-right: 1px solid #fff;
+  border-right: 1px solid #aaa;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
 }
-
-#vote .vote-downarrow {
-	color: blue;
-	cursor: pointer;
+#vote li:hover { background: rgba(229, 229, 229, 0.9); }
+#vote li:first-child { border-left: medium none; }
+#vote li:last-child {
+  border-right: medium none;
+  margin-left: -4px;
 }
-
-#vote .voted {
-	color: red;
-}
+#vote li b { margin-top: 5px; }
+#vote .comments { margin-right: 10px; }
