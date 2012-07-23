@@ -794,21 +794,21 @@ class TestFunctionalController(TrackerTestController):
                       params={'EnableVoting': 'true'})
 
         r = self.app.get('/bugs/1/')
-        votes_up = r.html.find('span', {'id': 'votes-up'})
-        votes_down = r.html.find('span', {'id': 'votes-down'})
+        votes_up = r.html.find('span', {'class': 'votes-up'})
+        votes_down = r.html.find('span', {'class': 'votes-down'})
         assert_in('0', str(votes_up))
         assert_in('0', str(votes_down))
 
         # invalid vote
         r = self.app.post('/bugs/1/vote', dict(vote='invalid'))
         expected_resp = json.dumps(
-                            dict(status='error', votes_up=0, votes_down=0))
+            dict(status='error', votes_up=0, votes_down=0, votes_percent=0))
         assert r.response.content == expected_resp
 
         # vote up
         r = self.app.post('/bugs/1/vote', dict(vote='u'))
         expected_resp = json.dumps(
-                            dict(status='ok', votes_up=1, votes_down=0))
+            dict(status='ok', votes_up=1, votes_down=0, votes_percent=100))
         assert r.response.content == expected_resp
 
         # vote down by another user
@@ -816,13 +816,13 @@ class TestFunctionalController(TrackerTestController):
                           extra_environ=dict(username='test-user-0'))
 
         expected_resp = json.dumps(
-                            dict(status='ok', votes_up=1, votes_down=1))
+            dict(status='ok', votes_up=1, votes_down=1, votes_percent=50))
         assert r.response.content == expected_resp
 
         # make sure that on the page we see the same result
         r = self.app.get('/bugs/1/')
-        votes_up = r.html.find('span', {'id': 'votes-up'})
-        votes_down = r.html.find('span', {'id': 'votes-down'})
+        votes_up = r.html.find('span', {'class': 'votes-up'})
+        votes_down = r.html.find('span', {'class': 'votes-down'})
         assert_in('1', str(votes_up))
         assert_in('1', str(votes_down))
 
