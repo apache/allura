@@ -676,25 +676,37 @@ class VotableArtifact(MappedClass):
     votes_down_users = FieldProperty([str], if_missing=list())
 
     def vote_up(self, user):
-        if user.username in self.votes_up_users:
-            return  # Can vote only once
-        if user.username in self.votes_down_users:
-            # Change vote negative
+        voted = self.user_voted(user)
+        if voted == 1:
+            # Already voted up - unvote
+            self.votes_up_users.remove(user.username)
+            self.votes_up -= 1
+        elif voted == -1:
+            # Change vote to negative
             self.votes_down_users.remove(user.username)
-            self.votes_down = self.votes_down - 1
-        self.votes_up_users.append(user.username)
-        self.votes_up += 1
+            self.votes_down -= 1
+            self.votes_up_users.append(user.username)
+            self.votes_up += 1
+        else:
+            self.votes_up_users.append(user.username)
+            self.votes_up += 1
         self.votes = self.votes_up - self.votes_down
 
     def vote_down(self, user):
-        if user.username in self.votes_down_users:
-            return  # Can vote only once
-        if user.username in self.votes_up_users:
+        voted = self.user_voted(user)
+        if voted == -1:
+            # Already voted down - unvote
+            self.votes_down_users.remove(user.username)
+            self.votes_down -= 1
+        elif voted == 1:
             # Change vote to positive
             self.votes_up_users.remove(user.username)
-            self.votes_up = self.votes_up - 1
-        self.votes_down_users.append(user.username)
-        self.votes_down += 1
+            self.votes_up -= 1
+            self.votes_down_users.append(user.username)
+            self.votes_down += 1
+        else:
+            self.votes_down_users.append(user.username)
+            self.votes_down += 1
         self.votes = self.votes_up - self.votes_down
 
     def user_voted(self, user):

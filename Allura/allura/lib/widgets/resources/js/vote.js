@@ -15,10 +15,14 @@ $(document).ready(function() {
         if (data.status == 'ok') {
           $('#vote .votes-up').text(data.votes_up);
           $('#vote .votes-down').text(data.votes_down);
+          var $vote_up = $('#vote .js-vote-up');
+          var $vote_down = $('#vote .js-vote-down');
           if (vote === 'u') {
-            $('#vote .js-vote-up').toggleClass('active');
+            $vote_up.toggleClass('active');
+            $vote_down.removeClass('active');
           } else if (vote === 'd') {
-            $('#vote .js-vote-down').toggleClass('active');
+            $vote_down.toggleClass('active');
+            $vote_up.removeClass('active');
           }
         }
       }
