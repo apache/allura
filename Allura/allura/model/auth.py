@@ -306,12 +306,12 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
 
     def url(self):
-        return '/u/' + self.username.replace('_', '-') + '/'
+        return plugin.AuthenticationProvider.get(request).project_url(self)
 
     def icon_url(self):
         icon_url = None
         if self.private_project() and self.private_project().icon:
-            icon_url = '/u/'+self.username.replace('_', '-')+'/user_icon'
+            icon_url = '/u/'+self.url()+'user_icon'
         elif self.preferences.email_address:
             icon_url = g.gravatar(self.preferences.email_address, default=None)
         return icon_url

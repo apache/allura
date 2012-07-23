@@ -68,9 +68,7 @@ class UserProfileController(BaseController):
 
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
-        username = c.project.shortname.split('/')[1]
-        user = User.by_username(username)
-        return dict(user=user)
+        return dict(user=c.project.user_project_of)
     # This will be fully implemented in a future iteration
     # @expose('jinja:allura.ext.user_profile:templates/user_subscriptions.html')
     # def subscriptions(self):
@@ -85,9 +83,7 @@ class UserProfileController(BaseController):
 
     @expose('jinja:allura.ext.user_profile:templates/user_dashboard_configuration.html')
     def configuration(self):
-        username = c.project.shortname.split('/')[1]
-        user = User.by_username(username)
-        return dict(user=user)
+        return dict(user=c.project.user_project_of)
 
     @expose()
     @validate(dict(
@@ -96,8 +92,7 @@ class UserProfileController(BaseController):
             page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
     def feed(self, since=None, until=None, page=None, limit=None):
-        username = c.project.shortname.split('/')[1]
-        user = User.by_username(username)
+        user = c.project.user_project_of
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
