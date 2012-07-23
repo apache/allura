@@ -27,3 +27,9 @@ class TestActivityController(TestController):
     def test_index_disabled(self):
         config['activitystream.enabled'] = 'false'
         resp = self.app.get('/activity/', status=404)
+
+    def test_index_override(self):
+        config['activitystream.enabled'] = 'false'
+        self.app.cookies['activitystream.enabled'] = 'true'
+        resp = self.app.get('/activity/')
+        assert 'Something happened.' in resp

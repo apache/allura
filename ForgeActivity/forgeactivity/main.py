@@ -4,7 +4,7 @@ import pkg_resources
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, response
+from pylons import c, request, response
 from tg import expose, validate, config, redirect
 from tg.decorators import with_trailing_slash
 from paste.deploy.converters import asbool
@@ -58,7 +58,9 @@ class ForgeActivityController(BaseController):
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
     def index(self, **kw):
-        activity_enabled = asbool(config.get('activitystream.enabled', False))
+        activity_enabled = config.get('activitystream.enabled', False)
+        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = asbool(activity_enabled)
         if not activity_enabled:
             raise exc.HTTPNotFound()
 
@@ -72,7 +74,9 @@ class ForgeActivityController(BaseController):
     @expose('json:')
     @validate(W.follow_toggle)
     def follow(self, follow, **kw):
-        activity_enabled = asbool(config.get('activitystream.enabled', False))
+        activity_enabled = config.get('activitystream.enabled', False)
+        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = asbool(activity_enabled)
         if not activity_enabled:
             raise exc.HTTPNotFound()
 
