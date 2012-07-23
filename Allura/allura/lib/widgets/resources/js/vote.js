@@ -15,6 +15,7 @@ $(document).ready(function() {
         if (data.status == 'ok') {
           $('#vote .votes-up').text(data.votes_up);
           $('#vote .votes-down').text(data.votes_down);
+          $('#vote .votes-percent').text(data.votes_percent);
           var $vote_up = $('#vote .js-vote-up');
           var $vote_down = $('#vote .js-vote-down');
           if (vote === 'u') {

@@ -722,3 +722,10 @@ class VotableArtifact(MappedClass):
         if user.username in self.votes_down_users:
             return -1
         return 0
+
+    @property
+    def votes_up_percent(self):
+        votes_count = self.votes_up + self.votes_down
+        if votes_count == 0:
+            return 0
+        return int(float(self.votes_up) / votes_count * 100)

@@ -12,8 +12,14 @@
     </li>
   </ul>
   <span class="votes-up">{{ artifact.votes_up }}</span> up votes | 
-  <span class="votes-down">{{ artifact.votes_down }}</span> down votes | <span class="votes-percent">100</span>%
-  <span class="comments fright">12 comments</span>
+  <span class="votes-down">{{ artifact.votes_down }}</span> down votes |
+  <span class="votes-percent">{{ artifact.votes_up_percent }}</span>%
+  <span class="comments fright">
+    {% trans num_comments = artifact.discussion_thread.num_replies %}
+      {{ num_comments }} comment
+      {% pluralize %}{{ num_comments}} comments
+    {% endtrans %}
+  </span>
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
     {# csrf protection will be automatically inserted here (_session_id field) #}
