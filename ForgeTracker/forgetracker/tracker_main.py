@@ -1182,7 +1182,8 @@ class TicketController(BaseController):
         return dict(
             status=status,
             votes_up=self.ticket.votes_up,
-            votes_down=self.ticket.votes_down)
+            votes_down=self.ticket.votes_down,
+            votes_percent=self.ticket.votes_up_percent)
 
 
 class AttachmentController(ac.AttachmentController):
