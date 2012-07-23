@@ -213,10 +213,10 @@ class HgImplementation(M.RepositoryImplementation):
         for name, t in tree.trees.iteritems():
             self.refresh_tree_info(t, seen, lazy)
             doc.tree_ids.append(
-                dict(name=name, id=t.hex()))
+                dict(name=h.really_unicode(name), id=t.hex()))
         for name, oid in tree.blobs.iteritems():
             doc.blob_ids.append(
-                dict(name=name, id=oid))
+                dict(name=h.really_unicode(name), id=oid))
         doc.m.save(safe=False)
         return doc
 
