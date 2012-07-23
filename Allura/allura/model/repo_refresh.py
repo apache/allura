@@ -66,9 +66,11 @@ def refresh_repo(repo, all_commits=False, notify=True):
         if not CommitRunDoc.m.find(dict(commit_ids=last_commit)).count():
             log.info('CommitRun incomplete, rebuilding with all commits')
             commit_run_ids = all_commit_ids
+    log.info('Starting CommitRunBuilder for %s', repo.full_fs_path)
     rb = CommitRunBuilder(commit_run_ids)
     rb.run()
     rb.cleanup()
+    log.info('Finished CommitRunBuilder for %s', repo.full_fs_path)
 
     # Refresh trees
     # Like diffs below, pre-computing trees for SVN repos is too expensive,
