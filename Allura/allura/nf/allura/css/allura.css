@@ -32,7 +32,8 @@ b.ico.ico-help { background-position: -48px -144px; }
 b.ico.ico-pin { background-position: -144px -144px; }
 b.ico.ico-feed { background-position: -16px -176px; }
 b.ico.ico-close { background-position: -80px -128px; }
-
+b.ico.ico-vote-up { background-image: url('../images/vote_up.png'); }
+b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 
 
 .ui-icon-tool-home {

@@ -2,13 +2,18 @@
                   and h.has_access(artifact, 'post')() %}
 {% set voted = artifact.user_voted(c.user) %}
 
-<div id="vote" class="info message">
-  Vote for this ticket:
-  <br />
-  <span class='vote-uparrow {% if can_vote %}vote-up{% endif %}'>&uArr;</span>
-  <span id='votes-up' class='votes-up {% if voted == 1 %}voted{% endif %}'>{{artifact.votes_up}}</span> up&nbsp;
-  <span class='vote-downarrow {% if can_vote %}vote-down{% endif %}'>&dArr;</span>
-  <span id='votes-down' class='votes-down {% if voted == -1 %}voted{% endif %}'>{{artifact.votes_down}}</span> down
+<div id="vote">
+  <ul>
+    <li class="{% if voted == 1 %}active{% endif %} {% if can_vote %}js-vote-up{% endif %}">
+      <b data-icon="+" class="ico ico-vote-up"></b>
+    </li>
+    <li class="{% if voted == -1 %}active{% endif %} {% if can_vote %}js-vote-down{% endif %}">
+      <b data-icon="+" class="ico ico-vote-down"></b>
+    </li>
+  </ul>
+  <span class="votes-up">{{ artifact.votes_up }}</span> up votes | 
+  <span class="votes-down">{{ artifact.votes_down }}</span> down votes | <span class="votes-percent">100</span>%
+  <span class="comments fright">12 comments</span>
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
     {# csrf protection will be automatically inserted here (_session_id field) #}

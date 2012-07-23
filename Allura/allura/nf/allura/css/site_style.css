@@ -1779,7 +1779,7 @@ nav .ico {
   position: relative;
   z-index: 2;
 }
-#sidebar ul {
+#sidebar ul, #vote ul {
   border: 1px solid #aaaaaa;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;

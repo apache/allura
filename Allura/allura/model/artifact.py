@@ -668,6 +668,7 @@ class VotableArtifact(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'vote'
+
     votes = FieldProperty(int, if_missing=0)
     votes_up = FieldProperty(int, if_missing=0)
     votes_down = FieldProperty(int, if_missing=0)
