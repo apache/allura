@@ -133,6 +133,9 @@ class GitImplementation(M.RepositoryImplementation):
     def all_commit_ids(self):
         """Yield commit ids, starting with the head(s) of the commit tree and
         ending with the root (first commit).
+
+        NB: The ForgeHg and ForgeSVN implementations return commits in the
+        opposite order.
         """
         seen = set()
         for head in self._git.heads:

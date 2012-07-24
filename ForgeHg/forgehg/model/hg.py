@@ -120,6 +120,8 @@ class HgImplementation(M.RepositoryImplementation):
     def all_commit_ids(self):
         """Return a list of commit ids, starting with the root (first commit)
         of the tree and ending with the head(s).
+
+        NB: The ForgeGit implementation returns commits in the opposite order.
         """
         graph = {}
         to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
