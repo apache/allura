@@ -149,25 +149,26 @@ class ForgeWikiApp(Application):
     def create_common_wiki_menu(self,
                                 has_create_access,
                                 create_page_url,
-                                create_page_class):
-        links =[]
+                                create_page_class,
+                                admin_menu=False):
+        links = []
         if has_create_access:
             links += [SitemapEntry('Create Page', create_page_url,
                                     ui_icon=g.icons['plus'],
-                                    className=create_page_class),
-                                    SitemapEntry('')]
-        links += [
-            SitemapEntry('Wiki Home', self.url,className='wiki_home'),
-            SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
-            SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
+                                    className=create_page_class)]
+        if not admin_menu:
+            links += [SitemapEntry(''),
+                SitemapEntry('Wiki Home', self.url, className='wiki_home')]
+        links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
+                  SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
         discussion = c.app.config.discussion
         pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
-        links += [SitemapEntry(''),
-                  SitemapEntry('Formatting Help',self.url+'markdown_syntax/')
-        ]
+        if not admin_menu:
+            links += [SitemapEntry(''),
+                SitemapEntry('Formatting Help',self.url+'markdown_syntax/')]
         return links
 
     def admin_menu(self):
@@ -179,10 +180,9 @@ class ForgeWikiApp(Application):
                               className='admin_modal')]
 
         if not self.show_left_bar:
-            links += self.create_common_wiki_menu(
-                            True,
-                            admin_url + 'create_wiki_page',
-                            'admin_modal')
+            links += self.create_common_wiki_menu(True,
+                        admin_url + 'create_wiki_page',
+                        'admin_modal', admin_menu=True)
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
