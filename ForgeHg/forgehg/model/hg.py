@@ -118,6 +118,9 @@ class HgImplementation(M.RepositoryImplementation):
         return [p for p in ci.parents() if p]
 
     def all_commit_ids(self):
+        """Return a list of commit ids, starting with the root (first commit)
+        of the tree and ending with the head(s).
+        """
         graph = {}
         to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
         while to_visit:

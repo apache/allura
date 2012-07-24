@@ -131,6 +131,9 @@ class GitImplementation(M.RepositoryImplementation):
         return result
 
     def all_commit_ids(self):
+        """Yield commit ids, starting with the head(s) of the commit tree and
+        ending with the root (first commit).
+        """
         seen = set()
         for head in self._git.heads:
             for ci in self._git.iter_commits(head, topo_order=True):
