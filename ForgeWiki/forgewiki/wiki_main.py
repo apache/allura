@@ -496,7 +496,9 @@ class PageController(BaseController):
         c.attachment_add = W.attachment_add
         c.attachment_list = W.attachment_list
         c.label_edit = W.label_edit
-        return dict(page=page, page_exists=page_exists)
+        hide_left_bar = not c.app.show_left_bar
+        return dict(page=page, page_exists=page_exists,
+            hide_left_bar=hide_left_bar)
 
     @without_trailing_slash
     @expose('json')

@@ -26,9 +26,11 @@
 	  <input type="text" name="title" id="title" value="{{page.title}}" placeholder="Page name" required="required" autofocus="autofocus"/>
 	</div>
 	<label class="grid-20">Content:</label>
+	<div style="clear:both;"></div>
 	<div class="grid-20">
 	  {{c.markdown_editor.display(id='text', name='text',value=page.text)}}
 	</div>
+	<div style="clear:both;"></div>
 	<label class="grid-4">Labels:</label>
 	<div class="grid-14" style="margin-left:0">
 		{{c.label_edit.display(id='labels', name='labels', value=page.labels)}}
