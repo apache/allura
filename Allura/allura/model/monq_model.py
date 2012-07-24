@@ -44,20 +44,18 @@ class MonQTask(MappedClass):
         name = 'monq_task'
         indexes = [
             [
+                # used in MonQTask.get() method
+                # also 'state' queries exist in several other methods
                 ('state', ming.ASCENDING),
                 ('priority', ming.DESCENDING),
                 ('time_queue', ming.ASCENDING)
-                ],
+            ],
             [
-                ('state', ming.ASCENDING),
-                ('task_name', ming.DESCENDING),
-                ('time_queue', ming.ASCENDING)
-                ],
-            [
-                'state',
-                'time_queue'
-                ],
-            ]
+                # used by SF internal tool, but could be generally useful to
+                # have an index on task_name
+                'state', 'task_name', 'time_queue'
+            ],
+        ]
 
     _id = FieldProperty(S.ObjectId)
     state = FieldProperty(S.OneOf(*states))
