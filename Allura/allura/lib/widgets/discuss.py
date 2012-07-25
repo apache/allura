@@ -125,7 +125,7 @@ class EditPost(ff.ForgeForm):
         fields = ew_core.NameList()
         fields.append(ffw.MarkdownEdit(
             name='text',
-            attrs={'style':'height:7em; width:97%'}))
+            attrs={'style':'height:7em; width:100%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
         if ew_core.widget_context.widget:
             # we are being displayed

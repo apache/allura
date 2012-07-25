@@ -177,5 +177,8 @@ b.ico.ico-close { background-position: -80px -128px; }
   background-image: url("../images/chat_48.png");
 }
 #ticket_search_results_holder{
-    overflow: auto;
+  overflow: auto;
+}
+.the-width-fix {
+  padding-right: 15px;
 }
