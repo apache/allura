@@ -18,7 +18,7 @@ from allura.lib import security
 from allura.lib.security import has_access
 
 from .session import main_orm_session
-from .session import project_orm_session
+from .session import project_orm_session, project_doc_session
 from .neighborhood import Neighborhood
 from .auth import ProjectRole
 from .timeline import ActivityNode, ActivityObject
@@ -179,9 +179,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def default_database_uri(cls, shortname):
-        base = config.get('ming.project.master')
-        db = config.get('ming.project.database')
-        return base + '/' + db
+        return config.get('ming.project.uri')
 
     @LazyProperty
     def allowed_tool_status(self):
