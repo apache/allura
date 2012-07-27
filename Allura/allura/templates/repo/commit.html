@@ -14,6 +14,32 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 </a>
 {% endblock %}
 
+{% block extra_js %}
+  <script type="text/javascript">
+    var MAX_REQUESTS = 5; // max simultaneous load requests
+    var WAIT_FOR = 500;   // wait for 100ms when requests queue is full and try again
+    var diff_queue = [];  // queue of diffs waiting for load
+    var called_count = 0; // count of running load requests
+
+    function load_diff() {
+      if (called_count >= MAX_REQUESTS || diff_queue.length == 0) {
+        return;
+      }
+      called_count++;
+      var diff = diff_queue.shift();
+      $(diff.selector).load(diff.url, function(response, status, xhr) {
+          if (status == 'error') {
+            $(this).text('Can\'t load diff');
+          }
+          called_count--;
+      });
+    }
+    $(document).ready(function() {
+      setInterval(load_diff, WAIT_FOR);
+    });
+  </script>
+{% endblock %}
+
 {% block content %}
 {{ clone_info(c.app.repo) }}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}
@@ -50,7 +76,10 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                     <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                     <script type="text/javascript">
                         $(document).ready(function() {
-                            $('#diff-{{loop.index}}').load('{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id}}');
+                          diff_queue.push({
+                            selector: '#diff-{{loop.index}}',
+                            url: '{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id}}'
+                          });
                         });
                     </script>
                     {% endif %}
