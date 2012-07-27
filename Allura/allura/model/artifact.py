@@ -20,6 +20,7 @@ from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
 from .index import ArtifactReference
 from .types import ACL, ACE
+from .project import AppConfig
 
 from filesystem import File
 
@@ -120,7 +121,14 @@ class Artifact(MappedClass):
             if artifact is None: continue
             artifact = artifact.primary()
             # don't link to artifacts in deleted tools
-            if hasattr(artifact, 'app_config') and artifact.app_config is None: continue
+            if hasattr(artifact, 'app_config') and artifact.app_config is None:
+                continue
+            if artifact.type_s == 'Commit' and not artifact.repo:
+                ac = AppConfig.query.get(
+                        _id=ref.artifact_reference['app_config_id'])
+                app = ac.project.app_instance(ac) if ac else None
+                if app:
+                    artifact.set_context(app.repo)
             if artifact not in related_artifacts:
                 related_artifacts.append(artifact)
         return related_artifacts
