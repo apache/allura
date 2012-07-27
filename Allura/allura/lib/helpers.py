@@ -575,14 +575,19 @@ INLINE = 'inline'
 TABLE = 'table'
 def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
     """
-    renders any markup format using the pypeline
+    renders markdown using allura enhacements if file is in markdown format
+    renders any other markup format using the pypeline
     Returns jinja-safe text
     """
     if text == '':
         text = '<p><em>Empty File</em></p>'
     else:
-        text = pylons.g.pypeline_markup.render(name, text)
-        if not pylons.g.pypeline_markup.can_render(name):
+        fmt = pylons.g.pypeline_markup.can_render(name)
+        if fmt == 'markdown':
+            text = pylons.g.markdown.convert(text)
+        else:
+            text = pylons.g.pypeline_markup.render(name, text)
+        if not fmt:
             if code_mode and linenumbers_style == INLINE:
                 text = _add_inline_line_numbers_to_text(text)
             elif code_mode and linenumbers_style == TABLE:

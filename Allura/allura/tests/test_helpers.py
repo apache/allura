@@ -126,8 +126,12 @@ def test_render_any_markup_plain():
                   '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
 
 def test_render_any_markup_formatting():
-    assert_equals(h.render_any_markup('README.md', '### foo\n<script>alert(1)</script> bar'),
-                  '<h3>foo</h3>\n<p>&lt;script&gt;alert(1)&lt;/script&gt; bar</p>')
+    assert_equals(h.render_any_markup('README.md', '### foo\n'
+                                      '    <script>alert(1)</script> bar'),
+                  '<div class="markdown_content"><h3 id="foo">foo</h3>\n'
+                  '<div class="codehilite"><pre><span class="nt">'
+                  '&lt;script&gt;</span>alert(1)<span class="nt">'
+                  '&lt;/script&gt;</span> bar\n</pre></div>\n</div>')
 
 
 class AuditLogMock(Mock):
