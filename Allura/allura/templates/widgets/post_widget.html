@@ -12,7 +12,7 @@
 <div>
   <div id="{{value.slug}}" class="discussion-post">
     <div class="row">
-      <div class="grid-2 tcenter">
+      <div class="grid-2 tcenter gravatar">
        <p class="gravatar">
         {% set size = value.parent and 32 or 48 %}
         {{lib.gravatar(value.author(), size=size)}}<br>
