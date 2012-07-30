@@ -79,8 +79,7 @@ class RepositoryApp(Application):
     @h.exceptionless([], log)
     def sidebar_menu(self):
         if not self.repo or self.repo.status != 'ready':
-            return [
-                SitemapEntry(self.repo.status) ]
+            return []
         if self.default_branch_name:
             default_branch_url = (
                 c.app.url

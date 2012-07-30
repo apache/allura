@@ -2704,6 +2704,17 @@ h1.title .viewer:hover {
   width: 32em;
 }
 
+/* Repo status indicator, displayed on repo pages if status != 'ready' */
+#repo_status h2 {
+  padding-left: 33px;
+}
+#repo_status .working {
+  text-shadow: #d9d926 0 0 0.1em;
+}
+#repo_status .ready {
+  text-shadow: #339933 0 0 0.1em;
+}
+
 .neighborhood_feed_entry h3 {
   font-size: 1.1em;
 }

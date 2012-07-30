@@ -20,7 +20,7 @@
     {% if int(count) > int(limit) %}
       <a href="log?page=1">More</a>
     {% endif %}
-  {% else %}
+  {% elif c.app.repo.status == 'ready' %}
     {% if h.has_access(c.app, 'write')() %}
     <div class="message warning scm-learn-basics">
       <div class="content">

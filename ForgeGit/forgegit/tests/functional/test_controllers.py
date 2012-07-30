@@ -38,6 +38,24 @@ class _TestCase(TestController):
 
 class TestRootController(_TestCase):
 
+    def test_status(self):
+        resp = self.app.get('/src-git/status')
+        d = json.loads(resp.body)
+        assert d == dict(status='ready')
+
+    def test_status_html(self):
+        resp = self.app.get('/src-git/').follow().follow()
+        # repo status not displayed if 'ready'
+        assert None == resp.html.find('div', dict(id='repo_status'))
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        c.app.repo.status = 'analyzing'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        # repo status displayed if not 'ready'
+        resp = self.app.get('/src-git/').follow().follow()
+        div = resp.html.find('div', dict(id='repo_status'))
+        assert div.span.text == 'analyzing'
+
     def test_index(self):
         resp = self.app.get('/src-git/').follow().follow()
         assert 'git://' in resp

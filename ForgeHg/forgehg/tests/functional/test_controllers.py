@@ -85,6 +85,24 @@ class TestRootController(TestController):
                           params=dict(status='rejected')).follow()
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
+    def test_status(self):
+        resp = self.app.get('/src-hg/status')
+        d = json.loads(resp.body)
+        assert d == dict(status='ready')
+
+    def test_status_html(self):
+        resp = self.app.get('/src-hg/').follow().follow()
+        # repo status not displayed if 'ready'
+        assert None == resp.html.find('div', dict(id='repo_status'))
+        h.set_context('test', 'src-hg', neighborhood='Projects')
+        c.app.repo.status = 'analyzing'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        # repo status displayed if not 'ready'
+        resp = self.app.get('/src-hg/').follow().follow()
+        div = resp.html.find('div', dict(id='repo_status'))
+        assert div.span.text == 'analyzing'
+
     def test_index(self):
         resp = self.app.get('/src-hg/').follow().follow()
         assert 'hg clone http://' in resp, resp

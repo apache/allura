@@ -34,6 +34,24 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
 
+    def test_status(self):
+        resp = self.app.get('/src/status')
+        d = json.loads(resp.body)
+        assert d == dict(status='ready')
+
+    def test_status_html(self):
+        resp = self.app.get('/src/').follow()
+        # repo status not displayed if 'ready'
+        assert None == resp.html.find('div', dict(id='repo_status'))
+        h.set_context('test', 'src', neighborhood='Projects')
+        c.app.repo.status = 'analyzing'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        # repo status displayed if not 'ready'
+        resp = self.app.get('/src/').follow()
+        div = resp.html.find('div', dict(id='repo_status'))
+        assert div.span.text == 'analyzing'
+
     def test_index(self):
         resp = self.app.get('/src/').follow()
         assert 'svn checkout' in resp
@@ -55,7 +73,6 @@ class TestRootController(TestController):
                 assert val['column'] == 0
                 assert val['row'] == 4
                 assert val['message'] == 'Create readme'
-
 
     def test_feed(self):
         r = self.app.get('/src/feed.rss')

@@ -84,24 +84,26 @@ class GitImplementation(M.RepositoryImplementation):
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
-        fullname = self._setup_paths(create_repo_dir=False)
-        if os.path.exists(fullname):
-            shutil.rmtree(fullname)
+        self._repo.status = 'cloning'
+        session(self._repo).flush(self._repo)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
-        repo = git.Repo.clone_from(
-            source_url,
-            to_path=fullname,
-            bare=True)
-        self.__dict__['_git'] = repo
-        self._setup_special_files()
-        self._repo.status = 'analyzing'
-        session(self._repo).flush()
-        log.info('... %r cloned, analyzing', self._repo)
+        try:
+            fullname = self._setup_paths(create_repo_dir=False)
+            if os.path.exists(fullname):
+                shutil.rmtree(fullname)
+            repo = git.Repo.clone_from(
+                source_url,
+                to_path=fullname,
+                bare=True)
+            self.__dict__['_git'] = repo
+            self._setup_special_files()
+        except:
+            self._repo.status = 'ready'
+            session(self._repo).flush(self._repo)
+            raise
+        log.info('... %r cloned', self._repo)
         self._repo.refresh(notify=False)
-        self._repo.status = 'ready'
-        log.info('... %s ready', self._repo)
-        session(self._repo).flush()
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''

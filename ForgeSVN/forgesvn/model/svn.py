@@ -139,10 +139,6 @@ class SVNImplementation(M.RepositoryImplementation):
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init(default_dirs=False, skip_special_files=True)
-        self._repo.status = 'importing'
-        session(self._repo).flush(self._repo)
-        log.info('Initialize %r as a clone of %s',
-                 self._repo, source_url)
         # Need a pre-revprop-change hook for cloning
         fn = os.path.join(self._repo.fs_path, self._repo.name,
                           'hooks', 'pre-revprop-change')
@@ -154,17 +150,18 @@ class SVNImplementation(M.RepositoryImplementation):
             p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input='p\n')
             if p.returncode != 0:
+                self._repo.status = 'ready'
+                session(self._repo).flush(self._repo)
                 raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
 
+        self._repo.status = 'importing'
+        session(self._repo).flush(self._repo)
+        log.info('Initialize %r as a clone of %s',
+                 self._repo, source_url)
         check_call(['svnsync', 'init', self._url, source_url])
         check_call(['svnsync', '--non-interactive', 'sync', self._url])
-        self._repo.status = 'analyzing'
-        session(self._repo).flush(self._repo)
-        log.info('... %r cloned, analyzing', self._repo)
+        log.info('... %r cloned', self._repo)
         self._repo.refresh(notify=False)
-        self._repo.status = 'ready'
-        log.info('... %s ready', self._repo)
-        session(self._repo).flush(self._repo)
         self._setup_special_files()
 
     def refresh_heads(self):

@@ -48,7 +48,7 @@ class ForgeGitApp(RepositoryApp):
         repo = GM.Repository(
             name=self.config.options.mount_point + '.git',
             tool='git',
-            status='initing')
+            status='initializing')
         ThreadLocalORMSession.flush_all()
         cloned_from_project_id = self.config.options.get('cloned_from_project_id')
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')

@@ -1,4 +1,4 @@
-{% extends g.theme.master %}
+{% extends 'allura:templates/repo/repo_master.html' %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Fork {{from_repo.name}}{% endblock %}
 

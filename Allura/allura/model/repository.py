@@ -312,16 +312,21 @@ class Repository(Artifact, ActivityObject):
 
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''
-        self._impl.refresh_heads()
-        if asbool(tg.config.get('scm.new_refresh')):
-            refresh_repo(self, all_commits, notify)
-            notify = False # don't double notify
-        self.status = 'ready'
-        for head in self.heads + self.branches + self.repo_tags:
-            ci = self.commit(head.object_id)
-            if ci is not None:
-                head.count = ci.count_revisions()
-        session(self).flush()
+        try:
+            log.info('... %r analyzing', self)
+            self.status = 'analyzing'
+            session(self).flush(self)
+            self._impl.refresh_heads()
+            if asbool(tg.config.get('scm.new_refresh')):
+                refresh_repo(self, all_commits, notify)
+            for head in self.heads + self.branches + self.repo_tags:
+                ci = self.commit(head.object_id)
+                if ci is not None:
+                    head.count = ci.count_revisions()
+        finally:
+            log.info('... %s ready', self)
+            self.status = 'ready'
+            session(self).flush(self)
 
     def push_upstream_context(self):
         project, rest=h.find_project(self.upstream_repo.name)

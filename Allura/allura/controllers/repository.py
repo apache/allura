@@ -244,6 +244,10 @@ class RepoRootController(BaseController):
             next_column=len(columns),
             max_row=row)
 
+    @expose('json:')
+    def status(self, **kw):
+        return dict(status=c.app.repo.status)
+
 class RepoRestController(RepoRootController):
     @expose('json:')
     def index(self, **kw):
