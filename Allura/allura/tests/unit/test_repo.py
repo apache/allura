@@ -1,5 +1,6 @@
 import datetime
 import unittest
+from mock import patch, Mock
 
 from allura import model as M
 from allura.controllers.repository import topo_sort
@@ -81,3 +82,122 @@ class TestTopoSort(unittest.TestCase):
         result = topo_sort(children, parents, dates, head_ids)
         self.assertEqual(list(result), ['dev', 'dev@{1}', 'master',
             'master@{1}', 'master@{2}', 'master@{3}'])
+
+
+def tree(name, id, trees=None, blobs=None):
+    t = Mock(tree_ids=[], blob_ids=[], other_ids=[])
+    t.name = name
+    t.id = id
+    t._id = id
+    if trees is not None:
+        t.tree_ids = trees
+    if blobs is not None:
+        t.blob_ids = blobs
+    return t
+
+
+def blob(name, id):
+    b = Mock()
+    b.name = name
+    b.id = id
+    return b
+
+
+class TestRefreshLastCommit(unittest.TestCase):
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_no_changes(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1')
+        rhs_tree = tree('rhs_tree', 'tid1')
+        parent_tree = Mock()
+        commit_info = {}
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        self.assertEqual(set_last_commit.call_count, 0)
+        self.assertEqual(get.call_count, 0)
+
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_unchanged_blob(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1', blobs=[blob('unchanged_blob', 'bid1')])
+        rhs_tree = tree('rhs_tree', 'tid2', blobs=[blob('unchanged_blob', 'bid1')])
+        parent_tree = Mock()
+        commit_info = {}
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        self.assertEqual(set_last_commit.call_count, 0)
+        self.assertEqual(get.call_count, 0)
+
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_changed_blob(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1', blobs=[blob('changed_blob', 'bid1')])
+        rhs_tree = tree('rhs_tree', 'tid2', blobs=[blob('changed_blob', 'bid2')])
+        parent_tree = Mock()
+        commit_info = {'author': 'Testy'}
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        set_last_commit.assert_called_once_with(repo_id, path, 'changed_blob', 'bid2', commit_info)
+        self.assertEqual(get.call_count, 0)
+
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_new_blob(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1', blobs=[blob('old_blob', 'bid1')])
+        rhs_tree = tree('rhs_tree', 'tid2', blobs=[blob('new_blob', 'bid2')])
+        parent_tree = Mock()
+        commit_info = {'author': 'Testy'}
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        set_last_commit.assert_called_once_with(repo_id, path, 'new_blob', 'bid2', commit_info)
+        self.assertEqual(get.call_count, 0)
+
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_unchanged_subtree(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1', trees=[tree('unchanged_tree', 'tid3')])
+        rhs_tree = tree('rhs_tree', 'tid2', trees=[tree('unchanged_tree', 'tid3', blobs=[blob('new_blob', 'bid1')])])
+        parent_tree = Mock()
+        commit_info = {'author': 'Testy'}
+        get.side_effect = [rhs_tree.tree_ids[0], lhs_tree.tree_ids[0]]
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        self.assertEqual(set_last_commit.call_count, 0)
+        self.assertEqual(get.call_count, 2)
+        self.assertEqual(get.call_args_list, [[{'_id': 'tid3'}], [{'_id': 'tid3'}]])
+
+    @patch('allura.model.repo_refresh.TreeDoc.m.get')
+    @patch('allura.model.repo_refresh.set_last_commit')
+    def test_changed_subtree(self, set_last_commit, get):
+        repo_id = 'repo_1'
+        path = '/'
+        lhs_tree = tree('lhs_tree', 'tid1', trees=[tree('changed_tree', 'tid3')])
+        rhs_tree = tree('rhs_tree', 'tid2', trees=[tree('changed_tree', 'tid4', blobs=[blob('new_blob', 'bid1')])])
+        parent_tree = Mock()
+        commit_info = {'author': 'Testy'}
+        get.side_effect = [rhs_tree.tree_ids[0], lhs_tree.tree_ids[0]]
+
+        M.repo_refresh.refresh_last_commit(repo_id, path, rhs_tree, lhs_tree, parent_tree, commit_info)
+
+        self.assertEqual(set_last_commit.call_count, 2)
+        self.assertEqual(set_last_commit.call_args_list, [
+            [(repo_id, '/', 'changed_tree', 'tid4', commit_info)],
+            [(repo_id, '/changed_tree/', 'new_blob', 'bid1', commit_info)],
+        ])
+        self.assertEqual(get.call_count, 2)
+        self.assertEqual(get.call_args_list, [[{'_id': 'tid4'}], [{'_id': 'tid3'}]])
