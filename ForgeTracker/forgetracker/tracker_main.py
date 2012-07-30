@@ -184,7 +184,6 @@ class ForgeTrackerApp(Application):
     def sidebar_menu(self):
         search_bins = []
         milestones = []
-        ticket = request.path_info.split(self.url)[-1].split('/')[0]
         for bin in self.bins:
             label = bin.shorthand_id()
             search_bins.append(SitemapEntry(
@@ -198,10 +197,6 @@ class ForgeTrackerApp(Application):
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
                         small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
-        if ticket.isdigit():
-            ticket = TM.Ticket.query.find(dict(app_config_id=self.config._id,ticket_num=int(ticket))).first()
-        else:
-            ticket = None
 
         links = []
         if has_access(self, 'create')():
@@ -216,17 +211,6 @@ class ForgeTrackerApp(Application):
         if pending_mod_count and has_access(discussion, 'moderate')():
             links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
                 small = pending_mod_count))
-        if ticket:
-            if ticket.super_id:
-                links.append(SitemapEntry('Supertask'))
-                super = TM.Ticket.query.get(_id=ticket.super_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(super.ticket_num), super.url()))
-            if ticket.sub_ids:
-                links.append(SitemapEntry('Subtasks'))
-            for sub_id in ticket.sub_ids or []:
-                sub = TM.Ticket.query.get(_id=sub_id, app_config_id=c.app.config._id)
-                links.append(SitemapEntry('[#{0}]'.format(sub.ticket_num), sub.url()))
-            #links.append(SitemapEntry('Create New Subtask', '{0}new/?super_id={1}'.format(self.config.url(), ticket._id)))
 
         links += milestones
 
