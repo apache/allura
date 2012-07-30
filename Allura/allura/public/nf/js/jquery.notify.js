@@ -38,16 +38,28 @@
 
     function scanMessages(container, o) {
         function helper() {
-            var $msg = $('.' + o.newClass + '.' + o.messageClass, container);
+            var selector = '.' + o.newClass + '.' + o.messageClass,
+                $msg;
+            // Special support for persistent messages, such as sitewide
+            // notifications; note that this requires the cookie plugin.
+            // Persistent messages are assumed sticky.
+            if ($.cookie && $.cookie(o.persistentCookie)){
+                $msg = $(selector, container).not(o.persistentClass);
+            } else {
+                $msg = $(selector, container);
+            }
             if ($msg.length) {
                 $msg.prepend(o.closeIcon);
                 $msg.click(function(e) {
+                    if ($.cookie && $msg.hasClass(o.persistentClass)) {
+                        $.cookie(o.persistentCookie, 1, { path: '/' });
+                    }
                     closer(this, o);
                 });
                 $msg.removeClass(o.newClass).addClass(o.activeClass);
                 $msg.each(function() {
                     var self = this;
-                    if (!$(self).hasClass(o.stickyClass)) {
+                    if (!$(self).hasClass(o.stickyClass) || !$(self).hasClass(o.persistentClass)) {
                         var timer = $(self).attr('data-timer') || o.timer;
                         setTimeout(function() {
                             closer($(self), o);
@@ -121,6 +133,8 @@
         tmpl: '<div class="message <%=newClass%> <%=status%> <% if (sticky) { %><%=stickyClass %><% } %>" data-timer="<%=timer%>"><% if (title) { %><h6><%=title%></h6><% } %><div class="content"><%=message%></div></div>',
         scrollcss: { position: 'fixed', top: '20px' },
         stickyClass: 'notify-sticky',
+		persistentClass: 'notify-persistent',
+		persistentCookie: 'notify-persistent-closed',
         newClass: 'notify-new',
         activeClass: 'notify-active',
         inactiveClass: 'notify-inactive',
