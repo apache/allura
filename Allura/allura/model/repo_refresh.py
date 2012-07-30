@@ -342,7 +342,7 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
             d['object_id']
             for d in last_commit_collection.find(
                 dict(object_id={'$in': rhs_tree_ids},
-                     _id=re.compile("^{}:".format(repo_id))),
+                     _id=re.compile("^{0}:".format(repo_id))),
                 { 'object_id': 1, '_id': 0 }))
         for tree_id in rhs_tree_ids:
             if tree_id not in last_commits:
