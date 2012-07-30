@@ -2386,8 +2386,8 @@ div.attachment_thumb .file_type span {
 }
 
 .grid-2.gravatar {
-  width: 65px;
-  margin-right: 5px;
+  width: 70px;
+  margin: 0 5px;
 }
 
 .discussion-post h4, #new_post_holder h4 {
