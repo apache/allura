@@ -336,9 +336,16 @@ class Tree(RepoObject):
         lc_index = dict(
             (lc.name, lc.commit_info)
             for lc in LastCommitDoc.m.find(dict(_id=id_re)))
+        # FIXME: Temporarily fall back to old, broken behavior until refresh is done
+        if len(lc_index) == 0:
+            oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
+            id_re = re.compile("^{}:".format(self.repo._id))
+            lc_index = dict(
+                (lc.object_id, lc.commit_info)
+                for lc in LastCommitDoc.m.find(dict(_id=id_re, object_id={'$in': oids})))
         results = []
-        def _get_last_commit(name):
-            lc = lc_index.get(name)
+        def _get_last_commit(name, oid):
+            lc = lc_index.get(name, lc_index.get(oid, None))
             if lc is None:
                 lc = dict(
                     author=None,
@@ -357,19 +364,19 @@ class Tree(RepoObject):
                     kind='DIR',
                     name=x.name,
                     href=x.name + '/',
-                    last_commit=_get_last_commit(x.name)))
+                    last_commit=_get_last_commit(x.name, x.id)))
         for x in sorted(self.blob_ids, key=lambda x:x.name):
             results.append(dict(
                     kind='FILE',
                     name=x.name,
                     href=x.name,
-                    last_commit=_get_last_commit(x.name)))
+                    last_commit=_get_last_commit(x.name, x.id)))
         for x in sorted(self.other_ids, key=lambda x:x.name):
             results.append(dict(
                     kind=x.type,
                     name=x.name,
                     href=None,
-                    last_commit=_get_last_commit(x.name)))
+                    last_commit=_get_last_commit(x.name, x.id)))
         return results
 
     def path(self):
