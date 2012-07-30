@@ -1433,11 +1433,14 @@ class MilestoneController(BaseController):
 
     def __init__(self, root, field, milestone):
         for fld in c.app.globals.milestone_fields:
-            if fld.name[1:] == field: break
+            name_no_underscore = fld.name[1:]
+            if fld.name[1:] == field:
+                break
         else:
             raise exc.HTTPNotFound()
         for m in fld.milestones:
-            if m.name == unquote(milestone): break
+            if m.name == unquote(milestone).decode('utf-8'):
+                break
         else:
             raise exc.HTTPNotFound()
         self.root = root
