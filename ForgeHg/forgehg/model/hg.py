@@ -156,13 +156,17 @@ class HgImplementation(M.RepositoryImplementation):
     def refresh_heads(self):
         self._repo.heads = [
             Object(name=None, object_id=self._hg[head].hex())
-            for head in self._hg.heads() ]
-        self._repo.branches = [
-            Object(name=name, object_id=self._hg[tag].hex())
-            for name, tag in self._hg.branchtags().iteritems() ]
+            for head in self._hg.heads()]
+
+        self._repo.branches = []
+        for name, tag in self._hg.branchtags().iteritems():
+            if ("close" not in self._hg.changelog.read(tag)[5]):
+                self._repo.branches.append(
+                    Object(name=name, object_id=self._hg[tag].hex()))
+
         self._repo.repo_tags = [
             Object(name=name, object_id=self._hg[tag].hex())
-            for name, tag in self._hg.tags().iteritems() ]
+            for name, tag in self._hg.tags().iteritems()]
         session(self._repo).flush()
 
     def refresh_commit_info(self, oid, seen, lazy=True):
