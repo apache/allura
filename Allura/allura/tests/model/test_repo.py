@@ -274,13 +274,13 @@ class TestRepoObject(_TestWithRepoAndCommit):
     def test_set_last_commit(self):
         obj, isnew = M.repo.Tree.upsert('foo1')
         M.repo_refresh.set_last_commit(
-            self.repo._id, obj._id,
+            self.repo._id, '/', 'fakefile', obj._id,
             M.repo_refresh.get_commit_info(self.ci))
 
     def test_get_last_commit(self):
         obj, isnew = M.repo.Tree.upsert('foo1')
         lc0 = M.repo_refresh.set_last_commit(
-            self.repo._id, obj._id,
+            self.repo._id, '/', 'fakefile', obj._id,
             M.repo_refresh.get_commit_info(self.ci))
 
         lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
