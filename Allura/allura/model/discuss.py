@@ -496,8 +496,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self, file_info=file_info)
-        if hasattr(self.artifact,"monitoring_email") and self.artifact.monitoring_email:
-            n.send_simple(self.artifact.monitoring_email)
+        if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
+            n.send_simple(artifact.monitoring_email)
         session(self).flush()
         self.thread.last_post_date = max(
             self.thread.last_post_date,
