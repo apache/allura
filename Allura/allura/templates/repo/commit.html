@@ -43,18 +43,27 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% block content %}
 {{ clone_info(c.app.repo) }}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}
+{{c.page_list.display(page=page, limit=limit, count=count)}}
 <table>
   <tbody>
     {% for type, file in artifacts %}
     <tr>
         <td>{{ type }}</td>
-        <td><a href="#diff-{{loop.index}}">{{h.really_unicode(file)}}</a></td>
+        {% set p = loop.index0 // limit %}
+        {% set d = loop.index0 % limit + 1 %}
+        <td>
+        {% if p == page %}
+          <a href="#diff-{{d}}">{{h.really_unicode(file)}}</a>
+        {% else %}
+          <a href="?page={{p}}&limit={{limit}}#diff-{{d}}">{{h.really_unicode(file)}}</a>
+        {% endif %}
+        </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 
-{% for type, file in artifacts %}
+{% for type, file in artifacts[start:start+limit] %}
         <div class="inline-diff">
             <h6>
             {% if type in ('added', 'changed') %}
@@ -89,4 +98,5 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             </div>
         </div>
 {% endfor %}
+{{c.page_list.display(page=page, limit=limit, count=count)}}
 {% endblock %}
