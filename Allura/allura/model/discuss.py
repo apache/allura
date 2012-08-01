@@ -494,11 +494,14 @@ class Post(Message, VersionedArtifact, ActivityObject):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
-        import pdb; pdb.set_trace()
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self, file_info=file_info)
         if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
-            n.send_simple(artifact.monitoring_email)
+            if hasattr(artifact, 'notify_post'):
+                if artifact.notify_post:
+                    n.send_simple(artifact.monitoring_email)
+            else: #  Send if no extra checks required
+                n.send_simple(artifact.monitoring_email)
         session(self).flush()
         self.thread.last_post_date = max(
             self.thread.last_post_date,

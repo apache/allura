@@ -343,6 +343,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def open_or_closed(self):
         return 'closed' if self.status in c.app.globals.set_of_closed_status_names else 'open'
 
+    @property
+    def monitoring_email(self):
+        return c.app.config.options.get('TicketMonitoringEmail')
+
+    @property
+    def notify_post(self):
+        return c.app.config.options.get('TicketMonitoringType') == 'AllTicketChange'
+
     def get_custom_user(self, custom_user_field_name):
         fld = None
         for f in c.app.globals.custom_fields:
