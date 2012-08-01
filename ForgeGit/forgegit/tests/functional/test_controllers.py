@@ -30,11 +30,11 @@ class _TestCase(TestController):
         c.app.repo.status = 'ready'
         c.app.repo.name = 'testgit.git'
         ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        # ThreadLocalORMSession.close_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        # ThreadLocalORMSession.close_all()
 
 class TestRootController(_TestCase):
 

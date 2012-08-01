@@ -431,7 +431,8 @@ def _diff_trees(lhs, rhs, index, *path):
 def get_commit_info(commit):
     if not isinstance(commit, Commit):
         commit = mapper(Commit).create(commit, dict(instrument=False))
-    session(commit).expunge(commit)
+    sess = session(commit)
+    if sess: sess.expunge(commit)
     return dict(
         id=commit._id,
         author=commit.authored.name,

@@ -150,7 +150,7 @@ def bootstrap(command, conf, vars):
     p1 = n_projects.register_project('test2', u_admin)
     p0._extra_tool_status = [ 'alpha', 'beta' ]
 
-    sess = session(n_adobe) # all the sessions are the same
+    sess = session(M.Neighborhood) # all the sessions are the same
     for x in (n_adobe, n_projects, n_users, p_projects, p_users, p_adobe):
         # Ming doesn't detect substructural changes in newly created objects (vs loaded from DB)
         state(x).status = 'dirty'

@@ -72,14 +72,14 @@ class _TestWithRepo(_Test):
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a,**kw: []
         ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        # ThreadLocalORMSession.close_all()
 
 class _TestWithRepoAndCommit(_TestWithRepo):
     def setUp(self):
         super(_TestWithRepoAndCommit, self).setUp()
         self.ci, isnew = self._make_commit('foo')
         ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
+        # ThreadLocalORMSession.close_all()
 
 class TestRepo(_TestWithRepo):
 
