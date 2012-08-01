@@ -425,6 +425,15 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 n.send_simple(monitoring_email)
         Feed.post(self, description)
 
+    def post_sent(self, post):
+        monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+        monitoring_type = c.app.config.options.get('TicketMonitoringType')
+        if monitoring_email and monitoring_type == 'AllTicketChanges':
+            subject = 'Comment to ticket %s' % self.ticket_num
+            n = Notification._make_notification(
+                post, 'message', subject=subject, post=post)
+            n.send_simple(monitoring_email)
+
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'
 
