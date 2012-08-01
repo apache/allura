@@ -1,3 +1,4 @@
+import re
 import os
 import shutil
 import string
@@ -331,6 +332,8 @@ class SVNImplementation(M.RepositoryImplementation):
             last_commit = M.repo.Commit.query.get(_id=last_commit_id)
             M.repo_refresh.set_last_commit(
                 self._repo._id,
+                re.sub(r'/?$', '/', tree_path),  # force it to end with /
+                path,
                 self._tree_oid(commit._id, path),
                 M.repo_refresh.get_commit_info(last_commit))
             if info.kind == pysvn.node_kind.dir:
