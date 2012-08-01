@@ -503,7 +503,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             self.thread.last_post_date,
             self.mod_date)
         self.thread.update_stats()
-        artifact.update_stats()
+        if hasattr(artifact, 'update_stats'):
+            artifact.update_stats()
         g.director.create_activity(author, 'posted', self, target=artifact,
                 related_nodes=[self.app_config.project])
 
