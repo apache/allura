@@ -496,6 +496,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         g.post_event('discussion.new_post', self.thread_id, self._id)
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self, file_info=file_info)
+        import pdb; pdb.set_trace()
         if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
             if hasattr(artifact, 'notify_post'):
                 if artifact.notify_post:
