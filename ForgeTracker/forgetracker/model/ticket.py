@@ -349,7 +349,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def notify_post(self):
-        return c.app.config.options.get('TicketMonitoringType') == 'AllTicketChange'
+        return c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges'
 
     def get_custom_user(self, custom_user_field_name):
         fld = None
