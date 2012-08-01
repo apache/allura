@@ -440,8 +440,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             artifact = post.thread.artifact or post.thread
             n = Notification.query.get(_id=artifact.url() + post._id)
             if not n:
+                subject = 'Comment to ticket %s' % self.ticket_num
                 n = Notification._make_notification(artifact, 'message',
-                                                      post=post)
+                                                      subject=subject, post=post)
             n.send_simple(monitoring_email)
 
     def url(self):
