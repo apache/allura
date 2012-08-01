@@ -30,10 +30,12 @@ $(document).ready(function() {
     });
   }
 
-  $('#vote .js-vote-up').click(function() {
+  $('#vote .js-vote-up').click(function(event) {
+    event.preventDefault();
     vote('u');
   });
-  $('#vote .js-vote-down').click(function() {
+  $('#vote .js-vote-down').click(function(event) {
+    event.preventDefault();
     vote('d');
   });
 });

@@ -11,5 +11,4 @@ class VoteForm(ew_core.Widget):
     )
 
     def resources(self):
-        yield ew.CSSLink('css/vote.css')
         yield ew.JSLink('js/vote.js')

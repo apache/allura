@@ -1779,7 +1779,7 @@ nav .ico {
   position: relative;
   z-index: 2;
 }
-#sidebar ul, #vote ul {
+#sidebar ul {
   border: 1px solid #aaaaaa;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -2756,3 +2756,7 @@ table thead tr th.narrow, table tr td.narrow {
 #selected-projects {
   padding: 10px 10px;
 }
+.gray { color: #aaa; }
+#vote { margin: -15px 10px 30px; }
+#vote .vote-text { position: relative; top: 5px; }
+#vote .vote-text.fright { display: inline; }

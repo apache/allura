@@ -2,24 +2,27 @@
                   and h.has_access(artifact, 'post')() %}
 {% set voted = artifact.user_voted(c.user) %}
 
-<div id="vote">
-  <ul>
-    <li class="{% if voted == 1 %}active{% endif %} {% if can_vote %}js-vote-up{% endif %}">
-      <b data-icon="+" class="ico ico-vote-up"></b>
-    </li>
-    <li class="{% if voted == -1 %}active{% endif %} {% if can_vote %}js-vote-down{% endif %}">
-      <b data-icon="+" class="ico ico-vote-down"></b>
-    </li>
-  </ul>
-  <span class="votes-up">{{ artifact.votes_up }}</span> up votes | 
-  <span class="votes-down">{{ artifact.votes_down }}</span> down votes |
-  <span class="votes-percent">{{ artifact.votes_up_percent }}</span>%
-  <span class="comments fright">
-    {% trans num_comments = artifact.discussion_thread.num_replies %}
-      {{ num_comments }} comment
-      {% pluralize %}{{ num_comments}} comments
-    {% endtrans %}
+<div id="vote" class="gray">
+  <span class="btn-set duo">
+  <a href="" class="btn {% if voted == 1 %}active{% endif %} {% if can_vote %}js-vote-up{% endif %}" onclick="javascript:return false;">
+    <b data-icon="+" class="ico ico-vote-up"></b>
+  </a>
+  <a href="" class="btn {% if voted == -1 %}active{% endif %} {% if can_vote %}js-vote-down{% endif %}" onclick="javascript:return false;">
+    <b data-icon="-" class="ico ico-vote-down"></b>
+  </a>
   </span>
+  <div class="grid-8 vote-text">
+    <span class="votes-up">{{ artifact.votes_up }}</span> up votes | 
+    <span class="votes-down">{{ artifact.votes_down }}</span> down votes |
+    <span class="votes-percent">{{ artifact.votes_up_percent }}</span>%
+  </div>
+  <div class="fright vote-text">
+      {% trans num_comments = artifact.discussion_thread.num_replies %}
+        {{ num_comments }} comment
+        {% pluralize %}{{ num_comments}} comments
+      {% endtrans %}
+  </div>
+  <div style="clear:both;"></div>
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
     {# csrf protection will be automatically inserted here (_session_id field) #}
