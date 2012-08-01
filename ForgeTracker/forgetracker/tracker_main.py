@@ -1117,15 +1117,6 @@ class TicketController(BaseController):
             changelist=changes.get_changed())
         if post is None:
             post = thread.add_post(text=change_text)
-            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
-            monitoring_type = c.app.config.options.get('TicketMonitoringType')
-            if monitoring_email and monitoring_type == 'AllTicketChanges':
-                artifact = post.thread.artifact or post.thread
-                n = M.Notification.query.get(_id=artifact.url() + post._id)
-                if not n:
-                    n = M.Notification._make_notification(artifact, 'message',
-                                                          post=post)
-                n.send_simple(monitoring_email)
         else:
             post.text += '\n\n' + change_text
         self.ticket.commit()

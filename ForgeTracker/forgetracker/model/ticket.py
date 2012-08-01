@@ -429,9 +429,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
         monitoring_type = c.app.config.options.get('TicketMonitoringType')
         if monitoring_email and monitoring_type == 'AllTicketChanges':
-            subject = 'Comment to ticket %s' % self.ticket_num
-            n = Notification._make_notification(
-                post, 'message', subject=subject, post=post)
+            artifact = post.thread.artifact or post.thread
+            n = Notification.query.get(_id=artifact.url() + post._id)
+            if not n:
+                n = Notification._make_notification(artifact, 'message',
+                                                      post=post)
             n.send_simple(monitoring_email)
 
     def url(self):
