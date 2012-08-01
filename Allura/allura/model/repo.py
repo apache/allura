@@ -332,14 +332,14 @@ class Tree(RepoObject):
 
     def ls(self):
         # Load last commit info
-        id_re = re.compile("{}:{}:".format(self.repo._id, self.path()))
+        id_re = re.compile("{0}:{0}:".format(self.repo._id, self.path()))
         lc_index = dict(
             (lc.name, lc.commit_info)
             for lc in LastCommitDoc.m.find(dict(_id=id_re)))
         # FIXME: Temporarily fall back to old, broken behavior until refresh is done
         if len(lc_index) == 0:
             oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
-            id_re = re.compile("^{}:".format(self.repo._id))
+            id_re = re.compile("^{0}:".format(self.repo._id))
             lc_index = dict(
                 (lc.object_id, lc.commit_info)
                 for lc in LastCommitDoc.m.find(dict(_id=id_re, object_id={'$in': oids})))
