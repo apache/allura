@@ -202,8 +202,6 @@ class Thread(Artifact, ActivityObject):
         if timestamp is not None: kwargs['timestamp'] = timestamp
         if message_id is not None: kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if hasattr(self.artifact, 'post_sent'):
-            self.artifact.post_sent(post)
         if ignore_security or has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
