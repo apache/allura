@@ -494,6 +494,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
+        import pdb; pdb.set_trace()
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self, file_info=file_info)
         if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
