@@ -491,7 +491,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
-        self.notify()
+        self.notify(file_info=file_info)
         artifact = self.thread.artifact or self.thread
         session(self).flush()
         self.thread.last_post_date = max(
@@ -503,7 +503,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         g.director.create_activity(author, 'posted', self, target=artifact,
                 related_nodes=[self.app_config.project])
 
-    def notify(self):
+    def notify(self, file_info=None):
         artifact = self.thread.artifact or self.thread
         n = Notification.post(artifact, 'message', post=self, file_info=file_info)
         if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
