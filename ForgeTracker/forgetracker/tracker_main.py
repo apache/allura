@@ -1119,6 +1119,7 @@ class TicketController(BaseController):
             post = thread.add_post(text=change_text)
         else:
             post.text += '\n\n' + change_text
+            post.notify()
         self.ticket.commit()
         if comment:
             self.ticket.discussion_thread.post(text=comment)
