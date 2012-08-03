@@ -22,7 +22,7 @@ iso8601==0.1.4
 Jinja2==2.6
 Markdown==2.0.3
 mercurial==1.4.3
-Ming==0.3.2dev-20120801
+Ming==0.3.2dev-20120803
 oauth2==1.5.170
 # tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
 Paste==1.7.5.1
