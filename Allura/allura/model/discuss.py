@@ -11,7 +11,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib.security import require_access, has_access
-from allura.model.notification import Notification
+from allura.model.notification import Notification, Mailbox
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
@@ -213,7 +213,6 @@ class Thread(Artifact, ActivityObject):
 
     def notify_moderators(self, post):
         ''' Notify moderators that a post needs approval [#2963] '''
-        from allura.model.notification import Notification, Mailbox
         artifact = self.artifact or self
         subject = '[%s:%s] Moderation action required' % (
                 c.project.shortname, c.app.config.options.mount_point)
