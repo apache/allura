@@ -505,8 +505,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     def notify(self, file_info=None, check_dup=False):
         artifact = self.thread.artifact or self.thread
-        n = Notification.query(
-                get(_id=artifact.url() + self._id)) if check_dup else None
+        n = Notification.query.get(
+                _id=artifact.url() + self._id) if check_dup else None
         if not n:
             n = Notification.post(artifact, 'message', post=self, 
                                   file_info=file_info)
