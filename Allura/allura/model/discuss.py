@@ -11,6 +11,7 @@ from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib.security import require_access, has_access
+from allura.model.notification import Notification
 from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
@@ -477,7 +478,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
     def approve(self, file_info=None):
-        from allura.model.notification import Notification
         if self.status == 'ok': return
         self.status = 'ok'
         if self.parent_id is None:
@@ -492,8 +492,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
         g.post_event('discussion.new_post', self.thread_id, self._id)
-        artifact = self.thread.artifact or self.thread
         self.notify()
+        artifact = self.thread.artifact or self.thread
         session(self).flush()
         self.thread.last_post_date = max(
             self.thread.last_post_date,
