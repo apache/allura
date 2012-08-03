@@ -503,9 +503,13 @@ class Post(Message, VersionedArtifact, ActivityObject):
         g.director.create_activity(author, 'posted', self, target=artifact,
                 related_nodes=[self.app_config.project])
 
-    def notify(self, file_info=None):
+    def notify(self, file_info=None, check_dup=False):
         artifact = self.thread.artifact or self.thread
-        n = Notification.post(artifact, 'message', post=self, file_info=file_info)
+        n = Notification.query(
+                get(_id=artifact.url() + self._id)) if check_dup else None
+        if not n:
+            n = Notification.post(artifact, 'message', post=self, 
+                                  file_info=file_info)
         if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
             if hasattr(artifact, 'notify_post'):
                 if artifact.notify_post:
