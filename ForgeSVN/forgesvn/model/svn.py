@@ -198,6 +198,8 @@ class SVNImplementation(M.RepositoryImplementation):
 
         NB: The ForgeGit implementation returns commits in the opposite order.
         """
+        if not self._repo.heads:
+            return []
         head_revno = self._revno(self._repo.heads[0].object_id)
         return map(self._oid, range(1, head_revno+1))
 
@@ -347,6 +349,13 @@ class SVNImplementation(M.RepositoryImplementation):
             else:
                 assert False
         session(tree).flush(tree)
+        trees_doc = RM.TreesDoc.m.get(_id=commit._id)
+        if not trees_doc:
+            trees_doc = RM.TreesDoc(dict(
+                _id=commit._id,
+                tree_ids=[]))
+        trees_doc.tree_ids.append(tree_id)
+        trees_doc.m.save(safe=False)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
