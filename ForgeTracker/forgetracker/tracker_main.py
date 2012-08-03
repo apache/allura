@@ -510,12 +510,12 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/new_ticket.html')
-    def new(self, super_id=None, description=None, summary=None, labels=None, **kw):
+    def new(self, description=None, summary=None, labels=None, **kw):
         require_access(c.app, 'create')
         c.ticket_form = W.ticket_form
         help_msg = c.app.config.options.get('TicketHelpNew')
         return dict(action=c.app.config.url()+'save_ticket',
-                    super_id=super_id, help_msg=help_msg,
+                    help_msg=help_msg,
                     description=description, summary=summary, labels=labels)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
@@ -1075,17 +1075,10 @@ class TicketController(BaseController):
             if hasattr(attachment, 'file'):
                 self.ticket.attach(
                     attachment.filename, attachment.file, content_type=attachment.type)
-        any_sums = False
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.' + cf.name in post_data:
                 value = post_data['custom_fields.' + cf.name]
-                if cf.type == 'sum':
-                    any_sums = True
-                    try:
-                        value = float(value)
-                    except (TypeError, ValueError):
-                        value = 0
-                elif cf.type == 'user':
+                if cf.type == 'user':
                     # restrict custom user field values to project members
                     user = c.project.user_in_project(value)
                     value = user.username \
@@ -1136,8 +1129,6 @@ class TicketController(BaseController):
         else:
             post.text += '\n\n' + change_text
         self.ticket.commit()
-        if any_sums:
-            self.ticket.dirty_sums()
         if comment:
             self.ticket.discussion_thread.post(text=comment)
         redirect('.')

@@ -29,7 +29,7 @@
     </div>
     {% set cf_count = 0 %}
     {% for field in globals.custom_fields %}
-      {% if field.type != 'sum' and field.name != '_milestone' %}
+      {% if field.name != '_milestone' %}
         {% if cf_count%3 == 0 %}
           <div style="clear: both"></div>
         {% endif %}

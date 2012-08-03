@@ -228,8 +228,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     _id = FieldProperty(schema.ObjectId)
     created_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
-    super_id = FieldProperty(schema.ObjectId, if_missing=None)
-    sub_ids = FieldProperty([schema.ObjectId])
     ticket_num = FieldProperty(int, required=True, allow_none=False)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
@@ -443,82 +441,15 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return TicketAttachment.query.find(dict(
             app_config_id=self.app_config_id, artifact_id=self._id, type='attachment'))
 
-    def set_as_subticket_of(self, new_super_id):
-        # For this to be generally useful we would have to check first that
-        # new_super_id is not a sub_id (recursively) of self
-
-        if self.super_id == new_super_id:
-            return
-
-        if self.super_id is not None:
-            old_super = Ticket.query.get(_id=self.super_id, app_config_id=c.app.config._id)
-            old_super.sub_ids = [id for id in old_super.sub_ids if id != self._id]
-            old_super.dirty_sums(dirty_self=True)
-
-        self.super_id = new_super_id
-
-        if new_super_id is not None:
-            new_super = Ticket.query.get(_id=new_super_id, app_config_id=c.app.config._id)
-            if new_super.sub_ids is None:
-                new_super.sub_ids = []
-            if self._id not in new_super.sub_ids:
-                new_super.sub_ids.append(self._id)
-            new_super.dirty_sums(dirty_self=True)
-
-    def recalculate_sums(self, super_sums=None):
-        """Calculate custom fields of type 'sum' (if any) by recursing into subtickets (if any)."""
-        if super_sums is None:
-            super_sums = {}
-            globals = Globals.query.get(app_config_id=c.app.config._id)
-            for k in [cf.name for cf in globals.custom_fields or [] if cf['type'] == 'sum']:
-                super_sums[k] = float(0)
-
-        # if there are no custom fields of type 'sum', we're done
-        if not super_sums:
-            return
-
-        # if this ticket has no subtickets, use its field values directly
-        if not self.sub_ids:
-            for k in super_sums:
-                try:
-                    v = float(self.custom_fields.get(k, 0))
-                except (TypeError, ValueError):
-                    v = 0
-                super_sums[k] += v
-
-        # else recurse into subtickets
-        else:
-            sub_sums = {}
-            for k in super_sums:
-                sub_sums[k] = float(0)
-            for id in self.sub_ids:
-                subticket = Ticket.query.get(_id=id, app_config_id=c.app.config._id)
-                subticket.recalculate_sums(sub_sums)
-            for k, v in sub_sums.iteritems():
-                self.custom_fields[k] = v
-                super_sums[k] += v
-
-    def dirty_sums(self, dirty_self=False):
-        """From a changed ticket, climb the superticket chain to call recalculate_sums at the root."""
-        root = self if dirty_self else None
-        next_id = self.super_id
-        while next_id is not None:
-            root = Ticket.query.get(_id=next_id, app_config_id=c.app.config._id)
-            next_id = root.super_id
-        if root is not None:
-            root.recalculate_sums()
-
     def update(self, ticket_form):
         self.globals.invalidate_bin_counts()
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
         self.labels = ticket_form.pop('labels', [])
-        custom_sums = set()
         custom_users = set()
         other_custom_fields = set()
         for cf in self.globals.custom_fields or []:
-            (custom_sums if cf['type'] == 'sum' else
-             custom_users if cf['type'] == 'user' else
+            (custom_users if cf['type'] == 'user' else
              other_custom_fields).add(cf['name'])
             if cf['type'] == 'boolean' and 'custom_fields.' + cf['name'] not in ticket_form:
                 self.custom_fields[cf['name']] = 'False'
@@ -538,17 +469,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     user = c.project.user_in_project(v)
                     if user:
                         self.assigned_to_id = user._id
-            elif k != 'super_id':
+            else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
             for k,v in ticket_form['custom_fields'].iteritems():
-                if k in custom_sums:
-                    # sums must be coerced to numeric type
-                    try:
-                        self.custom_fields[k] = float(v)
-                    except (TypeError, ValueError):
-                        self.custom_fields[k] = 0
-                elif k in custom_users:
+                if k in custom_users:
                     # restrict custom user field values to project members
                     user = self.app_config.project.user_in_project(v)
                     self.custom_fields[k] = user.username \
@@ -561,11 +486,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             self.attach(
                 attachment.filename, attachment.file,
                 content_type=attachment.type)
-        # flush so we can participate in a subticket search (if any)
-        session(self).flush()
-        super_id = ticket_form.get('super_id')
-        if super_id:
-            self.set_as_subticket_of(bson.ObjectId(super_id))
 
     def __json__(self):
         return dict(super(Ticket,self).__json__(),

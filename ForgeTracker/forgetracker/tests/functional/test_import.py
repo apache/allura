@@ -95,9 +95,9 @@ class TestImportController(TestRestApiBase):
         ming.orm.ThreadLocalORMSession.flush_all()
 
         indexed_tickets = filter(lambda a: a['type_s'] == 'Ticket', g.solr.db.values())
-        assert len(indexed_tickets) == 1
-        assert indexed_tickets[0]['summary_t'] == ticket_json['summary']
-        assert indexed_tickets[0]['ticket_num_i'] == ticket_json['id']
+        assert_equal(len(indexed_tickets), 1)
+        assert_equal(indexed_tickets[0]['summary_t'], ticket_json['summary'])
+        assert_equal(indexed_tickets[0]['ticket_num_i'], ticket_json['id'])
 
         r = self.app.get('/rest/p/test/bugs/204/')
         self.verify_ticket(r.json['ticket'], ticket_json)

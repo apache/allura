@@ -56,7 +56,7 @@ class GenericTicketForm(ew.SimpleForm):
             ew.SubmitButton(label=self.submit_text,name='submit',
                 attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
             ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),
-            ew.HiddenField(name='super_id', validator=fev.UnicodeString(if_missing=None)) ]
+        ]
         # milestone is kind of special because of the layout
         # add it to the main form rather than handle with the other customs
         if c.app.globals.custom_fields:
@@ -137,7 +137,6 @@ class TicketCustomField(object):
         select=_select,
         milestone=_milestone,
         boolean=_boolean,
-        sum=_number,
         number=_number,
         user=_user)
 
