@@ -1022,12 +1022,23 @@ class TestEmailMonitoring(TrackerTestController):
         self.new_ticket(summary='test')
         send_simple.assert_called_once_with(self.test_email)
         send_simple.reset_mock()
-        self.app.post('/bugs/1/update_ticket',{
-            'summary':'test',
-            'description':'update',
-        })
+        response = self.app.post(
+            '/bugs/1/update_ticket',
+            {'summary': 'test',
+            'description': 'update'})
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
+        send_simple.reset_mock()
+        response = response.follow()
+        for f in response.findAll('form'):
+            if (('thread' in f['action'])
+               and ('post' in f['action'])):  # Dirty way to find comment form
+                params = {i['name']: i['value'] for i in f.findAll('input')}
+                self.app.post(f['action'], params)
+            break  # Do it only once if many forms met
+        assert send_simple.call_count == 1, send_simple.call_count
+        send_simple.assert_called_with(self.test_email)
+
 
     @patch('forgetracker.tracker_main.M.Notification.send_simple')
     def test_notifications_off(self, send_simple):
