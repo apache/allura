@@ -6,7 +6,8 @@ from pylons import c, g
 
 from ming import schema
 from ming.orm.base import session
-from ming.orm.property import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm.property import (FieldProperty, RelationProperty,
+                               ForeignIdProperty)
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -19,9 +20,10 @@ from .timeline import ActivityObject
 
 log = logging.getLogger(__name__)
 
+
 class Discussion(Artifact, ActivityObject):
     class __mongometa__:
-        name='discussion'
+        name = 'discussion'
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.Deprecated)
@@ -30,7 +32,7 @@ class Discussion(Artifact, ActivityObject):
     description = FieldProperty(str, if_missing='')
     num_topics = FieldProperty(int, if_missing=0)
     num_posts = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str:bool})
+    subscriptions = FieldProperty({str: bool})
 
     threads = RelationProperty('Thread')
     posts = RelationProperty('Post')
@@ -42,7 +44,7 @@ class Discussion(Artifact, ActivityObject):
             name=self.name,
             description=self.description,
             threads=[dict(_id=t._id, subject=t.subject)
-                     for t in self.threads ])
+                     for t in self.threads])
 
     @property
     def activity_name(self):
@@ -100,28 +102,29 @@ class Discussion(Artifact, ActivityObject):
         q = dict(kw, discussion_id=self._id)
         return self.post_class().query.find(q)
 
+
 class Thread(Artifact, ActivityObject):
     class __mongometa__:
-        name='thread'
+        name = 'thread'
         indexes = [
             ('artifact_id',),
             ('ref_id',),
             (('app_config_id', pymongo.ASCENDING),
              ('last_post_date', pymongo.DESCENDING),
-             ('mod_date', pymongo.DESCENDING)) ,
+             ('mod_date', pymongo.DESCENDING)),
             ('discussion_id',),
             ]
     type_s = 'Thread'
 
-    _id=FieldProperty(str, if_missing=lambda:h.nonce(8))
+    _id = FieldProperty(str, if_missing=lambda: h.nonce(8))
     discussion_id = ForeignIdProperty(Discussion)
     ref_id = ForeignIdProperty('ArtifactReference')
     subject = FieldProperty(str, if_missing='')
     num_replies = FieldProperty(int, if_missing=0)
     num_views = FieldProperty(int, if_missing=0)
-    subscriptions = FieldProperty({str:bool})
+    subscriptions = FieldProperty({str: bool})
     first_post_id = ForeignIdProperty('Post')
-    last_post_date = FieldProperty(datetime, if_missing=datetime(1970,1,1))
+    last_post_date = FieldProperty(datetime, if_missing=datetime(1970, 1, 1))
     artifact_reference = FieldProperty(schema.Deprecated)
     artifact_id = FieldProperty(schema.Deprecated)
 
@@ -136,7 +139,7 @@ class Thread(Artifact, ActivityObject):
             discussion_id=str(self.discussion_id),
             subject=self.subject,
             posts=[dict(slug=p.slug, subject=p.subject)
-                   for p in self.posts ])
+                   for p in self.posts])
 
     @property
     def activity_name(self):
@@ -159,7 +162,8 @@ class Thread(Artifact, ActivityObject):
 
     @property
     def artifact(self):
-        if self.ref is None: return self.discussion
+        if self.ref is None:
+            return self.discussion
         return self.ref.artifact
 
     # Use wisely - there's .num_replies also
@@ -170,7 +174,8 @@ class Thread(Artifact, ActivityObject):
                 thread_id=self._id)).count()
 
     def primary(self):
-        if self.ref is None: return self
+        if self.ref is None:
+            return self
         return self.ref.artifact
 
     def add_post(self, **kw):
@@ -189,7 +194,8 @@ class Thread(Artifact, ActivityObject):
             require_access(self, 'post')
         if self.ref_id and self.artifact:
             self.artifact.subscribe()
-        if message_id is None: message_id = h.gen_message_id()
+        if message_id is None:
+            message_id = h.gen_message_id()
         parent = parent_id and self.post_class().query.get(_id=parent_id)
         slug, full_slug = self.post_class().make_slugs(parent, timestamp)
         kwargs = dict(
@@ -200,8 +206,10 @@ class Thread(Artifact, ActivityObject):
             parent_id=parent_id,
             text=text,
             status='pending')
-        if timestamp is not None: kwargs['timestamp'] = timestamp
-        if message_id is not None: kwargs['_id'] = message_id
+        if timestamp is not None:
+            kwargs['timestamp'] = timestamp
+        if message_id is not None:
+            kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
         if ignore_security or has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
@@ -218,15 +226,16 @@ class Thread(Artifact, ActivityObject):
                 c.project.shortname, c.app.config.options.mount_point)
         author = post.author()
         url = self.discussion_class().query.get(_id=self.discussion_id).url()
-        text = '''The following submission requires approval at %s before it can be approved for posting:
-
-        %s''' % (h.absurl(url + 'moderate'), post.text)
+        text = ('The following submission requires approval at %s before '
+                'it can be approved for posting:\n\n%s'
+                % (h.absurl(url + 'moderate'), post.text))
         n = Notification(
                 ref_id=artifact.index_id(),
                 topic='message',
                 link=artifact.url(),
-                _id=artifact.url()+post._id,
-                from_address=str(author._id) if author != User.anonymous() else None,
+                _id=artifact.url() + post._id,
+                from_address=str(author._id) if author != User.anonymous()
+                                             else None,
                 reply_to_address=u'noreply@in.sf.net',
                 subject=subject,
                 text=text,
@@ -236,7 +245,8 @@ class Thread(Artifact, ActivityObject):
         users = self.app_config.project.users()
         for u in users:
             if (has_access(self, 'moderate', u)
-                and Mailbox.subscribed(user_id=u._id, app_config_id=post.app_config_id)):
+                and Mailbox.subscribed(user_id=u._id,
+                                       app_config_id=post.app_config_id)):
                     n.send_direct(str(u._id))
 
     def update_stats(self):
@@ -252,7 +262,7 @@ class Thread(Artifact, ActivityObject):
     def create_post_threads(self, posts):
         result = []
         post_index = {}
-        for p in sorted(posts, key=lambda p:p.full_slug):
+        for p in sorted(posts, key=lambda p: p.full_slug):
             pi = dict(post=p, children=[])
             post_index[p._id] = pi
             if p.parent_id in post_index:
@@ -261,7 +271,8 @@ class Thread(Artifact, ActivityObject):
                 result.append(pi)
         return result
 
-    def query_posts(self, page=None, limit=None, timestamp=None, style='threaded'):
+    def query_posts(self, page=None, limit=None,
+                    timestamp=None, style='threaded'):
         if limit is None:
             limit = 50
         limit = int(limit)
@@ -277,13 +288,15 @@ class Thread(Artifact, ActivityObject):
         else:
             q = q.sort('timestamp')
         if page is not None:
-            q = q.skip(page*limit)
+            q = q.skip(page * limit)
         if limit is not None:
             q = q.limit(limit)
         return q
 
-    def find_posts(self, page=None, limit=None, timestamp=None, style='threaded'):
-        return self.query_posts(page=page, limit=limit, timestamp=timestamp, style=style).all()
+    def find_posts(self, page=None, limit=None, timestamp=None,
+                   style='threaded'):
+        return self.query_posts(page=page, limit=limit,
+                                timestamp=timestamp, style=style).all()
 
     def top_level_posts(self):
         return self.post_class().query.find(dict(
@@ -310,12 +323,13 @@ class Thread(Artifact, ActivityObject):
 
     def _get_subscription(self):
         return self.subscriptions.get(str(c.user._id))
+
     def _set_subscription(self, value):
         if value:
             self.subscriptions[str(c.user._id)] = True
         else:
             self.subscriptions.pop(str(c.user._id), None)
-    subscription=property(_get_subscription, _set_subscription)
+    subscription = property(_get_subscription, _set_subscription)
 
     def delete(self):
         for p in self.post_class().query.find(dict(thread_id=self._id)):
@@ -328,9 +342,10 @@ class Thread(Artifact, ActivityObject):
         for p in self.post_class().query.find(dict(thread_id=self._id)):
             p.spam()
 
+
 class PostHistory(Snapshot):
     class __mongometa__:
-        name='post_history'
+        name = 'post_history'
 
     artifact_id = ForeignIdProperty('Post')
 
@@ -361,17 +376,19 @@ class PostHistory(Snapshot):
             text=self.data.text)
         return result
 
+
 class Post(Message, VersionedArtifact, ActivityObject):
     class __mongometa__:
-        name='post'
+        name = 'post'
         history_class = PostHistory
-        indexes = [ 'discussion_id', 'thread_id' ]
+        indexes = ['discussion_id', 'thread_id']
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)
     discussion_id = ForeignIdProperty(Discussion)
     subject = FieldProperty(schema.Deprecated)
-    status = FieldProperty(schema.OneOf('ok', 'pending', 'spam', if_missing='pending'))
+    status = FieldProperty(schema.OneOf('ok', 'pending', 'spam',
+                                        if_missing='pending'))
     flagged_by = FieldProperty([schema.ObjectId])
     flags = FieldProperty(int, if_missing=0)
     last_edit_date = FieldProperty(datetime, if_missing=None)
@@ -453,13 +470,13 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def url(self):
         if self.thread:
             return self.thread.url() + h.urlquote(self.slug) + '/'
-        else: # pragma no cover
+        else:  # pragma no cover
             return None
 
     def shorthand_id(self):
         if self.thread:
             return '%s#%s' % (self.thread.shorthand_id(), self.slug)
-        else: # pragma no cover
+        else:  # pragma no cover
             return None
 
     def link_text(self):
@@ -469,7 +486,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         if self.subject and self.subject.lower().startswith('re:'):
             return self.subject
         else:
-            return 'Re: ' +(self.subject or '(no subject)')
+            return 'Re: ' + (self.subject or '(no subject)')
 
     def delete(self):
         self.attachment_class().remove(dict(post_id=self._id))
@@ -477,7 +494,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
     def approve(self, file_info=None):
-        if self.status == 'ok': return
+        if self.status == 'ok':
+            return
         self.status = 'ok'
         if self.parent_id is None:
             thd = self.thread_class().query.get(_id=self.thread_id)
@@ -506,15 +524,16 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def notify(self, file_info=None, check_dup=False):
         artifact = self.thread.artifact or self.thread
         n = Notification.query.get(
-                _id=artifact.url() + self._id) if check_dup else None
+            _id=artifact.url() + self._id) if check_dup else None
         if not n:
-            n = Notification.post(artifact, 'message', post=self, 
+            n = Notification.post(artifact, 'message', post=self,
                                   file_info=file_info)
-        if hasattr(artifact,"monitoring_email") and artifact.monitoring_email:
+        if (hasattr(artifact, "monitoring_email")
+                and artifact.monitoring_email):
             if hasattr(artifact, 'notify_post'):
                 if artifact.notify_post:
                     n.send_simple(artifact.monitoring_email)
-            else: #  Send if no extra checks required
+            else:  # Send if no extra checks required
                 n.send_simple(artifact.monitoring_email)
 
     def spam(self):
@@ -522,21 +541,23 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
         g.post_event('spam', self.index_id())
 
-class DiscussionAttachment(BaseAttachment):
-    DiscussionClass=Discussion
-    ThreadClass=Thread
-    PostClass=Post
-    ArtifactClass=Post
-    thumbnail_size = (100, 100)
-    class __mongometa__:
-        polymorphic_identity='DiscussionAttachment'
-        indexes = [ 'filename', 'discussion_id', 'thread_id', 'post_id' ]
 
-    discussion_id=FieldProperty(schema.ObjectId)
-    thread_id=FieldProperty(str)
-    post_id=FieldProperty(str)
-    artifact_id=FieldProperty(str)
-    attachment_type=FieldProperty(str, if_missing='DiscussionAttachment')
+class DiscussionAttachment(BaseAttachment):
+    DiscussionClass = Discussion
+    ThreadClass = Thread
+    PostClass = Post
+    ArtifactClass = Post
+    thumbnail_size = (100, 100)
+
+    class __mongometa__:
+        polymorphic_identity = 'DiscussionAttachment'
+        indexes = ['filename', 'discussion_id', 'thread_id', 'post_id']
+
+    discussion_id = FieldProperty(schema.ObjectId)
+    thread_id = FieldProperty(str)
+    post_id = FieldProperty(str)
+    artifact_id = FieldProperty(str)
+    attachment_type = FieldProperty(str, if_missing='DiscussionAttachment')
 
     @property
     def discussion(self):
@@ -560,8 +581,11 @@ class DiscussionAttachment(BaseAttachment):
 
     def url(self):
         if self.post_id:
-            return self.post.url() + 'attachment/' + h.urlquote(self.filename)
+            return (self.post.url() + 'attachment/' +
+                    h.urlquote(self.filename))
         elif self.thread_id:
-            return self.thread.url() + 'attachment/' + h.urlquote(self.filename)
+            return (self.thread.url() + 'attachment/' +
+                    h.urlquote(self.filename))
         else:
-            return self.discussion.url() + 'attachment/' + h.urlquote(self.filename)
+            return (self.discussion.url() + 'attachment/' +
+                    h.urlquote(self.filename))
