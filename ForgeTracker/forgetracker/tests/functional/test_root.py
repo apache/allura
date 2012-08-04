@@ -1030,12 +1030,15 @@ class TestEmailMonitoring(TrackerTestController):
         send_simple.assert_called_with(self.test_email)
         send_simple.reset_mock()
         response = response.follow()
-        for f in response.findAll('form'):
-            if (('thread' in f['action'])
-               and ('post' in f['action'])):  # Dirty way to find comment form
-                params = {i['name']: i['value'] for i in f.findAll('input')}
-                self.app.post(f['action'], params)
-            break  # Do it only once if many forms met
+        for f in response.html.findAll('form'):
+            # Dirty way to find comment form
+            if (('thread' in f['action']) and ('post' in f['action'])):
+                params = {i['name']: i['value']
+                          for i in f.findAll('input')
+                          if i.has_key('name')}
+                params[f.find('textarea')['name']] = 'foobar'
+                self.app.post(str(f['action']), params)
+                break  # Do it only once if many forms met
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
 
