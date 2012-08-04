@@ -1033,7 +1033,7 @@ class TestEmailMonitoring(TrackerTestController):
         for f in response.html.findAll('form'):
             # Dirty way to find comment form
             if (('thread' in f['action']) and ('post' in f['action'])):
-                params = {i['name']: i['value']
+                params = {i['name']: i.get('value', '')
                           for i in f.findAll('input')
                           if i.has_key('name')}
                 params[f.find('textarea')['name']] = 'foobar'
