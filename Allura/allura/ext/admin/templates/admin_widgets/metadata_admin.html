@@ -3,7 +3,7 @@
     {{ widget.display_label(widget.fields.name) }}
     <br>
     {{widget.display_field(widget.fields.name) }}
-
+    {%if value.neighborhood.name == 'Projects'%}
     <label for="shortname">Unixname</label>
     <br>
     <input id="shortname" type="text" disabled="disabled"
@@ -43,9 +43,10 @@
     <br>
     {{widget.display_field(widget.fields.tracking_id) }}
     {% endif %}
+      {% endif%}
   </div>
-  <div class="grid-9">
 
+  <div class="grid-9">
     <label>Icon:</label>
     <br>
     <div id="project-icon" class="viewing">
@@ -67,6 +68,7 @@
           <input type="submit" value="Save" name="save" style="float: none" />
       </div>
     </div>
+    {%if value.neighborhood.name == 'Projects'%}
     <div style="clear:both">&nbsp;</div>
 
     <div id="project-status">
@@ -103,7 +105,7 @@
             {% endif %}
         </div>
     </div>
-
+    {% endif%}
     {% if show_export_control %}
       <div style="clear:both">&nbsp;</div>
       <label for="export_controlled">Export Control:</label>

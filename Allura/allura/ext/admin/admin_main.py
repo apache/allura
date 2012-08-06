@@ -101,10 +101,11 @@ class AdminApp(Application):
                      SitemapEntry('Overview', nbhd_admin_url+'overview'),
                      SitemapEntry('Awards', nbhd_admin_url+'accolades')]
         else:
-            links += [
-                SitemapEntry('Metadata', admin_url+'overview'),
-                SitemapEntry('Screenshots', admin_url+'screenshots'),
-                SitemapEntry('Categorization', admin_url+'trove')
+            links += [SitemapEntry('Metadata', admin_url+'overview'),]
+            if c.project.neighborhood.name != "Users":
+                links += [
+                    SitemapEntry('Screenshots', admin_url+'screenshots'),
+                    SitemapEntry('Categorization', admin_url+'trove')
                 ]
         links.append(SitemapEntry('Tools', admin_url+'tools'))
         if c.project.is_root and has_access(c.project, 'admin')():
