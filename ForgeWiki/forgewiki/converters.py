@@ -1,8 +1,6 @@
 #-*- python -*-
 import html2text
 import re
-# https://github.com/zikzakmedia/python-mediawiki.git
-from mediawiki import wiki2html
 
 html2text.BODY_WIDTH = 0
 
@@ -23,6 +21,13 @@ def _link_to_attach_markdown(page_title):
 
 
 def mediawiki2markdown(source):
+    try:
+        from mediawiki import wiki2html
+    except ImportError:
+        raise ImportError('GPL library "mediawiki" from https://github.com/zikzakmedia/python-mediawiki.git '
+                                 'is required for this operation')
+
+
     wiki_content = wiki2html(source, True)
     markdown_text = html2text.html2text(wiki_content)
     return markdown_text

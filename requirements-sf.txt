@@ -17,6 +17,7 @@ pyzmq==2.1.7
 postmarkup==1.1.4
 # suds needed for teamforge import script
 suds==0.4
+mediawiki==0.0.1
 
 # development
 blessings==1.3

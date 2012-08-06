@@ -1,24 +1,10 @@
 from nose.tools import assert_equal
+from IPython.testing.decorators import module_not_available, skipif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-
-from pylons import c, g
-
-from allura.tests import decorators as td
 from forgewiki import converters
 
-
-def setUp():
-    setup_basic_test()
-    setup_with_tools()
-
-
-@td.with_wiki
-def setup_with_tools():
-    setup_global_objects()
-    g.set_app('wiki')
-
-
+@skipif(module_not_available('mediawiki'))
 def test_mediawiki2markdown():
     mediawiki_text = """
 '''bold''' ''italics''

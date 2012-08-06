@@ -1,5 +1,6 @@
 import mock
 import json
+from IPython.testing.decorators import module_not_available, skipif
 
 from forgewiki.command.wiki2markdown.extractors import MySQLExtractor
 from forgewiki.command.wiki2markdown.loaders import MediawikiLoader
@@ -232,6 +233,7 @@ class TestMediawikiLoader(object):
         return M.Post.query.get(discussion_id=thread.discussion_id,
                                 thread_id=thread._id)
 
+    @skipif(module_not_available('mediawiki'))
     def test_load_pages(self):
         """Test that pages, edit history and talk loaded properly"""
         self.loader.load_pages()

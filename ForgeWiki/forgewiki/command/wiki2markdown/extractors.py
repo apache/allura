@@ -1,9 +1,7 @@
-import MySQLdb
 import os
 import shutil
 import json
 import hashlib
-from MySQLdb import DatabaseError
 
 from allura.command import base as allura_base
 
@@ -41,10 +39,15 @@ class MySQLExtractor(MediawikiExtractor):
         }
 
     def connection(self):
+        try:
+            import MySQLdb
+        except ImportError:
+            raise ImportError('GPL library MySQL-python is required for this operation')
+
         if not self._connection:
             try:
                 self._connection = MySQLdb.connect(**self.db_options)
-            except DatabaseError, e:
+            except MySQLdb.DatabaseError, e:
                 allura_base.log.error("Can't connect to database: %s" % str(e))
                 exit(2)
         return self._connection

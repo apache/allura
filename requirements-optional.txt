@@ -1,0 +1,6 @@
+# Some packages must be optional due to license incompatibility with Apache
+# License v2
+
+# for ForgeWiki's mediawiki importer:
+-e git://github.com/zikzakmedia/python-mediawiki.git#egg=python-mediawiki   # GPL
+MySQL-python  # GPL
