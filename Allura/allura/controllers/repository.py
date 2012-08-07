@@ -552,7 +552,7 @@ class FileBrowser(BaseController):
         la = list(a)
         lb = list(b)
 
-        if "text" in utils.guess_mime_type(filename):
+        if ("text" in utils.guess_mime_type(filename)) or (filename == "README"):
             diff = ''.join(difflib.unified_diff(
                     la, lb,
                     ('a' + apath).encode('utf-8'),
