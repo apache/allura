@@ -21,21 +21,40 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     var diff_queue = [];  // queue of diffs waiting for load
     var called_count = 0; // count of running load requests
 
+    function ld(diff, callback) {
+      $(diff.selector).load(diff.url, callback);
+    }
+
     function load_diff() {
       if (called_count >= MAX_REQUESTS || diff_queue.length == 0) {
         return;
       }
       called_count++;
       var diff = diff_queue.shift();
-      $(diff.selector).load(diff.url, function(response, status, xhr) {
-          if (status == 'error') {
+      ld(diff, function(response, status, xhr) {
+        if (status == 'error') {
+          if (xhr.status == 500) {
+            // retry once
+            ld(diff, function(response, status, xhr) {
+              if (status == 'error') {
+                $(this).text('Can\'t load diff');
+              }
+              called_count--;
+            });
+          } else {
             $(this).text('Can\'t load diff');
+            called_count--;
           }
+        } else {
           called_count--;
+        }
+        if (diff_queue.length == 0) {
+          clearInterval(document.diff_queue_timer);
+        }
       });
     }
     $(document).ready(function() {
-      setInterval(load_diff, WAIT_FOR);
+      document.diff_queue_timer = setInterval(load_diff, WAIT_FOR);
     });
   </script>
 {% endblock %}
@@ -49,21 +68,13 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     {% for type, file in artifacts %}
     <tr>
         <td>{{ type }}</td>
-        {% set p = loop.index0 // limit %}
-        {% set d = loop.index0 % limit + 1 %}
-        <td>
-        {% if p == page %}
-          <a href="#diff-{{d}}">{{h.really_unicode(file)}}</a>
-        {% else %}
-          <a href="?page={{p}}&limit={{limit}}#diff-{{d}}">{{h.really_unicode(file)}}</a>
-        {% endif %}
-        </td>
+        <td><a href="#diff-{{loop.index}}">{{h.really_unicode(file)}}</a></td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 
-{% for type, file in artifacts[start:start+limit] %}
+{% for type, file in artifacts %}
         <div class="inline-diff">
             <h6>
             {% if type in ('added', 'changed') %}
