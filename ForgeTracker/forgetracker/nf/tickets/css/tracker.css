@@ -10,3 +10,7 @@ th[data-sort]:hover, .nav-button:hover{ text-decoration: underline; }
 .nav-button.disabled:hover{ text-decoration: none; }
 .open{ color: #050; }
 .closed{ color: #f33; }
+.gray { color: #aaa; }
+#vote { margin: -15px 10px 30px; }
+#vote .vote-text { position: relative; top: 5px; }
+#vote .vote-text.fright { display: inline; }

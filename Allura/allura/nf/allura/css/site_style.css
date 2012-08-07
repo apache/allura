@@ -2756,7 +2756,3 @@ table thead tr th.narrow, table tr td.narrow {
 #selected-projects {
   padding: 10px 10px;
 }
-.gray { color: #aaa; }
-#vote { margin: -15px 10px 30px; }
-#vote .vote-text { position: relative; top: 5px; }
-#vote .vote-text.fright { display: inline; }
