@@ -1,5 +1,9 @@
 {% extends g.theme.master %}
 
+{% if c.app.repo.status != 'ready' %}
+    {% set hide_left_bar = True %}
+{% endif %}
+
 {% block extra_css %}
     <link rel="alternate" type="application/rss+xml" title="RSS" href="{{c.app.url}}feed.rss"/>
     <link rel="alternate" type="application/atom+xml" title="Atom" href="{{c.app.url}}feed.atom"/>
@@ -45,7 +49,7 @@
                 spinner.opts.speed = 0;
                 spinner.opts.opacity = 1;
                 spinner.spin(repo_status)
-                $('#repo_status h2').html('Repo status: <span class="ready">ready</span>. <a href=".">Click here to refresh this page.</a>');
+                $('#repo_status h2').html('Repo status: ready. <a href=".">Click here to refresh this page.</a>');
             }
             else {
                 $('#repo_status h2 span').html(data.status);
@@ -62,7 +66,7 @@
 {% block before_content %}
   {% if c.app.repo.status != 'ready' %}
     <div id="repo_status">
-        <h2>Repo status: <span class="working">{{c.app.repo.status}}</span></h2>
+        <h2>Repo status: <span>{{c.app.repo.status}}</span>...</h2>
     </div>
   {% endif %}
 {% endblock %}
