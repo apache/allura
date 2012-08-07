@@ -400,11 +400,13 @@ class CommitBrowser(BaseController):
         result = dict(commit=self._commit)
         if self._commit:
             result.update(self._commit.context())
+        tree = self._commit.tree
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
         result['artifacts'] = [
                 (t,f) for t in ('added', 'removed', 'changed', 'copied')
-                    for f in self._commit.diffs[t]]
+                    for f in self._commit.diffs[t]
+                        if t == 'removed' or tree.get_blob_by_path(f)]
         count = len(result['artifacts'])
         result['artifacts'] = result['artifacts'][start:start+limit]
         result.update(dict(page=page, limit=limit, count=count))

@@ -311,6 +311,16 @@ class Tree(RepoObject):
         obj.set_context(self, name)
         return obj
 
+    def get_blob_by_path(self, path):
+        path = path.split('/')
+        obj = self
+        for p in path:
+            try:
+                obj = obj[p]
+            except KeyError:
+                return None
+        return obj if isinstance(obj, Blob) else None
+
     def set_context(self, commit_or_tree, name=None):
         assert commit_or_tree is not self
         self.repo = commit_or_tree.repo
