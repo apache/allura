@@ -153,6 +153,9 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'user_by_project_url'
 
+    def update_notifications(self, user):
+        raise NotImplemented, 'update_notifications'
+
 class LocalAuthenticationProvider(AuthenticationProvider):
     '''
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
@@ -206,8 +209,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         from allura import model as M
         return M.User.query.get(username=shortname)
 
-class LdapAuthenticationProvider(AuthenticationProvider):
+    def update_notifications(self, user):
+        return ''
 
+class LdapAuthenticationProvider(AuthenticationProvider):
     def register_user(self, user_doc):
         from allura import model as M
         password = user_doc['password'].encode('utf-8')

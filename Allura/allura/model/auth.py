@@ -462,6 +462,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
         h.append(u'<%s>' % self.get_pref('email_address'))
         return h
 
+    def update_notifications(self):
+        return plugin.AuthenticationProvider.get(request).update_notifications(self)
+
 class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
