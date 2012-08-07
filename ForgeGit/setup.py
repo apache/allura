@@ -20,7 +20,6 @@ setup(name='ForgeGit',
       install_requires=[
           # -*- Extra requirements: -*-
           'Allura',
-          'GitPython>=0.2.0_beta1, < 0.3.0',
       ],
       entry_points="""
       # -*- Entry points: -*-
