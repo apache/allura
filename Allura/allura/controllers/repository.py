@@ -400,12 +400,14 @@ class CommitBrowser(BaseController):
         result = dict(commit=self._commit)
         if self._commit:
             result.update(self._commit.context())
-        result['artifacts'] = [(t,f) for t in ('added', 'removed', 'changed', 'copied')
-                                     for f in self._commit.diffs[t]]
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
-        result.update(dict(page=page, limit=limit, start=start,
-                           count=len(result['artifacts'])))
+        result['artifacts'] = [
+                (t,f) for t in ('added', 'removed', 'changed', 'copied')
+                    for f in self._commit.diffs[t]]
+        count = len(result['artifacts'])
+        result['artifacts'] = result['artifacts'][start:start+limit]
+        result.update(dict(page=page, limit=limit, count=count))
         return result
 
     @expose('jinja:allura:templates/repo/commit_basic.html')
