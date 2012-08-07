@@ -38,8 +38,6 @@
         left: 10 // Left position relative to parent in px
     };
     var spinner = new Spinner(opts).spin(repo_status);
-    // Check repo status every 15 seconds
-    var status_checker = window.setInterval(check_status, 15000);
     function check_status() {
         $.get('{{c.app.repo.url()}}status', function(data) {
             if (data.status === 'ready') {
@@ -54,6 +52,8 @@
             }
         });
     }
+    // Check repo status every 15 seconds
+    var status_checker = window.setInterval(check_status, 15000);
   }
 }());
 </script>
