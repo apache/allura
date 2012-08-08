@@ -269,39 +269,71 @@ class Commit(RepoObject):
                 added.append(change.name)
             else:
                 changed.append(change.name)
-        prev_commit = self.log(1, 1)[0]
-        for r_name in removed[:]:
-            r_blob = prev_commit.tree.get_obj_by_path(r_name)
-            r_type = 'blob' if isinstance(r_blob, Blob) else 'tree'
-            best = dict(ratio=0, name='')
-            for a_name in added:
-                a_blob = self.tree.get_obj_by_path(a_name)
-                if r_type == 'tree':
-                    if isinstance(a_blob, Tree):
-                        if r_blob._id == a_blob._id:
-                            best['ratio'] = 100
-                            best['name'] = a_name
-                            break;
-                else:
-                    diff = SequenceMatcher(None, r_blob.text, a_blob.text)
-                    if diff.ratio() > best['ratio']:
-                        best['ratio'] = diff.ratio()
-                        best['name'] = a_name
-                        best['blob'] = a_blob
-            if best['ratio'] > DIFF_SIMILARITY_THRESHOLD:
-                diff = ''
-                if best['ratio'] < 1:
-                    a_blob = best['blob']
-                    diff = ''.join(unified_diff(list(r_blob), list(a_blob),
-                                    ('a' + r_blob.path()).encode('utf-8'),
-                                    ('b' + a_blob.path()).encode('utf-8')))
-                copied.append(dict(old=r_name, new=best['name'],
-                                   ratio=best['ratio'], diff=diff))
-                removed.remove(r_name)
-                added.remove(best['name'])
+        copied = self._diffs_copied(added, removed)
         return Object(
             added=added, removed=removed,
             changed=changed, copied=copied)
+
+    def _diffs_copied(self, added, removed):
+        '''Return list with file renames diffs.
+
+        Will change `added` and `removed` lists also.
+        '''
+        def _blobs_similarity(removed_blob, added):
+            best = dict(ratio=0, name='', blob=None)
+            for added_name in added:
+                added_blob = self.tree.get_obj_by_path(added_name)
+                if not isinstance(added_blob, Blob):
+                    continue
+                diff = SequenceMatcher(None, removed_blob.text,
+                                       added_blob.text)
+                ratio = diff.ratio()
+                if ratio > best['ratio']:
+                    best['ratio'] = ratio
+                    best['name'] = added_name
+                    best['blob'] = added_blob
+
+                if ratio == 1:
+                    break  # we'll won't find better similarity than 100% :)
+
+            if best['ratio'] > DIFF_SIMILARITY_THRESHOLD:
+                diff = ''
+                if best['ratio'] < 1:
+                    added_blob = best['blob']
+                    rpath = ('a' + removed_blob.path()).encode('utf-8')
+                    apath = ('b' + added_blob.path()).encode('utf-8')
+                    diff = ''.join(unified_diff(list(removed_blob),
+                                                list(added_blob),
+                                                rpath, apath))
+                return dict(new=best['name'],
+                            ratio=best['ratio'], diff=diff)
+
+        def _trees_similarity(removed_tree, added):
+            for added_name in added:
+                added_tree = self.tree.get_obj_by_path(added_name)
+                if not isinstance(added_tree, Tree):
+                    continue
+                if removed_tree._id == added_tree._id:
+                    return dict(new=added_name,
+                                ratio=1, diff='')
+
+        if not removed:
+            return []
+        copied = []
+        prev_commit = self.log(1, 1)[0]
+        for removed_name in removed[:]:
+            removed_blob = prev_commit.tree.get_obj_by_path(removed_name)
+            rename_info = None
+            if isinstance(removed_blob, Blob):
+                rename_info = _blobs_similarity(removed_blob, added)
+            elif isinstance(removed_blob, Tree):
+                rename_info = _trees_similarity(removed_blob, added)
+            if rename_info is not None:
+                rename_info['old'] = removed_name
+                copied.append(rename_info)
+                removed.remove(rename_info['old'])
+                added.remove(rename_info['new'])
+        return copied
 
     def get_path(self, path):
         if path[0] == '/': path = path[1:]
