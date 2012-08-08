@@ -552,13 +552,16 @@ class FileBrowser(BaseController):
         la = list(a)
         lb = list(b)
 
-        if ("text" in utils.guess_mime_type(filename)) or (filename == "README"):
-            diff = ''.join(difflib.unified_diff(
-                    la, lb,
-                    ('a' + apath).encode('utf-8'),
-                    ('b' + b.path()).encode('utf-8')))
-        else:
-            diff = "Cannot display: file marked as a binary type."
+        diff = "Cannot display: file marked as a binary type."
+        not_binary_mime = ["text","octet-stream"]
+        for mime in not_binary_mime:
+            if mime in utils.guess_mime_type(filename):
+                diff = ''.join(difflib.unified_diff(
+                        la, lb,
+                        ('a' + apath).encode('utf-8'),
+                        ('b' + b.path()).encode('utf-8')))
+
+
             
         return dict(
             a=a, b=b,
