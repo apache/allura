@@ -37,6 +37,8 @@ VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
     '.rb','.phtml','.txt','.bat','.ps1','.xhtml','.css','.cfm','.jsp','.jspx',
     '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
 
+DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
+
 # Basic commit information
 # One of these for each commit in the physical repo on disk. The _id is the
 # hexsha of the commit (for Git and Hg).
@@ -267,6 +269,28 @@ class Commit(RepoObject):
                 added.append(change.name)
             else:
                 changed.append(change.name)
+        prev_commit = self.log(1, 1)[0]
+        for r_name in removed[:]:
+            r_blob = prev_commit.tree.get_obj_by_path(r_name)
+            r_type = 'blob' if isinstance(r_blob, Blob) else 'tree'
+            best = dict(ratio=0, name='')
+            for a_name in added:
+                a_blob = self.tree.get_obj_by_path(a_name)
+                if r_type == 'tree':
+                    if isinstance(a_blob, Tree):
+                        if r_blob._id == a_blob._id:
+                            best['ratio'] = 100
+                            best['name'] = a_name
+                            break;
+                else:
+                    diff = SequenceMatcher(None, r_blob.text, a_blob.text)
+                    if diff.ratio() > best['ratio']:
+                        best['ratio'] = diff.ratio()
+                        best['name'] = a_name
+            if best['ratio'] > DIFF_SIMILARITY_THRESHOLD:
+                copied.append(dict(old=r_name, new=a_name))
+                removed.remove(r_name)
+                added.remove(best['name'])
         return Object(
             added=added, removed=removed,
             changed=changed, copied=copied)
@@ -311,7 +335,7 @@ class Tree(RepoObject):
         obj.set_context(self, name)
         return obj
 
-    def get_blob_by_path(self, path):
+    def get_obj_by_path(self, path):
         path = path.split('/')
         obj = self
         for p in path:
@@ -319,6 +343,10 @@ class Tree(RepoObject):
                 obj = obj[p]
             except KeyError:
                 return None
+        return obj
+
+    def get_blob_by_path(self, path):
+        obj = self.get_obj_by_path(path)
         return obj if isinstance(obj, Blob) else None
 
     def set_context(self, commit_or_tree, name=None):
