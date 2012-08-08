@@ -1,6 +1,12 @@
 {% extends g.theme.master %}
 
-{% if c.app.repo.status != 'ready' %}
+{% if hasattr(c.app, 'repo') %}
+    {% set repo = c.app.repo %}
+{% else %}
+    {% set repo = None %}
+{% endif %}
+
+{% if repo and repo.status != 'ready' %}
     {% set hide_left_bar = True %}
 {% endif %}
 
@@ -22,6 +28,7 @@
   });
   $('#access_urls .btn').first().click();
 
+  {% if repo %}
   var repo_status = document.getElementById('repo_status');
   // The repo_status div will only be present if repo.status != 'ready'
   if (repo_status) {
@@ -43,7 +50,7 @@
     };
     var spinner = new Spinner(opts).spin(repo_status);
     function check_status() {
-        $.get('{{c.app.repo.url()}}status', function(data) {
+        $.get('{{repo.url()}}status', function(data) {
             if (data.status === 'ready') {
                 window.clearInterval(status_checker);
                 spinner.opts.speed = 0;
@@ -58,15 +65,16 @@
     }
     // Check repo status every 15 seconds
     var status_checker = window.setInterval(check_status, 15000);
+    {% endif %}
   }
 }());
 </script>
 {% endblock %}
 
 {% block before_content %}
-  {% if c.app.repo.status != 'ready' %}
+  {% if repo and repo.status != 'ready' %}
     <div id="repo_status">
-        <h2>Repo status: <span>{{c.app.repo.status}}</span>...</h2>
+        <h2>Repo status: <span>{{repo.status}}</span>...</h2>
     </div>
   {% endif %}
 {% endblock %}

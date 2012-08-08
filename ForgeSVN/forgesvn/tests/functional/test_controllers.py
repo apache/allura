@@ -12,8 +12,7 @@ from allura.tests import decorators as td
 from alluratest.controller import TestController
 
 
-class TestRootController(TestController):
-
+class SVNTestController(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.setup_with_tools()
@@ -34,6 +33,8 @@ class TestRootController(TestController):
         ThreadLocalORMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
 
+
+class TestRootController(SVNTestController):
     def test_status(self):
         resp = self.app.get('/src/status')
         d = json.loads(resp.body)
@@ -103,3 +104,8 @@ class TestRootController(TestController):
         resp = self.app.get('/src/3/tree/README?diff=2')
         assert 'This is readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
+
+
+class TestImportController(SVNTestController):
+    def test_index(self):
+        self.app.get('/p/test/admin/src/importer').follow(status=200)
