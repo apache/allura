@@ -557,12 +557,10 @@ class FileBrowser(BaseController):
         for mime in not_binary_mime:
             if mime in utils.guess_mime_type(filename):
                 diff = ''.join(difflib.unified_diff(
-                        la, lb,
-                        ('a' + apath).encode('utf-8'),
-                        ('b' + b.path()).encode('utf-8')))
+                       la, lb,
+                       ('a' + apath).encode('utf-8'),
+                       ('b' + b.path()).encode('utf-8')))
 
-
-            
         return dict(
             a=a, b=b,
             diff=diff)
