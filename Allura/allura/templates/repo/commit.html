@@ -68,7 +68,13 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     {% for type, file in artifacts %}
     <tr>
         <td>{{ type }}</td>
-        <td><a href="#diff-{{loop.index}}">{{h.really_unicode(file)}}</a></td>
+        <td><a href="#diff-{{loop.index}}">
+            {% if type == 'copied' %}
+              {{ '%s -> %s' % (h.really_unicode(file.old), h.really_unicode(file.new)) }}
+            {% else %}
+              {{h.really_unicode(file)}}
+            {% endif %}
+        </a></td>
     </tr>
     {% endfor %}
   </tbody>
@@ -91,7 +97,15 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             {% endif %}
             </h6>
             <div id="diff-{{loop.index}}" class="inline-diff-body">
-                {% if type != 'removed' %}
+                {% if type == 'removed' %}
+                  <span class="empty-diff">File was removed.</span>
+                {% elif type == 'copied' %}
+                  {% if file.ratio == 1 %}
+                    <span class="empty-diff">File was renamed.</span>
+                  {% else %}
+                    {{g.highlight(file.diff, lexer='diff')}}
+                  {% endif %}
+                {% else %}
                     {% if prev %}
                     <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                     <script type="text/javascript">
@@ -103,8 +117,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                         });
                     </script>
                     {% endif %}
-                {% else %}
-                <span class="empty-diff">File was removed.</span>
                 {% endif %}
             </div>
         </div>

@@ -6,7 +6,7 @@ from hashlib import sha1
 from itertools import izip, chain
 from datetime import datetime
 from collections import defaultdict
-from difflib import SequenceMatcher
+from difflib import SequenceMatcher, unified_diff
 
 from pylons import c
 import pymongo.errors
@@ -287,8 +287,16 @@ class Commit(RepoObject):
                     if diff.ratio() > best['ratio']:
                         best['ratio'] = diff.ratio()
                         best['name'] = a_name
+                        best['blob'] = a_blob
             if best['ratio'] > DIFF_SIMILARITY_THRESHOLD:
-                copied.append(dict(old=r_name, new=a_name))
+                diff = ''
+                if best['ratio'] < 1:
+                    a_blob = best['blob']
+                    diff = ''.join(unified_diff(list(r_blob), list(a_blob),
+                                    ('a' + r_blob.path()).encode('utf-8'),
+                                    ('b' + a_blob.path()).encode('utf-8')))
+                copied.append(dict(old=r_name, new=best['name'],
+                                   ratio=best['ratio'], diff=diff))
                 removed.remove(r_name)
                 added.remove(best['name'])
         return Object(
