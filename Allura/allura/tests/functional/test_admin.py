@@ -165,9 +165,7 @@ class TestProjectAdmin(TestController):
         tool_strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
         expected_tools = [
             'External Link',
-            'Git',
             'Mercurial',
-            'SVN',
             'Wiki',
             'Tickets',
             'Discussion',

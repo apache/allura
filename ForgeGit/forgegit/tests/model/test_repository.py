@@ -18,6 +18,7 @@ from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
 from forgegit import model as GM
+from forgegit.tests import with_git
 from forgewiki import model as WM
 
 class TestNewGit(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestNewGit(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_git
+    @with_git
     @td.with_wiki
     def setup_with_tools(self):
         setup_global_objects()
@@ -99,7 +100,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_git
+    @with_git
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
@@ -221,7 +222,7 @@ class TestGitCommit(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_git
+    @with_git
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')

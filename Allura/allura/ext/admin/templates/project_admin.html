@@ -46,11 +46,11 @@
   </div>
   <div class="grid-13">
     <h3>Code</h3>
-    <p>Git/SVN/Hg will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
+    <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
   </div>
   <div class="grid-4">
     {% for tool in c.project.app_configs %}
-      {% if (tool.tool_name == 'Git' or tool.tool_name == 'Hg' or tool.tool_name == 'SVN') and not code_found %}
+      {% if ('code' in tool.options.mount_point) and not code_found %}
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
         {% set code_found = True %}

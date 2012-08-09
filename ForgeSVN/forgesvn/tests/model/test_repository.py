@@ -7,12 +7,14 @@ import mock
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.utils import svn_path_exists
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
-from allura import model as M
+
 from forgesvn import model as SM
+from forgesvn.tests import with_svn
 
 class TestNewRepo(unittest.TestCase):
 
@@ -20,7 +22,7 @@ class TestNewRepo(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_svn
+    @with_svn
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
@@ -78,7 +80,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_svn
+    @with_svn
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
@@ -243,7 +245,7 @@ class TestSVNRev(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_svn
+    @with_svn
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')

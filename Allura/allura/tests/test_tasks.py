@@ -187,43 +187,6 @@ class TestNotificationTasks(unittest.TestCase):
                 assert deliver.called_with('42', '52', 'none')
                 assert fire_ready.called_with()
 
-class TestRepoTasks(unittest.TestCase):
-
-    def setUp(self):
-        setup_basic_test()
-        self.setup_with_tools()
-
-    @td.with_svn
-    def setup_with_tools(self):
-        h.set_context('test', 'src', neighborhood='Projects')
-
-    def test_init(self):
-        ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init') as f:
-            repo_tasks.init()
-            M.main_orm_session.flush()
-            assert f.called_with()
-            assert ns + 1 == M.Notification.query.find().count()
-
-    def test_clone(self):
-        ns = M.Notification.query.find().count()
-        with mock.patch.object(c.app.repo, 'init_as_clone') as f:
-            with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
-                repo_tasks.clone('foo', 'bar', 'baz')
-                M.main_orm_session.flush()
-                f.assert_called_with('foo', 'bar', 'baz', False)
-                assert ns + 1 == M.Notification.query.find().count()
-
-    def test_refresh(self):
-        with mock.patch.object(c.app.repo, 'refresh') as f:
-            repo_tasks.refresh()
-            f.assert_called_with()
-
-    def test_uninstall(self):
-        with mock.patch.object(shutil, 'rmtree') as f:
-            repo_tasks.uninstall()
-            f.assert_called_with('/tmp/svn/p/test/src', ignore_errors=True)
-
 @event_handler('my_event')
 def _my_event(event_type, testcase, *args, **kwargs):
     testcase.called_with.append((args, kwargs))

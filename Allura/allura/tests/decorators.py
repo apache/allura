@@ -50,23 +50,8 @@ with_discussion = with_tool('test', 'Discussion', 'discussion')
 with_link = with_tool('test', 'Link', 'link')
 with_tracker = with_tool('test', 'Tickets', 'bugs')
 with_wiki = with_tool('test', 'Wiki', 'wiki')
-with_git = with_tool('test', 'Git', 'src-git', 'Git', type='git')
 with_hg = with_tool('test', 'Hg', 'src-hg', 'Mercurial', type='hg')
-with_svn = with_tool('test', 'SVN', 'src', 'SVN')
 with_url = with_tool('test', 'ShortUrl', 'url')
-
-
-
-
-def with_repos(func):
-    @wraps(func)
-    @with_git
-    @with_hg
-    @with_svn
-    def wrapped(*args, **kw):
-        return func(*args, **kw)
-    return wrapped
-
 
 class raises(object):
     'test helper in the form of a context manager, to assert that something raises an exception'

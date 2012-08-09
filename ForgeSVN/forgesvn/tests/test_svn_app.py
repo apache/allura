@@ -6,7 +6,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from allura.tests import decorators as td
+from forgesvn.tests import with_svn
 
 class TestSVNApp(unittest.TestCase):
 
@@ -14,7 +14,7 @@ class TestSVNApp(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_svn
+    @with_svn
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')

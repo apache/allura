@@ -292,82 +292,14 @@ class TestAuth(TestController):
         # Make sure that default _lookup() throws 404
         self.app.get('/auth/foobar', status=404)
 
-    @td.with_svn
-    def test_refresh_repo(self):
-        r = self.app.get('/auth/refresh_repo')
-        assert_equal(r.body, 'No repo specified')
-
-        r = self.app.get('/auth/refresh_repo/p/gbalksdfh')
-        assert_equal(r.body, 'No project at /p/gbalksdfh')
-
-        r = self.app.get('/auth/refresh_repo/p/test')
-        assert_equal(r.body, '/p/test does not include a repo mount point')
-
-        r = self.app.get('/auth/refresh_repo/p/test/blah/')
-        assert_equal(r.body, 'Cannot find repo at /p/test/blah')
-
-        r = self.app.get('/auth/refresh_repo/p/test/src/')
-        assert_equal(r.body, '<Repository /tmp/svn/p/test/src> refresh queued.\n')
-
 class TestUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
     read = dict(allow_read=True, allow_write=False, allow_create=False)
     disallow = dict(allow_read=False, allow_write=False, allow_create=False)
 
-    def test_unknown_project(self):
-        r = self._check_repo('/git/foo/bar', status=404)
-
-    def test_unknown_app(self):
-        r = self._check_repo('/git/test/bar')
-        assert r == self.disallow, r
-
-    @td.with_svn
-    def test_repo_write(self):
-        r = self._check_repo('/git/test/src.git')
-        assert r == self.allow, r
-        r = self._check_repo('/git/test/src')
-        assert r == self.allow, r
-
-    @td.with_svn
-    def test_subdir(self):
-        r = self._check_repo('/git/test/src.git/foo')
-        assert r == self.allow, r
-        r = self._check_repo('/git/test/src/foo')
-        assert r == self.allow, r
-
-    @td.with_svn
-    def test_neighborhood(self):
-        r = self._check_repo('/git/test.p/src.git')
-        assert r == self.allow, r
-
-    @td.with_svn
-    def test_repo_read(self):
-        r = self._check_repo(
-            '/git/test.p/src.git',
-            username='test-user')
-        assert r == self.read, r
-
-    def test_unknown_user(self):
-        r = self._check_repo(
-            '/git/test.p/src.git',
-            username='test-usera',
-            status=404)
-
-    def _check_repo(self, path, username='test-admin', **kw):
-        url = '/auth/repo_permissions'
-        r = self.app.get(url, params=dict(
-                repo_path=path,
-                username=username), **kw)
-        try:
-            return r.json
-        except:
-            return r
-
-    @td.with_repos
+    @td.with_hg
     def test_list_repos(self):
         r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
         assert_equal(json.loads(r.body), {"allow_write": [
-            '/git/test/src-git',
             '/hg/test/src-hg',
-            '/svn/test/src',
         ]})

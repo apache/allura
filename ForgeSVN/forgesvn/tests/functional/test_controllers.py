@@ -8,16 +8,15 @@ from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
-from allura.tests import decorators as td
 from alluratest.controller import TestController
-
+from forgesvn.tests import with_svn
 
 class SVNTestController(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.setup_with_tools()
 
-    @td.with_svn
+    @with_svn
     def setup_with_tools(self):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
