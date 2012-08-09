@@ -4,7 +4,7 @@ from itertools import count
 from datetime import datetime
 
 import mock
-from nose.tools import assert_equal, nottest
+from nose.tools import assert_equal
 from pylons import c
 import tg
 import ming
@@ -21,6 +21,8 @@ class _Test(unittest.TestCase):
 
     def _make_tree(self, object_id, **kwargs):
         t, isnew = M.repo.Tree.upsert(object_id)
+        repo = getattr(self, 'repo', None)
+        t.repo = repo
         for k,v in kwargs.iteritems():
             if isinstance(v, basestring):
                 obj = M.repo.Blob(
@@ -388,6 +390,69 @@ class TestCommit(_TestWithRepo):
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
+
+    def test_diffs_file_renames(self):
+        def open_blob(blob):
+            blobs = {
+                u'a': u'Leia',
+                u'/b/a/a': u'Darth Vader',
+                u'/b/a/b': u'Luke Skywalker',
+                u'/b/b': u'Death Star will destroy you',
+                u'/b/c': u'Luke Skywalker',  # moved from /b/a/b
+                u'/b/a/z': u'Death Star will destroy you\nALL',  # moved from /b/b and modified
+            }
+            from cStringIO import StringIO
+            return StringIO(blobs[blob.path()])
+        self.repo._impl.open_blob = open_blob
+
+        self.repo._impl.commit = mock.Mock(return_value=self.ci)
+        M.repo_refresh.refresh_commit_trees(self.ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
+        assert self.ci.diffs.added == ['a']
+        assert (self.ci.diffs.copied
+                == self.ci.diffs.changed
+                == self.ci.diffs.removed
+                == [])
+
+        ci, isnew = self._make_commit(
+            'bar',
+            b=dict(
+                a=dict(
+                    a='',
+                    b='',),
+                b=''))
+        ci.parent_ids = ['foo']
+        self._make_log(ci)
+        M.repo_refresh.refresh_commit_trees(ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
+        assert ci.diffs.added == ['b']
+        assert ci.diffs.removed == ['a']
+        assert (ci.diffs.copied
+                == ci.diffs.changed
+                == [])
+
+        ci, isnew = self._make_commit(
+            'baz',
+            b=dict(
+                a=dict(
+                    z=''),
+                c=''))
+        ci.parent_ids = ['bar']
+        self._make_log(ci)
+        M.repo_refresh.refresh_commit_trees(ci, {})
+        M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
+        assert ci.diffs.added == ci.diffs.changed == []
+        assert ci.diffs.removed == ['b/a/a']
+        # see mock for open_blob
+        assert len(ci.diffs.copied) == 2
+        assert ci.diffs.copied[0]['old'] == 'b/a/b'
+        assert ci.diffs.copied[0]['new'] == 'b/c'
+        assert ci.diffs.copied[0]['ratio'] == 1
+        assert ci.diffs.copied[0]['diff'] == ''
+        assert ci.diffs.copied[1]['old'] == 'b/b'
+        assert ci.diffs.copied[1]['new'] == 'b/a/z'
+        assert ci.diffs.copied[1]['ratio'] < 1
+        assert '+++' in ci.diffs.copied[1]['diff']
 
     def test_context(self):
         self.ci.context()
