@@ -297,7 +297,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def activity_name(self):
-        return self.username
+        return self.display_name or self.username
 
     def get_pref(self, pref_name):
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)

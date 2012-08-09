@@ -13,8 +13,7 @@ from allura.app import Application
 from allura import version
 from allura.controllers import BaseController
 from allura.lib.security import require_authenticated
-
-from activitystream import director
+from allura.model.timeline import perm_check
 
 from .widgets.follow import FollowToggle
 
@@ -63,15 +62,17 @@ class ForgeActivityController(BaseController):
             raise exc.HTTPNotFound()
 
         c.follow_toggle = W.follow_toggle
-        followee = c.project
-        timeline = []
         if c.project.is_user_project:
             followee = c.project.user_project_of
-            if followee == c.user:
-                # user is looking at his own activity stream
-                timeline = g.director.create_timeline(c.user)
-        following = g.director.is_connected(c.user, followee)
+            actor_only = followee != c.user
+        else:
+            followee = c.project
+            actor_only = False
 
+        following = g.director.is_connected(c.user, followee)
+        timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
+                limit=kw.get('limit', 100), actor_only=actor_only,
+                filter_func=perm_check(c.user))
         return dict(followee=followee, following=following, timeline=timeline)
 
     @expose('json:')

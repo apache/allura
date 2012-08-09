@@ -30,6 +30,7 @@
     <ul>
         {% for a in timeline %}
         <li>{{activity_obj(a['actor'])}} {{a['verb']}} {{activity_obj(a['obj'])}} {% if a.get('target') %}on {{activity_obj(a['target'])}}{% endif %} {{h.ago(a['published'])}}</li>
+        <!-- Score: {{ a.get('score') }} -->
         {% endfor %}
     </ul>
   {% endif %}

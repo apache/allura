@@ -416,6 +416,22 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def activity_name(self):
         return 'a comment'
 
+    def has_activity_access(self, perm, user):
+        """Return True if user has perm access to this object, otherwise
+        return False.
+
+        For the purposes of activitystreams, we're saying that the user does
+        not have access to a 'comment' activity unless he also has access to
+        the artifact on which it was posted (if there is one).
+        """
+        artifact_access = True
+        if self.thread.artifact:
+            artifact_access = security.has_access(self.thread.artifact, perm,
+                    user, self.thread.artifact.project)
+
+        return artifact_access and security.has_access(self, perm, user,
+                self.project)
+
     def index(self):
         result = super(Post, self).index()
         result.update(
@@ -518,8 +534,9 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.thread.update_stats()
         if hasattr(artifact, 'update_stats'):
             artifact.update_stats()
-        g.director.create_activity(author, 'posted', self, target=artifact,
-                related_nodes=[self.app_config.project])
+        if self.text:
+            g.director.create_activity(author, 'posted', self, target=artifact,
+                    related_nodes=[self.app_config.project])
 
     def notify(self, file_info=None, check_dup=False):
         artifact = self.thread.artifact or self.thread
