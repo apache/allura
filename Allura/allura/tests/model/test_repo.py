@@ -15,6 +15,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
 
+
 class _Test(unittest.TestCase):
     idgen = ( 'obj_%d' % i for i in count())
 
@@ -48,6 +49,12 @@ class _Test(unittest.TestCase):
             ci.tree_id = 't_' + object_id
             ci.tree = self._make_tree(ci.tree_id, **tree_parts)
         return ci, isnew
+
+    def _make_log(self, ci):
+        session(ci).flush(ci)
+        rb = M.repo_refresh.CommitRunBuilder([ci._id])
+        rb.run()
+        rb.cleanup()
 
     def setUp(self):
         setup_basic_test()
@@ -295,6 +302,7 @@ class TestRepoObject(_TestWithRepoAndCommit):
         assert self.ci.index_id() == 'allura/model/repo/Commit#foo', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()
 
+
 class TestCommit(_TestWithRepo):
 
     def setUp(self):
@@ -356,6 +364,7 @@ class TestCommit(_TestWithRepo):
                 == [])
         ci, isnew = self._make_commit('bar')
         ci.parent_ids = [ 'foo' ]
+        self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert ci.diffs.removed == [ 'a' ]
@@ -371,6 +380,7 @@ class TestCommit(_TestWithRepo):
                     b='',),
                 b=''))
         ci.parent_ids = [ 'foo' ]
+        self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
         assert ci.diffs.added == [ 'b' ]
