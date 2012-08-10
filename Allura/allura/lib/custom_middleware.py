@@ -5,6 +5,7 @@ import logging
 import tg
 import pkg_resources
 from paste import fileapp
+from pylons import c
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
@@ -182,3 +183,8 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'generate'),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
         ]
+
+    def before_logging(self, stat_record):
+        if c.app and c.app.config:
+            stat_record.add('request_category', c.app.config.tool_name)
+        return stat_record
