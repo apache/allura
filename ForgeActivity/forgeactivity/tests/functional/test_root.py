@@ -38,3 +38,9 @@ class TestActivityController(TestController):
         resp = self.app.get('/u/test-admin/activity/')
         assert director.create_timeline.call_count == 1
         assert director.create_timeline.call_args[0][0].username == 'test-admin'
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_follow_user(self):
+        resp = self.app.get('/u/test-user-1/activity/follow?follow=True')
+        assert 'You are now following Test User 1' in resp
