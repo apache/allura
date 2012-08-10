@@ -219,6 +219,17 @@ class Application(object):
         self.config.delete()
         session(self.config).flush()
 
+    @property
+    def uninstallable(self):
+        """Return True if this app can be uninstalled. Controls whether the
+        'Delete' option appears on the admin menu for this app.
+
+        By default, an app can be uninstalled iff it can be installed, although
+        some apps may want/need to override this (e.g. an app which can
+        not be installed directly by a user, but may be uninstalled).
+        """
+        return self.installable
+
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`

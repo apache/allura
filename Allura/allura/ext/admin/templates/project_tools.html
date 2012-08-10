@@ -62,21 +62,21 @@
                         <a href="{{ link.url }}" class="{{ link.className }}">{{ link.label }}</a>
                     </li>
                     {% endfor %}
-                    {% if app.installable %}
+                    {% if app.uninstallable %}
                     <li>
                       <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
                         <input type="hidden" class="mount_point"
                                name="tool-{{loop.index0}}.mount_point"
                                value="{{mount['ac'].options.mount_point}}"/>
                         <input name="tool-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                        {% if mount['ac'].load().installable %}
+                        {% if mount['ac'].load().uninstallable %}
                           <a href="#" class="mount_delete">Delete</a>
                         {% endif %}
                       </form>
                     </li>
                     {% endif %}
                 </ul>
-                {% if not app.installable %}
+                {% if not app.uninstallable %}
                   <input type="hidden" class="mount_point" value="{{mount['ac'].options.mount_point}}"/>
                 {% endif %}
             </div>
