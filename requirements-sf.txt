@@ -12,6 +12,7 @@ sf.phpsession==0.1
 SQLAlchemy==0.7.2
 sqlalchemy-migrate==0.7.1
 pyzmq==2.1.7
+html2text==3.200.3dev-20120810
 
 # for the migration scripts only
 postmarkup==1.1.4
