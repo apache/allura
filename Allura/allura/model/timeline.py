@@ -46,7 +46,9 @@ def perm_check(user):
         """Return True if c.user has 'read' access to this activity,
         otherwise return False.
         """
-        allura_id = activity['obj']['activity_extras'].get('allura_id')
+        extras_dict = activity['obj'].get('activity_extras')
+        if not extras_dict: return True
+        allura_id = extras_dict.get('allura_id')
         if not allura_id: return True
         classname, _id = allura_id.split(':')
         cls = Mapper.by_classname(classname).mapped_class
