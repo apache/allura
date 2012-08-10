@@ -93,7 +93,7 @@ def main(options, args):
                 write_sitemap(locs[:options.urls_per_file], file_count)
                 del locs[:options.urls_per_file]
                 file_count += 1
-            session(p).clear()
+            M.main_orm_session.clear()
         ThreadLocalORMSession.close_all()
     while locs:
         write_sitemap(locs[:options.urls_per_file], file_count)
