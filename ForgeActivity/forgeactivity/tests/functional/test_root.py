@@ -48,7 +48,7 @@ class TestActivityController(TestController):
 
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
-    @patch('forgeactivity.main.g._director')
+    @patch('forgeactivity.main.g.director')
     def test_viewing_other_user_project(self, director):
         resp = self.app.get('/u/test-user-1/activity/')
         assert director.get_timeline.call_count == 1
@@ -56,7 +56,7 @@ class TestActivityController(TestController):
         assert director.get_timeline.call_args[1]['actor_only'] == True
 
     @td.with_tool('test', 'activity')
-    @patch('forgeactivity.main.g._director')
+    @patch('forgeactivity.main.g.director')
     def test_viewing_project_activity(self, director):
         resp = self.app.get('/p/test/activity/')
         assert director.get_timeline.call_count == 1
