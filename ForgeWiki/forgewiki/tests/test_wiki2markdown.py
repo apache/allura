@@ -1,5 +1,6 @@
 import mock
 import json
+from datetime import datetime
 from IPython.testing.decorators import module_not_available, skipif
 
 from forgewiki.command.wiki2markdown.extractors import MySQLExtractor
@@ -30,16 +31,16 @@ class TestMySQLExtractor(object):
         def history(self, page_id):
             data = {
                 1: [
-                    {'timestamp': 1, 'text': "Test"},
-                    {'timestamp': 2, 'text': "Test Text"}
+                    {'timestamp': 1, 'text': "Test", 'username': 'test-user'},
+                    {'timestamp': 2, 'text': "Test Text", 'username': 'bad'}
                 ],
                 2: [
-                    {'timestamp': 1, 'text': "Main_Page"},
-                    {'timestamp': 2, 'text': "Main_Page text"}
+                    {'timestamp': 1, 'text': "Main_Page", 'username': 'b'},
+                    {'timestamp': 2, 'text': "Main_Page text", 'username': 'b'}
                 ],
                 3: [
-                    {'timestamp': 1, 'text': "Some test text"},
-                    {'timestamp': 2, 'text': ""}
+                    {'timestamp': 1, 'text': "Some test text", 'username': ''},
+                    {'timestamp': 2, 'text': "", 'username': ''}
                 ]
             }
             revisions = data[page_id]
@@ -47,7 +48,11 @@ class TestMySQLExtractor(object):
                 yield rev
 
         def talk(self, page_title):
-            return {'text': 'Talk for page %s.' % page_title}
+            return {
+                'text': 'Talk for page %s.' % page_title,
+                'timestamp': 1,
+                'username': 'test-user'
+            }
 
         def attachments(self, *args, **kwargs):
             # make 'empty' iterator
@@ -71,7 +76,8 @@ class TestMySQLExtractor(object):
             'timestamp': 1,
             'text': 'Test',
             'page_id': 1,
-            'title': 'Test title'
+            'title': 'Test title',
+            'username': 'test-user'
         }
         assert page == res_page
 
@@ -82,7 +88,8 @@ class TestMySQLExtractor(object):
             'timestamp': 2,
             'text': 'Test Text',
             'page_id': 1,
-            'title': 'Test title'
+            'title': 'Test title',
+            'username': 'bad'
         }
         assert page == res_page
 
@@ -93,7 +100,8 @@ class TestMySQLExtractor(object):
             'timestamp': 1,
             'text': 'Main_Page',
             'page_id': 2,
-            'title': 'Main_Page'
+            'title': 'Main_Page',
+            'username': 'b'
         }
         assert page == res_page
 
@@ -104,7 +112,8 @@ class TestMySQLExtractor(object):
             'timestamp': 2,
             'text': 'Main_Page text',
             'page_id': 2,
-            'title': 'Main_Page'
+            'title': 'Main_Page',
+            'username': 'b'
         }
         assert page == res_page
 
@@ -115,7 +124,8 @@ class TestMySQLExtractor(object):
             'timestamp': 1,
             'text': 'Some test text',
             'page_id': 3,
-            'title': 'Test'
+            'title': 'Test',
+            'username': ''
         }
         assert page == res_page
 
@@ -126,7 +136,8 @@ class TestMySQLExtractor(object):
             'timestamp': 2,
             'text': '',
             'page_id': 3,
-            'title': 'Test'
+            'title': 'Test',
+            'username': ''
         }
         assert page == res_page
 
@@ -142,15 +153,24 @@ class TestMySQLExtractor(object):
 
         with open('/tmp/w2m_test/pages/1/discussion.json', 'r') as f:
             page = json.load(f)
-        assert page == {'text': 'Talk for page Test 1.'}
+        assert page == {
+                        'text': 'Talk for page Test 1.',
+                        'username': 'test-user',
+                        'timestamp': 1}
 
         with open('/tmp/w2m_test/pages/2/discussion.json', 'r') as f:
             page = json.load(f)
-        assert page == {'text': 'Talk for page Test 2.'}
+        assert page == {
+                        'text': 'Talk for page Test 2.',
+                        'timestamp': 1,
+                        'username': 'test-user'}
 
         with open('/tmp/w2m_test/pages/3/discussion.json', 'r') as f:
             page = json.load(f)
-        assert page == {'text': 'Talk for page Test 3.'}
+        assert page == {
+                        'text': 'Talk for page Test 3.',
+                        'timestamp': 1,
+                        'username': 'test-user'}
 
 
 class TestMediawikiLoader(object):
@@ -177,13 +197,15 @@ class TestMediawikiLoader(object):
                         'title': 'Test title',
                         'text': "'''bold''' ''italics''",
                         'page_id': 1,
-                        'timestamp': 1
+                        'timestamp': '20120808000001',
+                        'username': 'test-user'
                     },
                     {
                         'title': 'Test title',
                         'text': "'''bold'''",
                         'page_id': 1,
-                        'timestamp': 2
+                        'timestamp': '20120809000001',
+                        'username': 'test-user'
                     },
                 ],
                 2: [
@@ -191,13 +213,15 @@ class TestMediawikiLoader(object):
                         'title': 'Main',
                         'text': "Main text rev 1",
                         'page_id': 2,
-                        'timestamp': 1
+                        'timestamp': '20120808000001',
+                        'username': 'bad-user'
                     },
                     {
                         'title': 'Main',
                         'text': "Main text rev 2",
                         'page_id': 2,
-                        'timestamp': 2
+                        'timestamp': '20120809000001',
+                        'username': 'bad-user'
                     },
 
                 ],
@@ -207,8 +231,16 @@ class TestMediawikiLoader(object):
 
         def talk(self, page_dir):
             data = {
-                1: {'text': "''Talk page'' for page 1."},
-                2: {'text': "''Talk page'' for page 2."},
+                1: {
+                    'text': "''Talk page'' for page 1.",
+                    'username': 'test-user',
+                    'timestamp': '20120809000001'
+                },
+                2: {
+                    'text': "''Talk page'' for page 2.",
+                    'username': 'bad-user',
+                    'timestamp': '20120809000001'
+                },
             }
             return data[page_dir]
 
@@ -234,27 +266,46 @@ class TestMediawikiLoader(object):
                                 thread_id=thread._id)
 
     @skipif(module_not_available('mediawiki'))
-    def test_load_pages(self):
+    @mock.patch('allura.model.discuss.g.director')
+    def test_load_pages(self, director):
         """Test that pages, edit history and talk loaded properly"""
         self.loader.load_pages()
         page = self.get_page('Test title')
 
+        assert page.mod_date == datetime.strptime('20120809000001',
+                                                  self.loader.TIMESTAMP_FMT)
+        assert page.authors()[0].username == 'test-user'
         assert '**bold**' in page.text
         # _italics should be only in the first revision of page
         assert '_italics_' not in page
 
         page = page.get_version(1)
         assert '**bold** _italics_' in page.text
+        assert page.mod_date == datetime.strptime('20120808000001',
+                                                  self.loader.TIMESTAMP_FMT)
+        assert page.authors()[0].username == 'test-user'
 
         page = self.get_page('Main')
+        assert page.mod_date == datetime.strptime('20120809000001',
+                                                  self.loader.TIMESTAMP_FMT)
+        assert page.authors()[0].username == '*anonymous'
         assert 'Main text rev 2' in page.text
 
         page = page.get_version(1)
+        assert page.mod_date == datetime.strptime('20120808000001',
+                                                  self.loader.TIMESTAMP_FMT)
+        assert page.authors()[0].username == '*anonymous'
         assert 'Main text rev 1' in page.text
 
         # Check that talk pages loaded
         post = self.get_post('Test title')
+        assert post.timestamp == datetime.strptime('20120809000001',
+                                                   self.loader.TIMESTAMP_FMT)
+        assert post.author().username == 'test-user'
         assert '_Talk page_ for page 1.' in post.text
 
         post = self.get_post('Main')
+        assert post.timestamp == datetime.strptime('20120809000001',
+                                                   self.loader.TIMESTAMP_FMT)
+        assert post.author().username == '*anonymous'
         assert '_Talk page_ for page 2.' in post.text

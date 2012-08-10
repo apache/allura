@@ -90,15 +90,17 @@ class MySQLExtractor(MediawikiExtractor):
     def _history(self, page_id):
         """Yield page_data for next revision of wiki page"""
         c = self.connection().cursor()
-        c.execute('select revision.rev_timestamp, text.old_text '
+        c.execute('select revision.rev_timestamp, text.old_text, '
+                  'revision.rev_user_text '
                   'from revision '
                   'left join text on revision.rev_text_id = text.old_id '
                   'where revision.rev_page = %s', page_id)
         for row in c:
-            timestamp, text = row
+            timestamp, text, username = row
             page_data = {
                 'timestamp': timestamp,
-                'text': text or ''
+                'text': text or '',
+                'username': username
             }
             yield page_data
 
@@ -106,7 +108,8 @@ class MySQLExtractor(MediawikiExtractor):
         """Return page_data for talk page with `page_title` title"""
         c = self.connection().cursor()
         query_attrs = (page_title, 1)  # page_namespace == 1 - talk pages
-        c.execute('select text.old_text '
+        c.execute('select text.old_text, revision.rev_timestamp, '
+                  'revision.rev_user_text '
                   'from page '
                   'left join revision on revision.rev_id = page.page_latest '
                   'left join text on text.old_id = revision.rev_text_id '
@@ -115,11 +118,11 @@ class MySQLExtractor(MediawikiExtractor):
 
         row = c.fetchone()
         if row:
-            text = row[0]
-            return {'text': text}
+            text, timestamp, username = row
+            return {'text': text, 'timestamp': timestamp, 'username': username}
 
     def _attachments(self, page_id):
-        """Yield path to nexe file attached to wiki page"""
+        """Yield path to next file attached to wiki page"""
         c = self.connection().cursor()
         c.execute('select il_to from imagelinks '
                   'where il_from = %s' % page_id)

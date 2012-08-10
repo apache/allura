@@ -84,7 +84,7 @@ class Page(VersionedArtifact, ActivityObject):
         return 'wiki page %s' % self.title
 
     def commit(self):
-        VersionedArtifact.commit(self)
+        ss = VersionedArtifact.commit(self)
         session(self).flush()
         if self.version > 1:
             v1 = self.get_version(self.version-1)
@@ -109,6 +109,7 @@ class Page(VersionedArtifact, ActivityObject):
         Feed.post(self, title=None, description=description)
         Notification.post(
             artifact=self, topic='metadata', text=description, subject=subject)
+        return ss
 
     @property
     def email_address(self):

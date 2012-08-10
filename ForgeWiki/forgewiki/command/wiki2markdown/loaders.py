@@ -1,6 +1,7 @@
 import os
 import json
-
+import datetime
+from pylons import c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
@@ -10,10 +11,12 @@ from forgewiki.converters import mediawiki_internal_links2markdown
 from allura.command import base as allura_base
 from allura.lib import helpers as h
 from allura.lib import utils
+from allura.model.session import artifact_orm_session
 
 
 class MediawikiLoader(object):
     """Load MediaWiki data from json to Allura wiki tool"""
+    TIMESTAMP_FMT = '%Y%m%d%H%M%S'
 
     def __init__(self, options):
         self.options = options
@@ -36,9 +39,22 @@ class MediawikiLoader(object):
             exit(2)
 
         h.set_context(self.project.shortname, 'wiki', neighborhood=self.nbhd)
+        self.project.notifications_disabled = True
+
+    def exit(self, status):
+        self.project.notifications_disabled = False
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        exit(status)
 
     def load(self):
+        artifact_orm_session._get().skip_mod_date = True
         self.load_pages()
+        self.project.notifications_disabled = False
+        artifact_orm_session._get().skip_mod_date = False
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        allura_base.log.info('Loading wiki done')
 
     def _pages(self):
         """Yield path to page dump directory for next wiki page"""
@@ -66,11 +82,11 @@ class MediawikiLoader(object):
                     page_data = json.load(pages_file)
             except IOError, e:
                 allura_base.log.error("Can't open file: %s" % str(e))
-                exit(2)
+                self.exit(2)
             except ValueError, e:
                 allura_base.log.error("Can't load data from file %s: %s"
                                       % (fn, str(e)))
-                exit(2)
+                self.exit(2)
             yield page_data
 
     def _talk(self, page_dir):
@@ -83,11 +99,11 @@ class MediawikiLoader(object):
                 talk_data = json.load(talk_file)
         except IOError, e:
             allura_base.log.error("Can't open file: %s" % str(e))
-            exit(2)
+            self.exit(2)
         except ValueError, e:
             allura_base.log.error("Can't load data from file %s: %s"
                                   % (filename, str(e)))
-            exit(2)
+            self.exit(2)
         return talk_data
 
     def _attachments(self, page_dir):
@@ -109,7 +125,13 @@ class MediawikiLoader(object):
                 p.text = mediawiki_internal_links2markdown(
                             mediawiki2markdown(page['text']),
                             page['title'])
-                p.commit()
+                timestamp = datetime.datetime.strptime(page['timestamp'],
+                                                        self.TIMESTAMP_FMT)
+                p.mod_date = timestamp
+                c.user = (M.User.query.get(username=page['username'])
+                          or M.User.anonymous())
+                ss = p.commit()
+                ss.mod_date = ss.timestamp = timestamp
 
             # set home to main page
             if page['title'] == 'Main_Page':
@@ -121,10 +143,6 @@ class MediawikiLoader(object):
 
             self.load_talk(page_dir, page['title'])
             self.load_attachments(page_dir, page['title'])
-
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
-        allura_base.log.info('Loading pages done')
 
     def load_talk(self, page_dir, page_title):
         """Load talk for page.
@@ -143,10 +161,15 @@ class MediawikiLoader(object):
         thread = M.Thread.query.get(ref_id=page.index_id())
         if not thread:
             return
+        timestamp = datetime.datetime.strptime(talk_data['timestamp'],
+                                               self.TIMESTAMP_FMT)
+        c.user = (M.User.query.get(username=talk_data['username'])
+                  or M.User.anonymous())
         thread.add_post(
             text=text,
             discussion_id=thread.discussion_id,
             thread_id=thread._id,
+            timestamp=timestamp,
             ignore_security=True)
         allura_base.log.info('Loaded talk for page %s' % page_title)
 
@@ -164,5 +187,5 @@ class MediawikiLoader(object):
                                 content_type=utils.guess_mime_type(filename))
             except IOError, e:
                 allura_base.log.error("Can't open file: %s" % str(e))
-                exit(2)
+                self.exit(2)
         allura_base.log.info('Loaded attachments for page %s.' % page_title)
