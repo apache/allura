@@ -149,12 +149,10 @@ class Globals(object):
         # Zarkov logger
         self._zarkov = None
 
-    @property
+    @LazyProperty
     def director(self):
         """Return activitystream director"""
-        if not hasattr(self, '_director'):
-            self._director = activitystream.director()
-        return self._director
+        return activitystream.director()
 
     @LazyProperty
     def amq_conn(self):

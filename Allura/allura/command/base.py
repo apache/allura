@@ -9,6 +9,7 @@ from paste.script import command
 from paste.deploy import appconfig
 from paste.registry import Registry
 
+import activitystream
 import ming
 from allura.config.environment import load_environment
 
@@ -56,6 +57,7 @@ class Command(command.Command):
             from allura import model
             M=model
             ming.configure(**conf)
+            activitystream.configure(**conf)
             pylons.c.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)

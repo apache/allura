@@ -33,7 +33,7 @@ class TestActivityController(TestController):
 
     @td.with_tool('u/test-admin', 'activity')
     @td.with_user_project('test-admin')
-    @patch('forgeactivity.main.g._director')
+    @patch('forgeactivity.main.g.director')
     def test_viewing_own_user_project(self, director):
         resp = self.app.get('/u/test-admin/activity/')
         assert director.create_timeline.call_count == 1
