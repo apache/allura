@@ -148,7 +148,8 @@ class exceptionless(object):
                 return fun(*args, **kwargs)
             except Exception as e:
                 if self.log:
-                    self.log.exception('Error calling %s %s' % (fname, str(e)))
+                    self.log.exception('Error calling %s(args=%s, kwargs=%s): %s',
+                            fname, args, kwargs, str(e))
                 return self.error_result
         inner.__name__ = fname
         return inner

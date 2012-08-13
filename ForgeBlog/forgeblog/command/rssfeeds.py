@@ -17,6 +17,7 @@ from forgeblog import model as BM
 from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
+from allura.lib.decorators import exceptionless
 
 html2text.BODY_WIDTH = 0
 
@@ -128,7 +129,17 @@ class RssFeedsCommand(base.BlogCommand):
                       help='poster username')
 
     def command(self):
+        # If this script creates a new BlogPost, it will create an
+        # activitystream activity for that post. During the saving of the
+        # activity, User.url() will be called. This method defers to an
+        # AuthenticationProvider, which depends on a request being setup in
+        # the current thread. So, we set one up here.
+        import pylons, webob
+        pylons.request._push_object(webob.Request.blank('/'))
+
         self.basic_setup()
+        self.process_feed = exceptionless(None, log=allura_base.log)(self.process_feed)
+        self.process_entry = exceptionless(None, log=allura_base.log)(self.process_entry)
 
         user = M.User.query.get(username=self.options.username)
         c.user = user
@@ -168,37 +179,39 @@ class RssFeedsCommand(base.BlogCommand):
             allura_base.log.exception("%s: %s" % (feed_url, f.bozo_exception))
             return
         for e in f.entries:
-            title = e.title
-            if 'content' in e:
-                content = u''
-                for ct in e.content:
-                    if ct.type != 'text/html':
-                        content += '[plain]%s[/plain]' % ct.value
-                    else:
-                        parser = MDHTMLParser()
-                        parser.feed(ct.value)
-                        parser.close() # must be before using the result_doc
-                        markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
-
-                        content += markdown_content
-            else:
-                content = '[plain]%s[/plain]' % getattr(e, 'summary',
-                                                    getattr(e, 'subtitle',
-                                                        getattr(e, 'title')))
-
-            content += u' [link](%s)' % e.link
-
-            updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
-
-            base_slug = BM.BlogPost.make_base_slug(title, updated)
-            b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
-            if b_count == 0:
-                post = BM.BlogPost(title=title, text=content, timestamp=updated,
-                               app_config_id=appid,
-                               tool_version={'blog': version.__version__},
-                               state='published')
-                post.neighborhood_id=c.project.neighborhood_id
-                post.make_slug()
-                post.commit()
-
+            self.process_entry(e, appid)
         session(BM.BlogPost).flush()
+
+    def process_entry(self, e, appid):
+        title = e.title
+        allura_base.log.info(" ...entry '%s'", title)
+        if 'content' in e:
+            content = u''
+            for ct in e.content:
+                if ct.type != 'text/html':
+                    content += '[plain]%s[/plain]' % ct.value
+                else:
+                    parser = MDHTMLParser()
+                    parser.feed(ct.value)
+                    parser.close() # must be before using the result_doc
+                    markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
+
+                    content += markdown_content
+        else:
+            content = '[plain]%s[/plain]' % getattr(e, 'summary',
+                                                getattr(e, 'subtitle',
+                                                    getattr(e, 'title')))
+
+        content += u' [link](%s)' % e.link
+        updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
+
+        base_slug = BM.BlogPost.make_base_slug(title, updated)
+        b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
+        if b_count == 0:
+            post = BM.BlogPost(title=title, text=content, timestamp=updated,
+                            app_config_id=appid,
+                            tool_version={'blog': version.__version__},
+                            state='published')
+            post.neighborhood_id=c.project.neighborhood_id
+            post.make_slug()
+            post.commit()
