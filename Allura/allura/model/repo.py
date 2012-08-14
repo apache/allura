@@ -332,7 +332,7 @@ class Tree(RepoObject):
 
     def ls(self):
         # Load last commit info
-        id_re = re.compile("^{0}:{1}:".format(self.repo._id, self.path()))
+        id_re = re.compile("^{0}:{1}:".format(self.repo._id, h.really_unicode(self.path()).encode('utf-8')))
         lc_index = dict(
             (lc.name, lc.commit_info)
             for lc in LastCommitDoc.m.find(dict(_id=id_re)))
