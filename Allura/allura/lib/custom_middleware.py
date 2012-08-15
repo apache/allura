@@ -186,5 +186,5 @@ class AlluraTimerMiddleware(TimerMiddleware):
 
     def before_logging(self, stat_record):
         if c.app and c.app.config:
-            stat_record.add('request_category', c.app.config.tool_name)
+            stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
