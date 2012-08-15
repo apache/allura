@@ -233,7 +233,7 @@ class MonQTask(MappedClass):
             raise
         finally:
             self.time_stop = datetime.utcnow()
-            session(self).flush(self)
+            main_orm_session.flush(self)
             if restore_context:
                 c.project = old_cproject
                 c.app = old_capp

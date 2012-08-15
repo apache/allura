@@ -30,7 +30,6 @@ class ArtifactSessionExtension(SessionExtension):
 
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
-        import allura.tasks.index_tasks
         if not getattr(self.session, 'disable_artifact_index', False):
             from pylons import g
             from .index import ArtifactReference, Shortlink
@@ -47,12 +46,7 @@ class ArtifactSessionExtension(SessionExtension):
                 main_orm_session.flush()
             except Exception:
                 log.exception("Failed to update artifact references. Is this a borked project migration?")
-            # Post delete and add indexing operations
-            if self.objects_deleted:
-                allura.tasks.index_tasks.del_artifacts.post(
-                    [ obj.index_id() for obj in self.objects_deleted ])
-            if arefs:
-                allura.tasks.index_tasks.add_artifacts.post([ aref._id for aref in arefs ])
+            self.update_index(self.objects_deleted, arefs)
             for obj in self.objects_added:
                 g.zarkov_event('create', extra=obj.index_id())
             for obj in self.objects_modified:
@@ -62,6 +56,15 @@ class ArtifactSessionExtension(SessionExtension):
         self.objects_added = []
         self.objects_modified = []
         self.objects_deleted = []
+
+    def update_index(self, objects_deleted, arefs):
+        # Post delete and add indexing operations
+        from allura.tasks import index_tasks
+        if objects_deleted:
+            index_tasks.del_artifacts.post(
+                [obj.index_id() for obj in objects_deleted])
+        if arefs:
+            index_tasks.add_artifacts.post([aref._id for aref in arefs])
 
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')

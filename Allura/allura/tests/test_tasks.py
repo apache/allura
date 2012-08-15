@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import operator
 import sys
 import shutil
 import unittest
@@ -14,6 +15,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import search
 from allura.lib.exceptions import CompoundError
 from allura.tasks import event_tasks
 from allura.tasks import index_tasks
@@ -71,9 +73,9 @@ class TestIndexTasks(unittest.TestCase):
         assert len(a.backrefs) == 5, a.backrefs
 
     @td.with_wiki
-    def test_del_artifacts(self):
+    @mock.patch('allura.tasks.index_tasks.g.solr')
+    def test_del_artifacts(self, solr):
         old_shortlinks = M.Shortlink.query.find().count()
-        old_solr_size = len(g.solr.db)
         artifacts = [ _TestArtifact(_shorthand_id='ta_%s' % x) for x in range(5) ]
         M.artifact_orm_session.flush()
         arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
@@ -83,16 +85,21 @@ class TestIndexTasks(unittest.TestCase):
         M.main_orm_session.flush()
         M.main_orm_session.clear()
         new_shortlinks = M.Shortlink.query.find().count()
-        new_solr_size = len(g.solr.db)
         assert old_shortlinks + 5 == new_shortlinks, 'Shortlinks not created'
-        assert old_solr_size + 5 == new_solr_size, "Solr additions didn't happen"
+        assert solr.add.call_count == 1
+        sort_key = operator.itemgetter('id')
+        assert_equal(
+                sorted(solr.add.call_args[0][0], key=sort_key),
+                sorted([search.solarize(ref.artifact) for ref in arefs],
+                        key=sort_key))
         index_tasks.del_artifacts(ref_ids)
         M.main_orm_session.flush()
         M.main_orm_session.clear()
         new_shortlinks = M.Shortlink.query.find().count()
-        new_solr_size = len(g.solr.db)
         assert old_shortlinks == new_shortlinks, 'Shortlinks not deleted'
-        assert old_solr_size == new_solr_size, "Solr deletions didn't happen"
+        solr_query = 'id:({0})'.format(' || '.join(ref_ids))
+        solr.delete.assert_called_once_with(q=solr_query)
+
 
 class TestMailTasks(unittest.TestCase):
 

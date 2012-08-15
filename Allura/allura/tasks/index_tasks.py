@@ -15,26 +15,25 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True):
     from allura import model as M
     from allura.lib.search import find_shortlinks, solarize
     exceptions = []
+    solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
-        for ref_id in ref_ids:
+        for ref in M.ArtifactReference.query.find(dict(_id={'$in': ref_ids})):
             try:
-                ref = M.ArtifactReference.query.get(_id=ref_id)
-                if ref is None:
-                    continue
                 artifact = ref.artifact
                 s = solarize(artifact)
                 if s is None:
                     continue
                 if update_solr:
-                    g.solr.add([s])
+                    solr_updates.append(s)
                 if update_refs:
                     if isinstance(artifact, M.Snapshot):
                         continue
                     ref.references = [
                         link.ref_id for link in find_shortlinks(s['text']) ]
             except Exception:
-                log.error('Error indexing artifact %s', ref_id)
+                log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
+        g.solr.add(solr_updates)
 
     if len(exceptions) == 1:
         raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
@@ -44,8 +43,9 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True):
 @task
 def del_artifacts(ref_ids):
     from allura import model as M
-    for ref_id in ref_ids:
-        g.solr.delete(id=ref_id)
+    if not ref_ids: return
+    solr_query = 'id:({0})'.format(' || '.join(ref_ids))
+    g.solr.delete(q=solr_query)
     M.ArtifactReference.query.remove(dict(_id={'$in':ref_ids}))
     M.Shortlink.query.remove(dict(ref_id={'$in':ref_ids}))
 
