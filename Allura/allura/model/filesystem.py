@@ -1,5 +1,6 @@
 import os
 from cStringIO import StringIO
+import logging
 
 import pylons
 import Image
@@ -12,6 +13,7 @@ from ming.orm.declarative import MappedClass
 from .session import project_orm_session
 from allura.lib import utils
 
+log = logging.getLogger(__name__)
 
 SUPPORTED_BY_PIL=set([
         'image/jpg',
@@ -147,7 +149,12 @@ class File(MappedClass):
         if not content_type.lower() in SUPPORTED_BY_PIL:
             return None, None
 
-        image = Image.open(fp)
+        try:
+            image = Image.open(fp)
+        except IOError as e:
+            log.error('Error opening image %s %s', filename, e)
+            return None, None
+
         format = image.format
         if save_original:
             original_meta = original_meta or {}
@@ -168,7 +175,7 @@ class File(MappedClass):
     def is_image(self):
         return (self.content_type
                 and self.content_type.lower() in SUPPORTED_BY_PIL)
-    
+
     @property
     def length(self):
         return self.rfile().length

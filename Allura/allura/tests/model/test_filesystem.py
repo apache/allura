@@ -130,6 +130,26 @@ class TestFile(TestCase):
         assert self.db.fs.files.count() == 2
         assert self.db.fs.chunks.count() == 2
 
+    def test_not_image(self):
+        f, t = File.save_image(
+            'file.txt',
+            StringIO('blah'),
+            thumbnail_size=(16,16),
+            square=True,
+            save_original=True)
+        assert f == None
+        assert t == None
+
+    def test_invalid_image(self):
+        f, t = File.save_image(
+            'bogus.png',
+            StringIO('bogus data here!'),
+            thumbnail_size=(16,16),
+            square=True,
+            save_original=True)
+        assert f == None
+        assert t == None
+
     def _assert_content(self, f, content):
         result = f.rfile().read()
         assert result == content, result

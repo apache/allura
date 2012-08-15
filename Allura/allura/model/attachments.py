@@ -61,4 +61,3 @@ class BaseAttachment(File):
         return cls.from_stream(
             filename, fp, content_type=content_type,
             **original_meta)
-
