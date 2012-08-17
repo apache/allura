@@ -10,10 +10,9 @@ functional tests exercise the whole application and its WSGI stack.
 Please read http://pythonpaste.org/webtest/ for more information.
 
 """
-from urllib import quote
-
 from tg import config
 from nose.tools import assert_equal
+from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.tests import decorators as td
 from allura.tests import TestController
@@ -40,6 +39,17 @@ class TestRootController(TestController):
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
+
+    def test_sidebar_escaping(self):
+        # use this as a convenient way to get something in the sidebar
+        M.ProjectCategory(name='test-xss', label='<script>alert(1)</script>')
+        ThreadLocalORMSession.flush_all()
+
+        response = self.app.get('/')
+        # inject it into the sidebar data
+        content = str(response.html.find('div',{'id':'content_base'}))
+        assert '<script>' not in content
+        assert '&lt;script&gt;' in content
 
     def test_strange_accept_headers(self):
         hdrs = [
