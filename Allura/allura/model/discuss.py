@@ -513,9 +513,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
         if self.status == 'ok':
             return
         self.status = 'ok'
-        if self.parent_id is None:
-            thd = self.thread_class().query.get(_id=self.thread_id)
-            g.post_event('discussion.new_thread', thd._id)
         author = self.author()
         security.simple_grant(
             self.acl, author.project_role()._id, 'moderate')
@@ -524,7 +521,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
             and author._id != None):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
-        g.post_event('discussion.new_post', self.thread_id, self._id)
         self.notify(file_info=file_info)
         artifact = self.thread.artifact or self.thread
         session(self).flush()
@@ -556,7 +552,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def spam(self):
         self.status = 'spam'
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
-        g.post_event('spam', self.index_id())
 
 
 class DiscussionAttachment(BaseAttachment):
