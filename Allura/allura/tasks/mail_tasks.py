@@ -66,10 +66,10 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     if fromaddr is None:
         fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
-        log.warning('Looking up user with fromaddr %s', fromaddr)
+        log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
-            log.warning('Cannot find user with ID %s', fromaddr)
+            log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = u'noreply@in.sf.net'
         else:
             fromaddr = user.email_address_header()
@@ -81,10 +81,10 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
             try:
                 user = M.User.query.get(_id=ObjectId(addr))
                 if not user:
-                    log.warning('Cannot find user with ID %s', addr)
+                    log.warning('Cannot find user with ID: %s', addr)
                     continue
             except:
-                log.exception('Error looking up user with ID %r' % addr)
+                log.exception('Error looking up user with ID: %r' % addr)
                 continue
             addr = user.email_address_header()
             if not addr and user.email_addresses:
@@ -128,10 +128,10 @@ def sendsimplemail(
     if fromaddr is None:
         fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
-        log.warning('Looking up user with fromaddr %s', fromaddr)
+        log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr))
         if not user:
-            log.warning('Cannot find user with ID %s', fromaddr)
+            log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = u'noreply@in.sf.net'
         else:
             fromaddr = user.email_address_header()
