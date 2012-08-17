@@ -11,6 +11,8 @@
   {{c.metadata_admin.display(value=c.project,
                              show_export_control=show_export_control,
                              allow_project_delete=allow_project_delete)}}
+  
+  {{c.explain_export_modal.display(content='The purpose of this section is to determine whether your project is subject to the provisions of the US Export Administration Regulations. You should consult section 734.4 and Supplement 2 to Part 734 for information on such items and the calculation of U.S. controlled content. <a href="http://www.bis.doc.gov/encryption/default.htm" target="_blank">http://www.bis.doc.gov/encryption/default.htm</a> If you have additional questions, please contact <a href="mailto:legal@geek.net">legal@geek.net</a>.')}}
 {% endblock %}
 
 {% block extra_js %}
@@ -89,6 +91,25 @@
           }
         }
         {% endif %}
+      });
+      // export control functionality
+      var $export_details = $('#export_details');
+      var $export_controlled = $('#export_controlled');
+      var $export_control_type = $('input[name=export_control_type]');
+      var $export_warning = $('#export_warning');
+      $export_controlled.change(function(){
+        if($export_controlled.is(':checked')){
+          $export_details.show();
+          $export_warning.show();
+        }
+        else{
+          $export_details.hide();
+          $export_warning.hide();
+        }
+      });
+      $export_control_type.change(function(evt){
+        var targ_type = $(evt.target).val();
+        targ_type=='more_than_25' ? $export_warning.show() : $export_warning.hide();
       });
     });
   </script>

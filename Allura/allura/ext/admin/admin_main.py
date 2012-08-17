@@ -32,6 +32,7 @@ class W:
     mount_delete = ffw.Lightbox(name='mount_delete',trigger='a.mount_delete')
     admin_modal = ffw.Lightbox(name='admin_modal',trigger='a.admin_modal')
     install_modal = ffw.Lightbox(name='install_modal',trigger='a.install_trig')
+    explain_export_modal = ffw.Lightbox(name='explain_export',trigger='#why_export')
     group_card = aw.GroupCard()
     permission_card = aw.PermissionCard()
     group_settings = aw.GroupSettings()
@@ -152,6 +153,7 @@ class ProjectAdminController(BaseController):
     def overview(self, **kw):
         c.markdown_editor = W.markdown_editor
         c.metadata_admin = W.metadata_admin
+        c.explain_export_modal = W.explain_export_modal
         show_export_control = asbool(config.get('show_export_control', False))
         allow_project_delete = asbool(config.get('allow_project_delete', True))
         return dict(show_export_control=show_export_control,
@@ -251,6 +253,7 @@ class ProjectAdminController(BaseController):
                removal='',
                moved_to_url='',
                export_controlled=False,
+               export_control_type=None,
                tracking_id='',
                **kw):
         require_access(c.project, 'update')
@@ -315,6 +318,12 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project export controlled status').info('')
             M.AuditLog.log('change project export controlled status to %s', export_controlled)
             c.project.export_controlled = not not export_controlled
+            if not export_controlled:
+                export_control_type = None
+        if export_control_type != c.project.export_control_type:
+            h.log_action(log, 'change project export control type').info('')
+            M.AuditLog.log('change project export control type to %s', export_control_type)
+            c.project.export_control_type = export_control_type
         if tracking_id != c.project.tracking_id:
             h.log_action(log, 'change project tracking ID').info('')
             M.AuditLog.log('change project tracking ID to %s', tracking_id)
