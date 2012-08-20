@@ -62,3 +62,24 @@ def with_repos(func):
     def wrapped(*args, **kw):
         return func(*args, **kw)
     return wrapped
+
+
+class raises(object):
+    'test helper in the form of a context manager, to assert that something raises an exception'
+
+    def __init__(self, ExcType):
+        self.ExcType = ExcType
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_t):
+        if exc_type:
+            if issubclass(exc_type, self.ExcType):
+                # ok
+                return True
+            else:
+                # root exception will be raised, untouched
+                return False
+        else:
+            raise AssertionError('Did not raise %s' % self.ExcType)

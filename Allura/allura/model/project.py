@@ -465,6 +465,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 mount_point = base_mount_point + '-%d' % x
         if not h.re_path_portion.match(mount_point):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
+        # HACK: reserved url components
+        if mount_point in ('feed', 'index', 'icon', '_nav.json'):
+            raise exceptions.ToolError, (
+                'Mount point "%s" is reserved' % mount_point)
         if self.app_instance(mount_point) is not None:
             raise exceptions.ToolError, (
                 'Mount point "%s" is already in use' % mount_point)

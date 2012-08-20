@@ -3,13 +3,14 @@
 Model tests for project
 """
 from nose.tools import with_setup
-from pylons import c 
+from pylons import c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.lib.exceptions import ToolError
 
 
 def setUp():
@@ -36,16 +37,21 @@ def test_project():
     assert p.script_name in p.url()
     assert c.project.shortname == 'test'
     assert '<p>' in c.project.description_html
-    try:
-        c.project.uninstall_app('hello-test-mount-point')
-        ThreadLocalORMSession.flush_all()
-    except:
-        pass
+    c.project.uninstall_app('hello-test-mount-point')
+    ThreadLocalORMSession.flush_all()
+
     c.project.install_app('Wiki', 'hello-test-mount-point')
     c.project.support_page = 'hello-test-mount-point'
     ThreadLocalORMSession.flush_all()
+    with td.raises(ToolError):
+        # already installed
+        c.project.install_app('Wiki', 'hello-test-mount-point')
+    ThreadLocalORMSession.flush_all()
     c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
+    with td.raises(ToolError):
+        # mount point reserved
+        c.project.install_app('Wiki', 'feed')
     # Make sure the project support page is reset if the tool it was pointing
     # to is uninstalled.
     assert c.project.support_page == ''
