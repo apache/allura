@@ -36,12 +36,13 @@ ArtifactReferenceDoc = collection(
 ShortlinkDoc = collection(
     'shortlink', main_doc_session,
     Field('_id', S.ObjectId()),
-    Field('ref_id', str, index=True),
+    Field('ref_id', str, index=True),  # index needed for from_artifact() and index_tasks.py:del_artifacts
     Field('project_id', S.ObjectId()),
     Field('app_config_id', S.ObjectId()),
     Field('link', str),
     Field('url', str),
-    Index('link', 'project_id', 'app_config_id'))
+    Index('project_id', 'link'), # used by from_links()  More helpful to have project_id first, for other queries
+)
 
 # Class definitions
 class ArtifactReference(object):
@@ -151,8 +152,8 @@ class Shortlink(object):
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
                     m for m in matches
-                    if m.project.shortname == d['project'] and 
-                       m.project.neighborhood_id == d['nbhd'] and 
+                    if m.project.shortname == d['project'] and
+                       m.project.neighborhood_id == d['nbhd'] and
                        m.app_config is not None and
                        m.project.app_instance(m.app_config.options.mount_point))
                 if d['app']:
