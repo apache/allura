@@ -41,6 +41,7 @@ if (!Array.prototype.indexOf)
 if($('#commit_graph')){
     var data;
     var offset = 0;
+    var selected_commit = -1;
     var y_offset = 0;
     var page_size = 14;
     var limit = 14;
@@ -54,8 +55,6 @@ if($('#commit_graph')){
 
     var $first = $('#first');
     var $last = $('#last');
-    var $prev = $('#prev');
-    var $next = $('#next');
     var $canvas = $('#commit_graph');
     var $highlighter = $('#commit_highlighter');
     var highlighter = $highlighter[0];
@@ -97,56 +96,53 @@ if($('#commit_graph')){
                 y_pos: y_pos }
         }
         updateOffset(0);
+        selectCommit(0);
     });
     updateOffset = function(x) {
-        console.log('Set offset to', x);
-        offset = x;
-        y_offset = x * y_space;
         $first.removeClass('disabled');
-        $prev.removeClass('disabled');
-        $next.removeClass('disabled');
         $last.removeClass('disabled');
-        if(offset <= 0) {
-            offset = 0;
+        offset = x;
+        if(offset <= 1) {
+            offset = 1;
             $last.addClass('disabled');
-            $next.addClass('disabled');
         }
         else if(offset > (max_row-page_size)) {
             offset = max_row - page_size;
             $first.addClass('disabled');
-            $prev.addClass('disabled');
         }
+        y_offset = offset * y_space;
         drawGraph(offset);
+        if (selected_commit >= offset-1 && selected_commit <= offset + page_size) {
+          selectCommit(selected_commit);
+        }
         return false;
     };
     $last.click(function() {
-        console.log('Last');
         return updateOffset(0);
     });
-    $next.click(function() {
-        console.log('Next');
-        return updateOffset(offset - page_size);
-    });
-    $prev.click(function() {
-        console.log('Prev');
-        return updateOffset(offset + page_size);
-    });
     $first.click(function() {
-        console.log('First');
         return updateOffset(max_row);
     });
 
-    $canvas.click(function(evt) {
-        var y = Math.floor((evt.pageY-$canvas.offset().top) / y_space);
-        var commit = commit_rows[offset+y-1];
+    function selectCommit(index) {
+        var commit = commit_rows[index];
         highlighter_ctx.clearRect(0, 0, canvas.width, canvas.height);
         // active_ys = [commit.y_pos-y_space/4,y_space]
         highlighter_ctx.fillRect(
             0, (commit.y_pos - y_offset) - y_space/4,
             750, y_space)
-        $.get(commit.url+'basic',function(result){
-            $('#commit_view').html(result);
-        });
+        if (selected_commit != index) {
+          $('#commit_view').html('<em>Loading commit details...</em>');
+          $.get(commit.url+'basic',function(result){
+              $('#commit_view').html(result);
+          });
+        }
+        selected_commit = index;
+    }
+
+    $canvas.click(function(evt) {
+        var y = Math.floor((evt.pageY-$canvas.offset().top) / y_space);
+        selectCommit(offset+y-1);
     });
 
     function drawGraph(offset) {
@@ -238,4 +234,20 @@ if($('#commit_graph')){
             canvas_ctx.fillText(commit.message, (1+next_column) * x_space, y_pos);
         }
     }
+
+    function scroll(event) {
+      var delta = 0;
+      var e = event.originalEvent;
+      if (e.type == "mousewheel") {
+        delta = -(e.wheelDelta / 40);
+      } else if (e.type == "DOMMouseScroll") {
+        // firefox
+        delta = e.detail;
+      }
+      updateOffset(offset + delta);
+      return false;
+    }
+
+    $canvas.bind("mousewheel", scroll);
+    $canvas.bind("DOMMouseScroll", scroll);
 }
