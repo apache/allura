@@ -295,11 +295,6 @@ class ProjectController(object):
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
-    @expose('jinja:allura:templates/project_sitemap.html')
-    @without_trailing_slash
-    def sitemap(self): # pragma no cover
-        raise NotImplementedError, 'sitemap'
-
     @without_trailing_slash
     @expose()
     @validate(dict(
@@ -481,7 +476,7 @@ class NeighborhoodAdminController(object):
     def update(self, name=None, css=None, homepage=None, project_template=None, icon=None, **kw):
         nbhd = self.neighborhood
         c.project = nbhd.neighborhood_project
-        h.log_if_changed(nbhd, 'name', name, 
+        h.log_if_changed(nbhd, 'name', name,
                         'change neighborhood name to %s' % name)
         nbhd_redirect = kw.pop('redirect', '')
         h.log_if_changed(nbhd, 'redirect', nbhd_redirect,
