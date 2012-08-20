@@ -128,7 +128,7 @@ class MediawikiLoader(object):
                 timestamp = datetime.datetime.strptime(page['timestamp'],
                                                         self.TIMESTAMP_FMT)
                 p.mod_date = timestamp
-                c.user = (M.User.query.get(username=page['username'])
+                c.user = (M.User.query.get(username=page['username'].lower())
                           or M.User.anonymous())
                 ss = p.commit()
                 ss.mod_date = ss.timestamp = timestamp
@@ -163,7 +163,7 @@ class MediawikiLoader(object):
             return
         timestamp = datetime.datetime.strptime(talk_data['timestamp'],
                                                self.TIMESTAMP_FMT)
-        c.user = (M.User.query.get(username=talk_data['username'])
+        c.user = (M.User.query.get(username=talk_data['username'].lower())
                   or M.User.anonymous())
         thread.add_post(
             text=text,
