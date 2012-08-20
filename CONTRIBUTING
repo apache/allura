@@ -35,7 +35,7 @@ list and an IRC channel.
 
 Report bugs to our public tracker at:
 
-  <http://sf.net/support>
+  <https://sourceforge.net/p/allura/tickets/>
 
 Four things make for a good bug report:
 
@@ -73,22 +73,15 @@ You can also 'fork' our repo at <https://sourceforge.net/p/allura/git/>.
 Develop and test your patches locally and then get them to us in one of
 two ways:
 
-  + use the git tools format-patch and send-email to send your patches
-    to the mailing list
-
-      <mailto:develop@discussion.allura.p.re.sf.net>
-
   + push your changes up to your 'forked' repo, and from there send us
     a merge request
+
+  + attach a patch file to a ticket
 
 Things your patch-sequence must have/do:
 
   + follow PEP-8 <http://www.python.org/dev/peps/pep-0008/> coding
     guidelines
-
-  + signify that you have full and clear rights to the code you are
-    supplying and that you wish to share it under the terms of the
-    Apache License Version 2.0 by using git commit --signoff
 
   + contain appropriate tests to be added to the automated testing
     machinery
@@ -117,7 +110,7 @@ discussion where we talk about new features, submitted patches, bugs,
 direction, and deployment.  You can join in the discussion on the
 mailing list:
 
-  <mailto:develop@discussion.allura.p.re.sf.net>
+  <http://mail-archives.apache.org/mod_mbox/incubator-allura-dev/>
 
 
 - ASKING QUESTIONS
