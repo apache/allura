@@ -128,7 +128,7 @@ class AdminApp(Application):
         pass
 
     def uninstall(self, project): # pragma no cover
-        pass
+        super(AdminApp, self).uninstall(project)
 
 class ProjectAdminController(BaseController):
 
