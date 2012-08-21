@@ -1,6 +1,7 @@
 #-*- python -*-
 import html2text
 import re
+from BeautifulSoup import BeautifulSoup
 
 html2text.BODY_WIDTH = 0
 
@@ -33,6 +34,14 @@ def _internal_link_markdown(match):
     return r'[%s]' % page_name
 
 
+def _convert_toc(wiki_html):
+    """Convert Table of Contents from mediawiki to markdown"""
+    soup = BeautifulSoup(wiki_html)
+    for toc_div in soup.findAll('div', id='toc'):
+        toc_div.replaceWith('[TOC]')
+    return unicode(soup)
+
+
 def mediawiki2markdown(source):
     try:
         from mediawiki import wiki2html
@@ -41,6 +50,7 @@ def mediawiki2markdown(source):
                                  'is required for this operation')
 
     wiki_content = wiki2html(source, True)
+    wiki_content = _convert_toc(wiki_content)
     markdown_text = html2text.html2text(wiki_content)
     markdown_text = markdown_text.replace('<', '&lt;').replace('>', '&gt;')
     return markdown_text

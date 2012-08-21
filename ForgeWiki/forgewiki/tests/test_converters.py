@@ -20,6 +20,25 @@ def test_mediawiki2markdown():
     assert '&lt;plugin&gt;.plugin()' in mediawiki_output
 
 
+def test_convert_toc():
+    '''Test that Table of Contents (TOC) converts properly'''
+    wiki_html = """<div>Some html before toc</div>
+<div id="toc">
+    Table of Contents
+    <ul>
+        <li><a href="#h1">Some heading</a></li>
+    </ul>
+</div>
+<div>Some html after toc</div>
+"""
+    expected_output = """<div>Some html before toc</div>
+[TOC]
+<div>Some html after toc</div>
+"""
+    output = converters._convert_toc(wiki_html)
+    assert output == expected_output, output
+
+
 def test_mediawiki_internal_links2markdown():
     text = """Example page!
 Inline image: [[File:image.png]]
