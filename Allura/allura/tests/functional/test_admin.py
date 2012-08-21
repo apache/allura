@@ -235,13 +235,13 @@ class TestProjectAdmin(TestController):
 
     def test_project_delete_undelete(self):
         # create a subproject
-        with audits('create subproject sub1'):
+        with audits('create subproject sub-del-undel'):
             self.app.post('/admin/update_mounts', params={
                     'new.install':'install',
                     'new.ep_name':'',
                     'new.ordinal':'1',
-                    'new.mount_point':'sub1',
-                    'new.mount_label':'sub1'})
+                    'new.mount_point':'sub-del-undel',
+                    'new.mount_label':'sub-del-undel'})
         r = self.app.get('/p/test/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' not in r
         assert r.html.find('input',{'name':'removal','value':''}).has_key('checked')
@@ -258,7 +258,7 @@ class TestProjectAdmin(TestController):
         assert not r.html.find('input',{'name':'removal','value':''}).has_key('checked')
         assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
         # make sure subprojects get deleted too
-        r = self.app.get('/p/test/sub1/admin/overview')
+        r = self.app.get('/p/test/sub-del-undel/admin/overview')
         assert 'This project has been deleted and is not visible to non-admin users' in r
         with audits('undelete project'):
             self.app.post('/admin/update', params=dict(
@@ -279,18 +279,18 @@ class TestProjectAdmin(TestController):
         config['allow_project_delete'] = False
         try:
             # create a subproject
-            with audits('create subproject sub1'):
+            with audits('create subproject sub-no-del'):
                 self.app.post('/admin/update_mounts', params={
                         'new.install':'install',
                         'new.ep_name':'',
                         'new.ordinal':'1',
-                        'new.mount_point':'sub1',
-                        'new.mount_label':'sub1'})
+                        'new.mount_point':'sub-no-del',
+                        'new.mount_label':'sub-no-del'})
             # root project doesn't have delete option
             r = self.app.get('/p/test/admin/overview')
             assert not r.html.find('input',{'name':'removal','value':'deleted'})
             # subprojects can still be deleted
-            r = self.app.get('/p/test/sub1/admin/overview')
+            r = self.app.get('/p/test/sub-no-del/admin/overview')
             assert r.html.find('input',{'name':'removal','value':'deleted'})
             # attempt to delete root project won't do anything
             self.app.post('/admin/update', params=dict(
@@ -305,13 +305,13 @@ class TestProjectAdmin(TestController):
             with audits(
                 'change project removal status to deleted',
                 'delete project'):
-                self.app.post('/p/test/sub1/admin/update', params=dict(
+                self.app.post('/p/test/sub-no-del/admin/update', params=dict(
                         name='sub1',
                         shortname='sub1',
                         removal='deleted',
                         short_description='A Test Project',
                         delete='on'))
-            r = self.app.get('/p/test/sub1/admin/overview')
+            r = self.app.get('/p/test/sub-no-del/admin/overview')
             assert 'This project has been deleted and is not visible to non-admin users' in r
             assert r.html.find('input',{'name':'removal','value':'deleted'}).has_key('checked')
         finally:
