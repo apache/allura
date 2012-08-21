@@ -113,6 +113,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             'parent_id',
             ('deleted', 'shortname', 'neighborhood_id'),
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
+        unique_indexes = [('neighborhood_id', 'shortname')]
         extensions = [ ProjectMapperExtension ]
 
     # Project schema
