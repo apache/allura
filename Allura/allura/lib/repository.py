@@ -100,7 +100,7 @@ class RepositoryApp(Application):
             repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
             links += [
                 SitemapEntry('Clone of'),
-                SitemapEntry('%s / <strong>%s</strong>' %
+                SitemapEntry('%s / %s' %
                     (repo_path_parts[1], repo_path_parts[-1]),
                     self.repo.upstream_repo.name)
                 ]
@@ -140,7 +140,7 @@ class RepositoryApp(Application):
             for f in self.repo.forks:
                 repo_path_parts = f.url().strip('/').split('/')
                 links.append(SitemapEntry(
-                    '%s / <strong>%s</strong>' %
+                    '%s / %s' %
                     (repo_path_parts[1], repo_path_parts[-1]),
                     f.url()))
         return links
