@@ -9,6 +9,7 @@ from urlparse import urlparse
 from email import header
 from datetime import timedelta, datetime
 from hashlib import sha256
+import uuid
 
 import iso8601
 import pymongo
@@ -119,7 +120,7 @@ class ApiToken(MappedClass, ApiAuthMixIn):
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
+    api_key = FieldProperty(str, if_missing=uuid.uuid4)
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
 
     user = RelationProperty('User')
