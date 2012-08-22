@@ -1,4 +1,4 @@
-<div>
+<div class="div_page_list">
   <div class="page_list">
     {% set paginator = widget.paginator(count, page, limit) %}
     {{paginator.pager('$link_first $link_previous ~2~ $link_next $link_last (Page $page of $page_count)')}}
