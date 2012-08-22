@@ -127,9 +127,6 @@ class AdminApp(Application):
     def install(self, project):
         pass
 
-    def uninstall(self, project): # pragma no cover
-        super(AdminApp, self).uninstall(project)
-
 class ProjectAdminController(BaseController):
 
     def _check_security(self):
