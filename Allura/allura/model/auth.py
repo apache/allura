@@ -120,7 +120,7 @@ class ApiToken(MappedClass, ApiAuthMixIn):
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    api_key = FieldProperty(str, if_missing=uuid.uuid4)
+    api_key = FieldProperty(str, if_missing=lambda:str(uuid.uuid4()))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
 
     user = RelationProperty('User')
