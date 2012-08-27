@@ -46,7 +46,7 @@
       {% endif%}
   </div>
 
-  <div class="grid-9">
+  <div class="grid-10">
     <label>Icon:</label>
     <br>
     <div id="project-icon" class="viewing">
@@ -120,9 +120,9 @@
         <input id="export_restricted" name="export_control_type" type="radio" value="more_than_25"
                {% if value.export_control_type == "more_than_25" or value.export_control_type == None and value.export_controlled == True %} checked{% endif %}> This Project has more than 25% U.S-origin parts or components.<br>
       </div>
+      <div id="export_warning" class="notice"{% if value.export_controlled == False or value.export_control_type == "less_than_10" or value.export_control_type == "less_than_25" %} style="display:none"{% endif %}>You must notify BIS and the ENC Encryption Request Coordinator via e-mail of the Internet location ( e.g., URL or Internet address) of the publicly available encryption source code or provide each of them a copy of the publicly available encryption source code. If you update or modify the source code, you must also provide additional copies to each of them each time the cryptographic functionality of the source code is updated or modified. In addition, if you posted the source code on the Internet, you must notify BIS and the ENC Encryption Request Coordinator each time the Internet location is changed, but you are not required to notify them of updates or modifications made to the encryption source code at the previously notified location. In all instances, submit the notification or copy to <a href="mailto:crypt@bis.doc.gov">crypt@bis.doc.gov</a> and to <a href="mailto:enc@nsa.gov">enc@nsa.gov</a>.</div>
     {% endif %}
   </div>
-  <div id="export_warning" class="grid-19 notice"{% if value.export_controlled == False or value.export_control_type == "less_than_10" or value.export_control_type == "less_than_25" %} style="display:none"{% endif %}>You must notify BIS and the ENC Encryption Request Coordinator via e-mail of the Internet location ( e.g., URL or Internet address) of the publicly available encryption source code or provide each of them a copy of the publicly available encryption source code. If you update or modify the source code, you must also provide additional copies to each of them each time the cryptographic functionality of the source code is updated or modified. In addition, if you posted the source code on the Internet, you must notify BIS and the ENC Encryption Request Coordinator each time the Internet location is changed, but you are not required to notify them of updates or modifications made to the encryption source code at the previously notified location. In all instances, submit the notification or copy to <a href="mailto:crypt@bis.doc.gov">crypt@bis.doc.gov</a> and to <a href="mailto:enc@nsa.gov">enc@nsa.gov</a>.</div>
   <hr class="grid-19" style="margin-top: 1em; margin-bottom: 1em;">
   <div class="grid-15">
     <input type="submit" value="Save">
