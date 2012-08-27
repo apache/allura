@@ -156,8 +156,17 @@ class ProjectAdminController(BaseController):
         c.explain_export_modal = W.explain_export_modal
         show_export_control = asbool(config.get('show_export_control', False))
         allow_project_delete = asbool(config.get('allow_project_delete', True))
+        explain_export_text = '''The purpose of this section is to determine whether your project is subject to the provisions of the
+        US Export Administration Regulations. You should consult section 734.4 and Supplement 2 to Part 734 for information on such items
+        and the calculation of U.S. controlled content.
+        <a href="http://www.bis.doc.gov/encryption/default.htm" target="_blank">http://www.bis.doc.gov/encryption/default.htm</a>'''
+        if 'us_export_contact' in config:
+            explain_export_text += 'If you have additional questions, please contact <a href="mailto:{contact}">{contact}</a>.'.format(
+                contact=config['us_export_contact']
+            )
         return dict(show_export_control=show_export_control,
-                    allow_project_delete=allow_project_delete)
+                    allow_project_delete=allow_project_delete,
+                    explain_export_text=explain_export_text)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_screenshots.html')
