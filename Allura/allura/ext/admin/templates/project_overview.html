@@ -100,7 +100,7 @@
       $export_controlled.change(function(){
         if($export_controlled.is(':checked')){
           $export_details.show();
-          $export_warning.show();
+          $export_control_type.change();
         }
         else{
           $export_details.hide();
@@ -108,9 +108,13 @@
         }
       });
       $export_control_type.change(function(evt){
-        var targ_type = $(evt.target).val();
-        targ_type=='more_than_25' ? $export_warning.show() : $export_warning.hide();
-      });
+        var $targ = jQuery(evt.target);
+        if ($targ.is(':checked') && $targ.val() === 'more_than_25') {
+          $export_warning.show();
+        } else {
+          $export_warning.hide();
+        }
+      }).change();
     });
   </script>
 {% endblock %}
