@@ -15,6 +15,7 @@ from nose.tools import assert_equal
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from allura.tests import decorators as td
+from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
 from forgegit import model as GM
 from forgewiki import model as WM
@@ -93,7 +94,7 @@ class TestNewGit(unittest.TestCase):
                 '/p/test/src-git/ci/'
                 '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
-class TestGitRepo(unittest.TestCase):
+class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     def setUp(self):
         setup_basic_test()
@@ -164,40 +165,6 @@ class TestGitRepo(unittest.TestCase):
             self.repo.heads.append(Object(name='HEAD', object_id='deadbeef'))
             self.repo.commit('HEAD')
             q.get.assert_called_with(_id='deadbeef')
-
-    def test_commit_run(self):
-        M.repo.CommitRunDoc.m.remove()
-        commit_ids = list(self.repo.all_commit_ids())
-        # simulate building up a commit run from multiple pushes
-        for c_id in commit_ids:
-            crb = M.repo_refresh.CommitRunBuilder([c_id])
-            crb.run()
-            crb.cleanup()
-        runs = M.repo.CommitRunDoc.m.find().all()
-        self.assertEqual(len(runs), 1)
-        run = runs[0]
-        self.assertEqual(run.commit_ids, commit_ids)
-        self.assertEqual(len(run.commit_ids), len(run.commit_times))
-        self.assertEqual(run.parent_commit_ids, [])
-
-    def test_repair_commit_run(self):
-        commit_ids = list(self.repo.all_commit_ids())
-        # simulate building up a commit run from multiple pushes, but skip the
-        # last commit to simulate a broken commit run
-        for c_id in commit_ids[:-1]:
-            crb = M.repo_refresh.CommitRunBuilder([c_id])
-            crb.run()
-            crb.cleanup()
-        # now repair the commitrun by rebuilding with all commit ids
-        crb = M.repo_refresh.CommitRunBuilder(commit_ids)
-        crb.run()
-        crb.cleanup()
-        runs = M.repo.CommitRunDoc.m.find().all()
-        self.assertEqual(len(runs), 1)
-        run = runs[0]
-        self.assertEqual(run.commit_ids, commit_ids)
-        self.assertEqual(len(run.commit_ids), len(run.commit_times))
-        self.assertEqual(run.parent_commit_ids, [])
 
 class TestGitCommit(unittest.TestCase):
 

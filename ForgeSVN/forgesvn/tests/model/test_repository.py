@@ -8,6 +8,7 @@ from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from allura.tests import decorators as td
+from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
 from forgesvn import model as SM
 
@@ -70,7 +71,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree['a']['b']['c'].ls() == []
         self.assertRaises(KeyError, lambda:self.rev.tree['a']['b']['d'])
 
-class TestSVNRepo(unittest.TestCase):
+class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def setUp(self):
         setup_basic_test()
