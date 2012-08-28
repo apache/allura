@@ -101,12 +101,15 @@ class TestPostNotifications(unittest.TestCase):
         self._subscribe()
         self._post_notification()
         ThreadLocalORMSession.flush_all()
-        M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
+
         assert_equal(M.Notification.query.get()['from_address'], '"Test Admin" <test-admin@users.localhost>')
         assert M.Mailbox.query.find().count()==1
+
+        M.MonQTask.run_ready()  # sends the notification out into "mailboxes"
+        assert_equal(M.Notification.query.get(), None)
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
+
         M.Mailbox.fire_ready()
         task = M.MonQTask.get()
         for addr in c.user.email_addresses:

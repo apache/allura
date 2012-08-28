@@ -12,7 +12,7 @@ from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.ext.project_home import model as M
 from allura.lib.security import require_access
-from allura.model import User, Notification, ACE
+from allura.model import User, Feed, ACE
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 
@@ -98,8 +98,8 @@ class UserProfileController(BaseController):
         else:
             feed_type = 'rss'
         title = 'Recent posts by %s' % user.display_name
-        feed = Notification.feed(
-            {'author_id':user._id},
+        feed = Feed.feed(
+            {'author_link':user.url()},
             feed_type,
             title,
             c.project.url(),

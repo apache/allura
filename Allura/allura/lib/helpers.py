@@ -419,12 +419,16 @@ def json_validation_error(controller, **kwargs):
 
 def pop_user_notifications(user=None):
     from allura import model as M
-    if user is None: user = c.user
+    if user is None:
+        user = c.user
     mbox = M.Mailbox.query.get(user_id=user._id, is_flash=True)
     if mbox:
         notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
         mbox.queue = []
-        for n in notifications: yield n
+        for n in notifications:
+            M.Notification.query.remove({'_id': n._id}) # clean it up so it doesn't hang around
+            yield n
+
 
 def config_with_prefix(d, prefix):
     '''Return a subdictionary keys with a given prefix,

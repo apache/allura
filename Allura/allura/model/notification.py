@@ -20,19 +20,16 @@ import logging
 from bson import ObjectId
 from datetime import datetime, timedelta
 from collections import defaultdict
-from webhelpers import feedgenerator as FG
 
 from pylons import c, g
 from tg import config
 import pymongo
 import jinja2
-import markdown
 
 from ming import schema as S
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
 from ming.orm.declarative import MappedClass
 
-from allura.lib.markdown_extensions import ForgeExtension
 from allura.lib import helpers as h
 from allura.lib import security
 import allura.tasks.mail_tasks
@@ -46,12 +43,13 @@ log = logging.getLogger(__name__)
 MAILBOX_QUIESCENT=None # Re-enable with [#1384]: timedelta(minutes=10)
 
 class Notification(MappedClass):
+    '''
+    Temporarily store notifications that will be emailed or displayed as a web flash.
+    '''
+
     class __mongometa__:
         session = main_orm_session
         name = 'notification'
-        indexes = [ ('neighborhood_id', 'tool_name', 'pubdate'),
-                    ('author_id',), # used in ext/user_profile/user_main.py for user feeds
-                  ]
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 
@@ -62,7 +60,6 @@ class Notification(MappedClass):
     tool_name = FieldProperty(str, if_missing=lambda:c.app.config.tool_name)
     ref_id = ForeignIdProperty('ArtifactReference')
     topic = FieldProperty(str)
-    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
 
     # Notification Content
     in_reply_to=FieldProperty(str)
@@ -80,9 +77,6 @@ class Notification(MappedClass):
 
     view = jinja2.Environment(
             loader=jinja2.PackageLoader('allura', 'templates'))
-
-    def author(self):
-        return User.query.get(_id=self.author_id) or User.anonymous()
 
     @classmethod
     def post(cls, artifact, topic, **kw):
@@ -187,36 +181,6 @@ class Notification(MappedClass):
                 link=kwargs.pop('link', artifact.url()),
                 **d)
         return n
-
-    @classmethod
-    def feed(cls, q, feed_type, title, link, description,
-             since=None, until=None, offset=None, limit=None):
-        """Produces webhelper.feedgenerator Feed"""
-        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
-        if feed_type == 'atom':
-            feed = FG.Atom1Feed(**d)
-        elif feed_type == 'rss':
-            feed = FG.Rss201rev2Feed(**d)
-        query = defaultdict(dict)
-        query.update(q)
-        if since is not None:
-            query['pubdate']['$gte'] = since
-        if until is not None:
-            query['pubdate']['$lte'] = until
-        cur = cls.query.find(query)
-        cur = cur.sort('pubdate', pymongo.DESCENDING)
-        if limit is None: limit = 10
-        query = cur.limit(limit)
-        if offset is not None: query = cur.offset(offset)
-        for r in cur:
-            feed.add_item(title=r.subject,
-                          link=h.absurl(r.link.encode('utf-8')),
-                          pubdate=r.pubdate,
-                          description=r.text,
-                          unique_id=r.unique_id,
-                          author_name=r.author().display_name,
-                          author_link=h.absurl(r.author().url()))
-        return feed
 
     def footer(self):
         template = self.view.get_template('mail/footer.txt')
@@ -517,3 +481,5 @@ class Mailbox(MappedClass):
             Notification.send_summary(
                 self.user_id, u'noreply@in.sf.net', 'Digest Email',
                 notifications)
+        # remove Notifications since they are no longer needed
+        Notification.query.remove({'_id': {'$in': [n._id for n in notifications]}})

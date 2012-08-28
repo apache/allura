@@ -587,7 +587,9 @@ class Feed(MappedClass):
              ('pubdate', pymongo.DESCENDING)),
             (('project_id', pymongo.ASCENDING),
              ('app_config_id', pymongo.ASCENDING),
-             ('pubdate', pymongo.DESCENDING))]
+             ('pubdate', pymongo.DESCENDING)),
+            'author_link',  # used in ext/user_profile/user_main.py for user feeds
+        ]
 
     _id = FieldProperty(S.ObjectId)
     ref_id = ForeignIdProperty('ArtifactReference')
