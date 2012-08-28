@@ -162,7 +162,7 @@ class TestHgRepo(unittest.TestCase):
         runs = M.repo.CommitRunDoc.m.find().all()
         self.assertEqual(len(runs), 1)
         run = runs[0]
-        self.assertEqual(run.commit_ids, list(reversed(commit_ids)))
+        self.assertEqual(run.commit_ids, list(commit_ids))
         self.assertEqual(len(run.commit_ids), len(run.commit_times))
         self.assertEqual(run.parent_commit_ids, [])
 
@@ -181,7 +181,7 @@ class TestHgRepo(unittest.TestCase):
         runs = M.repo.CommitRunDoc.m.find().all()
         self.assertEqual(len(runs), 1)
         run = runs[0]
-        self.assertEqual(run.commit_ids, list(reversed(commit_ids)))
+        self.assertEqual(run.commit_ids, list(commit_ids))
         self.assertEqual(len(run.commit_ids), len(run.commit_times))
         self.assertEqual(run.parent_commit_ids, [])
 

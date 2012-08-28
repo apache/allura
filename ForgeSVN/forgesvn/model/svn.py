@@ -190,15 +190,13 @@ class SVNImplementation(M.RepositoryImplementation):
         return result
 
     def all_commit_ids(self):
-        """Return a list of commit ids, starting with the root (first commit)
-        and ending with the most recent commit.
-
-        NB: The ForgeGit implementation returns commits in the opposite order.
+        """Return a list of commit ids, starting with the head (most recent
+        commit) and ending with the root (first commit).
         """
         if not self._repo.heads:
             return []
         head_revno = self._revno(self._repo.heads[0].object_id)
-        return map(self._oid, range(1, head_revno+1))
+        return map(self._oid, range(head_revno, 0, -1))
 
     def new_commits(self, all_commits=False):
         head_revno = self._revno(self._repo.heads[0].object_id)

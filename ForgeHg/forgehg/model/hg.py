@@ -120,10 +120,8 @@ class HgImplementation(M.RepositoryImplementation):
         return [p for p in ci.parents() if p]
 
     def all_commit_ids(self):
-        """Return a list of commit ids, starting with the root (first commit)
-        of the tree and ending with the head(s).
-
-        NB: The ForgeGit implementation returns commits in the opposite order.
+        """Return a list of commit ids, starting with the head(s) and ending
+        with the root (first commit) of the tree.
         """
         graph = {}
         to_visit = [ self._hg[hd] for hd in self._hg.heads() ]
@@ -135,7 +133,7 @@ class HgImplementation(M.RepositoryImplementation):
                 p.hex() for p in parents
                 if p.hex() != obj.hex())
             to_visit += parents
-        return [ ci for ci in topological_sort(graph) ]
+        return reversed([ ci for ci in topological_sort(graph) ])
 
     def new_commits(self, all_commits=False):
         graph = {}
