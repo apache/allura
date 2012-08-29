@@ -553,7 +553,7 @@ class Blob(object):
     @property
     def has_html_view(self):
         if self.content_type.startswith('text/') or self.extension in VIEWABLE_EXTENSIONS or \
-            self.extension in self._additional_viewable_extensions:
+            self.extension in self.repo._additional_viewable_extensions:
             return True
         return False
 

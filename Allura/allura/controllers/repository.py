@@ -553,13 +553,11 @@ class FileBrowser(BaseController):
         lb = list(b)
 
         diff = "Cannot display: file marked as a binary type."
-        not_binary_mime = ["text","octet-stream"]
-        for mime in not_binary_mime:
-            if mime in utils.guess_mime_type(filename):
-                diff = ''.join(difflib.unified_diff(
-                       la, lb,
-                       ('a' + apath).encode('utf-8'),
-                       ('b' + b.path()).encode('utf-8')))
+        if self._blob.has_html_view:
+            diff = ''.join(difflib.unified_diff(
+                   la, lb,
+                   ('a' + apath).encode('utf-8'),
+                   ('b' + b.path()).encode('utf-8')))
 
         return dict(
             a=a, b=b,
