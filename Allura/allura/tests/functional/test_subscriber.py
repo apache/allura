@@ -13,11 +13,6 @@ class TestSubscriber(TestController):
         response = self.app.get("/nf/admin/add_subscribers")
         assert "<h1>Add Subscribers to Artifact</h1>" in response
 
-        response = self.app.get('/u/test-admin/profile/feed')
-        assert 'Recent posts by Test Admin' in response
-        assert '[test:wiki] test-admin created page Home' in response
-
-        i = Mailbox.query.find().count()
         self.app.post("/nf/admin/add_subscribers", params=dict(
             for_user="root",
             artifact_url="http://localhost:8080/u/test-admin/wiki/Home/"))
