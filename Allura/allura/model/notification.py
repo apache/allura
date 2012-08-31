@@ -44,6 +44,7 @@ MAILBOX_QUIESCENT=None # Re-enable with [#1384]: timedelta(minutes=10)
 class Notification(MappedClass):
     '''
     Temporarily store notifications that will be emailed or displayed as a web flash.
+    This does not contain any recipient information.
     '''
 
     class __mongometa__:
@@ -106,6 +107,11 @@ class Notification(MappedClass):
 
     @classmethod
     def _make_notification(cls, artifact, topic, **kwargs):
+        '''
+        Create a Notification instance based on an artifact.  Special handling
+        for comments when topic=='message'
+        '''
+
         from allura.model import Project
         idx = artifact.index()
         subject_prefix = '[%s:%s] ' % (
@@ -267,7 +273,14 @@ class Notification(MappedClass):
             message_id=h.gen_message_id(),
             text=text)
 
+
 class Mailbox(MappedClass):
+    '''
+    Holds a queue of notifications for an artifact, or a user (webflash messages)
+    for a subscriber.
+    FIXME: describe the Mailbox concept better.
+    '''
+
     class __mongometa__:
         session = main_orm_session
         name = 'mailbox'
@@ -297,9 +310,9 @@ class Mailbox(MappedClass):
     frequency = FieldProperty(dict(
             n=int,unit=S.OneOf('day', 'week', 'month')))
     next_scheduled = FieldProperty(datetime, if_missing=datetime.utcnow)
-
-    # Actual notification IDs
     last_modified = FieldProperty(datetime, if_missing=datetime(2000,1,1))
+
+    # a list of notification _id values
     queue = FieldProperty([str])
 
     project = RelationProperty('Project')
@@ -398,7 +411,7 @@ class Mailbox(MappedClass):
     @classmethod
     def deliver(cls, nid, artifact_index_id, topic):
         '''Called in the notification message handler to deliver notification IDs
-        to the appropriate  mailboxes.  Atomically appends the nids
+        to the appropriate mailboxes.  Atomically appends the nids
         to the appropriate mailboxes.
         '''
         d = {
@@ -417,7 +430,8 @@ class Mailbox(MappedClass):
     @classmethod
     def fire_ready(cls):
         '''Fires all direct subscriptions with notifications as well as
-        all summary & digest subscriptions with notifications that are ready
+        all summary & digest subscriptions with notifications that are ready.
+        Clears the mailbox queue.
         '''
         now = datetime.utcnow()
         # Queries to find all matching subscription objects
@@ -453,6 +467,9 @@ class Mailbox(MappedClass):
             mbox.fire(now)
 
     def fire(self, now):
+        '''
+        Send all notifications that this mailbox has enqueued.
+        '''
         notifications = Notification.query.find(dict(_id={'$in':self.queue}))
         notifications = notifications.all()
         if self.type == 'direct':
@@ -480,5 +497,3 @@ class Mailbox(MappedClass):
             Notification.send_summary(
                 self.user_id, u'noreply@in.sf.net', 'Digest Email',
                 notifications)
-        # remove Notifications since they are no longer needed
-        Notification.query.remove({'_id': {'$in': [n._id for n in notifications]}})
