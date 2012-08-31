@@ -610,7 +610,8 @@ class ProjectRole(MappedClass):
 audit_log = collection(
     'audit_log', main_doc_session,
     Field('_id', S.ObjectId()),
-    Field('project_id', S.ObjectId, if_missing=None),
+    Field('project_id', S.ObjectId, if_missing=None,
+          index=True),  # main view of audit log queries by project_id
     Field('user_id', S.ObjectId, if_missing=None),
     Field('timestamp', datetime, if_missing=datetime.utcnow),
     Field('url', str),
