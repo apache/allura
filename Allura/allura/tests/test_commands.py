@@ -3,7 +3,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import script, set_neighborhood_features, \
-                           create_neighborhood
+                           create_neighborhood, show_models
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
@@ -121,3 +121,9 @@ def test_update_neighborhood():
     ThreadLocalORMSession.close_all() # make sure the app_configs get freshly queried
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool == False
+
+
+def testEnsureIndexCommand():
+    cmd = show_models.EnsureIndexCommand('ensure_index')
+    cmd.run([test_config])
+    

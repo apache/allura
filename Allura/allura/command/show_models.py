@@ -164,15 +164,6 @@ class EnsureIndexCommand(base.Command):
                 prev_uindexes[iname] = tuple(fields['key'])
             else:
                 prev_indexes[iname] = tuple(fields['key'])
-        # Drop obsolete indexes
-        for iname, key in prev_indexes.iteritems():
-            if key not in indexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
-                collection.drop_index(iname)
-        for iname, key in prev_uindexes.iteritems():
-            if key not in uindexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
-                collection.drop_index(iname)
         # Ensure all indexes
         for name, idx in uindexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
@@ -186,6 +177,15 @@ class EnsureIndexCommand(base.Command):
         for name, idx in indexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.ensure_index(idx.index_spec, background=True)
+        # Drop obsolete indexes
+        for iname, key in prev_indexes.iteritems():
+            if key not in indexes:
+                base.log.info('...... drop index %s:%s', collection.name, iname)
+                collection.drop_index(iname)
+        for iname, key in prev_uindexes.iteritems():
+            if key not in uindexes:
+                base.log.info('...... drop index %s:%s', collection.name, iname)
+                collection.drop_index(iname)
 
     def _remove_dupes(self, collection, spec):
         iname = collection.create_index(spec)
