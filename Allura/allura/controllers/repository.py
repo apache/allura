@@ -28,6 +28,7 @@ from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilter
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
+from allura.controllers.base import DispatchIndex
 
 from .base import BaseController
 
@@ -439,7 +440,7 @@ class CommitBrowser(BaseController):
             count=count,
             **kw)
 
-class TreeBrowser(BaseController):
+class TreeBrowser(BaseController, DispatchIndex):
     tree_widget = SCMTreeWidget()
     FileBrowserClass=None
 
