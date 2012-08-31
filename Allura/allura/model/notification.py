@@ -13,7 +13,6 @@ Periodically:
    - Enqueue one email message with all notifications
    - Clear subscription's notification list
 
-Notifications are also available for use in feeds
 '''
 
 import logging
