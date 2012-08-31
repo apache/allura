@@ -117,6 +117,7 @@ class ForumThread(M.Thread):
         indexes = [
             'flags',
             'discussion_id',
+            'import_id',  # may be used by external legacy systems
         ]
     type_s = 'Thread'
 
