@@ -174,3 +174,49 @@ class TestRootController(TestController):
         assert 'Cannot display: file marked as a binary type.' in resp
 
 
+class TestLogPagination(TestController):
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
+        h.set_context('test', 'src-hg', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgehg', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'paginationtest.hg'
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src-hg', neighborhood='Projects')
+        c.app.repo.refresh()
+
+    def _get_ci(self):
+        resp = self.app.get('/src-hg/').follow().follow()
+        for tag in resp.html.findAll('a'):
+            if tag['href'].startswith('/p/test/src-hg/ci/'):
+                return tag['href']
+        return None
+
+    def test_show_pagination(self):
+        resp = self.app.get(self._get_ci() + 'log/')
+        assert "pager_curpage" in resp
+        resp = self.app.get(self._get_ci() + 'log/?limit=50')
+        assert "pager_curpage" not in resp
+        resp = self.app.get(self._get_ci() + 'log/?page=2')
+        assert "pager_curpage" not in resp
+
+    def test_log_messages(self):
+        resp = self.app.get(self._get_ci() + 'log/')
+        assert "[0debe4]" in resp
+        assert "[ab7517]" in resp
+        assert "[dc406e]" not in resp
+        resp = self.app.get(self._get_ci() + 'log/?page=1')
+        assert "[0debe4]" not in resp
+        assert "[dc406e]" in resp
+        resp = self.app.get(self._get_ci() + 'log/?limit=50')
+        assert "[0debe4]" in resp
+        assert "[dc406e]" in resp

@@ -95,12 +95,6 @@ class TestRootController(_TestCase):
     def test_log(self):
         resp = self.app.get('/src-git/ref/master~/log/')
 
-    def test_limit_log(self):
-        resp = self.app.get(self._get_ci()+'log/')
-        assert "pager_curpage" not in resp
-        resp = self.app.get(self._get_ci()+'log/?limit=1')
-        assert "pager_curpage" in resp
-
     def test_tags(self):
         resp = self.app.get('/src-git/ref/master~/tags/')
 
