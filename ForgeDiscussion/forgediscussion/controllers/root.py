@@ -12,16 +12,14 @@ from pylons import g, c, request
 from formencode import validators
 from webob import exc
 
-from ming.orm.base import session
 
-from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib.security import require_access, has_access, require_authenticated
-from allura.model import ProjectRole, Feed
+from allura.model import Feed
 from allura.lib.search import search
 from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
-from allura.controllers import BaseController
+from allura.controllers import BaseController, DispatchIndex
 
 from .forum import ForumController
 from forgediscussion import import_support
@@ -35,7 +33,7 @@ from forgediscussion.widgets.admin import AddForumShort
 
 log = logging.getLogger(__name__)
 
-class RootController(BaseController):
+class RootController(BaseController, DispatchIndex):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()

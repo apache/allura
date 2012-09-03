@@ -21,6 +21,7 @@ from allura.lib.search import search
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
+from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
@@ -248,7 +249,7 @@ The wiki uses [Markdown](%s) syntax.
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
-class RootController(BaseController):
+class RootController(BaseController, DispatchIndex):
 
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
