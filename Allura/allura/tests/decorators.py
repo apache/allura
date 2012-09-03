@@ -53,6 +53,10 @@ with_wiki = with_tool('test', 'Wiki', 'wiki')
 with_git = with_tool('test', 'Git', 'src-git', 'Git', type='git')
 with_hg = with_tool('test', 'Hg', 'src-hg', 'Mercurial', type='hg')
 with_svn = with_tool('test', 'SVN', 'src', 'SVN')
+with_url = with_tool('test', 'ShortUrl', 'url')
+
+
+
 
 def with_repos(func):
     @wraps(func)

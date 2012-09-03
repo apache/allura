@@ -2222,6 +2222,10 @@ div.attachment_thumb .file_type span {
 .ui-icon-tool-link {
   background-repeat: no-repeat;
 }
+.ui-icon-tool-shorturl {
+  background-repeat: no-repeat;
+}
+
 
 .ui-icon-tool-blog {
   background-repeat: no-repeat;

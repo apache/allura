@@ -139,6 +139,9 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #top_nav .ui-icon-tool-link {
   background-image: url("../images/ext_32.png");
 }
+#top_nav .ui-icon-tool-shorturl {
+  background-image: url("../images/ext_32.png");
+}
 #top_nav .ui-icon-tool-blog {
   background-image: url("../images/blog_32.png");
 }
@@ -171,6 +174,9 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
   background-image: url("../images/downloads_48.png");
 }
 .big_icon.ui-icon-tool-link {
+  background-image: url("../images/ext_48.png");
+}
+.big_icon.ui-icon-tool-shorturl {
   background-image: url("../images/ext_48.png");
 }
 .big_icon.ui-icon-tool-blog {

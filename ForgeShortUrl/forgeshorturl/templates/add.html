@@ -1,0 +1,19 @@
+{% block content %}
+<div>
+    <form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/add">
+        <label class="grid-13">Short name</label>
+        <div class="grid-13"><input type = "text" name = "short_url" style="width: 250px"></div>
+        <label class="grid-13">Full URL</label>
+        <div class="grid-13"><input type = "text" name = "full_url" style="width: 250px"></div>
+        <label class="grid-13">Description</label>
+        <div class="grid-13"><textarea name = "description" style="width: 250px; height: 100px"></textarea></div>
+        <div class="grid-1"><input type = "checkbox" name="private" id="private"></div>
+        <label for="private" class="grid-12">Private</label>
+        <div class="grid-13">&nbsp;</div>
+        <hr>
+        <div class="grid-13"><div class="grid-13">&nbsp;</div>
+        <input type="submit" value="Save">
+        <a href="#" class="close">Cancel</a></div>
+    </form>
+</div>
+{% endblock %}
