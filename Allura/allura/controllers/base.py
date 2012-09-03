@@ -23,8 +23,10 @@ class DispatchIndex(object):
     Use this class as a mixin to controller that needs such behaviour.
     (see allura.controllers.repository.TreeBrowser for an example)
     """
+    dispatcher = ObjectDispatcher()
+
     def _dispatch(self, state, remainder):
-        dispatcher = ObjectDispatcher()
+        dispatcher = self.dispatcher
         if remainder and remainder[0] == 'index':
             controller, new_remainder = self._lookup(*remainder)
             state.add_controller(controller.__class__.__name__, controller)
