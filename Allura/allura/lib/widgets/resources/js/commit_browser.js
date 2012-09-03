@@ -145,6 +145,18 @@ if($('#commit_graph')){
         selectCommit(offset+y-1);
     });
 
+    function color(index) {
+      /* choose color for colorblind users (according to http://jfly.iam.u-tokyo.ac.jp/color/#pallet) */
+      switch(index){
+        case 0: return "rgb(213,94,0)";
+        case 1: return "rgb(0,114,178)";
+        case 2: return "rgb(240,228,66)";
+        case 3: return "rgb(0,158,115)";
+        case 4: return "rgb(230,159,0)";
+        default: return "rgb(86,180,223)";
+      }
+    }
+
     function drawGraph(offset) {
         // Clear the canvas and set the contetx
         var canvas_ctx = canvas.getContext('2d');
@@ -166,25 +178,7 @@ if($('#commit_graph')){
                 var parent_x = x_space+parent.column*x_space
                 var parent_y = y_space+(parent.row-offset)*y_space;
 
-                switch(parent.column % 6){
-                case 0:
-                    canvas_ctx.strokeStyle = "#a00";
-                    break;
-                case 1:
-                    canvas_ctx.strokeStyle = "#0a0";
-                    break;
-                case 2:
-                    canvas_ctx.strokeStyle = "#00a";
-                    break;
-                case 3:
-                    canvas_ctx.strokeStyle = "#aa0";
-                    break;
-                case 4:
-                    canvas_ctx.strokeStyle = "#0aa";
-                    break;
-                default:
-                    canvas_ctx.strokeStyle = "#f0f";
-                }
+                canvas_ctx.strokeStyle = color(parent.column % 6);
 
                 // Vertical
                 canvas_ctx.beginPath();
@@ -206,26 +200,7 @@ if($('#commit_graph')){
             var x_pos = x_space+(commit.column*x_space);
             var y_pos = y_space+((commit.row-offset)*y_space);
 
-            switch(commit.column % 6){
-                case 0:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#a00";
-                    break;
-                case 1:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#0a0";
-                    break;
-                case 2:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#00a";
-                    break;
-                case 3:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#aa0";
-                    break;
-                case 4:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#0aa";
-                    break;
-                default:
-                    canvas_ctx.strokeStyle = canvas_ctx.fillStyle = "#f0f";
-                }
-
+            canvas_ctx.strokeStyle = canvas_ctx.fillStyle = color(commit.column % 6);
             canvas_ctx.beginPath();
             canvas_ctx.arc(x_pos + point_offset, y_pos + point_offset, point_offset, 0, 2 * Math.PI, false);
             canvas_ctx.fill();
