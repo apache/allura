@@ -1,6 +1,6 @@
 <div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
   <div class="clear"></div>
-  <div style="height: 40px">{{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}</div>
+  <div class="pagination_size">{{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}</div>
   <form method="{{method}}" action="{{action}}" {% if enctype %}enctype="{{enctype}}"{% endif %} class="follow_form">
     {{widget.fields['threads'].display(value=threads)}}
     <p>

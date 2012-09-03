@@ -180,3 +180,6 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #ticket_search_results_holder{
     overflow: auto;
 }
+.pagination_size {
+    height: 40px;
+}
