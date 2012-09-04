@@ -148,24 +148,40 @@ class EnsureIndexCommand(base.Command):
         base.log.info('Done updating indexes')
 
     def _update_indexes(self, collection, indexes):
-        prev_indexes = {}
-        prev_uindexes = {}
         uindexes = dict(
-            (tuple(i.index_spec), i)
+            (tuple(i.index_spec), i)  # convert list to tuple so it's hashable for 'set'
             for i in indexes
             if i.unique)
         indexes = dict(
             (tuple(i.index_spec), i)
             for i in indexes
             if not i.unique)
+        prev_indexes = {}
+        prev_uindexes = {}
+        unique_flag_drop = {}
+        unique_flag_add = {}
         for iname, fields in collection.index_information().iteritems():
-            if iname == '_id_': continue
+            if iname == '_id_':
+                continue
+            keys = tuple(fields['key'])
             if fields.get('unique'):
-                prev_uindexes[iname] = tuple(fields['key'])
+                if keys in indexes:
+                    unique_flag_drop[iname] = keys
+                else:
+                    prev_uindexes[iname] = keys
             else:
-                prev_indexes[iname] = tuple(fields['key'])
+                if keys in uindexes:
+                    unique_flag_add[iname] = keys
+                else:
+                    prev_indexes[iname] = keys
+
+        for iname, keys in unique_flag_drop.iteritems():
+            self._recreate_index(collection, iname, list(keys), unique=False)
+        for iname, keys in unique_flag_add.iteritems():
+            self._recreate_index(collection, iname, list(keys), unique=True)
+
         # Ensure all indexes
-        for name, idx in uindexes.iteritems():
+        for keys, idx in uindexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             while True:
                 try:
@@ -174,18 +190,31 @@ class EnsureIndexCommand(base.Command):
                 except DuplicateKeyError, err:
                     base.log.info('Found dupe key(%s), eliminating dupes', err)
                     self._remove_dupes(collection, idx.index_spec)
-        for name, idx in indexes.iteritems():
+        for keys, idx in indexes.iteritems():
             base.log.info('...... ensure %s:%s', collection.name, idx)
             collection.ensure_index(idx.index_spec, background=True)
         # Drop obsolete indexes
-        for iname, key in prev_indexes.iteritems():
-            if key not in indexes:
+        for iname, keys in prev_indexes.iteritems():
+            if keys not in indexes:
                 base.log.info('...... drop index %s:%s', collection.name, iname)
                 collection.drop_index(iname)
-        for iname, key in prev_uindexes.iteritems():
-            if key not in uindexes:
+        for iname, keys in prev_uindexes.iteritems():
+            if keys not in uindexes:
                 base.log.info('...... drop index %s:%s', collection.name, iname)
                 collection.drop_index(iname)
+
+    def _recreate_index(self, collection, iname, keys, **creation_options):
+        '''Recreate an index with new creation options, using a temporary index
+        so that at no time is an index missing from the specified keys'''
+        superset_keys = keys + [('temporary_extra_field_for_indexing', 1)]
+        base.log.info('...... ensure index %s:%s', collection.name, superset_keys)
+        superset_index = collection.ensure_index(superset_keys)
+        base.log.info('...... drop index %s:%s', collection.name, iname)
+        collection.drop_index(iname)
+        base.log.info('...... ensure index %s:%s %s', collection.name, keys, creation_options)
+        collection.ensure_index(keys, **creation_options)
+        base.log.info('...... drop index %s:%s', collection.name, superset_index)
+        collection.drop_index(superset_index)
 
     def _remove_dupes(self, collection, spec):
         iname = collection.create_index(spec)
