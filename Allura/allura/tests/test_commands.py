@@ -1,5 +1,6 @@
 from nose.tools import assert_raises
 from ming.orm import ThreadLocalORMSession
+from mock import Mock
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import script, set_neighborhood_features, \
@@ -123,7 +124,27 @@ def test_update_neighborhood():
     assert nb.has_home_tool == False
 
 
-def testEnsureIndexCommand():
-    cmd = show_models.EnsureIndexCommand('ensure_index')
-    cmd.run([test_config])
-    
+class TestEnsureIndexCommand(object):
+
+    def test_run(self):
+        cmd = show_models.EnsureIndexCommand('ensure_index')
+        cmd.run([test_config])
+
+    def test_update_indexes_order(self):
+        collection = Mock(name='collection')
+        collection.index_information.return_value = {
+                '_id_': {'key': '_id'},
+                '_foo_bar': {'key': ['foo', 'bar']},
+                }
+        indexes = [
+                Mock(unique=False, index_spec=('foo')),
+                ]
+        cmd = show_models.EnsureIndexCommand('ensure_index')
+        cmd._update_indexes(collection, indexes)
+
+        collection_call_order = {}
+        for i, call in enumerate(collection.mock_calls):
+            method_name = call[0]
+            collection_call_order[method_name] = i
+        assert collection_call_order['ensure_index'] < collection_call_order['drop_index'], collection.mock_calls
+
