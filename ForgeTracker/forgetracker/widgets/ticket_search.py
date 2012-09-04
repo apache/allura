@@ -90,13 +90,13 @@ class SearchHelp(ffw.Lightbox):
 </ul>
 <h2>Example searches</h2>
 <p>Any ticket that is not closed in the 1.0 milestone with "foo" in the title</p>
-<div class="codehilite"><pre>!status:closed and summary:foo* and _milestone:1.0</pre></div>
+<div class="codehilite"><pre>!status:closed AND summary:foo* AND _milestone:1.0</pre></div>
 <p>Tickets with the label "foo" but not the label "bar":</p>
-<div class="codehilite"><pre>labels:foo and -labels:bar</pre></div>
+<div class="codehilite"><pre>labels:foo AND -labels:bar</pre></div>
 <p>Tickets assigned to or added by a user with the username "admin1" and the custom field "size" set to 2</p>
-<div class="codehilite"><pre>(assigned_to_s:admin1 or reported_by_s:admin1) and _size:2</pre></div>
+<div class="codehilite"><pre>(assigned_to_s:admin1 or reported_by_s:admin1) AND _size:2</pre></div>
 <p>The ticket has "foo" as the title or the body with a number lower than 50</p>
-<div class="codehilite"><pre>(summary:foo or text:foo) and ticket_num:[* TO 50]</pre></div>
+<div class="codehilite"><pre>(summary:foo or text:foo) AND ticket_num:[* TO 50]</pre></div>
 <p>Tickets last modified in April 2012</p>
 <div class="codehilite"><pre>mod_date_dt:[2012-04-01T00:00:00Z TO 2012-04-30T23:59:59Z]</pre></div>
 <h2>Saving searches</h2>
