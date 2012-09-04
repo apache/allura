@@ -194,6 +194,8 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/p/test/icon')
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
+        
+        r = self.app.get('/p/test/icon?foo=bar')
 
     def test_project_screenshot(self):
         file_name = 'neo-icon-set-454545-256x350.png'

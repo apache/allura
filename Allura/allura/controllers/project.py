@@ -194,7 +194,7 @@ class NeighborhoodController(object):
         redirect(c.project.script_name + 'admin/overview')
 
     @expose()
-    def icon(self):
+    def icon(self, **kw):
         icon = self.neighborhood.icon
         if not icon:
             raise exc.HTTPNotFound
@@ -320,14 +320,14 @@ class ProjectController(object):
         return feed.writeString('utf-8')
 
     @expose()
-    def icon(self):
+    def icon(self, **kw):
         icon = c.project.icon
         if not icon:
             raise exc.HTTPNotFound
         return icon.serve()
 
     @expose()
-    def user_icon(self):
+    def user_icon(self, **kw):
         try:
             return self.icon()
         except exc.HTTPNotFound:
@@ -744,7 +744,7 @@ class AwardController(object):
         return GrantController(self.neighborhood, self.award, recipient), remainder
 
     @expose()
-    def icon(self):
+    def icon(self, **kw):
         icon = self.award.icon
         if not icon:
             raise exc.HTTPNotFound
@@ -809,7 +809,7 @@ class GrantController(object):
         return dict()
 
     @expose()
-    def icon(self):
+    def icon(self, **kw):
         icon = self.award.icon
         if not icon:
             raise exc.HTTPNotFound

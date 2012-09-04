@@ -179,6 +179,8 @@ class TestNeighborhood(TestController):
         image = Image.open(StringIO(r.body))
         assert image.size == (48, 48)
 
+        r = self.app.get('/adobe/icon?foo=bar')
+
     def test_google_analytics(self):
         # analytics allowed
         neighborhood = M.Neighborhood.query.get(name='Adobe')
