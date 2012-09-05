@@ -31,8 +31,8 @@
         <td><small><a href="{{ c.app.url+su.short_name }}">{{ request.scheme+'://'+request.host+c.app.url+su.short_name}}</a></small></td>
         <td><small>{{ su.url|urlize(20) }}</small></td>
         <td><small>{{ su.description }}</small></td>
-        <td><small>{{ su.created }}</small></td>
-        <td><small>{{ su.last_updated }}</small></td>
+        <td><small>{{ lib.abbr_date(su.created) }}</small></td>
+        <td><small>{{ lib.abbr_date(su.last_updated) }}</small></td>
 
     </tr>
     {% endfor %}

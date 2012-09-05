@@ -29,10 +29,6 @@ class TestRootController(TestController):
         assert 'http://www.google.com/' in r
 
     def test_shorturl_private(self):
-        d = dict(short_url='test_private',
-                 full_url='http://www.amazone.com/',
-                 private='on',
-                 description="description1")
         self.app.post('/admin/url/add',
                       dict(short_url='test_private',
                            full_url='http://www.amazone.com/',
