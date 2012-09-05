@@ -208,18 +208,21 @@ class TestLogPagination(TestController):
         assert "pager_curpage" not in resp
         resp = self.app.get(self._get_ci() + 'log/?page=2')
         assert "pager_curpage" not in resp
-    #there are 26 commits
+
     def test_log_messages(self):
         resp = self.app.get(self._get_ci() + 'log/')
-        #show the first commit
+        # first commit is on the first page
         assert "[0debe4]" in resp
-        #show the 25th commit
+        # 25th commit is on the first page too
         assert "[ab7517]" in resp
-        #show the 26th commit
+        # 26th commit is not on the first page
         assert "[dc406e]" not in resp
         resp = self.app.get(self._get_ci() + 'log/?page=1')
         assert "[0debe4]" not in resp
+        # 26th commit is on the second page
         assert "[dc406e]" in resp
+
+        # test with greater limit
         resp = self.app.get(self._get_ci() + 'log/?limit=50')
         assert "[0debe4]" in resp
         assert "[dc406e]" in resp
