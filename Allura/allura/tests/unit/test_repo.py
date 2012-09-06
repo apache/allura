@@ -201,3 +201,20 @@ class TestRefreshLastCommit(unittest.TestCase):
         ])
         self.assertEqual(get.call_count, 2)
         self.assertEqual(get.call_args_list, [[{'_id': 'tid4'}], [{'_id': 'tid3'}]])
+
+
+class TestTree(unittest.TestCase):
+
+    @patch('allura.model.repo.Tree.__getitem__')
+    def test_get_obj_by_path(self, getitem):
+        tree = M.repo.Tree()
+        # test with relative path
+        tree.get_obj_by_path('some/path/file.txt')
+        getitem.assert_called_with('some')
+        getitem().__getitem__.assert_called_with('path')
+        getitem().__getitem__().__getitem__.assert_called_with('file.txt')
+        # test with absolute path
+        tree.get_obj_by_path('/some/path/file.txt')
+        getitem.assert_called_with('some')
+        getitem().__getitem__.assert_called_with('path')
+        getitem().__getitem__().__getitem__.assert_called_with('file.txt')
