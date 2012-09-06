@@ -102,12 +102,15 @@ if($('#commit_graph')){
         $first.removeClass('disabled');
         $last.removeClass('disabled');
         offset = x;
-        if(offset <= 1) {
+        if (max_row <= page_size) {
+            offset = 1;
+            $first.addClass('disabled');
+            $last.addClass('disabled');
+        } else if (offset <= 1) {
             offset = 1;
             $last.addClass('disabled');
-        }
-        else if(offset > (max_row-page_size)) {
-            offset = max_row - page_size;
+        } else if (offset > (max_row-page_size)) {
+            offset = max_row - page_size + 1;
             $first.addClass('disabled');
         }
         y_offset = offset * y_space;
