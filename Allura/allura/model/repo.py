@@ -378,6 +378,8 @@ class Tree(RepoObject):
     def get_obj_by_path(self, path):
         if hasattr(path, 'get'):
             path = path['new']
+        if path.startswith('/'):
+            path = path[1:]
         path = path.split('/')
         obj = self
         for p in path:
