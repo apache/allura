@@ -46,8 +46,8 @@ class MigrateUrls(ShortUrlCommand):
             url.url = h.really_unicode(row['url'])
             url.description = h.really_unicode(row['description'])
             url.private = row['private'] == 'Y'
-            url.created = datetime.fromtimestamp(row['create_time'])
-            url.last_updated = datetime.fromtimestamp(row['edit_time'])
+            url.created = datetime.utcfromtimestamp(row['create_time'])
+            url.last_updated = datetime.utcfromtimestamp(row['edit_time'])
             url.project_id = p._id
             user = M.User.query.get(sfx_userid=row['create_user'])
             user_id = user._id if user else M.User.anonymous()._id
