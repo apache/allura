@@ -17,4 +17,8 @@ setup(name='ForgeShortUrl',
       entry_points="""
       # -*- Entry points: -*-
       [allura]
-      ShortURL=forgeshorturl.main:ForgeShortUrlApp""",)
+      ShortURL=forgeshorturl.main:ForgeShortUrlApp
+
+      [paste.paster_command]
+      migrate-urls=forgeshorturl.command.migrate_urls:MigrateUrls
+      """,)
