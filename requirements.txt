@@ -5,5 +5,8 @@
 # https://github.com/aaronsw/html2text/commit/a5c0f3317edd1c9b61f89539b6a6e8363cf99225
 -e git://github.com/aaronsw/html2text.git#egg=html2text
 
+SQLAlchemy==0.7.2
+MySQL-python
+
 # Include our common requirements
 -r requirements-common.txt
