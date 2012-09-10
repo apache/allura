@@ -408,7 +408,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             App = ac.load()
             app = App(self, ac)
             if app.is_visible_to(c.user):
-                for sm in app.sitemap:
+                for sm in app.main_menu():
                     entry = sm.bind_app(app)
                     entry.ui_icon='tool-%s' % ac.tool_name.lower()
                     ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal

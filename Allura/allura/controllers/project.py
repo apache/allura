@@ -251,7 +251,7 @@ class ProjectController(object):
     def _nav(self):
         return dict(menu=[
                 dict(name=s.label, url=s.url, icon=s.ui_icon)
-                for s in c.project.sitemap() ])
+                for s in c.project.sitemap()])
 
     @expose()
     def _lookup(self, name, *remainder):
