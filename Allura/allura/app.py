@@ -46,6 +46,16 @@ class SitemapEntry(object):
         self.children = children
 
     def __getitem__(self, x):
+        """
+        Automatically expand the list of sitemap child entries with the given items.  Example:
+            SitemapEntry('HelloForge')[
+                SitemapEntry('foo')[
+                    SitemapEntry('Pages')[pages]
+                ]
+            ]
+
+        TODO: deprecate this; use a more clear method of building a tree
+        """
         if isinstance(x, (list, tuple)):
             self.children.extend(list(x))
         else:
