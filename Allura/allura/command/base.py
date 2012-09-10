@@ -42,14 +42,9 @@ class Command(command.Command):
         if self.args[0]:
             # Probably being called from the command line - load the config file
             self.config = conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
-            # Configure logging
-            try:
-                # ... logging does not understand section#subsection syntax
-                logging_config = self.args[0].split('#')[0]
-                logging.config.fileConfig(logging_config, disable_existing_loggers=False)
-            except Exception: # pragma no cover
-                print >> sys.stderr, (
-                    'Could not configure logging with config file %s' % self.args[0])
+            # ... logging does not understand section#subsection syntax
+            logging_config = self.args[0].split('#')[0]
+            logging.config.fileConfig(logging_config, disable_existing_loggers=False)
             log = logging.getLogger('allura.command')
             log.info('Initialize command with config %r', self.args[0])
             load_environment(conf.global_conf, conf.local_conf)
