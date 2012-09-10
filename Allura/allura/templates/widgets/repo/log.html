@@ -1,10 +1,5 @@
 {% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
 <div>
-  {% if show_paging %}
-    <div class="grid-19" style="clear:both">
-      {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
-    </div>
-  {% endif %}
   <table style="clear:both">
     <thead>
       <tr>
@@ -44,9 +39,7 @@
     </tbody>
   </table>
   {% if show_paging %}
-    <div class="grid-19" style="clear:both">
       {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
       {{widget.fields['page_size'].display(limit=limit, page=page, count=count)}}
-    </div>
   {% endif %}
 </div>
