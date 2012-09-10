@@ -228,6 +228,7 @@ class GitImplementation(M.RepositoryImplementation):
                 obj.type = o.type
                 doc.other_ids.append(obj)
         doc.m.save(safe=False)
+        return doc
 
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
@@ -277,6 +278,11 @@ class GitImplementation(M.RepositoryImplementation):
         containing_branches = self._git.git.branch(contains=commit._id)
         containing_branches = [br.strip(' *') for br in containing_branches.split('\n')]
         return containing_branches, tags
+
+    def compute_tree_new(self, commit, tree_path='/'):
+        ci = self._git.rev_parse(commit._id)
+        tree = self.refresh_tree_info(ci.tree, set())
+        return tree._id
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

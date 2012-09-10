@@ -9,7 +9,7 @@ pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c, g
 from ming.base import Object
-from ming.orm import ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -165,6 +165,24 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             self.repo.heads.append(Object(name='HEAD', object_id='deadbeef'))
             self.repo.commit('HEAD')
             q.get.assert_called_with(_id='deadbeef')
+        # test the auto-gen tree fall-through
+        orig_tree = M.repo.Tree.query.get(_id=entry.tree_id)
+        assert orig_tree
+        # force it to regenerate the tree
+        M.repo.Tree.query.remove(dict(_id=entry.tree_id))
+        session(orig_tree).flush()
+        # ensure we don't just pull it from the session cache
+        session(orig_tree).expunge(orig_tree)
+        # ensure we don't just use the LazyProperty copy
+        session(entry).expunge(entry)
+        entry = self.repo.commit(entry._id)
+        # regenerate the tree
+        new_tree = entry.tree
+        assert new_tree
+        self.assertEqual(new_tree._id, orig_tree._id)
+        self.assertEqual(new_tree.tree_ids, orig_tree.tree_ids)
+        self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
+        self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
 class TestGitCommit(unittest.TestCase):
 
