@@ -89,6 +89,9 @@ class ForgeBlogApp(Application):
             if globals is not None:
                 session(globals).flush()
 
+    def main_menu(self):
+        return [SitemapEntry(self.config.options.mount_label.title(), '.')]
+
     @property
     @h.exceptionless([], log)
     def sitemap(self):
