@@ -46,16 +46,15 @@ class ForgeDownloadsApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label.title(),
-                '.')]
+        menu_id = self.config.options.mount_label.title()
+        url = '/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
+        return [SitemapEntry(menu_id, url)]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
-        url='/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
-        return [SitemapEntry(menu_id, url)[self.sidebar_menu()] ]
+        main = self.main_menu()[0]
+        return [main[self.sidebar_menu()] ]
 
     def sidebar_menu(self):
         return []
@@ -97,4 +96,3 @@ class RootController(BaseController):
                 d['selected'] = True
             return d
         return dict(menu=[ _entry(s) for s in c.project.sitemap() ] )
-
