@@ -191,6 +191,40 @@ class TestRootController(_TestCase):
                 'index/index.htm'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
 
+    def test_subscribe(self):
+        user = M.User.query.get(username='test-user')
+        ci = self._get_ci()
+
+        # user is not subscribed
+        assert not M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get(ci + 'tree/',
+                extra_environ={'username': str(user.username)})
+        header = r.html.find('h2', {'class': 'dark title'})
+        link = header.find('a', {'class': 'artifact_subscribe'})
+        assert link is not None, header
+
+        # subscribe
+        self.app.get(ci + 'tree/subscribe?subscribe=True',
+                extra_environ={'username': str(user.username)}).follow()
+        # user is subscribed
+        assert M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get(ci + 'tree/',
+                extra_environ={'username': str(user.username)})
+        header = r.html.find('h2', {'class': 'dark title'})
+        link = header.find('a', {'class': 'artifact_unsubscribe active'})
+        assert link is not None, header
+
+        # unsubscribe
+        self.app.get(ci + 'tree/subscribe?unsubscribe=True',
+                extra_environ={'username': str(user.username)}).follow()
+        # user is not subscribed
+        assert not M.Mailbox.subscribed(user_id=user._id)
+        r = self.app.get(ci + 'tree/',
+                extra_environ={'username': str(user.username)})
+        header = r.html.find('h2', {'class': 'dark title'})
+        link = header.find('a', {'class': 'artifact_subscribe'})
+        assert link is not None, header
+
 
 class TestRestController(_TestCase):
 

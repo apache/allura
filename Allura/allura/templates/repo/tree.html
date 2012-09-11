@@ -15,6 +15,9 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 <a href="{{commit.url()}}log/">
   <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
 </a>
+{% if c.user and c.user != c.user.anonymous() %}
+  {{c.subscribe_form.display(value=tool_subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
+{% endif %}
 <a href="{{c.app.url}}feed/">
   <b data-icon="{{g.icons.feed.char}}" class="ico {{g.icons.feed.css}}" title="Feed"> </b>
 </a>

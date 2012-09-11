@@ -26,6 +26,7 @@ from allura.controllers import AppDiscussionController
 from allura.lib.widgets.repo import SCMLogWidget, SCMRevisionWidget, SCMTreeWidget
 from allura.lib.widgets.repo import SCMMergeRequestWidget, SCMMergeRequestFilterWidget
 from allura.lib.widgets.repo import SCMMergeRequestDisposeWidget, SCMCommitBrowserWidget
+from allura.lib.widgets.subscriptions import SubscribeForm
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
@@ -445,6 +446,7 @@ class CommitBrowser(BaseController):
 class TreeBrowser(BaseController, DispatchIndex):
     tree_widget = SCMTreeWidget()
     FileBrowserClass=None
+    subscribe_form = SubscribeForm()
 
     def __init__(self, commit, tree, path='', parent=None):
         self._commit = commit
@@ -456,12 +458,15 @@ class TreeBrowser(BaseController, DispatchIndex):
     @with_trailing_slash
     def index(self, **kw):
         c.tree_widget = self.tree_widget
+        c.subscribe_form = self.subscribe_form
+        tool_subscribed = M.Mailbox.subscribed()
         return dict(
             repo=c.app.repo,
             commit=self._commit,
             tree=self._tree,
             path=self._path,
-            parent=self._parent)
+            parent=self._parent,
+            tool_subscribed=tool_subscribed)
 
     @expose()
     def _lookup(self, next, *rest):
@@ -497,6 +502,16 @@ class TreeBrowser(BaseController, DispatchIndex):
             tree,
             self._path + '/' + next,
             self), rest
+
+    @expose()
+    @validate(subscribe_form)
+    def subscribe(self, subscribe=None, unsubscribe=None):
+        if subscribe:
+            M.Mailbox.subscribe()
+        elif unsubscribe:
+            M.Mailbox.unsubscribe()
+        redirect(request.referer)
+
 
 class FileBrowser(BaseController):
 
