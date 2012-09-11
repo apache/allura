@@ -349,7 +349,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     ordinal = ac.options.get('ordinal', 0)
                     entry_index[ac.project_id].append({'ordinal':ordinal,'entry':entry})
 
-        sitemaps = dict((pid, SitemapEntry('root').children) for pid in pids)
+        sitemaps = dict((pid, []) for pid in pids)
         for pid, entries in entry_index.iteritems():
             entries.sort(key=lambda e:e['ordinal'])
             sitemap = sitemaps[pid]
@@ -385,7 +385,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                                     exclude from sitemap
         """
         from allura.app import SitemapEntry
-        sitemap = SitemapEntry('root')
         entries = []
 
         # Set menu mode
@@ -421,9 +420,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             max_ordinal += 1
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
-        for e in entries:
-            sitemap.children.append(e['entry'])
-        return sitemap.children
+        return [e['entry'] for e in entries]
 
     def parent_iter(self):
         yield self
