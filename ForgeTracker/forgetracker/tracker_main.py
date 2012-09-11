@@ -140,6 +140,10 @@ class ForgeTrackerApp(Application):
         ]
     searchable=True
     tool_label='Tickets'
+    tool_description="""
+        Bugs, enhancements, tasks, etc., will help you plan and
+        manage your development.
+    """
     default_mount_label='Tickets'
     default_mount_point='tickets'
     ordinal=6

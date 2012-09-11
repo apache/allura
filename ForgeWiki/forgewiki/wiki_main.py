@@ -49,7 +49,11 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     search_results = SearchResults()
-
+    icons={
+        24:'images/wiki_24.png',
+        32:'images/wiki_32.png',
+        48:'images/wiki_48.png'
+    }
 
 class ForgeWikiApp(Application):
     '''This is the Wiki app for PyForge'''
@@ -58,6 +62,10 @@ class ForgeWikiApp(Application):
                     'unmoderated_post', 'post', 'moderate', 'admin']
     searchable=True
     tool_label='Wiki'
+    tool_description="""
+        Documentation is key to your project and the wiki tool
+        helps make it easy for anyone to contribute.
+    """
     default_mount_label='Wiki'
     default_mount_point='wiki'
     ordinal=5

@@ -29,82 +29,18 @@
     </div>
 
     {% if not neighborhood.project_template %}
-    <div class="inner-row">
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-git"></div>
-                <input checked type="checkbox" value="Git"
+    {% for tool in g.entry_points["tool"].itervalues() %}
+        {% if tool.installable %}
+            <div class="tool">
+                <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ tool.tool_label}} icon">
+                <input type="checkbox" value="{{ tool.tool_label }}"
                        name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Git">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Git">Git</label></h1>
-                <p>Git is a distributed version control system designed to
-                handle everything from small to very large projects with speed
-                and efficiency.</p>
-        </div>
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-tickets"></div>
-                <input checked type="checkbox" value="Tickets"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Tickets">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Tickets">Tickets</label></h1>
-                <p>Bugs, enhancements, tasks, etc., will help you plan and
-                manage your development.</p>
-        </div>
-        <div style="clear:both"></div>
-    </div>
-    <div class="inner-row">
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-git"></div>
-                <input type="checkbox" value="Hg"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Hg">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Hg">Mercurial</label></h1>
-                <p>Mercurial is a distributed source control management tool that efficiently
-                handles projects of any size and offers an easy and intuitive
-                interface.</p>
-        </div>
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-wiki"></div>
-                <input checked type="checkbox" value="Wiki"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Wiki">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Wiki">Wiki</label></h1>
-                <p>Documentation is key to your project and the wiki tool
-                helps make it easy for anyone to contribute.</p>
-        </div>
-        <div style="clear:both"></div>
-    </div>
-    <div class="inner-row">
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-git"></div>
-                <input type="checkbox" value="SVN"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_SVN">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_SVN">SVN</label></h1>
-                <p>Enterprise-class centralized version control for the masses.</p>
-        </div>
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-discussion"></div>
-                <input checked type="checkbox" value="Discussion"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Discussion">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Discussion">Forums</label></h1>
-                <p>Collaborate with your community in your forum.</p>
-        </div>
-        <div style="clear:both"></div>
-    </div>
-    <div class="inner-row">
-        <div class="tool" style="visibility: hidden"></div>
-        <div class="tool">
-            <div class="big_icon ui-icon-tool-blog"></div>
-                <input type="checkbox" value="Blog"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Blog">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_Blog">Blog</label></h1>
-                <p>Share exciting news and progress updates with your
-                community.</p>
-        </div>
-        <div style="clear:both"></div>
-    </div>
+                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">
+                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">{{ tool.tool_label }}</label></h1>
+                <p>{{ tool.tool_description }}</p>
+            </div>
+        {% endif %}
+    {% endfor %}
     {% endif %}
     {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}
     <div style="margin-top:20px">

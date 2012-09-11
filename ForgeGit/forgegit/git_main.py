@@ -26,6 +26,11 @@ class ForgeGitApp(RepositoryApp):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
     tool_label='Git'
+    tool_description="""
+        Git is a distributed version control system designed to
+        handle everything from small to very large projects with speed
+        and efficiency.
+    """
     ordinal=2
     forkable=True
     default_branch_name='ref/master'

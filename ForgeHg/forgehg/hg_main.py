@@ -26,6 +26,11 @@ class ForgeHgApp(RepositoryApp):
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
     tool_label='Mercurial'
+    tool_description="""
+        Mercurial is a distributed source control management tool that efficiently
+        handles projects of any size and offers an easy and intuitive
+        interface.
+    """
     ordinal=3
     forkable=True
     default_branch_name='ref/default'

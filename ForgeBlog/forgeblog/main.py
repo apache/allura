@@ -52,6 +52,10 @@ class W:
 class ForgeBlogApp(Application):
     __version__ = version.__version__
     tool_label='Blog'
+    tool_description="""
+        Share exciting news and progress updates with your
+        community.
+    """
     default_mount_label='Blog'
     default_mount_point='blog'
     permissions = ['configure', 'read', 'write',

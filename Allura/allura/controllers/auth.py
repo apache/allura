@@ -15,6 +15,7 @@ from allura.lib.security import require_authenticated, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post
+from allura.lib.repository import RepositoryApp
 from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm, LoginForm
 from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
@@ -221,7 +222,7 @@ class AuthController(BaseController):
         for p in user.my_projects():
             for p in [p] + p.direct_subprojects.all():
                 for app in p.app_configs:
-                    if not app.tool_name.lower() in ('git', 'hg', 'svn'):
+                    if not isinstance(app, RepositoryApp):
                         continue
                     if not has_access(app, 'write', user, p):
                         continue

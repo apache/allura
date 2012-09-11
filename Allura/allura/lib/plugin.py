@@ -308,8 +308,15 @@ class ProjectRegistrationProvider(object):
     '''
 
     def __init__(self):
-        from allura.lib.widgets import forms as forms
+        from allura.lib.widgets import forms
         self.add_project_widget = forms.NeighborhoodAddProjectForm
+        ## Dynamically generating CheckboxSet of installable tools
+        self.add_project_widget.fields.tools = forms.ew.CheckboxSet(
+            name="tools", options=[
+                forms.ew.Option(label=tool.tool_label, html_value=tool.tool_label) \
+                for tool in g.entry_points["tool"].itervalues() if tool.installable
+            ]
+        )
 
     @classmethod
     def get(cls):

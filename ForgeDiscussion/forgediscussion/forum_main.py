@@ -45,6 +45,9 @@ class ForgeDiscussionApp(Application):
     AttachmentClass=DM.ForumAttachment
     searchable=True
     tool_label='Discussion'
+    tool_description="""
+        Collaborate with your community in your forum.
+    """
     default_mount_label='Discussion'
     default_mount_point='discussion'
     ordinal=7

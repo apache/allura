@@ -268,15 +268,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     r'^[A-z][-A-z0-9]{2,}$',
                     messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
                 NeighborhoodProjectTakenValidator()))
-
         tools = ew.CheckboxSet(name='tools', options=[
-            ew.Option(label='Wiki', html_value='Wiki', selected=True),
-            ew.Option(label='Git', html_value='Git', selected=True),
-            ew.Option(label='Hg', html_value='Hg'),
-            ew.Option(label='SVN', html_value='SVN'),
-            ew.Option(label='Tickets', html_value='Tickets', selected=True),
-            ew.Option(label='Discussion', html_value='Discussion', selected=True),
-            ew.Option(label='Blog', html_value='Blog')
+            ## Required for Neighborhood functional tests to pass
+            ew.Option(label='Wiki', html_value='Wiki', selected=True)
         ])
 
     def resources(self):

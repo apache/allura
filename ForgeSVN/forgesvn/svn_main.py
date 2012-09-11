@@ -34,6 +34,9 @@ class ForgeSVNApp(RepositoryApp):
         ConfigOption('checkout_url', str, 'trunk')
         ]
     tool_label='SVN'
+    tool_description="""
+        Enterprise-class centralized version control for the masses.
+    """
     ordinal=4
     forkable=False
     default_branch_name=''

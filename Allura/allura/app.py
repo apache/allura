@@ -108,9 +108,11 @@ class Application(object):
     :var sitemap: a list of :class:`SitemapEntries <allura.app.SitemapEntry>` to create an app navigation.
     :var bool installable: toggle if the app can be installed in a project
     :var bool hidden: toggle if the app should be hidden from the list of tools
+    :var tool_description: tool's description that will be displayed to forge users
     :var Controller self.root: the root Controller used for the app
     :var Controller self.api_root: a Controller used for API access at /rest/<neighborhood>/<project>/<app>/
     :var Controller self.admin: a Controller used in the admin interface
+    :var icons: a dictionary mapping icon sizes to application-specific icons paths
     """
 
     __version__ = None
@@ -131,6 +133,7 @@ class Application(object):
     PostClass = model.Post
     AttachmentClass = model.DiscussionAttachment
     tool_label='Tool'
+    tool_description="This is a tool for Allura forge."
     default_mount_label='Tool Name'
     default_mount_point='tool'
     ordinal=0
