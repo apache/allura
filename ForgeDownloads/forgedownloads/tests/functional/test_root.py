@@ -1,14 +1,20 @@
+from nose.tools import assert_equals
+from ming.orm import ThreadLocalORMSession
+
+from allura import model as M
 from alluratest.controller import TestController
-from allura.tests import decorators as td
+
 
 class TestRootController(TestController):
-    @td.with_wiki
+
+    def test_root_redirect(self):
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        project = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        project.set_tool_data('sfx', unix_group_name='foobar')
+        ThreadLocalORMSession.flush_all()
+
+        response = self.app.get('/downloads/', status=301)
+        assert_equals(response.location, 'http://localhost/projects/foobar/files/')
+
     def test_root(self):
-        response = self.app.get('/downloads/nav.json')
-        root = self.app.get('/p/test/wiki/').follow()
-        nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
-        assert len(nav_links) ==  len(response.json['menu'])
-        for nl, entry in zip(nav_links, response.json['menu']):
-            assert nl['href'] == entry['url']
-
-
+        self.app.get('/downloads/', status=404)

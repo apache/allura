@@ -6,6 +6,7 @@ import pkg_resources
 from tg import expose, validate, response, config, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request
+from webob import exc
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -20,6 +21,14 @@ from allura.controllers import BaseController
 from forgedownloads import version
 
 log = logging.getLogger(__name__)
+
+
+def files_url(project):
+    unix_group_name = project.get_tool_data('sfx', 'unix_group_name')
+    if unix_group_name:
+        return '/projects/%s/files/' % unix_group_name
+    else:
+        return None
 
 
 class ForgeDownloadsApp(Application):
@@ -47,8 +56,11 @@ class ForgeDownloadsApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         menu_id = self.config.options.mount_label.title()
-        url = '/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
-        return [SitemapEntry(menu_id, url)]
+        url = files_url(c.project)
+        if url:
+            return [SitemapEntry(menu_id, url)]
+        else:
+            return []
 
     @property
     @h.exceptionless([], log)
@@ -75,24 +87,11 @@ class ForgeDownloadsApp(Application):
 
 class RootController(BaseController):
 
-    def __init__(self):
-        setattr(self, 'nav.json', self.nav)
-
     @expose()
     @with_trailing_slash
     def index(self, **kw):
-        url='/projects/' + c.project.get_tool_data('sfx', 'unix_group_name') + '/files/'
-        permanent_redirect(url)
-
-    @expose('json:')
-    def nav(self):
-        if c.app.sitemap:
-            my_entry = c.app.sitemap[0]
+        url = files_url(c.project)
+        if url:
+            permanent_redirect(url)
         else:
-            my_entry = None
-        def _entry(s):
-            d = dict(name=s.label, url=s.url, icon=s.ui_icon)
-            if my_entry and s.url == my_entry.url:
-                d['selected'] = True
-            return d
-        return dict(menu=[ _entry(s) for s in c.project.sitemap() ] )
+            raise exc.HTTPNotFound
