@@ -315,7 +315,7 @@ class ProjectRegistrationProvider(object):
             name="tools", options=[
                 forms.ew.Option(label=tool.tool_label, html_value=tool.tool_label) \
                 for tool in g.entry_points["tool"].itervalues() if tool.installable
-            ]
+            ], selected=True
         )
 
     @classmethod

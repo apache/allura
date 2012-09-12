@@ -1,6 +1,5 @@
 {% extends g.theme.master %}
 {% set wiki_found = False %}
-{% set code_found = False %}
 {% set tracker_found = False %}
 {% set forum_found = False %}
 
@@ -49,13 +48,11 @@
     <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
   </div>
   <div class="grid-4">
-    {% for tool in c.project.app_configs %}
-      {% if ('code' in tool.options.mount_point) and not code_found %}
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
-        <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
-        {% set code_found = True %}
-      {% endif %}
-    {% endfor %}
+    {% if scm_tools %}
+      {% set tool = scm_tools[0] %}
+      <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
+      <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
+    {% endif %}
   </div>
   <div style="clear:both"></div>
 

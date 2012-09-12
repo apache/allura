@@ -222,7 +222,7 @@ class AuthController(BaseController):
         for p in user.my_projects():
             for p in [p] + p.direct_subprojects.all():
                 for app in p.app_configs:
-                    if not isinstance(app, RepositoryApp):
+                    if not issubclass(g.entry_points["tool"][app.tool_name], RepositoryApp):
                         continue
                     if not has_access(app, 'write', user, p):
                         continue

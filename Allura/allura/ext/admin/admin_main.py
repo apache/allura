@@ -14,6 +14,7 @@ from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M
+from allura.lib.repository import RepositoryApp
 from allura.lib.security import has_access, require_access
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
@@ -139,7 +140,9 @@ class ProjectAdminController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')
     def index(self, **kw):
-        return dict()
+        scm_tools = [tool for tool in c.project.app_configs if issubclass(
+                g.entry_points["tool"][tool.tool_name], RepositoryApp)]
+        return dict(scm_tools=scm_tools)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_invitations.html')

@@ -33,7 +33,7 @@
         {% if tool.installable %}
             <div class="tool">
                 <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ tool.tool_label}} icon">
-                <input type="checkbox" value="{{ tool.tool_label }}"
+                <input checked type="checkbox" value="{{ tool.tool_label }}"
                        name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
                        id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">
                 <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">{{ tool.tool_label }}</label></h1>
