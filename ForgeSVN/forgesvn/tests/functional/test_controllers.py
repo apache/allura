@@ -8,6 +8,7 @@ from pylons import c
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
+from allura.lib import validators as V
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -104,6 +105,16 @@ class TestRootController(SVNTestController):
         resp = self.app.get('/src/3/tree/README?diff=2')
         assert 'This is readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
+
+    def test_checkout_svn(self):
+        self.app.post('/p/test/admin/src/set_checkout_url',
+                      {"checkout_url": "badurl"})
+        r = self.app.get('/p/test/admin/src/checkout_url')
+        assert "trunk" in r
+
+    def test_validator(self):
+        v_svn = V.CheckoutUrlValidator()
+        v_svn.to_python("file:///" + c.app.repo.fs_path + c.app.repo.name)
 
 
 class TestImportController(SVNTestController):
