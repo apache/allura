@@ -151,6 +151,7 @@ class Repository(Artifact, ActivityObject):
     _impl = None
     repo_id='repo'
     type_s='Repository'
+    _refresh_precompute = True
 
     name=FieldProperty(str)
     tool=FieldProperty(str)

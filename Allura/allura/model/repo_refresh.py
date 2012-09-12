@@ -76,9 +76,9 @@ def refresh_repo(repo, all_commits=False, notify=True):
         log.info('Finished CommitRunBuilder for %s', repo.full_fs_path)
 
     # Refresh trees
-    # Like diffs below, pre-computing trees for SVN repos is too expensive,
+    # Like diffs below, pre-computing trees for some SCMs is too expensive,
     # so we skip it here, then do it on-demand later.
-    if repo.tool.lower() != 'svn':
+    if repo._refresh_precompute == False:
         cache = {}
         for i, oid in enumerate(commit_ids):
             ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
@@ -89,10 +89,10 @@ def refresh_repo(repo, all_commits=False, notify=True):
     # Compute diffs
     cache = {}
     # Have to compute_diffs() for all commits to ensure that LastCommitDocs
-    # are set properly for forked repos. For SVN, compute_diffs() we don't
-    # want to pre-compute the diffs because that would be too expensive, so
-    # we skip them here and do them on-demand with caching.
-    if repo.tool.lower() != 'svn':
+    # are set properly for forked repos. For some SCMs, compute_diffs()
+    # we don't want to pre-compute the diffs because that would be too
+    # expensive, so we skip them here and do them on-demand with caching.
+    if repo._refresh_precompute == False:
         for i, oid in enumerate(reversed(all_commit_ids)):
             ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
             compute_diffs(repo._id, cache, ci)

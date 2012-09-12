@@ -38,6 +38,7 @@ class Repository(M.Repository):
     class __mongometa__:
         name='svn-repository'
     branches = FieldProperty([dict(name=str,object_id=str)])
+    _refresh_precompute = False
 
     @LazyProperty
     def _impl(self):
