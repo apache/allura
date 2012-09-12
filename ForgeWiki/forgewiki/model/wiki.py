@@ -155,7 +155,7 @@ class Page(VersionedArtifact, ActivityObject):
                     title=title,
                     app_config_id=context.app.config._id,
                     )
-                Thread(discussion_id=obj.app_config.discussion_id,
+                Thread.new(discussion_id=obj.app_config.discussion_id,
                            ref_id=obj.index_id())
             return obj
         else:

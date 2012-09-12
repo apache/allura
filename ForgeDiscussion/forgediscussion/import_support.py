@@ -46,7 +46,7 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
             description=forum['description'])
         for tid, posts in forum.threads.iteritems():
             rest, head = posts[:-1], posts[-1]
-            t = DM.ForumThread(
+            t = DM.ForumThread.new(
                 _id=tid,
                 discussion_id=f._id,
                 subject=head['subject'])

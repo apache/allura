@@ -54,7 +54,7 @@ def create_post(slug):
 
 @flush_on_return
 def create_thread(discussion):
-    return Thread(discussion_id=discussion._id)
+    return Thread.new(discussion_id=discussion._id)
 
 
 @flush_on_return

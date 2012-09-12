@@ -139,7 +139,7 @@ class RepoRootController(BaseController):
             M.Notification.post(
                 mr, 'merge_request',
                 subject='Merge request: ' + mr.summary)
-            t = M.Thread(
+            t = M.Thread.new(
                 discussion_id=c.app.config.discussion_id,
                 artifact_reference=mr.index_id(),
                 subject='Discussion for Merge Request #:%s: %s' % (

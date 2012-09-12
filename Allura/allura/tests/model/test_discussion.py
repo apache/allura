@@ -11,7 +11,7 @@ from pylons import c, g, request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm import session, ThreadLocalORMSession
 from webob import Request, Response, exc
 
 from allura import model as M
@@ -57,7 +57,7 @@ def test_discussion_methods():
 @with_setup(setUp, tearDown)
 def test_thread_methods():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     assert t.discussion_class() == M.Discussion
     assert t.post_class() == M.Post
     assert t.attachment_class() == M.DiscussionAttachment
@@ -101,9 +101,26 @@ def test_thread_methods():
     t.delete()
 
 @with_setup(setUp, tearDown)
+def test_thread_new():
+    with mock.patch('allura.model.discuss.h.nonce') as nonce:
+        nonce.side_effect = ['deadbeef', 'deadbeef', 'beefdead']
+        d = M.Discussion(shortname='test', name='test')
+        t1 = M.Thread.new(discussion_id=d._id, subject='Test Thread One')
+        t2 = M.Thread.new(discussion_id=d._id, subject='Test Thread Two')
+        ThreadLocalORMSession.flush_all()
+        session(t1).expunge(t1)
+        session(t2).expunge(t2)
+        t1_2 = M.Thread.query.get(_id=t1._id)
+        t2_2 = M.Thread.query.get(_id=t2._id)
+        assert_equals(t1._id, 'deadbeef')
+        assert_equals(t2._id, 'beefdead')
+        assert_equals(t1_2.subject, 'Test Thread One')
+        assert_equals(t2_2.subject, 'Test Thread Two')
+
+@with_setup(setUp, tearDown)
 def test_post_methods():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p2 = t.post('This is another post')
     assert p.discussion_class() == M.Discussion
@@ -137,7 +154,7 @@ def test_post_methods():
 @with_setup(setUp, tearDown)
 def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p_att = p.attach('foo.text', StringIO('Hello, world!'),
                 discussion_id=d._id,
@@ -158,7 +175,7 @@ def test_attachment_methods():
         assert 'attachment/' in att.url()
 
     # Test notification in mail
-    t = M.Thread(discussion_id=d._id, subject='Test comment notification')
+    t = M.Thread.new(discussion_id=d._id, subject='Test comment notification')
     fs = FieldStorage()
     fs.name='file_info'
     fs.filename='fake.txt'
@@ -172,7 +189,7 @@ def test_attachment_methods():
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
@@ -184,7 +201,7 @@ def test_discussion_delete():
 @with_setup(setUp, tearDown)
 def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
@@ -196,7 +213,7 @@ def test_thread_delete():
 @with_setup(setUp, tearDown)
 def test_post_delete():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
                 discussion_id=d._id,
@@ -208,7 +225,7 @@ def test_post_delete():
 @with_setup(setUp, tearDown)
 def test_post_permission_check():
     d = M.Discussion(shortname='test', name='test')
-    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     c.user = M.User.anonymous()
     try:
         p1 = t.post('This post will fail the check.')

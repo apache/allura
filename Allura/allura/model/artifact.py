@@ -262,7 +262,7 @@ class Artifact(MappedClass):
         t = Thread.query.get(ref_id=self.index_id())
         if t is None:
             idx = self.index()
-            t = Thread(
+            t = Thread.new(
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
                 subject='%s discussion' % idx['title_s'])

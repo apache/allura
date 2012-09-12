@@ -486,7 +486,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                         thread_query['import_id'] = topic_data.id
                     to = DM.ForumThread.query.get(**thread_query)
                     if not to:
-                        to = DM.ForumThread(
+                        to = DM.ForumThread.new(
                             subject=topic_data.title,
                             discussion_id=fo._id,
                             import_id=topic_data.id,
@@ -566,7 +566,7 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                 if not p.history().first():
                     p.commit()
                     ThreadLocalORMSession.flush_all()
-                    M.Thread(discussion_id=p.app_config.discussion_id,
+                    M.Thread.new(discussion_id=p.app_config.discussion_id,
                            ref_id=p.index_id(),
                            subject='%s discussion' % p.title)
                 user = get_user(post_data.createdByUsername)

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import pymongo
+from pymongo.errors import OperationFailure
 from pylons import c, g
 
 from ming import schema
@@ -147,6 +148,20 @@ class Thread(Artifact, ActivityObject):
 
     def parent_security_context(self):
         return self.discussion
+
+    @classmethod
+    def new(cls, **props):
+        '''Creates a new Thread instance, ensuring a unique _id.'''
+        while True:
+            try:
+                thread = cls(**props)
+                session(thread).flush(thread)
+                return thread
+            except OperationFailure as err:
+                if 'duplicate' in err.args[0]:
+                    session(thread).expunge(thread)
+                    continue
+                raise
 
     @classmethod
     def discussion_class(cls):

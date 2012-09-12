@@ -426,7 +426,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 self.subscribe(user=User.query.get(_id=self.assigned_to_id))
             description = ''
             subject = self.email_subject
-            Thread(discussion_id=self.app_config.discussion_id,
+            Thread.new(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
             n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
             if monitoring_email and n:
