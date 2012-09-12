@@ -4,7 +4,7 @@ Model tests for artifact
 """
 from cStringIO import StringIO
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from cgi import FieldStorage
 
 from pylons import c, g, request, response
@@ -233,3 +233,55 @@ def test_post_permission_check():
     except exc.HTTPUnauthorized:
         pass
     p2 = t.post('This post will pass the check.', ignore_security=True)
+
+
+@with_setup(setUp, tearDown)
+def test_post_url_paginated():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    p = []  # posts in display order
+    ts = datetime.now() - timedelta(days=1)
+    for i in range(5):
+        ts += timedelta(minutes=1)
+        p.append(t.post('This is a post #%s' % i, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(1, t.post(
+        'This is reply #0 to post #0', parent_id=p[0]._id, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(2, t.post(
+        'This is reply #1 to post #0', parent_id=p[0]._id, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(4, t.post(
+        'This is reply #0 to post #1', parent_id=p[3]._id, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(6, t.post(
+        'This is reply #0 to post #2', parent_id=p[5]._id, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(7, t.post(
+        'This is reply #1 to post #2', parent_id=p[5]._id, timestamp=ts))
+
+    ts += timedelta(minutes=1)
+    p.insert(8, t.post(
+        'This is reply #0 to reply #1 to post #2',
+        parent_id=p[7]._id, timestamp=ts))
+
+    # with default paging limit
+    for _p in p:
+        url = t.url() + '?limit=50#' + _p.slug
+        assert _p.url_paginated() == url, _p.url_paginated()
+
+    # with user paging limit
+    limit = 3
+    c.user.set_pref('results_per_page', limit)
+    for i, _p in enumerate(p):
+        page = i / limit
+        url = t.url() + '?limit=%s' % limit
+        if page > 0:
+            url += '&page=%s' % page
+        url += '#' + _p.slug
+        assert _p.url_paginated() == url, _p.url_paginated()

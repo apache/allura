@@ -1,3 +1,4 @@
+import sys
 import logging
 from datetime import datetime
 
@@ -504,6 +505,43 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return self.thread.url() + h.urlquote(self.slug) + '/'
         else:  # pragma no cover
             return None
+
+    def url_paginated(self):
+        '''Return link to the thread with a #target that poins to this comment.
+
+        Also handle pagination properly.
+        '''
+        if not self.thread:  # pragma no cover
+            return None
+        limit, p, s = g.handle_paging(None, 0)  # get paging limit
+        if self.query.find(dict(thread_id=self.thread._id)).count() <= limit:
+            # all posts in a single page
+            page = 0
+        else:
+            posts = self.thread.find_posts(None, sys.maxint)
+            posts = self.thread.create_post_threads(posts)
+
+            def find_i(posts):
+                '''Find the index number of this post in the display order'''
+                q = []
+                def traverse(posts):
+                    for p in posts:
+                        if p['post']._id == self._id:
+                            return True  # found
+                        q.append(p)
+                        if traverse(p['children']):
+                            return True
+                traverse(posts)
+                return len(q)
+
+            page = find_i(posts) / limit
+
+        slug = h.urlquote(self.slug)
+        url = self.thread.url()
+        if page == 0:
+            return '%s?limit=%s#%s' % (url, limit, slug)
+        return '%s?limit=%s&page=%s#%s' % (url, limit, page, slug)
+
 
     def shorthand_id(self):
         if self.thread:
