@@ -84,9 +84,7 @@ class AdminApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label.title(),
-                '.')]
+        return [SitemapEntry('Admin', '.')]
 
     @h.exceptionless([], log)
     def sidebar_menu(self):

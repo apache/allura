@@ -29,6 +29,7 @@ def test_project():
     h.set_context('test/sub1', neighborhood='Projects')
     assert type(c.project.sidebar_menu()) == list
     assert type(c.project.sitemap()) == list
+    assert c.project.sitemap()[0].label == 'Admin'
     assert old_proj in list(c.project.parent_iter())
     h.set_context('test', 'wiki', neighborhood='Projects')
     adobe_nbhd = M.Neighborhood.query.get(name='Adobe')
