@@ -144,6 +144,16 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         repo._impl.clone_from(repo_path)
         assert len(repo.log())
+        assert os.path.exists('/tmp/testgit.git/hooks/update')
+        with open('/tmp/testgit.git/hooks/update') as f: c = f.read()
+        self.assertEqual(c, 'update\n')
+        assert os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
+        with open('/tmp/testgit.git/hooks/post-receive-user') as f: c = f.read()
+        self.assertEqual(c, 'post-receive\n')
+        assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
+        with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+        self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
     def test_index(self):

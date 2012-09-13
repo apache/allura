@@ -5,6 +5,7 @@ import logging
 import random
 from collections import namedtuple
 from datetime import datetime
+from glob import glob
 
 import tg
 import git
@@ -53,8 +54,14 @@ class Repository(M.Repository):
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
-        '# The following line is required for site integration, do not remove/modify\n'
-        'curl -s $url\n')
+        '# The following is required for site integration, do not remove/modify.\n'
+        '# Place user hook code in post-receive-user and it will be called from here.\n'
+        'curl -s $url\n'
+        '\n'
+        'DIR="$$(dirname "$${BASH_SOURCE[0]}")"\n'
+        'if [ -x $$DIR/post-receive-user ]; then'
+        '  exec $$DIR/post-receive-user\n'
+        'fi')
 
     def __init__(self, repo):
         self._repo = repo
@@ -97,7 +104,7 @@ class GitImplementation(M.RepositoryImplementation):
                 to_path=fullname,
                 bare=True)
             self.__dict__['_git'] = repo
-            self._setup_special_files()
+            self._setup_special_files(source_url)
         except:
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
@@ -255,7 +262,7 @@ class GitImplementation(M.RepositoryImplementation):
     def blob_size(self, blob):
         return self._object(blob._id).data_stream.size
 
-    def _setup_hooks(self):
+    def _setup_hooks(self, source_path=None):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
@@ -264,6 +271,15 @@ class GitImplementation(M.RepositoryImplementation):
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
+        # copy existing hooks if source path is given and exists
+        if source_path is not None and os.path.exists(source_path):
+            for hook in glob(os.path.join(source_path, 'hooks/*')):
+                filename = os.path.basename(hook)
+                target_filename = filename
+                if filename == 'post-receive':
+                    target_filename = 'post-receive-user'
+                target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
+                shutil.copyfile(hook, target)
 
     def _object(self, oid):
         evens = oid[::2]

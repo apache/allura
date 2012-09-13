@@ -413,7 +413,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
         return size
 
-    def _setup_hooks(self):
+    def _setup_hooks(self, source_path=None):
         'Set up the post-commit and pre-revprop-change hooks'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
