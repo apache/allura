@@ -1,2 +1,1 @@
-#!/bin/bash
-curl -s http://localhost:8080/p/test/svn/refresh
+post-commit

@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
+from glob import glob
 
 import tg
 import pysvn
@@ -87,8 +88,14 @@ class SVNCalledProcessError(Exception):
 class SVNImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
-        '# The following line is required for site integration, do not remove/modify\n'
-        'curl -s $url\n')
+        '# The following is required for site integration, do not remove/modify.\n'
+        '# Place user hook code in post-commit-user and it will be called from here.\n'
+        'curl -s $url\n'
+        '\n'
+        'DIR="$$(dirname "$${BASH_SOURCE[0]}")"\n'
+        'if [ -x $$DIR/post-commit-user ]; then'
+        '  exec $$DIR/post-commit-user\n'
+        'fi')
 
     def __init__(self, repo):
         self._repo = repo
@@ -168,7 +175,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           c.app.config.options['checkout_url'])):
             c.app.config.options['checkout_url'] = ""
         self._repo.refresh(notify=False)
-        self._setup_special_files()
+        self._setup_special_files(source_url)
 
     def refresh_heads(self):
         info = self._svn.info2(
@@ -426,6 +433,17 @@ class SVNImplementation(M.RepositoryImplementation):
         with open(fn, 'wb') as fp:
             fp.write('#!/bin/sh\n')
         os.chmod(fn, 0755)
+        # copy existing hooks if source path is given and exists
+        if source_path and source_path.startswith('file://'):
+            source_path = source_path[7:]
+        if source_path is not None and os.path.exists(source_path):
+            for hook in glob(os.path.join(source_path, 'hooks/*')):
+                filename = os.path.basename(hook)
+                target_filename = filename
+                if filename == 'post-commit':
+                    target_filename = 'post-commit-user'
+                target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
+                shutil.copyfile(hook, target)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])
