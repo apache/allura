@@ -158,6 +158,7 @@ class Thread(Artifact, ActivityObject):
                 session(thread).flush(thread)
                 return thread
             except DuplicateKeyError as err:
+                log.warning('Got DuplicateKeyError: attempt #%s, trying again. %s', i, err)
                 if i == 4:
                     raise
                 session(thread).expunge(thread)
