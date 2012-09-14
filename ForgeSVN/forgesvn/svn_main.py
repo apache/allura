@@ -1,7 +1,6 @@
 #-*- python -*-
 import logging
 from pylons import c, request
-import pylons
 
 # Non-stdlib imports
 from ming.utils import LazyProperty
@@ -18,7 +17,7 @@ from allura.lib.repository import RepositoryApp, RepoAdminController
 from allura.app import SitemapEntry, ConfigOption
 from allura.lib import helpers as h
 from allura import model as M
-from allura.lib import validators as V
+from allura.lib.utils import check_svn_repo
 
 # Local imports
 from . import model as SM
@@ -99,14 +98,15 @@ class SVNRepoAdminController(RepoAdminController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(dict(checkout_url=V.CheckoutUrlValidator()))
     def set_checkout_url(self, **post_data):
-        if not pylons.c.form_errors:
-            url = post_data['checkout_url'].replace(
-                self.app.repo.clone_url('ro', self.app), "")
-            self.app.config.options['checkout_url'] = url
+        if check_svn_repo("file://%s%s/%s" %
+                          (self.app.repo.fs_path,
+                           self.app.repo.name,
+                           post_data['checkout_url'])):
+            self.app.config.options['checkout_url'] = post_data['checkout_url']
+            flash("Checkout URL successfully changed")
         else:
-            flash(pylons.c.form_errors["checkout_url"], "error")
+            flash("%s isn't a valid svn repository" % post_data['checkout_url'], "error")
 
 
 class SVNImportController(BaseController):

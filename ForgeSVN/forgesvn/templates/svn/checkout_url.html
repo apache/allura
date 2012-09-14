@@ -26,7 +26,7 @@
     function save_checkout_url() {
         var cval = $.cookie('_session_id');
         $.post('{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_checkout_url', {
-            checkout_url: "{{app.repo.clone_url('ro', app)}}" + $('#checkout_url').val(),
+            checkout_url: $('#checkout_url').val(),
             _session_id:cval
         },
         function () {

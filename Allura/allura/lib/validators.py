@@ -3,7 +3,6 @@ from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
 from . import helpers as h
-import pysvn
 
 class Ming(fev.FancyValidator):
 
@@ -61,14 +60,4 @@ class JsonValidator(fev.FancyValidator):
             json.loads(value)
         except ValueError, e:
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
-        return value
-
-
-class CheckoutUrlValidator(fev.FancyValidator):
-    def _to_python(self, value, state):
-        svn = pysvn.Client()
-        try:
-            svn.info2(value)
-        except pysvn.ClientError, e:
-            raise  fe.Invalid(str(e), value, state)
         return value

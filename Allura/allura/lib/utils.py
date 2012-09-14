@@ -25,6 +25,7 @@ from pygments.formatters import HtmlFormatter
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
+import pysvn
 
 def permanent_redirect(url):
     try:
@@ -428,3 +429,12 @@ def generate_code_stats(blob):
     spaces = re.compile(r'^\s*$')
     stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
     return stats
+
+def check_svn_repo(path):
+    svn = pysvn.Client()
+    try:
+        svn.info2(path)
+        return True
+    except pysvn.ClientError, e:
+        return False
+

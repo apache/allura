@@ -25,6 +25,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.model.repository import GitLikeTree
 from allura.model.auth import User
+from allura.lib.utils import check_svn_repo
 
 log = logging.getLogger(__name__)
 
@@ -161,6 +162,8 @@ class SVNImplementation(M.RepositoryImplementation):
         check_call(['svnsync', 'init', self._url, source_url])
         check_call(['svnsync', '--non-interactive', 'sync', self._url])
         log.info('... %r cloned', self._repo)
+        if not check_svn_repo(self._repo.fs_path+self._repo.name):
+            c.app.config.options['checkout_url'] = ""
         self._repo.refresh(notify=False)
         self._setup_special_files()
 
