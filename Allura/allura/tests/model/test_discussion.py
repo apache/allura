@@ -240,7 +240,7 @@ def test_post_url_paginated():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     p = []  # posts in display order
-    ts = datetime.now() - timedelta(days=1)
+    ts = datetime.utcnow() - timedelta(days=1)
     for i in range(5):
         ts += timedelta(minutes=1)
         p.append(t.post('This is a post #%s' % i, timestamp=ts))
