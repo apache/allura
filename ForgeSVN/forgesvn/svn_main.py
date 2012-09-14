@@ -17,7 +17,7 @@ from allura.lib.repository import RepositoryApp, RepoAdminController
 from allura.app import SitemapEntry, ConfigOption
 from allura.lib import helpers as h
 from allura import model as M
-from allura.lib.utils import check_svn_repo
+from allura.lib.utils import svn_path_exists
 
 # Local imports
 from . import model as SM
@@ -99,14 +99,14 @@ class SVNRepoAdminController(RepoAdminController):
     @expose()
     @require_post()
     def set_checkout_url(self, **post_data):
-        if check_svn_repo("file://%s%s/%s" %
+        if svn_path_exists("file://%s%s/%s" %
                           (self.app.repo.fs_path,
                            self.app.repo.name,
                            post_data['checkout_url'])):
             self.app.config.options['checkout_url'] = post_data['checkout_url']
             flash("Checkout URL successfully changed")
         else:
-            flash("%s isn't a valid svn repository" % post_data['checkout_url'], "error")
+            flash("%s is not a valid path for this repository" % post_data['checkout_url'], "error")
 
 
 class SVNImportController(BaseController):

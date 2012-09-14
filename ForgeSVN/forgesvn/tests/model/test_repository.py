@@ -7,6 +7,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura.lib.utils import svn_path_exists
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
@@ -178,6 +179,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         entry = self.repo.commit(1)
         assert entry.committed.name == 'rick446'
         assert entry.message
+
+    def test_svn_path_exists(self):
+        repo_path = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/testsvn')
+        assert svn_path_exists("file://%s/a" % repo_path)
+        assert svn_path_exists("file://%s" % repo_path)
+        assert not svn_path_exists("file://%s/badpath" % repo_path)
+
 
 class TestSVNRev(unittest.TestCase):
 

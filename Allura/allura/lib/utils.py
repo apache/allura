@@ -430,7 +430,7 @@ def generate_code_stats(blob):
     stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
     return stats
 
-def check_svn_repo(path):
+def svn_path_exists(path):
     svn = pysvn.Client()
     try:
         svn.info2(path)
