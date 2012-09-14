@@ -20,6 +20,10 @@ class TaskdCommand(base.Command):
                       help='number of worker processes to spawn')
     parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
                       help="get ready to run the task daemon, but don't actually run it")
+    parser.add_option('--only', dest='only', type='string', default=None,
+                      help='only handle tasks of the given name(s) (can be comma-separated list)')
+    parser.add_option('--exclude', dest='exclude', type='string', default=None,
+                      help='never handle tasks of the given name(s) (can be comma-separated list)')
 
     def command(self):
         self.basic_setup()
@@ -45,6 +49,12 @@ class TaskdCommand(base.Command):
         if self.options.dry_run: return
         wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
         poll_interval = asint(pylons.config.get('monq.poll_interval', 10))
+        only = self.options.only
+        if only:
+            only = only.split(',')
+        exclude = self.options.exclude
+        if exclude:
+            exclude = exclude.split(',')
         def start_response(status, headers, exc_info=None):
             pass
         def waitfunc_amqp():
@@ -63,7 +73,11 @@ class TaskdCommand(base.Command):
                 pylons.g.amq_conn.reset()
             try:
                 while True:
-                    task = M.MonQTask.get(process=name, waitfunc=waitfunc)
+                    task = M.MonQTask.get(
+                            process=name,
+                            waitfunc=waitfunc,
+                            only=only,
+                            exclude=exclude)
                     # Build the (fake) request
                     r = Request.blank('/--%s--/' % task.task_name, dict(task=task))
                     list(wsgi_app(r.environ, start_response))
