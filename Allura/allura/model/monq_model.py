@@ -159,14 +159,10 @@ class MonQTask(MappedClass):
         while True:
             try:
                 query = dict(state=state)
+                if exclude:
+                    query['task_name'] = {'$nin': exclude}
                 if only:
                     query['task_name'] = {'$in': only}
-                if exclude:
-                    nin = {'$nin': exclude}
-                    if 'task_name' not in query:
-                        query['task_name'] = nin
-                    else:
-                        query['task_name'] = {'$and': [query['task_name'], nin]}
                 obj = cls.query.find_and_modify(
                     query=query,
                     update={
