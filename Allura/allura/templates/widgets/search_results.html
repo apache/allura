@@ -16,7 +16,7 @@
 </div>
 {% for doc in results %}
   <div class="grid-19">
-    <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br>
+    <a href="{{doc['url_paginated'] or doc['url_s']}}">{{doc.title_s}}</a><br>
     {% if doc.get('snippet') %}
       <p>{{doc.snippet}}</p>
     {% endif %}
