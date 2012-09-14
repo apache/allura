@@ -29,9 +29,9 @@ class TaskdCommand(base.Command):
         self.keep_running = True
         self.restart_when_done = False
         base.log.info('Starting taskd, pid %s' % os.getpid())
-        signal.signal(signal.SIGUSR1, self.graceful_restart)
-        signal.signal(signal.SIGUSR2, self.graceful_stop)
-        signal.signal(signal.SIGTRAP, self.log_current_task)
+        signal.signal(signal.SIGHUP, self.graceful_restart)
+        signal.signal(signal.SIGTERM, self.graceful_stop)
+        signal.signal(signal.SIGUSR1, self.log_current_task)
         self.worker()
 
     def graceful_restart(self, signum, frame):
