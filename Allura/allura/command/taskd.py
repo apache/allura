@@ -96,12 +96,12 @@ class TaskdCommand(base.Command):
                         r = Request.blank('/--%s--/' % self.task.task_name, dict(task=self.task))
                         list(wsgi_app(r.environ, start_response))
                         self.task = None
-            except Exception:
+            except Exception as e:
                 if self.keep_running:
-                    base.log.exception('taskd error; pausing for 10s before taking more tasks')
+                    base.log.exception('taskd error %s; pausing for 10s before taking more tasks' % e)
                     time.sleep(10)
                 else:
-                    base.log.exception('taskd error')
+                    base.log.exception('taskd error %s' % e)
         base.log.info('taskd pid %s stopping gracefully.' % os.getpid())
 
         if self.restart_when_done:
