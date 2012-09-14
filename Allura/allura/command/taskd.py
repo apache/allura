@@ -31,6 +31,7 @@ class TaskdCommand(base.Command):
         base.log.info('Starting taskd, pid %s' % os.getpid())
         signal.signal(signal.SIGUSR1, self.graceful_restart)
         signal.signal(signal.SIGUSR2, self.graceful_stop)
+        signal.signal(signal.SIGTRAP, self.log_current_task)
         self.worker()
 
     def graceful_restart(self, signum, frame):
@@ -41,6 +42,9 @@ class TaskdCommand(base.Command):
     def graceful_stop(self, signum, frame):
         base.log.info('taskd pid %s recieved signal %s preparing to do a graceful stop' % (os.getpid(), signum))
         self.keep_running = False
+
+    def log_current_task(self, signum, frame):
+        base.log.info('taskd pid %s is currently handling task %s' % (os.getpid(), getattr(self, 'task', None)))
 
     def worker(self):
         from allura import model as M
@@ -82,15 +86,16 @@ class TaskdCommand(base.Command):
                 pylons.g.amq_conn.reset()
             try:
                 while self.keep_running:
-                    task = M.MonQTask.get(
+                    self.task = M.MonQTask.get(
                             process=name,
                             waitfunc=waitfunc,
                             only=only,
                             exclude=exclude)
-                    if task:
+                    if self.task:
                         # Build the (fake) request
-                        r = Request.blank('/--%s--/' % task.task_name, dict(task=task))
+                        r = Request.blank('/--%s--/' % self.task.task_name, dict(task=self.task))
                         list(wsgi_app(r.environ, start_response))
+                        self.task = None
             except Exception:
                 base.log.exception('taskd error; pausing for 10s before taking more tasks')
                 time.sleep(10)
