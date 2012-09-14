@@ -13,13 +13,10 @@ import base
 
 faulthandler.enable()
 
+
 class TaskdCommand(base.Command):
     summary = 'Task server'
     parser = base.Command.standard_parser(verbose=True)
-    parser.add_option('-p', '--proc', dest='proc', type='int', default=1,
-                      help='number of worker processes to spawn')
-    parser.add_option('--dry_run', dest='dry_run', action='store_true', default=False,
-                      help="get ready to run the task daemon, but don't actually run it")
     parser.add_option('--only', dest='only', type='string', default=None,
                       help='only handle tasks of the given name(s) (can be comma-separated list)')
     parser.add_option('--exclude', dest='exclude', type='string', default=None,
@@ -27,26 +24,12 @@ class TaskdCommand(base.Command):
 
     def command(self):
         self.basic_setup()
-        processes = [ ]
-        for x in xrange(self.options.proc):
-            processes.append(base.RestartableProcess(target=self.worker, log=base.log, ))
-        if self.options.dry_run: return
-        elif self.options.proc == 1:
-            base.log.info('Starting single taskd process')
-            self.worker()
-        else: # pragma no cover
-            for p in processes:
-                p.start()
-            while True:
-                for x in xrange(60):
-                    time.sleep(5)
-                    for p in processes: p.check()
-                base.log.info('=== Mark ===')
+        base.log.info('Starting single taskd process')
+        self.worker()
 
     def worker(self):
         from allura import model as M
         name = '%s pid %s' % (os.uname()[1], os.getpid())
-        if self.options.dry_run: return
         wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
         poll_interval = asint(pylons.config.get('monq.poll_interval', 10))
         only = self.options.only
