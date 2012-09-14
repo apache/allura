@@ -262,6 +262,18 @@ class GitImplementation(M.RepositoryImplementation):
     def blob_size(self, blob):
         return self._object(blob._id).data_stream.size
 
+    def _copy_hooks(self, source_path):
+        '''Copy existing hooks if source path is given and exists.'''
+        if source_path is None or not os.path.exists(source_path):
+            return
+        for hook in glob(os.path.join(source_path, 'hooks/*')):
+            filename = os.path.basename(hook)
+            target_filename = filename
+            if filename == 'post-receive':
+                target_filename = 'post-receive-user'
+            target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
+            shutil.copy2(hook, target)
+
     def _setup_hooks(self, source_path=None):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
@@ -271,15 +283,7 @@ class GitImplementation(M.RepositoryImplementation):
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
-        # copy existing hooks if source path is given and exists
-        if source_path is not None and os.path.exists(source_path):
-            for hook in glob(os.path.join(source_path, 'hooks/*')):
-                filename = os.path.basename(hook)
-                target_filename = filename
-                if filename == 'post-receive':
-                    target_filename = 'post-receive-user'
-                target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
-                shutil.copyfile(hook, target)
+        self._copy_hooks(source_path)
 
     def _object(self, oid):
         evens = oid[::2]
