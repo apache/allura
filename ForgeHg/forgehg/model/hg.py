@@ -85,7 +85,7 @@ class HgImplementation(M.RepositoryImplementation):
                 self._repo.full_fs_path.encode('utf-8'),
                 update=False)
             self.__dict__['_hg'] = repo
-            self._setup_special_files()
+            self._setup_special_files(source_url)
         except:
             self._repo.status = 'raise'
             session(self._repo).flush(self._repo)
@@ -250,20 +250,44 @@ class HgImplementation(M.RepositoryImplementation):
         fctx = self._hg[blob.commit._id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return fctx.size()
 
+    def _copy_hooks(self, source_path):
+        '''Copy existing hooks if source path is given and exists.'''
+        if source_path is None or not os.path.exists(source_path):
+            return
+        hgrc = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
+        try:
+            os.remove(hgrc)
+        except OSError as e:
+            if os.path.exists(hgrc):
+                raise
+        for name in os.listdir(os.path.join(source_path, '.hg')):
+            source = os.path.join(source_path, '.hg', name)
+            target = os.path.join(
+                    self._repo.full_fs_path, '.hg', os.path.basename(source))
+            if os.path.exists(target):
+                # skip existing files, presumably internal
+                # hg files that would be the same anyway
+                continue
+            if os.path.isdir(source):
+                shutil.copytree(source, target)
+            else:
+                shutil.copy2(source, target)
+
     def _setup_hooks(self, source_path=None):
         'Set up the hg changegroup hook'
+        self._copy_hooks(source_path)
+        hgrc = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
         cp = ConfigParser()
-        fn = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
-        cp.read(fn)
+        cp.read(hgrc)
         if not cp.has_section('hooks'):
             cp.add_section('hooks')
         url = (tg.config.get('base_url', 'http://localhost:8080')
                + '/auth/refresh_repo' + self._repo.url())
         cp.set('hooks','; = [the next line is required for site integration, do not remove/modify]', '')
-        cp.set('hooks','changegroup','curl -s %s' % url)
-        with open(fn, 'w') as fp:
+        cp.set('hooks','changegroup.sourceforge','curl -s %s' % url)
+        with open(hgrc, 'w') as fp:
             cp.write(fp)
-        os.chmod(fn, 0755)
+        os.chmod(hgrc, 0755)
 
     def _tree_from_changectx(self, changectx):
         '''Build a fake git-like tree from a changectx and its manifest'''

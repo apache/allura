@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 import pkg_resources
+from ConfigParser import ConfigParser
 
 import mock
 from ming.base import Object
@@ -129,6 +130,26 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         repo._impl.clone_from(repo_path)
         assert len(repo.log())
+        assert os.path.exists('/tmp/testrepo.hg/.hg/external-changegroup')
+        assert os.access('/tmp/testrepo.hg/.hg/external-changegroup', os.X_OK)
+        with open('/tmp/testrepo.hg/.hg/external-changegroup') as f: c = f.read()
+        self.assertEqual(c,
+                '#!/bin/bash\n'
+                '\n'
+                'echo external-changegroup\n')
+        assert os.path.exists('/tmp/testrepo.hg/.hg/nested/nested-file')
+        assert os.access('/tmp/testrepo.hg/.hg/nested/nested-file', os.X_OK)
+        with open('/tmp/testrepo.hg/.hg/nested/nested-file') as f: c = f.read()
+        self.assertEqual(c, 'nested-file\n')
+        assert os.path.exists('/tmp/testrepo.hg/.hg/hgrc')
+        cp = ConfigParser()
+        cp.read('/tmp/testrepo.hg/.hg/hgrc')
+        assert cp.has_section('other')
+        self.assertEquals(cp.get('other', 'custom'), 'custom value')
+        assert cp.has_section('hooks')
+        self.assertEquals(cp.get('hooks', 'changegroup.sourceforge'), 'curl -s http://localhost//auth/refresh_repo/p/test/src-hg/')
+        self.assertEquals(cp.get('hooks', 'changegroup.external'), '.hg/external-changegroup')
+        self.assertEquals(cp.get('hooks', 'commit'), 'python:hgext.notify.hook')
         shutil.rmtree(dirname)
 
     def test_index(self):
