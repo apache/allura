@@ -118,6 +118,7 @@ setup(
     update-neighborhood-home-tool = allura.command:UpdateNeighborhoodCommand
     create-trove-categories = allura.command:CreateTroveCategoriesCommand
     set-neighborhood-features = allura.command:SetNeighborhoodFeaturesCommand
+    reclone-repo = allura.command.reclone_repo:RecloneRepoCommand
 
     [easy_widgets.resources]
     ew_resources=allura.config.resources:register_ew_resources
