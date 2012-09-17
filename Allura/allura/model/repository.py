@@ -46,7 +46,7 @@ class RepositoryImplementation(object):
     def init(self): # pragma no cover
         raise NotImplementedError, 'init'
 
-    def clone_from(self, source_path, source_url): # pragma no cover
+    def clone_from(self, source_url): # pragma no cover
         raise NotImplementedError, 'clone_from'
 
     def commit(self, revision): # pragma no cover
@@ -218,7 +218,8 @@ class Repository(Artifact, ActivityObject):
         self.upstream_repo.name = source_name
         self.upstream_repo.url = source_url
         session(self).flush(self)
-        self._impl.clone_from(source_url)
+        source = source_path if source_path else source_url
+        self._impl.clone_from(source)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))

@@ -53,15 +53,16 @@ class ForgeGitApp(RepositoryApp):
         cloned_from_project_id = self.config.options.get('cloned_from_project_id')
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
         init_from_url = self.config.options.get('init_from_url')
+        init_from_path = self.config.options.get('init_from_path')
         if cloned_from_project_id is not None:
             cloned_from = GM.Repository.query.get(_id=cloned_from_repo_id)
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=cloned_from.full_fs_path,
                 cloned_from_name=cloned_from.app.config.script_name(),
                 cloned_from_url=cloned_from.full_fs_path)
-        elif init_from_url:
+        elif init_from_url or init_from_path:
             allura.tasks.repo_tasks.clone.post(
-                cloned_from_path=None,
+                cloned_from_path=init_from_path,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
         else:

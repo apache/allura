@@ -61,9 +61,10 @@ class ForgeSVNApp(RepositoryApp):
             status='initializing')
         ThreadLocalORMSession.flush_all()
         init_from_url = self.config.options.get('init_from_url')
-        if init_from_url:
+        init_from_path = self.config.options.get('init_from_path')
+        if init_from_url or init_from_path:
             allura.tasks.repo_tasks.clone.post(
-                cloned_from_path=None,
+                cloned_from_path=init_from_path,
                 cloned_from_name=None,
                 cloned_from_url=init_from_url)
         else:
