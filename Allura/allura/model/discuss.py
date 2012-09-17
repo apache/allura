@@ -1,4 +1,3 @@
-import sys
 import logging
 from datetime import datetime
 
@@ -290,9 +289,6 @@ class Thread(Artifact, ActivityObject):
 
     def query_posts(self, page=None, limit=None,
                     timestamp=None, style='threaded'):
-        if limit is None:
-            limit = 50
-        limit = int(limit)
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
                     status={'$in': ['ok', 'pending']}, timestamp=timestamp)
@@ -304,9 +300,10 @@ class Thread(Artifact, ActivityObject):
             q = q.sort('full_slug')
         else:
             q = q.sort('timestamp')
-        if page is not None:
-            q = q.skip(page * limit)
         if limit is not None:
+            limit = int(limit)
+            if page is not None:
+                q = q.skip(page * limit)
             q = q.limit(limit)
         return q
 
@@ -518,7 +515,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             # all posts in a single page
             page = 0
         else:
-            posts = self.thread.find_posts(None, sys.maxint)
+            posts = self.thread.find_posts()
             posts = self.thread.create_post_threads(posts)
 
             def find_i(posts):

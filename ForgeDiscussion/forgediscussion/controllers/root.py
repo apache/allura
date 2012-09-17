@@ -137,12 +137,13 @@ class RootController(BaseController, DispatchIndex):
                     '-deleted_b:true'])
             if results: count=results.hits
         c.search_results = self.W.search_results
-        for doc in results:
-            if doc.get('type_s', '') == 'Post':
-                _id = doc.get('id').split('#')
-                _id = _id[-1].replace('/', '.') if _id else ''
-                p = model.ForumPost.query.get(_id=_id)
-                doc['url_paginated'] = p.url_paginated()
+        if results is not None:
+            for doc in results:
+                if doc.get('type_s', '') == 'Post':
+                    _id = doc.get('id').split('#')
+                    _id = _id[-1].replace('/', '.') if _id else ''
+                    p = model.ForumPost.query.get(_id=_id)
+                    doc['url_paginated'] = p.url_paginated()
         return dict(q=q, history=history, results=results or [],
                     count=count, limit=limit, page=page)
 
