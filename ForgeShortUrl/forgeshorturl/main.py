@@ -1,19 +1,23 @@
 from tg import expose, validate, redirect, flash, request
+
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
 from allura.lib import helpers as h
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
+
 from webob import exc
+import pylons
 from pylons import c, g
+from datetime import datetime
 from formencode import validators
 from formencode.compound import All
-import logging
+
 from forgeshorturl.model.shorturl import ShortUrl
-from datetime import datetime
 from forgeshorturl.widgets.short_url import CreateShortUrlWidget
-import pylons
+
+import logging
 
 
 log = logging.getLogger(__name__)
@@ -36,7 +40,6 @@ class ForgeShortUrlApp(Application):
     sitemap = []
     ordinal = 14
     installable = False
-    hidden = True
     icons = {
         24: 'images/ext_24.png',
         32: 'images/ext_32.png',
@@ -47,6 +50,10 @@ class ForgeShortUrlApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = ShortURLAdminController(self)
+
+    def is_visible_to(self, user):
+        '''Whether the user can view the app.'''
+        return has_access(c.project, 'create')(user=user)
 
     @property
     @h.exceptionless([], log)
@@ -88,16 +95,15 @@ class ForgeShortUrlApp(Application):
         super(ForgeShortUrlApp, self).install(project)
         # Setup permissions
         role_admin = M.ProjectRole.by_name('Admin')._id
-        role_anon = M.ProjectRole.anonymous()._id
         self.config.acl = [
             M.ACE.allow(role_admin, 'create'),
             M.ACE.allow(role_admin, 'update'),
             M.ACE.allow(role_admin, 'view_private'),
-            M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'configure'), ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
+        ShortUrl.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeShortUrlApp, self).uninstall(project)
 
 
@@ -115,7 +121,7 @@ class RootController(BaseController):
         c.page_list = W.page_list
         c.page_size = W.page_size
         limit, pagenum, start = g.handle_paging(limit, page, default=100)
-        p = {'project_id': c.project._id}
+        p = {'app_config_id': c.app.config._id}
         if not has_access(c.app, 'view_private'):
             p['private'] = False
         short_urls = (ShortUrl.query.find(p))
@@ -133,11 +139,10 @@ class RootController(BaseController):
     @expose()
     def _lookup(self, pname, *remainder):
         if request.method == 'GET':
-            short_url = ShortUrl.query.find({'project_id': c.project._id,
+            short_url = ShortUrl.query.find({'app_config_id': c.app.config._id,
                                              'short_name': pname}).first()
             if short_url:
-                u = validators.URL(add_http=True)
-                redirect(u.to_python(short_url.url))
+                redirect(short_url.url)
 
         flash("We're sorry but we weren't able "
               "to process this request.", "error")
@@ -153,7 +158,7 @@ class ShortURLAdminController(DefaultAdminController):
         redirect(c.project.url() + 'admin/tools')
 
     @expose('jinja:forgeshorturl:templates/add.html')
-    @validate(dict(full_url=All(validators.URL(),
+    @validate(dict(full_url=All(validators.URL(add_http=True),
                                 validators.NotEmpty()),
                    short_url=validators.NotEmpty()))
     def add(self, short_url="",
@@ -188,7 +193,7 @@ class ShortURLAdminController(DefaultAdminController):
                 shorturl.short_name = short_url
                 shorturl.description = description
                 shorturl.create_user = c.user._id
-                shorturl.project_id = c.project._id
+                shorturl.app_config_id = self.app.config._id
                 if private == "on":
                     shorturl.private = True
                 else:
