@@ -62,7 +62,7 @@ class GitImplementation(M.RepositoryImplementation):
     @LazyProperty
     def _git(self):
         try:
-            return git.Repo(self._repo.full_fs_path)
+            return git.Repo(self._repo.full_fs_path, odbt=git.GitCmdObjectDB)
         except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError), err:
             log.error('Problem looking up repo: %r', err)
             return None
