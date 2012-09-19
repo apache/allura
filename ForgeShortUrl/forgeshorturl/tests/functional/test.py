@@ -18,6 +18,12 @@ class TestRootController(TestController):
         response.form.submit()
         redirected = self.app.get('/url/test').follow()
         assert redirected.request.url == 'http://www.google.com/'
+        response = self.app.get('/admin/url/add')
+        response.form['short_url'] = 'test'
+        response.form['full_url'] = 'http://www.yahoo.com/'
+        response.form.submit()
+        redirected = self.app.get('/url/test').follow()
+        assert redirected.request.url == 'http://www.yahoo.com/'
 
     def test_shorturl_not_found(self):
         self.app.post('/admin/url/add',

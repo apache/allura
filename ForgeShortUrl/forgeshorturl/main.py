@@ -208,8 +208,8 @@ class ShortURLAdminController(DefaultAdminController):
 
             if (short_url != full_url):
                 shorturl = ShortUrl.query.find({
-                    'short_name': short_url,
-                    'project_id': c.project._id}).first()
+                    'app_config_id': self.app.config._id,
+                    'short_name': short_url}).first()
                 if shorturl is None:
                     shorturl = ShortUrl()
                     shorturl.created = datetime.utcnow()
@@ -219,7 +219,7 @@ class ShortURLAdminController(DefaultAdminController):
                 else:
                     log_msg = 'update short url %s from %s to %s' %\
                               (short_url,
-                               shorturl.url,
+                               shorturl.full_url,
                                full_url)
                 shorturl.full_url = full_url
                 shorturl.short_name = short_url
