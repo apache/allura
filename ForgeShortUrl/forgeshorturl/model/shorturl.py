@@ -1,4 +1,7 @@
 import pymongo
+import pylons
+pylons.c = pylons.tmpl_context
+from pylons import c
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime
 from allura.model.auth import User
@@ -26,15 +29,16 @@ class ShortUrl(M.Artifact):
 
     @classmethod
     def upsert(cls, shortname):
-        u = cls.query.get(short_name=shortname)
+        u = cls.query.get(short_name=shortname, app_config_id=c.app.config._id)
         if u is not None:
             return u
         try:
-            u = cls(short_name=shortname)
+            u = cls(short_name=shortname, app_config_id=c.app.config._id)
             session(u).flush(u)
         except pymongo.errors.DuplicateKeyError:
             session(u).expunge(u)
-            u = cls.query.get(short_name=shortname)
+            u = cls.query.get(short_name=shortname,
+                    app_config_id=c.app.config._id)
         return u
 
     def index(self):
