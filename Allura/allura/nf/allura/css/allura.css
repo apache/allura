@@ -49,7 +49,8 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 .ui-icon-tool-git,
 .ui-icon-tool-svn,
 .ui-icon-tool-hg,
-.ui-icon-tool-cvs {
+.ui-icon-tool-cvs,
+.ui-icon-tool-bzr {
   background-image: url("../images/code_24.png");
   background-repeat: no-repeat;
 }
@@ -115,7 +116,8 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #top_nav .ui-icon-tool-git,
 #top_nav .ui-icon-tool-svn,
 #top_nav .ui-icon-tool-hg,
-#top_nav .ui-icon-tool-cvs
+#top_nav .ui-icon-tool-cvs,
+#top_nav .ui-icon-tool-bzr
 {
   background-image: url("../images/code_32.png");
 }
