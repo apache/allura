@@ -1,4 +1,14 @@
-    <form method="post" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/add">
+{% extends g.theme.master %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Link is not configured{% endblock %}
+
+{% block header %}{{c.app.config.options.mount_label}}{% endblock %}
+{% block short_url_content %}{% endblock %}
+
+{% block extra_js %}
+{{c.create_short_url_lightbox.display(content='''
+<div>
+    <h1>Add Short URL</h1>
+    <form method="post" action="" id="add_url_form">
         <label class="grid-13">Short name</label>
         <div class="grid-13"><input type = "text" name = "short_url" style="width: 250px"></div>
         <label class="grid-13">Full URL</label>
@@ -10,6 +20,14 @@
         <div class="grid-13">&nbsp;</div>
         <hr>
         <div class="grid-13"><div class="grid-13">&nbsp;</div>
-        <input type="submit" value="Save">
-        <a href="#" class="close">Cancel</a></div>
+            <input type="submit" value="Save">
+            <a href="#" class="close">Cancel</a></div>
     </form>
+</div>
+''')}}
+<script type="text/javascript">
+    /*<![CDATA[*/
+    $('#add_url_form').attr("action",$('#sidebar a.add_short_url').attr('href'));
+    /*]]>*/
+</script>
+{% endblock %}

@@ -1,11 +1,14 @@
 from tg import expose, validate, redirect, flash, request
+from urllib import urlencode
 
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
 from allura.lib import helpers as h
+from allura.lib.search import search
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.search import SearchResults
 
 from webob import exc
 import pylons
@@ -24,11 +27,12 @@ log = logging.getLogger(__name__)
 
 
 class W:
+    search_results = SearchResults()
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     create_short_url_lightbox = \
         CreateShortUrlWidget(name='create_short_url',
-                             trigger='#sidebar a.create_short_url')
+                             trigger='#sidebar a.add_short_url')
 
 
 class ForgeShortUrlApp(Application):
@@ -64,13 +68,12 @@ class ForgeShortUrlApp(Application):
     def sidebar_menu(self):
         links = []
         if has_access(c.app, "create"):
-            links += [SitemapEntry('Add Short URL',
-                      c.project.url() +
-                      'admin/' +
-                      self.config.options.mount_point +
-                      '/add/',
-                      ui_icon=g.icons['plus'],
-                      className="create_short_url")]
+            url = '%sadmin/%s/add/' % \
+                  (c.project.url(), self.config.options.mount_point)
+            links = [SitemapEntry('Add Short URL',
+                                  url,
+                                  ui_icon=g.icons['plus'],
+                                  className="add_short_url"), ]
         return links
 
     def admin_menu(self):
@@ -136,13 +139,42 @@ class RootController(BaseController):
             'count': count
         }
 
+    @expose('jinja:forgeshorturl:templates/search.html')
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   history=validators.StringBool(if_empty=False),
+                   project=validators.StringBool(if_empty=False)))
+    def search(self, q=None,
+               history=None, project=None,
+               limit=None, page=0, **kw):
+        if project:
+            redirect(c.project.url() +
+                     'search?' +
+                     urlencode(dict(q=q, history=history)))
+        results = []
+        count = 0
+        limit, page, start = g.handle_paging(limit, page, default=25)
+        if not q:
+            q = ''
+        else:
+            results = search(
+                q,
+                fq=[
+                    'is_history_b:%s' % history,
+                    'project_id_s:%s' % c.project._id])
+
+            if results:
+                count = results.hits
+        c.search_results = W.search_results
+        return dict(q=q, history=history, results=results or [],
+                    count=count, limit=limit, page=page)
+
     @expose()
     def _lookup(self, pname, *remainder):
         if request.method == 'GET':
             short_url = ShortUrl.query.find({'app_config_id': c.app.config._id,
                                              'short_name': pname}).first()
             if short_url:
-                redirect(short_url.url)
+                redirect(short_url.full_url)
 
         flash("We're sorry but we weren't able "
               "to process this request.", "error")
@@ -189,7 +221,7 @@ class ShortURLAdminController(DefaultAdminController):
                               (short_url,
                                shorturl.url,
                                full_url)
-                shorturl.url = full_url
+                shorturl.full_url = full_url
                 shorturl.short_name = short_url
                 shorturl.description = description
                 shorturl.create_user = c.user._id

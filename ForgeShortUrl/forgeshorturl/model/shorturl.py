@@ -1,5 +1,4 @@
 import pymongo
-from allura.model import project_orm_session
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime
 from allura.model.auth import User
@@ -10,10 +9,10 @@ class ShortUrl(M.Artifact):
 
     class __mongometa__:
         name = 'short_urls'
-        session = project_orm_session
         unique_indexes = ['short_name']
 
-    url = FieldProperty(str)
+    type_s = 'ShortUrl'
+    full_url = FieldProperty(str)
     short_name = FieldProperty(str)
     description = FieldProperty(str)
     private = FieldProperty(bool)
@@ -41,6 +40,12 @@ class ShortUrl(M.Artifact):
     def index(self):
         result = M.Artifact.index(self)
         result.update(
-            url=self.url,
-            short_name=self.short_name)
+            full_url_s=self.full_url,
+            short_name_s=self.short_name,
+            description_s=self.description,
+            title_s='%s => %s' % (self.url(), self.full_url),
+            type_s=self.type_s)
         return result
+
+    def url(self):
+        return self.app.url + self.short_name

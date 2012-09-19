@@ -1,0 +1,11 @@
+{% extends 'forgeshorturl:templates/master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
+
+{% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}
+{% block short_url_content %}{% endblock %}
+{% block content %}
+{{c.search_results.display(results=results,q=q,history=history,
+count=count,limit=limit,page=page)}}
+{% endblock %}
+

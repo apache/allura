@@ -37,6 +37,12 @@ class TestRootController(TestController):
         r = self.app.get('/url/')
         assert 'http://www.amazone.com/' in r
         assert '<td><small>yes</small></td>' in r
+        self.app.get('/url/',
+                     extra_environ=dict(username='*anonymous'),
+                     status=302)
+        self.app.get('/url/',
+                     extra_environ=dict(username='test-user'),
+                     status=403)
 
     def test_shorturl_errors(self):
         d = dict(short_url='http://www.amazone.com/',
