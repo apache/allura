@@ -1,12 +1,8 @@
 <p id="commit_browser_canvas_message">This commit browser uses JS canvas but unfortunately your browser does not support it.</p>
-<p id="commit_browser_paging">
-  <a id="last" href="#">Last</a>
-  <a id="first" href="#">First</a>
-  <br><em>You can scroll commit list to view older commits.</em>
-</p>
 <div id="graph_holder" class="grid-19">
   <canvas id="commit_highlighter" width="750" height="300"></canvas>
   <canvas id="commit_graph" width="750" height="300"></canvas>
+  <div id="graph_scroll_placeholder" width="750"></div>
 </div>
-<div id="commit_view" class="grid-19"><em>Select a commit to view details about it.</em></div>
+<div id="commit_view" class="grid-19"><em>Loading commits...</em></div>
 <!--[if IE]><script type="text/javascript" src="{{g.forge_static('js/excanvas.compiled.js')}}"></script><![endif]-->
