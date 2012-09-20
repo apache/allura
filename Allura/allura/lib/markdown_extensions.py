@@ -308,10 +308,10 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
                         .replace('\n', '<br/>'))
             new_node = None
             try:
-                new_node = markdown.etree.fromstring(new_text)
+                new_node = markdown.util.etree.fromstring(new_text)
             except SyntaxError:
                 try:
-                    new_node = markdown.etree.fromstring(unicode(BeautifulSoup(new_text)))
+                    new_node = markdown.util.etree.fromstring(unicode(BeautifulSoup(new_text)))
                 except:
                     log.exception('Error adding <br> tags: new text is %s', new_text)
                     pass
@@ -325,7 +325,7 @@ class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
 
     def handleMatch(self, mo):
         old_link = mo.group(2)
-        result = markdown.etree.Element('a')
+        result = markdown.util.etree.Element('a')
         result.text = old_link
         result.set('href', old_link)
         return result
