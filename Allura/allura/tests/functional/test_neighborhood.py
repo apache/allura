@@ -14,6 +14,7 @@ import allura
 from allura import model as M
 from allura.tests import TestController
 from allura.tests import decorators as td
+from allura.lib import helpers as h
 
 class TestNeighborhood(TestController):
 
@@ -290,6 +291,42 @@ class TestNeighborhood(TestController):
         while isinstance(r.response, HTTPFound):
             r = r.follow()
         assert 'You have exceeded the maximum number of projects' in r
+
+    def test_project_rate_limit(self):
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'project.rate_limits': '{}'}):
+            r = self.app.post('/p/register',
+                              params=dict(project_unixname='rateproject1', project_name='Rate project1', project_description='', neighborhood='Projects'),
+                              antispam=True,
+                              extra_environ=dict(username='test-user-1'), status=302)
+            assert '/p/rateproject1/admin' in r.location
+
+        # Set rate limit to 1 per hour
+        with h.push_config(config, **{'project.rate_limits': '{"3600": 1}'}):
+            r = self.app.post('/p/register',
+                              params=dict(project_unixname='rateproject2', project_name='Rate project2', project_description='', neighborhood='Projects'),
+                              antispam=True,
+                              extra_environ=dict(username='test-user-1'))
+            while isinstance(r.response, HTTPFound):
+                r = r.follow()
+            assert 'Project creation rate limit exceeded.  Please try again later.' in r
+
+    def test_project_rate_limit_admin(self):
+        # Set rate limit to unlimit
+        with h.push_config(config, **{'project.rate_limits': '{}'}):
+            r = self.app.post('/p/register',
+                              params=dict(project_unixname='rateproject1', project_name='Rate project1', project_description='', neighborhood='Projects'),
+                              antispam=True,
+                              extra_environ=dict(username='root'), status=302)
+            assert '/p/rateproject1/admin' in r.location
+
+        # Set rate limit to 1 per hour
+        with h.push_config(config, **{'project.rate_limits': '{"3600": 1}'}):
+            r = self.app.post('/p/register',
+                              params=dict(project_unixname='rateproject2', project_name='Rate project2', project_description='', neighborhood='Projects'),
+                              antispam=True,
+                              extra_environ=dict(username='root'))
+            assert '/p/rateproject2/admin' in r.location
 
     def test_invite(self):
         p_nbhd_id = str(M.Neighborhood.query.get(name='Projects')._id)
