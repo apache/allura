@@ -226,3 +226,39 @@ class TestLogPagination(TestController):
         resp = self.app.get(self._get_ci() + 'log/?limit=50')
         assert "[0debe4]" in resp
         assert "[dc406e]" in resp
+
+
+class TestTreeLs(TestController):
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.setup_with_tools()
+
+    @td.with_hg
+    def setup_with_tools(self):
+        h.set_context('test', 'src-hg', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgehg', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'testrepoforre.hg'
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src-hg', neighborhood='Projects')
+        c.app.repo.refresh()
+
+    def _get_ci(self):
+        resp = self.app.get('/src-hg/').follow().follow()
+        for tag in resp.html.findAll('a'):
+            if tag['href'].startswith('/p/test/src-hg/ci/'):
+                return tag['href']
+        return None
+
+    def test_tree_ls(self):
+        ci = self._get_ci()
+        for i in ['*', '%', '%3F', '+', '*', '%', '.', '~']:
+            r = self.app.get('%stree/test%stest/' % (ci, i))
+            assert 'test.txt' in r
+            r = self.app.get('%stree/test%stest/' % (ci, i + i))
+            assert 'test.txt' in r
