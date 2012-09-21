@@ -150,6 +150,7 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEquals(cp.get('hooks', 'changegroup.sourceforge'), 'curl -s http://localhost//auth/refresh_repo/p/test/src-hg/')
         self.assertEquals(cp.get('hooks', 'changegroup.external'), '.hg/external-changegroup')
         self.assertEquals(cp.get('hooks', 'commit'), 'python:hgext.notify.hook')
+        assert not os.path.exists('/tmp/testrepo.hg/.hg/undo.branch')
         shutil.rmtree(dirname)
 
     def test_index(self):

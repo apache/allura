@@ -49,6 +49,26 @@ class Repository(M.Repository):
 
 class HgImplementation(M.RepositoryImplementation):
     re_hg_user = re.compile('(.*) <(.*)>')
+    skip_internal_files = set([
+            '00changelog.i',
+            'requires',
+            'branch',
+            'branch.cache',
+            'dirstate',
+            'inotify.sock',
+            'patches',
+            'wlock',
+            'undo.dirstate',
+            'undo.branch',
+            'journal.dirstate',
+            'journal.branch',
+            'store',
+            'lock',
+            'journal',
+            'undo',
+            'fncache',
+            'data',
+        ])
 
     def __init__(self, repo):
         self._repo = repo
@@ -264,9 +284,7 @@ class HgImplementation(M.RepositoryImplementation):
             source = os.path.join(source_path, '.hg', name)
             target = os.path.join(
                     self._repo.full_fs_path, '.hg', os.path.basename(source))
-            if os.path.exists(target):
-                # skip existing files, presumably internal
-                # hg files that would be the same anyway
+            if name in self.skip_internal_files:
                 continue
             if os.path.isdir(source):
                 shutil.copytree(source, target)
