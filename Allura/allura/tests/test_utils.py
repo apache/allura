@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import unittest
+from os import path
 
 import pylons
 from webob import Request

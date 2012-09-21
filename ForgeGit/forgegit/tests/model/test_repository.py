@@ -226,3 +226,37 @@ class TestGitCommit(unittest.TestCase):
                  +self.rev.diffs.copied)
         for d in diffs:
             print d
+
+
+class TestGitHtmlView(unittest.TestCase):
+
+    def setUp(self):
+        setup_basic_test()
+        self.setup_with_tools()
+
+    @td.with_git
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        self.repo = GM.Repository(
+            name='testmime.git',
+            fs_path=repo_dir,
+            url_path='/test/',
+            tool='git',
+            status='creating')
+        self.repo.refresh()
+        self.rev = self.repo.commit('HEAD')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_html_view(self):
+        b = self.rev.tree.get_blob_by_path('README')
+        assert b.has_html_view
+        b = self.rev.tree.get_blob_by_path('test.jpg')
+        assert not b.has_html_view
+        b = self.rev.tree.get_blob_by_path('ChangeLog')
+        assert b.has_html_view
+        b = self.rev.tree.get_blob_by_path('test.spec.in')
+        assert b.has_html_view

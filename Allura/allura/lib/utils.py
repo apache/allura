@@ -9,6 +9,7 @@ import datetime
 import random
 import mimetypes
 import re
+import magic
 from itertools import groupby
 
 import tg
@@ -430,6 +431,7 @@ def generate_code_stats(blob):
     stats['data_line_count'] = sum([1 for l in lines if not spaces.match(l)])
     return stats
 
+
 def svn_path_exists(path):
     svn = pysvn.Client()
     try:
@@ -438,3 +440,8 @@ def svn_path_exists(path):
     except pysvn.ClientError, e:
         return False
 
+
+def is_text_file(file):
+    if "text" in magic.from_buffer(file):
+        return True
+    return False
