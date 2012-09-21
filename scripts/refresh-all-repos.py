@@ -52,10 +52,6 @@ def main(options):
                     log.info("Skipping %r: wrong type (%s)", c.app.repo,
                             c.app.repo.tool.lower())
                     continue
-                try:
-                    c.app.repo._impl._setup_hooks()
-                except:
-                    log.exception('Error setting up hooks for %r', c.app.repo)
 
                 if options.clean:
                     ci_ids = list(c.app.repo.all_commit_ids())
