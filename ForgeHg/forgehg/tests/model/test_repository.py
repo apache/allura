@@ -55,13 +55,13 @@ class TestNewRepo(unittest.TestCase):
         self.rev.committer_url
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
-        assert self.rev.shorthand_id() == '[4a7f7e]'
+        assert self.rev.shorthand_id() == '[5a0a99]'
         assert self.rev.symbolic_ids == (['default'], ['tip'])
         assert self.rev.url() == (
             '/p/test/src-hg/ci/'
-            '4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/')
+            '5a0a993efa9bce7d1983344261393e841fcfd65d/')
         all_cis = self.rev.log(0, 1000)
-        assert len(all_cis) == 5
+        assert len(all_cis) == 6
         assert self.rev.log(1,1000) == all_cis[1:]
         assert self.rev.log(0,3) == all_cis[:3]
         assert self.rev.log(1,2) == all_cis[1:3]
@@ -74,7 +74,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src-hg/ci/'
-            '4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/'
+            '5a0a993efa9bce7d1983344261393e841fcfd65d/'
             'tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
@@ -186,7 +186,7 @@ class TestHgCommit(unittest.TestCase):
         self.assertEqual(old_tree._id, new_tree._id)
 
     def test_url(self):
-        assert self.rev.url().endswith('159843/'), \
+        assert self.rev.url().endswith('cfd65d/'), \
             self.rev.url()
 
     def test_committer_url(self):

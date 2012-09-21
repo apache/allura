@@ -116,14 +116,14 @@ class TestRootController(TestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src-hg/commit_browser_data')
         data = json.loads(resp.body);
-        assert data['max_row'] == 4
+        assert data['max_row'] == 5
         assert data['next_column'] == 1
         assert_equal(data['built_tree']['e5a0b44437be783c41084e7bf0740f9b58b96ecf'],
                 {u'url': u'/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/',
                  u'oid': u'e5a0b44437be783c41084e7bf0740f9b58b96ecf',
                  u'column': 0,
                  u'parents': [u'773d2f8e3a94d0d5872988b16533d67e1a7f5462'],
-                 u'message': u'Modify README', u'row': 3})
+                 u'message': u'Modify README', u'row': 4})
 
     def _get_ci(self):
         resp = self.app.get('/src-hg/').follow().follow()
@@ -140,7 +140,7 @@ class TestRootController(TestController):
     def test_tree(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/')
-        assert len(resp.html.findAll('tr')) == 3, resp.showbrowser()
+        assert len(resp.html.findAll('tr')) == 4, resp.showbrowser()
         assert 'README' in resp, resp.showbrowser()
 
     def test_file(self):
@@ -165,6 +165,13 @@ class TestRootController(TestController):
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
         assert '+Another line' in resp, resp.showbrowser()
+
+    def test_binary_diff(self):
+        ci = '/p/test/src-hg/ci/5a0a993efa9bce7d1983344261393e841fcfd65d/'
+        parent = '4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843'
+        resp = self.app.get(ci + 'tree/bin_file?barediff=' + parent,
+        validate_chunk=True)
+        assert 'Cannot display: file marked as a binary type.' in resp
 
 
 class TestLogPagination(TestController):
