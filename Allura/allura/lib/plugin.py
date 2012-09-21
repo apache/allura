@@ -457,7 +457,7 @@ class ProjectRegistrationProvider(object):
                                 for perm in permissions]
                     for username in usernames:
                         guser = M.User.by_username(username)
-                        if not (guser and user._id): continue
+                        if not (guser and guser._id): continue
                         pr = guser.project_role(project=p)
                         if group._id not in pr.roles:
                             pr.roles.append(group._id)
