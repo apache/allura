@@ -9,7 +9,7 @@ Creoleparser==0.7.3
 decorator==3.3.2
 # dep of pypeline
 docutils==0.8.1
-EasyWidgets==0.2dev-20120920
+EasyWidgets==0.2dev-20120918
 faulthandler==2.1
 feedparser==5.0.1
 FormEncode==1.2.4
