@@ -181,10 +181,10 @@ class NeighborhoodController(object):
                     project_name=project_name, private_project=private_project)
         except exceptions.ProjectOverlimitError:
             flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
-            redirect('.')
+            redirect('add_project')
         except exceptions.ProjectRatelimitError:
             flash("Project creation rate limit exceeded.  Please try again later.", 'error')
-            redirect('.')
+            redirect('add_project')
 
         if project_description:
             c.project.short_description = project_description
