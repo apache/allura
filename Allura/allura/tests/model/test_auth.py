@@ -2,7 +2,7 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup
+from nose.tools import with_setup, assert_equal
 from pylons import c, g
 from webob import Request
 
@@ -63,16 +63,16 @@ def test_openid():
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert set(p.shortname for p in c.user.my_projects()) == set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--'])
+    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
-    assert set(p.shortname for p in c.user.my_projects()) == set(['test', 'u/test-admin', 'adobe-1', '--init--'])
-    assert M.User.anonymous().project_role().name == '*anonymous'
+    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(M.User.anonymous().project_role().name, '*anonymous')
     u = M.User.register(dict(
             username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
-    assert u.private_project().shortname == 'u/nosetest-user'
+    assert_equal(u.private_project().shortname, 'u/nosetest-user')
     roles = g.credentials.user_roles(
         u._id, project_id=u.private_project().root_project._id)
     assert len(roles) == 3, roles
