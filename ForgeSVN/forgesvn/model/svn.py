@@ -94,7 +94,7 @@ class SVNImplementation(M.RepositoryImplementation):
         '\n'
         'DIR="$$(dirname "$${BASH_SOURCE[0]}")"\n'
         'if [ -x $$DIR/post-commit-user ]; then'
-        '  exec $$DIR/post-commit-user\n'
+        '  exec $$DIR/post-commit-user "$@"\n'
         'fi')
 
     def __init__(self, repo):
