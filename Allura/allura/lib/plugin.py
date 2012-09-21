@@ -497,6 +497,9 @@ class ProjectRegistrationProvider(object):
                     project_template['icon']['filename'], icon_file,
                     square=True, thumbnail_size=(48, 48),
                     thumbnail_meta=dict(project_id=p._id, category='icon'))
+            # clear the RoleCache for the user so this project will
+            # be picked up by user.my_projects()
+            g.credentials.clear_user(user._id)
         except forge_exc.ProjectConflict:
             raise
         except:

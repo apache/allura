@@ -32,6 +32,9 @@ class Credentials(object):
         self.users = {}
         self.projects = {}
 
+    def clear_user(self, user_id, project_id=None):
+        self.users.pop((user_id, project_id), None)
+
     def load_user_roles(self, user_id, *project_ids):
         '''Load the credentials with all user roles for a set of projects'''
         from allura import model as M
