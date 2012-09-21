@@ -342,7 +342,10 @@ class ProjectRegistrationProvider(object):
         '''
         if security.has_access(neighborhood, 'admin', user=user)():
             return
-        now = datetime.now().replace(tzinfo=FixedOffset(0, 'UTC'))
+        # have to have the replace because, despite being UTC,
+        # the result from utcnow() is still offset-naive  :-(
+        # maybe look into making the mongo connection offset-naive?
+        now = datetime.utcnow().replace(tzinfo=FixedOffset(0, 'UTC'))
         project_count = len(list(user.my_projects()))
         rate_limits = json.loads(config.get('project.rate_limits', '{}'))
         for rate, count in rate_limits.items():
