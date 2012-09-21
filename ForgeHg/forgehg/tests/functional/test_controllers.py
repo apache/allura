@@ -166,13 +166,6 @@ class TestRootController(TestController):
         assert '+++' in resp, resp.showbrowser()
         assert '+Another line' in resp, resp.showbrowser()
 
-    def test_binary_diff(self):
-        ci = '/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/'
-        parent = '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1'
-        resp = self.app.get(ci + 'tree/test.jpg?barediff=' + parent,
-        validate_chunk=True)
-        assert 'Cannot display: file marked as a binary type.' in resp
-
 
 class TestLogPagination(TestController):
 

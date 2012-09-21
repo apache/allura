@@ -133,3 +133,14 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
         assert '<div class="codehilite">' in hl_code
         assert '<div id="l1" class="code_block">' in hl_code
         assert '<span class="lineno">1</span>' in hl_code
+
+
+class TestIsTextFile(unittest.TestCase):
+    def test_is_text_file(self):
+        here_dir = path.dirname(__file__)
+        assert utils.is_text_file(open(path.join(
+            here_dir,
+            'data/test_mime/text_file.txt')).read())
+        assert not utils.is_text_file(open(path.join(
+            here_dir,
+            'data/test_mime/bin_file')).read())

@@ -44,6 +44,7 @@ TimerMiddleware==0.2.1
 TurboGears2==2.1.3
 # part of the stdlib, but with a version number.  see http://guide.python-distribute.org/pip.html#listing-installed-packages
 wsgiref==0.1.2
+python-magic
 
 # tg2 deps (not used directly)
 Babel==0.9.6

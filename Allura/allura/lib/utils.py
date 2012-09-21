@@ -442,6 +442,7 @@ def svn_path_exists(path):
 
 
 def is_text_file(file):
-    if "text" in magic.from_buffer(file):
+    if (("text" in magic.from_buffer(file)) or
+        ("empty" in magic.from_buffer(file))):
         return True
     return False
