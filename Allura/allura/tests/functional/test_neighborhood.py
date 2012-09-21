@@ -301,7 +301,7 @@ class TestNeighborhood(TestController):
                               extra_environ=dict(username='test-user-1'), status=302)
             assert '/p/rateproject1/admin' in r.location
 
-        # Set rate limit to 1 per hour
+        # Set rate limit to 1 in first hour of user account
         with h.push_config(config, **{'project.rate_limits': '{"3600": 1}'}):
             r = self.app.post('/p/register',
                               params=dict(project_unixname='rateproject2', project_name='Rate project2', project_description='', neighborhood='Projects'),
@@ -320,7 +320,7 @@ class TestNeighborhood(TestController):
                               extra_environ=dict(username='root'), status=302)
             assert '/p/rateproject1/admin' in r.location
 
-        # Set rate limit to 1 per hour
+        # Set rate limit to 1 in first hour of user account
         with h.push_config(config, **{'project.rate_limits': '{"3600": 1}'}):
             r = self.app.post('/p/register',
                               params=dict(project_unixname='rateproject2', project_name='Rate project2', project_description='', neighborhood='Projects'),
