@@ -456,9 +456,9 @@ class ProjectRegistrationProvider(object):
                         p.acl += [M.ACE.allow(group._id, perm)
                                 for perm in permissions]
                     for username in usernames:
-                        user = M.User.by_username(username)
-                        if not (user and user._id): continue
-                        pr = user.project_role(project=p)
+                        guser = M.User.by_username(username)
+                        if not (guser and user._id): continue
+                        pr = guser.project_role(project=p)
                         if group._id not in pr.roles:
                             pr.roles.append(group._id)
             if 'tools' in project_template:
