@@ -42,15 +42,16 @@ class parse(object):
                 args = dict(t.split('=', 1) for t in parts[1:])
                 response = macro(**h.encode_keys(args))
                 return response
-            except (ValueError, TypeError), ex:
+            except (ValueError, TypeError) as ex:
                 msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
+                log.warn('macro error', exc_info=True)
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception, ex:
             raise
             return '[[Error parsing %s: %s]]' % (s, ex)
 
     def _lookup_macro(self, s):
-        macro, context = _macros.get(s, None)
+        macro, context = _macros.get(s, (None, None))
         if context is None or context == self._context:
             return macro
         else:
@@ -240,7 +241,7 @@ def projects(category=None, display_mode='grid', sort='last_updated',
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
         grid_view_tools=''):
     initial_q = dict(neighborhood_id=c.project.neighborhood_id)
-    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
+    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort,
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
                    show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
@@ -261,7 +262,7 @@ def my_projects(category=None, display_mode='grid', sort='last_updated',
         ids.append(p._id)
 
     initial_q = dict(_id={'$in': ids})
-    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort, 
+    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort,
                    show_total=show_total, limit=limit, labels=labels, award=award, private=private,
                    columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
                    show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,

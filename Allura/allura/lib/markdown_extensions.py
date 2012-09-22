@@ -128,8 +128,14 @@ class ForgeProcessor(object):
         if self.macro_re.match(raw):
             stash = 'macro'
             raw = raw[1:-1] # strip off the enclosing []
-        elif self.artifact_re.match(raw): stash = 'artifact'
-        else: return raw
+        elif raw == 'TOC':
+            # pass this straight through and don't do an artifact lookup
+            return '[' + raw + ']'
+        elif self.artifact_re.match(raw):
+            stash = 'artifact'
+        else:
+            return raw
+        print 'store', stash, raw
         return self._store(stash, raw)
 
     def _store(self, stash_name, value):
@@ -139,7 +145,9 @@ class ForgeProcessor(object):
 
     def lookup(self, stash, id):
         stash = self.stash.get(stash, [])
-        if id >= len(stash): return ''
+        if id >= len(stash):
+            return ''
+        print 'lookup returning', stash[id]
         return stash[id]
 
     def compile(self):
@@ -152,7 +160,9 @@ class ForgeProcessor(object):
                 self.alinks = {}
         self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
         self.stash['link'] = map(self._expand_link, self.stash['link'])
+        print 'pre:', self.stash['macro']
         self.stash['macro'] = map(macro.parse(self._macro_context), self.stash['macro'])
+        print 'post:', self.stash['macro']
 
     def reset(self):
         self.stash = dict(
@@ -200,7 +210,12 @@ class ForgePostprocessor(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
         self.parent.compile()
+        print
+        print 1, text
         def repl(mo):
+            print 2, mo.group(1)
+            print 3, mo.group(2)
+            print 4, self.parent.lookup(mo.group(1), int(mo.group(2)))
             return self.parent.lookup(mo.group(1), int(mo.group(2)))
         return self.parent.placeholder_re.sub(repl, text)
 

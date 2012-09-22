@@ -111,16 +111,6 @@ def test_macros():
         assert '<img alt="test2 Logo"' in r, r
         assert '<img alt="test Logo"' not in r, r
         assert '<img alt="sub1 Logo"' not in r, r
-        r = g.markdown_wiki.convert("""[TOC]
-
-# Header 1
-
-## Header 2""")
-        assert '<a class="" href="#header-1">Header 1</a>' in r, r
-
-        r = g.markdown_wiki.convert("""  <?xml version="1.0" encoding="UTF-8"?>
-  <project xmlns="0"></project>""")
-        assert 'The markdown supplied could not be parsed correctly.' in r, r
 
         r = g.markdown_wiki.convert('[[projects show_proj_icon=True]]')
         assert '<img alt="test Logo"' in r
@@ -128,8 +118,6 @@ def test_macros():
         assert '<img alt="test Logo"' not in r
 
     c.project = curr_project
-    r = g.markdown_wiki.convert('[[project_admins]]')
-    assert r == '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>'
     r = g.markdown_wiki.convert('[[download_button]]')
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p></div>' % p_test._id)
     h.set_context('--init--', 'wiki', neighborhood='Projects')
@@ -156,6 +144,23 @@ def test_macros():
     ThreadLocalORMSession.flush_all()
     r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
     assert 'test content' in r
+
+def test_macro_project_admins():
+    r = g.markdown_wiki.convert('[[project_admins]]')
+    assert_equal(r, '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>')
+
+def test_markdown_toc():
+    r = g.markdown_wiki.convert("""[TOC]
+
+# Header 1
+
+## Header 2""")
+    assert '<a class="" href="#header-1">Header 1</a>' in r, r
+
+def test_markdown_xml_error():
+    r = g.markdown_wiki.convert("""  <?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="0"></project>""")
+    assert 'The markdown supplied could not be parsed correctly.' in r, r
 
 @with_setup(setUp)
 def test_markdown():
@@ -317,9 +322,9 @@ def test_hideawards_macro():
 
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert '<div class="feature">Award short</div>' in r
+        assert '<div class="feature">Award short</div>' in r, r
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
-        assert '<div class="feature">Award short</div>' not in r
+        assert '<div class="feature">Award short</div>' not in r, r
 
 def get_project_names(r):
     """

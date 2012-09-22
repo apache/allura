@@ -47,7 +47,7 @@ class ForgeMarkdown(markdown.Markdown):
         try:
             return markdown.Markdown.convert(self, source)
         except Exception as e:
-            log.info('Invalid markdown: %s %s', e, source)
+            log.info('Invalid markdown: %s', source, exc_info=True)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
             return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
@@ -307,7 +307,7 @@ class Globals(object):
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
-                extensions=['codehilite', ForgeExtension(**kwargs), 'tables', 'toc'],
+                extensions=['codehilite', ForgeExtension(**kwargs), 'tables', 'toc'], # 'nl2br', 'fenced_code'
                 output_format='html4')
 
     @property
