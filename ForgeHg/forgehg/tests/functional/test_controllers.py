@@ -9,10 +9,10 @@ from ming.orm import ThreadLocalORMSession
 from datadiff.tools import assert_equal
 
 from allura.lib import helpers as h
-from allura.tests import decorators as td
 from allura import model as M
 from alluratest.controller import TestController
 
+from forgehg.tests import with_hg
 
 class TestRootController(TestController):
 
@@ -20,7 +20,7 @@ class TestRootController(TestController):
         TestController.setUp(self)
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -180,7 +180,7 @@ class TestLogPagination(TestController):
         TestController.setUp(self)
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(

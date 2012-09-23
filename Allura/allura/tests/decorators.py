@@ -50,7 +50,6 @@ with_discussion = with_tool('test', 'Discussion', 'discussion')
 with_link = with_tool('test', 'Link', 'link')
 with_tracker = with_tool('test', 'Tickets', 'bugs')
 with_wiki = with_tool('test', 'Wiki', 'wiki')
-with_hg = with_tool('test', 'Hg', 'src-hg', 'Mercurial', type='hg')
 with_url = with_tool('test', 'ShortUrl', 'url')
 
 class raises(object):

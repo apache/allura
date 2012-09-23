@@ -291,15 +291,3 @@ class TestAuth(TestController):
     def test_default_lookup(self):
         # Make sure that default _lookup() throws 404
         self.app.get('/auth/foobar', status=404)
-
-class TestUserPermissions(TestController):
-    allow = dict(allow_read=True, allow_write=True, allow_create=True)
-    read = dict(allow_read=True, allow_write=False, allow_create=False)
-    disallow = dict(allow_read=False, allow_write=False, allow_create=False)
-
-    @td.with_hg
-    def test_list_repos(self):
-        r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
-        assert_equal(json.loads(r.body), {"allow_write": [
-            '/hg/test/src-hg',
-        ]})

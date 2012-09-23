@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import operator
 import sys
-import shutil
 import unittest
 from base64 import b64encode
 
@@ -24,7 +23,6 @@ from allura.tasks import event_tasks
 from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
-from allura.tasks import repo_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
 

@@ -5,7 +5,8 @@ from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from allura.tasks import repo_tasks
-from allura.tests import decorators as td
+
+from forgehg.tests import with_hg
 
 class TestHgReactors(unittest.TestCase):
 
@@ -13,7 +14,7 @@ class TestHgReactors(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')

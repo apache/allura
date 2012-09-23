@@ -2,9 +2,11 @@
 import shutil
 import unittest
 
+import tg
 import mock
 from pylons import c
 from ming.orm import ThreadLocalORMSession
+from paste.deploy.converters import asbool
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
@@ -19,6 +21,13 @@ class TestRepoTasks(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         self.setup_with_tools()
+        if asbool(tg.config.get('smtp.mock')):
+            self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
+            self.smtp_mock.start()
+        
+    def tearDown(self):
+        if asbool(tg.config.get('smtp.mock')):
+            self.smtp_mock.stop()
 
     @with_svn
     def setup_with_tools(self):

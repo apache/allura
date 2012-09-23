@@ -10,10 +10,11 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
-from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
+
 from forgehg import model as HM
+from forgehg.tests import with_hg
 
 class TestNewRepo(unittest.TestCase):
 
@@ -21,7 +22,7 @@ class TestNewRepo(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
@@ -85,7 +86,7 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
@@ -208,7 +209,7 @@ class TestHgCommit(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-hg', neighborhood='Projects')
