@@ -23,6 +23,7 @@ from ming.utils import LazyProperty
 # Pyforge-specific imports
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
 from allura.lib.search import search_artifact
 from allura.lib.decorators import require_post
@@ -954,6 +955,12 @@ class TicketController(BaseController):
             self.ticket_num = int(ticket_num)
             self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
+            if self.ticket is None:
+                self.ticket = TM.Ticket.query.get(
+                        app_config_id=c.app.config._id,
+                        import_id=str(ticket_num))
+                if self.ticket is not None:
+                    utils.permanent_redirect(self.ticket.url())
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
         setattr(self, 'feed.atom', self.feed)

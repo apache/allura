@@ -868,6 +868,19 @@ class TestFunctionalController(TrackerTestController):
         a = r.html.find('a', {'class': 'edit_ticket'})
         assert a.text == 'Edit'
 
+    def test_imported_tickets_redirect(self):
+        self.new_ticket(summary='Imported ticket')
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        ticket.import_id = '42000'
+        ThreadLocalORMSession.flush_all()
+
+        # expect permanent redirect to /p/test/bugs/1/
+        r = self.app.get('/p/test/bugs/42000/', status=301).follow()
+        assert r.request.path == '/p/test/bugs/1/', r.request.path
+
+        # not found and has not import_id
+        self.app.get('/p/test/bugs/42042/', status=404)
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
