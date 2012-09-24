@@ -587,12 +587,15 @@ class Post(Message, VersionedArtifact, ActivityObject):
                     related_nodes=[self.app_config.project])
 
     def notify(self, file_info=None, check_dup=False):
+        if self.project.notifications_disabled:
+            return  # notifications disabled for entire project
         artifact = self.thread.artifact or self.thread
         n = Notification.query.get(
             _id=artifact.url() + self._id) if check_dup else None
         if not n:
             n = Notification.post(artifact, 'message', post=self,
                                   file_info=file_info)
+        if not n: return
         if (hasattr(artifact, "monitoring_email")
                 and artifact.monitoring_email):
             if hasattr(artifact, 'notify_post'):

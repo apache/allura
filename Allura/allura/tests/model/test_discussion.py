@@ -10,6 +10,7 @@ from cgi import FieldStorage
 from pylons import c, g, request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
+from mock import patch
 
 from ming.orm import session, ThreadLocalORMSession
 from webob import Request, Response, exc
@@ -289,3 +290,23 @@ def test_post_url_paginated():
             url += '&page=%s' % page
         url += '#' + _p.slug
         assert _p.url_paginated() == url, _p.url_paginated()
+
+
+@with_setup(setUp, tearDown)
+def test_post_notify():
+    d = M.Discussion(shortname='test', name='test')
+    d.monitoring_email = 'darthvader@deathstar.org'
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+    with patch('allura.model.notification.Notification.send_simple') as send:
+        t.post('This is a post')
+        send.assert_called_with(d.monitoring_email)
+
+    c.app.config.project.notifications_disabled = True
+    with patch('allura.model.notification.Notification.send_simple') as send:
+        t.post('Another post')
+        try:
+            send.assert_called_with(d.monitoring_email)
+        except AssertionError:
+            pass  # method not called as expected
+        else:
+            assert False, 'send_simple must not be called'
