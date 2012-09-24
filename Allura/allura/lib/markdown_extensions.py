@@ -25,6 +25,7 @@ PLAINTEXT_BLOCK_RE = re.compile( \
     re.MULTILINE|re.DOTALL
     )
 
+
 class ForgeExtension(markdown.Extension):
 
     def __init__(self, wiki=False, email=False, macro_context=None):
@@ -40,6 +41,8 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
+        # replace the link pattern with our extended version
+        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md)
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
@@ -52,6 +55,18 @@ class ForgeExtension(markdown.Extension):
 
     def reset(self):
         self.forge_processor.reset()
+
+class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
+
+    artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
+
+    def sanitize_url(self, url):
+        url = markdown.inlinepatterns.Pattern.sanitize_url(url)
+        log.warn('url is %s' % url)
+        log.info('url is %s' % url)
+        if not url and self.artifact_re.match(url):
+            url = 'LINK %s LINK' % url
+        return url
 
 class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
     '''
@@ -98,7 +113,6 @@ class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
         return new_lines
 
 class ForgeProcessor(object):
-    alink_pattern = r'(?<!\[)\[([^\]\[]*)\]'
     macro_pattern = r'\[(\[([^\]\[]*)\])\]'
     placeholder_prefix = '#jgimwge'
     placeholder = '%s:%%s:%%.4d#khjhhj' % placeholder_prefix
@@ -109,13 +123,11 @@ class ForgeProcessor(object):
         self._use_wiki = use_wiki
         self._macro_context = macro_context
         self.inline_patterns = {
-            'forge.alink' : ForgeInlinePattern(self, self.alink_pattern),
             'forge.macro' : ForgeInlinePattern(self, self.macro_pattern)}
-        self.postprocessor = ForgePostprocessor(self)
         self.tree_processor = ForgeTreeProcessor(self)
         self.reset()
         self.artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
-        self.macro_re = re.compile(self.alink_pattern)
+        self.macro_re = re.compile(self.alink_pattern) # BUG
 
     def install(self):
         for k,v in self.inline_patterns.iteritems():
@@ -201,23 +213,6 @@ class ForgeInlinePattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m):
         return self.parent.store(m.group(2))
 
-class ForgePostprocessor(markdown.postprocessors.Postprocessor):
-
-    def __init__(self, parent):
-        self.parent = parent
-        markdown.postprocessors.Postprocessor.__init__(
-            self, parent.markdown)
-
-    def run(self, text):
-        self.parent.compile()
-        print
-        print 1, text
-        def repl(mo):
-            print 2, mo.group(1)
-            print 3, mo.group(2)
-            print 4, self.parent.lookup(mo.group(1), int(mo.group(2)))
-            return self.parent.lookup(mo.group(1), int(mo.group(2)))
-        return self.parent.placeholder_re.sub(repl, text)
 
 class ForgeTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''This flags intra-wiki links that point to non-existent pages'''
