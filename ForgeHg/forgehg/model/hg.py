@@ -212,7 +212,7 @@ class HgImplementation(M.RepositoryImplementation):
         user = Object(
             name=h.really_unicode(user_name),
             email=h.really_unicode(user_email),
-            date=datetime.utcfromtimestamp(sum(obj.date())))
+            date=datetime.utcfromtimestamp(obj.date()[0]))
         fake_tree = self._tree_from_changectx(obj)
         args = dict(
             tree_id=fake_tree.hex(),
