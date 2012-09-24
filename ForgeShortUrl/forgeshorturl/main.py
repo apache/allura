@@ -36,7 +36,7 @@ class W:
 
 
 class ForgeShortUrlApp(Application):
-    permissions = ['create ', 'update', 'view_private']
+    permissions = ['read', 'create', 'update', 'view_private']
     searchable = True
     tool_label = 'URL shortener'
     default_mount_label = 'URL shortener'
@@ -97,8 +97,10 @@ class ForgeShortUrlApp(Application):
         self.config.options['project_name'] = project.name
         super(ForgeShortUrlApp, self).install(project)
         # Setup permissions
+        role_anon = M.ProjectRole.anonymous()._id
         role_admin = M.ProjectRole.by_name('Admin')._id
         self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'create'),
             M.ACE.allow(role_admin, 'update'),
             M.ACE.allow(role_admin, 'view_private'),
