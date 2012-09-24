@@ -277,7 +277,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             snippet_s=self.summary,
             votes_up_i=self.votes_up,
             votes_down_i=self.votes_down,
-            votes_total_i=(self.votes_up-self.votes_down)
+            votes_total_i=(self.votes_up-self.votes_down),
+            import_id_s=self.import_id
             )
         for k,v in self.custom_fields.iteritems():
             result[k + '_s'] = unicode(v)
