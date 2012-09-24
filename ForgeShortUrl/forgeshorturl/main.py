@@ -158,11 +158,13 @@ class RootController(BaseController):
         if not q:
             q = ''
         else:
-            results = search(
-                q,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id])
+            query = ['is_history_b:%s' % history,
+                    'project_id_s:%s' % c.project._id,
+                    'mount_point_s:%s' % c.app.config.options.mount_point,
+                    'type_s:%s' % ShortUrl.type_s]
+            if not has_access(c.app, 'view_private'):
+                query.append('private_b:False')
+            results = search(q, fq=query)
 
             if results:
                 count = results.hits
@@ -173,8 +175,11 @@ class RootController(BaseController):
     @expose()
     def _lookup(self, pname, *remainder):
         if request.method == 'GET':
-            short_url = ShortUrl.query.find({'app_config_id': c.app.config._id,
-                                             'short_name': pname}).first()
+            query = {'app_config_id': c.app.config._id,
+                     'short_name': pname}
+            if not has_access(c.app, 'view_private'):
+                query['private'] = False
+            short_url = ShortUrl.query.find(query).first()
             if short_url:
                 redirect(short_url.full_url)
 
