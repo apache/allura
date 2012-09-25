@@ -94,7 +94,7 @@ class SVNImplementation(M.RepositoryImplementation):
         '\n'
         'DIR="$$(dirname "$${BASH_SOURCE[0]}")"\n'
         'if [ -x $$DIR/post-commit-user ]; then'
-        '  exec $$DIR/post-commit-user "$@"\n'
+        '  exec $$DIR/post-commit-user "$$@"\n'
         'fi')
 
     def __init__(self, repo):
@@ -436,6 +436,9 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def _setup_hooks(self, source_path=None):
         'Set up the post-commit and pre-revprop-change hooks'
+        self._copy_hooks(source_path)
+        # setup a post-commit hook to notify Allura of changes to the repo
+        # the hook should also call the user-defined post-commit-user hook
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
             + '/auth/refresh_repo' + self._repo.url())
@@ -443,11 +446,14 @@ class SVNImplementation(M.RepositoryImplementation):
         with open(fn, 'wb') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
+        # create a blank pre-revprop-change file if one doesn't
+        # already exist to allow remote modification of revision
+        # properties (see http://svnbook.red-bean.com/en/1.1/ch05s02.html)
         fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'pre-revprop-change')
-        with open(fn, 'wb') as fp:
-            fp.write('#!/bin/sh\n')
-        os.chmod(fn, 0755)
-        self._copy_hooks(source_path)
+        if not os.path.exists(fn):
+            with open(fn, 'wb') as fp:
+                fp.write('#!/bin/sh\n')
+            os.chmod(fn, 0755)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])

@@ -138,7 +138,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
-        self.assertIn('exec $DIR/post-commit-user\n', c)
+        self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
         shutil.rmtree(dirname)
 
     def test_index(self):
