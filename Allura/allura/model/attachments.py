@@ -56,8 +56,9 @@ class BaseAttachment(File):
             original_meta=original_meta)
         if orig is not None:
             return orig, thumbnail
-
-        # No, generic attachment
-        return cls.from_stream(
-            filename, fp, content_type=content_type,
-            **original_meta)
+        else:
+            # No, generic attachment
+            fp.seek(0)  # stream may have been partially consumed in a failed save_image attempt
+            return cls.from_stream(
+                filename, fp, content_type=content_type,
+                **original_meta)
