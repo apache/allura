@@ -68,6 +68,9 @@ class HgImplementation(M.RepositoryImplementation):
             'undo',
             'fncache',
             'data',
+            'branchheads.cache',  # older versions have these cache files
+            'tags.cache',         # directly in the .hg directory
+            'cache',  # newer versions have cache directory (see http://selenic.com/repo/hg/rev/5ccdca7df211)
         ])
 
     def __init__(self, repo):
