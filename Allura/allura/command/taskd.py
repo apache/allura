@@ -32,6 +32,12 @@ class TaskdCommand(base.Command):
         signal.signal(signal.SIGHUP, self.graceful_restart)
         signal.signal(signal.SIGTERM, self.graceful_stop)
         signal.signal(signal.SIGUSR1, self.log_current_task)
+        # restore default behavior of not interrupting system calls
+        # see http://docs.python.org/library/signal.html#signal.siginterrupt
+        # and http://linux.die.net/man/3/siginterrupt
+        signal.siginterrupt(signal.SIGHUP, False)
+        signal.siginterrupt(signal.SIGTERM, False)
+        signal.siginterrupt(signal.SIGUSR1, False)
         self.worker()
 
     def graceful_restart(self, signum, frame):
