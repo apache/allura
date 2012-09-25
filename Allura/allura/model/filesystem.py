@@ -161,10 +161,15 @@ class File(MappedClass):
             original = cls(
                 filename=filename, content_type=content_type, **original_meta)
             with original.wfile() as fp_w:
-                if 'transparency' in image.info:
-                    image.save(fp_w, format, transparency=image.info['transparency'])
-                else:
-                    image.save(fp_w, format)
+                try:
+                    if 'transparency' in image.info:
+                        image.save(fp_w, format, transparency=image.info['transparency'])
+                    else:
+                        image.save(fp_w, format)
+                except Exception as e:
+                    session(original).expunge(original)
+                    log.error('Error saving image %s %s', filename, e)
+                    return None, None
         else:
             original = None
 

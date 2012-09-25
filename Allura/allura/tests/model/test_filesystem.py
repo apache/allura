@@ -2,10 +2,12 @@
 import os
 from unittest import TestCase
 from cStringIO import StringIO
+from io import BytesIO
 
 from pylons import response
+from pylons import tmpl_context as c
 from ming.orm import session, Mapper
-
+from nose.tools import assert_equal
 
 from allura import model as M
 from alluratest.controller import setup_unit_test
@@ -149,6 +151,17 @@ class TestFile(TestCase):
             save_original=True)
         assert f == None
         assert t == None
+
+    def test_partial_image_as_attachment(self):
+        path = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        fp = BytesIO(open(path, 'rb').read(500))
+        c.app.config._id = None
+        attachment = M.BaseAttachment.save_attachment('user.png', fp,
+                                                      save_original=True)
+        assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
+        assert_equal(attachment.length, 500)
+        assert_equal(attachment.filename, 'user.png')
+
 
     def _assert_content(self, f, content):
         result = f.rfile().read()
