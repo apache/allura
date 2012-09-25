@@ -1,5 +1,10 @@
+import pylons
+pylons.c = pylons.tmpl_context
+from pylons import c
 from allura.tests import decorators as td
 from alluratest.controller import TestController
+
+from forgeshorturl.model import ShortUrl
 
 
 class TestRootController(TestController):
@@ -18,11 +23,22 @@ class TestRootController(TestController):
         response.form.submit()
         redirected = self.app.get('/url/test').follow()
         assert redirected.request.url == 'http://www.google.com/'
+
+    def test_shorturl_update(self):
         response = self.app.get('/admin/url/add')
-        response.form['short_url'] = 'test'
-        response.form['full_url'] = 'http://www.yahoo.com/'
+        response.form['short_url'] = 'g'
+        response.form['full_url'] = 'http://www.google.com/'
         response.form.submit()
-        redirected = self.app.get('/url/test').follow()
+        redirected = self.app.get('/url/g').follow()
+        assert redirected.request.url == 'http://www.google.com/'
+
+        response = self.app.get('/url/')
+        form = response.forms['update-short-url-form']
+        form['short_url'] = 'g'
+        form['full_url'] = 'http://www.yahoo.com/'
+        form.action = '/admin/url/add/'
+        form.submit()
+        redirected = self.app.get('/url/g').follow()
         assert redirected.request.url == 'http://www.yahoo.com/'
 
     def test_shorturl_not_found(self):
@@ -50,10 +66,26 @@ class TestRootController(TestController):
                      status=302)
 
     def test_shorturl_errors(self):
-        d = dict(short_url='http://www.amazone.com/',
-                 full_url='http://www.amazone.com/')
+        d = dict(short_url='amazone',
+                 full_url='amazone')
         r = self.app.post('/admin/url/add', params=d)
         assert 'error' in self.webflash(r)
-        d = dict(short_url='http://www.amazone.com/', full_url='amazone')
+        d = dict(short_url='test', full_url='http://google.com/')
         r = self.app.post('/admin/url/add', params=d)
-        assert 'error' in self.webflash(r)
+        d['full_url'] = 'http://yahoo.com'
+        r = self.app.post('/admin/url/add', params=d)
+        assert 'exists' in self.webflash(r)
+
+    def test_shorturl_remove(self):
+        self.app.post('/admin/url/add',
+                params=dict(short_url='g', full_url='http://google.com/'))
+        assert ShortUrl.query.find(app_config_id=c.app.config._id).count() == 1
+        self.app.post('/admin/url/remove', params=dict(shorturl='g'))
+        assert ShortUrl.query.find(app_config_id=c.app.config._id).count() == 0
+
+    def test_shorturl_permissions(self):
+        self.app.post('/admin/url/add',
+                params=dict(short_url='g', full_url='http://google.com/'),
+                extra_environ=dict(username='test-user'), status=403)
+        self.app.post('/admin/url/remove', params=dict(shorturl='g'),
+                extra_environ=dict(username='test-user'), status=403)

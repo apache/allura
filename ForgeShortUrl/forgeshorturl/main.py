@@ -1,4 +1,5 @@
 from tg import expose, validate, redirect, flash, request
+from tg.decorators import without_trailing_slash
 from urllib import urlencode
 
 from allura.app import Application, SitemapEntry, DefaultAdminController
@@ -18,7 +19,7 @@ from formencode import validators
 from formencode.compound import All
 
 from forgeshorturl.model.shorturl import ShortUrl
-from forgeshorturl.widgets.short_url import CreateShortUrlWidget
+import forgeshorturl.widgets.short_url as suw
 
 import logging
 
@@ -30,9 +31,10 @@ class W:
     search_results = SearchResults()
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
-    create_short_url_lightbox = \
-        CreateShortUrlWidget(name='create_short_url',
-                             trigger='#sidebar a.add_short_url')
+    create_short_url_lightbox = suw.CreateShortUrlWidget(
+            name='create_short_url',
+            trigger='#sidebar a.add_short_url')
+    update_short_url_lightbox = suw.UpdateShortUrlWidget()
 
 
 class ForgeShortUrlApp(Application):
@@ -115,6 +117,7 @@ class ForgeShortUrlApp(Application):
 class RootController(BaseController):
     def __init__(self):
         c.create_short_url_lightbox = W.create_short_url_lightbox
+        c.update_short_url_lightbox = W.update_short_url_lightbox
 
     def _check_security(self):
         require_access(c.app, 'read')
@@ -196,52 +199,61 @@ class ShortURLAdminController(DefaultAdminController):
     def index(self, **kw):
         redirect(c.project.url() + 'admin/tools')
 
+    @without_trailing_slash
+    @expose('json:')
+    def remove(self, shorturl):
+        require_access(self.app, 'update')
+        ShortUrl.query.remove({
+            'app_config_id': self.app.config._id,
+            'short_name': shorturl})
+        return dict(status='ok')
+
     @expose('jinja:forgeshorturl:templates/add.html')
     @validate(dict(full_url=All(validators.URL(add_http=True),
                                 validators.NotEmpty()),
                    short_url=validators.NotEmpty()))
-    def add(self, short_url="",
-            full_url="",
-            description="",
-            private="off", **kw):
-        if (request.method == 'POST'):
+    def add(self, short_url='', full_url='', description='', private='off',
+            update=False, **kw):
+        if update:
+            require_access(self.app, 'update')
+        else:
+            require_access(self.app, 'create')
+        if request.method == 'POST':
             if pylons.c.form_errors:
-                error_msg = "Error creating Short URL: "
+                error_msg = 'Error: '
                 for msg in list(pylons.c.form_errors):
-                    names = {"short_url": "Short name", "full_url": "Full URL"}
-                    error_msg += "%s - %s " % (names[msg], c.form_errors[msg])
-                    flash(error_msg, "error")
+                    names = {'short_url': 'Short url', 'full_url': 'Full URL'}
+                    error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
+                    flash(error_msg, 'error')
                 redirect(request.referer)
 
-            if (short_url != full_url):
-                shorturl = ShortUrl.query.find({
-                    'app_config_id': self.app.config._id,
-                    'short_name': short_url}).first()
-                if shorturl is None:
-                    shorturl = ShortUrl()
-                    shorturl.created = datetime.utcnow()
-                    log_msg = 'create short url %s for %s' %\
-                              (short_url,
-                               full_url)
+            shorturl = ShortUrl.query.find({
+                'app_config_id': self.app.config._id,
+                'short_name': short_url}).first()
+
+            if shorturl is not None:
+                if not update:
+                    flash('Short url %s already exists' % short_url, 'error')
+                    redirect(request.referer)
                 else:
-                    log_msg = 'update short url %s from %s to %s' %\
-                              (short_url,
-                               shorturl.full_url,
-                               full_url)
-                shorturl.full_url = full_url
-                shorturl.short_name = short_url
-                shorturl.description = description
-                shorturl.create_user = c.user._id
-                shorturl.app_config_id = self.app.config._id
-                if private == "on":
-                    shorturl.private = True
-                else:
-                    shorturl.private = False
-                shorturl.last_updated = datetime.utcnow()
-                M.AuditLog.log(log_msg)
-                flash("Short url created")
+                    msg = ('update short url %s from %s to %s'
+                            % (short_url, shorturl.full_url, full_url))
+                    flash("Short url updated")
+
             else:
-                flash("Error creating Short URL: "
-                      "Short Name and Full URL must be different", "error")
+                shorturl = ShortUrl()
+                shorturl.created = datetime.utcnow()
+                shorturl.app_config_id = self.app.config._id
+                msg = 'create short url %s for %s' % (short_url, full_url)
+                flash("Short url created")
+
+            shorturl.short_name = short_url
+            shorturl.full_url = full_url
+            shorturl.description = description
+            shorturl.create_user = c.user._id
+            shorturl.private = private == 'on'
+            shorturl.last_updated = datetime.utcnow()
+
+            M.AuditLog.log(msg)
             redirect(request.referer)
         return dict(app=self.app)

@@ -1,4 +1,34 @@
 {% extends 'forgeshorturl:templates/master.html' %}
+
+{% set can_update = c.user and h.has_access(c.app, 'update') %}
+
+{% block extra_js %}
+  {{ super() }}
+
+  {{ c.update_short_url_lightbox.display(content='''
+<div>
+<h1>Update Short URL</h1>
+<form method="post" action="" id="update-short-url-form">
+  <input type="hidden" name="update" value="update">
+  <input type="hidden" name="short_url">
+  <label class="grid-13">Short name</label>
+  <div class="grid-13"><input type="text" name="short_url_display" style="width: 250px" disabled="disabled"></div>
+  <label class="grid-13">Full URL</label>
+  <div class="grid-13"><input type="text" name="full_url" style="width: 250px"></div>
+  <label class="grid-13">Description</label>
+  <div class="grid-13"><textarea name="description" style="width: 250px; height: 100px"></textarea></div>
+  <div class="grid-13"><input type="checkbox" name="private" id="update-checkbox-private"><label for="update-checkbox-private">Private</label></div>
+  <div class="grid-13">&nbsp;</div>
+  <hr>
+  <div class="grid-13"><div class="grid-13">&nbsp;</div>
+  <input type="submit" value="Save">
+    <a href="#" class="close">Cancel</a>
+  </div>
+</form>
+</div>
+''') }}
+{% endblock %}
+
 {% block content %}
 <table>
     <thead>
@@ -10,6 +40,7 @@
         <th>Description</th>
         <th>Created</th>
         <th>Last updated</th>
+        {% if can_update %}<th></th>{% endif %}
     </tr>
     </thead>
     {% for su in short_urls %}
@@ -26,7 +57,50 @@
         <td><small>{{ su.description }}</small></td>
         <td><small>{{ lib.abbr_date(su.created) }}</small></td>
         <td><small>{{ lib.abbr_date(su.last_updated) }}</small></td>
-
+        {% if can_update %}
+        <td>
+          <small>
+            <a class="update-url" id="update-url-{{su.short_name}}" href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/add/">
+              Update
+            </a>
+            <script>
+              $(function() {
+                var upform = $('#update-short-url-form');
+                $('#update-url-{{su.short_name}}').click(function() {
+                  upform.attr('action', this.href);
+                  upform.find('input[name="short_url"]').val('{{ su.short_name }}');
+                  upform.find('input[name="short_url_display"]').val('{{ su.short_name }}');
+                  upform.find('input[name="full_url"]').val('{{ su.full_url }}');
+                  upform.find('textarea[name="description"]').val('{{su.description|replace("\n", "\\n")|replace("\r", "\\r")}}');
+                  if ('{{ su.private }}' == 'True') {
+                    $('#update-checkbox-private').attr('checked', 'checked');
+                  } else {
+                    $('#update-checkbox-private').removeAttr('checked');
+                  }
+                  return false;
+                });
+              });
+            </script>
+            <br>
+            <a id="remove-url-{{su.short_name}}" href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/remove">
+              Remove
+            </a>
+            <script>
+              $(function() {
+                var cval = $.cookie('_session_id');
+                $('#remove-url-{{su.short_name}}').click(function() {
+                  var row = $(this).parents('tr');
+                  var data = {_session_id: cval, shorturl: '{{ su.short_name }}'};
+                  $.post(this.href, data, function(data, status, xhr) {
+                    if (data.status == 'ok') row.remove();
+                  });
+                  return false;
+                });
+              });
+            </script>
+          </small>
+        </td>
+        {% endif %} {# can_update #}
     </tr>
     {% endfor %}
 
