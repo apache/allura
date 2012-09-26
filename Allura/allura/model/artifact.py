@@ -283,6 +283,10 @@ class Artifact(MappedClass):
             fp=fp, artifact_id=self._id, **kw)
         return att
 
+    def delete(self):
+        ArtifactReference.query.remove(dict(_id=self.index_id()))
+        super(Artifact, self).delete()
+
 class Snapshot(Artifact):
     """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
     class __mongometa__:
