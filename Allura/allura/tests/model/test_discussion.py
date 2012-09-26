@@ -195,8 +195,12 @@ def test_discussion_delete():
                 discussion_id=d._id,
                 thread_id=t._id,
                 post_id=p._id)
+    r = M.ArtifactReference.from_artifact(d)
+    rid = d.index_id()
     ThreadLocalORMSession.flush_all()
     d.delete()
+    ThreadLocalORMSession.flush_all()
+    assert_equals(M.ArtifactReference.query.find(dict(_id=rid)).count(), 0)
 
 @with_setup(setUp, tearDown)
 def test_thread_delete():
