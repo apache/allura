@@ -159,8 +159,10 @@
           var title_holder = $('h2.dark');
           var original_title = title_holder.text();
           var title_actions = title_holder.find('small');
-          var vote = $('#vote')
+          var vote = $('#vote');
+          var discussion_comment_textarea = $('#new_post_holder').find('form').find('textarea');
           $('a.edit_ticket').click(function () {
+            var not_posted_comment = discussion_comment_textarea.val();
             form_holder.show();
             view_holder.hide();
             discussion_holder.hide();
@@ -171,6 +173,7 @@
             vote.hide();
             $('a.edit_ticket').addClass('btn_activate');
             $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
+            $('textarea[name="ticket_form.comment"]').val(not_posted_comment);
             $(this).trigger('editTicket');
             return false;
           });
