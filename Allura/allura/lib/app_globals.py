@@ -20,7 +20,8 @@ import pygments.lexers
 import pygments.formatters
 import pygments.util
 from tg import config, session
-from pylons import c, request
+from pylons import request
+from pylons import tmpl_context as c
 from paste.deploy.converters import asbool, asint
 from pypeline.markup import markup as pypeline_markup
 
