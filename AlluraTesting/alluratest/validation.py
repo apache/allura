@@ -18,6 +18,7 @@ import beaker.session
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import c, g, url, request, response, session
+import webtest
 from webtest import TestApp
 from webob import Request, Response
 from nose.tools import ok_, assert_true, assert_false
@@ -235,7 +236,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
         for k, v in params:
             if not isinstance(k, basestring):
                 raise TypeError('%s key %s is %s, not str' % (method, k, type(k)))
-            if not isinstance(v, basestring):
+            if not isinstance(v, (basestring, webtest.app.File)):
                 raise TypeError('%s key %s has value %s of type %s, not str. ' % (method, k, v, type(v)))
 
     def get(self, *args, **kwargs):
