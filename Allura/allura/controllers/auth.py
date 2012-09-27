@@ -310,14 +310,34 @@ class PreferencesController(BaseController):
             if mb.artifact_url:
                 title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
             subscriptions.append(dict(
-                    _id=mb._id,
+                    subscription_id=mb._id,
                     project_name=project.name,
                     mount_point=app_config.options['mount_point'],
                     artifact_title=title,
                     topic=mb.topic,
                     type=mb.type,
                     frequency=mb.frequency.unit,
-                    artifact=mb.artifact_index_id))
+                    artifact=mb.artifact_index_id,
+                    subscribed=True))
+
+        my_projects = dict((p._id, p) for p in c.user.my_projects())
+        my_tools = app_collection.m.find(dict(
+            project_id={'$in': my_projects.keys()}))
+        for tool in my_tools:
+            p_id = tool.project_id
+            subscribed = M.Mailbox.subscribed(
+                    project_id=p_id, app_config_id=tool._id)
+            if not subscribed:
+                subscriptions.append(dict(
+                    tool_id=tool._id,
+                    project_id=p_id,
+                    project_name=my_projects[p_id].name,
+                    mount_point=tool.options['mount_point'],
+                    artifact_title='No subscription',
+                    topic=None,
+                    type=None,
+                    frequency=None,
+                    artifact=None))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
@@ -378,8 +398,14 @@ class PreferencesController(BaseController):
     @validate(F.subscription_form, error_handler=index)
     def update_subscriptions(self, subscriptions=None, **kw):
         for s in subscriptions:
-            if s['unsubscribe']:
-                s['_id'].delete()
+            if s['subscribed']:
+                if s['tool_id'] and s['project_id']:
+                    M.Mailbox.subscribe(
+                        project_id=bson.ObjectId(s['project_id']),
+                        app_config_id=bson.ObjectId(s['tool_id']))
+            else:
+                if s['subscription_id'] is not None:
+                    s['subscription_id'].delete()
         redirect(request.referer)
 
     @expose()

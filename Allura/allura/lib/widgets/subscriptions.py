@@ -11,7 +11,9 @@ from .form_fields import SubmitButton
 # Discussion forms
 class _SubscriptionTable(ew.TableField):
     class hidden_fields(ew_core.NameList):
-        _id = ew.HiddenField(validator=V.Ming(M.Mailbox))
+        subscription_id = ew.HiddenField(validator=V.Ming(M.Mailbox))
+        tool_id = ew.HiddenField()
+        project_id = ew.HiddenField()
         topic = ew.HiddenField()
         artifact_index_id = ew.HiddenField()
     class fields(ew_core.NameList):
@@ -22,12 +24,12 @@ class _SubscriptionTable(ew.TableField):
         frequency = ew.HTMLField(label='Frequency', show_label=True)
         artifact_title = ew.HTMLField(label='Artifact', show_label=True)
         # unsubscribe = SubmitButton()
-        unsubscribe = ew.Checkbox(suppress_label=True)
+        subscribed = ew.Checkbox(suppress_label=True)
 
 class SubscriptionForm(ew.SimpleForm):
     defaults=dict(
         ew.SimpleForm.defaults,
-        submit_text='Unsubscribe from marked artifacts')
+        submit_text='Save')
     class fields(ew_core.NameList):
         subscriptions=_SubscriptionTable()
 

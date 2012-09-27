@@ -1,4 +1,5 @@
 import json
+from bson import ObjectId
 
 import mock
 from nose.tools import assert_equal
@@ -42,11 +43,6 @@ class TestAuth(TestController):
     def test_prefs(self):
         r = self.app.get('/auth/prefs/', extra_environ=dict(username='test-admin'))
         assert 'test@example.com' not in r
-        subscriptions = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False)).all()
-        # make sure page actually lists all the user's subscriptions
-        assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
-        for m in subscriptions:
-            assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
         r = self.app.post('/auth/prefs/update', params={
                  'display_name':'Test Admin',
                  'new_addr.addr':'test@example.com',
@@ -77,6 +73,78 @@ class TestAuth(TestController):
                  'primary_addr':'test-admin@users.localhost',
                  'preferences.email_format':'plain'},
                 extra_environ=dict(username='test-admin'))
+
+    @td.with_user_project('test-admin')
+    def test_prefs_subscriptions(self):
+        r = self.app.get('/auth/prefs/',
+                extra_environ=dict(username='test-admin'))
+        subscriptions = M.Mailbox.query.find(dict(
+            user_id=c.user._id, is_flash=False)).all()
+        # make sure page actually lists all the user's subscriptions
+        assert len(subscriptions) > 0, 'Test user has no subscriptions, cannot verify that they are shown'
+        for m in subscriptions:
+            assert m._id in r, "Page doesn't list subscription for Mailbox._id = %s" % m._id
+
+        # make sure page lists all tools which user can subscribe
+        user = M.User.query.get(username='test-admin')
+        tools = []
+        for p in user.my_projects():
+            for ac in p.app_configs:
+                if not M.Mailbox.subscribed(project_id=p._id, app_config_id=ac._id):
+                    tools.append(ac._id)
+        for tool_id in tools:
+            assert tool_id in r, "Page doesn't list tool with app_config_id = %s" % tool_id
+
+    def _find_subscriptions_form(self, r):
+        form = None
+        for f in r.forms.itervalues():
+            if f.action == 'update_subscriptions':
+                form = f
+                break;
+        assert form is not None, "Can't find subscriptions form"
+        return form
+
+    def _find_subscriptions_field(self, form, subscribed=False):
+        field_name = None
+        for k, v in form.fields.iteritems():
+            if subscribed:
+                check = c and v[0].value == 'on'
+            else:
+                check = c and v[0].value != 'on'
+            if k and k.endswith('.subscribed') and check:
+                field_name = k.replace('.subscribed', '')
+        assert field_name, "Can't find unsubscribed tool for user"
+        return field_name
+
+    @td.with_user_project('test-admin')
+    def test_prefs_subscriptions_subscribe(self):
+        resp = self.app.get('/auth/prefs/',
+                extra_environ=dict(username='test-admin'))
+        form = self._find_subscriptions_form(resp)
+        # find not subscribed tool, subscribe and verify
+        field_name = self._find_subscriptions_field(form, subscribed=False)
+        t_id = ObjectId(form.fields[field_name + '.tool_id'][0].value)
+        p_id = ObjectId(form.fields[field_name + '.project_id'][0].value)
+        subscribed = M.Mailbox.subscribed(project_id=p_id, app_config_id=t_id)
+        assert not subscribed, "User already subscribed for tool %s" % t_id
+        form.fields[field_name + '.subscribed'][0].value = 'on'
+        form.submit()
+        subscribed = M.Mailbox.subscribed(project_id=p_id, app_config_id=t_id)
+        assert subscribed, "User is not subscribed for tool %s" % t_id
+
+    @td.with_user_project('test-admin')
+    def test_prefs_subscriptions_unsubscribe(self):
+        resp = self.app.get('/auth/prefs/',
+                extra_environ=dict(username='test-admin'))
+        form = self._find_subscriptions_form(resp)
+        field_name = self._find_subscriptions_field(form, subscribed=True)
+        s_id = ObjectId(form.fields[field_name + '.subscription_id'][0].value)
+        s = M.Mailbox.query.get(_id=s_id)
+        assert s, "User has not subscription with Mailbox._id = %s" % s_id
+        form.fields[field_name + '.subscribed'][0].value = None
+        form.submit()
+        s = M.Mailbox.query.get(_id=s_id)
+        assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     def test_api_key(self):
          r = self.app.get('/auth/prefs/')

@@ -67,6 +67,7 @@
 
   <h2>Subscriptions</h2>
   {% if subscriptions %}
+    <p><em>Mark tools that you want to subscribe to. Unmark tools that you want to unsubscribe from. Press 'Save' button.</em></p>
     {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
   {% else%}
     <p>No subscriptions.</p>
@@ -99,7 +100,7 @@
           </select>
         </div>
         {% endif %}
-    
+
     {% if tg.config.get('auth.method', 'local') == 'local' %}
       {% for a in c.user.email_addresses %}
         <input name="addr-{{loop.index0}}.ord" value="{{loop.index0}}" type="hidden"/>
