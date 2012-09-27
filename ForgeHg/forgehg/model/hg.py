@@ -47,6 +47,12 @@ class Repository(M.Repository):
     def log(self, branch='default', offset=0, limit=10):
         return super(Repository, self).log(branch, offset, limit)
 
+class HgUI(ui.ui):
+    '''Hg UI subclass that suppresses reporting of untrusted hgrc files.'''
+    def __init__(self, *args, **kwargs):
+        super(HgUI, self).__init__(*args, **kwargs)
+        self._reportuntrusted = False
+
 class HgImplementation(M.RepositoryImplementation):
     re_hg_user = re.compile('(.*) <(.*)>')
     skip_internal_files = set([
@@ -78,7 +84,7 @@ class HgImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def _hg(self):
-        return hg.repository(ui.ui(), self._repo.full_fs_path)
+        return hg.repository(HgUI(), self._repo.full_fs_path)
 
     def init(self):
         fullname = self._setup_paths()
