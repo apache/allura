@@ -225,6 +225,11 @@ class TestRootController(_TestCase):
         link = header.find('a', {'class': 'artifact_subscribe'})
         assert link is not None, header
 
+    def test_timezone(self):
+        ci = self._get_ci()
+        resp = self.app.get(ci + 'tree/')
+        assert "Thu Oct 07, 2010 06:44 PM UTC" in resp, resp.showbrowser()
+
 
 class TestRestController(_TestCase):
 
