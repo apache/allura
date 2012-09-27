@@ -3,6 +3,8 @@ import json
 import logging
 from collections import defaultdict
 from urllib import unquote
+
+from decorator import decorator
 from tg.decorators import before_validate
 from tg import request, redirect
 
@@ -169,3 +171,28 @@ def Property(function):
     sys.settrace(probeFunc)
     function()
     return property(**func_locals)
+
+
+def getattr_(obj, name, default_thunk):
+    "Similar to .setdefault in dictionaries."
+    try:
+        return getattr(obj, name)
+    except AttributeError:
+        default = default_thunk()
+        setattr(obj, name, default)
+        return default
+
+
+@decorator
+def memoize(func, *args):
+    """
+    Cache the method's result, for the given args
+    """
+    dic = getattr_(func, "memoize_dic", dict)
+    # memoize_dic is created at the first call
+    if args in dic:
+        return dic[args]
+    else:
+        result = func(*args)
+        dic[args] = result
+        return result
