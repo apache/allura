@@ -91,7 +91,7 @@
   </table>
   <div class="grid-19"><input type="button" id="add_forum" value="Add another forum"></div>
 </form>
-{{c.add_forum.display(method='POST',action='add_forum',app=app, value=add_forum)}}
+{{c.add_forum.display(method='POST',action='add_forum',app=app, value=c.add_forum)}}
 {% endblock %}
 
 {% block extra_js %}

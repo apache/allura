@@ -253,6 +253,7 @@ class TestForum(TestController):
         r.forms[1]['add_forum.name'] = 'Test Forum'
         r.forms[1].submit()
         r = self.app.get('/admin/discussion/forums')
+        frm = FM.Forum.query.get(shortname='testforum')
         assert 'testforum' in r
         h.set_context('test', 'discussion', neighborhood='Projects')
         frm = FM.Forum.query.get(shortname='testforum')
