@@ -60,12 +60,7 @@ class RootController(BaseController, DispatchIndex):
                         app_config_id=c.app.config._id,
                         parent_id=None, deleted=False)).all()
         forums = [f for f in forums if h.has_access(f, 'read')()]
-        threads = dict()
-        for forum in forums:
-            threads[forum._id] = model.ForumThread.query.find(dict(
-                discussion_id=forum._id, num_replies={'$gt': 0})).sort('mod_date', pymongo.DESCENDING).limit(6).all()
         return dict(forums=forums,
-                    threads=threads,
                     announcements=announcements,
                     hide_forum=(not new_forum))
 
