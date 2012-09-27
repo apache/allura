@@ -399,8 +399,3 @@ class DefaultAdminController(BaseController):
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]
         redirect(request.referer)
-
-@event_handler('project_updated')
-def subscribe_admins(topic):
-    for ac in c.project.app_configs:
-        c.project.app_instance(ac).subscribe_admins()
