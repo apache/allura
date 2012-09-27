@@ -24,6 +24,7 @@ from ming.orm.declarative import MappedClass
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
 from allura.lib import plugin
+from allura.lib.decorators import memoize
 
 from .session import main_orm_session, main_doc_session
 from .session import project_orm_session
@@ -272,6 +273,7 @@ class AuthGlobals(MappedClass):
             new=True)
         return g.next_uid
 
+
 class User(MappedClass, ActivityNode, ActivityObject):
     SALT_LEN=8
     class __mongometa__:
@@ -309,9 +311,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def url(self):
         return plugin.AuthenticationProvider.get(request).project_url(self)
 
+    @memoize
     def icon_url(self):
         icon_url = None
-        if self.private_project() and self.private_project().icon:
+        private_project = self.private_project()
+        if private_project and private_project.icon:
             icon_url = self.url()+'user_icon'
         elif self.preferences.email_address:
             icon_url = g.gravatar(self.preferences.email_address, default=None)
