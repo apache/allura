@@ -9,6 +9,7 @@ from ming import schema
 from ming.orm.base import session
 from ming.orm.property import (FieldProperty, RelationProperty,
                                ForeignIdProperty)
+from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
 from allura.lib import security
@@ -69,7 +70,7 @@ class Discussion(Artifact, ActivityObject):
         self.num_posts = self.post_class().query.find(
             dict(discussion_id=self._id, status='ok')).count()
 
-    @property
+    @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
                 discussion_id=self._id)).sort('timestamp', pymongo.DESCENDING)
