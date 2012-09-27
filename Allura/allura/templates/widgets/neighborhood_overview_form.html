@@ -5,7 +5,7 @@
     <div class="grid-14">{{widget.display_field(widget.fields.name)}}</div>
     <label class="grid-4">Redirect</label>
     <div class="grid-14">{{widget.display_field(widget.fields.redirect)}}</div>
-  {% if value.has_home_tool %}
+  {% if neighborhood.has_home_tool %}
     <label class="grid-4">Home Content (HTML)</label>
     <div class="grid-14">{{widget.display_field(widget.fields.homepage)}}</div>
     <label class="grid-4">Allow Browsing</label>
@@ -13,7 +13,7 @@
   {% endif %}
     <label class="grid-4">Show Title</label>
     <div class="grid-14">{{widget.display_field(widget.fields.show_title)}}</div>
-  {% if value.allow_custom_css %}
+  {% if neighborhood.allow_custom_css %}
     <label class="grid-4">Custom CSS</label>
     <div class="grid-14">{{widget.display_field(widget.fields.css)}}</div>
   {% endif %}
@@ -21,12 +21,12 @@
     <div class="grid-14">{{widget.display_field(widget.fields.project_template)}}</div>
     <label class="grid-4">Icon</label>
     <div class="grid-14">
-      {% if value.icon %}
-        <img src="{{value.url()}}/icon" style="vertical-align: middle" alt=""/>
+      {% if neighborhood.icon %}
+        <img src="{{neighborhood.url()}}/icon" style="vertical-align: middle" alt=""/>
       {% endif %}
       {{widget.display_field(widget.fields.icon)}}
     </div>
-    {% if value.features and value.features['google_analytics'] %}
+    {% if neighborhood.features and neighborhood.features['google_analytics'] %}
     <label class="grid-4">Analytics Tracking ID</label>
     <div class="grid-14">{{widget.display_field(widget.fields.tracking_id)}}</div>
     {% endif %}
