@@ -89,11 +89,13 @@
               $(function() {
                 var cval = $.cookie('_session_id');
                 $('#remove-url-{{su.short_name}}').click(function() {
-                  var row = $(this).parents('tr');
-                  var data = {_session_id: cval, shorturl: '{{ su.short_name }}'};
-                  $.post(this.href, data, function(data, status, xhr) {
-                    if (data.status == 'ok') row.remove();
-                  });
+                    if (confirm('Remove URL {{su.short_name}}?')) {
+                      var row = $(this).parents('tr');
+                      var data = {_session_id: cval, shorturl: '{{ su.short_name }}'};
+                      $.post(this.href, data, function(data, status, xhr) {
+                        if (data.status == 'ok') row.remove();
+                      });
+                    }
                   return false;
                 });
               });
