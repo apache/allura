@@ -314,7 +314,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if self.private_project() and self.private_project().icon:
             icon_url = self.url()+'user_icon'
         elif self.preferences.email_address:
-            icon_url = g.gravatar(self.preferences.email_address, default=None)
+            icon_url = g.gravatar(self.preferences.email_address)
         return icon_url
 
     @classmethod
