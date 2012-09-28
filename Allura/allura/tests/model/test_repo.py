@@ -191,7 +191,10 @@ class TestRepo(_TestWithRepo):
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
         self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
         self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
-        self.repo.refresh()
+        with mock.patch('allura.model.repo_refresh.g.post_event') as post_event:
+            self.repo.refresh()
+            post_event.assert_called_with(
+                    'repo_refreshed', commit_number=100, new=True)
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:

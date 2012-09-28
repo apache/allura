@@ -7,6 +7,8 @@ import bson
 
 import tg
 
+from pylons import g
+
 from ming.base import Object
 from ming.orm import mapper, session
 
@@ -97,7 +99,10 @@ def refresh_repo(repo, all_commits=False, notify=True):
                 log.info('Compute diffs %d: %s', (i+1), ci._id)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
-
+    g.post_event(
+            'repo_refreshed',
+            commit_number=len(commit_ids),
+            new=bool(new_commit_ids))
     # Send notifications
     if notify:
         send_notifications(repo, commit_ids)
