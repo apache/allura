@@ -164,10 +164,10 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
             assert entry.message
 
     def test_revision(self):
-        entry = self.repo.commit('tip')
+        entry = self.repo.commit('4a7f7ec0dcf5')
         assert entry.committed.email == 'rick446@usa.net'
         assert entry.message
-        assert str(entry.committed.date) == "2012-08-29 13:34:26"
+        assert str(entry.committed.date) == "2012-08-29 13:34:26", str(entry.committed.date)
         # Test that sha1s for named refs are looked up in cache first, instead
         # of from disk.
         with mock.patch('forgehg.model.hg.M.repo.Commit.query') as q:
