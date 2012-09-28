@@ -92,13 +92,6 @@ class SitemapEntry(object):
                 self.children.append(e)
                 child_index[lbl] = e
 
-class WidgetController(BaseController):
-    widgets=[]
-
-    def __init__(self, app): pass
-
-    def portlet(self, content):
-        return '<div class="portlet">%s</div>' % content
 
 class Application(object):
     """
@@ -133,7 +126,6 @@ class Application(object):
     permissions=[]
     sitemap = [ ]
     installable=True
-    widget = WidgetController
     searchable = False
     DiscussionClass = model.Discussion
     PostClass = model.Post

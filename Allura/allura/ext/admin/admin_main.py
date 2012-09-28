@@ -10,7 +10,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
 
-from allura.app import Application, WidgetController, DefaultAdminController, SitemapEntry
+from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
 from allura import version
 from allura import model as M

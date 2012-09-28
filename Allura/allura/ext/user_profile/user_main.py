@@ -7,10 +7,9 @@ from formencode import validators
 from tg import expose, redirect, validate, response
 
 from allura import version
-from allura.app import Application, WidgetController
+from allura.app import Application
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
-from allura.ext.project_home import model as M
 from allura.lib.security import require_access
 from allura.model import User, Feed, ACE
 from allura.controllers import BaseController
@@ -18,17 +17,9 @@ from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
 
-class UserWidgets(WidgetController):
-    widgets=['welcome']
-
-    def __init__(self, app): pass
-
-    def welcome(self):
-        return self.portlet('<p><!-- Please configure your widgets --></p>')
 
 class UserProfileApp(Application):
     __version__ = version.__version__
-    widget = UserWidgets
     installable = False
     icons={
         24:'images/sftheme/24x24/home_24.png',
@@ -81,10 +72,6 @@ class UserProfileController(BaseController):
     #             print r.docs
     #     return dict(user=user)
 
-    @expose('jinja:allura.ext.user_profile:templates/user_dashboard_configuration.html')
-    def configuration(self):
-        return dict(user=c.project.user_project_of)
-
     @expose()
     @validate(dict(
             since=DateTimeConverter(if_empty=None),
@@ -108,34 +95,3 @@ class UserProfileController(BaseController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         return feed.writeString('utf-8')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_configuration(self, divs=None, layout_class=None, new_div=None, **kw):
-        require_access(c.project, 'update')
-        config = M.PortalConfig.current()
-        config.layout_class = layout_class
-        # Handle updated and deleted divs
-        if divs is None: divs = []
-        new_divs = []
-        for div in divs:
-            log.info('Got div update:%s', pformat(div))
-            if div.get('del'): continue
-            new_divs.append(div)
-        # Handle new divs
-        if new_div:
-            new_divs.append(dict(name=h.nonce(), content=[]))
-        config.layout = []
-        for div in new_divs:
-            content = []
-            for w in div.get('content', []):
-                if w.get('del'): continue
-                mp,wn = w['widget'].split('/')
-                content.append(dict(mount_point=mp, widget_name=wn))
-            if div.get('new_widget'):
-                content.append(dict(mount_point='profile', widget_name='welcome'))
-            config.layout.append(dict(
-                    name=div['name'],
-                    content=content))
-        redirect('configuration')

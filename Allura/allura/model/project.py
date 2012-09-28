@@ -578,11 +578,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             self.uninstall_app(ac.options.get('mount_point'))
         MappedClass.delete(self)
 
-    def render_widget(self, widget):
-        app = self.app_instance(widget['mount_point'])
-        with h.push_config(c, project=self, app=app):
-            return getattr(app.widget(app), widget['widget_name'])()
-
     def breadcrumbs(self):
         entry = ( self.name, self.url() )
         if self.parent_project:

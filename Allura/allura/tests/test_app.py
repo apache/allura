@@ -51,7 +51,3 @@ def test_sitemap():
                 app.SitemapEntry('d', 'd/')]])
     assert len(sm.children) == 3
 
-def test_widget_controller():
-    wc = app.WidgetController(c.app)
-    assert 'portlet' in wc.portlet('Foo'), wc.portlet('Foo')
-
