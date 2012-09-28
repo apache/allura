@@ -1,6 +1,7 @@
 from . import base
 
 from ming.orm import session
+from bson import ObjectId
 
 from allura import model as M
 from allura.lib import plugin, exceptions
@@ -30,9 +31,9 @@ class CreateNeighborhoodCommand(base.Command):
 class UpdateNeighborhoodCommand(base.Command):
     min_args=3
     max_args=None
-    usage = '<ini file> <neighborhood_shortname> <home_tool_active>'
+    usage = '<ini file> <neighborhood> <home_tool_active>'
     summary = 'Activate Home application for neighborhood\r\n' \
-        '\t<neighborhood> - the neighborhood name\r\n' \
+        '\t<neighborhood> - the neighborhood name or _id\r\n' \
         '\t<value> - boolean value to install/uninstall Home tool\r\n' \
         '\t    must be True or False\r\n\r\n' \
         '\tExample:\r\n' \
@@ -43,6 +44,8 @@ class UpdateNeighborhoodCommand(base.Command):
         self.basic_setup()
         shortname = self.args[1]
         nb = M.Neighborhood.query.get(name=shortname)
+        if not nb:
+            nb = M.Neighborhood.query.get(_id=ObjectId(shortname))
         if nb is None:
             raise exceptions.NoSuchNeighborhoodError("The neighborhood %s " \
                 "could not be found in the database" % shortname)
