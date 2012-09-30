@@ -616,7 +616,8 @@ def commitlog(commit_ids, skip=0, limit=sys.maxint):
             else:
                 ci_parents[oid] = run.parent_commit_ids
         for oid in run.parent_commit_ids:
-            _visit(oid)
+            if commit_id!=oid:
+                _visit(oid)
 
     def _gen_ids(commit_ids, skip, limit):
         # Traverse the graph in topo order, yielding commit IDs

@@ -304,7 +304,12 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
             for xx in _walk_tree(tree_index[x.id], tree_index):
                 yield xx
 
-    rhs_tree_ids = TreesDoc.m.get(_id=rhs_ci._id).tree_ids
+    treedoc = TreesDoc.m.get(_id=rhs_ci._id)
+    if treedoc:
+        rhs_tree_ids = treedoc.tree_ids
+    else:
+        return tree_cache
+
     if rhs_ci.parent_ids:
         lhs_ci = CommitDoc.m.get(_id=rhs_ci.parent_ids[0])
     else:
