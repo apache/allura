@@ -353,24 +353,31 @@ class RootController(BaseController, DispatchIndex):
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=None)))
-    def browse_tags(self, sort='alpha', page=0, limit=None):
+                   limit=validators.Int(if_empty=25)))
+    def browse_tags(self, sort='alpha', page=0, limit=None, **kw):
         'list of all labels in the wiki'
         c.page_list = W.page_list
         c.page_size = W.page_size
         limit, pagenum, start = g.handle_paging(limit, page, default=25)
         count = 0
         page_tags = {}
-        q = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
-        count = q.count()
-        q = q.skip(start).limit(int(limit))
+        q = WM.Page.query.find(dict(app_config_id=c.app.config._id,
+                                    deleted=False,
+                                    labels={'$ne': []}))
         for page in q:
             if page.labels:
                 for label in page.labels:
                     if label not in page_tags:
                         page_tags[label] = []
                     page_tags[label].append(page)
-        return dict(labels=page_tags, limit=limit, count=count, page=pagenum)
+        count = len(page_tags)
+        name_labels = list(page_tags)
+        name_labels.sort()
+        return dict(labels=page_tags,
+                    limit=limit,
+                    count=count,
+                    page=pagenum,
+                    name_labels=name_labels[start:start + limit])
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax.html')

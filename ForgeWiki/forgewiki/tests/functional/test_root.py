@@ -248,6 +248,28 @@ class TestRootController(TestController):
                 'viewable_by-0.id':'all'})
         assert 'tést' in response
 
+    def test_page_label_count(self):
+        labels = "label"
+        for i in range(1, 100):
+            labels += ',label%s' % i
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': labels,
+                'labels_old': labels,
+                'viewable_by-0.id': 'all'})
+        r = self.app.get('/wiki/browse_tags/')
+        assert 'results of 100 ' in r
+        assert '<div class="page_list">' in r
+        assert '(Page 1 of 4)' in r
+        assert '<td>label30</td>' in r
+        assert '<td>label1</td>' in r
+        r = self.app.get('/wiki/browse_tags/?page=3')
+        assert '<td>label77</td>' in r
+        assert '<td>label99</td>' in r
+
     def test_new_attachment(self):
         self.app.post(
             '/wiki/tést/update',
