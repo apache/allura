@@ -59,11 +59,13 @@ class ForgeGitApp(RepositoryApp):
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=cloned_from.full_fs_path,
                 cloned_from_name=cloned_from.app.config.script_name(),
-                cloned_from_url=cloned_from.full_fs_path)
+                cloned_from_url=cloned_from.full_fs_path,
+                copy_hooks=self.config.options.get('copy_hooks', False))
         elif init_from_url or init_from_path:
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=init_from_path,
                 cloned_from_name=None,
-                cloned_from_url=init_from_url)
+                cloned_from_url=init_from_url,
+                copy_hooks=self.config.options.get('copy_hooks', False))
         else:
             allura.tasks.repo_tasks.init.post()
