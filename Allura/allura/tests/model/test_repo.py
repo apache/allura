@@ -195,6 +195,10 @@ class TestRepo(_TestWithRepo):
             self.repo.refresh()
             post_event.assert_called_with(
                     'repo_refreshed', commit_number=100, new=True)
+            # refresh second time - all commits are seen
+            self.repo.refresh()
+            post_event.assert_called_with(
+                    'repo_refreshed', commit_number=0, new=False)
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
