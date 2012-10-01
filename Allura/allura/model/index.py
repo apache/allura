@@ -31,7 +31,9 @@ ArtifactReferenceDoc = collection(
             project_id=S.ObjectId(),
             app_config_id=S.ObjectId(),
             artifact_id=S.Anything(if_missing=None))),
-    Field('references', [str], index=True))
+    Field('references', [str], index=True),
+    Index('artifact_reference.project_id'),  # used in ReindexCommand
+)
 
 ShortlinkDoc = collection(
     'shortlink', main_doc_session,
