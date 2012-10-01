@@ -73,7 +73,12 @@ class Discussion(Artifact, ActivityObject):
     @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
-                discussion_id=self._id)).sort('timestamp', pymongo.DESCENDING)
+                discussion_id=self._id))\
+            .sort('timestamp', pymongo.DESCENDING)\
+            .limit(1)\
+            .hint([('discussion_id', pymongo.ASCENDING)])
+            # hint is to try to force the index to be used, since mongo wouldn't select it sometimes
+            # https://groups.google.com/forum/#!topic/mongodb-user/0TEqPfXxQU8
         return q.first()
 
     def url(self):
