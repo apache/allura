@@ -6,6 +6,9 @@ import unittest
 from base64 import b64encode
 
 import mock
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
 from pylons import c, g
 from datadiff.tools import assert_equal
 from nose.tools import assert_in
@@ -205,10 +208,11 @@ class TestRepoTasks(unittest.TestCase):
     def test_clone(self):
         ns = M.Notification.query.find().count()
         with mock.patch.object(c.app.repo, 'init_as_clone') as f:
-            repo_tasks.clone('foo', 'bar', 'baz')
-            M.main_orm_session.flush()
-            f.assert_called_with('foo', 'bar', 'baz')
-            assert ns + 1 == M.Notification.query.find().count()
+            with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+                repo_tasks.clone('foo', 'bar', 'baz')
+                M.main_orm_session.flush()
+                f.assert_called_with('foo', 'bar', 'baz', False)
+                assert ns + 1 == M.Notification.query.find().count()
 
     def test_refresh(self):
         with mock.patch.object(c.app.repo, 'refresh') as f:
