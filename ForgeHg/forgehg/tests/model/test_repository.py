@@ -115,6 +115,34 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         shutil.rmtree(dirname)
 
+    def test_fork(self):
+        repo = HM.Repository(
+            name='testrepo.hg',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'hg',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgehg', 'tests/data/testrepo.hg')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from(repo_path, copy_hooks=False)
+        assert len(repo.log())
+        assert not os.path.exists('/tmp/testrepo.hg/.hg/external-changegroup')
+        assert not os.path.exists('/tmp/testrepo.hg/.hg/nested/nested-file')
+        assert os.path.exists('/tmp/testrepo.hg/.hg/hgrc')
+        cp = ConfigParser()
+        cp.read('/tmp/testrepo.hg/.hg/hgrc')
+        assert not cp.has_section('other')
+        assert cp.has_section('hooks')
+        assert not cp.has_option('hooks', 'changegroup.external')
+        assert not cp.has_option('hooks', 'commit')
+        self.assertEquals(cp.get('hooks', 'changegroup.sourceforge'), 'curl -s http://localhost//auth/refresh_repo/p/test/src-hg/')
+        assert not os.path.exists('/tmp/testrepo.hg/.hg/undo.branch')
+        shutil.rmtree(dirname)
+
     def test_clone(self):
         repo = HM.Repository(
             name='testrepo.hg',
@@ -128,7 +156,7 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path)
+        repo._impl.clone_from(repo_path, copy_hooks=True)
         assert len(repo.log())
         assert os.path.exists('/tmp/testrepo.hg/.hg/external-changegroup')
         assert os.access('/tmp/testrepo.hg/.hg/external-changegroup', os.X_OK)

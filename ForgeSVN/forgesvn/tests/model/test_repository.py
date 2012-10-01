@@ -107,6 +107,34 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         shutil.rmtree(dirname)
 
+    def test_fork(self):
+        repo = SM.Repository(
+            name='testsvn',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'svn',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/testsvn')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from('file://' + repo_path, copy_hooks=False)
+        assert len(repo.log())
+        assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
+        assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
+        with open('/tmp/testsvn/hooks/pre-revprop-change') as f: c = f.read()
+        self.assertEqual(c, '#!/bin/sh\n')
+        assert not os.path.exists('/tmp/testsvn/hooks/post-revprop-change')
+        assert not os.path.exists('/tmp/testsvn/hooks/post-commit-user')
+        assert os.path.exists('/tmp/testsvn/hooks/post-commit')
+        assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
+        with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
+        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
+        self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
+        shutil.rmtree(dirname)
+
     def test_clone(self):
         repo = SM.Repository(
             name='testsvn',
@@ -120,7 +148,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from('file://' + repo_path)
+        repo._impl.clone_from('file://' + repo_path, copy_hooks=True)
         assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
