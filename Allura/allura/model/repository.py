@@ -46,7 +46,7 @@ class RepositoryImplementation(object):
     def init(self): # pragma no cover
         raise NotImplementedError, 'init'
 
-    def clone_from(self, source_url): # pragma no cover
+    def clone_from(self, source_url, copy_hooks=False): # pragma no cover
         raise NotImplementedError, 'clone_from'
 
     def commit(self, revision): # pragma no cover
@@ -76,7 +76,7 @@ class RepositoryImplementation(object):
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
 
-    def _setup_hooks(self, source_path=None): # pragma no cover
+    def _setup_hooks(self, source_path=None, copy_hooks=False): # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo.  Optionally provide a path from which to copy existing hooks.'''
         raise NotImplementedError, '_setup_hooks'
@@ -133,12 +133,12 @@ class RepositoryImplementation(object):
                 log.warn('setup_paths error %s' % path, exc_info=True)
         return fullname
 
-    def _setup_special_files(self, source_path=None):
+    def _setup_special_files(self, source_path=None, copy_hooks=False):
         magic_file = os.path.join(self._repo.fs_path, self._repo.name, '.SOURCEFORGE-REPOSITORY')
         with open(magic_file, 'w') as f:
             f.write(self._repo.repo_id)
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
-        self._setup_hooks(source_path)
+        self._setup_hooks(source_path, copy_hooks)
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
@@ -214,12 +214,12 @@ class Repository(Artifact, ActivityObject):
         if ci is None: return []
         return ci.log(int(skip), int(max_count))
 
-    def init_as_clone(self, source_path, source_name, source_url):
+    def init_as_clone(self, source_path, source_name, source_url, copy_hooks=False):
         self.upstream_repo.name = source_name
         self.upstream_repo.url = source_url
         session(self).flush(self)
         source = source_path if source_path else source_url
-        self._impl.clone_from(source)
+        self._impl.clone_from(source, copy_hooks)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))

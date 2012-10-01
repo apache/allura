@@ -129,6 +129,25 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         shutil.rmtree(dirname)
 
+    def test_fork(self):
+        repo = GM.Repository(
+            name='testgit.git',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'git',
+            status = 'creating')
+        repo_path = pkg_resources.resource_filename(
+            'forgegit', 'tests/data/testgit.git')
+        dirname = os.path.join(repo.fs_path, repo.name)
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+        repo.init()
+        repo._impl.clone_from(repo_path, copy_hooks=False)
+        assert not os.path.exists('/tmp/testgit.git/hooks/update')
+        assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
+        assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
+        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+
     def test_clone(self):
         repo = GM.Repository(
             name='testgit.git',
@@ -142,7 +161,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path)
+        repo._impl.clone_from(repo_path, copy_hooks=True)
         assert len(repo.log())
         assert os.path.exists('/tmp/testgit.git/hooks/update')
         assert os.access('/tmp/testgit.git/hooks/update', os.X_OK)

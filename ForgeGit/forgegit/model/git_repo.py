@@ -59,7 +59,7 @@ class GitImplementation(M.RepositoryImplementation):
         'curl -s $url\n'
         '\n'
         'DIR="$$(dirname "$${BASH_SOURCE[0]}")"\n'
-        'if [ -x $$DIR/post-receive-user ]; then'
+        'if [ -x $$DIR/post-receive-user ]; then\n'
         '  exec $$DIR/post-receive-user\n'
         'fi')
 
@@ -89,7 +89,7 @@ class GitImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_url):
+    def clone_from(self, source_url, copy_hooks=False):
         '''Initialize a repo as a clone of another'''
         self._repo.status = 'cloning'
         session(self._repo).flush(self._repo)
@@ -104,7 +104,7 @@ class GitImplementation(M.RepositoryImplementation):
                 to_path=fullname,
                 bare=True)
             self.__dict__['_git'] = repo
-            self._setup_special_files(source_url)
+            self._setup_special_files(source_url, copy_hooks)
         except:
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
@@ -272,8 +272,10 @@ class GitImplementation(M.RepositoryImplementation):
             target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
             shutil.copy2(hook, target)
 
-    def _setup_hooks(self, source_path=None):
+    def _setup_hooks(self, source_path=None, copy_hooks=False):
         'Set up the git post-commit hook'
+        if copy_hooks:
+            self._copy_hooks(source_path)
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
             + '/auth/refresh_repo' + self._repo.url())
@@ -281,7 +283,6 @@ class GitImplementation(M.RepositoryImplementation):
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
-        self._copy_hooks(source_path)
 
     def _object(self, oid):
         evens = oid[::2]
