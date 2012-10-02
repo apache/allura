@@ -1,3 +1,4 @@
+from nose.tools import assert_equal
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgeshorturl.command import migrate_urls
 from forgeshorturl.model import ShortUrl
@@ -48,20 +49,23 @@ class TableMock(MagicMock):
 @patch('sqlalchemy.Table', TableMock)
 def test_migrate_urls():
     p = M.Project.query.find().first()
-    assert ShortUrl.query.find({'project_id': p._id}).count() == 0
+    app = p.app_instance('url')
+    if not app:
+        app = p.install_app('ShortUrl')
+    assert_equal(ShortUrl.query.find({'app_config_id': app.config._id}).count(), 0)
 
     cmd = migrate_urls.MigrateUrls('migrate-urls')
     cmd.run([test_config, 'db_name', str(p._id)])
-    assert ShortUrl.query.find({'project_id': p._id}).count() == 2
+    assert_equal(ShortUrl.query.find({'app_config_id': app.config._id}).count(), 2)
 
-    u = ShortUrl.query.get(short_name='g')
-    assert u.url == 'http://google.com'
-    assert u.description == 'Two\nlines'
+    u = ShortUrl.query.find(dict(app_config_id=app.config._id, short_name='g')).first()
+    assert_equal(u.full_url, 'http://google.com')
+    assert_equal(u.description, 'Two\nlines')
     assert not u.private
-    assert u.create_user == M.User.anonymous()._id
+    assert_equal(u.create_user, M.User.anonymous()._id)
 
-    u = ShortUrl.query.get(short_name='y')
-    assert u.url == 'http://yahoo.com'
-    assert u.description == 'One line'
+    u = ShortUrl.query.find(dict(app_config_id=app.config._id, short_name='y')).first()
+    assert_equal(u.full_url, 'http://yahoo.com')
+    assert_equal(u.description, 'One line')
     assert u.private
-    assert u.create_user == M.User.anonymous()._id
+    assert_equal(u.create_user, M.User.anonymous()._id)
