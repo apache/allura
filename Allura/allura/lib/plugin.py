@@ -629,6 +629,8 @@ class ThemeProvider(object):
             Takes an instance of class Application, or else a string.
             Expected to be overriden by derived Themes.
         """
+        if isinstance(app, unicode):
+            app = str(app)
         if isinstance(app, str):
             if app in self.icons and size in self.icons[app]:
                 return g.theme_href(self.icons[app][size])

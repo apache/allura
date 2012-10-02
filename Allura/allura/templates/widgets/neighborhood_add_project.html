@@ -44,10 +44,8 @@
     {% endif %}
     {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}
     <div style="margin-top:20px">
-        <div class="grid-1" style="text-align: right">
+        <div class="grid-16" style="padding-top:4px; padding-left:4px">
           {{widget.display_field(widget.fields.private_project)}}
-        </div>
-        <div class="grid-16">
             <label for="{{ widget.context_for(widget.fields.private_project)['id'] }}">
             Private? Private projects will be unreadable to non-project members and will
             not show up in search results.

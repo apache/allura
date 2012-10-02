@@ -39,21 +39,20 @@
     {% endfor %}
   </div>
   <div style="clear:both"></div>
-
-  <div class="grid-2">
-    <img src="{{ g.theme.app_icon_url('Git', 48) }}" alt="">
-  </div>
-  <div class="grid-13">
-    <h3>Code</h3>
-    <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
-  </div>
-  <div class="grid-4">
-    {% if scm_tools %}
-      {% set tool = scm_tools[0] %}
+  {% if scm_tools %}
+    {% set tool = scm_tools[0] %}
+    <div class="grid-2">
+        <img src="{{ g.theme.app_icon_url(tool.tool_name, 48) }}" alt="">
+    </div>
+    <div class="grid-13">
+      <h3>Code</h3>
+      <p>Source Control Management will help you keep track of code changes over time. A repository has already been created, checkout, add files and upload code.</p>
+    </div>
+    <div class="grid-4">
       <a href="{{c.project.url()}}{{tool.options.mount_point}}/fork">Checkout repo</a><br>
       <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View source</a>
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
   <div style="clear:both"></div>
 
   <div class="grid-2">

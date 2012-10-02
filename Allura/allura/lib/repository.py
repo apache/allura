@@ -55,7 +55,7 @@ class RepositoryApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.tool_label,
                 '.')]
 
     @property

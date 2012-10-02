@@ -165,13 +165,13 @@ class TestProjectAdmin(TestController):
         tool_strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
         expected_tools = [
             'External Link',
-            'Mercurial',
             'Wiki',
             'Tickets',
             'Discussion',
             'Chat (alpha)',
             'Blog',
             'Subproject']
+        print tool_strings
         # check using sets, because their may be more tools installed by default
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
