@@ -101,6 +101,6 @@ class MigrateUrls(ShortUrlCommand):
             ]}).first()
         if not c.project:
             raise exceptions.NoSuchProjectError('The project %s '
-                    'could not be found in the database' % p_id)
+                    'could not be found in the database' % self.args[2])
         c.app = c.project.app_instance(self.options.mount_point)
         assert c.app, 'Project does not have ShortURL app installed'
