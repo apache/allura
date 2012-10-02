@@ -75,17 +75,18 @@ class SearchHelp(ffw.Lightbox):
         content="""<div style="height:400px; overflow:auto;"><h1>Searching for tickets</h1>
 <p>Searches use <a href="http://www.solrtutorial.com/solr-query-syntax.html" target="_blank">solr lucene query syntax</a>. Use the following fields in tracker ticket searches:</p>
 <ul>
-<li>User who owns the ticket - assigned_to_s</li>
+<li>User who owns the ticket - assigned_to</li>
 <li>Labels assigned to the ticket - labels</li>
 <li>Milestone the ticket is assigned to - _milestone</li>
 <li>Last modified date - mod_date_dt</li>
 <li>Body of the ticket - text</li>
 <li>Number of ticket - ticket_num</li>
-<li>User who created the ticket - reported_by_s</li>
+<li>User who created the ticket - reported_by</li>
 <li>Status of the ticket - status</li>
 <li>Title of the ticket - summary</li>
-<li>Votes up/down of the ticket - votes_up_i/votes_down_i (if enabled in tool options)</li>
-<li>Votes total of the ticket - votes_total_i</li>
+<li>Votes up/down of the ticket - votes_up/votes_down (if enabled in tool options)</li>
+<li>Votes total of the ticket - votes_total</li>
+<li>Imported legacy id - import_id</li>
 <li>Custom field - the field name with an underscore in front, like _custom</li>
 </ul>
 <h2>Example searches</h2>
