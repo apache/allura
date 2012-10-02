@@ -74,7 +74,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     class __mongometa__:
         name='blog_post'
         history_class = BlogPostSnapshot
-        unique_indexes = [ ('project_id', 'app_config_id', 'slug') ]
+        unique_indexes = [ ('app_config_id', 'slug') ]
     type_s = 'Blog Post'
 
     title = FieldProperty(str, if_missing='Untitled')
