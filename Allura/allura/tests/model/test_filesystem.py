@@ -162,6 +162,14 @@ class TestFile(TestCase):
         assert_equal(attachment.length, 500)
         assert_equal(attachment.filename, 'user.png')
 
+    def test_attachment_name_encoding(self):
+        path = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        fp = open(path, 'rb')
+        c.app.config._id = None
+        attachment = M.BaseAttachment.save_attachment(b'Strukturpr\xfcfung.dvi', fp,
+                                                      save_original=True)
+        assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
+        assert_equal(attachment.filename, u'Strukturpr\xfcfung.dvi')
 
     def _assert_content(self, f, content):
         result = f.rfile().read()
