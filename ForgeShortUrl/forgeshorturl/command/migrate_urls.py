@@ -1,4 +1,5 @@
 import tg
+from pylons import tmpl_context as c
 from bson import ObjectId
 from forgeshorturl.command.base import ShortUrlCommand
 from forgeshorturl.model import ShortUrl
@@ -31,10 +32,13 @@ class MigrateUrls(ShortUrlCommand):
     def command(self):
         self.basic_setup()
         p_id = self.args[2]
-        p = M.Project.query.get(_id=ObjectId(p_id))
-        if not p:
+        mount_point = 'url'
+        c.project = M.Project.query.get(_id=ObjectId(p_id))
+        if not c.project:
             raise exceptions.NoSuchProjectError('The project %s '
                     'could not be found in the database' % p_id)
+        c.app = c.project.app_instance(mount_point)
+        assert c.app, 'Project does not have ShortURL app installed'
 
         db = sqlalchemy.create_engine(self._connection_string())
         meta = sqlalchemy.MetaData()
@@ -48,7 +52,6 @@ class MigrateUrls(ShortUrlCommand):
             url.private = row['private'] == 'Y'
             url.created = datetime.utcfromtimestamp(row['create_time'])
             url.last_updated = datetime.utcfromtimestamp(row['edit_time'])
-            url.project_id = p._id
             user = M.User.query.get(sfx_userid=row['create_user'])
             user_id = user._id if user else M.User.anonymous()._id
             url.create_user = user_id
