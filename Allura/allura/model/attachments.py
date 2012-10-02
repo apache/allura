@@ -42,6 +42,7 @@ class BaseAttachment(File):
 
     @classmethod
     def save_attachment(cls, filename, fp, content_type=None, **kwargs):
+        filename = h.really_unicode(filename)
         thumbnail_meta = dict(type="thumbnail", app_config_id=c.app.config._id)
         thumbnail_meta.update(kwargs)
         original_meta = dict(type="attachment", app_config_id=c.app.config._id)
