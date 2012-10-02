@@ -139,12 +139,24 @@ class Globals(object):
         )
 
         # Cache some loaded entry points
-        self.entry_points = dict(
-            tool=self._cache_eps('allura', dict_cls=utils.CaseInsensitiveDict),
-            auth=self._cache_eps('allura.auth'),
-            registration=self._cache_eps('allura.project_registration'),
-            theme=self._cache_eps('allura.theme'),
-            user_prefs=self._cache_eps('allura.user_prefs'),
+        def _cache_eps(section_name, dict_cls=dict):
+            d = dict_cls()
+            for ep in pkg_resources.iter_entry_points(section_name):
+                value = ep.load()
+                d[ep.name] = value
+            return d
+
+        class entry_point_loading_dict(dict):
+            def __missing__(self, key):
+                self[key] = _cache_eps(key)
+                return self[key]
+
+        self.entry_points = entry_point_loading_dict(
+            tool=_cache_eps('allura', dict_cls=utils.CaseInsensitiveDict),
+            auth=_cache_eps('allura.auth'),
+            registration=_cache_eps('allura.project_registration'),
+            theme=_cache_eps('allura.theme'),
+            user_prefs=_cache_eps('allura.user_prefs'),
             )
 
         # Zarkov logger
@@ -169,13 +181,6 @@ class Globals(object):
                     vhost=config.get('amqp.vhost', 'testvhost'))
         else:
             return None
-
-    def _cache_eps(self, section_name, dict_cls=dict):
-        d = dict_cls()
-        for ep in pkg_resources.iter_entry_points(section_name):
-            value = ep.load()
-            d[ep.name] = value
-        return d
 
     def post_event(self, topic, *args, **kwargs):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)

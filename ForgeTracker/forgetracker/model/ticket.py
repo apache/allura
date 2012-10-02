@@ -4,7 +4,6 @@ import json
 import difflib
 from datetime import datetime, timedelta
 
-import bson
 import pymongo
 import pylons
 pylons.c = pylons.tmpl_context
@@ -28,6 +27,8 @@ from allura.lib import security
 from allura.lib.search import search_artifact
 from allura.lib import utils
 from allura.lib import helpers as h
+
+from forgetracker.plugins import ImportIdConverter
 
 log = logging.getLogger(__name__)
 
@@ -278,7 +279,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             votes_up_i=self.votes_up,
             votes_down_i=self.votes_down,
             votes_total_i=(self.votes_up-self.votes_down),
-            import_id_s=self.import_id
+            import_id_s=ImportIdConverter.get().simplify(self.import_id)
             )
         for k,v in self.custom_fields.iteritems():
             result[k + '_s'] = unicode(v)

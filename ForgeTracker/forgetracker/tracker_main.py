@@ -48,6 +48,7 @@ from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, SearchHelp
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 from forgetracker.import_support import ImportSupport
+from forgetracker.plugins import ImportIdConverter
 
 log = logging.getLogger(__name__)
 
@@ -298,8 +299,6 @@ class ForgeTrackerApp(Application):
     @property
     def bins(self):
         return TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary').all()
-
-
 
 
 
@@ -958,7 +957,7 @@ class TicketController(BaseController):
             if self.ticket is None:
                 self.ticket = TM.Ticket.query.get(
                         app_config_id=c.app.config._id,
-                        import_id=str(ticket_num))
+                        import_id=str(ImportIdConverter.get().expand(ticket_num, c.app)))
                 if self.ticket is not None:
                     utils.permanent_redirect(self.ticket.url())
             self.attachment = AttachmentsController(self.ticket)
