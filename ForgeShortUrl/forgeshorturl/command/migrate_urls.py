@@ -1,6 +1,7 @@
 import tg
+import warnings
 from pylons import tmpl_context as c
-from bson import ObjectId
+import bson
 from forgeshorturl.command.base import ShortUrlCommand
 from forgeshorturl.model import ShortUrl
 from allura.lib import exceptions
@@ -14,49 +15,61 @@ from datetime import datetime
 class MigrateUrls(ShortUrlCommand):
     """Usage example:
 
-    paster migrate-urls ../Allura/development.ini urls 504867768fd0920bb8c21ffd
+    paster migrate-urls ../Allura/development.ini sfurl allura.p
+
+    The following settings are read from the INI file:
+
+        sfx.hostedapps_db.hostname
+        sfx.hostedapps_db.port
+        sfx.hostedapps_db.username
+        sfx.hostedapps_db.password
     """
     min_args = 3
     max_args = 3
-    usage = '<ini file> <database name> <project>'
-    summary = ('Migrate short urls from MySQL tables to ShortUrlApp\n'
-            '\t<database name> - MySQL database name to load data from\n'
-            '\t\tthe rest of the connection information comes from ini file:\n'
-            '\t\t\tsfx.hostedapps_db.hostname - database hostname\n'
-            '\t\t\tsfx.hostedapps_db.port - database port\n'
-            '\t\t\tsfx.hostedapps_db.username - database username\n'
-            '\t\t\tsfx.hostedapps_db.password - user password\n'
-            '\t<project> - the project id to load data to\n')
+    usage = '<ini file> <database name> <project name>'
+    summary = 'Migrate short URLs from the SFX Hosted App to Allura'
     parser = ShortUrlCommand.standard_parser(verbose=True)
+    parser.add_option('-m', dest='mount_point', type='string', default='url',
+                      help='mount point (default: url)')
+    parser.add_option('-n', dest='nbhd', type='string', default='p',
+                      help='neighborhood shortname or _id (default: p)')
+    parser.add_option('--clean', dest='clean', action='store_true', default=False,
+                      help='clean existing short URLs from Allura')
 
     def command(self):
-        self.basic_setup()
-        p_id = self.args[2]
-        mount_point = 'url'
-        c.project = M.Project.query.get(_id=ObjectId(p_id))
-        if not c.project:
-            raise exceptions.NoSuchProjectError('The project %s '
-                    'could not be found in the database' % p_id)
-        c.app = c.project.app_instance(mount_point)
-        assert c.app, 'Project does not have ShortURL app installed'
+        self._setup()
+        self._load_objects()
 
-        db = sqlalchemy.create_engine(self._connection_string())
-        meta = sqlalchemy.MetaData()
-        meta.bind = db
-        urls = sqlalchemy.Table('sfurl', meta, autoload=True)
+        if self.options.clean:
+            ShortUrl.query.remove({'app_config_id': c.app.config._id})
 
-        for row in urls.select().execute():
+        for row in self.urls.select().execute():
             url = ShortUrl.upsert(h.really_unicode(row['short_id']))
             url.full_url = h.really_unicode(row['url'])
             url.description = h.really_unicode(row['description'])
             url.private = row['private'] == 'Y'
             url.created = datetime.utcfromtimestamp(row['create_time'])
             url.last_updated = datetime.utcfromtimestamp(row['edit_time'])
-            user = M.User.query.get(sfx_userid=row['create_user'])
-            user_id = user._id if user else M.User.anonymous()._id
-            url.create_user = user_id
+            user = M.User.query.find({'tool_data.sfx.userid': row['create_user']}).first()
+            url.create_user = user._id if user else M.User.anonymous()._id
 
         session(ShortUrl).flush()
+
+    def _setup(self):
+        '''Perform basic setup, suppressing superfluous warnings.'''
+        with warnings.catch_warnings():
+            try:
+                from sqlalchemy import exc
+            except ImportError:
+                pass
+            else:
+                warnings.simplefilter("ignore", category=exc.SAWarning)
+            self.basic_setup()
+
+        db = sqlalchemy.create_engine(self._connection_string())
+        meta = sqlalchemy.MetaData()
+        meta.bind = db
+        self.urls = sqlalchemy.Table('sfurl', meta, autoload=True)
 
     def _connection_string(self):
         prefix = 'sfx.hostedapps_db.'
@@ -68,3 +81,26 @@ class MigrateUrls(ShortUrlCommand):
             'db': self.args[1]
         }
         return 'mysql://%(user)s:%(pwd)s@%(host)s:%(port)s/%(db)s' % params
+
+    def _load_objects(self):
+        nbhd = None
+        try:
+            nbhd = M.Neighborhood.query.get(_id=bson.ObjectId(self.options.nbhd))
+        except bson.errors.InvalidId:
+            nbhd = M.Neighborhood.query.find({'$or': [
+                {'url_prefix': '/%s/' % self.options.nbhd},
+                {'name': self.options.nbhd},
+            ]}).first()
+        assert nbhd, 'Neighborhood %s not found' % self.options.nbhd
+        try:
+            c.project = M.Project.query.get(_id=bson.ObjectId(self.args[2]))
+        except bson.errors.InvalidId:
+            c.project = M.Project.query.find({'$or': [
+                {'shortname': self.args[2]},
+                {'name': self.args[2]},
+            ]}).first()
+        if not c.project:
+            raise exceptions.NoSuchProjectError('The project %s '
+                    'could not be found in the database' % p_id)
+        c.app = c.project.app_instance(self.options.mount_point)
+        assert c.app, 'Project does not have ShortURL app installed'
