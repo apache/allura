@@ -12,7 +12,6 @@
 {%- endblock %}
 
 {% block content %}
-  {{ clone_info(c.app.repo) }}
   {% if status == 'no_commits' %}
     <p>No commits to display.</p>
   {% elif status == 'too_many_commits' %}

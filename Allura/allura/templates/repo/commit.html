@@ -15,6 +15,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% endblock %}
 
 {% block extra_js %}
+{{ super() }}
   <script type="text/javascript">
     var MAX_REQUESTS = 5; // max simultaneous load requests
     var WAIT_FOR = 500;   // wait for 100ms when requests queue is full and try again
@@ -60,7 +61,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% endblock %}
 
 {% block content %}
-{{ clone_info(c.app.repo) }}
 {{c.revision_widget.display(value=commit, prev=prev, next=next)}}
 {{c.page_list.display(page=page, limit=limit, count=count)}}
 <table>

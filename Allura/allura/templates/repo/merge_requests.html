@@ -9,10 +9,7 @@
 {% endblock %}
 
 {% block header %}{{c.app.config.options.mount_label}} Merge Requests{% endblock %}
-
 {% block content %}
-  {{ clone_info(c.app.repo) }}
-
   {{ c.mr_filter.display(action='.', value=dict(status=status)) }}
 
   <table>

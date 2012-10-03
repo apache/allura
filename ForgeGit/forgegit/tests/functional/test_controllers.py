@@ -230,6 +230,21 @@ class TestRootController(_TestCase):
         resp = self.app.get(ci + 'tree/')
         assert "Thu Oct 07, 2010 06:44 PM UTC" in resp, resp.showbrowser()
 
+    def test_checkout_input(self):
+        ci = self._get_ci()
+        r = self.app.get('/src-git/commit_browser')
+        assert not '<div id="access_urls"' in r
+        r = self.app.get('/src-git/fork')
+        assert not '<div id="access_urls"' in r
+        r = self.app.get(
+            ci +
+            'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        assert not '<div id="access_urls"' in r
+        r = self.app.get(ci + 'tree/README')
+        assert not '<div id="access_urls"' in r
+        r = self.app.get(ci + 'tree/')
+        assert '<div id="access_urls"' in r
+
 
 class TestRestController(_TestCase):
 

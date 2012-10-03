@@ -13,8 +13,6 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
 
 {% block content %}
-
-  {{ clone_info(c.app.repo) }}
   <p>
     <a href="{{req.creator_url}}">{{req.creator_name}}</a>
     would like you to merge {{ req.commits | count }} commits

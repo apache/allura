@@ -17,7 +17,6 @@
 {% endblock %}
 
 {% block content %}
-  {{ clone_info(c.app.repo) }}
   {% if a.has_image_view and b.has_image_view %}
   <div class="grid-19">
     <img src="{{a.url()}}?format=raw"
