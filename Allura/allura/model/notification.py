@@ -443,7 +443,6 @@ class Mailbox(MappedClass):
         # Queries to find all matching subscription objects
         q_direct = dict(
             type='direct',
-            queue={'$ne':[]},
             queue_empty=False,
         )
         if MAILBOX_QUIESCENT:
