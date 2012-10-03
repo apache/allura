@@ -425,6 +425,7 @@ def pop_user_notifications(user=None):
     if mbox:
         notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
         mbox.queue = []
+        mbox.queue_empty = True
         for n in notifications:
             M.Notification.query.remove({'_id': n._id}) # clean it up so it doesn't hang around
             yield n

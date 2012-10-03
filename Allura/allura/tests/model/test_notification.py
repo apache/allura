@@ -96,6 +96,7 @@ class TestPostNotifications(unittest.TestCase):
         assert M.Mailbox.query.find().count()==1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
+        assert not mbox.queue_empty
 
     def test_email(self):
         self._subscribe()  # as current user: test-admin
@@ -111,7 +112,9 @@ class TestPostNotifications(unittest.TestCase):
         mboxes = M.Mailbox.query.find().all()
         assert_equal(len(mboxes), 2)
         assert_equal(len(mboxes[0].queue), 1)
+        assert not mboxes[0].queue_empty
         assert_equal(len(mboxes[1].queue), 1)
+        assert not mboxes[1].queue_empty
 
         M.Mailbox.fire_ready()
         email_tasks = M.MonQTask.query.find({'state': 'ready'}).all()
@@ -200,10 +203,13 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def test_message(self):
         self._test_message()
+        
         self.setUp()
         self._test_message()
+
         self.setUp()
         M.notification.MAILBOX_QUIESCENT=timedelta(minutes=1)
+        # will raise "assert msg is not None" since the new message is not 1 min old:
         self.assertRaises(AssertionError, self._test_message)
 
     def _test_message(self):

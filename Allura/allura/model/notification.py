@@ -103,6 +103,7 @@ class Notification(MappedClass):
         n = cls._make_notification(artifact, topic, **kw)
         if n:
             mbox.queue.append(n._id)
+            mbox.queue_empty = False
         return n
 
     @classmethod
@@ -291,7 +292,9 @@ class Mailbox(MappedClass):
         indexes = [
             ('project_id', 'artifact_index_id'),
             ('is_flash', 'user_id'),
-            ('type', 'next_scheduled')]
+            ('type', 'next_scheduled'),  # for q_digest
+            ('type', 'queue_empty'),  # for q_direct
+        ]
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
@@ -314,6 +317,7 @@ class Mailbox(MappedClass):
 
     # a list of notification _id values
     queue = FieldProperty([str])
+    queue_empty = FieldProperty(bool)
 
     project = RelationProperty('Project')
     app_config = RelationProperty('AppConfig')
@@ -423,7 +427,9 @@ class Mailbox(MappedClass):
         for mbox in cls.query.find(d):
             mbox.query.update(
                 {'$push':dict(queue=nid),
-                 '$set':dict(last_modified=datetime.utcnow())})
+                 '$set':dict(last_modified=datetime.utcnow(),
+                             queue_empty=False),
+                })
             # Make sure the mbox doesn't stick around to be flush()ed
             session(mbox).expunge(mbox)
 
@@ -437,7 +443,9 @@ class Mailbox(MappedClass):
         # Queries to find all matching subscription objects
         q_direct = dict(
             type='direct',
-            queue={'$ne':[]})
+            queue={'$ne':[]},
+            queue_empty=False,
+        )
         if MAILBOX_QUIESCENT:
             q_direct['last_modified']={'$lt':now - MAILBOX_QUIESCENT}
         q_digest = dict(
@@ -447,7 +455,9 @@ class Mailbox(MappedClass):
             mbox = cls.query.find_and_modify(
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
-                        queue=[])},
+                            queue=[],
+                            queue_empty=True,
+                        )},
                 new=False)
             mbox.fire(now)
         for mbox in cls.query.find(q_digest):
@@ -462,7 +472,9 @@ class Mailbox(MappedClass):
                 query=dict(_id=mbox._id),
                 update={'$set': dict(
                         next_scheduled=next_scheduled,
-                        queue=[])},
+                        queue=[],
+                        queue_empty=True,
+                        )},
                 new=False)
             mbox.fire(now)
 
