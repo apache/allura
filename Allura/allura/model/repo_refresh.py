@@ -222,8 +222,9 @@ class CommitRunBuilder(object):
             run['commit_times'] += parent_run['commit_times']
             run['parent_commit_ids'] = parent_run['parent_commit_ids']
             run.m.save()
-            runs[p_cis[0]].m.delete()
-        for run1 in self._all_runs():
+            parent_run.m.delete()
+            del runs[p_cis[0]]
+        for run1 in runs.values():
             # if run1 is a subset of another run, delete it
             if CommitRunDoc.m.find(dict(commit_ids={'$all': run1.commit_ids},
                     _id={'$ne': run1._id})).count():
