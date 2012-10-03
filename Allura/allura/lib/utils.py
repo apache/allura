@@ -446,3 +446,10 @@ def is_text_file(file):
     if ("text" in msg) or ("empty" in msg):
         return True
     return False
+
+
+def take_while_true(source):
+    x = source()
+    while x:
+        yield x
+        x = source()

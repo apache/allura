@@ -108,7 +108,7 @@ class TestPostNotifications(unittest.TestCase):
         assert_equal(M.Notification.query.get()['from_address'], '"Test Admin" <test-admin@users.localhost>')
         assert_equal(M.Mailbox.query.find().count(), 2)
 
-        M.MonQTask.run_ready()  # sends the notification out into "mailboxes"
+        M.MonQTask.run_ready()  # sends the notification out into "mailboxes", and from mailboxes into email tasks
         mboxes = M.Mailbox.query.find().all()
         assert_equal(len(mboxes), 2)
         assert_equal(len(mboxes[0].queue), 1)
@@ -116,7 +116,6 @@ class TestPostNotifications(unittest.TestCase):
         assert_equal(len(mboxes[1].queue), 1)
         assert not mboxes[1].queue_empty
 
-        M.Mailbox.fire_ready()
         email_tasks = M.MonQTask.query.find({'state': 'ready'}).all()
         assert_equal(len(email_tasks), 2)  # make sure both subscribers will get an email
 
@@ -203,7 +202,7 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def test_message(self):
         self._test_message()
-        
+
         self.setUp()
         self._test_message()
 

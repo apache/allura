@@ -31,6 +31,7 @@ from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
 from allura.lib import security
+from allura.lib.utils import take_while_true
 import allura.tasks.mail_tasks
 
 from .session import main_orm_session, project_orm_session
@@ -450,15 +451,19 @@ class Mailbox(MappedClass):
         q_digest = dict(
             type={'$in': ['digest', 'summary']},
             next_scheduled={'$lt':now})
-        for mbox in cls.query.find(q_direct):
-            mbox = cls.query.find_and_modify(
-                query=dict(_id=mbox._id),
+
+        def find_and_modify_direct_mbox():
+            return cls.query.find_and_modify(
+                query=q_direct,
                 update={'$set': dict(
                             queue=[],
                             queue_empty=True,
                         )},
                 new=False)
+
+        for mbox in take_while_true(find_and_modify_direct_mbox):
             mbox.fire(now)
+
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
             if mbox.frequency.unit == 'day':
