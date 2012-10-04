@@ -155,7 +155,22 @@ def test_markdown_toc():
 # Header 1
 
 ## Header 2""")
-    assert '<a class="" href="#header-1">Header 1</a>' in r, r
+    assert '''<ul>
+<li><a href="#header-1">Header 1</a><ul>
+<li><a href="#header-2">Header 2</a></li>
+</ul>
+</li>
+</ul>''' in r, r
+
+@with_setup(setUp)
+def test_markdown_links():
+    h.set_context('test', 'wiki', neighborhood='Projects')
+    text = g.markdown.convert('Read [here](Home) about our project')
+    assert '<a class="alink" href="/p/test/wiki/Home/">[here]</a>' in text, text
+    text = g.markdown.convert('[Go home](test:wiki:Home)')
+    assert '<a class="alink" href="/p/test/wiki/Home/">[Go home]</a>' in text, text
+    text = g.markdown.convert('See [test:wiki:Home]')
+    assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 
 def test_markdown_xml_error():
     r = g.markdown_wiki.convert("""  <?xml version="1.0" encoding="UTF-8"?>
@@ -166,9 +181,12 @@ def test_markdown_xml_error():
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
     h.set_context('test', 'wiki', neighborhood='Projects')
-    assert '<a href=' in g.markdown.convert('# Foo!\n[Home]')
-    assert '<a href=' not in g.markdown.convert('# Foo!\n[Rooted]')
-    assert '<a href=' in g.markdown.convert('This is http://sf.net')
+    text = g.markdown.convert('# Foo!\n[Home]')
+    assert '<a class="alink" href=' in text, text
+    text = g.markdown.convert('# Foo!\n[Rooted]')
+    assert '<a href=' not in text, text
+    text = g.markdown.convert('This is http://sf.net')
+    assert '<a href=' in text, text
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(

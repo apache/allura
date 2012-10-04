@@ -65,5 +65,5 @@ def find_shortlinks(text):
         extensions=['codehilite', ForgeExtension(), 'tables'],
         output_format='html4')
     md.convert(text)
-    link_index = md.postprocessors['forge'].parent.alinks
-    return [ link for link in link_index.itervalues() if link is not None]
+    link_index = md.treeprocessors['links'].alinks
+    return [ link for link in link_index if link is not None]

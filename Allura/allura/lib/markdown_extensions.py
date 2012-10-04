@@ -1,15 +1,9 @@
 import re
-import os
 import logging
-import string
-from collections import defaultdict
-from urllib import quote
 from urlparse import urljoin
-from ConfigParser import RawConfigParser
-from pprint import pformat
 
 from tg import config
-from pylons import c, g, request
+from pylons import request
 from BeautifulSoup import BeautifulSoup
 
 import markdown
@@ -17,6 +11,7 @@ import feedparser
 
 from . import macro
 from . import helpers as h
+from allura import model as M
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +19,8 @@ PLAINTEXT_BLOCK_RE = re.compile( \
     r'(?P<bplain>\[plain\])(?P<code>.*?)(?P<eplain>\[\/plain\])',
     re.MULTILINE|re.DOTALL
     )
+
+MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
 
 
 class ForgeExtension(markdown.Extension):
@@ -36,13 +33,16 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
-        self.forge_processor = ForgeProcessor(self._use_wiki, md, macro_context=self._macro_context)
-        self.forge_processor.install()
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
         # replace the link pattern with our extended version
-        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md)
+        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        # macro must be processed before links
+        md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
+        self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
+        md.treeprocessors['links'] = self.forge_link_tree_processor
         md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
@@ -54,19 +54,59 @@ class ForgeExtension(markdown.Extension):
         md.postprocessors['mark_safe'] = MarkAsSafe()
 
     def reset(self):
-        self.forge_processor.reset()
+        self.forge_link_tree_processor.reset()
+
 
 class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
     artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
 
-    def sanitize_url(self, url):
-        url = markdown.inlinepatterns.Pattern.sanitize_url(url)
-        log.warn('url is %s' % url)
-        log.info('url is %s' % url)
-        if not url and self.artifact_re.match(url):
-            url = 'LINK %s LINK' % url
-        return url
+    def __init__(self, *args, **kwargs):
+        self.ext = kwargs.pop('ext')
+        markdown.inlinepatterns.LinkPattern.__init__(self, *args, **kwargs)
+
+    def handleMatch(self, m):
+        el = markdown.util.etree.Element('a')
+        el.text = m.group(2)
+        try:
+            href = m.group(9)
+        except IndexError:
+            href = m.group(2)
+        try:
+            title = m.group(13)
+        except IndexError:
+            title = None
+
+        if href:
+            if href == 'TOC':
+                return '[TOC]'  # skip TOC
+            if self.artifact_re.match(href):
+                href, classes = self._expand_alink(href)
+            el.set('href', self.sanitize_url(self.unescape(href.strip())))
+            el.set('class', classes)
+        else:
+            el.set('href', '')
+
+        if title:
+            title = markdown.inlinepatterns.dequote(self.unescape(title))
+            el.set('title', title)
+
+        return el
+
+    def _expand_alink(self, link):
+        '''Return (href, classes) for an artifact link'''
+        classes = ''
+        href = link
+        shortlink = M.Shortlink.lookup(link)
+        if shortlink:
+            href = shortlink.url
+            classes = 'alink'
+            self.ext.forge_link_tree_processor.alinks.append(link)
+        elif self.ext._use_wiki and ':' not in link:
+            href = h.urlquote(link)
+            classes = 'notfound alink'
+        return href, classes
+
 
 class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
     '''
@@ -96,6 +136,7 @@ class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
         txt = txt.replace('"', '&quot;')
         return txt
 
+
 class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
     pattern = '~~~~'
 
@@ -112,132 +153,48 @@ class FencedCodeProcessor(markdown.preprocessors.Preprocessor):
                 new_lines.append(line)
         return new_lines
 
-class ForgeProcessor(object):
-    macro_pattern = r'\[(\[([^\]\[]*)\])\]'
-    placeholder_prefix = '#jgimwge'
-    placeholder = '%s:%%s:%%.4d#khjhhj' % placeholder_prefix
-    placeholder_re = re.compile('%s:(\\w+):(\\d+)#khjhhj' % placeholder_prefix)
 
-    def __init__(self, use_wiki = False, markdown=None, macro_context=None):
-        self.markdown = markdown
-        self._use_wiki = use_wiki
-        self._macro_context = macro_context
-        self.inline_patterns = {
-            'forge.macro' : ForgeInlinePattern(self, self.macro_pattern)}
-        self.tree_processor = ForgeTreeProcessor(self)
-        self.reset()
-        self.artifact_re = re.compile(r'((.*?):)?((.*?):)?(.+)')
-        self.macro_re = re.compile(self.alink_pattern) # BUG
+class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
 
-    def install(self):
-        for k,v in self.inline_patterns.iteritems():
-            self.markdown.inlinePatterns[k] = v
-        if self._use_wiki:
-            self.markdown.treeprocessors['forge'] = self.tree_processor
-        self.markdown.postprocessors['forge'] = self.postprocessor
-
-    def store(self, raw):
-        if self.macro_re.match(raw):
-            stash = 'macro'
-            raw = raw[1:-1] # strip off the enclosing []
-        elif raw == 'TOC':
-            # pass this straight through and don't do an artifact lookup
-            return '[' + raw + ']'
-        elif self.artifact_re.match(raw):
-            stash = 'artifact'
-        else:
-            return raw
-        print 'store', stash, raw
-        return self._store(stash, raw)
-
-    def _store(self, stash_name, value):
-        placeholder = self.placeholder % (stash_name, len(self.stash[stash_name]))
-        self.stash[stash_name].append(value)
-        return placeholder
-
-    def lookup(self, stash, id):
-        stash = self.stash.get(stash, [])
-        if id >= len(stash):
-            return ''
-        print 'lookup returning', stash[id]
-        return stash[id]
-
-    def compile(self):
-        from allura import model as M
-        if self.stash['artifact'] or self.stash['link']:
-            try:
-                self.alinks = M.Shortlink.from_links(*self.stash['artifact'])
-                self.alinks.update(M.Shortlink.from_links(*self.stash['link']))
-            except:
-                self.alinks = {}
-        self.stash['artifact'] = map(self._expand_alink, self.stash['artifact'])
-        self.stash['link'] = map(self._expand_link, self.stash['link'])
-        print 'pre:', self.stash['macro']
-        self.stash['macro'] = map(macro.parse(self._macro_context), self.stash['macro'])
-        print 'post:', self.stash['macro']
-
-    def reset(self):
-        self.stash = dict(
-            artifact=[],
-            macro=[],
-            link=[])
-        self.alinks = {}
-        self.compiled = False
-
-    def _expand_alink(self, link):
-        new_link = self.alinks.get(link, None)
-        if new_link:
-            return '<a href="%s">[%s]</a>' % (
-                new_link.url, link)
-        elif self._use_wiki and ':' not in link:
-            return '<a href="%s" class="notfound">[%s]</a>' % (
-                h.urlquote(link), link)
-        else:
-            return link
-
-    def _expand_link(self, link):
-        reference = self.alinks.get(link)
-        mailto = u'\x02amp\x03#109;\x02amp\x03#97;\x02amp\x03#105;\x02amp\x03#108;\x02amp\x03#116;\x02amp\x03#111;\x02amp\x03#58;'
-        if not reference and not link.startswith(mailto) and '#' not in link:
-            return 'notfound'
-        else:
-            return ''
-
-class ForgeInlinePattern(markdown.inlinepatterns.Pattern):
-
-    def __init__(self, parent, pattern):
-        self.parent = parent
-        markdown.inlinepatterns.Pattern.__init__(
-            self, pattern, parent.markdown)
+    def __init__(self, *args, **kwargs):
+        self.ext = kwargs.pop('ext')
+        self.macro = macro.parse(self.ext._macro_context)
+        markdown.inlinepatterns.Pattern.__init__(self, *args, **kwargs)
 
     def handleMatch(self, m):
-        return self.parent.store(m.group(2))
+        html = self.macro(m.group(2))
+        placeholder = self.markdown.htmlStash.store(html)
+        return placeholder
 
 
-class ForgeTreeProcessor(markdown.treeprocessors.Treeprocessor):
-    '''This flags intra-wiki links that point to non-existent pages'''
+class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
+    '''Wraps artifact links with []'''
 
     def __init__(self, parent):
         self.parent = parent
+        self.alinks = []
 
     def run(self, root):
         for node in root.getiterator('a'):
-            href = node.get('href')
-            if not href: continue
-            if '/' in href: continue
-            classes = node.get('class', '').split() + [ self.parent._store('link', href) ]
-            node.attrib['class'] = ' '.join(classes)
+            if 'alink' in node.get('class', '').split():
+                node.text = '[' + node.text + ']'
         return root
+
+    def reset(self):
+        self.alinks = []
+
 
 class MarkAsSafe(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
         return h.html.literal(text)
 
+
 class AddCustomClass(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
         return '<div class="markdown_content">%s</div>' % text
+
 
 class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
@@ -287,6 +244,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         val = urljoin(config.get('base_url', 'http://sourceforge.net/'),val)
         tag[attr] = val
 
+
 class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
@@ -296,6 +254,7 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
             p = feedparser._HTMLSanitizer('utf-8', '')
         p.feed(text.encode('utf-8'))
         return unicode(p.output(), 'utf-8')
+
 
 class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
     '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
@@ -330,6 +289,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
                 node.text = new_node.text
                 node[:] = list(new_node)
         return root
+
 
 class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
 
