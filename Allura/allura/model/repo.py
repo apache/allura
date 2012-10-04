@@ -99,7 +99,7 @@ DiffInfoDoc = collection(
 CommitRunDoc = collection(
     'repo_commitrun', main_doc_session,
     Field('_id', str),
-    Field('parent_commit_ids', [str]),
+    Field('parent_commit_ids', [str], index=True),
     Field('commit_ids', [str], index=True),
     Field('commit_times', [datetime]))
 
