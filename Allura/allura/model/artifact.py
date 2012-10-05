@@ -217,6 +217,7 @@ class Artifact(MappedClass):
         project = self.project
         return dict(
             id=self.index_id(),
+            created_dt=self._id.generation_time,
             mod_date_dt=self.mod_date,
             title_s='Artifact %s' % self._id,
             project_id_s=str(project._id),
