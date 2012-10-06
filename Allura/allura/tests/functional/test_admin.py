@@ -171,7 +171,6 @@ class TestProjectAdmin(TestController):
             'Chat (alpha)',
             'Blog',
             'Subproject']
-        print tool_strings
         # check using sets, because their may be more tools installed by default
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
