@@ -204,6 +204,11 @@ class TestRepo(_TestWithRepo):
             self.repo.refresh()
             post_event.assert_called_with(
                     'repo_refreshed', commit_number=0, new=False)
+        with mock.patch('allura.model.repository.refresh') as refresh:
+            self.repo.refresh()
+            self.repo.refresh()
+            refresh.assert_called_once()
+            M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:

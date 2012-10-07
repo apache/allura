@@ -88,7 +88,16 @@ def reclone(*args, **kwargs):
 
 @task
 def refresh(**kwargs):
-    c.app.repo.refresh()
+    from allura import model as M
+    q = {
+        'task_name': 'allura.tasks.repo_tasks.refresh',
+        'state': 'busy'
+    }
+    refresh_tasks_count = M.MonQTask.query.find(q).count()
+    q['state'] = 'ready'
+    refresh_tasks_count += M.MonQTask.query.find(q).count()
+    if refresh_tasks_count == 0:
+        c.app.repo.refresh()
 
 @task
 def uninstall(**kwargs):
