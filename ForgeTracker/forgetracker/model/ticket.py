@@ -160,21 +160,31 @@ class TicketHistory(Snapshot):
         return Ticket.query.get(_id=self.artifact_id)
 
     def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        orig = self.original()
+        if not orig:
+            return None
+        return '%s#%s' % (orig.shorthand_id(), self.version)
 
     def url(self):
-        return self.original().url() + '?version=%d' % self.version
+        orig = self.original()
+        if not orig:
+            return None
+        return orig.url() + '?version=%d' % self.version
 
     @property
     def assigned_to(self):
-        if self.data.assigned_to_id is None: return None
+        if self.data.assigned_to_id is None:
+            return None
         return User.query.get(_id=self.data.assigned_to_id)
 
     def index(self):
+        orig = self.original()
+        if not orig:
+            return None
         result = Snapshot.index(self)
         result.update(
             title_s='Version %d of %s' % (
-                self.version,self.original().summary),
+                self.version, orig.summary),
             type_s='Ticket Snapshot',
             text=self.data.summary)
         return result
