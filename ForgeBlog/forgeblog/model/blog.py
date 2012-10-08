@@ -61,7 +61,7 @@ class BlogPostSnapshot(M.Snapshot):
         result = super(BlogPostSnapshot, self).index()
         result.update(
             title_s='Version %d of %s' % (
-                self.version, self.original().shorthand_id()),
+                self.version, orig.shorthand_id()),
             type_s=self.type_s,
             text=self.data.text)
         return result
@@ -76,14 +76,14 @@ class BlogPostSnapshot(M.Snapshot):
         orig = self.original()
         if not orig:
             return None
-        return self.original().attachments
+        return orig.attachments
 
     @property
     def email_address(self):
         orig = self.original()
         if not orig:
             return None
-        return self.original().email_address
+        return orig.email_address
 
 class BlogPost(M.VersionedArtifact, ActivityObject):
     class __mongometa__:
