@@ -340,27 +340,20 @@ class ProjectController(object):
     def user_search(self, term=''):
         if len(term) < 3:
             raise exc.HTTPBadRequest('"term" param must be at least length 3')
-        users = M.User.by_display_name(term)
         named_roles = RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)
-        result = [ [], [] ]
-        for u in users:
-            if u._id in named_roles.userids_that_reach:
-                result[0].append(u)
-            else:
-                pass
-                # comment this back in if you want non-project-member users
-                # in the search results
-                #result[1].append(u)
-        result = list(islice(chain(*result), 10))
+        users = M.User.query.find({
+                '_id': {'$in': named_roles.userids_that_reach},
+                'display_name': re.compile(r'(?i)%s' % re.escape(term)),
+            }).sort('username').limit(10).all()
         return dict(
             users=[
                 dict(
                     label='%s (%s)' % (u.get_pref('display_name'), u.username),
                     value=u.username,
                     id=u.username)
-                for u in result])
+                for u in users])
 
 class ScreenshotsController(object):
 
