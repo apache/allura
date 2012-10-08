@@ -25,7 +25,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     var called_count = 0; // count of running load requests
 
     function ld(diff, callback) {
-      $(diff.selector).load(diff.url, callback);
+      $(diff.selector).load(encodeURI(diff.url), callback);
     }
 
     function load_diff() {
