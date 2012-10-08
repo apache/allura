@@ -405,6 +405,13 @@ class VersionedArtifact(Artifact):
         else:
             return self.mod_date
 
+    def delete(self):
+        # remove history so that the snapshots aren't left orphaned
+        super(VersionedArtifact, self).delete()
+        HC = self.__mongometa__.history_class
+        HC.query.remove(dict(artifact_id=self._id))
+
+
 class Message(Artifact):
     """
     A message
