@@ -43,12 +43,21 @@ class BlogPostSnapshot(M.Snapshot):
         return BlogPost.query.get(_id=self.artifact_id)
 
     def shorthand_id(self):
-        return '%s#%s' % (self.original().shorthand_id(), self.version)
+        orig = self.original()
+        if not orig:
+            return None
+        return '%s#%s' % (orig.shorthand_id(), self.version)
 
     def url(self):
-        return self.original().url() + '?version=%d' % self.version
+        orig = self.original()
+        if not orig:
+            return None
+        return orig.url() + '?version=%d' % self.version
 
     def index(self):
+        orig = self.original()
+        if not orig:
+            return None
         result = super(BlogPostSnapshot, self).index()
         result.update(
             title_s='Version %d of %s' % (
@@ -64,10 +73,16 @@ class BlogPostSnapshot(M.Snapshot):
 
     @property
     def attachments(self):
+        orig = self.original()
+        if not orig:
+            return None
         return self.original().attachments
 
     @property
     def email_address(self):
+        orig = self.original()
+        if not orig:
+            return None
         return self.original().email_address
 
 class BlogPost(M.VersionedArtifact, ActivityObject):
