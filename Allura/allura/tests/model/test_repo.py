@@ -14,7 +14,7 @@ from ming.orm import session, ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
-
+import allura.tasks
 
 class _Test(unittest.TestCase):
     idgen = ( 'obj_%d' % i for i in count())
@@ -204,11 +204,11 @@ class TestRepo(_TestWithRepo):
             self.repo.refresh()
             post_event.assert_called_with(
                     'repo_refreshed', commit_number=0, new=False)
-        with mock.patch('allura.model.repository.refresh') as refresh:
-            self.repo.refresh()
-            self.repo.refresh()
-            refresh.assert_called_once()
+        with mock.patch('allura.model.repository.Repository.refresh') as refresh:
+            allura.tasks.repo_tasks.refresh.post()
+            allura.tasks.repo_tasks.refresh.post()
             M.MonQTask.run_ready()
+            refresh.assert_called_once()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
