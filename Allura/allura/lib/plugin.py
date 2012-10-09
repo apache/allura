@@ -399,17 +399,16 @@ class ProjectRegistrationProvider(object):
             raise ValueError("You can't create private projects for %s neighborhood" % neighborhood.name)
 
         # Check for project limit creation
-        pq = M.Project.query.find(dict(
-                neighborhood_id=neighborhood._id,
-                deleted=False,
-                is_nbhd_project=False,
-                ))
-        count = pq.count()
         nb_max_projects = neighborhood.get_max_projects()
-
-        if nb_max_projects is not None and count >= nb_max_projects:
-            log.exception('Error registering project %s' % project_name)
-            raise forge_exc.ProjectOverlimitError()
+        if nb_max_projects is not None:
+            count = M.Project.query.find(dict(
+                    neighborhood_id=neighborhood._id,
+                    deleted=False,
+                    is_nbhd_project=False,
+                    )).count()
+            if count >= nb_max_projects:
+                log.exception('Error registering project %s' % project_name)
+                raise forge_exc.ProjectOverlimitError()
 
         self.rate_limit(user, neighborhood)
 
