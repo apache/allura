@@ -247,7 +247,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 project_id=self._id,
                 category='screenshot')).all()
 
-    @property
+    @LazyProperty
     def icon(self):
         return ProjectFile.query.get(
             project_id=self._id,

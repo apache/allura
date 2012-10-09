@@ -21,7 +21,7 @@
     {% if c.project.user_project_of %}
       {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
     {% elif c.project.icon %}
-      <img src="{{c.project.url()}}/icon" class="project_icon" alt="Project Logo">
+      <img src="{{c.project.url()}}/icon?{{c.project.icon._id.generation_time}}" class="project_icon" alt="Project Logo">
     {% endif %}
 	<h1 class="project_title">
       {% if c.project.is_nbhd_project %}

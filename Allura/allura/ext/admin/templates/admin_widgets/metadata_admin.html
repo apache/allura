@@ -52,7 +52,7 @@
     <div id="project-icon" class="viewing">
       {% if value.icon %}
         <div class="viewer" style="overflow: auto">
-          <img src="{{value.url()}}/icon" style="float:left; margin-right: 1em;" alt="">
+          <img src="{{value.url()}}/icon?{{value.icon._id.generation_time}}" style="float:left; margin-right: 1em;" alt="">
           <a id="edit-icon" href="#" title="Edit" style="display:inline-block;margin-top:15px"><b data-icon="p" class="ico ico-pencil"></b></a>
           <a id="delete-icon" href="#" title="Remove" style="display:inline-block;margin-top:15px"><b data-icon="d" class="ico ico-delete"></b></a>
         </div>
