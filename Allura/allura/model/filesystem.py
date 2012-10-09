@@ -5,6 +5,8 @@ import logging
 import pylons
 import Image
 from gridfs import GridFS
+from tg import config
+from paste.deploy.converters import asint
 
 from ming import schema
 from ming.orm import session, FieldProperty
@@ -93,6 +95,10 @@ class File(MappedClass):
         fp = self.rfile()
         pylons.response.headers['Content-Type'] = ''
         pylons.response.content_type = self.content_type.encode('utf-8')
+        pylons.response.cache_expires = asint(config.get('files_expires_header_secs', 60 * 60))
+        pylons.response.last_modified = self._id.generation_time
+        del pylons.response.headers['Pragma']
+        del pylons.response.headers['Cache-Control']
         if not embed:
             pylons.response.headers.add(
                 'Content-Disposition',
