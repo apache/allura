@@ -1107,25 +1107,13 @@ class TicketController(BaseController):
                 changes[cf.name[1:]] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
                 changes[cf.name[1:]] = cf_val(cf)
-        thread = self.ticket.discussion_thread
-        latest_post = thread.posts and thread.posts[-1] or None
-        post = None
-        if latest_post and latest_post.author() == c.user:
-            now = datetime.utcnow()
-            folding_window = timedelta(seconds=60*5)
-            if (latest_post.timestamp + folding_window) > now:
-                post = latest_post
-                log.info('Folding ticket updates into %s', post)
+        thread = self.ticket.discussion_thread            
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
         change_text = h.render_genshi_plaintext(
             tpl_fn,
             changelist=changes.get_changed())
-        if post is None:
-            post = thread.add_post(text=change_text)
-        else:
-            post.text += '\n\n' + change_text
-            post.notify(check_dup=True)
+        post = thread.add_post(text=change_text)
         self.ticket.commit()
         if comment:
             self.ticket.discussion_thread.post(text=comment)

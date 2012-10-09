@@ -696,6 +696,41 @@ class TestFunctionalController(TrackerTestController):
         assert sidebar_contains(r, 'New')
         assert not sidebar_contains(r, 'Original')
 
+    def test_comment_split(self):
+        summary = 'new ticket'
+        ticket_view = self.new_ticket(summary=summary).follow()                
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'ticket discussion post content'
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert_true(post_content in r)        
+        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 1)
+
+        new_summary = 'old ticket'
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('update_ticket_from_widget'):
+                break                
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params['ticket_form.summary'] = new_summary
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert_true(summary+' --&gt; '+new_summary in r)   
+        assert_true(len(r.html.findAll(attrs={'class': 'discussion-post'})) == 2)     
+
     def test_discussion_paging(self):
         summary = 'test discussion paging'
         ticket_view = self.new_ticket(summary=summary).follow()
