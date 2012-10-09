@@ -196,6 +196,7 @@ class TestRepo(_TestWithRepo):
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
         self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
         self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
+
         with mock.patch('allura.model.repo_refresh.g.post_event') as post_event:
             self.repo.refresh()
             post_event.assert_called_with(
@@ -204,11 +205,27 @@ class TestRepo(_TestWithRepo):
             self.repo.refresh()
             post_event.assert_called_with(
                     'repo_refreshed', commit_number=0, new=False)
+
         with mock.patch('allura.model.repository.Repository.refresh') as refresh:
             allura.tasks.repo_tasks.refresh.post()
+            with mock.patch('allura.model.repository.Repository.unknown_commit_ids') as unknown_commit_ids:
+                unknown_commit_ids.return_value = [1,2,3]
+                #there are new commits so refresh has to be called once
+                #and new refresh should be queued
+                M.MonQTask.run_ready()
+                refresh.assert_called_once_with()
+            q = {
+                'task_name': 'allura.tasks.repo_tasks.refresh',
+                'state': 'ready',
+            }
+            assert M.MonQTask.query.find(q).count() == 1
+            refresh.reset_mock()
+            #adding second task and checking if refresh is fired once
             allura.tasks.repo_tasks.refresh.post()
-            M.MonQTask.run_ready()
-            refresh.assert_called_once()
+            with mock.patch('allura.lib.mail_util.SMTPClient.sendmail') as sendmail:
+                M.MonQTask.run_ready()
+            refresh.assert_called_once_with()
+
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:

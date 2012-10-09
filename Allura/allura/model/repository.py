@@ -29,7 +29,7 @@ from .artifact import Artifact, VersionedArtifact, Feed
 from .auth import User
 from .session import repository_orm_session, project_orm_session
 from .notification import Notification
-from .repo_refresh import refresh_repo
+from .repo_refresh import refresh_repo, unknown_commit_ids as unknown_commit_ids_repo
 from .repo import CommitRunDoc, QSIZE
 from .timeline import ActivityObject
 
@@ -402,6 +402,9 @@ class Repository(Artifact, ActivityObject):
             if content_type is None:
                 content_type, encoding = 'application/octet-stream', None
         return content_type, encoding
+
+    def unknown_commit_ids(self):
+        return unknown_commit_ids_repo(self.all_commit_ids())
 
     def refresh(self, all_commits=False, notify=True):
         '''Find any new commits in the repository and update'''

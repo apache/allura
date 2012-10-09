@@ -89,6 +89,7 @@ def reclone(*args, **kwargs):
 @task
 def refresh(**kwargs):
     from allura import model as M
+    #don't create multiple refresh tasks
     q = {
         'task_name': 'allura.tasks.repo_tasks.refresh',
         'state': 'busy'
@@ -96,8 +97,13 @@ def refresh(**kwargs):
     refresh_tasks_count = M.MonQTask.query.find(q).count()
     q['state'] = 'ready'
     refresh_tasks_count += M.MonQTask.query.find(q).count()
-    if refresh_tasks_count == 0:
+    if refresh_tasks_count <= 1: #only this task
         c.app.repo.refresh()
+        #checking if we have new commits arrived
+        #during refresh and re-queue task if so
+        new_commit_ids = c.app.repo.unknown_commit_ids()
+        if len(new_commit_ids) > 0:
+            refresh.post()
 
 @task
 def uninstall(**kwargs):
