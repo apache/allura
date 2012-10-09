@@ -101,7 +101,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         if shortlink:
             href = shortlink.url
             classes = 'alink'
-            self.ext.forge_link_tree_processor.alinks.append(link)
+            self.ext.forge_link_tree_processor.alinks.append(shortlink)
         elif self.ext._use_wiki and ':' not in link:
             href = h.urlquote(link)
             classes = 'notfound alink'
