@@ -108,9 +108,10 @@ class CSRFMiddleware(object):
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
                 environ.pop('HTTP_COOKIE', None)
         def session_start_response(status, headers, exc_info = None):
-            headers.append(
-                ('Set-cookie',
-                 str('%s=%s; Path=/' % (self._cookie_name, cookie))))
+            if dict(headers).get('Content-Type', '').startswith('text/html'):
+                headers.append(
+                    ('Set-cookie',
+                     str('%s=%s; Path=/' % (self._cookie_name, cookie))))
             return start_response(status, headers, exc_info)
         return self._app(environ, session_start_response)
 
