@@ -21,8 +21,6 @@ class TaskdCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('--only', dest='only', type='string', default=None,
                       help='only handle tasks of the given name(s) (can be comma-separated list)')
-    parser.add_option('--exclude', dest='exclude', type='string', default=None,
-                      help='never handle tasks of the given name(s) (can be comma-separated list)')
 
     def command(self):
         self.basic_setup()
@@ -60,9 +58,6 @@ class TaskdCommand(base.Command):
         only = self.options.only
         if only:
             only = only.split(',')
-        exclude = self.options.exclude
-        if exclude:
-            exclude = exclude.split(',')
 
         def start_response(status, headers, exc_info=None):
             pass
@@ -95,8 +90,7 @@ class TaskdCommand(base.Command):
                     self.task = M.MonQTask.get(
                             process=name,
                             waitfunc=waitfunc,
-                            only=only,
-                            exclude=exclude)
+                            only=only)
                     if self.task:
                         # Build the (fake) request
                         r = Request.blank('/--%s--/' % self.task.task_name, dict(task=self.task))

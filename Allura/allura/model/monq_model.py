@@ -147,7 +147,7 @@ class MonQTask(MappedClass):
         return obj
 
     @classmethod
-    def get(cls, process='worker', state='ready', waitfunc=None, only=None, exclude=None):
+    def get(cls, process='worker', state='ready', waitfunc=None, only=None):
         '''Get the highest-priority, oldest, ready task and lock it to the
         current process.  If no task is available and waitfunc is supplied, call
         the waitfunc before trying to get the task again.  If waitfunc is None
@@ -159,8 +159,6 @@ class MonQTask(MappedClass):
         while True:
             try:
                 query = dict(state=state)
-                if exclude:
-                    query['task_name'] = {'$nin': exclude}
                 if only:
                     query['task_name'] = {'$in': only}
                 obj = cls.query.find_and_modify(
