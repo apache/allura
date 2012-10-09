@@ -97,8 +97,10 @@ class File(MappedClass):
         pylons.response.content_type = self.content_type.encode('utf-8')
         pylons.response.cache_expires = asint(config.get('files_expires_header_secs', 60 * 60))
         pylons.response.last_modified = self._id.generation_time
-        del pylons.response.headers['Pragma']
-        del pylons.response.headers['Cache-Control']
+        if 'Pragma' in pylons.response.headers:
+            del pylons.response.headers['Pragma']
+        if 'Cache-Control' in pylons.response.headers:
+            del pylons.response.headers['Cache-Control']
         if not embed:
             pylons.response.headers.add(
                 'Content-Disposition',
