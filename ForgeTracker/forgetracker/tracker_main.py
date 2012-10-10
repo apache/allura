@@ -1107,7 +1107,7 @@ class TicketController(BaseController):
                 changes[cf.name[1:]] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
                 changes[cf.name[1:]] = cf_val(cf)
-        thread = self.ticket.discussion_thread            
+        thread = self.ticket.discussion_thread
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
         change_text = h.render_genshi_plaintext(
