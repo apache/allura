@@ -305,10 +305,17 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
                 yield xx
 
     treedoc = TreesDoc.m.get(_id=rhs_ci._id)
-    if treedoc:
-        rhs_tree_ids = treedoc.tree_ids
-    else:
+
+    # FIXME: There are cases of missing TreesDoc records in production
+    #        that should be fixed, but this is a quick-and-dirty patch
+    #        to at least staunch the bleeding.  A "generate-if-missing"
+    #        fix, and/or, even better, a cleanup / regen sweep plus
+    #        audit to ensure there're no more bugs causing them to be
+    #        missed should be done.
+    if not treedoc:
         return tree_cache
+
+    rhs_tree_ids = treedoc.tree_ids
 
     if rhs_ci.parent_ids:
         lhs_ci = CommitDoc.m.get(_id=rhs_ci.parent_ids[0])

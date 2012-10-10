@@ -616,7 +616,7 @@ def commitlog(commit_ids, skip=0, limit=sys.maxint):
             else:
                 ci_parents[oid] = run.parent_commit_ids
         for oid in run.parent_commit_ids:
-            if commit_id!=oid:
+            if oid not in seen:
                 _visit(oid)
 
     def _gen_ids(commit_ids, skip, limit):
