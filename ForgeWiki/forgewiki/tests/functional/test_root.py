@@ -475,16 +475,16 @@ class TestRootController(TestController):
         r = self.app.get('/wiki/TEST/')
         found_links = 0
         for link in r.html.findAll('a'):
-            if link.contents == ['this page']:
+            if link.contents == ['[this page]']:
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
-            if link.contents == ['another page']:
+            if link.contents == ['[another page]']:
                 assert 'notfound' in link.get('class', '')
                 found_links +=1
-            if link.contents == ['space page space']:
+            if link.contents == ['[space page space]']:
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
-            if link.contents == ['space page escape']:
+            if link.contents == ['[space page escape]']:
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
             if link.contents == ['[TEST]']:
