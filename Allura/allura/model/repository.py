@@ -445,21 +445,6 @@ class Repository(Artifact, ActivityObject):
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
 
-    def get_last_commit(self, obj):
-        from .repo import LastCommitDoc
-        lc = LastCommitDoc.m.get(
-            repo_id=self._id, object_id=obj._id)
-        if lc is None:
-            return dict(
-                author=None,
-                author_email=None,
-                author_url=None,
-                date=None,
-                id=None,
-                shortlink=None,
-                summary=None)
-        return lc.commit_info
-
     @property
     def forks(self):
         return self.query.find({'upstream_repo.name': self.url()}).all()

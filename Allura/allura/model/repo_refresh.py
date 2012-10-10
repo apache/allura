@@ -2,12 +2,13 @@ import logging
 from itertools import chain
 from cPickle import dumps
 import re
+import os
 
 import bson
 
 import tg
 
-from pylons import g
+from pylons import g,c
 
 from ming.base import Object
 from ming.orm import mapper, session
@@ -16,7 +17,7 @@ from allura.lib import utils
 from allura.lib import helpers as h
 from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
 from allura.model.repo import LastCommitDoc, CommitRunDoc
-from allura.model.repo import Commit
+from allura.model.repo import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 
 log = logging.getLogger(__name__)
@@ -88,16 +89,24 @@ def refresh_repo(repo, all_commits=False, notify=True):
 
     # Compute diffs
     cache = {}
-    # Have to compute_diffs() for all commits to ensure that LastCommitDocs
-    # are set properly for forked repos. For some SCMs, compute_diffs()
-    # we don't want to pre-compute the diffs because that would be too
-    # expensive, so we skip them here and do them on-demand with caching.
+    # For some SCMs, we don't want to pre-compute the diffs because that
+    # would be too expensive, so we skip them here and do them on-demand
+    # with caching.
     if repo._refresh_precompute:
-        for i, oid in enumerate(reversed(all_commit_ids)):
+        for i, oid in enumerate(commit_ids):
             ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
             compute_diffs(repo._id, cache, ci)
             if (i+1) % 100 == 0:
                 log.info('Compute diffs %d: %s', (i+1), ci._id)
+
+    if repo._refresh_precompute:
+        cache = ModelCache()
+        for i, oid in enumerate(reversed(commit_ids)):
+            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            compute_lcds(ci, cache)
+            if (i+1) % 100 == 0:
+                log.info('Compute last commit info %d: %s', (i+1), ci._id)
+
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event(
@@ -348,7 +357,6 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
             dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
     # Set last commit data
     rhs_tree = tree_index[rhs_ci.tree_id]
-    refresh_last_commit(repo_id, '/', rhs_tree, lhs_tree, None, commit_info)
     # Build the diffinfo
     di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
@@ -420,18 +428,21 @@ def _diff_trees(lhs, rhs, index, *path):
         (o.name, o.id)
         for o in rhs.tree_ids)
     for o in lhs.tree_ids:
-        rhs_id = rhs_tree_ids.pop(o.name, None)
-        if rhs_id == o.id:
-            continue # no change
-        elif rhs_id is None:
+        rhs_id = rhs_tree_ids.pop(o.name, None)  # remove so won't be picked up as added, below
+        if rhs_id == o.id:  # no change
+            continue
+        elif rhs_id is None:  # removed
             yield (_fq(o.name), o.id, None)
-        else:
-            for difference in _diff_trees(
-                index[o.id], index[rhs_id], index,
-                o.name, *path):
-                yield difference
-    for name, id in rhs_tree_ids.items():
+            rhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
+        else:  # changed
+            rhs_tree = index[rhs_id]
+        for difference in _diff_trees(index[o.id], rhs_tree, index, o.name, *path):
+            yield difference
+    for name, id in rhs_tree_ids.items():  # added
         yield (_fq(name), None, id)
+        lhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
+        for difference in _diff_trees(lhs_tree, index[id], index, name, *path):
+            yield difference
     # DIff the blobs
     rhs_blob_ids = dict(
         (o.name, o.id)
@@ -462,53 +473,6 @@ def get_commit_info(commit):
         summary=commit.summary
         )
 
-def refresh_last_commit(repo_id, path, tree, lhs_tree, parent_tree, commit_info):
-    '''Build the LastCommit info.
-
-    We only need to create LastCommit info for objects that are in the
-    RHS but not in the LHS, because only those objects are only ones
-    who have had anything changed in them.  (If file x/y/z.txt changes,
-    then it's hash will change, which also forces the hash for tree x/y
-    to change, as well as the hash for tree x.  So as long as an object's
-    hash isn't in the LHS, it means it's new or modified in this commit.)
-
-    In order to uniquely identify the tree or blob that a LastCommitDoc is
-    for, the tree or blob hash is not sufficient; we also need to know
-    either it's full path name, or it's parent tree and name.  Because of
-    this, we have to walk down the commit tree.'''
-    if lhs_tree is not None and tree._id == lhs_tree._id:
-        # tree was not changed in this commit (nor was anything under it)
-        return
-
-    # map LHS entries for easy lookup
-    lhs_map = {}
-    if lhs_tree:
-        for lhs_child in chain(lhs_tree.tree_ids, lhs_tree.blob_ids, lhs_tree.other_ids):
-            lhs_map[lhs_child.name] = lhs_child.id
-
-    # update our children
-    for child in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
-        if child.id != lhs_map.get(child.name, None):  # check if changed in this commit
-            lc = set_last_commit(repo_id, path, child.name, child.id, commit_info)
-
-    # (re)curse at our child trees
-    for child_tree in tree.tree_ids:
-        child_name = child_tree.name
-        child_tree = TreeDoc.m.get(_id=child_tree.id)
-        lhs_child = None
-        if child_name in lhs_map:
-            lhs_child = TreeDoc.m.get(_id=lhs_map[child_name])
-        refresh_last_commit(repo_id, path + child_name + '/', child_tree, lhs_child, tree, commit_info)
-
-def set_last_commit(repo_id, path, name, oid, commit_info):
-    lc = LastCommitDoc(dict(
-            _id='%s:%s:%s' % (repo_id, path, name),
-            object_id=oid,
-            name=name,
-            commit_info=commit_info))
-    lc.m.save(safe=False, upsert=True)
-    return lc
-
 def last_known_commit_id(all_commit_ids, new_commit_ids):
     """
     Return the newest "known" (cached in mongo) commit id.
@@ -522,3 +486,35 @@ def last_known_commit_id(all_commit_ids, new_commit_ids):
     if not all_commit_ids: return None
     if not new_commit_ids: return all_commit_ids[-1]
     return all_commit_ids[all_commit_ids.index(new_commit_ids[0]) - 1]
+
+
+def compute_lcds(commit, cache):
+    '''
+    Compute LastCommit data for every Tree node under this tree.
+    '''
+    trees = cache.get(TreesDoc, dict(_id=commit._id))
+    if not trees:
+        log.error('Missing TreesDoc for %s; skipping compute_lcd' % commit)
+        return
+    _update_tree_cache(trees.tree_ids, cache)
+    c.model_cache = cache
+    for tree in _walk_commit_tree(commit, cache):
+        lcd = LastCommit.get(tree)  # auto-vivify LCD
+
+def _walk_commit_tree(commit, cache):
+    def _walk_tree(tree):
+        yield tree
+        for x in tree.tree_ids:
+            sub_tree = cache.get(Tree, dict(_id=x.id))
+            sub_tree.set_context(tree, x.name)
+            for xx in _walk_tree(sub_tree):
+                yield xx
+    top_tree = cache.get(Tree, dict(_id=commit.tree_id))
+    top_tree.set_context(commit)
+    return _walk_tree(top_tree)
+
+def _update_tree_cache(tree_ids, cache):
+    current_ids = set(tree_ids)
+    cached_ids = set([k['_id'] for k in cache.keys(Tree)])
+    new_ids = current_ids - cached_ids
+    cache.batch_load(Tree, {'_id': {'$in': list(new_ids)}})

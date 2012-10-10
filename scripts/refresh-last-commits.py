@@ -1,6 +1,8 @@
 import argparse
 import logging
 import re
+from datetime import datetime
+from contextlib import contextmanager
 
 import faulthandler
 from pylons import c
@@ -24,19 +26,11 @@ def main(options):
     elif options.project_regex:
         q_project['shortname'] = {'$regex': options.project_regex}
 
-    log.info('Refreshing repositories')
-    if options.clean_all:
-        log.info('Removing all repository objects')
-        M.repo.CommitDoc.m.remove({})
-        M.repo.TreeDoc.m.remove({})
-        M.repo.TreesDoc.m.remove({})
-        M.repo.DiffInfoDoc.m.remove({})
-        M.repo.CommitRunDoc.m.remove({})
-        M.repo.LastCommitDoc.m.remove({})
+    log.info('Refreshing last commit data')
 
     for chunk in chunked_find(M.Project, q_project):
         for p in chunk:
-            log.info("Refreshing repos for project '%s'." % p.shortname)
+            log.info("Refreshing last commit data for project '%s'." % p.shortname)
             if options.dry_run:
                 continue
             c.project = p
@@ -54,62 +48,79 @@ def main(options):
                             c.app.repo.tool.lower())
                     continue
 
+                ci_ids = list(reversed(list(c.app.repo.all_commit_ids())))
+                #ci_ids = list(c.app.repo.all_commit_ids())
                 if options.clean:
-                    ci_ids = list(c.app.repo.all_commit_ids())
-                    log.info("Deleting mongo data for %i commits...", len(ci_ids))
-                    tree_ids = [
-                            tree_id for doc in
-                            M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}},
-                                                   {"tree_ids": 1})
-                            for tree_id in doc.get("tree_ids", [])]
-
-                    i = M.repo.CommitDoc.m.find({"_id": {"$in": ci_ids}}).count()
-                    log.info("Deleting %i CommitDoc docs...", i)
-                    M.repo.CommitDoc.m.remove({"_id": {"$in": ci_ids}})
-
-                    # delete these in chunks, otherwise the query doc can
-                    # exceed the max BSON size limit (16MB at the moment)
-                    for tree_ids_chunk in chunked_list(tree_ids, 300000):
-                        i = M.repo.TreeDoc.m.find({"_id": {"$in": tree_ids_chunk}}).count()
-                        log.info("Deleting %i TreeDoc docs...", i)
-                        M.repo.TreeDoc.m.remove({"_id": {"$in": tree_ids_chunk}})
-                    del tree_ids
-
-                    # delete these after TreeDoc and LastCommitDoc so that if
-                    # we crash, we don't lose the ability to delete those
-                    i = M.repo.TreesDoc.m.find({"_id": {"$in": ci_ids}}).count()
-                    log.info("Deleting %i TreesDoc docs...", i)
-                    M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
+                    if options.diffs:
+                        # delete DiffInfoDocs
+                        i = M.repo.DiffInfoDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
+                        log.info("Deleting %i DiffInfoDoc docs, by repo id...", i)
+                        M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
 
                     # delete LastCommitDocs
                     i = M.repo.LastCommitDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
-                    log.info("Deleting %i remaining LastCommitDoc docs, by repo id...", i)
+                    log.info("Deleting %i LastCommitDoc docs, by repo id...", i)
                     M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
 
-                    i = M.repo.DiffInfoDoc.m.find({"_id": {"$in": ci_ids}}).count()
-                    log.info("Deleting %i DiffInfoDoc docs...", i)
-                    M.repo.DiffInfoDoc.m.remove({"_id": {"$in": ci_ids}})
-
-                    i = M.repo.CommitRunDoc.m.find({"commit_ids": {"$in": ci_ids}}).count()
-                    log.info("Deleting %i CommitRunDoc docs...", i)
-                    M.repo.CommitRunDoc.m.remove({"commit_ids": {"$in": ci_ids}})
-                    del ci_ids
-
                 try:
-                    if options.all:
-                        log.info('Refreshing ALL commits in %r', c.app.repo)
-                    else:
-                        log.info('Refreshing NEW commits in %r', c.app.repo)
+                    log.info('Refreshing all last commits in %r', c.app.repo)
                     if options.profile:
                         import cProfile
-                        cProfile.runctx('c.app.repo.refresh(options.all, notify=options.notify)',
-                                globals(), locals(), 'refresh.profile')
+                        cProfile.runctx('refresh_repo_lcds(ci_ids, options)',
+                                globals(), locals(), '/tmp/refresh_lcds.profile')
                     else:
-                        c.app.repo.refresh(options.all, notify=options.notify)
+                        refresh_repo_lcds(ci_ids, options)
                 except:
                     log.exception('Error refreshing %r', c.app.repo)
+                    raise
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
+
+
+def refresh_repo_lcds(commit_ids, options):
+    tree_cache = {}
+    timings = []
+    if options.diffs:
+        print 'Processing diffs'
+        for commit_id in commit_ids:
+            commit = M.repo.Commit.query.get(_id=commit_id)
+            with time(timings):
+                M.repo_refresh.compute_diffs(c.app.repo._id, tree_cache, commit)
+            if len(timings) % 1000 == 0:
+                mt = max(timings)
+                tt = sum(timings)
+                at = tt / len(timings)
+                print '  Processed %d commits (max: %f, avg: %f, tot: %f, cl: %d)' % (
+                        len(timings), mt, at, tt, len(tree_cache))
+    lcd_cache = M.repo.ModelCache(80000)
+    timings = []
+    print 'Processing last commits'
+    for commit_id in commit_ids:
+        commit = M.repo.Commit.query.get(_id=commit_id)
+        with time(timings):
+            M.repo_refresh.compute_lcds(commit, lcd_cache)
+        if len(timings) % 100 == 0:
+            mt = max(timings)
+            tt = sum(timings)
+            at = tt / len(timings)
+            mat = sum(timings[-100:]) / 100
+            print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f, lc: %d, lcl: %d, hits: %d, agw: %d, mgw: %d, gh: %d, abw: %d, mbw: %d, ts: %d)' % (
+                    len(timings), mt, at, mat, tt, lcd_cache.size(), len(lcd_cache._cache[M.repo.LastCommit]),
+                    lcd_cache._hits * 100 / (lcd_cache._hits + lcd_cache._misses),
+                    lcd_cache._get_walks / lcd_cache._get_calls, lcd_cache._get_walks_max, lcd_cache._get_hits * 100 / lcd_cache._get_calls,
+                    lcd_cache._build_walks / lcd_cache._build_calls, lcd_cache._build_walks_max,
+                    len(lcd_cache.get(M.repo.TreesDoc, dict(_id=commit._id)).tree_ids))
+            ThreadLocalORMSession.flush_all()
+            ThreadLocalORMSession.close_all()
+        #if len(timings) == 300:
+        #    break
+
+
+@contextmanager
+def time(timings):
+    s = datetime.now()
+    yield
+    timings.append((datetime.now() - s).total_seconds())
 
 
 def repo_type_list(s):
@@ -124,8 +135,8 @@ def repo_type_list(s):
 
 
 def parse_options():
-    parser = argparse.ArgumentParser(description='Scan repos on filesytem and '
-            'update repo metadata in MongoDB. Run for all repos (no args), '
+    parser = argparse.ArgumentParser(description='Using existing commit data, '
+            'refresh the last commit metadata in MongoDB. Run for all repos (no args), '
             'or restrict by neighborhood, project, or code tool mount point.')
     parser.add_argument('--nbhd', action='store', default='', dest='nbhd',
             help='Restrict update to a particular neighborhood, e.g. /p/.')
@@ -138,26 +149,21 @@ def parse_options():
             'the provided regex.')
     parser.add_argument('--repo-types', action='store', type=repo_type_list,
             default=['svn', 'git', 'hg'], dest='repo_types',
-            help='Only refresh repos of the given type(s). Defaults to: '
+            help='Only refresh last commits for repos of the given type(s). Defaults to: '
             'svn,git,hg. Example: --repo-types=git,hg')
     parser.add_argument('--mount_point', default='', dest='mount_point',
             help='Restrict update to repos at the given tool mount point. ')
     parser.add_argument('--clean', action='store_true', dest='clean',
-            default=False, help='Remove repo-related mongo docs (for '
-            'project(s) being refreshed only) before doing the refresh.')
-    parser.add_argument('--clean-all', action='store_true', dest='clean_all',
-            default=False, help='Remove ALL repo-related mongo docs before '
-            'refresh.')
-    parser.add_argument('--all', action='store_true', dest='all', default=False,
-            help='Refresh all commits (not just the ones that are new).')
-    parser.add_argument('--notify', action='store_true', dest='notify',
-            default=False, help='Send email notifications of new commits.')
+            default=False, help='Remove last commit mongo docs for '
+            'project(s) being refreshed before doing the refresh.')
     parser.add_argument('--dry-run', action='store_true', dest='dry_run',
             default=False, help='Log names of projects that would have their '
-            'repos refreshed, but do not perform the actual refresh.')
+            'last commits refreshed, but do not perform the actual refresh.')
     parser.add_argument('--profile', action='store_true', dest='profile',
             default=False, help='Enable the profiler (slow). Will log '
             'profiling output to ./refresh.profile')
+    parser.add_argument('--diffs', action='store_true', dest='diffs',
+            default=False, help='Refresh diffs as well as LCDs')
     return parser.parse_args()
 
 if __name__ == '__main__':
