@@ -35,6 +35,8 @@ class ReindexCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
                       help='project to reindex')
+    parser.add_option('--mount_point', dest='mount_point',  default=None,
+                      help='limit to this mount point (only use with --solr)')
     parser.add_option('-n', '--neighborhood', dest='neighborhood', default=None,
                       help='neighborhood to reindex (e.g. p)')
 
@@ -70,7 +72,9 @@ class ReindexCommand(base.Command):
                 if self.options.refs:
                     M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
                     M.Shortlink.query.remove({'project_id':p._id})
-                app_config_ids = [ ac._id for ac in p.app_configs ]
+                app_config_ids = [ac._id for ac in p.app_configs
+                                  if not self.options.mount_point
+                                  or self.options.mount_point == ac.options.mount_point]
                 # Traverse the inheritance graph, finding all artifacts that
                 # belong to this project
                 for _, a_cls in dfs(M.Artifact, graph):
@@ -91,9 +95,12 @@ class ReindexCommand(base.Command):
                     M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
+                        if self.options.verbose:
+                            base.log.info('adding artifacts: %s' % ref_ids)
                         allura.tasks.index_tasks.add_artifacts(ref_ids,
                                                                update_solr=self.options.solr,
-                                                               update_refs=self.options.refs)
+                                                               update_refs=self.options.refs,
+                                                               verbose=self.options.verbose)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
