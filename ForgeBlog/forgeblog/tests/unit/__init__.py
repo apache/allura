@@ -1,3 +1,5 @@
+import pylons
+pylons.c = pylons.tmpl_context
 from pylons import c
 from ming.orm.ormsession import ThreadLocalORMSession
 
