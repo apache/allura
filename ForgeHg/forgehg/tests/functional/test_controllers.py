@@ -173,6 +173,15 @@ class TestRootController(TestController):
         validate_chunk=True)
         assert 'Cannot display: file marked as a binary type.' in resp
 
+    def test_log(self):
+        r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/?path=')
+        assert "add test.jpg " in r
+        assert "Add README" in r
+        r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/?path=/README')
+        assert "add test.jpg " not in r
+        assert "Add README" in r
+        assert "Modify README" in r
+
 
 class TestLogPagination(TestController):
 

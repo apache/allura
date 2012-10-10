@@ -468,4 +468,14 @@ class SVNImplementation(M.RepositoryImplementation):
     def _oid(self, revno):
         return '%s:%s' % (self._repo._id, revno)
 
+    def  get_commits_by_path(self, path):
+        result = []
+        try:
+            for l in self._svn.log(url_or_path=self._url + "/" + path):
+                result.append(self._oid('') + str(l.revision.number))
+            return result
+        except:
+            return result
+
+
 Mapper.compile_all()

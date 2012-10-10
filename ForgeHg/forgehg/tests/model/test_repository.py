@@ -247,3 +247,8 @@ class TestHgCommit(unittest.TestCase):
                  +self.rev.diffs.copied)
         for d in diffs:
             print d
+
+    def test_get_commits_by_path(self):
+        assert len(self.repo.get_commits_by_path('')) == 5
+        assert len(self.repo.get_commits_by_path('README')) == 2
+        assert len(self.repo.get_commits_by_path('test')) == 0

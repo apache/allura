@@ -234,6 +234,12 @@ class GitImplementation(M.RepositoryImplementation):
         doc.m.save(safe=False)
         return doc
 
+    def get_commits_by_path(self, path):
+        result = []
+        for c in self._git.iter_commits(paths=path):
+            result.append(c.hexsha)
+        return result
+
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
         candidates = [ obj ]

@@ -95,6 +95,15 @@ class TestRootController(_TestCase):
 
     def test_log(self):
         resp = self.app.get('/src-git/ref/master~/log/')
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        assert 'Initial commit' in resp
+        assert 'Change README' in resp
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        assert 'Change README ' in resp
+        assert 'Add README ' in resp
+        assert "Initial commit " not in resp
+        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/test')
+        assert 'No (more) commits' in resp
 
     def test_tags(self):
         resp = self.app.get('/src-git/ref/master~/tags/')

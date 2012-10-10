@@ -254,6 +254,15 @@ class TestGitCommit(unittest.TestCase):
         for d in diffs:
             print d
 
+    def test_get_commits_by_path(self):
+        assert ("9a7df788cf800241e3bb5a849c8870f2f8259d98"
+                in self.repo.get_commits_by_path(''))
+        assert ("1e146e67985dcd71c74de79613719bef7bddca4a"
+                in self.repo.get_commits_by_path('README'))
+        assert ("df30427c488aeab84b2352bdf88a3b19223f9d7a"
+                in self.repo.get_commits_by_path('README'))
+        assert [] == self.repo.get_commits_by_path('test')
+
 
 class TestGitHtmlView(unittest.TestCase):
 

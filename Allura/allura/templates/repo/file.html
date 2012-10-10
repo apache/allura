@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block actions %}
-<a href="{{blob.commit.url()}}log/">
+<a href="{{blob.commit.url()}}log/?path={{ blob.path() }}">
   <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
 </a>
 {% endblock %}

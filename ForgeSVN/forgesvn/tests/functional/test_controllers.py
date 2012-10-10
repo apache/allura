@@ -118,6 +118,17 @@ class TestRootController(SVNTestController):
         r = self.app.get('/p/test/admin/src/checkout_url')
         assert 'value="a"' in r
 
+    def test_log(self):
+        r = self.app.get('/src/2/log/?path=')
+        assert "Create readme" in r
+        assert "Add path " in r
+        r = self.app.get('/src/2/log/?path=README')
+        assert "Modify readme" in r
+        assert "Remove hello.txt" not in r
+        assert "Create readme " in r
+        r = self.app.get('/src/2/log/?path=test')
+        assert 'No (more) commits' in r
+
 
 class TestImportController(SVNTestController):
     def test_index(self):
