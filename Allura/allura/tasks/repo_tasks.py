@@ -92,7 +92,9 @@ def refresh(**kwargs):
     #don't create multiple refresh tasks
     q = {
         'task_name': 'allura.tasks.repo_tasks.refresh',
-        'state': 'busy'
+        'state': 'busy',
+        'context.app_config_id': c.app.config._id,
+        'context.project_id': c.project._id,
     }
     refresh_tasks_count = M.MonQTask.query.find(q).count()
     q['state'] = 'ready'
