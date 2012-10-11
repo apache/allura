@@ -68,8 +68,10 @@ class ArtifactSessionExtension(SessionExtension):
 
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')
+task_doc_session = Session.by_name('task')
 main_orm_session = ThreadLocalORMSession(main_doc_session)
 project_orm_session = ThreadLocalORMSession(project_doc_session)
+task_orm_session = ThreadLocalORMSession(task_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
     extensions = [ ArtifactSessionExtension ])

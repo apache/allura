@@ -111,9 +111,8 @@ class EnsureIndexCommand(base.Command):
     def command(self):
         from allura import model as M
         self.basic_setup()
-        # Collect indexes by collection name
-        main_indexes = defaultdict(list)
-        project_indexes = defaultdict(list)
+        main_indexes = defaultdict(lambda: defaultdict(list))  # by db, then collection name
+        project_indexes = defaultdict(list)  # by collection name
         base.log.info('Collecting indexes...')
         for m in Mapper.all_mappers():
             mgr = m.collection.m
@@ -124,15 +123,16 @@ class EnsureIndexCommand(base.Command):
                 continue
             base.log.info('... for class %s', cls)
             if session(cls) in (
-                M.main_orm_session, M.repository_orm_session):
-                idx = main_indexes[cname]
+                M.main_orm_session, M.repository_orm_session, M.task_orm_session):
+                idx = main_indexes[session(cls)][cname]
             else:
                 idx = project_indexes[cname]
             idx.extend(mgr.indexes)
         base.log.info('Updating indexes for main DB')
-        db = M.main_doc_session.db
-        for name, indexes in main_indexes.iteritems():
-            self._update_indexes(db[name], indexes)
+        for odm_session, db_indexes in main_indexes.iteritems():
+            db = odm_session.impl.db
+            for name, indexes in db_indexes.iteritems():
+                self._update_indexes(db[name], indexes)
         base.log.info('Updating indexes for project DBs')
         configured_dbs = set()
         for projects in utils.chunked_find(M.Project):

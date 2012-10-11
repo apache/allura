@@ -13,9 +13,10 @@ from ming import schema as S
 from ming.orm import session, FieldProperty
 from ming.orm.declarative import MappedClass
 
-from .session import main_orm_session
+from .session import task_orm_session
 
 log = logging.getLogger(__name__)
+
 
 class MonQTask(MappedClass):
     '''Task to be executed by the taskd daemon.
@@ -40,7 +41,7 @@ class MonQTask(MappedClass):
     states = ('ready', 'busy', 'error', 'complete')
     result_types = ('keep', 'forget')
     class __mongometa__:
-        session = main_orm_session
+        session = task_orm_session
         name = 'monq_task'
         indexes = [
             [
@@ -236,7 +237,7 @@ class MonQTask(MappedClass):
             raise
         finally:
             self.time_stop = datetime.utcnow()
-            main_orm_session.flush(self)
+            session(self).flush(self)
             if restore_context:
                 c.project = old_cproject
                 c.app = old_capp
