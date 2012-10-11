@@ -138,7 +138,7 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
-        form_data.setdefault('tools', [u'Wiki',u'Git',u'Tickets',u'Downloads',u'Discussion'])
+        form_data.setdefault('tools', [u'Wiki',u'Git',u'Tickets',u'Discussion'])
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 

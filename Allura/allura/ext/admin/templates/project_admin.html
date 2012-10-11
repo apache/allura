@@ -2,7 +2,6 @@
 {% set wiki_found = False %}
 {% set code_found = False %}
 {% set tracker_found = False %}
-{% set downloads_found = False %}
 {% set forum_found = False %}
 
 {% block title %}{{c.project.name}} / Admin{% endblock %}
@@ -78,26 +77,6 @@
     {% endfor %}
   </div>
   <div style="clear:both"></div>
-
-  {% if config.get('auth.method', 'local') == 'sfx' %}
-    <div class="grid-2">
-      <img src="{{ g.theme.app_icon_url('Downloads', 48) }}" alt="">
-    </div>
-    <div class="grid-13">
-      <h3>Downloads</h3>
-      <p>Upload releases, track who is downloading your project around the world, and use the largest free, managed, global mirror network to distribute your files.</p>
-    </div>
-    <div class="grid-4">
-      {% for tool in c.project.app_configs %}
-        {% if tool.tool_name == 'Downloads' and not downloads_found %}
-          <a href="/projects/{{c.project.get_tool_data('sfx', 'unix_group_name') }}/upload/">Upload Release</a><br>
-          <a href="/projects/{{c.project.get_tool_data('sfx', 'unix_group_name') }}/files/">View Releases</a>
-          {% set downloads_found = True %}
-        {% endif %}
-      {% endfor %}
-    </div>
-    <div style="clear:both"></div>
-  {% endif %}
 
   <div class="grid-2">
     <img src="{{ g.theme.app_icon_url('Discussion', 48) }}" alt="">

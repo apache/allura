@@ -275,7 +275,6 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.Option(label='Hg', html_value='Hg'),
             ew.Option(label='SVN', html_value='SVN'),
             ew.Option(label='Tickets', html_value='Tickets', selected=True),
-            ew.Option(label='Downloads', html_value='Downloads', selected=True),
             ew.Option(label='Discussion', html_value='Discussion', selected=True),
             ew.Option(label='Blog', html_value='Blog')
         ])

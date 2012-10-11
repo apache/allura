@@ -21,7 +21,6 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeSVN \
     ForgeTracker \
     ForgeWiki \
-    ForgeDownloads \
     ForgeActivity \
     ForgeShortUrl \
     "

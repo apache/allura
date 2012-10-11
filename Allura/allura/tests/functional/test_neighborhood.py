@@ -555,10 +555,9 @@ class TestNeighborhood(TestController):
                     "blog":{"label":"News","mount_point":"news","options":{
                     "show_discussion":false
                     }},
-                    "downloads":{"label":"Downloads","mount_point":"downloads"},
                     "admin":{"label":"Admin","mount_point":"admin"}
                 },
-                "tool_order":["wiki","discussion","news","downloads","admin"],
+                "tool_order":["wiki","discussion","news","admin"],
                 "labels":["mmi"],
                 "trove_cats":{
                     "topic":[247],

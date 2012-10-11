@@ -76,12 +76,6 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 }
 
 /* TODO: Move to forge-classic per PT#53 */
-.ui-icon-tool-downloads {
-  background-image: url("../images/downloads_24.png");
-  background-repeat: no-repeat;
-}
-
-/* TODO: Move to forge-classic per PT#53 */
 .ui-icon-tool-summary {
   background-image: url("../images/blog_24.png");
   background-repeat: no-repeat;
@@ -133,9 +127,6 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #top_nav .ui-icon-tool-tickets {
   background-image: url("../images/tickets_32.png");
 }
-#top_nav .ui-icon-tool-downloads {
-  background-image: url("../images/downloads_32.png");
-}
 #top_nav .ui-icon-tool-link {
   background-image: url("../images/ext_32.png");
 }
@@ -169,9 +160,6 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 }
 .big_icon.ui-icon-tool-tickets {
   background-image: url("../images/tickets_48.png");
-}
-.big_icon.ui-icon-tool-downloads {
-  background-image: url("../images/downloads_48.png");
 }
 .big_icon.ui-icon-tool-link {
   background-image: url("../images/ext_48.png");
