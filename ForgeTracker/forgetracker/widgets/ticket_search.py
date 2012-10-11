@@ -79,7 +79,6 @@ class SearchHelp(ffw.Lightbox):
 <li>Labels assigned to the ticket - labels</li>
 <li>Milestone the ticket is assigned to - _milestone</li>
 <li>Last modified date - mod_date_dt</li>
-<li>Created date - created_dt</li>
 <li>Body of the ticket - text</li>
 <li>Number of ticket - ticket_num</li>
 <li>User who created the ticket - reported_by</li>
@@ -109,7 +108,6 @@ class SearchHelp(ffw.Lightbox):
 <li>Labels assigned to the ticket - labels_s</li>
 <li>Milestone the ticket is assigned to - _milestone_s</li>
 <li>Last modified date - mod_date_dt</li>
-<li>Created date - created_dt</li>
 <li>Body of the ticket - text_s</li>
 <li>Number of ticket - ticket_num_i</li>
 <li>User who created the ticket - reported_by_s</li>
