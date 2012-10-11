@@ -89,6 +89,7 @@ def reclone(*args, **kwargs):
 @task
 def refresh(**kwargs):
     from allura import model as M
+    log = logging.getLogger(__name__)
     #don't create multiple refresh tasks
     q = {
         'task_name': 'allura.tasks.repo_tasks.refresh',
@@ -106,6 +107,9 @@ def refresh(**kwargs):
         new_commit_ids = c.app.repo.unknown_commit_ids()
         if len(new_commit_ids) > 0:
             refresh.post()
+            log.info('New refresh task is queued due to new commit(s).')
+    else:
+        log.info('Refresh task is cancelled because another one is ready to start or busy.')
 
 @task
 def uninstall(**kwargs):
