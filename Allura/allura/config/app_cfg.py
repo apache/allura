@@ -55,11 +55,38 @@ class ForgeConfig(AppConfig):
                     action='routes_placeholder')
         config['routes.map'] = map
 
+    def _setup_bytecode_cache(self):
+        cache_type = config.get('bytecode_cache_type')
+        bcc = None
+        if cache_type == 'memcached' and config.get('memcached_host'):
+            try:
+                import pylibmc
+                from jinja2 import MemcachedBytecodeCache
+                client = pylibmc.Client([config['memcached_host']])
+                bcc = MemcachedBytecodeCache(client)
+            except:
+                log.exception("Error encountered while setting up a" +
+                        " filesystem-backed bytecode cache for Jinja.")
+        elif cache_type == 'filesystem':
+            try:
+                from jinja2 import FileSystemBytecodeCache
+                bcc = FileSystemBytecodeCache()
+            except ImportError:
+                log.exception("pylibmc is a required dependency when" +
+                        " using a memcached-backed bytecode cache for" +
+                        " Jinja")
+            except:
+                log.exception("Error encountered while setting up a" +
+                        " memcached-backed bytecode cache for Jinja")
+        return bcc
+
     def setup_jinja_renderer(self):
+        bcc = self._setup_bytecode_cache()
         jinja2_env = jinja2.Environment(
             loader=PackagePathLoader(),
             auto_reload=self.auto_reload_templates,
             autoescape=True,
+            bytecode_cache=bcc,
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(pylons.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat

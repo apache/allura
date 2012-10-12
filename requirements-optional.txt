@@ -4,3 +4,5 @@
 # for ForgeWiki's mediawiki importer:
 -e git://github.com/zikzakmedia/python-mediawiki.git#egg=python-mediawiki   # GPL
 MySQL-python  # GPL
+# for a memcached-backed Jinja bytecode cache:
+pylibmc==1.2.3
