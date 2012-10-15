@@ -15,7 +15,7 @@ pyzmq==2.1.7
 html2text==3.200.3dev-20120920
 
 # for a memcached-backed Jinja bytecode cache:
-pylibmc==1.2.3
+pylibmc==1.2.2
 
 # for the migration scripts only
 postmarkup==1.1.4
