@@ -155,6 +155,45 @@ class TestFunctionalController(TrackerTestController):
         response = form.submit().follow()
         assert 'Test Admin' in response
 
+    def test_mass_edit(self):
+        ticket_view = self.new_ticket(summary='First Ticket').follow()
+        ticket_view = self.new_ticket(summary='Second Ticket').follow()
+        M.MonQTask.run_ready()
+        first_ticket = tm.Ticket.query.find({
+            'summary': 'First Ticket'}).first()
+        second_ticket = tm.Ticket.query.find({
+            'summary': 'Second Ticket'}).first()
+        r = self.app.get('/p/test/bugs/edit/?q=ticket')
+        self.app.post('/p/test/bugs/update_tickets', {
+                      'selected': first_ticket._id,
+                      '_milestone': '2.0',
+                      })
+        r = self.app.get('/p/test/bugs/1/')
+        assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' in r
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' not in r
+        self.app.post('/p/test/bugs/update_tickets', {
+                      'selected': '%s,%s' % (
+                          first_ticket._id,
+                          second_ticket._id),
+                      '_milestone': '1.0',
+                      })
+        r = self.app.get('/p/test/bugs/1/')
+        assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' in r
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' not in r
+
+        self.app.post('/p/test/bugs/update_tickets', {
+                      'selected': '%s,%s' % (
+                          first_ticket._id,
+                          second_ticket._id),
+                      'status': 'accepted',
+                      })
+        r = self.app.get('/p/test/bugs/1/')
+        assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
+
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
         assert_true('<label class="simple">Private:</label> No' in ticket_view)

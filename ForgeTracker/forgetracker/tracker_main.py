@@ -84,6 +84,26 @@ def _mongo_col_to_solr_col(name):
             if name == field['name']:
                 return field['sortable_name']
 
+
+def get_label(name):
+    for column in mongo_columns():
+        if column['name'] == name:
+            return column['label']
+    if name == 'assigned_to_id':
+        return 'Owner'
+
+
+def get_change_text(name, new_value, old_value):
+    changes = changelog()
+    changes[name] = old_value
+    changes[name] = new_value
+    tpl_fn = pkg_resources.resource_filename(
+        'forgetracker', 'data/ticket_changed_tmpl')
+    return h.render_genshi_plaintext(
+        tpl_fn,
+        changelist=changes.get_changed())
+
+
 class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
@@ -627,11 +647,31 @@ class RootController(BaseController):
             if v: custom_values[k] = v
 
         for ticket in tickets:
+            message = ''
             for k, v in values.iteritems():
+                if k == 'assigned_to_id':
+                    new_user = M.User.query.get(_id=v)
+                    old_user = M.User.query.get(_id=getattr(ticket, k))
+                    if new_user:
+                        message += get_change_text(
+                            get_label(k),
+                            new_user.username,
+                            old_user.username)
+                else:
+                    message += get_change_text(
+                        get_label(k),
+                        v,
+                        getattr(ticket, k))
                 setattr(ticket, k, v)
             for k, v in custom_values.iteritems():
+                message += get_change_text(
+                    get_label(k),
+                    v,
+                    ticket.custom_fields[k])
                 ticket.custom_fields[k] = v
-
+            if message != '':
+                ticket.discussion_thread.post(message)
+                ticket.commit()
         ThreadLocalORMSession.flush_all()
 
 # tickets
