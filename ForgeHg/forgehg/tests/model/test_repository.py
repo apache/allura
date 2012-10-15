@@ -61,13 +61,12 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.url() == (
             '/p/test/src-hg/ci/'
             '5a0a993efa9bce7d1983344261393e841fcfd65d/')
-        all_cis = self.rev.log(0, 1000)
+        all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 6
-        assert self.rev.log(1,1000) == all_cis[1:]
-        assert self.rev.log(0,3) == all_cis[:3]
-        assert self.rev.log(1,2) == all_cis[1:3]
+        assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
+        assert self.repo.log(self.rev._id, 0,3) == all_cis[:3]
+        assert self.repo.log(self.rev._id, 1,2) == all_cis[1:3]
         for ci in all_cis:
-            ci.count_revisions()
             ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (

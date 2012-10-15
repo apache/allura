@@ -3,6 +3,7 @@ import shutil
 import unittest
 import pkg_resources
 
+import mock
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -53,13 +54,12 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == (
             '/p/test/src/5/')
-        all_cis = self.rev.log(0, 1000)
+        all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 5
-        assert self.rev.log(1,1000) == all_cis[1:]
-        assert self.rev.log(0,3) == all_cis[:3]
-        assert self.rev.log(1,2) == all_cis[1:3]
+        assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
+        assert self.repo.log(self.rev._id, 0,3) == all_cis[:3]
+        assert self.repo.log(self.rev._id, 1,2) == all_cis[1:3]
         for ci in all_cis:
-            ci.count_revisions()
             ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
@@ -231,6 +231,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert svn_path_exists("file://%s/a" % repo_path)
         assert svn_path_exists("file://%s" % repo_path)
         assert not svn_path_exists("file://%s/badpath" % repo_path)
+
+    def test_count_revisions(self):
+        ci = mock.Mock(_id='deadbeef:100')
+        self.assertEqual(self.repo.count_revisions(ci), 100)
 
 
 class TestSVNRev(unittest.TestCase):

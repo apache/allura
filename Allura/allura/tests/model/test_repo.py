@@ -123,15 +123,20 @@ class TestRepo(_TestWithRepo):
         assert self.repo.upstream_repo.url == 'srcurl'
         assert self.repo._impl.clone_from.called_with('srcpath')
 
-    def test_log(self):
-        ci = mock.Mock()
-        ci.log = mock.Mock(return_value=[1,2,3])
-        self.repo._impl.commit = mock.Mock(return_value=ci)
-        assert self.repo.log() == [1,2,3], self.repo.log()
+    @mock.patch.object(M.repo.CommitRunDoc.m, 'get')
+    def test_log(self, crd):
+        head = mock.Mock(_id=4)
+        commits = [mock.Mock(_id=i) for i in (1,3,2)]
+        commits.append(head)
+        head.query.find.return_value = commits
+        self.repo._impl.commit = mock.Mock(return_value=head)
+        crd.return_value = mock.Mock(commit_ids=[4, 3, 2, 1], commit_times=[4, 3, 2, 1], parent_commit_ids=[])
+        log = self.repo.log()
+        assert_equal([c._id for c in log], [4, 3, 2, 1])
 
     def test_count_revisions(self):
         ci = mock.Mock()
-        ci.count_revisions = mock.Mock(return_value=42)
+        self.repo.count_revisions = mock.Mock(return_value=42)
         self.repo._impl.commit = mock.Mock(return_value=ci)
         assert self.repo.count() == 42
 
@@ -172,13 +177,13 @@ class TestRepo(_TestWithRepo):
 
     def test_refresh(self):
         ci = mock.Mock()
-        ci.count_revisions=mock.Mock(return_value=100)
         ci.authored.name = 'Test Committer'
         ci.author_url = '/u/test-committer/'
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo.symbolics_for_commit = mock.Mock(return_value=[['master', 'branch'], []])
+        self.repo.count_revisions=mock.Mock(return_value=100)
         def refresh_commit_info(oid, seen, lazy=False):
             M.repo.CommitDoc(dict(
                     authored=dict(
@@ -213,9 +218,9 @@ class TestRepo(_TestWithRepo):
 
     def test_refresh_private(self):
         ci = mock.Mock()
-        ci.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
+        self.repo.count_revisions=mock.Mock(return_value=100)
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
@@ -348,18 +353,11 @@ class TestCommit(_TestWithRepo):
         x = self.ci.get_path('a/a')
         assert isinstance(x, M.repo.Tree)
 
-    def test_log(self):
-        rb = M.repo_refresh.CommitRunBuilder(['foo'])
-        rb.run()
-        rb.cleanup()
-        commits = self.ci.log(0, 100)
-        assert commits[0]._id == 'foo'
-
     def test_count_revisions(self):
         rb = M.repo_refresh.CommitRunBuilder(['foo'])
         rb.run()
         rb.cleanup()
-        assert self.ci.count_revisions() == 1
+        assert self.repo.count_revisions(self.ci) == 1
 
     def test_compute_diffs(self):
         self.repo._impl.commit = mock.Mock(return_value=self.ci)

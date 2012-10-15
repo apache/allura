@@ -188,7 +188,7 @@ class RepoRootController(BaseController):
     @expose('json:')
     def commit_browser_data(self):
         head_ids = [ head.object_id for head in c.app.repo.heads ]
-        commit_ids = list(M.repo.commitlog(head_ids))
+        commit_ids = list(c.app.repo.commitlog(head_ids))
         log.info('Grab %d commit objects by ID', len(commit_ids))
         commits_by_id = dict(
             (c_obj._id, c_obj)

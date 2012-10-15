@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 import shutil
@@ -42,11 +43,6 @@ class Repository(M.Repository):
     def _impl(self):
         return SVNImplementation(self)
 
-    def _log(self, rev, skip, max_count):
-        ci = self.commit(rev)
-        if ci is None: return []
-        return ci.log(int(skip), int(max_count))
-
     def clone_command(self, category, username=''):
         '''Return a string suitable for copy/paste that would clone this repo locally
            category is one of 'ro' (read-only), 'rw' (read/write), or 'https' (read/write via https)
@@ -64,8 +60,25 @@ class Repository(M.Repository):
     def count(self, *args, **kwargs):
         return super(Repository, self).count(None)
 
-    def log(self, branch=None, offset=0, limit=10):
+    def count_revisions(self, ci):
+        # since SVN histories are inherently linear and the commit _id
+        # contains the revision, just parse it out from there
+        return int(ci._id.split(':')[1])
+
+    def log(self, branch='HEAD', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))
+
+    def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
+        ci_id = commit_ids[0]
+        if skip > 0:
+            rid, rev = ci_id.split(':')
+            rev = int(rev) - skip
+            ci_id = '%s:%s' % (rid, rev)
+        ci = self._impl.commit(ci_id)
+        while ci is not None and limit > 0:
+            yield ci._id
+            limit -= 1
+            ci = ci.parent()
 
     def latest(self, branch=None):
         if self._impl is None: return None

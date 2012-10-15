@@ -57,22 +57,23 @@ def refresh_repo(repo, all_commits=False, notify=True):
         if (i+1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s', (i+1), ci._id)
 
-    # Refresh commit runs
-    commit_run_ids = commit_ids
-    # Check if the CommitRuns for the repo are in a good state by checking for
-    # a CommitRunDoc that contains the last known commit. If there isn't one,
-    # the CommitRuns for this repo are in a bad state - rebuild them entirely.
-    if commit_run_ids != all_commit_ids:
-        last_commit = last_known_commit_id(all_commit_ids, new_commit_ids)
-        log.info('Last known commit id: %s', last_commit)
-        if not CommitRunDoc.m.find(dict(commit_ids=last_commit)).count():
-            log.info('CommitRun incomplete, rebuilding with all commits')
-            commit_run_ids = all_commit_ids
-    log.info('Starting CommitRunBuilder for %s', repo.full_fs_path)
-    rb = CommitRunBuilder(commit_run_ids)
-    rb.run()
-    rb.cleanup()
-    log.info('Finished CommitRunBuilder for %s', repo.full_fs_path)
+    if repo.tool.lower() != 'svn':
+        # Refresh commit runs
+        commit_run_ids = commit_ids
+        # Check if the CommitRuns for the repo are in a good state by checking for
+        # a CommitRunDoc that contains the last known commit. If there isn't one,
+        # the CommitRuns for this repo are in a bad state - rebuild them entirely.
+        if commit_run_ids != all_commit_ids:
+            last_commit = last_known_commit_id(all_commit_ids, new_commit_ids)
+            log.info('Last known commit id: %s', last_commit)
+            if not CommitRunDoc.m.find(dict(commit_ids=last_commit)).count():
+                log.info('CommitRun incomplete, rebuilding with all commits')
+                commit_run_ids = all_commit_ids
+        log.info('Starting CommitRunBuilder for %s', repo.full_fs_path)
+        rb = CommitRunBuilder(commit_run_ids)
+        rb.run()
+        rb.cleanup()
+        log.info('Finished CommitRunBuilder for %s', repo.full_fs_path)
 
     # Refresh trees
     # Like diffs below, pre-computing trees for SVN repos is too expensive,

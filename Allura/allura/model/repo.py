@@ -3,7 +3,7 @@ import re
 import sys
 import logging
 from hashlib import sha1
-from itertools import izip, chain
+from itertools import chain
 from datetime import datetime
 from collections import defaultdict
 from difflib import SequenceMatcher, unified_diff
@@ -182,6 +182,14 @@ class Commit(RepoObject):
     def symbolic_ids(self):
         return self.repo.symbolics_for_commit(self)
 
+    def parent(self, index=0):
+        ci = None
+        if self.parent_ids:
+            ci = self.query.get(_id=self.parent_ids[index])
+        if ci:
+            ci.set_context(self.repo)
+        return ci
+
     def url(self):
         if self.repo is None: self.repo = self.guess_repo()
         if self.repo is None: return '#'
@@ -205,41 +213,6 @@ class Commit(RepoObject):
         override this method to provide more descriptive link text.
         '''
         return self.shorthand_id()
-
-    def log_iter(self, skip, count):
-        for oids in utils.chunked_iter(commitlog([self._id]), QSIZE):
-            oids = list(oids)
-            commits = dict(
-                (ci._id, ci) for ci in self.query.find(dict(
-                        _id={'$in': oids})))
-            for oid in oids:
-                if skip:
-                    skip -= 1
-                    continue
-                if count:
-                    count -= 1
-                    ci = commits[oid]
-                    ci.set_context(self.repo)
-                    yield ci
-                else:
-                    break
-
-    def log(self, skip, count):
-        return list(self.log_iter(skip, count))
-
-    def count_revisions(self):
-        from .repo_refresh import CommitRunBuilder
-        result = 0
-        # If there's no CommitRunDoc for this commit, the call to
-        # commitlog() below will raise a KeyError. Repair the CommitRuns for
-        # this repo by rebuilding them entirely.
-        if self.repo and not CommitRunDoc.m.find(dict(commit_ids=self._id)).count():
-            log.info('CommitRun incomplete, rebuilding with all commits')
-            rb = CommitRunBuilder(list(self.repo.all_commit_ids()))
-            rb.run()
-            rb.cleanup()
-        for oid in commitlog([self._id]): result += 1
-        return result
 
     def context(self):
         result = dict(prev=None, next=None)
@@ -320,7 +293,7 @@ class Commit(RepoObject):
         if not removed:
             return []
         copied = []
-        prev_commit = self.log(1, 1)[0]
+        prev_commit = self.parent()
         for removed_name in removed[:]:
             removed_blob = prev_commit.tree.get_obj_by_path(removed_name)
             rename_info = None
@@ -598,63 +571,3 @@ class Blob(object):
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
-
-def commitlog(commit_ids, skip=0, limit=sys.maxint):
-    seen = set()
-    def _visit(commit_id):
-        if commit_id in seen: return
-        run = CommitRunDoc.m.get(commit_ids=commit_id)
-        if run is None: return
-        index = False
-        for pos, (oid, time) in enumerate(izip(run.commit_ids, run.commit_times)):
-            if oid == commit_id: index = True
-            elif not index: continue
-            seen.add(oid)
-            ci_times[oid] = time
-            if pos+1 < len(run.commit_ids):
-                ci_parents[oid] = [ run.commit_ids[pos+1] ]
-            else:
-                ci_parents[oid] = run.parent_commit_ids
-        for oid in run.parent_commit_ids:
-            if oid not in seen:
-                _visit(oid)
-
-    def _gen_ids(commit_ids, skip, limit):
-        # Traverse the graph in topo order, yielding commit IDs
-        commits = set(commit_ids)
-        new_parent = None
-        while commits and limit:
-            # next commit is latest commit that's valid to log
-            if new_parent in commits:
-                ci = new_parent
-            else:
-                ci = max(commits, key=lambda ci:ci_times[ci])
-            commits.remove(ci)
-            if skip:
-                skip -= 1
-                continue
-            else:
-                limit -= 1
-            yield ci
-            # remove this commit from its parents children and add any childless
-            # parents to the 'ready set'
-            new_parent = None
-            for oid in ci_parents.get(ci, []):
-                children = ci_children[oid]
-                children.discard(ci)
-                if not children:
-                    commits.add(oid)
-                    new_parent = oid
-
-    # Load all the runs to build a commit graph
-    ci_times = {}
-    ci_parents = {}
-    ci_children = defaultdict(set)
-    log.info('Build commit graph')
-    for cid in commit_ids:
-        _visit(cid)
-    for oid, parents in ci_parents.iteritems():
-        for ci_parent in parents:
-            ci_children[ci_parent].add(oid)
-
-    return _gen_ids(commit_ids, skip, limit)

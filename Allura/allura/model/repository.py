@@ -1,3 +1,4 @@
+import sys
 import os
 import stat
 import errno
@@ -9,6 +10,7 @@ from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
+from itertools import izip
 
 import tg
 from paste.deploy.converters import asbool
@@ -28,6 +30,7 @@ from .auth import User
 from .session import repository_orm_session, project_orm_session
 from .notification import Notification
 from .repo_refresh import refresh_repo
+from .repo import CommitRunDoc, QSIZE
 from .timeline import ActivityObject
 
 log = logging.getLogger(__name__)
@@ -210,9 +213,24 @@ class Repository(Artifact, ActivityObject):
         return self._impl.compute_tree_new(commit, path)
 
     def _log(self, rev, skip, max_count):
-        ci = self.commit(rev)
-        if ci is None: return []
-        return ci.log(int(skip), int(max_count))
+        head = self.commit(rev)
+        if head is None: return
+        for oids in utils.chunked_iter(self.commitlog([head._id]), QSIZE):
+            oids = list(oids)
+            commits = dict(
+                (ci._id, ci) for ci in head.query.find(dict(
+                        _id={'$in': oids})))
+            for oid in oids:
+                if skip:
+                    skip -= 1
+                    continue
+                if max_count:
+                    max_count -= 1
+                    ci = commits[oid]
+                    ci.set_context(self)
+                    yield ci
+                else:
+                    break
 
     def init_as_clone(self, source_path, source_name, source_url, copy_hooks=False):
         self.upstream_repo.name = source_name
@@ -224,14 +242,88 @@ class Repository(Artifact, ActivityObject):
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(rev=branch, skip=offset, max_count=limit))
 
+    def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
+        seen = set()
+        def _visit(commit_id):
+            if commit_id in seen: return
+            run = CommitRunDoc.m.get(commit_ids=commit_id)
+            if run is None: return
+            index = False
+            for pos, (oid, time) in enumerate(izip(run.commit_ids, run.commit_times)):
+                if oid == commit_id: index = True
+                elif not index: continue
+                seen.add(oid)
+                ci_times[oid] = time
+                if pos+1 < len(run.commit_ids):
+                    ci_parents[oid] = [ run.commit_ids[pos+1] ]
+                else:
+                    ci_parents[oid] = run.parent_commit_ids
+            for oid in run.parent_commit_ids:
+                if oid not in seen:
+                    _visit(oid)
+
+        def _gen_ids(commit_ids, skip, limit):
+            # Traverse the graph in topo order, yielding commit IDs
+            commits = set(commit_ids)
+            new_parent = None
+            while commits and limit:
+                # next commit is latest commit that's valid to log
+                if new_parent in commits:
+                    ci = new_parent
+                else:
+                    ci = max(commits, key=lambda ci:ci_times[ci])
+                commits.remove(ci)
+                if skip:
+                    skip -= 1
+                    continue
+                else:
+                    limit -= 1
+                yield ci
+                # remove this commit from its parents children and add any childless
+                # parents to the 'ready set'
+                new_parent = None
+                for oid in ci_parents.get(ci, []):
+                    children = ci_children[oid]
+                    children.discard(ci)
+                    if not children:
+                        commits.add(oid)
+                        new_parent = oid
+
+        # Load all the runs to build a commit graph
+        ci_times = {}
+        ci_parents = {}
+        ci_children = defaultdict(set)
+        log.info('Build commit graph')
+        for cid in commit_ids:
+            _visit(cid)
+        for oid, parents in ci_parents.iteritems():
+            for ci_parent in parents:
+                ci_children[ci_parent].add(oid)
+
+        return _gen_ids(commit_ids, skip, limit)
+
     def count(self, branch='master'):
         try:
             ci = self.commit(branch)
             if ci is None: return 0
-            return ci.count_revisions()
+            return self.count_revisions(ci)
         except: # pragma no cover
             log.exception('Error getting repo count')
             return 0
+
+    def count_revisions(self, ci):
+        from .repo_refresh import CommitRunBuilder
+        result = 0
+        # If there's no CommitRunDoc for this commit, the call to
+        # commitlog() below will raise a KeyError. Repair the CommitRuns for
+        # this repo by rebuilding them entirely.
+        if not CommitRunDoc.m.find(dict(commit_ids=ci._id)).count():
+            log.info('CommitRun incomplete, rebuilding with all commits')
+            rb = CommitRunBuilder(list(self.all_commit_ids()))
+            rb.run()
+            rb.cleanup()
+        for oid in self.commitlog([ci._id]): result += 1
+        return result
 
     def latest(self, branch='master'):
         if self._impl is None: return None
@@ -323,7 +415,7 @@ class Repository(Artifact, ActivityObject):
             for head in self.heads + self.branches + self.repo_tags:
                 ci = self.commit(head.object_id)
                 if ci is not None:
-                    head.count = ci.count_revisions()
+                    head.count = self.count_revisions(ci)
         finally:
             log.info('... %s ready', self)
             self.status = 'ready'
