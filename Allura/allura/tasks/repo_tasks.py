@@ -107,7 +107,7 @@ def refresh(**kwargs):
             refresh.post()
             log.info('New refresh task is queued due to new commit(s).')
     else:
-        log.info('Refresh task is cancelled because another one is ready to start or busy.')
+        log.info('Refresh task for %s:%s skipped due to backlog', c.project.shortname, c.app.config.options.mount_point)
 
 @task
 def uninstall(**kwargs):
