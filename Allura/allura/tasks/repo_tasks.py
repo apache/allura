@@ -93,13 +93,11 @@ def refresh(**kwargs):
     #don't create multiple refresh tasks
     q = {
         'task_name': 'allura.tasks.repo_tasks.refresh',
-        'state': 'busy',
+        'state': {'$in': ['busy', 'ready']},
         'context.app_config_id': c.app.config._id,
         'context.project_id': c.project._id,
     }
     refresh_tasks_count = M.MonQTask.query.find(q).count()
-    q['state'] = 'ready'
-    refresh_tasks_count += M.MonQTask.query.find(q).count()
     if refresh_tasks_count <= 1: #only this task
         c.app.repo.refresh()
         #checking if we have new commits arrived
