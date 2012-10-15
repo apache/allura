@@ -58,26 +58,18 @@ class ForgeConfig(AppConfig):
     def _setup_bytecode_cache(self):
         cache_type = config.get('jinja_bytecode_cache_type')
         bcc = None
-        if cache_type == 'memcached' and config.get('memcached_host'):
-            try:
+        try:
+            if cache_type == 'memcached' and config.get('memcached_host'):
                 import pylibmc
                 from jinja2 import MemcachedBytecodeCache
                 client = pylibmc.Client([config['memcached_host']])
                 bcc = MemcachedBytecodeCache(client)
-            except:
-                log.exception("Error encountered while setting up a" +
-                        " filesystem-backed bytecode cache for Jinja.")
-        elif cache_type == 'filesystem':
-            try:
+            elif cache_type == 'filesystem':
                 from jinja2 import FileSystemBytecodeCache
                 bcc = FileSystemBytecodeCache()
-            except ImportError:
-                log.exception("pylibmc is a required dependency when" +
-                        " using a memcached-backed bytecode cache for" +
-                        " Jinja")
-            except:
-                log.exception("Error encountered while setting up a" +
-                        " memcached-backed bytecode cache for Jinja")
+        except:
+            log.exception("Error encountered while setting up a" +
+                        " %s-backed bytecode cache for Jinja" % cache_type)
         return bcc
 
     def setup_jinja_renderer(self):
