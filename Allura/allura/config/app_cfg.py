@@ -56,7 +56,7 @@ class ForgeConfig(AppConfig):
         config['routes.map'] = map
 
     def _setup_bytecode_cache(self):
-        cache_type = config.get('bytecode_cache_type')
+        cache_type = config.get('jinja_bytecode_cache_type')
         bcc = None
         if cache_type == 'memcached' and config.get('memcached_host'):
             try:
