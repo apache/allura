@@ -62,9 +62,9 @@ class TestNewGit(unittest.TestCase):
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
         all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 4
-        assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
-        assert self.repo.log(self.rev._id, 0,3) == all_cis[:3]
-        assert self.repo.log(self.rev._id, 1,2) == all_cis[1:3]
+        assert_equal(self.repo.log(self.rev._id, 1,1000), all_cis[1:])
+        assert_equal(self.repo.log(self.rev._id, 0,3), all_cis[:3])
+        assert_equal(self.repo.log(self.rev._id, 1,2), all_cis[1:3])
         for ci in all_cis:
             ci.context()
         self.rev.tree.ls()

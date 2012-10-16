@@ -212,25 +212,13 @@ class Repository(Artifact, ActivityObject):
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
 
-    def _log(self, rev, skip, max_count):
+    def _log(self, rev, skip, limit):
         head = self.commit(rev)
         if head is None: return
-        for oids in utils.chunked_iter(self.commitlog([head._id]), QSIZE):
-            oids = list(oids)
-            commits = dict(
-                (ci._id, ci) for ci in head.query.find(dict(
-                        _id={'$in': oids})))
-            for oid in oids:
-                if skip:
-                    skip -= 1
-                    continue
-                if max_count:
-                    max_count -= 1
-                    ci = commits[oid]
-                    ci.set_context(self)
-                    yield ci
-                else:
-                    break
+        for _id in self.commitlog([head._id], skip, limit):
+            ci = head.query.get(_id=_id)
+            ci.set_context(self)
+            yield ci
 
     def init_as_clone(self, source_path, source_name, source_url, copy_hooks=False):
         self.upstream_repo.name = source_name
@@ -240,7 +228,7 @@ class Repository(Artifact, ActivityObject):
         self._impl.clone_from(source, copy_hooks)
 
     def log(self, branch='master', offset=0, limit=10):
-        return list(self._log(rev=branch, skip=offset, max_count=limit))
+        return list(self._log(branch, offset, limit))
 
     def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
         seen = set()
@@ -273,12 +261,6 @@ class Repository(Artifact, ActivityObject):
                 else:
                     ci = max(commits, key=lambda ci:ci_times[ci])
                 commits.remove(ci)
-                if skip:
-                    skip -= 1
-                    continue
-                else:
-                    limit -= 1
-                yield ci
                 # remove this commit from its parents children and add any childless
                 # parents to the 'ready set'
                 new_parent = None
@@ -288,6 +270,12 @@ class Repository(Artifact, ActivityObject):
                     if not children:
                         commits.add(oid)
                         new_parent = oid
+                if skip:
+                    skip -= 1
+                    continue
+                else:
+                    limit -= 1
+                    yield ci
 
         # Load all the runs to build a commit graph
         ci_times = {}

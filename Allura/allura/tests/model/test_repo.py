@@ -125,14 +125,14 @@ class TestRepo(_TestWithRepo):
 
     @mock.patch.object(M.repo.CommitRunDoc.m, 'get')
     def test_log(self, crd):
-        head = mock.Mock(_id=4)
-        commits = [mock.Mock(_id=i) for i in (1,3,2)]
-        commits.append(head)
-        head.query.find.return_value = commits
+        head = mock.Mock(name='commit_head', _id=3)
+        commits = dict([(i, mock.Mock(name='commit_%s'%i, _id=i)) for i in range(3)])
+        commits[3] = head
+        head.query.get = lambda _id: commits[_id]
         self.repo._impl.commit = mock.Mock(return_value=head)
-        crd.return_value = mock.Mock(commit_ids=[4, 3, 2, 1], commit_times=[4, 3, 2, 1], parent_commit_ids=[])
+        crd.return_value = mock.Mock(commit_ids=[3, 2, 1, 0], commit_times=[4, 3, 2, 1], parent_commit_ids=[])
         log = self.repo.log()
-        assert_equal([c._id for c in log], [4, 3, 2, 1])
+        assert_equal([c._id for c in log], [3, 2, 1, 0])
 
     def test_count_revisions(self):
         ci = mock.Mock()

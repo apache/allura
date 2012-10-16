@@ -66,7 +66,7 @@ class Repository(M.Repository):
         return int(ci._id.split(':')[1])
 
     def log(self, branch='HEAD', offset=0, limit=10):
-        return list(self._log(rev=branch, skip=offset, max_count=limit))
+        return list(self._log(branch, offset, limit))
 
     def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
         ci_id = commit_ids[0]
