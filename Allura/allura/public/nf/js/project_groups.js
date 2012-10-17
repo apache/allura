@@ -32,23 +32,24 @@ $(function() {
   });
   // remove user from group
   var delete_user = function(evt){
-    var user_holder = $(this);
-    var params = {'role_id': user_holder.closest('tr').data('group'),
+    var user_holder =  $(this).parent();
+    if(confirm("Are you sure you want to remove the user "+user_holder.data('user')+"?")){
+        var params = {'role_id': user_holder.closest('tr').data('group'),
                   'username': user_holder.data('user'),
                   '_session_id': cval};
-    var old_html = user_holder.html();
-    user_holder.html(spinner_img+' Removing...');
-    $.post('remove_user', params, function(data){
-      if(data.error){
-        flash(data.error, 'error');
-        user_holder.html(old_html);
-      }
-      else{
-        user_holder.slideUp('fast');
+        var old_html = user_holder.html();
+        user_holder.html(spinner_img+' Removing...');
+        $.post('remove_user', params, function(data){
+            if(data.error){
+            flash(data.error, 'error');
+            user_holder.html(old_html);
+        }
+            else{
+             user_holder.slideUp('fast');
       }
     });
-  };
-  $('#usergroup_admin li.deleter').click(delete_user);
+  }};
+  $('#usergroup_admin b.deleter').click(delete_user);
   // add user to group
   $('#usergroup_admin tr').delegate("form.add_user", "submit", function(evt){
     evt.preventDefault();
@@ -66,7 +67,7 @@ $(function() {
       else{
         holder.attr('data-user', data.username).addClass('deleter');
         holder.html(perm_delete_ico+' '+data.displayname);
-        holder.click(delete_user);
+        holder.children('b').click(delete_user);
       }
     });
   });
