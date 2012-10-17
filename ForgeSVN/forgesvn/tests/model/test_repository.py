@@ -170,7 +170,23 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.exists('/tmp/testsvn/hooks/post-commit-user')
         assert os.access('/tmp/testsvn/hooks/post-commit-user', os.X_OK)
         with open('/tmp/testsvn/hooks/post-commit-user') as f: c = f.read()
-        self.assertEqual(c, 'post-commit\n')
+        expected = (
+                    '#!/bin/bash\n'
+                    '/var/local/mastertree/host/sfu-scm/hook-scripts/ciabot_svn.py --revisionURI="http://localhost//p/test/src/%(revision)s" --repositoryURI=https://localhost:8022/scm-repo/test/testsvn/ "$1" "$2" t2809\n'
+                    '/var/local/mastertree/host/sfu-scm/hook-scripts/ciabot_svn.py --revisionURI="http://localhost//p/test/src/%(revision)s" --repositoryURI=https://localhost:8022/scm-repo/test/testsvn/ "$1" "$2" "foo"\n'
+                    '/var/local/mastertree/host/sfu-scm/hook-scripts/svnnotify --repos-path "$1" --revision "$2" --to "test@example.com" --subject-prefix "SF.net SVN: t2809:" --subject-cx --no-first-line --with-diff --viewcvs-url "http://localhost//p/test/src/%s" --user-domain "users.sourceforge.net" --footer "This was sent by the SourceForge.net collaborative development platform, the world\'s largest Open Source development site." -l /usr/bin/svnlook --max-diff-length 100000\n'
+                    '/var/local/mastertree/host/sfu-scm/hook-scripts/svnnotify --repos-path "$1" --revision "$2" --to "test@example.com" --subject-prefix "SF.net SVN: t2809:" --subject-cx --no-first-line --viewcvs-url "http://localhost//p/test/src/%s" --user-domain "users.sourceforge.net" --footer "This was sent by the SourceForge.net collaborative development platform, the world\'s largest Open Source development site." -l /usr/bin/svnlook --max-diff-length 100000\n'
+                )
+        self.assertEqual(c, expected, (
+                    'Incorrect post-commit-user; expected:\n'
+                    '-------------------------------------\n'
+                    '%s'
+                    '-------------------------------------\n'
+                    'Got:\n'
+                    '-------------------------------------\n'
+                    '%s'
+                    '-------------------------------------\n'
+                ) % (expected, c))
         assert os.path.exists('/tmp/testsvn/hooks/post-commit')
         assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
