@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import Queue
@@ -14,6 +15,8 @@ from webob import Request
 import base
 
 faulthandler.enable()
+
+status_log = logging.getLogger('taskdstatus')
 
 
 class TaskdCommand(base.Command):
@@ -48,7 +51,9 @@ class TaskdCommand(base.Command):
         self.keep_running = False
 
     def log_current_task(self, signum, frame):
-        base.log.info('taskd pid %s is currently handling task %s' % (os.getpid(), getattr(self, 'task', None)))
+        entry = 'taskd pid %s is currently handling task %s' % (os.getpid(), getattr(self, 'task', None))
+        status_log.info(entry)
+        base.log.info(entry)
 
     def worker(self):
         from allura import model as M
