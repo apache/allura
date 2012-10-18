@@ -373,6 +373,9 @@ class CaseInsensitiveDict(dict):
     def __delitem__(self, name):
         super(CaseInsensitiveDict, self).__delitem__(name.lower())
 
+    def __contains__(self, name):
+        return super(CaseInsensitiveDict, self).__contains__(name.lower())
+
     def pop(self, k, *args):
         return super(CaseInsensitiveDict, self).pop(k.lower(), *args)
 
