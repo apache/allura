@@ -234,7 +234,7 @@ class TestTreeLs(TestController):
         TestController.setUp(self)
         self.setup_with_tools()
 
-    @td.with_hg
+    @with_hg
     def setup_with_tools(self):
         h.set_context('test', 'src-hg', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(

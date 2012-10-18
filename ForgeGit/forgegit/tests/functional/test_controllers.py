@@ -13,6 +13,7 @@ from datadiff.tools import assert_equal
 from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestController
+from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
 
 class _TestCase(TestController):
@@ -36,7 +37,7 @@ class _TestCase(TestController):
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
 
-    @td.with_tool('test', 'Git', 'testgit-index', 'Git', type='git')
+    @with_tool('test', 'Git', 'testgit-index', 'Git', type='git')
     def setup_testgit_index_repo(self):
         h.set_context('test', 'testgit-index', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(

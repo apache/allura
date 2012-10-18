@@ -64,7 +64,7 @@ class Repository(M.Repository):
     def count_revisions(self, ci):
         # since SVN histories are inherently linear and the commit _id
         # contains the revision, just parse it out from there
-        return int(ci._id.split(':')[1])
+        return int(self._impl._revno(ci._id))
 
     def log(self, branch='HEAD', offset=0, limit=10):
         return list(self._log(branch, offset, limit))

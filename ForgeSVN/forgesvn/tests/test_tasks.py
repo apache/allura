@@ -46,7 +46,7 @@ class TestRepoTasks(unittest.TestCase):
         with mock.patch.object(c.app.repo, 'init_as_clone') as f:
             repo_tasks.clone('foo', 'bar', 'baz')
             M.main_orm_session.flush()
-            f.assert_called_with('foo', 'bar', 'baz')
+            f.assert_called_with('foo', 'bar', 'baz', False)
             assert ns + 1 == M.Notification.query.find().count()
 
     def test_refresh(self):

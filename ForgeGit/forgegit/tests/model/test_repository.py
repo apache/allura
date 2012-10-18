@@ -266,7 +266,7 @@ class TestGitHtmlView(unittest.TestCase):
         setup_basic_test()
         self.setup_with_tools()
 
-    @td.with_git
+    @with_git
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src-git', neighborhood='Projects')
