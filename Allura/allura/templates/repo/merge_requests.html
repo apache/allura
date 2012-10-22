@@ -10,7 +10,9 @@
 
 {% block header %}{{c.app.config.options.mount_label}} Merge Requests{% endblock %}
 {% block content %}
+  <div class="nested-grid-container">
   {{ c.mr_filter.display(action='.', value=dict(status=status)) }}
+  </div>
 
   <table>
     <thead>
