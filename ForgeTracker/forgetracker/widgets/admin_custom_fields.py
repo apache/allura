@@ -65,7 +65,9 @@ class CustomFieldAdminDetail(ffw.StateField):
         states=dict(
             select=ffw.FieldCluster(
                 fields=[
-                    ffw.AdminField(field=ew.TextField(name='options')) ],
+                    ffw.AdminField(field=ew.TextField(name='options',
+                        label='Options (separate with spaces; prefix with * to set a default)',
+                        )) ],
                 show_labels=False),
             milestone=ffw.FieldCluster(
                 # name='milestones',
