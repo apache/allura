@@ -145,7 +145,7 @@ $(function() {
       newitem.remove();
       newitem.removeClass('new-item');
       adder.click(function(evt) {
-          newitem.clone().insertBefore(adder.closest('li')).find('input').focus();
+          newitem.clone().insertBefore(adder.closest('li')).find('input:text').focus();
       });
   });
   // cancel adding user
