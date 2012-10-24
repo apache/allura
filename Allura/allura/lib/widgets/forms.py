@@ -273,6 +273,16 @@ class NeighborhoodAddProjectForm(ForgeForm):
             ew.Option(label='Wiki', html_value='wiki', selected=True)
         ])
 
+    def __init__(self, *args, **kwargs):
+        super(NeighborhoodAddProjectForm, self).__init__(*args, **kwargs)
+        ## Dynamically generating CheckboxSet of installable tools
+        from allura.lib.widgets import forms
+        self.fields.tools.options = [
+                forms.ew.Option(label=tool.tool_label, html_value=ep)
+                    for ep,tool in g.entry_points["tool"].iteritems()
+                    if tool.installable and tool.status == 'production'
+            ]
+
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
         yield ew.CSSLink('css/add_project.css')

@@ -311,19 +311,6 @@ class ProjectRegistrationProvider(object):
     def __init__(self):
         from allura.lib.widgets import forms
         self.add_project_widget = forms.NeighborhoodAddProjectForm
-        ## Dynamically generating CheckboxSet of installable tools
-        self.add_project_widget.fields.tools = forms.ew.CheckboxSet(
-            name="tools", options=[
-                forms.ew.Option(label=tool.tool_label, html_value=ep)
-                for ep,tool in g.entry_points["tool"].iteritems()
-                if tool.installable and tool.status == 'production'
-            ], selected=True
-        )
-        # have to update it via index as well because of crazy
-        # implementation of EasyWidget's NamedList "helper";
-        # otherwise, validation doesn't see the new options
-        tfi = utils.index_matching(lambda x: x.name == 'tools', self.add_project_widget.fields)
-        self.add_project_widget.fields[tfi] = self.add_project_widget.fields.tools
 
     @classmethod
     def get(cls):
