@@ -314,8 +314,9 @@ class ProjectRegistrationProvider(object):
         ## Dynamically generating CheckboxSet of installable tools
         self.add_project_widget.fields.tools = forms.ew.CheckboxSet(
             name="tools", options=[
-                forms.ew.Option(label=tool.tool_label, html_value=ep) \
-                for ep,tool in g.entry_points["tool"].iteritems() if tool.installable
+                forms.ew.Option(label=tool.tool_label, html_value=ep)
+                for ep,tool in g.entry_points["tool"].iteritems()
+                if tool.installable and tool.status == 'production'
             ], selected=True
         )
         # have to update it via index as well because of crazy
