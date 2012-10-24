@@ -270,7 +270,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 NeighborhoodProjectTakenValidator()))
         tools = ew.CheckboxSet(name='tools', options=[
             ## Required for Neighborhood functional tests to pass
-            ew.Option(label='Wiki', html_value='Wiki', selected=True)
+            ew.Option(label='Wiki', html_value='wiki', selected=True)
         ])
 
     def resources(self):

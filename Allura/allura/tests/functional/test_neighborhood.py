@@ -492,7 +492,7 @@ class TestNeighborhood(TestController):
                 project_description='',
                 neighborhood='Projects',
                 private_project='on',
-                tools='Wiki'),
+                tools='wiki'),
             antispam=True,
             extra_environ=dict(username='root'),
             status=302)
@@ -664,7 +664,7 @@ class TestNeighborhood(TestController):
         # p/test exists, so try creating adobe/test
         self.app.get('/adobe/test/wiki/', status=404)
         r = self.app.post('/adobe/register',
-                          params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe', tools='Wiki'),
+                          params=dict(project_unixname='test', project_name='Test again', project_description='', neighborhood='Adobe', tools='wiki'),
                           antispam=True,
                           extra_environ=dict(username='root'))
         assert r.status_int == 302, r.html.find('div', {'class':'error'}).string
