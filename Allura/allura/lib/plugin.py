@@ -30,6 +30,7 @@ from ming.orm import state
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
 
@@ -313,10 +314,15 @@ class ProjectRegistrationProvider(object):
         ## Dynamically generating CheckboxSet of installable tools
         self.add_project_widget.fields.tools = forms.ew.CheckboxSet(
             name="tools", options=[
-                forms.ew.Option(label=tool.tool_label, html_value=tool.tool_label) \
-                for tool in g.entry_points["tool"].itervalues() if tool.installable
+                forms.ew.Option(label=tool.tool_label, html_value=ep) \
+                for ep,tool in g.entry_points["tool"].iteritems() if tool.installable
             ], selected=True
         )
+        # have to update it via index as well because of crazy
+        # implementation of EasyWidget's NamedList "helper";
+        # otherwise, validation doesn't see the new options
+        tfi = utils.index_matching(lambda x: x.name == 'tools', self.add_project_widget.fields)
+        self.add_project_widget.fields[tfi] = self.add_project_widget.fields.tools
 
     @classmethod
     def get(cls):

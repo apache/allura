@@ -456,3 +456,12 @@ def take_while_true(source):
     while x:
         yield x
         x = source()
+
+def index_matching(pred, seq):
+    '''Return the index of the first item from seq matching the predicate.
+
+    If no items match the predicate, None is returned instead.'''
+    for i,x in enumerate(seq):
+        if pred(x):
+            return i
+    return None

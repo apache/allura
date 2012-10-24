@@ -29,17 +29,16 @@
     </div>
 
     {% if not neighborhood.project_template %}
-    {% for tool in g.entry_points["tool"].itervalues() %}
-        {% if tool.installable %}
-            <div class="tool">
-                <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ tool.tool_label}} icon">
-                <input checked type="checkbox" value="{{ tool.tool_label }}"
-                       name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
-                       id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">
-                <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ tool.tool_label }}">{{ tool.tool_label }}</label></h1>
-                <p>{{ tool.tool_description }}</p>
-            </div>
-        {% endif %}
+    {% for opt in widget.fields.tools.options %}
+        {% set tool = g.entry_points["tool"][opt.html_value] %}
+        <div class="tool">
+            <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ opt.label }} icon">
+            <input checked type="checkbox" value="{{ opt.html_value }}"
+                   name="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}"
+                   id="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ opt.html_value }}">
+            <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ opt.html_value }}">{{ opt.label }}</label></h1>
+            <p>{{ tool.tool_description }}</p>
+        </div>
     {% endfor %}
     {% endif %}
     {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}
