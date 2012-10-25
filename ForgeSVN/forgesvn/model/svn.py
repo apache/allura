@@ -434,44 +434,8 @@ class SVNImplementation(M.RepositoryImplementation):
 
         return size
 
-    def _process_classic_user_hooks(self, file_name):
-        target_file = os.path.join(self._repo.full_fs_path, 'hooks/post-commit-user')
-        with open(file_name) as classic:
-            with open(target_file, 'w') as allura:
-                allura.write('#!/bin/bash\n')
-                for line in classic:
-                    if not line.startswith('/var/local'):
-                        continue
-                    if re.search(r'sf-svn-stats-hook.py|keepsake', line):
-                        continue
-                    line = re.sub(r'/sfp-svn/', '/sfu-scm/', line)
-                    line = re.sub(r'--viewcvs-url "[^"]*"', '--viewcvs-url "%s%s%%s"' % (
-                        tg.config.get('base_url', ''), self._repo.url()), line)
-                    line = re.sub(r'--revisionURI="[^"]*"', '--revisionURI="%s%s%%(revision)s"' % (
-                        tg.config.get('base_url', ''), self._repo.url()), line)
-                    line = re.sub(r'--repositoryURI=\S*', '--repositoryURI=%s' % self._repo.clone_url('https_anon'), line)
-                    allura.write(line)
-        shutil.copymode(file_name, target_file)
-
-    def _copy_hooks(self, source_path):
-        '''Copy existing hooks if source path is given and exists.'''
-        if source_path is not None and source_path.startswith('file://'):
-            source_path = source_path[7:]
-        if source_path is None or not os.path.exists(source_path):
-            return
-        for hook in glob(os.path.join(source_path, 'hooks/*')):
-            filename = os.path.basename(hook)
-            target_filename = filename
-            if filename == 'post-commit':
-                self._process_classic_user_hooks(hook)
-            else:
-                target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
-                shutil.copy2(hook, target)
-
     def _setup_hooks(self, source_path=None, copy_hooks=False):
         'Set up the post-commit and pre-revprop-change hooks'
-        if copy_hooks:
-            self._copy_hooks(source_path)
         # setup a post-commit hook to notify Allura of changes to the repo
         # the hook should also call the user-defined post-commit-user hook
         text = self.post_receive_template.substitute(
