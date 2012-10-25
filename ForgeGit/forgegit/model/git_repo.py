@@ -260,22 +260,8 @@ class GitImplementation(M.RepositoryImplementation):
     def blob_size(self, blob):
         return self._object(blob._id).data_stream.size
 
-    def _copy_hooks(self, source_path):
-        '''Copy existing hooks if source path is given and exists.'''
-        if source_path is None or not os.path.exists(source_path):
-            return
-        for hook in glob(os.path.join(source_path, 'hooks/*')):
-            filename = os.path.basename(hook)
-            target_filename = filename
-            if filename == 'post-receive':
-                target_filename = 'post-receive-user'
-            target = os.path.join(self._repo.full_fs_path, 'hooks', target_filename)
-            shutil.copy2(hook, target)
-
     def _setup_hooks(self, source_path=None, copy_hooks=False):
         'Set up the git post-commit hook'
-        if copy_hooks:
-            self._copy_hooks(source_path)
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')
             + '/auth/refresh_repo' + self._repo.url())
