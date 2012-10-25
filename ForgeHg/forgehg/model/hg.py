@@ -55,29 +55,6 @@ class HgUI(ui.ui):
 
 class HgImplementation(M.RepositoryImplementation):
     re_hg_user = re.compile('(.*) <(.*)>')
-    skip_internal_files = set([
-            '00changelog.i',
-            'requires',
-            'branch',
-            'branch.cache',
-            'dirstate',
-            'inotify.sock',
-            'patches',
-            'wlock',
-            'undo.dirstate',
-            'undo.branch',
-            'journal.dirstate',
-            'journal.branch',
-            'store',
-            'lock',
-            'journal',
-            'undo',
-            'fncache',
-            'data',
-            'branchheads.cache',  # older versions have these cache files
-            'tags.cache',         # directly in the .hg directory
-            'cache',  # newer versions have cache directory (see http://selenic.com/repo/hg/rev/5ccdca7df211)
-        ])
 
     def __init__(self, repo):
         self._repo = repo
@@ -279,31 +256,8 @@ class HgImplementation(M.RepositoryImplementation):
         fctx = self._hg[blob.commit._id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return fctx.size()
 
-    def _copy_hooks(self, source_path):
-        '''Copy existing hooks if source path is given and exists.'''
-        if source_path is None or not os.path.exists(source_path):
-            return
-        hgrc = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
-        try:
-            os.remove(hgrc)
-        except OSError as e:
-            if os.path.exists(hgrc):
-                raise
-        for name in os.listdir(os.path.join(source_path, '.hg')):
-            source = os.path.join(source_path, '.hg', name)
-            target = os.path.join(
-                    self._repo.full_fs_path, '.hg', os.path.basename(source))
-            if name in self.skip_internal_files:
-                continue
-            if os.path.isdir(source):
-                shutil.copytree(source, target)
-            else:
-                shutil.copy2(source, target)
-
     def _setup_hooks(self, source_path=None, copy_hooks=False):
         'Set up the hg changegroup hook'
-        if copy_hooks:
-            self._copy_hooks(source_path)
         hgrc = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
         cp = ConfigParser()
         cp.read(hgrc)
