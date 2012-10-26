@@ -408,7 +408,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             try:
                 App = ac.load()
             # If so, we don't want it listed
-            except KeyError:
+            except KeyError as e:
+                log.exception(e)
                 continue
             app = App(self, ac)
             if app.is_visible_to(c.user):
