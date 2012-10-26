@@ -404,7 +404,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for ac in self.app_configs:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
-            App = ac.load()
+            # Tool could've been uninstalled in the meantime
+            try:
+                App = ac.load()
+            # If so, we don't want it listed
+            except KeyError as e:
+                log.exception('AppConfig %s references invalid tool %s', ac._id, ac.tool_name)
+                continue
             app = App(self, ac)
             if app.is_visible_to(c.user):
                 for sm in app.main_menu():
@@ -533,8 +539,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for sub in self.direct_subprojects:
             result.append({'ordinal':int(sub.ordinal), 'sub':sub, 'rank':1})
         for ac in self.app_configs:
-            App = g.entry_points['tool'][ac.tool_name]
-            if include_hidden or not App.hidden:
+            App = g.entry_points['tool'].get(ac.tool_name)
+            if include_hidden or App and not App.hidden:
                 ordinal = ac.options.get('ordinal', 0)
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
                 result.append({'ordinal':int(ordinal), 'ac':ac, 'rank':rank})
