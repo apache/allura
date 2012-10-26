@@ -70,8 +70,7 @@ class ForgeSVNApp(RepositoryApp):
             allura.tasks.repo_tasks.clone.post(
                 cloned_from_path=init_from_path,
                 cloned_from_name=None,
-                cloned_from_url=init_from_url,
-                copy_hooks=self.config.options.get('copy_hooks', False))
+                cloned_from_url=init_from_url)
         else:
             allura.tasks.repo_tasks.init.post()
 

@@ -129,7 +129,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from('file://' + repo_path, copy_hooks=False)
+        repo._impl.clone_from('file://' + repo_path)
         assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
@@ -157,7 +157,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from('file://' + repo_path, copy_hooks=True)
+        repo._impl.clone_from('file://' + repo_path)
         assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)

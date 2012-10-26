@@ -89,7 +89,7 @@ class GitImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_url, copy_hooks=False):
+    def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
         self._repo.status = 'cloning'
         session(self._repo).flush(self._repo)
@@ -104,7 +104,7 @@ class GitImplementation(M.RepositoryImplementation):
                 to_path=fullname,
                 bare=True)
             self.__dict__['_git'] = repo
-            self._setup_special_files(source_url, copy_hooks)
+            self._setup_special_files(source_url)
         except:
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
@@ -260,7 +260,7 @@ class GitImplementation(M.RepositoryImplementation):
     def blob_size(self, blob):
         return self._object(blob._id).data_stream.size
 
-    def _setup_hooks(self, source_path=None, copy_hooks=False):
+    def _setup_hooks(self, source_path=None):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
             url=tg.config.get('base_url', 'http://localhost:8080')

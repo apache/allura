@@ -128,7 +128,7 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path, copy_hooks=False)
+        repo._impl.clone_from(repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testrepo.hg/.hg/external-changegroup')
         assert not os.path.exists('/tmp/testrepo.hg/.hg/nested/nested-file')
@@ -156,7 +156,7 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path, copy_hooks=True)
+        repo._impl.clone_from(repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testrepo.hg/.hg/external-changegroup')
         assert not os.path.exists('/tmp/testrepo.hg/.hg/nested/nested-file')

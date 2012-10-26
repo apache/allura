@@ -158,7 +158,7 @@ class SVNImplementation(M.RepositoryImplementation):
             self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
             shutil.rmtree(fullname+'/tmp')
 
-    def clone_from(self, source_url, copy_hooks=False):
+    def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init(default_dirs=False, skip_special_files=True)
         # Need a pre-revprop-change hook for cloning
@@ -189,7 +189,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           c.app.config.options['checkout_url'])):
             c.app.config.options['checkout_url'] = ""
         self._repo.refresh(notify=False)
-        self._setup_special_files(source_url, copy_hooks)
+        self._setup_special_files(source_url)
 
     def refresh_heads(self):
         info = self._svn.info2(
@@ -434,7 +434,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
         return size
 
-    def _setup_hooks(self, source_path=None, copy_hooks=False):
+    def _setup_hooks(self, source_path=None):
         'Set up the post-commit and pre-revprop-change hooks'
         # setup a post-commit hook to notify Allura of changes to the repo
         # the hook should also call the user-defined post-commit-user hook

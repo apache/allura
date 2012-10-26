@@ -74,7 +74,7 @@ class HgImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
-    def clone_from(self, source_url, copy_hooks=False):
+    def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
         self._repo.status = 'cloning'
         session(self._repo).flush(self._repo)
@@ -91,7 +91,7 @@ class HgImplementation(M.RepositoryImplementation):
                 self._repo.full_fs_path.encode('utf-8'),
                 update=False)
             self.__dict__['_hg'] = repo
-            self._setup_special_files(source_url, copy_hooks)
+            self._setup_special_files(source_url)
         except:
             self._repo.status = 'raise'
             session(self._repo).flush(self._repo)
@@ -256,7 +256,7 @@ class HgImplementation(M.RepositoryImplementation):
         fctx = self._hg[blob.commit._id][h.really_unicode(blob.path()).encode('utf-8')[1:]]
         return fctx.size()
 
-    def _setup_hooks(self, source_path=None, copy_hooks=False):
+    def _setup_hooks(self, source_path=None):
         'Set up the hg changegroup hook'
         hgrc = os.path.join(self._repo.fs_path, self._repo.name, '.hg', 'hgrc')
         cp = ConfigParser()

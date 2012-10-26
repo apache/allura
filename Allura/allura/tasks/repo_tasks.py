@@ -22,15 +22,13 @@ def init(**kwargs):
 def clone(
     cloned_from_path,
     cloned_from_name,
-    cloned_from_url,
-    copy_hooks=False):
+    cloned_from_url):
     try:
         from allura import model as M
         c.app.repo.init_as_clone(
             cloned_from_path,
             cloned_from_name,
-            cloned_from_url,
-            copy_hooks)
+            cloned_from_url)
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (

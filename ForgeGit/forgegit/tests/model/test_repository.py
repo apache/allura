@@ -142,7 +142,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path, copy_hooks=False)
+        repo._impl.clone_from(repo_path)
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
         assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
@@ -161,7 +161,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
         repo.init()
-        repo._impl.clone_from(repo_path, copy_hooks=True)
+        repo._impl.clone_from(repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
