@@ -409,7 +409,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 App = ac.load()
             # If so, we don't want it listed
             except KeyError as e:
-                log.exception(e)
+                log.exception('AppConfig %s references invalid tool %s', ac._id, ac.tool_name)
                 continue
             app = App(self, ac)
             if app.is_visible_to(c.user):
