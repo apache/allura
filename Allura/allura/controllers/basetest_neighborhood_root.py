@@ -30,7 +30,7 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-class TestNeighborhoodRootController(WsgiDispatchController, NeighborhoodController):
+class BasetestNeighborhoodRootController(WsgiDispatchController, NeighborhoodController):
     '''Root controller for testing -- it behaves just like a
     NeighborhoodController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -58,7 +58,7 @@ class TestNeighborhoodRootController(WsgiDispatchController, NeighborhoodControl
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
-        super(TestNeighborhoodRootController, self).__init__()
+        super(BasetestNeighborhoodRootController, self).__init__()
 
     def _setup_request(self):
         pass

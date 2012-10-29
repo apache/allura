@@ -22,7 +22,7 @@ class TestNeighborhood(TestController):
         # change the override_root config value to change which root controller the test uses
         self._make_app = allura.config.middleware.make_app
         def make_app(global_conf, full_stack=True, **app_conf):
-            app_conf['override_root'] = 'test_neighborhood_root'
+            app_conf['override_root'] = 'basetest_neighborhood_root'
             return self._make_app(global_conf, full_stack, **app_conf)
         allura.config.middleware.make_app = make_app
         super(TestNeighborhood, self).setUp()

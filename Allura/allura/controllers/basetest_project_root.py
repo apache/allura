@@ -30,7 +30,7 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-class TestProjectRootController(WsgiDispatchController, ProjectController):
+class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     '''Root controller for testing -- it behaves just like a
     ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -60,7 +60,7 @@ class TestProjectRootController(WsgiDispatchController, ProjectController):
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
-        super(TestProjectRootController, self).__init__()
+        super(BasetestProjectRootController, self).__init__()
 
     def _setup_request(self):
         # This code fixes a race condition in our tests
