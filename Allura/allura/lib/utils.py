@@ -11,6 +11,7 @@ import mimetypes
 import re
 import magic
 from itertools import groupby
+import collections
 
 import tg
 import pylons
@@ -348,44 +349,43 @@ class TruthyCallable(object):
     def __nonzero__(self):
         return self.callable()
 
-class CaseInsensitiveDict(dict):
+
+class TransformedDict(collections.MutableMapping):
+    """
+    A dictionary which applies an arbitrary
+    key-altering function before accessing the keys.
+
+    From: http://stackoverflow.com/questions/3387691/python-how-to-perfectly-override-a-dict
+    """
 
     def __init__(self, *args, **kwargs):
-        super(CaseInsensitiveDict, self).__init__(*args, **kwargs)
-        self._reindex()
+        self.store = dict()
+        self.update(dict(*args, **kwargs)) # use the free update to set keys
 
-    def _reindex(self):
-        items = self.items()
-        self.clear()
-        self._index = {}
-        for k,v in items:
-            self[k] = v
-        assert len(self) == len(items), 'Duplicate (case-insensitive) key'
+    def __getitem__(self, key):
+        return self.store[self.__keytransform__(key)]
 
-    def __getitem__(self, name):
-        return super(CaseInsensitiveDict, self).__getitem__(name.lower())
+    def __setitem__(self, key, value):
+        self.store[self.__keytransform__(key)] = value
 
-    def __setitem__(self, name, value):
-        lname = name.lower()
-        super(CaseInsensitiveDict, self).__setitem__(lname, value)
-        self._index[lname] = name
+    def __delitem__(self, key):
+        del self.store[self.__keytransform__(key)]
 
-    def __delitem__(self, name):
-        super(CaseInsensitiveDict, self).__delitem__(name.lower())
+    def __iter__(self):
+        return iter(self.store)
 
-    def __contains__(self, name):
-        return super(CaseInsensitiveDict, self).__contains__(name.lower())
+    def __len__(self):
+        return len(self.store)
 
-    def pop(self, k, *args):
-        return super(CaseInsensitiveDict, self).pop(k.lower(), *args)
+    def __keytransform__(self, key):
+        return key
 
-    def popitem(self):
-        k,v = super(CaseInsensitiveDict, self).popitem()
-        return self._index[k], v
 
-    def update(self, *args, **kwargs):
-        super(CaseInsensitiveDict, self).update(*args, **kwargs)
-        self._reindex()
+class CaseInsensitiveDict(TransformedDict):
+
+    def __keytransform__(self, key):
+        return key.lower()
+
 
 def postmortem_hook(etype, value, tb): # pragma no cover
     import sys, pdb, traceback

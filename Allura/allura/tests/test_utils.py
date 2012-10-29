@@ -111,12 +111,11 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d['bar'] == d['Bar'] == 6
         d['bar'] = 7
         assert d['bar'] == d['bAr'] == 7
-        self.assertRaises(AssertionError, utils.CaseInsensitiveDict, foo=1, Foo=2)
         del d['bar']
         assert len(d) == 1, d
-        assert d.popitem() == ('Foo', 5)
-        self.assertRaises(AssertionError, d.update, foo=1, Foo=2)
+        assert d.get('foo') == 5
         d.update(foo=1, Bar=2)
+        assert d.get('FOO') == 1
         assert d == dict(foo=1, bar=2)
         assert d != dict(Foo=1, bar=2)
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
