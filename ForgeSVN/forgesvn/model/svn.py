@@ -13,11 +13,8 @@ from glob import glob
 
 import tg
 import pysvn
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pymongo.errors import DuplicateKeyError
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session

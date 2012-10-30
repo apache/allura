@@ -10,7 +10,7 @@ from glob import glob
 import tg
 import git
 import gitdb
-from pylons import g
+from pylons import app_globals as g
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object

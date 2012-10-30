@@ -8,7 +8,7 @@ from cStringIO import StringIO
 from ConfigParser import ConfigParser
 
 import tg
-from pylons import g
+from pylons import app_globals as g
 os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
 from pymongo.errors import DuplicateKeyError
