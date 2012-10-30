@@ -9,6 +9,7 @@ from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
+from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
@@ -362,6 +363,7 @@ class ProjectAdminController(BaseController):
             if trove_obj._id not in current_troves:
                 current_troves.append(trove_obj._id)
                 M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
+                ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
                 g.post_event('project_updated')
             else:
                 error_msg = 'This category has already been assigned to the project.'
@@ -392,6 +394,7 @@ class ProjectAdminController(BaseController):
         if trove_obj is not None and trove_obj._id in current_troves:
             M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
             current_troves.remove(trove_obj._id)
+            ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
             g.post_event('project_updated')
         redirect('trove')
 
