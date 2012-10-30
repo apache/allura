@@ -79,9 +79,9 @@ class TestRootController(TestController):
     def test_shorturl_remove(self):
         self.app.post('/admin/url/add',
                 params=dict(short_url='g', full_url='http://google.com/'))
-        assert ShortUrl.query.find(app_config_id=c.app.config._id).count() == 1
+        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 1
         self.app.post('/admin/url/remove', params=dict(shorturl='g'))
-        assert ShortUrl.query.find(app_config_id=c.app.config._id).count() == 0
+        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
 
     def test_shorturl_permissions(self):
         self.app.post('/admin/url/add',
