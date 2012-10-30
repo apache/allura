@@ -62,7 +62,8 @@ class ForgeSVNApp(RepositoryApp):
         SM.Repository(
             name=self.config.options.mount_point,
             tool='svn',
-            status='initializing')
+            status='initializing',
+            fs_path=self.config.options.get('fs_path'))
         ThreadLocalORMSession.flush_all()
         init_from_url = self.config.options.get('init_from_url')
         init_from_path = self.config.options.get('init_from_path')
