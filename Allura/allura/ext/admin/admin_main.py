@@ -361,6 +361,7 @@ class ProjectAdminController(BaseController):
         elif trove_obj is not None:
             if trove_obj._id not in current_troves:
                 current_troves.append(trove_obj._id)
+                M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
                 g.post_event('project_updated')
             else:
                 error_msg = 'This category has already been assigned to the project.'
@@ -372,14 +373,12 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
         return dict(trove_full_path = trove_obj.fullpath, trove_cat_id = trove_obj.trove_cat_id, error_msg=error_msg)
-        redirect('trove')
 
     @expose()
     @require_post()
     def add_trove(self, type, new_trove, **kw):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
-        M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
         if error_msg:
             flash(error_msg,'error')
         redirect('trove')
