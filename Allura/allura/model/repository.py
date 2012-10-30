@@ -124,16 +124,18 @@ class RepositoryImplementation(object):
         return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):
+        '''
+        Ensure that the base directory in which the repo lives exists.
+        If create_repo_dir is True, also ensure that the directory
+        of the repo itself exists.
+        '''
         if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
         fullname = self._repo.fs_path + self._repo.name
-        path = fullname if create_repo_dir else self._repo.fs_path
-        try:
-            os.makedirs(path)
-        except OSError, e: # pragma no cover
-            if e.errno != errno.EEXIST:
-                raise
-            else:
-                log.warn('setup_paths error %s' % path, exc_info=True)
+        # make the base dir for repo, regardless
+        if not os.path.exists(self._repo.fs_path):
+            os.makedirs(self._repo.fs_path)
+        if create_repo_dir and not os.path.exists(fullname):
+            os.makedir(fullname)
         return fullname
 
     def _setup_special_files(self, source_path=None):
@@ -167,9 +169,9 @@ class Repository(Artifact, ActivityObject):
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
-            if 'fs_path' not in kw:
+            if kw.get('fs_path') is None:
                 kw['fs_path'] = self.default_fs_path(c.project, kw['tool'])
-            if 'url_path' not in kw:
+            if kw.get('url_path') is None:
                 kw['url_path'] = self.default_url_path(c.project, kw['tool'])
         super(Repository, self).__init__(**kw)
 
