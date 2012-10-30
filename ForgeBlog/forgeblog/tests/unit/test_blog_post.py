@@ -1,11 +1,32 @@
 from datetime import datetime
 from nose.tools import assert_equal
+from pylons import c
 
 from forgeblog import model as M
 from forgeblog.tests.unit import BlogTestWithModel
+from allura.model import Feed
 
 def wrapped(s):
     return '<div class="markdown_content"><p>%s</p></div>' % s
+
+class TestFeed(BlogTestWithModel):
+    def testd(self):
+        post = M.BlogPost()
+        post.title = 'test'
+        post.text = 'test message'
+        post.state = 'published'
+        post.timestamp = datetime(2012, 10, 29, 9, 57, 21, 465000)
+        post.neighborhood_id = c.project.neighborhood_id
+        post.make_slug()
+        post.commit()
+        f = Feed.post(
+            post,
+            title=post.title,
+            description=post.text,
+            author=post.author(),
+            pubdate=post.timestamp)
+        assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
+
 
 class TestHtmlPreview(BlogTestWithModel):
     def _make_post(self, text):

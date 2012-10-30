@@ -215,7 +215,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             description = diff
             if v1.state != 'published' and v2.state == 'published':
                 activity('created', self)
-                M.Feed.post(self, self.title, self.text, author=self.author())
+                M.Feed.post(self, self.title, self.text, author=self.author(), pubdate=self.get_version(1).timestamp)
                 description = self.text
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
@@ -233,7 +233,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 c.user.username, self.title)
             if self.state == 'published':
                 activity('created', self)
-                M.Feed.post(self, self.title, self.text, author=self.author())
+                M.Feed.post(self, self.title, self.text, author=self.author(), pubdate=self.timestamp)
         if self.state == 'published':
             M.Notification.post(
                 artifact=self, topic='metadata', text=description, subject=subject)
