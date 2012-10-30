@@ -17,7 +17,7 @@ import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pymongo.errors import DuplicateKeyError
-from pylons import c
+from pylons import c, g
 
 from ming.base import Object
 from ming.orm import Mapper, FieldProperty, session
@@ -190,6 +190,7 @@ class SVNImplementation(M.RepositoryImplementation):
             c.app.config.options['checkout_url'] = ""
         self._repo.refresh(notify=False)
         self._setup_special_files(source_url)
+        g.post_event('repo_cloned')
 
     def refresh_heads(self):
         info = self._svn.info2(

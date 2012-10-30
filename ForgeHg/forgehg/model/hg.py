@@ -8,6 +8,7 @@ from cStringIO import StringIO
 from ConfigParser import ConfigParser
 
 import tg
+from pylons import g
 os.environ['HGRCPATH'] = '' # disable loading .hgrc
 from mercurial import ui, hg
 from pymongo.errors import DuplicateKeyError
@@ -98,6 +99,7 @@ class HgImplementation(M.RepositoryImplementation):
             raise
         log.info('... %r cloned', self._repo)
         self._repo.refresh(notify=False)
+        g.post_event('repo_cloned')
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''

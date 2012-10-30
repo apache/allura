@@ -10,6 +10,7 @@ from glob import glob
 import tg
 import git
 import gitdb
+from pylons import g
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
@@ -111,6 +112,7 @@ class GitImplementation(M.RepositoryImplementation):
             raise
         log.info('... %r cloned', self._repo)
         self._repo.refresh(notify=False)
+        g.post_event('repo_cloned')
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''
