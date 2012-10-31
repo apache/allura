@@ -135,7 +135,7 @@ class RepositoryImplementation(object):
         if not os.path.exists(self._repo.fs_path):
             os.makedirs(self._repo.fs_path)
         if create_repo_dir and not os.path.exists(fullname):
-            os.makedir(fullname)
+            os.mkdir(fullname)
         return fullname
 
     def _setup_special_files(self, source_path=None):
