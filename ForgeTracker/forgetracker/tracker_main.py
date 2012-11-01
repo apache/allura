@@ -536,7 +536,7 @@ class RootController(BaseController):
     def new(self, description=None, summary=None, labels=None, **kw):
         require_access(c.app, 'create')
         c.ticket_form = W.ticket_form
-        help_msg = c.app.config.options.get('TicketHelpNew')
+        help_msg = c.app.config.options.get('TicketHelpNew','').strip()
         return dict(action=c.app.config.url()+'save_ticket',
                     help_msg=help_msg,
                     description=description, summary=summary, labels=labels)
@@ -1472,7 +1472,7 @@ class MilestoneController(BaseController):
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
-        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         progress = c.app.globals.milestone_count(self.progress_key)
         result.pop('q')
         result.update(
