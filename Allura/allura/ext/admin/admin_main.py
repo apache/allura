@@ -691,6 +691,9 @@ class GroupsController(BaseController):
             return dict(error='%s (%s) is already in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('add user %s to %s', username, group.name)
         user.project_role().roles.append(group._id)
+        if group.name == 'Admin':
+            for ac in c.project.app_configs:
+                c.project.app_instance(ac).subscribe(user)
         g.post_event('project_updated')
         return dict(username=username, displayname=user.display_name)
 

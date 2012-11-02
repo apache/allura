@@ -194,6 +194,14 @@ class Application(object):
                 project_id=self.project._id,
                 app_config_id=self.config._id)
 
+    def subscribe(self, user):
+        if user and user != model.User.anonymous():
+            model.Mailbox.subscribe(
+                    type='direct',
+                    user_id=user._id,
+                    project_id=self.project._id,
+                    app_config_id=self.config._id)
+
     @classmethod
     def default_options(cls):
         ":return: the default config options"

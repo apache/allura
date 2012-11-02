@@ -191,7 +191,7 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/p/test/icon')
         image = Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
-        
+
         r = self.app.get('/p/test/icon?foo=bar')
 
     def test_project_screenshot(self):
@@ -417,6 +417,38 @@ class TestProjectAdmin(TestController):
         assert 'test-user' in users[0]['data-user']
         # Make sure we can open role page for builtin role
         r = self.app.get('/admin/groups/' + developer_id + '/', validate_chunk=True)
+
+    def test_new_admin_subscriptions(self):
+        """Newly added admin must be subscribed to all the tools in the project"""
+        r = self.app.get('/admin/groups/')
+        admin_holder = r.html.find('table', {'id': 'usergroup_admin'}).findAll('tr')[1]
+        admin_id = admin_holder['data-group']
+        with audits('add user test-user to Admin'):
+            self.app.post('/admin/groups/add_user', params={
+                'role_id': admin_id,
+                'username': 'test-user'})
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        uid = M.User.by_username('test-user')._id
+        for ac in p.app_configs:
+            sub = M.Mailbox.subscribed(user_id=uid, project_id=p._id, app_config_id=ac._id)
+            assert sub, 'New admin not subscribed to app %s' % ac
+
+    def test_new_user_subscriptions(self):
+        """Newly added user must not be subscribed to all the tools in the project if he is not admin"""
+        r = self.app.get('/admin/groups/')
+        dev_holder = r.html.find('table',{'id':'usergroup_admin'}).findAll('tr')[2]
+        developer_id = dev_holder['data-group']
+        with audits('add user test-user to Developer'):
+            self.app.post('/admin/groups/add_user', params={
+                'role_id': developer_id,
+                'username': 'test-user'})
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        p = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+        uid = M.User.by_username('test-user')._id
+        for ac in p.app_configs:
+            sub = M.Mailbox.subscribed(user_id=uid, project_id=p._id, app_config_id=ac._id)
+            assert not sub, 'New user subscribed to app %s' % ac
 
     def test_subroles(self):
         """Make sure subroles are preserved during group updates."""
