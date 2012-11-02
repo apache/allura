@@ -650,8 +650,8 @@ class Feed(MappedClass):
             title=title,
             description=description,
             link=artifact.url(),
-            author_name=author_name,
             pubdate=pubdate,
+            author_name=author_name,
             author_link=author_link or author.url())
         return item
 

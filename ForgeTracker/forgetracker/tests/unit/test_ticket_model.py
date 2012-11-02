@@ -1,11 +1,13 @@
 from pylons import c
+from datetime import datetime
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming import schema
-from nose.tools import raises, assert_raises
+from nose.tools import raises, assert_raises, assert_equal
 
 from forgetracker.model import Ticket
 from forgetracker.tests.unit import TrackerTestWithModel
+from allura.model import Feed
 
 
 class TestTicketModel(TrackerTestWithModel):
@@ -109,3 +111,20 @@ class TestTicketModel(TrackerTestWithModel):
         assert not has_access(t, 'update', user=creator)()
         assert has_access(t, 'read', user=observer)()
         assert has_access(t, 'read', user=anon)()
+
+    def test_feed(self):
+        t = Ticket(
+        app_config_id=c.app.config._id,
+        ticket_num=1,
+        summary='test ticket',
+        description='test description',
+        created_date=datetime(2012, 10, 29, 9, 57, 21, 465000))
+        assert_equal(t.created_date, datetime(2012, 10, 29, 9, 57, 21, 465000))
+        f = Feed.post(
+            t,
+            title=t.summary,
+            description=t.description,
+            pubdate=t.created_date)
+        assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
+        assert_equal(f.title, 'test ticket')
+        assert_equal(f.description, 'test description')

@@ -672,6 +672,16 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search_feed.atom?q=test')
         assert '<title>test first ticket</title>' in response
 
+    def test_feed(self):
+        self.new_ticket(
+            summary='test first ticket',
+            description='test description')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/feed')
+        assert 'test first ticket' in response
+
     def test_touch(self):
         self.new_ticket(summary='test touch')
         h.set_context('test', 'bugs', neighborhood='Projects')

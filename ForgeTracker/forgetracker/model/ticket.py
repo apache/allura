@@ -443,7 +443,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
             if monitoring_email and n:
                 n.send_simple(monitoring_email)
-        Feed.post(self, description)
+        Feed.post(
+            self,
+            title=self.summary,
+            description=description if description else self.description,
+            author=self.reported_by,
+            pubdate=self.created_date)
 
     def url(self):
         return self.app_config.url() + str(self.ticket_num) + '/'
