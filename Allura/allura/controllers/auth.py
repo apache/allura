@@ -338,6 +338,7 @@ class PreferencesController(BaseController):
                     type=None,
                     frequency=None,
                     artifact=None))
+        subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
