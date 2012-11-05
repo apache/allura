@@ -165,7 +165,21 @@ class Globals(object):
     @LazyProperty
     def director(self):
         """Return activitystream director"""
-        return activitystream.director()
+        if asbool(config.get('activitystream.recording.enabled', False)):
+            return activitystream.director()
+        else:
+            class NullActivityStreamDirector(object):
+                def connect(self, *a, **kw):
+                    pass
+                def disconnect(self, *a, **kw):
+                    pass
+                def is_connected(self, *a, **kw):
+                    return False
+                def create_activity(self, *a, **kw):
+                    pass
+                def get_timeline(self, *a, **kw):
+                    return []
+            return NullActivityStreamDirector()
 
     @LazyProperty
     def amq_conn(self):
