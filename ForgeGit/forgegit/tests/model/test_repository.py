@@ -254,14 +254,34 @@ class TestGitCommit(unittest.TestCase):
         for d in diffs:
             print d
 
-    def test_get_commits_by_path(self):
-        assert ("9a7df788cf800241e3bb5a849c8870f2f8259d98"
-                in self.repo.get_commits_by_path(''))
-        assert ("1e146e67985dcd71c74de79613719bef7bddca4a"
-                in self.repo.get_commits_by_path('README'))
-        assert ("df30427c488aeab84b2352bdf88a3b19223f9d7a"
-                in self.repo.get_commits_by_path('README'))
-        assert [] == self.repo.get_commits_by_path('test')
+    def test_commits(self):
+        # path only
+        commits = self.repo.commits()
+        assert "9a7df788cf800241e3bb5a849c8870f2f8259d98" in commits, commits
+        commits = self.repo.commits('README')
+        assert "1e146e67985dcd71c74de79613719bef7bddca4a" in commits, commits
+        assert "df30427c488aeab84b2352bdf88a3b19223f9d7a" in commits, commits
+        assert self.repo.commits('does/not/exist') == []
+        # with path and start rev
+        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a'], commits
+        # skip and limit
+        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
+        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8']
+        commits = self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1)
+        assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
+        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1)
+        assert commits == []
+
+    def test_commits_count(self):
+        commits = self.repo.commits_count()
+        assert commits == 4, commits
+        commits = self.repo.commits_count('README')
+        assert commits == 2, commits
+        commits = self.repo.commits_count(None, 'df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        assert commits == 3, commits
+        commits = self.repo.commits_count('a/b/c/hello.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8')
+        assert commits == 2, commits
 
 
 class TestGitHtmlView(unittest.TestCase):

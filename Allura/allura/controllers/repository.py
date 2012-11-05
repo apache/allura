@@ -428,15 +428,12 @@ class CommitBrowser(BaseController):
                    limit=validators.Int(if_empty=25)))
     def log(self, limit=25, page=0, path="", **kw):
         limit, page, start = g.handle_paging(limit, page, default=25)
-        if path[0:1] == "/":
+        if path[0] == "/":
             path = path[1:]
-        commits = c.app.repo.get_commits_by_path(path=path)
-        index = 0
-        if self._commit._id in commits:
-            index = commits.index(self._commit._id)
-        commits = commits[index:]
-        count = len(commits)
-        revisions = M.repo.Commit.query.find({'_id': {'$in': commits[start:start + limit]}}).sort('committed.date', -1)
+        params = dict(path=path, rev=self._commit._id, skip=start, limit=limit)
+        commits = c.app.repo.commits(**params)
+        count = c.app.repo.commits(**params)
+        revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
         c.log_widget = self.log_widget
         return dict(
             username=c.user._id and c.user.username,

@@ -104,9 +104,13 @@ class RepositoryImplementation(object):
         '''Return a blob size in bytes'''
         raise NotImplementedError, 'blob_size'
 
-    def get_commits_by_path(self, path):
-        '''Return a list of commits'''
-        raise NotImplementedError, 'get_commits_by_path'
+    def commits(self, path=None, rev=None, skip=None, limit=None):
+        '''Return a list of the commits related to path'''
+        raise NotImplementedError, 'commits'
+
+    def commits_count(self, path=None, rev=None):
+        '''Return count of the commits related to path'''
+        raise NotImplementedError, 'commits_count'
 
     @classmethod
     def shorthand_for_commit(cls, oid):
@@ -219,6 +223,10 @@ class Repository(Artifact, ActivityObject):
         return self._impl.url_for_commit(commit)
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
+    def commits(self, path=None, rev=None, skip=None, limit=None):
+        return self._impl.commits(path, rev, skip, limit)
+    def commits_count(self, path=None, rev=None):
+        return self._impl.commits_count(path, rev)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -227,9 +235,6 @@ class Repository(Artifact, ActivityObject):
             ci = head.query.get(_id=_id)
             ci.set_context(self)
             yield ci
-
-    def get_commits_by_path(self, path):
-        return self._impl.get_commits_by_path(path)
 
     def init_as_clone(self, source_path, source_name, source_url):
         self.upstream_repo.name = source_name

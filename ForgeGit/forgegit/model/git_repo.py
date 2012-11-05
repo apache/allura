@@ -234,11 +234,19 @@ class GitImplementation(M.RepositoryImplementation):
         doc.m.save(safe=False)
         return doc
 
-    def get_commits_by_path(self, path):
-        result = []
-        for c in self._git.iter_commits(paths=path):
-            result.append(c.hexsha)
-        return result
+    def commits(self, path=None, rev=None, skip=None, limit=None):
+        params = dict(paths=path)
+        if rev is not None:
+            params['rev'] = rev
+        if skip is not None:
+            params['skip'] = skip
+        if limit is not None:
+            params['max_count'] = limit
+        return [c.hexsha for c in self._git.iter_commits(**params)]
+
+    def commits_count(self, path=None, rev=None):
+        commit = self._git.commit(rev)
+        return commit.count(path)
 
     def log(self, object_id, skip, count):
         obj = self._git.commit(object_id)
