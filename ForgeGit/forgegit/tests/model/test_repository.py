@@ -148,7 +148,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
         assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
 
-    def test_clone(self):
+    @mock.patch('forgegit.model.git_repo.g.post_event')
+    def test_clone(self, post_event):
         repo = GM.Repository(
             name='testgit.git',
             fs_path='/tmp/',
@@ -162,6 +163,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
+        post_event.assert_any_call('repo_cloned', repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')

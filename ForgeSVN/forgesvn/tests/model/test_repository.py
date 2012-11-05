@@ -144,7 +144,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
         shutil.rmtree(dirname)
 
-    def test_clone(self):
+    @mock.patch('forgesvn.model.svn.g.post_event')
+    def test_clone(self, post_event):
         repo = SM.Repository(
             name='testsvn',
             fs_path='/tmp/',
@@ -158,6 +159,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
+        post_event.assert_any_call('repo_cloned', 'file://' + repo_path)
         assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)

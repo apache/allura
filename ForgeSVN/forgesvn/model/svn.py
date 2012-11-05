@@ -186,7 +186,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           c.app.config.options['checkout_url'])):
             c.app.config.options['checkout_url'] = ""
         self._setup_special_files(source_url)
-        g.post_event('repo_cloned')
+        g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)
 
     def refresh_heads(self):
