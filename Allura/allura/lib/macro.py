@@ -325,7 +325,7 @@ def project_admins():
     output = ''
     admin_role = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')
     if admin_role:
-        output = '\n'.join(
+        output = ''.join(
             template_project_admins.substitute(dict(
                 url=user_role.user.url(),
                 name=user_role.user.display_name))
