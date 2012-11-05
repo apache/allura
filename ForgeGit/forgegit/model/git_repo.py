@@ -3,6 +3,7 @@ import shutil
 import string
 import logging
 import random
+import traceback
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
@@ -107,11 +108,12 @@ class GitImplementation(M.RepositoryImplementation):
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
         except:
+            g.post_event('repo_clone_failed', source_url, traceback.format_exc())
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
             raise
         log.info('... %r cloned', self._repo)
-        g.post_event('repo_cloned')
+        g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)
 
     def commit(self, rev):

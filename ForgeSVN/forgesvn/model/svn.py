@@ -169,6 +169,7 @@ class SVNImplementation(M.RepositoryImplementation):
             p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate(input='p\n')
             if p.returncode != 0:
+                g.post_event('repo_clone_failed', source_url, stderr)
                 self._repo.status = 'ready'
                 session(self._repo).flush(self._repo)
                 raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
@@ -186,7 +187,7 @@ class SVNImplementation(M.RepositoryImplementation):
                           c.app.config.options['checkout_url'])):
             c.app.config.options['checkout_url'] = ""
         self._setup_special_files(source_url)
-        g.post_event('repo_cloned')
+        g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)
 
     def refresh_heads(self):

@@ -148,7 +148,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
         assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
 
-    def test_clone(self):
+    @mock.patch('forgegit.model.git_repo.g.post_event')
+    def test_clone(self, post_event):
         repo = GM.Repository(
             name='testgit.git',
             fs_path='/tmp/',
@@ -162,6 +163,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
+        post_event.assert_any_call('repo_cloned', repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
@@ -171,6 +173,24 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
+
+    @mock.patch('forgegit.model.git_repo.g.post_event')
+    @mock.patch('forgegit.model.git_repo.traceback')
+    def test_clone_from_posts_event_on_failure(self, traceback, post_event):
+        fake_source_url = 'fake_source_url'
+        fake_traceback = 'fake_traceback'
+        traceback.format_exc.return_value = fake_traceback
+        repo = GM.Repository(
+            name='testgit.git',
+            fs_path='/tmp/',
+            url_path = '/test/',
+            tool = 'git',
+            status = 'creating')
+        try:
+            repo._impl.clone_from(fake_source_url)
+        except:
+            pass
+        post_event.assert_any_call('repo_clone_failed', fake_source_url, fake_traceback)
 
     def test_index(self):
         i = self.repo.index()
