@@ -35,7 +35,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_follow_user(self):
         resp = self.app.get('/u/test-user-1/activity/follow?follow=True')
-        assert 'You are now following Test User 1' in resp
+        assert 'You are now following Test User 1' in resp, resp
 
     @td.with_tool('u/test-admin', 'activity')
     @td.with_user_project('test-admin')

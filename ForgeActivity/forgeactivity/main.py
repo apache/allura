@@ -98,6 +98,7 @@ class ForgeActivityController(BaseController):
             else:
                 g.director.disconnect(c.user, followee)
         except Exception as e:
+            log.exception('Unexpected error following user')
             return dict(
                 success=False,
                 message='Unexpected error: %s' % e)
