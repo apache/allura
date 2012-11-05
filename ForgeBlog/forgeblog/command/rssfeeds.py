@@ -1,6 +1,5 @@
 from time import mktime
 from datetime import datetime
-from HTMLParser import HTMLParser
 
 import feedparser
 import html2text
@@ -20,104 +19,6 @@ from allura.lib import exceptions
 from allura.lib.decorators import exceptionless
 
 html2text.BODY_WIDTH = 0
-
-class MDHTMLParser(HTMLParser):
-    def __init__(self):
-        HTMLParser.__init__(self)
-        self.NO_END_TAGS = ["area", "base", "basefont", "br", "col", "frame",
-                            "hr", "img", "input", "link", "meta", "param"]
-        self.CUSTTAG_OPEN = u"[plain]"
-        self.CUSTTAG_CLOSE = u"[/plain]"
-        self.result_doc = u""
-        self.custom_tag_opened = False
-
-    def handle_starttag(self, tag, attrs):
-        if self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
-
-        tag_text = u"<%s" % tag
-        for attr in attrs:
-            if attr[1].find('"'):
-                tag_text = u"%s %s='%s'" % (tag_text, attr[0], attr[1])
-            else:
-                tag_text = u'%s %s="%s"' % (tag_text, attr[0], attr[1])
-        if tag not in self.NO_END_TAGS:
-            tag_text = tag_text + ">"
-        else:
-            tag_text = tag_text + "/>"
-        self.result_doc = u"%s%s" % (self.result_doc, tag_text)
-
-    def handle_endtag(self, tag):
-        if tag not in self.NO_END_TAGS:
-            if self.custom_tag_opened:
-                self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_CLOSE)
-                self.custom_tag_opened = False
-
-            self.result_doc = u"%s</%s>" % (self.result_doc, tag)
-
-    def handle_data(self, data):
-        res_data = ''
-
-        for line in data.splitlines(True):
-            # pre-emptive special case
-            if not line or line.isspace():
-                # don't wrap all whitespace lines
-                res_data += line
-                continue
-
-            # open custom tag
-            if not self.custom_tag_opened:
-                res_data += self.CUSTTAG_OPEN
-                self.custom_tag_opened = True
-            # else: cust tag might be open already from previous incomplete data block
-
-            # data
-            res_data += line.rstrip('\r\n')  # strip EOL (add close tag before)
-
-            # close custom tag
-            if line.endswith(('\r','\n')):
-                res_data += self.CUSTTAG_CLOSE + '\n'
-                self.custom_tag_opened = False
-            # else: no EOL could mean we're dealing with incomplete data block;
-                # leave it open for next handle_data, handle_starttag, or handle_endtag to clean up
-
-        self.result_doc += res_data
-
-    def handle_comment(self, data):
-        if self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
-
-        self.result_doc = u"%s<!-- %s -->" % (self.result_doc, data)
-
-    def handle_entityref(self, name):
-        if not self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_OPEN)
-            self.custom_tag_opened = True
-
-        self.result_doc = u"%s&%s;" % (self.result_doc, name)
-
-    def handle_charref(self, name):
-        if not self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_OPEN)
-            self.custom_tag_opened = True
-
-        self.result_doc = u"%s&%s;" % (self.result_doc, name)
-
-    def handle_decl(self, data):
-        if self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
-
-        self.result_doc = u"%s<!%s>" % (self.result_doc, data)
-
-    def close(self):
-        HTMLParser.close(self)
-
-        if self.custom_tag_opened:
-            self.result_doc = u"%s%s" % (self.result_doc, self.CUSTTAG_CLOSE)
-            self.custom_tag_opened = False
 
 
 class RssFeedsCommand(base.BlogCommand):
@@ -189,18 +90,17 @@ class RssFeedsCommand(base.BlogCommand):
             content = u''
             for ct in e.content:
                 if ct.type != 'text/html':
-                    content += '[plain]%s[/plain]' % ct.value
+                    content += html2text.escape_md_section(ct.value, snob=True)
                 else:
-                    parser = MDHTMLParser()
-                    parser.feed(ct.value)
-                    parser.close() # must be before using the result_doc
-                    markdown_content = html2text.html2text(parser.result_doc, baseurl=e.link)
-
+                    html2md = html2text.HTML2Text(baseurl=e.link)
+                    html2md.escape_snob = True
+                    markdown_content = html2md.handle(ct.value)
                     content += markdown_content
         else:
-            content = '[plain]%s[/plain]' % getattr(e, 'summary',
-                                                getattr(e, 'subtitle',
-                                                    getattr(e, 'title')))
+            content = html2text.escape_md_section(getattr(e, 'summary',
+                                                    getattr(e, 'subtitle',
+                                                      getattr(e, 'title'))),
+                                                  snob=True)
 
         content += u' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))

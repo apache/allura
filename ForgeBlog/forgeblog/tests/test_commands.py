@@ -89,71 +89,18 @@ def test_pull_rss_feeds(parsefeed):
     assert_equal(posts.count(), 3)
     posts = posts.all()
     assert_equal(posts[0].title, 'Test')
-    assert_equal(posts[0].text, '[plain]This is a test[/plain] [link](http://example.com/)')
+    assert_equal(posts[0].text, 'This is a test [link](http://example.com/)')
     assert_equal(posts[1].title, 'Default Title 2')
-    assert_equal(posts[1].text, '[plain]Test feed[/plain] [link](http://example.com/)')
+    assert_equal(posts[1].text, 'Test feed [link](http://example.com/)')
     assert_equal(posts[2].title, 'Default Title 3')
-    assert_equal(posts[2].text,
-        "[plain]1. foo[/plain]\n"
-        "\n"
-        "[plain]#foo bar [/plain][[plain]baz[/plain]](baz) "
-        "[plain]foo bar[/plain] \n"
-        "\n"
-        "[plain]#foo bar [/plain][ [plain]baz[/plain] ](baz)\n "
-        "[link](http://example.com/)"
-    )
-
-def test_plaintext_parser():
-    parser = rssfeeds.MDHTMLParser()
-    parser.feed(
-        '1. foo\n'
-        '\n'
-        '#foo bar <a href="baz">baz</a>\n'
-        'foo bar\n'
-        '\n'
-        '#foo bar <a href="baz">\n'
-        'baz\n'
-        '</a>\n'
-    )
-    parser.close()
-    assert_equal(parser.result_doc,
-        "[plain]1. foo[/plain]\n"
-        "\n"
-        "[plain]#foo bar [/plain]<a href='baz'>[plain]baz[/plain]</a>\n"
-        "[plain]foo bar[/plain]\n"
-        "\n"
-        "[plain]#foo bar [/plain]<a href='baz'>\n"
-        "[plain]baz[/plain]\n"
-        "</a>\n"
-    )
-
-def test_plaintext_parser_wrapped():
-    parser = rssfeeds.MDHTMLParser()
-    parser.feed(
-        '<p>1. foo</p>\n'
-        '\n'
-        '<p>\n'
-        '#foo bar <a href="baz">baz</a>\n'
-        'foo bar\n'
-        '</p>\n'
-        '\n'
-        '<p>#foo bar <a href="baz">\n'
-        'baz\n'
-        '</a></p>\n'
-    )
-    parser.close()
-    assert_equal(parser.result_doc,
-        "<p>[plain]1. foo[/plain]</p>\n"
-        "\n"
-        "<p>\n"
-        "[plain]#foo bar [/plain]<a href='baz'>[plain]baz[/plain]</a>\n"
-        "[plain]foo bar[/plain]\n"
-        "</p>\n"
-        "\n"
-        "<p>[plain]#foo bar [/plain]<a href='baz'>\n"
-        "[plain]baz[/plain]\n"
-        "</a></p>\n"
-    )
+    assert_equal(posts[2].text, "\n".join([
+       r"1\. foo",
+        "",
+       r"\#foo bar [baz](baz) foo bar ",
+        "",
+       r"\#foo bar [ baz ](baz)",
+        " [link](http://example.com/)",
+    ]))
 
 def test_plaintext_preprocessor():
     text = html2text(
