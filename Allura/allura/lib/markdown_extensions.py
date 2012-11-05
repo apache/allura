@@ -54,6 +54,11 @@ class ForgeExtension(markdown.Extension):
         self.forge_processor.reset()
 
 class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
+    '''
+    This was used earlier for [plain] tags that the Blog tool's rss importer
+    created, before html2text did good escaping of all special markdown chars.
+    Can be deprecated.
+    '''
 
     def run(self, lines):
         text = "\n".join(lines)
@@ -289,7 +294,7 @@ class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
 
     def __init__(self, md):
         self._markdown = md
-    
+
     def run(self, root):
         for node in root.getiterator('p'):
             if not node.text: continue
@@ -324,4 +329,3 @@ class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
         result.text = old_link
         result.set('href', old_link)
         return result
-
