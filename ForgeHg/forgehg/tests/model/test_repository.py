@@ -249,6 +249,6 @@ class TestHgCommit(unittest.TestCase):
             print d
 
     def test_get_commits_by_path(self):
-        assert len(self.repo.get_commits_by_path('')) == 5
+        assert len(self.repo.get_commits_by_path('')) == 6
         assert len(self.repo.get_commits_by_path('README')) == 2
         assert len(self.repo.get_commits_by_path('test')) == 0
