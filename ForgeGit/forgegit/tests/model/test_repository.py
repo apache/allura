@@ -257,8 +257,10 @@ class TestGitCommit(unittest.TestCase):
     def test_commits(self):
         # path only
         commits = self.repo.commits()
+        assert len(commits) == 4, 'Returned %s commits' % len(commits)
         assert "9a7df788cf800241e3bb5a849c8870f2f8259d98" in commits, commits
         commits = self.repo.commits('README')
+        assert len(commits) == 2, 'Returned %s README commits' % len(commits)
         assert "1e146e67985dcd71c74de79613719bef7bddca4a" in commits, commits
         assert "df30427c488aeab84b2352bdf88a3b19223f9d7a" in commits, commits
         assert self.repo.commits('does/not/exist') == []
