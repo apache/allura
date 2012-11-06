@@ -3,7 +3,6 @@ import shutil
 import string
 import logging
 import random
-import traceback
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
@@ -110,7 +109,7 @@ class GitImplementation(M.RepositoryImplementation):
         except:
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
-            raise Exception(traceback.format_exc())
+            raise
         log.info('... %r cloned', self._repo)
         g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)

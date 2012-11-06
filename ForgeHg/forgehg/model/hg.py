@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 import logging
-import traceback
 from binascii import b2a_hex
 from datetime import datetime
 from cStringIO import StringIO
@@ -97,7 +96,7 @@ class HgImplementation(M.RepositoryImplementation):
         except:
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
-            raise Exception(traceback.format_exc())
+            raise
         log.info('... %r cloned', self._repo)
         g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)
