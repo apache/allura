@@ -173,24 +173,6 @@ class TestHgRepo(unittest.TestCase, RepoImplTestBase):
         assert not os.path.exists('/tmp/testrepo.hg/.hg/undo.branch')
         shutil.rmtree(dirname)
 
-    @mock.patch('forgehg.model.hg.g.post_event')
-    @mock.patch('forgehg.model.hg.traceback')
-    def test_clone_from_posts_event_on_failure(self, traceback, post_event):
-        fake_source_url = 'fake_source_url'
-        fake_traceback = 'fake_traceback'
-        traceback.format_exc.return_value = fake_traceback
-        repo = HM.Repository(
-            name='testrepo.hg',
-            fs_path='/tmp/',
-            url_path = '/test/',
-            tool = 'hg',
-            status = 'creating')
-        try:
-            repo._impl.clone_from(fake_source_url)
-        except:
-            pass
-        post_event.assert_any_call('repo_clone_failed', fake_source_url, fake_traceback)
-
     def test_index(self):
         i = self.repo.index()
         assert i['type_s'] == 'Hg Repository', i

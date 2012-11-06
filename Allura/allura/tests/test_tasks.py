@@ -23,8 +23,24 @@ from allura.tasks import event_tasks
 from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
+from allura.tasks import repo_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
+
+
+class TestRepoTasks(unittest.TestCase):
+    @mock.patch('allura.tasks.repo_tasks.c.app')
+    @mock.patch('allura.tasks.repo_tasks.g.post_event')
+    def test_clone_posts_event_on_failure(self, post_event, app):
+        fake_source_url = 'fake_source_url'
+        fake_traceback = 'fake_traceback'
+        app.repo.init_as_clone.side_effect = Exception(fake_traceback)
+        try:
+            repo_tasks.clone(None, None, fake_source_url)
+        except:
+            pass
+        post_event.assert_any_call('repo_clone_task_failed', fake_source_url, fake_traceback)
+
 
 class TestEventTasks(unittest.TestCase):
 

@@ -174,26 +174,6 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
         shutil.rmtree(dirname)
 
-    @mock.patch('forgesvn.model.svn.g.post_event')
-    @mock.patch('forgesvn.model.svn.Popen')
-    def test_clone_from_posts_event_on_failure(self, popen, post_event):
-        fake_source_url = 'fake_source_url'
-        fake_traceback = 'fake_traceback'
-        popen_mock = mock.Mock(returncode=1)
-        popen_mock.communicate.return_value = '', fake_traceback
-        popen.return_value = popen_mock
-        repo = SM.Repository(
-            name='testsvn',
-            fs_path='/tmp/',
-            url_path = '/test/',
-            tool = 'svn',
-            status = 'creating')
-        try:
-            repo._impl.clone_from(fake_source_url)
-        except:
-            pass
-        post_event.assert_any_call('repo_clone_failed', fake_source_url, fake_traceback)
-
     def test_index(self):
         i = self.repo.index()
         assert i['type_s'] == 'SVN Repository', i

@@ -1,7 +1,7 @@
 import shutil
 import logging
 
-from pylons import c
+from pylons import c, g
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
@@ -18,14 +18,18 @@ def init(**kwargs):
 @task
 def clone(cloned_from_path, cloned_from_name, cloned_from_url):
     from allura import model as M
-    c.app.repo.init_as_clone(
-        cloned_from_path,
-        cloned_from_name,
-        cloned_from_url)
-    M.Notification.post_user(
-        c.user, c.app.repo, 'created',
-        text='Repository %s/%s created' % (
-            c.project.shortname, c.app.config.options.mount_point))
+    try:
+        c.app.repo.init_as_clone(
+            cloned_from_path,
+            cloned_from_name,
+            cloned_from_url)
+        M.Notification.post_user(
+            c.user, c.app.repo, 'created',
+            text='Repository %s/%s created' % (
+                c.project.shortname, c.app.config.options.mount_point))
+    except Exception, e:
+        source_url = cloned_from_path or cloned_from_url
+        g.post_event('repo_clone_task_failed', source_url, str(e))
 
 @task
 def reclone(*args, **kwargs):

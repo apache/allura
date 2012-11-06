@@ -108,10 +108,9 @@ class GitImplementation(M.RepositoryImplementation):
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
         except:
-            g.post_event('repo_clone_failed', source_url, traceback.format_exc())
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
-            raise
+            raise Exception(traceback.format_exc())
         log.info('... %r cloned', self._repo)
         g.post_event('repo_cloned', source_url)
         self._repo.refresh(notify=False)
