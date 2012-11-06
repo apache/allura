@@ -248,7 +248,34 @@ class TestHgCommit(unittest.TestCase):
         for d in diffs:
             print d
 
-    def test_get_commits_by_path(self):
-        assert len(self.repo.get_commits_by_path('')) == 6
-        assert len(self.repo.get_commits_by_path('README')) == 2
-        assert len(self.repo.get_commits_by_path('test')) == 0
+    def test_commits(self):
+        # path only
+        commits = self.repo.commits()
+        assert len(commits) == 6, 'Returned %s commits' % len(commits)
+        assert "5a0a993efa9bce7d1983344261393e841fcfd65d" in commits, commits
+        assert "773d2f8e3a94d0d5872988b16533d67e1a7f5462" in commits, commits
+        commits = self.repo.commits('README')
+        assert len(commits) == 2, 'Returned %s commits related to README' % len(commits)
+        assert "e5a0b44437be783c41084e7bf0740f9b58b96ecf" in commits, commits
+        assert "773d2f8e3a94d0d5872988b16533d67e1a7f5462" in commits, commits
+        assert self.repo.commits('does/not/exist') == []
+        # with path and start rev
+        commits = self.repo.commits('README', '773d2f8e3a94d0d5872988b16533d67e1a7f5462')
+        assert commits == ['773d2f8e3a94d0d5872988b16533d67e1a7f5462'], commits
+        # skip and limit
+        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
+        assert commits == ['4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843', '1c7eb55bbd66ff45906b4a25d4b403899e0ffff1']
+        commits = self.repo.commits(None, 'e5a0b44437be783c41084e7bf0740f9b58b96ecf', skip=1)
+        assert commits == ['773d2f8e3a94d0d5872988b16533d67e1a7f5462'], commits
+        commits = self.repo.commits('README', '773d2f8e3a94d0d5872988b16533d67e1a7f5462', skip=1)
+        assert commits == []
+
+    def test_commits_count(self):
+        commits = self.repo.commits_count()
+        assert commits == 6, commits
+        commits = self.repo.commits_count('a/b/c/hello.txt')
+        assert commits == 1, commits
+        commits = self.repo.commits_count(None, '23d1d8b68c8d6f3326bd42bcc30c40fffe77372c')
+        assert commits == 3, commits
+        commits = self.repo.commits_count('README', '773d2f8e3a94d0d5872988b16533d67e1a7f5462')
+        assert commits == 1, commits

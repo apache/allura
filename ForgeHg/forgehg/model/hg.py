@@ -10,8 +10,7 @@ from ConfigParser import ConfigParser
 import tg
 from pylons import app_globals as g
 os.environ['HGRCPATH'] = '' # disable loading .hgrc
-from mercurial import ui, hg, cmdutil, error
-from mercurial.node import nullrev
+from mercurial import ui, hg, cmdutil
 
 from pymongo.errors import DuplicateKeyError
 
@@ -231,76 +230,6 @@ class HgImplementation(M.RepositoryImplementation):
         doc.m.save(safe=False)
         return doc
 
-    def get_commits(self, ui, repo, *pats, **opts):
-        matchfn = cmdutil.match(repo, pats, opts, default='relpath')
-        if opts.get('copies') and opts.get('rev'):
-            endrev = max(cmdutil.revrange(repo, opts.get('rev'))) + 1
-        else:
-            endrev = len(repo)
-        rcache = {}
-        ncache = {}
-
-        def getrenamed(fn, rev):
-            if fn not in rcache:
-                rcache[fn] = {}
-                ncache[fn] = {}
-                fl = repo.file(fn)
-                for i in fl:
-                    node = fl.node(i)
-                    lr = fl.linkrev(i)
-                    renamed = fl.renamed(node)
-                    rcache[fn][lr] = renamed
-                    if renamed:
-                        ncache[fn][node] = renamed
-                    if lr >= endrev:
-                        break
-            if rev in rcache[fn]:
-                return rcache[fn][rev]
-
-            try:
-                return repo[rev][fn].renamed()
-            except error.LookupError:
-                pass
-            return None
-
-        df = False
-
-        def prep(ctx, fns):
-            rev = ctx.rev()
-            parents = [
-                p for p in repo.changelog.parentrevs(rev) if p != nullrev
-            ]
-            if opts.get('no_merges') and len(parents) == 2:
-                return
-            if opts.get('only_merges') and len(parents) != 2:
-                return
-            if opts.get('only_branch') and ctx.branch() not in opts['only_branch']:
-                return
-            if df and not df(ctx.date()[0]):
-                return
-            if opts['user'] and not [k for k in opts['user'] if k in ctx.user()]:
-                return
-            if opts.get('keyword'):
-                for k in [kw.lower() for kw in opts['keyword']]:
-                    if (k in ctx.user().lower() or
-                        k in ctx.description().lower() or
-                        k in " ".join(ctx.files()).lower()):
-                        break
-                else:
-                    return
-
-            copies = []
-            if opts.get('copies') and rev:
-                for fn in ctx.files():
-                    rename = getrenamed(fn, rev)
-                    if rename:
-                        copies.append((fn, rename[0]))
-
-        revs = []
-        for ctx in cmdutil.walkchangerevs(repo, matchfn, opts, prep):
-            revs.append(ctx.hex())
-        return revs
-
     def log(self, object_id, skip, count):
         obj = self._hg[object_id]
         candidates = [ obj ]
@@ -363,12 +292,35 @@ class HgImplementation(M.RepositoryImplementation):
         tree = self.refresh_tree_info(fake_tree, set())
         return tree._id
 
-    def get_commits_by_path(self, path):
-        return self.get_commits(
-            ui.ui(),
-            self._hg,
-            self._repo.fs_path + '/' + self._repo.name + '/'+path,
-            rev=None,
-            user=None)
+    def commits(self, path=None, rev=None, skip=None, limit=None):
+        if skip is None: skip = 0
+        if path is not None:
+            path = os.path.join(self._repo.full_fs_path, path)
+            m = cmdutil.match(self._hg, [path])
+        else:
+            m = cmdutil.match(self._hg)
+        revs = []
+        opts = {'rev': ['%s:0' % rev] if rev is not None else rev}
+        for ctx in cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None):
+            if limit and limit == len(revs):
+                return revs
+            if skip == 0:
+                revs.append(ctx.hex())
+            else:
+                skip -= 1
+        return revs
+
+    def commits_count(self, path=None, rev=None):
+        if path is not None:
+            path = os.path.join(self._repo.full_fs_path, path)
+            m = cmdutil.match(self._hg, [path])
+        else:
+            m = cmdutil.match(self._hg)
+        opts = {'rev': ['%s:0' % rev] if rev is not None else rev}
+        count = 0
+        for ctx in cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None):
+            count += 1
+        return count
+        return len(self._hg)
 
 Mapper.compile_all()
