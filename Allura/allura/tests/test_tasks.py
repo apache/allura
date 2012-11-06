@@ -33,6 +33,7 @@ class TestRepoTasks(unittest.TestCase):
     @mock.patch('allura.tasks.repo_tasks.g.post_event')
     def test_clone_posts_event_on_failure(self, post_event, app):
         fake_source_url = 'fake_source_url'
+        fake_traceback = 'fake_traceback'
         app.repo.init_as_clone.side_effect = Exception(fake_traceback)
         repo_tasks.clone(None, None, fake_source_url)
         assert_equal(post_event.call_args[0][0], 'repo_clone_task_failed')
