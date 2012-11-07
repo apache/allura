@@ -71,7 +71,8 @@ class MonQTask(MappedClass):
     context = FieldProperty(dict(
             project_id=S.ObjectId,
             app_config_id=S.ObjectId,
-            user_id=S.ObjectId))
+            user_id=S.ObjectId,
+            notifications_disabled=bool))
     args = FieldProperty([])
     kwargs = FieldProperty({None:None})
     result = FieldProperty(None, if_missing=None)
@@ -122,9 +123,11 @@ class MonQTask(MappedClass):
         context = dict(
             project_id=None,
             app_config_id=None,
-            user_id=None)
+            user_id=None,
+            notifications_disabled=False)
         if getattr(c, 'project', None):
             context['project_id']=c.project._id
+            context['notifications_disabled']=c.project.notifications_disabled
         if getattr(c, 'app', None):
             context['app_config_id']=c.app.config._id
         if getattr(c, 'user', None):
@@ -219,6 +222,7 @@ class MonQTask(MappedClass):
             c.project = M.Project.query.get(_id=self.context.project_id)
             c.app = None
             if c.project:
+                c.project.notifications_disabled = self.context.get('notifications_disabled', False)
                 app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
                 if app_config:
                     c.app = c.project.app_instance(app_config)

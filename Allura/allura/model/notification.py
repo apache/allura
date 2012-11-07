@@ -178,7 +178,9 @@ class Notification(MappedClass):
             log.warn('Could not render notification template %s' % artifact.type_s, exc_info=True)
 
         assert d['reply_to_address'] is not None
-        project = Project.query.get(_id=d.get('project_id', c.project._id))
+        project = c.project
+        if d.get('project_id', c.project._id) != c.project._id:
+            project = Project.query.get(_id=d['project_id'])
         if project.notifications_disabled:
             log.info('Notifications disabled for project %s, not sending %s(%r)',
                      project.shortname, topic, artifact)
