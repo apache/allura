@@ -321,6 +321,5 @@ class HgImplementation(M.RepositoryImplementation):
         for ctx in cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None):
             count += 1
         return count
-        return len(self._hg)
 
 Mapper.compile_all()
