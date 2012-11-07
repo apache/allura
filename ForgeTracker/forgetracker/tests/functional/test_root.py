@@ -1147,9 +1147,10 @@ class TestEmailMonitoring(TrackerTestController):
         """
         p = M.Project.query.get(shortname='test')
         p.notifications_disabled = True
-        ThreadLocalORMSession.flush_all()
         self._set_options()
-        self.new_ticket(summary='test')
+        with patch.object(M.Project.query, 'get') as get:
+            get.side_effect = lambda *a,**k: None if 'bugs' in k.get('shortname', '') else p
+            self.new_ticket(summary='test')
         assert send_simple.call_count == 0, send_simple.call_count
 
 class TestCustomUserField(TrackerTestController):

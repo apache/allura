@@ -122,8 +122,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     neighborhood_id = ForeignIdProperty(Neighborhood)
     shortname = FieldProperty(str)
     name=FieldProperty(str)
-    notifications_disabled = FieldProperty(bool)
-    suppress_emails = FieldProperty(bool)
     show_download_button=FieldProperty(S.Deprecated)
     short_description=FieldProperty(str, if_missing='')
     summary=FieldProperty(str, if_missing='')
@@ -163,6 +161,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     trove_environment=FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project=FieldProperty(bool, if_missing=False)
+
+    # transient properties
+    notifications_disabled = False
 
     @property
     def activity_name(self):
