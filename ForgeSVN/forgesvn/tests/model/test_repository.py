@@ -287,10 +287,49 @@ class TestSVNRev(unittest.TestCase):
         for d in diffs:
             print d
 
-    def test_get_commits_by_path(self):
-        assert  len(self.repo.get_commits_by_path('')) == 5
-        assert  len(self.repo.get_commits_by_path('README')) == 2
-        assert  len(self.repo.get_commits_by_path('test')) == 0
+    def _oid(self, rev_id):
+        return '%s:%s' % (self.repo._id, rev_id)
+
+    def test_commits(self):
+        # path only
+        commits = self.repo.commits()
+        assert len(commits) == 5, 'Returned %s commits' % len(commits)
+        assert self._oid(5) in commits, commits
+        assert self._oid(1) in commits, commits
+        commits = self.repo.commits('README')
+        assert commits == [self._oid(3), self._oid(1)]
+        assert self.repo.commits('does/not/exist') == []
+        # with path and start rev
+        commits = self.repo.commits('README', self._oid(1))
+        assert commits == [self._oid(1)], commits
+        # skip and limit
+        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
+        assert commits == [self._oid(4), self._oid(3)]
+        commits = self.repo.commits(None, self._oid(2), skip=1)
+        assert commits == [self._oid(1)], commits
+        commits = self.repo.commits('README', self._oid(1), skip=1)
+        assert commits == []
+        # path to dir
+        commits = self.repo.commits('a/b/c/')
+        assert commits == [self._oid(4), self._oid(2)]
+        commits = self.repo.commits('a/b/c/', skip=1)
+        assert commits == [self._oid(2)]
+        commits = self.repo.commits('a/b/c/', limit=1)
+        assert commits == [self._oid(4)]
+        commits = self.repo.commits('not/exist/')
+        assert commits == []
+
+    def test_commits_count(self):
+        commits = self.repo.commits_count()
+        assert commits == 5, commits
+        commits = self.repo.commits_count('a/b/c/')
+        assert commits == 2, commits
+        commits = self.repo.commits_count(None, self._oid(3))
+        assert commits == 3, commits
+        commits = self.repo.commits_count('README', self._oid(1))
+        assert commits == 1, commits
+        commits = self.repo.commits_count('not/exist/')
+        assert commits == 0, commits
 
 
 class _Test(unittest.TestCase):
