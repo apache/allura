@@ -391,7 +391,7 @@ class RootController(BaseController):
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_access(c.app, 'update')()
-        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         result['url_q'] = c.app.globals.not_closed_query
         result['url_sort'] = ''
         if sort:
@@ -492,7 +492,7 @@ class RootController(BaseController):
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
         result['bin'] = bin
-        result['help_msg'] = c.app.config.options.get('TicketHelpSearch')
+        result['help_msg'] = c.app.config.options.get('TicketHelpSearch', '').strip()
         c.ticket_search_results = W.ticket_search_results
         return result
 
