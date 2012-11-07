@@ -274,6 +274,15 @@ class TestGitCommit(unittest.TestCase):
         assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
         commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1)
         assert commits == []
+        # path to dir
+        commits = self.repo.commits('a/b/c/')
+        assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8', '9a7df788cf800241e3bb5a849c8870f2f8259d98']
+        commits = self.repo.commits('a/b/c/', skip=1)
+        assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
+        commits = self.repo.commits('a/b/c/', limit=1)
+        assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8']
+        commits = self.repo.commits('not/exist/')
+        assert commits == []
 
     def test_commits_count(self):
         commits = self.repo.commits_count()
@@ -284,6 +293,10 @@ class TestGitCommit(unittest.TestCase):
         assert commits == 3, commits
         commits = self.repo.commits_count('a/b/c/hello.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8')
         assert commits == 2, commits
+        commits = self.repo.commits_count('a/b/c/')
+        assert commits == 2, commits
+        commits = self.repo.commits_count('not/exist/')
+        assert commits == 0, commits
 
 
 class TestGitHtmlView(unittest.TestCase):

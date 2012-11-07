@@ -269,6 +269,15 @@ class TestHgCommit(unittest.TestCase):
         assert commits == ['773d2f8e3a94d0d5872988b16533d67e1a7f5462'], commits
         commits = self.repo.commits('README', '773d2f8e3a94d0d5872988b16533d67e1a7f5462', skip=1)
         assert commits == []
+        # path to dir
+        commits = self.repo.commits('a/b/c/')
+        assert commits == ['1c7eb55bbd66ff45906b4a25d4b403899e0ffff1', '23d1d8b68c8d6f3326bd42bcc30c40fffe77372c']
+        commits = self.repo.commits('a/b/c/', skip=1)
+        assert commits == ['23d1d8b68c8d6f3326bd42bcc30c40fffe77372c']
+        commits = self.repo.commits('a/b/c/', limit=1)
+        assert commits == ['1c7eb55bbd66ff45906b4a25d4b403899e0ffff1']
+        commits = self.repo.commits('not/exist/')
+        assert commits == []
 
     def test_commits_count(self):
         commits = self.repo.commits_count()
@@ -279,3 +288,7 @@ class TestHgCommit(unittest.TestCase):
         assert commits == 3, commits
         commits = self.repo.commits_count('README', '773d2f8e3a94d0d5872988b16533d67e1a7f5462')
         assert commits == 1, commits
+        commits = self.repo.commits_count('a/b/c/')
+        assert commits == 2, commits
+        commits = self.repo.commits_count('not/exist/')
+        assert commits == 0, commits
