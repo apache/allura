@@ -119,14 +119,21 @@ class TestRootController(SVNTestController):
         assert 'value="a"' in r
 
     def test_log(self):
+        r = self.app.get('/src/1/log/')
+        assert 'Create readme' in r
         r = self.app.get('/src/2/log/?path=')
         assert "Create readme" in r
         assert "Add path " in r
         r = self.app.get('/src/2/log/?path=README')
-        assert "Modify readme" in r
-        assert "Remove hello.txt" not in r
+        assert "Modify readme" not in r
         assert "Create readme " in r
-        r = self.app.get('/src/2/log/?path=test')
+        r = self.app.get('/src/2/log/?path=/a/b/c/')
+        assert 'Add path' in r
+        assert 'Remove hello.txt' not in r
+        r = self.app.get('/src/5/log/?path=a/b/c/')
+        assert 'Add path' in r
+        assert 'Remove hello.txt' in r
+        r = self.app.get('/src/2/log/?path=does/not/exist/')
         assert 'No (more) commits' in r
 
 

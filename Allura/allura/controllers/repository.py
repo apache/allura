@@ -426,13 +426,13 @@ class CommitBrowser(BaseController):
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
-    def log(self, limit=25, page=0, path="", **kw):
+    def log(self, limit=25, page=0, path=None, **kw):
         limit, page, start = g.handle_paging(limit, page, default=25)
-        if path[0] == "/":
+        if path and path[0] == "/":
             path = path[1:]
-        params = dict(path=path, rev=self._commit._id, skip=start, limit=limit)
-        commits = c.app.repo.commits(**params)
-        count = c.app.repo.commits(**params)
+        params = dict(path=path, rev=self._commit._id)
+        commits = c.app.repo.commits(skip=start, limit=limit, **params)
+        count = c.app.repo.commits_count(**params)
         revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
         c.log_widget = self.log_widget
         return dict(

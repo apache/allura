@@ -174,13 +174,20 @@ class TestRootController(TestController):
         assert 'Cannot display: file marked as a binary type.' in resp
 
     def test_log(self):
-        r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/?path=')
+        r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/')
         assert "add test.jpg " in r
         assert "Add README" in r
+        assert "added binfile" not in r
         r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/?path=/README')
         assert "add test.jpg " not in r
         assert "Add README" in r
         assert "Modify README" in r
+        r = self.app.get('/p/test/src-hg/ci/4a7f7ec0dcf5f005eb5d177b3d8c00bfc8159843/log/?path=a/b/c')
+        assert "Remove dir structure" in r
+        assert "Add dir structure" in r
+        assert "Modify README" not in r
+        r = self.app.get('/p/test/src-hg/ci/e5a0b44437be783c41084e7bf0740f9b58b96ecf/log/?path=a/b/c')
+        assert "No (more) commits" in r
 
 
 class TestLogPagination(TestController):
