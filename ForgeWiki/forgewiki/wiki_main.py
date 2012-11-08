@@ -406,7 +406,7 @@ class RootController(BaseController, DispatchIndex):
             until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
+    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
@@ -580,7 +580,7 @@ class PageController(BaseController):
             until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
+    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         if request.environ['PATH_INFO'].endswith('.atom'):

@@ -78,7 +78,7 @@ class UserProfileController(BaseController):
             until=DateTimeConverter(if_empty=None),
             page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None):
+    def feed(self, since=None, until=None, page=None, limit=None, **kw):
         user = c.project.user_project_of
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'

@@ -305,7 +305,7 @@ class ProjectController(object):
             until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             page=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None):
+    def feed(self, since=None, until=None, page=None, limit=None, **kw):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:

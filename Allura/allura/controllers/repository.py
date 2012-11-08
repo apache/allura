@@ -155,7 +155,7 @@ class RepoRootController(BaseController):
             until=h.DateTimeConverter(if_empty=None, if_invalid=None),
             offset=validators.Int(if_empty=None),
             limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None):
+    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed_type = 'atom'
         else:
