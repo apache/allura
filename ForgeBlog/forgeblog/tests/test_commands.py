@@ -3,7 +3,7 @@ import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from pylons import c, g
-from nose.tools import assert_equal
+from datadiff.tools import assert_equal
 
 from html2text import html2text
 
@@ -139,3 +139,37 @@ def test_plaintext_preprocessor_wrapped():
         '<p>#foo bar <a class="" href="../baz">baz</a> foo bar </p>\n'
         '<p>#foo bar <a class="" href="../baz"> baz </a></p></div>'
     )
+
+
+def test_plain2markdown():
+    text = '''paragraph
+
+    4 spaces before this
+
+    *blah*
+
+here's a <tag> that should be <b>preserved</b>
+Literal &gt; &Ograve; &frac14; &amp; &#38; &#x123F;
+M & Ms - doesn't get escaped
+http://blah.com/?x=y&a=b - not escaped either
+'''
+
+    expected = '''paragraph
+
+4 spaces before this
+
+\*blah\*
+
+here's a &lt;tag&gt; that should be &lt;b&gt;preserved&lt;/b&gt;
+Literal &amp;gt; &amp;Ograve; &amp;frac14; &amp;amp; &amp;\#38; &amp;\#x123F;
+M & Ms - doesn't get escaped
+http://blah.com/?x=y&a=b - not escaped either
+'''
+    # note: the \# isn't necessary it could be just # but that's the way
+    # html2text escapes all #s currently.  The extra escaping of \# ends up
+    # being ok though when rendered
+
+    assert_equal(rssfeeds.plain2markdown(text), expected)
+
+    assert_equal(rssfeeds.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
+                'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')

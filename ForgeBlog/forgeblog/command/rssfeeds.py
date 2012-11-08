@@ -1,5 +1,6 @@
 from time import mktime
 from datetime import datetime
+import re
 
 import feedparser
 import html2text
@@ -19,6 +20,39 @@ from allura.lib import exceptions
 from allura.lib.decorators import exceptionless
 
 html2text.BODY_WIDTH = 0
+
+re_amp = re.compile(r'''
+    [&]          # amp
+    (?=          # look ahead for:
+      ([a-zA-Z0-9]+;)  # named HTML entity
+      |
+      (\#[0-9]+;)      # decimal entity
+      |
+      (\#x[0-9A-F]+;)  # hex entity
+    )
+    ''', re.VERBOSE)
+re_leading_spaces = re.compile(r'^[ ]+', re.MULTILINE)
+re_preserve_spaces = re.compile(r'''
+    [ ]           # space
+    (?=[ ])       # lookahead for a space
+    ''', re.VERBOSE)
+re_angle_bracket_open = re.compile('<')
+re_angle_bracket_close = re.compile('>')
+def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False):
+    if not has_html_entities:
+        # prevent &foo; and &#123; from becoming HTML entities
+        text = re_amp.sub('&amp;', text)
+    # avoid accidental 4-space indentations creating code blocks
+    if preserve_multiple_spaces:
+        text = re_preserve_spaces.sub('&nbsp;', text)
+    else:
+        text = re_leading_spaces.sub('', text)
+    # use html2text for most of the escaping
+    text = html2text.escape_md_section(text, snob=True)
+    # prevent < and > from becoming tags
+    text = re_angle_bracket_open.sub('&lt;', text)
+    text = re_angle_bracket_close.sub('&gt;', text)
+    return text
 
 
 class RssFeedsCommand(base.BlogCommand):
@@ -90,17 +124,16 @@ class RssFeedsCommand(base.BlogCommand):
             content = u''
             for ct in e.content:
                 if ct.type != 'text/html':
-                    content += html2text.escape_md_section(ct.value, snob=True)
+                    content += plain2markdown(ct.value)
                 else:
                     html2md = html2text.HTML2Text(baseurl=e.link)
                     html2md.escape_snob = True
                     markdown_content = html2md.handle(ct.value)
                     content += markdown_content
         else:
-            content = html2text.escape_md_section(getattr(e, 'summary',
-                                                    getattr(e, 'subtitle',
-                                                      getattr(e, 'title'))),
-                                                  snob=True)
+            content = plain2markdown(getattr(e, 'summary',
+                                        getattr(e, 'subtitle',
+                                            getattr(e, 'title'))))
 
         content += u' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
