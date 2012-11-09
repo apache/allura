@@ -100,7 +100,7 @@ class ForgeDiscussionApp(Application):
 
     @property
     def forums(self):
-        return DM.Forum.query.find(dict(app_config_id=self.config._id)).all()
+        return DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('_id').all()
 
     @property
     def top_forums(self):
@@ -127,7 +127,7 @@ class ForgeDiscussionApp(Application):
             forum_links = []
             forums = DM.Forum.query.find(dict(
                             app_config_id=c.app.config._id,
-                            parent_id=None, deleted=False))
+                            parent_id=None, deleted=False)).sort('_id')
             for f in forums:
                 if has_access(f,'read')():
                     if f.url() in request.url and h.has_access(f, 'moderate')():
@@ -265,4 +265,3 @@ class ForumAdminController(DefaultAdminController):
     def add_forum(self, add_forum=None, **kw):
         f = utils.create_forum(self.app, add_forum)
         redirect(f.url())
-

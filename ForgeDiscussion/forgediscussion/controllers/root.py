@@ -58,7 +58,7 @@ class RootController(BaseController, DispatchIndex):
                 )).all()
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
-                        parent_id=None, deleted=False)).all()
+                        parent_id=None, deleted=False)).sort('_id').all()
         forums = [f for f in forums if h.has_access(f, 'read')()]
         return dict(forums=forums,
                     announcements=announcements,
