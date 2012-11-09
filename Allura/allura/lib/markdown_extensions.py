@@ -43,7 +43,6 @@ class ForgeExtension(markdown.Extension):
         md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
-        md.treeprocessors['br'] = LineOrientedTreeProcessor(md)
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
         # Rewrite all relative links that don't start with . to have a '../' prefix
@@ -254,41 +253,6 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
             p = feedparser._HTMLSanitizer('utf-8', '')
         p.feed(text.encode('utf-8'))
         return unicode(p.output(), 'utf-8')
-
-
-class LineOrientedTreeProcessor(markdown.treeprocessors.Treeprocessor):
-    '''Once MD is satisfied with the etree, this runs to replace \n with <br/>
-    within <p>s.
-    '''
-
-    def __init__(self, md):
-        self._markdown = md
-
-    def run(self, root):
-        for node in root.getiterator('p'):
-            if not node.text: continue
-            if '\n' not in node.text: continue
-            text = self._markdown.serializer(node)
-            text = self._markdown.postprocessors['raw_html'].run(text)
-            text = text.strip().encode('utf-8')
-            if '\n' not in text: continue
-            new_text = (text
-                        .replace('<br>', '<br/>')
-                        .replace('\n', '<br/>'))
-            new_node = None
-            try:
-                new_node = markdown.util.etree.fromstring(new_text)
-            except SyntaxError:
-                try:
-                    new_node = markdown.util.etree.fromstring(unicode(BeautifulSoup(new_text)))
-                except:
-                    log.exception('Error adding <br> tags: new text is %s', new_text)
-                    pass
-            if new_node:
-                node.clear()
-                node.text = new_node.text
-                node[:] = list(new_node)
-        return root
 
 
 class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
