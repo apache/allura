@@ -205,7 +205,7 @@ class Bin(Artifact, ActivityObject):
 
     def url(self):
         base = self.app_config.url() + 'search/?'
-        params = dict(q=(self.terms or ''))
+        params = dict(q=(h.really_unicode(self.terms).encode('utf-8') or ''))
         if self.sort:
             params['sort'] = self.sort
         return base + urllib.urlencode(params)

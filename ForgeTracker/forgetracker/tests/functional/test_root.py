@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import urllib
 import os
 import time
 import json
@@ -661,6 +662,20 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search/?q=test')
         assert '3 results' in response, response.showbrowser()
         assert 'test third ticket' in response, response.showbrowser()
+
+    def test_search_with_strange_chars(self):
+        r = self.app.get('/p/test/bugs/search/?' + urllib.urlencode({'q': 'tést'}))
+        assert 'Search bugs: tést' in r
+
+    def test_saved_search_with_strange_chars(self):
+        '''Sidebar must be visible even with a strange characters in saved search terms'''
+        r = self.app.post('/admin/bugs/bins/save_bin',{
+            'summary': 'Strange chars in terms here',
+            'terms': 'labels:tést',
+            'old_summary': '',
+            'sort': ''}).follow()
+        r = self.app.get('/bugs/')
+        assert sidebar_contains(r, 'Strange chars in terms here')
 
     def test_search_feed(self):
         self.new_ticket(summary='test first ticket')
