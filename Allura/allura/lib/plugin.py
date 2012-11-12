@@ -70,6 +70,9 @@ class AuthenticationProvider(object):
         user = M.User.query.get(_id=self.session.get('userid', None))
         if user is None:
             return M.User.anonymous()
+        if user.disabled:
+            self.logout()
+            return M.User.anonymous()
         return user
 
     def register_user(self, user_doc):

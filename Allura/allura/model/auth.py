@@ -291,8 +291,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
     projects=FieldProperty(S.Deprecated)
     tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
     tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
-    # Don't use directly, use get/set_pref() instead
     display_name=FieldProperty(str)
+    disabled=FieldProperty(bool, if_missing=False)
+    # Don't use directly, use get/set_pref() instead
     preferences=FieldProperty(dict(
             results_per_page=int,
             email_address=str,
