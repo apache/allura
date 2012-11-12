@@ -44,6 +44,7 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
         text = re_amp.sub('&amp;', text)
     # avoid accidental 4-space indentations creating code blocks
     if preserve_multiple_spaces:
+        text = text.replace('\t', ' ' * 4)
         text = re_preserve_spaces.sub('&nbsp;', text)
     else:
         text = re_leading_spaces.sub('', text)

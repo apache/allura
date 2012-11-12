@@ -173,3 +173,6 @@ http://blah.com/?x=y&a=b - not escaped either
 
     assert_equal(rssfeeds.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
                 'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+
+    assert_equal(rssfeeds.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
+                 '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
