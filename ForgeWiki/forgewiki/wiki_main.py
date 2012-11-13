@@ -540,7 +540,7 @@ class PageController(BaseController):
     @expose('jinja:forgewiki:templates/wiki/page_history.html')
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=None)))
-    def history(self, page=0, limit=None):
+    def history(self, page=0, limit=None, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         c.page_list = W.page_list
@@ -602,7 +602,7 @@ class PageController(BaseController):
     @expose('json')
     @require_post()
     @validate(dict(version=validators.Int(if_empty=1)))
-    def revert(self, version):
+    def revert(self, version, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         require_access(self.page, 'edit')
@@ -671,7 +671,7 @@ class PageController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    def attach(self, file_info=None):
+    def attach(self, file_info=None, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         require_access(self.page, 'edit')
@@ -681,7 +681,7 @@ class PageController(BaseController):
 
     @expose()
     @validate(W.subscribe_form)
-    def subscribe(self, subscribe=None, unsubscribe=None):
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if not self.page:
             raise exc.HTTPNotFound
         if subscribe:
