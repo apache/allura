@@ -1,6 +1,7 @@
 import os, allura
 
 from allura.tests import TestController
+from nose.tools import assert_equal
 
 
 class TestSiteAdmin(TestController):
@@ -60,3 +61,16 @@ class TestSiteAdmin(TestController):
         assert headers[6].contents[0] == 'Deleted?'
         assert headers[7].contents[0] == 'Homepage'
         assert headers[8].contents[0] == 'Admins'
+
+    def test_reclone_repo_access(self):
+        r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(
+            username='*anonymous'), status=302).follow()
+        assert 'Login' in r
+
+    def test_reclone_repo(self):
+        r = self.app.get('/nf/admin/reclone_repo')
+        assert 'Reclone repository' in r
+
+    def test_reclone_repo_default_value(self):
+        r = self.app.get('/nf/admin/reclone_repo')
+        assert 'value="p"' in r

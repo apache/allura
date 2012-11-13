@@ -1,0 +1,22 @@
+{% set page="reclone_repo" %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block content %}
+<h1>Reclone repository</h1>
+<form name="add_subscriber" method="POST">
+    <table>
+        <tr>
+            <td>Neighborhood prefix:</td> <td><input name="prefix" type="text" value="{{prefix}}"></td>
+        </tr>
+        <tr>
+            <td> Project shortname:</td> <td><input name="shortname" type="text" value="{{shortname}}"></td>
+        </tr>
+        <tr>
+            <td> Repository mount point:</td> <td><input name="mount_point" type="text" value="{{mount_point}}"></td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="Reclone"></td>
+        </tr>
+    </table>
+</form>
+{% endblock %}

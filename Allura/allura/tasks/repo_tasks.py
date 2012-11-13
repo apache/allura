@@ -84,3 +84,21 @@ def uninstall(**kwargs):
 def nop():
     log = logging.getLogger(__name__)
     log.info('nop')
+
+@task
+def reclone_repo(*args, **kwargs):
+    from allura import model as M
+    try:
+        nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % kwargs['prefix'])
+        c.project = M.Project.query.get(shortname=kwargs['shortname'], neighborhood_id=nbhd._id)
+        c.app = c.project.app_instance(kwargs['mount_point'])
+        source_url = c.app.config.options.get('init_from_url')
+        source_path = c.app.config.options.get('init_from_path')
+        c.app.repo.init_as_clone(source_path, None, source_url)
+        M.Notification.post_user(
+            c.user, c.app.repo, 'created',
+            text='Repository %s/%s created' % (
+                c.project.shortname, c.app.config.options.mount_point))
+    except Exception, e:
+        source_url = source_path or source_url
+        g.post_event('repo_clone_task_failed', source_url, traceback.format_exc())

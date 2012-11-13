@@ -14,6 +14,7 @@ from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura import model as M
 from allura.command.show_models import dfs, build_model_inheritance_graph
+import allura
 
 from urlparse import urlparse
 
@@ -191,3 +192,41 @@ class SiteAdminController(object):
             'pagenum': pagenum,
             'count': count
         }
+
+    @expose('jinja:allura:templates/site_admin_reclone_repo.html')
+    @validate(dict(prefix=validators.NotEmpty(),
+                   shortname=validators.NotEmpty(),
+                   mount_point=validators.NotEmpty()))
+    def reclone_repo(self, prefix=None, shortname=None, mount_point=None, **data):
+        if request.method == 'POST':
+            if c.form_errors:
+                error_msg = 'Error: '
+                for msg in list(c.form_errors):
+                    names = {'prefix': 'Neighborhood prefix', 'shortname': 'Project shortname', 'mount_point': 'Repository mount point'}
+                    error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
+                    flash(error_msg, 'error')
+                return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % prefix)
+            if not nbhd:
+                flash('Neighborhood with prefix %s not found' % prefix, 'error')
+                return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            c.project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
+            if not c.project:
+                flash('Project with shortname %s not found in neighborhood %s' % (shortname, nbhd.name), 'error')
+                return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            c.app = c.project.app_instance(mount_point)
+            if not c.app:
+                flash('Mount point %s not found on project %s' % (mount_point, c.project.shortname), 'error')
+                return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            source_url = c.app.config.options.get('init_from_url')
+            source_path = c.app.config.options.get('init_from_path')
+            if not (source_url or source_path):
+                flash('%s does not appear to be a cloned repo' % c.app, 'error')
+                return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            allura.tasks.repo_tasks.reclone_repo.post(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            flash('Repository is being recloned')
+        else:
+            prefix = 'p'
+            shortname = ''
+            mount_point = ''
+        return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
