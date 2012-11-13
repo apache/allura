@@ -9,7 +9,7 @@ from pylons import c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
-from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm.ormsession import ThreadLocalORMSession, session
 from allura.lib import oid_helper
 
 
@@ -359,3 +359,18 @@ class TestAuth(TestController):
     def test_default_lookup(self):
         # Make sure that default _lookup() throws 404
         self.app.get('/auth/foobar', status=404)
+
+    def test_disabled_user(self):
+        user = M.User.query.get(username='test-admin')
+        sess = session(user)
+        assert not user.disabled
+        r = self.app.get('/p/test/admin/', extra_environ={'username':'test-admin'})
+        assert_equal(r.status_int, 200, 'Redirect to %s' % r.location)
+        user.disabled = True
+        sess.save(user)
+        sess.flush()
+        user = M.User.query.get(username='test-admin')
+        assert user.disabled
+        r = self.app.get('/p/test/admin/', extra_environ={'username':'test-admin'})
+        assert_equal(r.status_int, 302)
+        assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
