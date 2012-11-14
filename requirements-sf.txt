@@ -15,7 +15,7 @@ pyzmq==2.1.7
 html2text==3.200.3dev-20121112
 
 # for the migration scripts only
-postmarkup==1.2.0
+postmarkup==1.2.0dev-20121114
 # suds needed for teamforge import script
 suds==0.4
 mediawiki==0.0.1
