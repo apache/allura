@@ -123,12 +123,12 @@ class RepoObject(object):
         return id.replace('.', '/')
 
     @classmethod
-    def upsert(cls, id):
+    def upsert(cls, id, **kwargs):
         isnew = False
         r = cls.query.get(_id=id)
         if r is not None: return r, isnew
         try:
-            r = cls(_id=id)
+            r = cls(_id=id, **kwargs)
             session(r).flush(r)
             isnew = True
         except pymongo.errors.DuplicateKeyError: # pragma no cover
