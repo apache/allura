@@ -158,12 +158,13 @@ class SVNImplementation(M.RepositoryImplementation):
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init(default_dirs=False, skip_special_files=True)
-        # Need a pre-revprop-change hook for cloning
-        fn = os.path.join(self._repo.fs_path, self._repo.name,
-                          'hooks', 'pre-revprop-change')
-        with open(fn, 'wb') as fp:
-            fp.write('#!/bin/sh\n')
-        os.chmod(fn, 0755)
+
+        def set_hook(hook_name):
+            fn = os.path.join(self._repo.fs_path, self._repo.name,
+                              'hooks', hook_name)
+            with open(fn, 'wb') as fp:
+                fp.write('#!/bin/sh\n')
+            os.chmod(fn, 0755)
 
         def check_call(cmd):
             p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -177,8 +178,25 @@ class SVNImplementation(M.RepositoryImplementation):
         session(self._repo).flush(self._repo)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
-        check_call(['svnsync', 'init', self._url, source_url])
-        check_call(['svnsync', '--non-interactive', 'sync', self._url])
+
+        if source_url.startswith('file://'):
+            # src repo is on the local filesystem - use hotcopy (faster)
+            source_path, dest_path = source_url[7:], self._url[7:]
+            fullname = os.path.join(self._repo.fs_path, self._repo.name)
+            # hotcopy expects dest dir to not exist yet
+            if os.path.exists(fullname):
+                shutil.rmtree(fullname)
+            check_call(['svnadmin', 'hotcopy', source_path, dest_path])
+            # make sure new repo has a pre-revprop-change hook,
+            # otherwise the sync will fail
+            set_hook('pre-revprop-change')
+            check_call(['svnsync', '--non-interactive', '--allow-non-empty',
+              'initialize', self._url, source_url])
+        else:
+            set_hook('pre-revprop-change')
+            check_call(['svnsync', 'init', self._url, source_url])
+            check_call(['svnsync', '--non-interactive', 'sync', self._url])
+
         log.info('... %r cloned', self._repo)
         if not svn_path_exists("file://%s%s/%s" %
                          (self._repo.fs_path,
