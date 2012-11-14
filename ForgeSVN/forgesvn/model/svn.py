@@ -333,8 +333,9 @@ class SVNImplementation(M.RepositoryImplementation):
         from allura.model import repo as RM
         tree_path = tree_path[:-1]
         tree_id = self._tree_oid(commit._id, tree_path)
-        tree, isnew = RM.Tree.upsert(tree_id)
-        if not isnew: return tree_id
+        tree = RM.Tree.query.get(_id=tree_id)
+        if tree:
+            return tree_id
         log.debug('Computing tree for %s: %s',
                  self._revno(commit._id), tree_path)
         rev = self._revision(commit._id)
@@ -346,9 +347,10 @@ class SVNImplementation(M.RepositoryImplementation):
         except pysvn.ClientError:
             log.exception('Error computing tree for %s: %s(%s)',
                           self._repo, commit, tree_path)
-            tree.delete()
             return None
         log.debug('Compute tree for %d paths', len(infos))
+        tree_ids = []
+        blob_ids = []
         for path, info in infos[1:]:
             last_commit_id = self._oid(info['last_changed_rev'].number)
             last_commit = M.repo.Commit.query.get(_id=last_commit_id)
@@ -359,23 +361,28 @@ class SVNImplementation(M.RepositoryImplementation):
                 self._tree_oid(commit._id, path),
                 M.repo_refresh.get_commit_info(last_commit))
             if info.kind == pysvn.node_kind.dir:
-                tree.tree_ids.append(Object(
+                tree_ids.append(Object(
                         id=self._tree_oid(commit._id, path),
                         name=path))
             elif info.kind == pysvn.node_kind.file:
-                tree.blob_ids.append(Object(
+                blob_ids.append(Object(
                         id=self._tree_oid(commit._id, path),
                         name=path))
             else:
                 assert False
-        session(tree).flush(tree)
-        trees_doc = RM.TreesDoc.m.get(_id=commit._id)
-        if not trees_doc:
-            trees_doc = RM.TreesDoc(dict(
-                _id=commit._id,
-                tree_ids=[]))
-        trees_doc.tree_ids.append(tree_id)
-        trees_doc.m.save(safe=False)
+        tree, is_new = RM.Tree.upsert(tree_id,
+                tree_ids=tree_ids,
+                blob_ids=blob_ids,
+                other_ids=[],
+            )
+        if is_new:
+            trees_doc = RM.TreesDoc.m.get(_id=commit._id)
+            if not trees_doc:
+                trees_doc = RM.TreesDoc(dict(
+                    _id=commit._id,
+                    tree_ids=[]))
+            trees_doc.tree_ids.append(tree_id)
+            trees_doc.m.save(safe=False)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
