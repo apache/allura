@@ -150,7 +150,7 @@ actually be ready will be reverted.
 'master' which would then immediately be merged down into 'dev'.
 
 As we get more contributors and start having "patch-churn", we will
-re-evaluate a three-branch model, like Git.  The third branch would be
+re-evaluate a three-branch model, like Git. The third branch would be
 'pu' (for "proposed update").
 
 We expect that people deploying the code will deploy from 'master' or
