@@ -49,7 +49,7 @@
 
     {% block head %}
     {% endblock %}
-{% if g.production_mode %}{{g.analytics.display()}}{% endif %}
+    {% if g.production_mode %}{{g.analytics.display()}}{% endif %}
   </head>
 
   <body{% block body_attrs %}{% endblock %} id="forge">
