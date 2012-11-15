@@ -38,7 +38,8 @@ class TestRepoTasks(unittest.TestCase):
         repo_tasks.clone(None, None, fake_source_url)
         assert_equal(post_event.call_args[0][0], 'repo_clone_task_failed')
         assert_equal(post_event.call_args[0][1], fake_source_url)
-        # ignore args[2] which is a traceback string
+        assert_equal(post_event.call_args[0][2], None)
+        # ignore args[3] which is a traceback string
 
 
 class TestEventTasks(unittest.TestCase):
