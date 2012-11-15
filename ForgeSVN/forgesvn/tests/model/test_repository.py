@@ -130,7 +130,6 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
         with open('/tmp/testsvn/hooks/pre-revprop-change') as f: c = f.read()
@@ -142,6 +141,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
+
+        repo.refresh(notify=False)
+        assert len(repo.log())
+
         shutil.rmtree(dirname)
 
     @mock.patch('forgesvn.model.svn.g.post_event')
@@ -159,8 +162,6 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        post_event.assert_any_call('repo_cloned', 'file://' + repo_path)
-        assert len(repo.log())
         assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
         with open('/tmp/testsvn/hooks/pre-revprop-change') as f: c = f.read()
@@ -172,6 +173,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
+
+        repo.refresh(notify=False)
+        assert len(repo.log())
+
         shutil.rmtree(dirname)
 
     def test_index(self):
@@ -330,7 +335,7 @@ class _Test(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.prefix = tg.config.get('scm.repos.root', '/')
-        
+
 class _TestWithRepo(_Test):
     def setUp(self):
         super(_TestWithRepo, self).setUp()
@@ -383,11 +388,13 @@ class TestRepo(_TestWithRepo):
             self.repo.url_for_commit('a'*40),
             '/p/test/test1/ci/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/')
 
-    def test_init_as_clone(self):
+    @mock.patch('allura.model.repository.g.post_event')
+    def test_init_as_clone(self, post_event):
         self.repo.init_as_clone('srcpath', 'srcname', 'srcurl')
         assert self.repo.upstream_repo.name == 'srcname'
         assert self.repo.upstream_repo.url == 'srcurl'
         assert self.repo._impl.clone_from.called_with('srcpath')
+        post_event.assert_called_once_with('repo_cloned', 'srcurl', 'srcpath')
 
     @mock.patch.object(M.repo.CommitRunDoc.m, 'get')
     def test_log(self, crd):
@@ -520,6 +527,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
         self.repo2 = M.Repository(name='test2', tool='svn')
         self.repo2._impl = mock.Mock(spec=M.RepositoryImplementation())
         self.repo2._impl.log = lambda *a,**kw:(['foo'], [])
+        self.repo2._impl.all_commit_ids = lambda *a,**kw: []
         self.repo2._impl._repo = self.repo2
         self.repo2.init_as_clone('/p/test/', 'test1', '/p/test/test1/')
         ThreadLocalORMSession.flush_all()

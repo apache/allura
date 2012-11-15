@@ -163,7 +163,6 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
-        post_event.assert_any_call('repo_cloned', repo_path)
         assert len(repo.log())
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')

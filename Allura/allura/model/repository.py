@@ -15,6 +15,7 @@ from itertools import izip
 import tg
 from paste.deploy.converters import asbool
 from pylons import c
+from pylons import app_globals as g
 import pymongo.errors
 
 from ming import schema as S
@@ -229,6 +230,9 @@ class Repository(Artifact, ActivityObject):
         session(self).flush(self)
         source = source_path if source_path else source_url
         self._impl.clone_from(source)
+        log.info('... %r cloned', self)
+        g.post_event('repo_cloned', source_url, source_path)
+        self.refresh(notify=False)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(branch, offset, limit))

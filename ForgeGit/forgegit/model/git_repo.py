@@ -110,9 +110,6 @@ class GitImplementation(M.RepositoryImplementation):
             self._repo.status = 'ready'
             session(self._repo).flush(self._repo)
             raise
-        log.info('... %r cloned', self._repo)
-        g.post_event('repo_cloned', source_url)
-        self._repo.refresh(notify=False)
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''
