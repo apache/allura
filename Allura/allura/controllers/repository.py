@@ -428,8 +428,8 @@ class CommitBrowser(BaseController):
                    limit=validators.Int(if_empty=25)))
     def log(self, limit=25, page=0, path=None, **kw):
         limit, page, start = g.handle_paging(limit, page, default=25)
-        if path and path[0] == "/":
-            path = path[1:]
+        if path:
+            path = path.lstrip('/')
         params = dict(path=path, rev=self._commit._id)
         commits = c.app.repo.commits(skip=start, limit=limit, **params)
         count = c.app.repo.commits_count(**params)

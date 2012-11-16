@@ -294,14 +294,23 @@ class HgImplementation(M.RepositoryImplementation):
 
     def commits(self, path=None, rev=None, skip=None, limit=None):
         if skip is None: skip = 0
-        if path is not None:
-            path = os.path.join(self._repo.full_fs_path, path)
-            m = cmdutil.match(self._hg, [path])
+        if path:
+            opts = {'pats': [path], 'default': 'path'}
         else:
-            m = cmdutil.match(self._hg)
+            opts = {}
+        try:
+            m = cmdutil.match(self._hg, **opts)
+        except Exception, e:
+            log.exception(e)
+            return []
         revs = []
         opts = {'rev': ['%s:0' % rev] if rev is not None else rev}
-        for ctx in cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None):
+        try:
+            revs_iter = cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None)
+        except Exception, e:
+            log.exception(e)
+            return []
+        for ctx in revs_iter:
             if limit and limit == len(revs):
                 return revs
             if skip == 0:
@@ -311,14 +320,23 @@ class HgImplementation(M.RepositoryImplementation):
         return revs
 
     def commits_count(self, path=None, rev=None):
-        if path is not None:
-            path = os.path.join(self._repo.full_fs_path, path)
-            m = cmdutil.match(self._hg, [path])
+        if path:
+            opts = {'pats': [path], 'default': 'path'}
         else:
-            m = cmdutil.match(self._hg)
+            opts = {}
+        try:
+            m = cmdutil.match(self._hg, **opts)
+        except Exception, e:
+            log.exception(e)
+            return 0
         opts = {'rev': ['%s:0' % rev] if rev is not None else rev}
+        try:
+            revs_iter = cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None)
+        except Exception, e:
+            log.exception(e)
+            return 0
         count = 0
-        for ctx in cmdutil.walkchangerevs(self._hg, m, opts, lambda *a: None):
+        for ctx in revs_iter:
             count += 1
         return count
 
