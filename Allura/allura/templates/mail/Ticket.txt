@@ -2,7 +2,7 @@
 
 ---
 
-** [{{data.app_config.options.mount_point}}:{{data.ticket_num}}] {{data.summary}}**
+** [{{data.app_config.options.mount_point}}:#{{data.ticket_num}}] {{data.summary}}**
 
 **Status:** {{data.status}}
 {% if data.labels.__len__() -%}
