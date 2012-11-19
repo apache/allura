@@ -213,7 +213,7 @@ class MonQTask(MappedClass):
         from allura import model as M
         self.time_start = datetime.utcnow()
         session(self).flush(self)
-        log.info('%r', self)
+        log.info('starting %r', self)
         old_cproject = getattr(c, 'project', None)
         old_capp = getattr(c, 'app', None)
         old_cuser = getattr(c, 'user', None)
@@ -231,7 +231,7 @@ class MonQTask(MappedClass):
             self.state = 'complete'
             return self.result
         except Exception, exc:
-            log.exception('%r', self)
+            log.info('Error on job %r, re-raising it', self)
             self.state = 'error'
             if hasattr(exc, 'format_error'):
                 self.result = exc.format_error()
