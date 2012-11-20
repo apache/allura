@@ -175,9 +175,9 @@ def test_markdown_toc():
 def test_markdown_links():
     h.set_context('test', 'wiki', neighborhood='Projects')
     text = g.markdown.convert('Read [here](Home) about our project')
-    assert '<a class="alink" href="/p/test/wiki/Home/">[here]</a>' in text, text
+    assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text
     text = g.markdown.convert('[Go home](test:wiki:Home)')
-    assert '<a class="alink" href="/p/test/wiki/Home/">[Go home]</a>' in text, text
+    assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text, text
     text = g.markdown.convert('See [test:wiki:Home]')
     assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 

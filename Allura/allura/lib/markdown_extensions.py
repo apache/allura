@@ -67,10 +67,12 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
     def handleMatch(self, m):
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
+        is_link_with_brackets = False
         try:
             href = m.group(9)
         except IndexError:
             href = m.group(2)
+            is_link_with_brackets = True
         try:
             title = m.group(13)
         except IndexError:
@@ -80,7 +82,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             if href == 'TOC':
                 return '[TOC]'  # skip TOC
             if self.artifact_re.match(href):
-                href, classes = self._expand_alink(href)
+                href, classes = self._expand_alink(href, is_link_with_brackets)
             el.set('href', self.sanitize_url(self.unescape(href.strip())))
             el.set('class', classes)
         else:
@@ -92,18 +94,19 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
         return el
 
-    def _expand_alink(self, link):
+    def _expand_alink(self, link, is_link_with_brackets):
         '''Return (href, classes) for an artifact link'''
         classes = ''
+        if is_link_with_brackets:
+            classes = 'alink'
         href = link
         shortlink = M.Shortlink.lookup(link)
         if shortlink:
             href = shortlink.url
-            classes = 'alink'
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
         elif self.ext._use_wiki and ':' not in link:
             href = h.urlquote(link)
-            classes = 'notfound alink'
+            classes += ' notfound'
         return href, classes
 
 
@@ -175,7 +178,7 @@ class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
 
     def run(self, root):
         for node in root.getiterator('a'):
-            if 'alink' in node.get('class', '').split():
+            if 'alink' in node.get('class', '').split() and node.text:
                 node.text = '[' + node.text + ']'
         return root
 
