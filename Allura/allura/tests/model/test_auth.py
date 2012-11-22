@@ -97,8 +97,11 @@ def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
     ThreadLocalORMSession.flush_all()
-    for pr in g.credentials.user_roles(
-        c.user._id, project_id=c.project.root_project._id):
+    roles = g.credentials.user_roles(
+        c.user._id, project_id=c.project.root_project._id)
+    roles_ids = [role['_id'] for role in roles]
+    roles = M.ProjectRole.query.find({'_id': {'$in': roles_ids}})
+    for pr in roles:
         assert pr.display()
         pr.special
         assert pr.user in (c.user, None, M.User.anonymous())

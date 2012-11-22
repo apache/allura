@@ -20,7 +20,7 @@ from allura.lib.security import has_access
 from .session import main_orm_session
 from .session import project_orm_session, project_doc_session
 from .neighborhood import Neighborhood
-from .auth import ProjectRole
+from .auth import ProjectRole, User
 from .timeline import ActivityNode, ActivityObject
 from .types import ACL, ACE
 
@@ -458,9 +458,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def named_roles(self):
+        roles_ids = [r['_id'] for r in g.credentials.project_roles(self.root_project._id).named]
         roles = sorted(
-            g.credentials.project_roles(self.root_project._id).named,
-            key=lambda r:r.name.lower())
+            ProjectRole.query.find({'_id': {'$in': roles_ids}}),
+            key=lambda r: r.name.lower())
         return roles
 
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
@@ -598,7 +599,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         named_roles = security.RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=self.root_project._id).named)
-        return [ r.user for r in named_roles.roles_that_reach if r.user_id is not None ]
+        uids = [uid for uid in named_roles.userids_that_reach if uid is not None]
+        return list(User.query.find({'_id': {'$in': uids}}))
 
     def users_with_role(self, *role_names):
         """Return all users in this project that have at least one of the roles
@@ -624,7 +626,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             return None
         named_roles = g.credentials.project_roles(project_id=self.root_project._id).named
         for r in named_roles.roles_that_reach:
-            if r.user_id == u._id: return u
+            if r.get('user_id') == u._id: return u
         return None
 
     def configure_project(

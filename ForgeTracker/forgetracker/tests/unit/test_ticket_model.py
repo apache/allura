@@ -75,6 +75,7 @@ class TestTicketModel(TrackerTestWithModel):
         role_developer = ProjectRole.by_name('Developer')._id
         role_creator = t.reported_by.project_role()._id
         developer.project_role().roles.append(role_developer)
+        ThreadLocalORMSession.flush_all()
         cred = Credentials.get().clear()
 
         t.private = True

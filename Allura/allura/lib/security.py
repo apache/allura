@@ -21,6 +21,12 @@ class Credentials(object):
     def __init__(self):
         self.clear()
 
+    @property
+    def project_role(self):
+        from allura import model as M
+        db = M.session.main_doc_session.db
+        return db[M.ProjectRole.__mongometa__.name]
+
     @classmethod
     def get(cls):
         'get the global Credentials instance'
@@ -33,43 +39,47 @@ class Credentials(object):
         self.projects = {}
 
     def clear_user(self, user_id, project_id=None):
-        self.users.pop((user_id, project_id), None)
+        if project_id == '*':
+            to_remove = [(uid, pid) for uid, pid in self.users if uid == user_id]
+        else:
+            to_remove = [(user_id, project_id)]
+        for uid, pid in to_remove:
+            self.projects.pop(pid, None)
+            self.users.pop((uid, pid), None)
 
     def load_user_roles(self, user_id, *project_ids):
         '''Load the credentials with all user roles for a set of projects'''
-        from allura import model as M
         # Don't reload roles
         project_ids = [ pid for pid in project_ids if self.users.get((user_id, pid)) is None ]
-        if not project_ids: return 
+        if not project_ids: return
         if user_id is None:
-            q = M.ProjectRole.query.find(
-                dict(
-                    project_id={'$in': project_ids},
-                    name='*anonymous'))
+            q = self.project_role.find({
+                'project_id': {'$in': project_ids},
+                'name': '*anonymous'})
         else:
-            q0 = M.ProjectRole.query.find(
-                dict(project_id={'$in': list(project_ids)},
-                     name={'$in':['*anonymous', '*authenticated']}))
-            q1 = M.ProjectRole.query.find(
-                        dict(project_id={'$in': list(project_ids)},user_id=user_id))
+            q0 = self.project_role.find({
+                'project_id': {'$in': project_ids},
+                'name': {'$in': ['*anonymous', '*authenticated']}})
+            q1 = self.project_role.find({
+                'project_id': {'$in': project_ids},
+                'user_id': user_id})
             q = chain(q0, q1)
         roles_by_project = dict((pid, []) for pid in project_ids)
         for role in q:
-            roles_by_project[role.project_id].append(role)
+            roles_by_project[role['project_id']].append(role)
         for pid, roles in roles_by_project.iteritems():
             self.users[user_id, pid] = RoleCache(self, roles)
 
     def load_project_roles(self, *project_ids):
         '''Load the credentials with all user roles for a set of projects'''
-        from allura import model as M
         # Don't reload roles
         project_ids = [ pid for pid in project_ids if self.projects.get(pid) is None ]
-        if not project_ids: return 
-        q = M.ProjectRole.query.find(dict(
-                project_id={'$in': project_ids}))
+        if not project_ids: return
+        q = self.project_role.find({
+            'project_id': {'$in': project_ids}})
         roles_by_project = dict((pid, []) for pid in project_ids)
         for role in q:
-            roles_by_project[role.project_id].append(role)
+            roles_by_project[role['project_id']].append(role)
         for pid, roles in roles_by_project.iteritems():
             self.projects[pid] = RoleCache(self, roles)
 
@@ -87,14 +97,13 @@ class Credentials(object):
         '''
         :returns: a RoleCache of ProjectRoles for given user_id and project_id, *anonymous and *authenticated checked as appropriate
         '''
-        from allura import model as M
         roles = self.users.get((user_id, project_id))
         if roles is None:
             if project_id is None:
                 if user_id is None:
                     q = []
                 else:
-                    q = M.ProjectRole.query.find(dict(user_id=user_id))
+                    q = self.project_role.find({'user_id': user_id})
                 roles = RoleCache(self, q)
             else:
                 self.load_user_roles(user_id, project_id)
@@ -126,7 +135,7 @@ class RoleCache(object):
         def _iter():
             for r in self:
                 for k,v in tests:
-                    val = getattr(r, k)
+                    val = r.get(k)
                     if callable(v):
                         if not v(val): break
                     elif v != val: break
@@ -146,19 +155,19 @@ class RoleCache(object):
 
     @LazyProperty
     def index(self):
-        return dict((r._id, r) for r in self.q)
+        return dict((r['_id'], r) for r in self.q)
 
     @LazyProperty
     def named(self):
         return RoleCache(self.cred, (
             r for r in self
-            if r.name and not r.name.startswith('*')))
+            if r.get('name') and not r.get('name').startswith('*')))
 
     @LazyProperty
     def reverse_index(self):
         rev_index = defaultdict(list)
         for r in self:
-            for rr_id in r.roles:
+            for rr_id in r['roles']:
                 rev_index[rr_id].append(r)
         return rev_index
 
@@ -169,22 +178,22 @@ class RoleCache(object):
             to_visit = list(self)
             while to_visit:
                 r = to_visit.pop(0)
-                if r in visited: continue
-                visited.add(r)
+                if r['_id'] in visited: continue
+                visited.add(r['_id'])
                 yield r
-                pr_rindex = self.cred.project_roles(r.project_id).reverse_index
-                to_visit += pr_rindex[r._id]
+                pr_rindex = self.cred.project_roles(r['project_id']).reverse_index
+                to_visit += pr_rindex[r['_id']]
         return RoleCache(self.cred, _iter())
 
     @LazyProperty
     def users_that_reach(self):
-        return [
-            r.user for r in self.roles_that_reach if r.user ]
+        from allura import model as M
+        uids = [uid for uid in self.userids_that_reach if uid]
+        return M.User.query.find({'_id': {'$in': uids}})
 
     @LazyProperty
     def userids_that_reach(self):
-        return [
-            r.user_id for r in self.roles_that_reach ]
+        return [ r['user_id'] for r in self.roles_that_reach ]
 
     @LazyProperty
     def reaching_roles(self):
@@ -195,16 +204,16 @@ class RoleCache(object):
                 (rid, role) = to_visit.pop()
                 if rid in visited: continue
                 yield role
-                pr_index = self.cred.project_roles(role.project_id).index
+                pr_index = self.cred.project_roles(role['project_id']).index
                 if rid in pr_index:
-                    for i in pr_index[rid].roles:
+                    for i in pr_index[rid]['roles']:
                         if i in pr_index:
                             to_visit.append((i, pr_index[i]))
         return RoleCache(self.cred, _iter())
 
     @LazyProperty
     def reaching_ids(self):
-        return [ r._id for r in self.reaching_roles ]
+        return [ r['_id'] for r in self.reaching_roles ]
 
     @LazyProperty
     def reaching_ids_set(self):

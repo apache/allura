@@ -228,7 +228,7 @@ class Globals(object):
                 cred = Credentials.get()
                 if cred is not None:
                     for pr in cred.user_roles(user._id, project._id).reaching_roles:
-                        if pr.name and pr.name[0] != '*':
+                        if pr.get('name') and pr.get('name')[0] != '*':
                             context['is_project_member'] = True
         if app:
             context.update(
