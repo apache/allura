@@ -104,9 +104,18 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         if shortlink:
             href = shortlink.url
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
-        elif self.ext._use_wiki and ':' not in link:
+        elif self.ext._use_wiki and is_link_with_brackets:
             href = h.urlquote(link)
             classes += ' notfound'
+        attach_link = link.split('/attachment/')
+        if len(attach_link) == 2 and self.ext._use_wiki:
+            shortlink = M.Shortlink.lookup(attach_link[0])
+            if shortlink:
+                attach_status = ' notfound'
+                for attach in shortlink.ref.artifact.attachments:
+                    if attach.filename == attach_link[1]:
+                        attach_status = ''
+                classes += attach_status
         return href, classes
 
 

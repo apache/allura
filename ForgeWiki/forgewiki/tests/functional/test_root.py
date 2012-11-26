@@ -467,11 +467,15 @@ class TestRootController(TestController):
 * Here is a link to [Some page which does not exist]
 * Here is a link to [space page]
 * Here is a link to [space%20page]
+* Here is a link to [another attach](TEST/attachment/attach.txt)
+* Here is a link to [attach](TEST/attachment/test_root.py)
 ''',
             'labels':'',
             'labels_old':'',
             'viewable_by-0.id':'all'}
         self.app.post('/wiki/TEST/update', params=params)
+        content = file(__file__).read()
+        self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/wiki/TEST/')
         found_links = 0
         for link in r.html.findAll('a'):
@@ -479,7 +483,7 @@ class TestRootController(TestController):
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
             if link.contents == ['another page']:
-                assert 'notfound' in link.get('class', '')
+                assert 'notfound' not in link.get('class', '')
                 found_links +=1
             if link.contents == ['space page space']:
                 assert 'notfound' not in link.get('class', '')
@@ -499,7 +503,13 @@ class TestRootController(TestController):
             if link.contents == ['[space%20page]']:
                 assert 'notfound' not in link.get('class', '')
                 found_links +=1
-        assert found_links == 8, 'Wrong number of links found'
+            if link.contents == ['another attach']:
+                assert 'notfound' in link.get('class', '')
+                found_links +=1
+            if link.contents == ['attach']:
+                assert 'notfound' not in link.get('class', '')
+                found_links +=1
+        assert found_links == 10, 'Wrong number of links found'
 
     def test_home_rename(self):
         assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get('/p/test/wiki/')
