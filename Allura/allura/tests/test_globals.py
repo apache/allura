@@ -159,6 +159,38 @@ def test_macro_project_admins_one_br():
     assert not '</a><br /><br /><a href=' in r, r
     assert '</a><br /><a href=' in r, r
 
+
+@td.with_wiki
+def test_macro_include_extra_br():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    wiki = p_test.app_instance('wiki')
+    with h.push_context(p_test._id, app_config_id=wiki.config._id):
+        p = WM.Page.upsert(title='Include_1')
+        p.text = 'included page 1'
+        p.commit()
+        p = WM.Page.upsert(title='Include_2')
+        p.text = 'included page 2'
+        p.commit()
+        p = WM.Page.upsert(title='Include_3')
+        p.text = 'included page 3'
+        p.commit()
+        ThreadLocalORMSession.flush_all()
+        md = '[[include ref=Include_1]]\n[[include ref=Include_2]]\n[[include ref=Include_3]]'
+        html = g.markdown_wiki.convert(md)
+
+    expected_html = '''
+<div class="markdown_content">
+<p>
+<div><div class="markdown_content"><p>included page 1</p></div></div>
+<div><div class="markdown_content"><p>included page 2</p></div></div>
+<div><div class="markdown_content"><p>included page 3</p></div></div>
+</p>
+</div>
+'''.strip().replace('\n', '')
+    assert html.strip().replace('\n', '') == expected_html, html
+
+
 def test_markdown_toc():
     r = g.markdown_wiki.convert("""[TOC]
 

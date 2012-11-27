@@ -37,6 +37,7 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors['html_block'].markdown_in_raw = True
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
+        md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
@@ -276,4 +277,30 @@ class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
         result = markdown.util.etree.Element('a')
         result.text = old_link
         result.set('href', old_link)
+        return result
+
+
+class ForgeMacroIncludePreprocessor(markdown.preprocessors.Preprocessor):
+    '''Join include statements to prevent extra <br>'s inserted by nl2br extension.
+
+    Converts:
+    [[include ref=some_ref]]
+    [[include ref=some_other_ref]]
+
+    To:
+    [[include ref=some_ref]][[include ref=some_other_ref]]
+    '''
+    pattern = re.compile(r'^\s*\[\[include ref=[^\]]*\]\]\s*$', re.IGNORECASE)
+
+    def run(self, lines):
+        buf = []
+        result = []
+        for line in lines:
+            if self.pattern.match(line):
+                buf.append(line)
+            else:
+                if buf:
+                    result.append(''.join(buf))
+                    buf = []
+                result.append(line)
         return result
