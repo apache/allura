@@ -109,7 +109,8 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
                 author=post.author().display_name,
                 ago=h.ago(post.timestamp),
                 description=summary and '&nbsp;' or g.markdown.convert(post.text)))
-        for post in posts if security.has_access(post, 'read', project=post.app.project)() and
+        for post in posts if post.app and
+                             security.has_access(post, 'read', project=post.app.project)() and
                              security.has_access(post.app.project, 'read', project=post.app.project)())
     return output
 

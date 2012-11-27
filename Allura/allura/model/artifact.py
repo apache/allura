@@ -186,6 +186,8 @@ class Artifact(MappedClass):
 
     @LazyProperty
     def app(self):
+        if not self.app_config:
+            return None
         if getattr(c, 'app', None) and c.app.config._id == self.app_config._id:
             return c.app
         else:
