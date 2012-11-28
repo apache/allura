@@ -374,3 +374,296 @@ class TestAuth(TestController):
         r = self.app.get('/p/test/admin/', extra_environ={'username':'test-admin'})
         assert_equal(r.status_int, 302)
         assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
+
+class TestPreferences(TestController):
+
+    @td.with_user_project('test-admin')
+    def test_personal_data(self):
+        from pytz import country_names
+        setsex, setbirthdate, setcountry, setcity, settimezone = \
+            ('Male', '19/08/1988', 'IT', 'Milan', 'Europe/Rome')
+        result = self.app.get('/auth/prefs')
+
+        #Check if personal data is properly set
+        r = self.app.post('/auth/prefs/change_personal_data', 
+             params=dict(
+                 sex=setsex,
+                 birthdate=setbirthdate,
+                 country=setcountry,
+                 city=setcity,
+                 timezone=settimezone))
+        user = M.User.query.get(username='test-admin')
+        sex = user.sex
+        assert sex == setsex
+        birthdate = user.birthdate.strftime('%d/%m/%Y')
+        assert birthdate == setbirthdate
+        country = user.localization.country
+        assert country_names.get(setcountry) == country
+        city = user.localization.city
+        assert city == setcity
+        timezone = user.timezone
+        assert timezone == settimezone
+        
+        #Check if setting a wrong date everything works correctly
+        r = self.app.post('/auth/prefs/change_personal_data', 
+             params=dict(birthdate='30/02/1998'))
+        assert 'Please enter a valid date' in str(r)
+        user = M.User.query.get(username='test-admin')
+        sex = user.sex
+        assert sex == setsex
+        birthdate = user.birthdate.strftime('%d/%m/%Y')
+        assert birthdate == setbirthdate
+        country = user.localization.country
+        assert country_names.get(setcountry) == country
+        city = user.localization.city
+        assert city == setcity
+        timezone = user.timezone
+        assert timezone == settimezone
+
+        #Check deleting birthdate
+        r = self.app.post('/auth/prefs/change_personal_data', 
+             params=dict(
+                 sex=setsex,
+                 birthdate='',
+                 country=setcountry,
+                 city=setcity,
+                 timezone=settimezone))
+        user = M.User.query.get(username='test-admin')
+        assert user.birthdate is None
+
+    @td.with_user_project('test-admin')
+    def test_contacts(self):
+        #Add skype account
+        testvalue = 'testaccount'
+        result = self.app.get('/auth/prefs')
+        r = self.app.post('/auth/prefs/skype_account', 
+             params=dict(skypeaccount=testvalue))
+        user = M.User.query.get(username='test-admin')
+        assert user.skypeaccount == testvalue
+
+        #Add social network account
+        socialnetwork = 'Facebook'
+        accounturl = 'http://www.facebook.com/test'
+        r = self.app.post('/auth/prefs/add_social_network', 
+             params=dict(socialnetwork=socialnetwork,
+                         accounturl = accounturl))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 1 and \
+               user.socialnetworks[0].socialnetwork == socialnetwork and \
+               user.socialnetworks[0].accounturl == accounturl
+
+        #Add second social network account
+        socialnetwork2 = 'Twitter'
+        accounturl2 = 'http://www.twitter.com/test'
+        r = self.app.post('/auth/prefs/add_social_network', 
+             params=dict(socialnetwork=socialnetwork2,
+                         accounturl = accounturl2))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 2 and \
+               ({'socialnetwork':socialnetwork, 'accounturl':accounturl} in user.socialnetworks and \
+                {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks)
+
+        #Remove first social network account
+        r = self.app.post('/auth/prefs/remove_social_network', 
+             params=dict(socialnetwork=socialnetwork,
+                         account = accounturl))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 1 and \
+               {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks
+
+        #Add invalid social network account
+        r = self.app.post('/auth/prefs/add_social_network', 
+             params=dict(accounturl = accounturl, socialnetwork=''))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 1 and \
+               {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks
+
+        #Add telephone number
+        telnumber = '+3902123456'
+        r = self.app.post('/auth/prefs/add_telnumber', 
+             params=dict(newnumber=telnumber))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.telnumbers) == 1 and (user.telnumbers[0] == telnumber))
+
+        #Add second telephone number
+        telnumber2 = '+3902654321'
+        r = self.app.post('/auth/prefs/add_telnumber', 
+             params=dict(newnumber=telnumber2))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.telnumbers) == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
+
+        #Remove first telephone number
+        r = self.app.post('/auth/prefs/remove_telnumber', 
+             params=dict(oldvalue=telnumber))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.telnumbers) == 1 and telnumber2 in user.telnumbers)
+
+        #Add website
+        website = 'http://www.testurl.com'
+        r = self.app.post('/auth/prefs/add_webpage', 
+             params=dict(newwebsite=website))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.webpages) == 1 and (website in user.webpages))
+
+        #Add second website
+        website2 = 'http://www.testurl2.com'
+        r = self.app.post('/auth/prefs/add_webpage', 
+             params=dict(newwebsite=website2))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.webpages) == 2 and website in user.webpages and website2 in user.webpages)
+
+        #Remove first website
+        r = self.app.post('/auth/prefs/remove_webpage', 
+             params=dict(oldvalue=website))
+        user = M.User.query.get(username='test-admin')
+        assert (len(user.webpages) == 1 and website2 in user.webpages)
+
+    @td.with_user_project('test-admin')
+    def test_availability(self):
+        from datetime import time
+
+        #Add availability timeslot
+        weekday = 'Monday'
+        starttime = time(9,0,0)
+        endtime = time(12, 0, 0)
+
+        result = self.app.get('/auth/prefs')
+        r = self.app.post('/auth/prefs/add_timeslot', 
+             params=dict(
+                 weekday=weekday,
+                 starttime=starttime.strftime('%H:%M'),
+                 endtime=endtime.strftime('%H:%M')))
+        user = M.User.query.get(username='test-admin')
+        timeslot1dict = dict(week_day=weekday, start_time=starttime, end_time=endtime)
+        assert len(user.availability) == 1 and timeslot1dict in user.get_availability_timeslots()
+
+        weekday2 = 'Tuesday'
+        starttime2 = time(14,0,0)
+        endtime2 = time(16, 0, 0)
+
+        #Add second availability timeslot
+        r = self.app.post('/auth/prefs/add_timeslot', 
+             params=dict(
+                 weekday=weekday2,
+                 starttime=starttime2.strftime('%H:%M'),
+                 endtime=endtime2.strftime('%H:%M')))
+        user = M.User.query.get(username='test-admin')
+        timeslot2dict = dict(week_day=weekday2, start_time=starttime2, end_time=endtime2)
+        assert len(user.availability) == 2 and timeslot1dict in user.get_availability_timeslots() \
+               and timeslot2dict in user.get_availability_timeslots()
+
+        #Remove availability timeslot
+        r = self.app.post('/auth/prefs/remove_timeslot', 
+             params=dict(
+                 weekday=weekday,
+                 starttime=starttime.strftime('%H:%M'),
+                 endtime=endtime.strftime('%H:%M')))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
+
+        #Add invalid availability timeslot
+        r = self.app.post('/auth/prefs/add_timeslot', 
+             params=dict(
+                 weekday=weekday2,
+                 starttime=endtime2.strftime('%H:%M'),
+                 endtime=starttime2.strftime('%H:%M')))
+        assert 'Invalid period:' in str(r)
+        user = M.User.query.get(username='test-admin')
+        timeslot2dict = dict(week_day=weekday2, start_time=starttime2, end_time=endtime2)
+        assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
+
+    @td.with_user_project('test-admin')
+    def test_inactivity(self):
+        from datetime import datetime
+
+        #Add inactivity period
+        startdate = datetime(2012, 12, 14)
+        enddate = datetime(2012, 12, 20)
+        result = self.app.get('/auth/prefs')
+        r = self.app.post('/auth/prefs/add_inactive_period', 
+             params=dict(
+                 startdate=startdate.strftime('%d/%m/%Y'),
+                 enddate=enddate.strftime('%d/%m/%Y')))
+        user = M.User.query.get(username='test-admin')
+        period1dict = dict(start_date=startdate, end_date=enddate)
+        assert len(user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
+
+        #Add second inactivity period
+        startdate2 = datetime(2012, 12, 24)
+        enddate2 = datetime(2012, 12, 28)
+        r = self.app.post('/auth/prefs/add_inactive_period', 
+             params=dict(
+                 startdate=startdate2.strftime('%d/%m/%Y'),
+                 enddate=enddate2.strftime('%d/%m/%Y')))
+        user = M.User.query.get(username='test-admin')
+        period2dict = dict(start_date=startdate2, end_date=enddate2)
+        assert len(user.inactiveperiod) == 2 and period1dict in user.get_inactive_periods() \
+               and period2dict in user.get_inactive_periods()
+
+        #Remove first inactivity period
+        r = self.app.post('/auth/prefs/remove_inactive_period', 
+             params=dict(
+                 startdate=startdate.strftime('%d/%m/%Y'),
+                 enddate=enddate.strftime('%d/%m/%Y')))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
+
+        #Add invalid inactivity period
+        r = self.app.post('/auth/prefs/add_inactive_period', 
+             params=dict(
+                 startdate='NOT/A/DATE',
+                 enddate=enddate2.strftime('%d/%m/%Y')))
+        user = M.User.query.get(username='test-admin')
+        assert 'Please enter a valid date' in str(r)
+        assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
+
+    @td.with_user_project('test-admin')
+    def test_skills(self):
+        from datetime import datetime
+
+        #Add a skill
+        skill_cat = M.TroveCategory.query.get(show_as_skill=True)
+        level = 'low'
+        comment = 'test comment'
+        result = self.app.get('/auth/prefs/user_skills')
+        r = self.app.post('/auth/prefs/user_skills/save_skill', 
+             params=dict(
+                 level=level,
+                 comment=comment,
+                 selected_skill=str(skill_cat.trove_cat_id)))
+        user = M.User.query.get(username='test-admin')
+        skilldict = dict(category_id=skill_cat._id, comment=comment, level=level)
+        assert len(user.skills) == 1 and skilldict in user.skills
+
+        #Add again the same skill
+        level = 'medium'
+        comment = 'test comment 2'
+        result = self.app.get('/auth/prefs/user_skills')
+        r = self.app.post('/auth/prefs/user_skills/save_skill', 
+             params=dict(
+                 level=level,
+                 comment=comment,
+                 selected_skill=str(skill_cat.trove_cat_id)))
+        user = M.User.query.get(username='test-admin')
+        skilldict = dict(category_id=skill_cat._id, comment=comment, level=level)
+        assert len(user.skills) == 1 and skilldict in user.skills
+
+        #Add an invalid skill
+        level2 = 'not a level'
+        comment2 = 'test comment 2'
+        r = self.app.post('/auth/prefs/user_skills/save_skill', 
+             params=dict(
+                 level=level2,
+                 comment=comment2,
+                 selected_skill=str(skill_cat.trove_cat_id)))
+        user = M.User.query.get(username='test-admin')
+        #Check that everything is as it was before
+        assert len(user.skills) == 1 and skilldict in user.skills
+
+        #Remove a skill
+        result = self.app.get('/auth/prefs/user_skills')
+        r = self.app.post('/auth/prefs/user_skills/remove_skill', 
+             params=dict(
+                 categoryid=str(skill_cat.trove_cat_id)))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.skills) == 0

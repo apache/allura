@@ -9,6 +9,7 @@ from webob import exc as wexc
 
 import allura.tasks.repo_tasks
 from allura import model as M
+from allura.model.project import TroveCategory
 from allura.lib import validators as V
 from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_access
@@ -43,6 +44,19 @@ class F(object):
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
     oauth_revocation_form = OAuthRevocationForm(action='revoke_oauth')
+    change_personal_data_form = forms.PersonalDataForm()
+    add_socialnetwork_form = forms.AddSocialNetworkForm()
+    remove_socialnetwork_form = forms.RemoveSocialNetworkForm()
+    add_telnumber_form = forms.AddTelNumberForm()
+    add_website_form = forms.AddWebsiteForm()
+    skype_account_form = forms.SkypeAccountForm()
+    remove_textvalue_form = forms.RemoveTextValueForm()
+    add_timeslot_form = forms.AddTimeSlotForm()
+    remove_timeslot_form = forms.RemoveTimeSlotForm()
+    add_inactive_period_form = forms.AddInactivePeriodForm()
+    remove_inactive_period_form = forms.RemoveInactivePeriodForm()
+    save_skill_form = forms.AddUserSkillForm()
+    remove_skill_form = forms.RemoveSkillForm()
 
 class AuthController(BaseController):
 
@@ -278,7 +292,82 @@ class AuthController(BaseController):
                     allow_write=has_access(c.app, 'write')(user=user),
                     allow_create=has_access(c.app, 'create')(user=user))
 
+class UserSkillsController(BaseController):
+
+    def __init__(self, category=None):
+        self.category = category
+        super(UserSkillsController, self).__init__()
+
+    @expose()
+    def _lookup(self, catshortname, *remainder):
+        cat = M.TroveCategory.query.get(shortname=catshortname)
+        return UserSkillsController(category=cat), remainder
+
+    @expose('jinja:allura:templates/user_skills.html')
+    def index(self, **kw):
+        require_authenticated()
+
+        l = []
+        parents = []
+        if kw.get('selected_category') is not None:
+            selected_skill = M.TroveCategory.query.get(trove_cat_id=int(kw.get('selected_category')))
+        elif self.category:
+            selected_skill = self.category
+        else:
+            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True))
+            selected_skill = None
+        if selected_skill:
+            l = [scat for scat in selected_skill.subcategories
+                 if scat.show_as_skill]
+            temp_cat = selected_skill.parent_category
+            while temp_cat:
+                parents = [temp_cat] + parents
+                temp_cat = temp_cat.parent_category
+        return dict(
+            skills_list = l,
+            selected_skill = selected_skill,
+            parents = parents, 
+            add_details_fields=(len(l)==0))
+
+    @expose()
+    @require_post()
+    @validate(F.save_skill_form, error_handler=index)
+    def save_skill(self, **kw):
+        require_authenticated()
+        
+        trove_id = int(kw.get('selected_skill'))
+        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
+
+        new_skill = dict(
+            category_id=category._id,
+            level=kw.get('level'),
+            comment=kw.get('comment'))
+
+        s = [skill for skill in c.user.skills 
+             if str(skill.category_id) != str(new_skill['category_id'])]
+        s.append(new_skill)
+        c.user.set_pref('skills', s)
+        flash('Your skills list was successfully updated!')
+        redirect('/auth/prefs/user_skills')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_skill_form, error_handler=index)
+    def remove_skill(self, **kw):
+        require_authenticated()
+
+        trove_id = int(kw.get('categoryid'))
+        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
+
+        s = [skill for skill in c.user.skills 
+             if str(skill.category_id) != str(category._id)]
+        c.user.set_pref('skills', s)
+        flash('Your skills list was successfully updated!')
+        redirect('/auth/prefs/user_skills')
+
 class PreferencesController(BaseController):
+
+    user_skills = UserSkillsController()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/user_preferences.html')
@@ -454,6 +543,119 @@ class PreferencesController(BaseController):
             redirect('.')
         flash('Password changed')
         redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.change_personal_data_form, error_handler=index)
+    def change_personal_data(self, **kw):
+        require_authenticated()
+        c.user.set_pref('sex', kw['sex'])
+        c.user.set_pref('birthdate', kw.get('birthdate'))
+        localization={'country':kw.get('country'), 'city':kw.get('city')}
+        c.user.set_pref('localization', localization)
+        c.user.set_pref('timezone', kw['timezone'])
+
+        flash('Your personal data was successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.add_socialnetwork_form, error_handler=index)
+    def add_social_network(self, **kw):
+        require_authenticated()
+        c.user.add_socialnetwork(kw['socialnetwork'], kw['accounturl'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_socialnetwork_form, error_handler=index)
+    def remove_social_network(self, **kw):
+        require_authenticated()
+        c.user.remove_socialnetwork(kw['socialnetwork'], kw['account'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.add_telnumber_form, error_handler=index)
+    def add_telnumber(self, **kw):
+        require_authenticated()
+        c.user.add_telephonenumber(kw['newnumber'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_textvalue_form, error_handler=index)
+    def remove_telnumber(self, **kw):
+        require_authenticated()
+        c.user.remove_telephonenumber(kw['oldvalue'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.add_website_form, error_handler=index)
+    def add_webpage(self, **kw):
+        require_authenticated()
+        c.user.add_webpage(kw['newwebsite'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_textvalue_form, error_handler=index)
+    def remove_webpage(self, **kw):
+        require_authenticated()
+        c.user.remove_webpage(kw['oldvalue'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.skype_account_form, error_handler=index)
+    def skype_account(self, **kw):
+        require_authenticated()
+        c.user.set_pref('skypeaccount', kw['skypeaccount'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.#Contacts')
+
+    @expose()
+    @require_post()
+    @validate(F.add_timeslot_form, error_handler=index)
+    def add_timeslot(self, **kw):
+        require_authenticated()
+        c.user.add_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.#Availability')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_timeslot_form, error_handler=index)
+    def remove_timeslot(self, **kw):
+        require_authenticated()
+        c.user.remove_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.#Availability')
+
+    @expose()
+    @require_post()
+    @validate(F.add_inactive_period_form, error_handler=index)
+    def add_inactive_period(self, **kw):
+        require_authenticated()
+        c.user.add_inactive_period(kw['startdate'], kw['enddate'])
+        flash('Your inactivity periods were successfully updated!')
+        redirect('.#Availability')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_inactive_period_form, error_handler=index)
+    def remove_inactive_period(self, **kw):
+        require_authenticated()
+        c.user.remove_inactive_period(kw['startdate'], kw['enddate'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.#Availability')
 
     @expose()
     @require_post()

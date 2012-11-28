@@ -24,12 +24,14 @@
       {{field.display(**ctx)}}
     {% endif %}
   {% endfor %}
-  <label class="grid-4">&nbsp;</label>
-  <div class="grid-{{15 + extra_width}}">
-    {% for b in buttons %}
-      {{b.display()}}
-    {% endfor %}
-  </div>
+  {% if buttons %}
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-{{15 + extra_width}}">
+      {% for b in buttons %}
+        {{b.display()}}
+      {% endfor %}
+    </div>
+  {% endif %}
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
 </form>
