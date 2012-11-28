@@ -1,8 +1,7 @@
 import json
 import os
 from cStringIO import StringIO
-from nose.tools import assert_raises, assert_equal
-from datetime import datetime, timedelta
+import urllib2
 
 import Image
 from tg import config
@@ -448,8 +447,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/p/add_project', extra_environ=dict(username='root'))
         assert 'private_project' not in r
 
-        assert_raises(ValueError,
-            self.app.post,
+        r = self.app.post(
             '/p/register',
             params=dict(
                 project_unixname='myprivate1',
@@ -459,6 +457,8 @@ class TestNeighborhood(TestController):
                 private_project='on'),
             antispam=True,
             extra_environ=dict(username='root'))
+        flash_msg_cookie = urllib2.unquote(r.headers['Set-Cookie'])
+        assert 'Internal Error.' in flash_msg_cookie
 
         proj = M.Project.query.get(shortname='myprivate1', neighborhood_id=neighborhood._id)
         assert proj is None

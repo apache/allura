@@ -185,6 +185,10 @@ class NeighborhoodController(object):
         except exceptions.ProjectRatelimitError:
             flash("Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('add_project')
+        except Exception as e:
+            log.warn('error registering project %s', project_unixname, exc_info=True)
+            flash('Internal Error. Please try again later.', 'error')
+            redirect('add_project')
 
         if project_description:
             c.project.short_description = project_description
