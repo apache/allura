@@ -17,6 +17,118 @@
       {%- endfor %}
    </ul>
 
+  <div style="clear:both" class="grid-20">
+    <h2>Personal Settings</h2>
+    {{g.theme.personal_data_form.display(action="/auth/prefs/change_personal_data", user=c.user)}} 
+  </div>
+
+  <div style="clear:both" class="grid-20">
+    <a name="Contacts"></a>
+    <h2>Personal Contacts</h2>
+    <h3>Skype account</h3>
+
+    {{g.theme.skype_account_form.display(action="/auth/prefs/skype_account",
+          initial_value=c.user.get_pref('skypeaccount'))}}
+     
+    {%if c.user.get_pref('socialnetworks') or c.user.get_pref('telnumbers') or c.user.get_pref('webpages') %}
+      <h3>Other existing contacts</h3>
+        <table>
+          <tr>
+            <thead>
+              <th>Type</th>
+              <th>Contact</th>
+              <th>Actions</th>
+            </thead>
+          </tr>
+          {% for sn in c.user.get_pref('socialnetworks') %}
+             {{g.theme.remove_socialnetwork_form.display(account=sn.accounturl, socialnetwork=sn.socialnetwork)}} 
+          {% endfor %}
+
+          {% for tn in c.user.get_pref('telnumbers') %}
+              {{g.theme.remove_textvalue_form.display(action="/auth/prefs/remove_telnumber", value=tn, label="Telephone number")}} 
+          {%endfor%}
+
+          {% for ws in c.user.get_pref('webpages') %}
+              {{g.theme.remove_textvalue_form.display(action="/auth/prefs/remove_webpage", value=ws, label="Website url")}} 
+          {%endfor%}
+        </table>
+    {% endif %}
+
+    <h3>Add a social network account</h3>
+    {{g.theme.add_socialnetwork_form.display(action="/auth/prefs/add_social_network")}}
+    <h3>Add a telephone number</h3>
+    {{g.theme.add_telnumber_form.display(action="/auth/prefs/add_telnumber")}}
+    <h3>Add a personal website</h3>
+    {{g.theme.add_website_form.display(action="/auth/prefs/add_webpage")}}
+  </div>
+
+  <a name="Availability"></a>
+  <div style="clear:both" class="grid-20">
+    <h2>Availability</h2>
+    <div class="grid-18">
+      If you want, you can set the weekly timeslot during which you are usually available to support other users of the forge.
+      Please, set your time intervals choosing a weekday and entering the time interval according to the timezone specified in your 
+      personal data, using the format HH:MM. If you didn't set any timezone, your timeslots could be meaningless to other users, 
+      therefore they will be ignored.
+    </div>
+    <div class="grid-18">
+      You can also specify periods of time during which you won't be able to work on the forge, in orther to communicate other users
+      that they can't contact you during those days. Please, do it specifying date intervals in format DD/MM/YYYY.
+    </div> 
+  </div>
+  <div class="grid-20">
+    {%if c.user.get_availability_timeslots() %}
+      <h3>Existing availability timeslots</h3>
+      <table>
+        <tr>
+          <thead>
+            <th>Weekday</th>
+            <th>Start time</th>
+            <th>End time</th>
+            <th>Actions</th>
+          </thead>
+        </tr>
+        {% for ts in c.user.get_availability_timeslots() %}
+          {{g.theme.remove_timeslot_form.display(
+                action="/auth/prefs/remove_timeslot",
+                weekday=ts.week_day,
+                starttime=ts.start_time,
+                endtime=ts.end_time)}} 
+        {%endfor%}
+      </table>
+    {% endif %}
+    <h3>Add a new availability timeslot</h3>
+    {{g.theme.add_timeslot_form.display(action="/auth/prefs/add_timeslot")}}
+  </div>
+
+  <div class="grid-20">
+    {%if c.user.get_inactive_periods() %}
+      <h3>Existing periods of inactivity on the forge</h3>
+      <table>
+        <tr>
+          <thead>
+            <th>Start date</th>
+            <th>End date</th>
+            <th>Actions</th>
+          </thead>
+        </tr>
+        {% for ip in c.user.get_inactive_periods() %}
+          {{g.theme.remove_inactive_period_form.display(
+                action="/auth/prefs/remove_inactive_period",
+                startdate=ip.start_date,
+                enddate=ip.end_date)}} 
+        {%endfor%}
+      </table>
+    {% endif %}
+    <h3>Add a new period of inactivity on the forge</h3>
+    {{g.theme.add_inactive_period_form.display(action="/auth/prefs/add_inactive_period")}}
+  </div>
+
+  <div class="grid-20">
+    <h2>Skills list</h2>
+    <ul><li><a href="/auth/prefs/user_skills">Click here to check and change your skills list</a></li></ul>
+  </div>
+
   {% if g.theme.password_change_form %}
   <div class="grid-20">
     <h2>Change Password</h2>

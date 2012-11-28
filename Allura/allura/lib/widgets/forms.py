@@ -6,6 +6,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura import model as M
+from datetime import datetime
 
 from formencode import validators as fev
 import formencode
@@ -13,7 +14,19 @@ import formencode
 import ew as ew_core
 import ew.jinja2_ew as ew
 
+from pytz import common_timezones, country_timezones, country_names
+
 log = logging.getLogger(__name__)
+
+socialnetworks=['Facebook','Linkedin','Twitter','Google+']
+weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+
+class _HTMLExplanation(ew.InputField):
+    template=ew.Snippet(
+        '''<label class="grid-4">&nbsp;</label>
+           <div class="grid-14" style="margin:2px;">{{widget.text}}</div>
+        ''',
+        'jinja2')
 
 class NeighborhoodProjectTakenValidator(fev.FancyValidator):
 
@@ -86,6 +99,517 @@ class PasswordChangeForm(ForgeForm):
         d = super(PasswordChangeForm, self).to_python(value, state)
         if d['pw'] != d['pw2']:
             raise formencode.Invalid('Passwords must match', value, state)
+        return d
+
+class PersonalDataForm(ForgeForm):
+    class fields(ew_core.NameList):
+        sex = ew.SingleSelectField(
+            label='Gender', 
+            options=[ew.Option(py_value=v,label=v,selected=False)
+                     for v in ['Male', 'Female', 'Unknown', 'Other']],
+            validator=formencode.All(
+                V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
+                fev.UnicodeString(not_empty=True)))
+        birthdate = ew.TextField(
+            label='Birth date', 
+            validator=V.DateValidator(),
+            attrs=dict(value=None))
+        exp = _HTMLExplanation(
+            text="Use the format DD/MM/YYYY",
+            show_errors=False)
+        country = ew.SingleSelectField(
+            label='Country of residence', 
+            validator=V.MapValidator(country_names, not_empty=False),
+            options = [
+                ew.Option(
+                    py_value=" ", label=" -- Unknown -- ", selected=False)] +\
+                [ew.Option(py_value=c, label=n, selected=False)
+                 for c,n in sorted(country_names.items(), 
+                                   key=lambda (k,v):v)],
+            attrs={'onchange':'selectTimezone(this.value)'})
+        city = ew.TextField(
+            label='City of residence', 
+            attrs=dict(value=None),
+            validator=fev.UnicodeString(not_empty=False))
+        timezone=ew.SingleSelectField(
+            label='Timezone', 
+            attrs={'id':'tz'},
+            validator=V.OneOfValidator(common_timezones, not_empty=False),
+            options=[
+                 ew.Option(
+                     py_value=" ",
+                     label=" -- Unknown -- ")] + \
+                 [ew.Option(py_value=n, label=n)
+                  for n in sorted(common_timezones)])
+
+    def display(self, **kw):
+        user = kw.get('user')
+
+        for opt in self.fields['sex'].options:
+            if opt.label == user.sex:
+                opt.selected = True
+            else:
+                opt.selected = False
+
+        if user.get_pref('birthdate'):
+            self.fields['birthdate'].attrs['value'] = \
+                user.get_pref('birthdate').strftime('%d/%m/%Y')
+        else:
+            self.fields['birthdate'].attrs['value'] = ''
+
+        for opt in self.fields['country'].options:
+            if opt.label == user.localization.country:
+                opt.selected = True
+            elif opt.py_value == " " and user.localization.country is None:
+                opt.selected = True
+            else:
+                opt.selected = False
+
+        if user.localization.city:
+            self.fields['city'].attrs['value'] = user.localization.city
+        else:
+            self.fields['city'].attrs['value'] = ''
+
+        for opt in self.fields['timezone'].options:
+            if opt.label == user.timezone:
+                opt.selected = True
+            elif opt.py_value == " " and user.timezone is None:
+                opt.selected = True
+            else:
+                opt.selected = False
+
+        return super(ForgeForm, self).display(**kw)
+        
+    def resources(self):
+        def _append(x, y):
+            return x + y
+
+        yield ew.JSScript('''
+var $allTimezones = $("#tz").clone();
+var $t = {};
+''' + \
+    reduce(_append, [
+        '$t["'+ el +'"] = ' + str([name.encode('utf-8') 
+                                  for name in country_timezones[el]]) + ";\n"
+        for el in country_timezones]) + '''
+function selectTimezone($country){
+     if($country == " "){
+         $("#tz").replaceWith($allTimezones);
+     }
+     else{
+         $("#tz option:gt(0)").remove();
+         $.each($t[$country], function(index, value){
+             $("#tz").append($("<option></option>").attr("value", value).text(value))
+         })
+     }
+}''')
+
+class AddTelNumberForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        newnumber = ew.TextField(
+            label='New telephone number',
+            attrs={'value':''},
+            validator=fev.UnicodeString(not_empty=True))
+        
+    def display(self, **kw):
+        initial_value = kw.get('initial_value','')
+        self.fields['newnumber'].attrs['value'] = initial_value
+        return super(ForgeForm, self).display(**kw)
+
+class AddWebsiteForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        newwebsite = ew.TextField(
+            label='New website url',
+            attrs={'value':''},
+            validator=fev.UnicodeString(not_empty=True))
+        
+    def display(self, **kw):
+        initial_value = kw.get('initial_value','')
+        self.fields['newwebsite'].attrs['value'] = initial_value
+        return super(ForgeForm, self).display(**kw)
+
+class SkypeAccountForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        skypeaccount = ew.TextField(
+            label='Skype account',
+            attrs={'value':''},
+            validator=fev.UnicodeString(not_empty=False))
+        
+    def display(self, **kw):
+        initial_value = kw.get('initial_value','')
+        self.fields['skypeaccount'].attrs['value'] = initial_value
+        return super(ForgeForm, self).display(**kw)
+
+class RemoveTextValueForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        initial_value = kw.get('value','')
+        label = kw.get('label','')
+        description = kw.get('description')
+        
+        self.fields = [
+            ew.RowField(
+                show_errors=False,
+                hidden_fields=[
+                    ew.HiddenField(
+                        name="oldvalue",
+                        attrs={'value':initial_value},
+                        show_errors=False)
+                ],
+                fields=[
+                    ew.HTMLField(
+                        text=label,
+                        show_errors=False),
+                    ew.HTMLField(
+                        show_label=False,
+                        text=initial_value),
+                    ew.SubmitButton(
+                        show_label=False,
+                        attrs={'value':'Remove'},
+                        show_errors=False)])]
+        if description:
+            self.fields.append(
+                _HTMLExplanation(
+                    text=description,
+                    show_errors=False))
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveTextValueForm, self).to_python(kw, state)
+        d["oldvalue"] = kw.get('oldvalue', '')
+        return d
+
+class AddSocialNetworkForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        socialnetwork = ew.SingleSelectField(
+            label='Social network', 
+            options=[ew.Option(py_value=name, label=name)
+                     for name in socialnetworks],
+            validator=formencode.All(
+                V.OneOfValidator(socialnetworks),
+                fev.UnicodeString(not_empty=True)))
+        accounturl = ew.TextField(
+            label='Account url',
+            validator=fev.UnicodeString(not_empty=True))
+
+class RemoveSocialNetworkForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        account = kw.get('account','')
+        socialnetwork = kw.get('socialnetwork','')
+        
+        self.fields = [
+            ew.RowField(
+                show_errors=False,
+                hidden_fields=[
+                    ew.HiddenField(
+                        name="account",
+                        attrs={'value':account},
+                        show_errors=False),
+                    ew.HiddenField(
+                        name="socialnetwork",
+                        attrs={'value':socialnetwork},
+                        show_errors=False)],
+                fields=[
+                    ew.HTMLField(
+                        text='%s account' % socialnetwork,
+                        show_errors=False),
+                    ew.HTMLField(
+                        show_label=False,
+                        text=account),
+                    ew.SubmitButton(
+                        show_label=False,
+                        attrs={'value':'Remove'},
+                        show_errors=False)])]
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveSocialNetworkForm, self).to_python(kw, state)
+        d["account"] = kw.get('account', '')
+        d["socialnetwork"] = kw.get('socialnetwork', '')
+        return d
+
+class AddInactivePeriodForm(ForgeForm):
+    class fields(ew_core.NameList):
+        startdate = ew.TextField(
+            label='Start date',
+            validator=formencode.All(
+                V.DateValidator(),
+                fev.UnicodeString(not_empty=True)))
+        enddate = ew.TextField(
+            label='End date',
+            validator=formencode.All(
+                V.DateValidator(),
+                fev.UnicodeString(not_empty=True)))
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(AddInactivePeriodForm, self).to_python(kw, state)
+        if d['startdate'] > d['enddate']:
+                raise formencode.Invalid(
+                   'Invalid period: start date greater than end date.', 
+                    kw, state)
+        return d
+
+class RemoveInactivePeriodForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        startdate = kw.get('startdate')
+        enddate = kw.get('enddate')
+
+        self.fields = [
+            ew.RowField(
+                show_label=False,
+                show_errors=False,
+                fields=[
+                    ew.HTMLField(text=startdate.strftime('%d/%m/%Y'),
+                                 show_errors=False),
+                    ew.HTMLField(text=enddate.strftime('%d/%m/%Y'),
+                                 show_errors=False),
+                    ew.SubmitButton(
+                        attrs={'value':'Remove'},
+                        show_errors=False)],
+                hidden_fields=[
+                    ew.HiddenField(
+                        name='startdate',
+                        attrs={'value':startdate.strftime('%d/%m/%Y')},
+                        show_errors=False),
+                    ew.HiddenField(
+                        name='enddate',
+                        attrs={'value':enddate.strftime('%d/%m/%Y')},
+                        show_errors=False)])]
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveInactivePeriodForm, self).to_python(kw, state)
+        d['startdate'] = V.convertDate(kw.get('startdate',''))
+        d['enddate'] = V.convertDate(kw.get('enddate',''))
+        return d
+
+class AddTimeSlotForm(ForgeForm):
+    class fields(ew_core.NameList):
+        weekday = ew.SingleSelectField(
+            label='Weekday', 
+            options=[ew.Option(py_value=wd, label=wd)
+                     for wd in weekdays],
+            validator=formencode.All(
+                V.OneOfValidator(weekdays),
+                fev.UnicodeString(not_empty=True)))
+        starttime = ew.TextField(
+            label='Start time',
+            validator=formencode.All(
+                V.TimeValidator(),
+                fev.UnicodeString(not_empty=True)))
+        endtime = ew.TextField(
+            label='End time',
+            validator=formencode.All(
+                V.TimeValidator(),
+                fev.UnicodeString(not_empty=True)))
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(AddTimeSlotForm, self).to_python(kw, state)
+        if (d['starttime']['h'], d['starttime']['m']) > \
+           (d['endtime']['h'], d['endtime']['m']):
+                raise formencode.Invalid(
+                   'Invalid period: start time greater than end time.', 
+                    kw, state)
+        return d
+
+class RemoveTimeSlotForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        weekday = kw.get('weekday','')
+        starttime = kw.get('starttime')
+        endtime = kw.get('endtime')
+
+        self.fields = [
+            ew.RowField(
+                show_errors=False,
+                show_label=False,
+                fields=[
+                    ew.HTMLField(text=weekday),
+                    ew.HTMLField(text=starttime.strftime('%H:%M')),
+                    ew.HTMLField(text=endtime.strftime('%H:%M')),
+                    ew.SubmitButton(
+                        show_errors=False,
+                        attrs={'value':'Remove'})],
+                hidden_fields=[
+                    ew.HiddenField(
+                        name='weekday', 
+                        attrs={'value':weekday}),
+                    ew.HiddenField(
+                        name='starttime',
+                        attrs={'value':starttime.strftime('%H:%M')}),
+                    ew.HiddenField(
+                        name='endtime',
+                        attrs={'value':endtime.strftime('%H:%M')})])]
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveTimeSlotForm, self).to_python(kw, state)
+        d["weekday"] = kw.get('weekday', None)
+        d['starttime'] = V.convertTime(kw.get('starttime',''))
+        d['endtime'] = V.convertTime(kw.get('endtime',''))
+        return d
+
+class RemoveTroveCategoryForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        cat = kw.get('category')
+        
+        self.fields = [
+            ew.RowField(
+                show_errors=False,
+                show_label=False,
+                fields=[
+                    ew.LinkField(
+                        text=cat.fullname,
+                        href="/categories/%s" % cat.shortname),
+                    ew.SubmitButton(
+                        show_errors=False,
+                        attrs={'value':'Remove'})],
+                hidden_fields=[
+                    ew.HiddenField(
+                        name='categoryid', 
+                        attrs={'value':cat.trove_cat_id})])]
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveTroveCategoryForm, self).to_python(kw, state)
+        d["categoryid"] = kw.get('categoryid')
+        if d["categoryid"]:
+            d["categoryid"] = int(d['categoryid'])
+        return d
+
+class AddTroveCategoryForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        uppercategory_id = ew.HiddenField(
+            attrs={'value':''},
+            show_errors=False)
+        categoryname = ew.TextField(
+            label="Category name",
+            validator=fev.UnicodeString(not_empty=True))
+
+    def display(self, **kw):
+        upper_category = kw.get('uppercategory_id',0)
+        
+        self.fields['uppercategory_id'].attrs['value'] = upper_category
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(AddTroveCategoryForm, self).to_python(kw, state)
+        d["uppercategory_id"] = kw.get('uppercategory_id', 0)
+        return d
+
+class AddUserSkillForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults)
+
+    class fields(ew_core.NameList):
+        selected_skill=ew.HiddenField(
+            attrs={'value':''},
+            show_errors=False,
+            validator=fev.UnicodeString(not_empty=True))
+        level=ew.SingleSelectField(
+            label="Level of knowledge",
+            options=[
+                ew.Option(py_value="low",label="Low level"),
+                ew.Option(py_value="medium",label="Medium level"),
+                ew.Option(py_value="high",label="Advanced level")],
+            validator=formencode.All(
+                V.OneOfValidator(['low','medium','high']),
+                fev.UnicodeString(not_empty=True)))
+        comment=ew.TextArea(
+            label="Additional comments",
+            validator=fev.UnicodeString(not_empty=False),
+            attrs={'rows':5,'cols':30})
+
+    def display(self, **kw):
+        category = kw.get('selected_skill')
+        
+        self.fields["selected_skill"].attrs['value']=category
+        return super(ForgeForm, self).display(**kw)
+
+class SelectSubCategoryForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text="Confirm")
+
+    class fields(ew_core.NameList):
+        selected_category=ew.SingleSelectField(
+            name="selected_category",
+            label="Available categories",
+            options=[])
+
+    def display(self, **kw):
+        categories = kw.get('categories')
+        
+        self.fields['selected_category'].options= \
+            [ew.Option(py_value=el.trove_cat_id,label=el.fullname)
+             for el in categories]
+        self.fields['selected_category'].validator= \
+            validator=formencode.All(
+                V.OneOfValidator(categories),
+                fev.UnicodeString(not_empty=True))
+        return super(ForgeForm, self).display(**kw)
+
+class RemoveSkillForm(ForgeForm):
+    defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
+
+    def display(self, **kw):
+        skill = kw.get('skill')
+        comment = skill['comment']
+        if not comment:
+            comment = "&nbsp;"
+
+        self.fields = [
+            ew.RowField(
+                show_errors=False,
+                hidden_fields=[
+                    ew.HiddenField(
+                        name="categoryid",
+                        attrs={'value':skill['skill'].trove_cat_id},
+                        show_errors=False)
+                ],
+                fields=[
+                    ew.HTMLField(
+                        text=skill['skill'].fullpath,
+                        show_errors=False),
+                    ew.HTMLField(
+                        text=skill['level'],
+                        show_errors=False),
+                    ew.HTMLField(
+                        text=comment,
+                        show_errors=False),
+                    ew.SubmitButton(
+                        show_label=False,
+                        attrs={'value':'Remove'},
+                        show_errors=False)])]
+        return super(ForgeForm, self).display(**kw)
+
+    @ew_core.core.validator
+    def to_python(self, kw, state):
+        d = super(RemoveSkillForm, self).to_python(kw, state)
+        d["categoryid"] = kw.get('categoryid', None)
         return d
 
 class UploadKeyForm(ForgeForm):

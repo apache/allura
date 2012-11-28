@@ -69,6 +69,7 @@ class TroveCategory(MappedClass):
     fullname = FieldProperty(str, if_missing='')
     fullpath = FieldProperty(str, if_missing='')
     parent_only = FieldProperty(bool, if_missing=False)
+    show_as_skill = FieldProperty(bool, if_missing=True)
 
     @property
     def parent_category(self):
