@@ -255,7 +255,7 @@ class RootController(BaseController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
-    def markdown_syntax_dialog(self):
+    def markdown_syntax_dialog(self, **kw):
         'Static dialog page about how to use markdown.'
         return dict()
 
@@ -307,13 +307,13 @@ class PostController(BaseController):
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_history.html')
-    def history(self):
+    def history(self, **kw):
         posts = self.post.history()
         return dict(title=self.post.title, posts=posts)
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/post_diff.html')
-    def diff(self, v1, v2):
+    def diff(self, v1, v2, **kw):
         p1 = self._get_version(int(v1))
         p2 = self._get_version(int(v2))
         result = h.diff_text(p1.text, p2.text)
@@ -337,7 +337,7 @@ class PostController(BaseController):
     @without_trailing_slash
     @require_post()
     @expose()
-    def revert(self, version):
+    def revert(self, version, **kw):
         require_access(self.post, 'write')
         orig = self._get_version(version)
         if orig:
@@ -347,7 +347,7 @@ class PostController(BaseController):
 
     @expose()
     @validate(W.subscribe_form)
-    def subscribe(self, subscribe=None, unsubscribe=None):
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:
             self.post.subscribe(type='direct')
         elif unsubscribe:
