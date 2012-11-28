@@ -199,7 +199,7 @@ class TracExport(object):
         except urllib2.HTTPError, e:
             if 'emulated' in e.msg:
                 body = e.fp.read()
-                if 'beyond the number of pages in the query' in body:
+                if 'beyond the number of pages in the query' in body or 'Log in with a SourceForge account' in body:
                     raise StopIteration
             raise
         reader = csv.reader(f)
