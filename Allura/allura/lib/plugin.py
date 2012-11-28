@@ -11,7 +11,7 @@ from cStringIO import StringIO
 from random import randint
 from hashlib import sha256
 from base64 import b64encode
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 
 try:
@@ -20,7 +20,7 @@ try:
 except ImportError:
     ldap = modlist = None
 import pkg_resources
-from tg import config, flash
+from tg import config
 from pylons import g, c
 from webob import exc
 from bson.tz_util import FixedOffset
@@ -30,7 +30,6 @@ from ming.orm import state
 from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
-from allura.lib import utils
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
 
@@ -396,6 +395,13 @@ class ProjectRegistrationProvider(object):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.
         '''
+        self.validate_project(neighborhood, shortname, project_name, user, user_project, private_project)
+        return self._create_project(neighborhood, shortname, project_name, user, user_project, private_project, apps)
+
+    def validate_project(self, neighborhood, shortname, project_name, user, user_project, private_project):
+        '''
+        Validate that a project can be registered, before it is
+        '''
         from allura import model as M
 
         # Check for private project rights
@@ -418,97 +424,99 @@ class ProjectRegistrationProvider(object):
 
         if not h.re_path_portion.match(shortname.replace('/', '')):
             raise ValueError('Invalid project shortname: %s' % shortname)
-        try:
-            p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
-            if p:
-                raise forge_exc.ProjectConflict()
-            project_template = neighborhood.get_project_template()
-            p = M.Project(neighborhood_id=neighborhood._id,
-                        shortname=shortname,
-                        name=project_name,
-                        short_description='',
-                        description=('You can edit this description in the admin page'),
-                        homepage_title=shortname,
-                        database_uri=M.Project.default_database_uri(shortname),
-                        last_updated = datetime.utcnow(),
-                        is_nbhd_project=False,
-                        is_root=True)
-            p.configure_project(
-                users=[user],
-                is_user_project=user_project,
-                is_private_project=private_project or project_template.get('private', False),
-                apps=apps or [] if 'tools' in project_template else None)
 
-            # Setup defaults from neighborhood project template if applicable
-            offset = p.next_mount_point(include_hidden=True)
-            if 'groups' in project_template:
-                for obj in project_template['groups']:
-                    name = obj.get('name')
-                    permissions = set(obj.get('permissions', [])) & \
-                                  set(p.permissions)
-                    usernames = obj.get('usernames', [])
-                    # Must provide a group name
-                    if not name: continue
-                    # If the group already exists, we'll add users to it,
-                    # but we won't change permissions on the group
-                    group = M.ProjectRole.by_name(name, project=p)
-                    if not group:
-                        # If creating a new group, *must* specify permissions
-                        if not permissions: continue
-                        group = M.ProjectRole(project_id=p._id, name=name)
-                        p.acl += [M.ACE.allow(group._id, perm)
-                                for perm in permissions]
-                    for username in usernames:
-                        guser = M.User.by_username(username)
-                        if not (guser and guser._id): continue
-                        pr = guser.project_role(project=p)
-                        if group._id not in pr.roles:
-                            pr.roles.append(group._id)
-            if 'tools' in project_template:
-                for i, tool in enumerate(project_template['tools'].keys()):
-                    tool_config = project_template['tools'][tool]
-                    tool_options = tool_config.get('options', {})
-                    for k, v in tool_options.iteritems():
-                        if isinstance(v, basestring):
-                            tool_options[k] = \
-                                    string.Template(v).safe_substitute(
-                                        p.__dict__.get('root_project', {}))
-                    app = p.install_app(tool,
-                        mount_label=tool_config['label'],
-                        mount_point=tool_config['mount_point'],
-                        ordinal=i + offset,
-                        **tool_options)
-                    if tool == 'wiki':
-                        from forgewiki import model as WM
-                        text = tool_config.get('home_text',
-                            '[[project_admins]]\n[[download_button]]')
-                        WM.Page.query.get(app_config_id=app.config._id).text = text
+        p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
+        if p:
+            raise forge_exc.ProjectConflict()
 
-            if 'tool_order' in project_template:
-                for i, tool in enumerate(project_template['tool_order']):
-                    p.app_config(tool).options.ordinal = i
-            if 'labels' in project_template:
-                p.labels = project_template['labels']
-            if 'trove_cats' in project_template:
-                for trove_type in project_template['trove_cats'].keys():
-                    troves = getattr(p, 'trove_%s' % trove_type)
-                    for trove_id in project_template['trove_cats'][trove_type]:
-                        troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
-            if 'icon' in project_template:
-                icon_file = StringIO(urlopen(project_template['icon']['url']).read())
-                M.ProjectFile.save_image(
-                    project_template['icon']['filename'], icon_file,
-                    square=True, thumbnail_size=(48, 48),
-                    thumbnail_meta=dict(project_id=p._id, category='icon'))
-            # clear the RoleCache for the user so this project will
-            # be picked up by user.my_projects()
-            g.credentials.clear_user(user._id)
-        except forge_exc.ProjectConflict:
-            raise
-        except:
-            ThreadLocalORMSession.close_all()
-            log.exception('Error registering project %s' % p)
-            raise
+    def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
+        '''
+        Actually create the project, no validation.  This should not be called directly
+        under normal circumstances.
+        '''
+        from allura import model as M
+
+        project_template = neighborhood.get_project_template()
+        p = M.Project(neighborhood_id=neighborhood._id,
+                    shortname=shortname,
+                    name=project_name,
+                    short_description='',
+                    description=('You can edit this description in the admin page'),
+                    homepage_title=shortname,
+                    database_uri=M.Project.default_database_uri(shortname),
+                    last_updated = datetime.utcnow(),
+                    is_nbhd_project=False,
+                    is_root=True)
+        p.configure_project(
+            users=[user],
+            is_user_project=user_project,
+            is_private_project=private_project or project_template.get('private', False),
+            apps=apps or [] if 'tools' in project_template else None)
+
+        # Setup defaults from neighborhood project template if applicable
+        offset = p.next_mount_point(include_hidden=True)
+        if 'groups' in project_template:
+            for obj in project_template['groups']:
+                name = obj.get('name')
+                permissions = set(obj.get('permissions', [])) & \
+                              set(p.permissions)
+                usernames = obj.get('usernames', [])
+                # Must provide a group name
+                if not name: continue
+                # If the group already exists, we'll add users to it,
+                # but we won't change permissions on the group
+                group = M.ProjectRole.by_name(name, project=p)
+                if not group:
+                    # If creating a new group, *must* specify permissions
+                    if not permissions: continue
+                    group = M.ProjectRole(project_id=p._id, name=name)
+                    p.acl += [M.ACE.allow(group._id, perm)
+                            for perm in permissions]
+                for username in usernames:
+                    guser = M.User.by_username(username)
+                    if not (guser and guser._id): continue
+                    pr = guser.project_role(project=p)
+                    if group._id not in pr.roles:
+                        pr.roles.append(group._id)
+        if 'tools' in project_template:
+            for i, tool in enumerate(project_template['tools'].keys()):
+                tool_config = project_template['tools'][tool]
+                tool_options = tool_config.get('options', {})
+                for k, v in tool_options.iteritems():
+                    if isinstance(v, basestring):
+                        tool_options[k] = \
+                                string.Template(v).safe_substitute(
+                                    p.__dict__.get('root_project', {}))
+                app = p.install_app(tool,
+                    mount_label=tool_config['label'],
+                    mount_point=tool_config['mount_point'],
+                    ordinal=i + offset,
+                    **tool_options)
+                if tool == 'wiki':
+                    from forgewiki import model as WM
+                    text = tool_config.get('home_text',
+                        '[[project_admins]]\n[[download_button]]')
+                    WM.Page.query.get(app_config_id=app.config._id).text = text
+
+        if 'tool_order' in project_template:
+            for i, tool in enumerate(project_template['tool_order']):
+                p.app_config(tool).options.ordinal = i
+        if 'labels' in project_template:
+            p.labels = project_template['labels']
+        if 'trove_cats' in project_template:
+            for trove_type in project_template['trove_cats'].keys():
+                troves = getattr(p, 'trove_%s' % trove_type)
+                for trove_id in project_template['trove_cats'][trove_type]:
+                    troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
+        if 'icon' in project_template:
+            icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+            M.ProjectFile.save_image(
+                project_template['icon']['filename'], icon_file,
+                square=True, thumbnail_size=(48, 48),
+                thumbnail_meta=dict(project_id=p._id, category='icon'))
+        # clear the RoleCache for the user so this project will
+        # be picked up by user.my_projects()
+        g.credentials.clear_user(user._id)
         with h.push_config(c, project=p, user=user):
             ThreadLocalORMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
