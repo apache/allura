@@ -188,5 +188,5 @@ $(function(){
 
     // Provide CSRF protection
     var cval = $.cookie('_session_id');
-    $('form').append('<input name="_session_id" type="hidden" value="'+cval+'">');
+    $('form[method=post]').append('<input name="_session_id" type="hidden" value="'+cval+'">');
 });
