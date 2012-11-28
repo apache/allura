@@ -1,0 +1,60 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}Trove categories{% endblock %}
+
+{% block header %}Managing trove categories{% endblock %}
+
+{% block content %}
+  <div class="grid-20">
+    {% if selected_cat %} 
+      <div class="grid-20">
+        <a href="/categories">Top-level categories</a>
+        {% for cat in hierarchy %}
+          &gt; <a href="/categories/{{cat.shortname}}">{{cat.fullname}}</a>
+        {% endfor %}
+        &gt; {{selected_cat.fullname}}
+      </div>
+      <h2>
+        Sub-categories of {{selected_cat.fullname}}
+      </h2>
+    {% else %} 
+      <h2>
+        List of all top-level categories
+      </h2>
+    {% endif %}
+   
+    {% if categories|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+              {{g.theme.remove_trove_category.display(category=cat)}}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="grid-20">
+        There are no categories in this list.
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="grid-20">
+    <h2>Create a new item in this category</h2>
+    {% if selected_cat %}
+      {{g.theme.add_trove_category.display(uppercategory_id=selected_cat.trove_cat_id)}}
+    {% else %}
+      {{g.theme.add_trove_category.display(uppercategory_id=0)}}
+    {% endif %}
+    <div class="grid-20" style="margin-bottom:10px;">
+      Are you done creating new categories? <a href="/auth/prefs/user_skills/{{selected_cat.shortname}}">Click here</a> to configure your skills!
+    </div>
+
+  </div>
+{% endblock %}

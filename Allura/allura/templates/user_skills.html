@@ -1,0 +1,86 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{c.user.username}} / Skills{% endblock %}
+
+{% block header %}Skills manager for {{c.user.username}} {% endblock %}
+
+{% block content %}
+  <div class="grid-20">
+    {% if c.user.get_skills()|length > 0 %}
+      <h2>Your current skills list:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Skill</th>
+            <th>Level</th>
+            <th>Comments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in c.user.get_skills() %}
+              {{g.theme.remove_user_skill.display(skill=s)}}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <h2>At the moment, your skills list is empty!</h2>
+      <div class="grid-20">
+        You can set your skills so that other users will be able to know what you can do best. 
+        To do it, you just need to choose the options that best fit your skills in the section below. You 
+        can also specify your skill level and some additional free comments.
+      </div>
+    {% endif %}
+  </div>
+ 
+  <div class="grid-20">
+    <h2>Add a new skill</h2>
+
+    {% if selected_skill %}
+      <div class="grid-20" style="margin:0;">
+        <div class="grid-4">
+          You selected:
+        </div>
+        <div class="grid-12" style="margin-bottom:20px">      
+           <a href="user_skills">List of all skills</a>
+           {% for cat in parents %}
+             &gt; <a href="/auth/prefs/user_skills/{{cat.shortname}}">{{cat.fullname}}</a>
+           {% endfor %}
+           &gt; <b>{{selected_skill.fullname}}</b>
+           <input type="hidden" name="upper_category" value="{{selected_skill.trove_parent_id}}"/>
+        </div>
+      </div>
+    {% endif %}
+ 
+    {% if skills_list %}
+      {% if selected_skill %}
+        <h3>Select a subcategory of "{{selected_skill.fullname}}"</h3>
+      {% else %}
+        <h3>Select a category</h3>
+      {%endif%}
+      {{g.theme.select_subcategory_form.display(categories=skills_list)}}
+    {% endif %}
+    {% if selected_skill %}
+      <h3>Add "{{selected_skill.fullname}}" to you set of skills</h3>
+      {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
+           action="/auth/prefs/user_skills/" + selected_skill.shortname + "/save_skill")}}
+    {% endif %}
+    <h3>Other possible actions</h3>
+    <div class="grid-20" style="margin-bottom:10px;"/>
+      <ul>
+        {%if tg.config.get('trovecategories.enableediting', 'false')=='true'%}
+          <li>
+            <a href="/categories/{{selected_skill.shortname}}">
+              Create a new category in this list
+            </a>
+            if you want to add a more specific kind of skill which is not included here.
+          </li>
+        {%endif%}
+        <li>
+          <a href="/auth/prefs">Go to you profile</a> to set the remaining personal preferences.
+        </li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}

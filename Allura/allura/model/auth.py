@@ -5,11 +5,13 @@ import logging
 import urllib
 import hmac
 import hashlib
+import pytz
 from urlparse import urlparse
 from email import header
-from datetime import timedelta, datetime
 from hashlib import sha256
 import uuid
+from pytz import timezone
+from datetime import timedelta, date, datetime, time
 
 import iso8601
 import pymongo
@@ -299,6 +301,35 @@ class User(MappedClass, ActivityNode, ActivityObject):
             email_address=str,
             email_format=str))
 
+    #Personal data
+    sex=FieldProperty(
+        S.OneOf('Male', 'Female', 'Other', 'Unknown', 
+        if_missing='Unknown'))
+    birthdate=FieldProperty(S.DateTime, if_missing=None)
+
+    #Availability information
+    availability=FieldProperty([dict(
+        week_day=str,
+        start_time=dict(h=int, m=int),
+        end_time=dict(h=int, m=int))])
+    localization=FieldProperty(dict(city=str,country=str))
+    timezone=FieldProperty(str)
+    inactiveperiod=FieldProperty([dict(
+        start_date=S.DateTime,
+        end_date=S.DateTime)])
+
+    #Additional contacts
+    socialnetworks=FieldProperty([dict(socialnetwork=str,accounturl=str)])
+    telnumbers=FieldProperty([str])
+    skypeaccount=FieldProperty(str)
+    webpages=FieldProperty([str])
+
+    #Skills list
+    skills = FieldProperty([dict(
+        category_id = S.ObjectId,
+        level = S.OneOf('low', 'high', 'medium'),
+        comment=str)])
+
     @property
     def activity_name(self):
         return self.display_name or self.username
@@ -308,6 +339,139 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def set_pref(self, pref_name, pref_value):
         return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+
+    def add_socialnetwork(self, socialnetwork, accounturl):
+        self.socialnetworks.append(dict(
+            socialnetwork=socialnetwork,
+            accounturl=accounturl))
+
+    def remove_socialnetwork(self, socialnetwork, oldurl):
+        for el in self.socialnetworks:
+            if el.socialnetwork==socialnetwork and el.accounturl==oldurl:
+                del self.socialnetworks[self.socialnetworks.index(el)]
+                return
+
+    def add_telephonenumber(self, telnumber):
+        self.telnumbers.append(telnumber)
+
+    def remove_telephonenumber(self, oldvalue):
+        for el in self.telnumbers:
+            if el==oldvalue:
+                del self.telnumbers[self.telnumbers.index(el)]
+                return
+
+    def add_webpage(self, webpage):
+        self.webpages.append(webpage)
+
+    def remove_webpage(self, oldvalue):
+        for el in self.webpages:
+            if el==oldvalue:
+                del self.webpages[self.webpages.index(el)]
+                return
+
+    def add_timeslot(self, weekday, starttime, endtime):
+        self.availability.append(
+           dict(week_day=weekday, 
+                start_time=starttime, 
+                end_time=endtime))
+
+    def remove_timeslot(self, weekday, starttime, endtime):
+        oldel = dict(week_day=weekday, start_time=starttime, end_time=endtime)
+        for el in self.availability:
+            if el == oldel:
+                del self.availability[self.availability.index(el)]
+                return
+
+    def add_inactive_period(self, startdate, enddate):
+        self.inactiveperiod.append(
+           dict(start_date=startdate, 
+                end_date=enddate))
+
+    def remove_inactive_period(self, startdate, enddate):
+        oldel = dict(start_date=startdate, end_date=enddate)
+        for el in self.inactiveperiod:
+            if el == oldel:
+                del self.inactiveperiod[self.inactiveperiod.index(el)]
+                return
+
+    def get_localized_availability(self, tz_name):
+        week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+                    'Friday', 'Saturday', 'Sunday']
+        avail = self.get_availability_timeslots()
+        usertimezone = timezone(self.get_pref('timezone'))
+        chosentimezone = timezone(tz_name)
+        retlist = []
+        for t in avail:
+            today = datetime.today()
+            start = datetime(
+                today.year, today.month, today.day, 
+                t['start_time'].hour, t['start_time'].minute, 0)
+            end = datetime(
+                today.year, today.month, today.day, 
+                t['end_time'].hour, t['end_time'].minute, 0)            
+
+            loctime1 = usertimezone.localize(start)
+            loctime2 = usertimezone.localize(end)
+            convtime1 = loctime1.astimezone(chosentimezone)           
+            convtime2 = loctime2.astimezone(chosentimezone)
+
+            dif_days_start = convtime1.weekday() - today.weekday()
+            dif_days_end = convtime2.weekday() - today.weekday()
+            index = (week_day.index(t['week_day'])+dif_days_start) % 7
+            week_day_start = week_day[index]
+            week_day_end = week_day[index]
+
+            if week_day_start == week_day_end:
+                retlist.append(dict(
+                    week_day = week_day_start,
+                    start_time = convtime1.time(),
+                    end_time = convtime2.time()))
+            else:
+                retlist.append(dict(
+                    week_day = week_day_start,
+                    start_time = convtime1.time(),
+                    end_time = time(23, 59)))
+                retlist.append(dict(
+                    week_day = week_day_end,
+                    start_time = time(0, 0),
+                    end_time = convtime2.time()))
+
+        return sorted(
+            retlist, 
+            key=lambda k:(week_day.index(k['week_day']), k['start_time']))
+
+    def get_skills(self):
+        from allura.model.project import TroveCategory
+        retval = []
+        for el in self.skills:
+            d = dict(
+                skill=TroveCategory.query.get(_id=el["category_id"]),
+                level=el.level,
+                comment=el.comment)
+            retval.append(d)
+        return retval
+
+    def get_availability_timeslots(self):
+        retval = []
+        for el in self.availability:
+            start, end = (el.get('start_time'), el.get('end_time'))
+            (starth, startm) = (start.get('h'), start.get('m'))
+            (endh, endm) = (end.get('h'), end.get('m')) 
+            newdict = dict(
+                week_day  = el.get('week_day'),
+                start_time= time(starth,startm,0),
+                end_time  = time(endh,endm,0))
+            retval.append(newdict) 
+        return retval
+
+    def get_inactive_periods(self, include_past_periods=False):
+        retval = []
+        for el in self.inactiveperiod:
+            d1, d2 = (el.get('start_date'), el.get('end_date'))
+            newdict = dict(start_date = d1, end_date = d2)
+            if include_past_periods or newdict['end_date'] > datetime.today():
+                retval.append(newdict) 
+        return retval
 
     def url(self):
         return plugin.AuthenticationProvider.get(request).project_url(self)
@@ -463,6 +627,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def update_notifications(self):
         return plugin.AuthenticationProvider.get(request).update_notifications(self)
+
+    @classmethod
+    def withskill(cls, skill):
+        return cls.query.find({"skills.category_id" : skill._id})
 
 class OldProjectRole(MappedClass):
     class __mongometa__:

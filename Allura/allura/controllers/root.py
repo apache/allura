@@ -22,6 +22,7 @@ from allura.controllers.error import ErrorController
 from allura import model as M
 from allura.lib.widgets import project_list as plw
 from .auth import AuthController
+from .trovecategories import TroveCategoryController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
 from .site_admin import SiteAdminController
@@ -58,6 +59,8 @@ class RootController(WsgiDispatchController):
     nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
+    if config.get('trovecategories.enableediting', 'false')=='true':
+        categories=TroveCategoryController()
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
