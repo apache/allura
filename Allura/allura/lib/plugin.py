@@ -514,6 +514,19 @@ class ProjectRegistrationProvider(object):
                 project_template['icon']['filename'], icon_file,
                 square=True, thumbnail_size=(48, 48),
                 thumbnail_meta=dict(project_id=p._id, category='icon'))
+
+        if user_project:
+            # Allow for special user-only tools
+            p._extra_tool_status = ['user']
+            # add user project informative text to home
+            from forgewiki import model as WM
+            home_app = p.app_instance('wiki')
+            home_page = WM.Page.query.get(app_config_id=home_app.config._id)
+            home_page.text = ("This is the personal project of %s."
+            " This project is created automatically during user registration"
+            " as an easy place to store personal data that doesn't need its own"
+            " project such as cloned repositories.") % user.display_name
+
         # clear the RoleCache for the user so this project will
         # be picked up by user.my_projects()
         g.credentials.clear_user(user._id)

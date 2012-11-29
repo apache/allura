@@ -728,6 +728,11 @@ class TestNeighborhood(TestController):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
         assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
 
+    def test_user_project_creates_on_demand(self):
+        M.User.register(dict(username='donald-duck'), make_project=False)
+        ThreadLocalORMSession.flush_all()
+        self.app.get('/u/donald-duck/')
+
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')
         link = r.html.find('div', {'class':'neighborhood_title_link'}).find('a')

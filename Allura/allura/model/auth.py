@@ -409,15 +409,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
             p = n.register_project('u/' + user.username, user=user, user_project=True)
-            # Allow for special user-only tools
-            p._extra_tool_status = ['user']
-            # add user project informative text to home
-            home_app = p.app_instance('wiki')
-            home_page = WM.Page.query.get(app_config_id=home_app.config._id)
-            home_page.text = ("This is the personal project of %s."
-            " This project is created automatically during user registration"
-            " as an easy place to store personal data that doesn't need its own"
-            " project such as cloned repositories.") % user.display_name
         return user
 
     def private_project(self):
@@ -425,11 +416,13 @@ class User(MappedClass, ActivityNode, ActivityObject):
         Returns the personal user-project for the user
         '''
         from .project import Project
-        try:
-            return Project.query.get(shortname='u/%s' % self.username, deleted=False)
-        except S.Invalid:
-            log.exception('Error retrieving private_project for %s', self.username)
-            return None
+        p = Project.query.get(shortname='u/%s' % self.username, deleted=False)
+        if not p:
+            # create user-project on demand if it is missing
+            from allura import model as M
+            n = M.Neighborhood.query.get(name='Users')
+            p = n.register_project('u/' + self.username, user=self, user_project=True)
+        return p
 
     @property
     def script_name(self):

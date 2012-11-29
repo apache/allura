@@ -85,6 +85,14 @@ def test_user():
     assert not provider._validate_password(u, 'foo')
 
 @with_setup(setUp)
+def test_user_project_creates_on_demand():
+    u = M.User.register(dict(username='foobar123'), make_project=False)
+    ThreadLocalORMSession.flush_all()
+    assert not M.Project.query.get(shortname='u/foobar123')
+    assert u.private_project()
+    assert M.Project.query.get(shortname='u/foobar123')
+
+@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
