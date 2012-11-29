@@ -33,6 +33,8 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
+        # allow markdown within e.g. <div markdown>...</div>  More info at: https://github.com/waylan/Python-Markdown/issues/52
+        md.preprocessors['html_block'].markdown_in_raw = True
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')

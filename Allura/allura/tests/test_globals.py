@@ -185,6 +185,16 @@ def test_markdown_error():
     r = g.markdown_wiki.convert('[:::]')
     assert 'The markdown supplied could not be parsed correctly.' in r, r
 
+def test_markdown_and_html():
+    r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
+    assert '<div style="float: left;">blah</div>' in r, r
+
+def test_markdown_within_html():
+    r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
+    assert '''<div style="float: left;">
+<p><strong>blah</strong></p>
+</div>''' in r, r
+
 @with_setup(setUp)
 def test_markdown():
     'Just a test to get coverage in our markdown extension'
