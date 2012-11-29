@@ -65,7 +65,13 @@ class NeighborhoodController(object):
         if not h.re_path_portion.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
+        if project is None and self.prefix == 'u/':
+            # create user-project if it is missing
+            user = M.User.query.get(username=pname)
+            if user:
+                project = self.neighborhood.register_project('u/' + user.username, user=user, user_project=True)
         if project is None:
+            # look for neighborhood tools matching the URL
             project = self.neighborhood.neighborhood_project
             c.project = project
             return ProjectController()._lookup(pname, *remainder)
