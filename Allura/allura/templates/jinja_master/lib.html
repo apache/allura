@@ -120,7 +120,7 @@
     <li><a href="#md_ex_links{{id}}">Links</a></li>
     <li><a href="#md_ex_reflinks{{id}}">Reference Links</a></li>
     <li><a href="#md_ex_artlinks{{id}}">Artifact Links</a></li>
-    <li><a href="#md_ex_text{{id}}">Text</a></li>
+    <li><a href="#md_ex_text{{id}}">Basic Text Formatting</a></li>
     <li><a href="#md_ex_bq{{id}}">Blockquotes</a></li>
     <li><a href="#md_ex_pre{{id}}">Preformatted Text</a></li>
     <li><a href="#md_ex_lists{{id}}">Lists</a></li>
@@ -128,7 +128,7 @@
     <li><a href="#md_ex_headers{{id}}">Headers</a></li>
     <li><a href="#md_ex_hr{{id}}">Horizontal Rules</a></li>
     <li><a href="#md_ex_img{{id}}">Images</a></li>
-    <li><a href="#md_ex_escapes{{id}}">Escapes</a></li>
+    <li><a href="#md_ex_escapes{{id}}">Escapes and HTML</a></li>
     <li><a href="#md_ex_moreheaders{{id}}">More Headers</a></li>
     <li><a href="#md_ex_toc{{id}}">Table of Contents</a></li>
     <li><a href="#md_ex_code{{id}}">Code Highlighting</a></li>
@@ -226,7 +226,7 @@ You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</
 </div>
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_text{{id}}">
-<h2 id="md_ex_text{{id}}">Text</h2>
+<h2 id="md_ex_text{{id}}">Basic Text Formatting</h2>
 <p>Use * or _ to emphasize things:</p>
 <div class="codehilite"><pre>*this is in italic*  and _so is this_
 
@@ -484,7 +484,7 @@ image.</p>
 
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_escapes{{id}}">
-<h2 id="md_ex_escapes{{id}}">Escapes</h2>
+<h2 id="md_ex_escapes{{id}}">Escapes and HTML</h2>
 <p>What if you want to just show asterisks, not italics?</p>
 <div class="codehilite"><pre>* this shows up in italics: *a happy day*
 * this shows the asterisks: \*a happy day\*
@@ -494,22 +494,30 @@ image.</p>
 {{g.markdown.convert('''* this shows up in italics: *a happy day*
 * this shows the asterisks: \*a happy day\*''')}}
 
-<p>The backslashes will disappear and leave the asterisks.</p>
-<p>You can do the same with any of the characters that have a special meaning<br>for Markdown.</p>
-<p>HTML tags may need to be escaped.  &lt;b&gt; will be interpreted as a bold tag.  Entity codes will be used.
-&lt;foobar&gt; isn't allowed and will be dropped, so you probably want to escape it:</p>
+<p>The backslashes will disappear and leave the asterisks.  You can do the same with any of the
+characters that have a special meaning<br>for Markdown.</p>
+
+<p>Many simple HTML tags are allowed, for example &lt;b&gt;  And unknown tags will be dropped.
+To show a literal &lt;b&gt; or an unknown tag like &lt;foobar&gt; you need escape it with
+HTML entities:
+:</p>
 <div class="codehilite"><pre>
 &lt;b&gt;this will be bold&lt;/b&gt;
 you should escape &amp;lt;unknown&amp;gt; tags
-&amp;lt; special entities work
-&amp;amp;lt; if you want to escape it
+&amp;copy; special entities work
+&amp;amp;copy; if you want to escape it
 </pre></div>
 
 <p>Output:</p>
 {{g.markdown.convert('''<b>this will be bold</b>
 you should escape &lt;unknown&gt; tags
-&lt; special entities work
-&amp;lt; if you want to escape it''')}}
+&copy; special entities work
+&amp;copy; if you want to escape it''')}}
+
+<p>HTML tags that are block-level like &lt;div&gt; can be used, but if there is markdown formatting
+within it, you must add a "markdown" attribute: &lt;div markdown&gt;  Some safe attributes are also
+allowed, permitting basic styling and layout: &lt;div markdown style="float:left"&gt;</p>
+
 <p>Individual ampersands (&amp;) and less-than signs (&lt;) are fine, they will be shown as expected.</p>
 </div>
 
