@@ -49,13 +49,13 @@ def main():
 
     # import the tracker (if any)
     if options.tracker:
-        import_tracker(cli, options.project, options.tracker, import_options, doc_txt,
+        import_tracker(cli, options.project, options.tracker, import_options, options, doc_txt,
                        validate=options.validate,
                        verbose=options.verbose)
     elif options.forum:
         import_forum(cli, options.project, options.forum, user_map, doc_txt, validate=options.validate)
 
-def import_tracker(cli, project, tool, import_options, doc_txt, validate=True, verbose=False):
+def import_tracker(cli, project, tool, import_options, options, doc_txt, validate=True, verbose=False):
     url = '/rest/p/' + project + '/' + tool
     if validate:
         url += '/validate_import'
@@ -111,6 +111,7 @@ Import project data dump in JSON format into an Allura project.''')
     optparser.add_option('--user-map', dest='user_map_file', help='Map original users to SF.net users', metavar='JSON_FILE')
     optparser.add_option('--validate', dest='validate', action='store_true', help='Validate import data')
     optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
+    optparser.add_option('-c', '--continue', dest='cont', action='store_true', help='Continue import into existing tracker')
     options, args = optparser.parse_args()
     if len(args) != 1:
         optparser.error("Wrong number of arguments")
@@ -123,3 +124,4 @@ Import project data dump in JSON format into an Allura project.''')
 
 if __name__ == '__main__':
     main()
+
