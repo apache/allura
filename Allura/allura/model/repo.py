@@ -5,7 +5,7 @@ import logging
 from hashlib import sha1
 from itertools import chain
 from datetime import datetime
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from difflib import SequenceMatcher, unified_diff
 
 from pylons import c
@@ -824,12 +824,11 @@ class ModelCache(object):
         Commit instances and 2000 Tree instances in the cache
         at once with the default value.
         '''
-        self._cache = defaultdict(dict)
+        self._cache = defaultdict(OrderedDict)
         self.max_size = max_size
-        self._insertion_order = defaultdict(list)
         # temporary, for performance testing
-        self._hits = 0
-        self._misses = 0
+        self._hits = defaultdict(int)
+        self._accesses = defaultdict(int)
         self._get_calls = 0
         self._get_walks = 0
         self._get_walks_max = 0
@@ -847,12 +846,13 @@ class ModelCache(object):
 
     def get(self, cls, key):
         _key = self._normalize_key(key)
+        self._manage_cache(cls, _key)
+        self._accesses[cls] += 1
         if _key not in self._cache[cls]:
-            self._misses += 1
             query = getattr(cls, 'query', getattr(cls, 'm', None))
             self.set(cls, _key, query.get(**key))
         else:
-            self._hits += 1
+            self._hits[cls] += 1
         return self._cache[cls][_key]
 
     def set(self, cls, key, val):
@@ -866,23 +866,25 @@ class ModelCache(object):
         and expire from the cache in a FIFO manner.
         '''
         if key in self._cache[cls]:
-            return
-        self._insertion_order[cls].append(key)
-        if len(self._insertion_order[cls]) > self.max_size:
-            _key = self._insertion_order[cls].pop(0)
-            self._cache[cls].pop(_key)
+            # refresh access time in cache
+            val = self._cache[cls].pop(key)
+            self._cache[cls][key] = val
+        elif len(self._cache[cls]) >= self.max_size:
+            # remove the least-recently-used cache item
+            self._cache[cls].popitem(last=False)
 
     def size(self):
-        return sum([len(c) for c in self._insertion_order.values()])
+        return sum([len(c) for c in self._cache.values()])
 
-    def keys(self, cls):
+    def keys(self, cls, as_dict=True):
         '''
         Returns all the cache keys for a given class.  Each
         cache key will be a dict.
         '''
-        if self._cache[cls]:
+        if as_dict:
             return [dict(k) for k in self._cache[cls].keys()]
-        return []
+        else:
+            return self._cache[cls].keys()
 
     def batch_load(self, cls, query, attrs=None):
         '''

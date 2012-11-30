@@ -515,6 +515,6 @@ def _walk_commit_tree(commit, cache):
 
 def _update_tree_cache(tree_ids, cache):
     current_ids = set(tree_ids)
-    cached_ids = set([k['_id'] for k in cache.keys(Tree)])
+    cached_ids = set([k[0][1] for k in cache.keys(Tree, as_dict=False)])
     new_ids = current_ids - cached_ids
     cache.batch_load(Tree, {'_id': {'$in': list(new_ids)}})

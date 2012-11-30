@@ -571,6 +571,12 @@ class TestModelCache(unittest.TestCase):
         self.assertEqual(self.cache.keys(M.repo.Tree), [{'_id': 'test_keys', 'text': 'tko'}, {'fubar': 'scm'}])
         self.assertEqual(self.cache.keys(M.repo.LastCommit), [])
 
+    def test_keys_not_as_dict(self):
+        self.cache._cache[M.repo.Tree][(('_id', 'test_keys'), ('text', 'tko'))] = 'foo'
+        self.cache._cache[M.repo.Tree][(('fubar', 'scm'),)] = 'bar'
+        self.assertEqual(self.cache.keys(M.repo.Tree, as_dict=False), [(('_id', 'test_keys'), ('text', 'tko')), (('fubar', 'scm'),)])
+        self.assertEqual(self.cache.keys(M.repo.LastCommit), [])
+
     @mock.patch.object(M.repo.Tree.query, 'find')
     def test_batch_load(self, tr_find):
         # cls, query, attrs
@@ -600,14 +606,18 @@ class TestModelCache(unittest.TestCase):
             })
 
     def test_pruning(self):
-        self.cache.max_size = 2
+        self.cache.max_size = 3
+        # ensure cache expires as LRU
         self.cache.set(M.repo.Tree, {'_id': 'foo'}, 'bar')
         self.cache.set(M.repo.Tree, {'_id': 'qux'}, 'zaz')
         self.cache.set(M.repo.Tree, {'_id': 'f00'}, 'b4r')
-        self.cache.set(M.repo.Tree, {'_id': 'qux'}, 'zaz')
+        self.cache.set(M.repo.Tree, {'_id': 'foo'}, 'zaz')
+        self.cache.get(M.repo.Tree, {'_id': 'f00'})
+        self.cache.set(M.repo.Tree, {'_id': 'mee'}, 'you')
         self.assertEqual(self.cache._cache, {
                 M.repo.Tree: {
-                    (('_id', 'qux'),): 'zaz',
+                    (('_id', 'foo'),): 'zaz',
                     (('_id', 'f00'),): 'b4r',
+                    (('_id', 'mee'),): 'you',
                 },
             })

@@ -2,6 +2,7 @@ import sys
 import argparse
 import logging
 import re
+from math import pow, log10
 from datetime import datetime
 from contextlib import contextmanager
 
@@ -97,29 +98,38 @@ def refresh_repo_lcds(commit_ids, options):
                 at = tt / len(timings)
                 print '  Processed %d commits (max: %f, avg: %f, tot: %f, cl: %d)' % (
                         len(timings), mt, at, tt, len(tree_cache))
-    lcd_cache = M.repo.ModelCache(80000)
+    lcd_cache = M.repo.ModelCache(20000)
     timings = []
     print 'Processing last commits'
+    debug_step = int(pow(10, max(0, int(log10(len(commit_ids)) - log10(options.step) - 1))))
     for i, commit_id in enum_step(commit_ids, options.step):
-        print '    Processing commit %s...' % commit_id,
-        sys.stdout.flush()
+        #print '    Processing commit %s...' % commit_id,
+        #sys.stdout.flush()
         commit = M.repo.Commit.query.get(_id=commit_id)
         with time(timings):
             M.repo_refresh.compute_lcds(commit, lcd_cache)
-        print 'done in %fs' % timings[-1]
-        if len(timings) % 10 == 0:
+        #print 'done in %fs [%d%% in %d]' % (
+        #        timings[-1],
+        #        lcd_cache._hits[M.repo.LastCommit] * 100 / lcd_cache._accesses[M.repo.LastCommit],
+        #        len(lcd_cache._cache[M.repo.LastCommit]),
+        #    )
+        if len(timings) % debug_step == 0:
             mt = max(timings)
             tt = sum(timings)
             at = tt / len(timings)
-            mat = sum(timings[-10:]) / 10
+            mat = sum(timings[-debug_step:]) / debug_step
+            hits = sum(lcd_cache._hits.values())
+            accs = sum(lcd_cache._accesses.values())
             print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f, lc: %d, lcl: %d, hits: %d, agw: %d, mgw: %d, gh: %d, abw: %d, mbw: %d, ts: %d)' % (
                     len(timings), mt, at, mat, tt, lcd_cache.size(), len(lcd_cache._cache[M.repo.LastCommit]),
-                    lcd_cache._hits * 100 / (lcd_cache._hits + lcd_cache._misses),
+                    hits * 100 / accs,
                     lcd_cache._get_walks / lcd_cache._get_calls, lcd_cache._get_walks_max, lcd_cache._get_hits * 100 / lcd_cache._get_calls,
                     lcd_cache._build_walks / lcd_cache._build_calls, lcd_cache._build_walks_max,
                     len(lcd_cache.get(M.repo.TreesDoc, dict(_id=commit._id)).tree_ids))
             ThreadLocalORMSession.flush_all()
             ThreadLocalORMSession.close_all()
+    ThreadLocalORMSession.flush_all()
+    ThreadLocalORMSession.close_all()
 
 
 @contextmanager
