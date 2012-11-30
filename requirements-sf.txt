@@ -1,5 +1,6 @@
 # requirements for the SF instance
 
+akismet==0.2.0
 amqplib==0.6.1
 kombu==1.0.4
 coverage==3.5a1-20110413
