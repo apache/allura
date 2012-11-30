@@ -33,6 +33,7 @@ from allura.lib.markdown_extensions import ForgeExtension
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
+from allura.lib import spam
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.async import Connection, MockAMQ
@@ -165,6 +166,22 @@ class Globals(object):
 
         # Zarkov logger
         self._zarkov = None
+
+    @LazyProperty
+    def spam_checker(self):
+        """Return an Akismet spam checker if config defines an Akismet API key.
+        Otherwise, return a no-op spam checker.
+
+        Eventually we may support checkers for other services like Mollom and
+        Defensio.
+        """
+        akismet_key = config.get('spam.akismet_key')
+        if akismet_key:
+            checker = spam.akismetservice.Akismet(akismet_key, config.get('base_url'))
+            checker.verify_key()
+        else:
+            checker = spam.FakeSpamChecker()
+        return checker
 
     @LazyProperty
     def director(self):

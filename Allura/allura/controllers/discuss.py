@@ -183,8 +183,10 @@ class ThreadController(BaseController):
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')
             redirect(request.referer)
+
         file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
+        is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
         if hasattr(file_info, 'file'):
             p.attach(
                 file_info.filename, file_info.file, content_type=file_info.type,
