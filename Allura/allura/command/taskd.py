@@ -77,10 +77,12 @@ class TaskdCommand(base.Command):
             time.sleep(poll_interval)
 
         def check_running(func):
-            if self.keep_running:
-                return func()
-            else:
-                return None
+            def waitfunc_checks_running():
+                if self.keep_running:
+                    return func()
+                else:
+                    return None
+            return waitfunc_checks_running
 
         if pylons.g.amq_conn:
             waitfunc = waitfunc_amqp
