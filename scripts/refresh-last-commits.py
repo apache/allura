@@ -1,3 +1,4 @@
+import sys
 import argparse
 import logging
 import re
@@ -49,7 +50,6 @@ def main(options):
                     continue
 
                 ci_ids = list(reversed(list(c.app.repo.all_commit_ids())))
-                #ci_ids = list(c.app.repo.all_commit_ids())
                 if options.clean:
                     if options.diffs:
                         # delete DiffInfoDocs
@@ -77,6 +77,11 @@ def main(options):
         ThreadLocalORMSession.close_all()
 
 
+def enum_step(iter, step):
+    for i,elem in enumerate(iter):
+        if i % step == 0:
+            yield i, elem
+
 def refresh_repo_lcds(commit_ids, options):
     tree_cache = {}
     timings = []
@@ -95,15 +100,18 @@ def refresh_repo_lcds(commit_ids, options):
     lcd_cache = M.repo.ModelCache(80000)
     timings = []
     print 'Processing last commits'
-    for commit_id in commit_ids:
+    for i, commit_id in enum_step(commit_ids, options.step):
+        print '    Processing commit %s...' % commit_id,
+        sys.stdout.flush()
         commit = M.repo.Commit.query.get(_id=commit_id)
         with time(timings):
             M.repo_refresh.compute_lcds(commit, lcd_cache)
-        if len(timings) % 100 == 0:
+        print 'done in %fs' % timings[-1]
+        if len(timings) % 10 == 0:
             mt = max(timings)
             tt = sum(timings)
             at = tt / len(timings)
-            mat = sum(timings[-100:]) / 100
+            mat = sum(timings[-10:]) / 10
             print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f, lc: %d, lcl: %d, hits: %d, agw: %d, mgw: %d, gh: %d, abw: %d, mbw: %d, ts: %d)' % (
                     len(timings), mt, at, mat, tt, lcd_cache.size(), len(lcd_cache._cache[M.repo.LastCommit]),
                     lcd_cache._hits * 100 / (lcd_cache._hits + lcd_cache._misses),
@@ -112,8 +120,6 @@ def refresh_repo_lcds(commit_ids, options):
                     len(lcd_cache.get(M.repo.TreesDoc, dict(_id=commit._id)).tree_ids))
             ThreadLocalORMSession.flush_all()
             ThreadLocalORMSession.close_all()
-        #if len(timings) == 300:
-        #    break
 
 
 @contextmanager
@@ -164,6 +170,10 @@ def parse_options():
             'profiling output to ./refresh.profile')
     parser.add_argument('--diffs', action='store_true', dest='diffs',
             default=False, help='Refresh diffs as well as LCDs')
+    parser.add_argument('--all', action='store_const', dest='step',
+            const=1, default=100, help='Refresh diffs as well as LCDs')
+    parser.add_argument('--step', action='store', dest='step',
+            type=int, default=100, help='Refresh diffs as well as LCDs')
     return parser.parse_args()
 
 if __name__ == '__main__':
