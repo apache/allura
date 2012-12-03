@@ -303,7 +303,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     #Personal data
     sex=FieldProperty(
-        S.OneOf('Male', 'Female', 'Other', 'Unknown', 
+        S.OneOf('Male', 'Female', 'Other', 'Unknown',
         if_missing='Unknown'))
     birthdate=FieldProperty(S.DateTime, if_missing=None)
 
@@ -341,6 +341,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
 
     def add_socialnetwork(self, socialnetwork, accounturl):
+        if socialnetwork == 'Twitter' and not accounturl.startswith('http'):
+            accounturl = 'http://twitter.com/%s' % accounturl.replace('@', '')
         self.socialnetworks.append(dict(
             socialnetwork=socialnetwork,
             accounturl=accounturl))
@@ -371,8 +373,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def add_timeslot(self, weekday, starttime, endtime):
         self.availability.append(
-           dict(week_day=weekday, 
-                start_time=starttime, 
+           dict(week_day=weekday,
+                start_time=starttime,
                 end_time=endtime))
 
     def remove_timeslot(self, weekday, starttime, endtime):
@@ -384,7 +386,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def add_inactive_period(self, startdate, enddate):
         self.inactiveperiod.append(
-           dict(start_date=startdate, 
+           dict(start_date=startdate,
                 end_date=enddate))
 
     def remove_inactive_period(self, startdate, enddate):
@@ -395,7 +397,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
                 return
 
     def get_localized_availability(self, tz_name):
-        week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+        week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
                     'Friday', 'Saturday', 'Sunday']
         avail = self.get_availability_timeslots()
         usertimezone = timezone(self.get_pref('timezone'))
@@ -404,15 +406,15 @@ class User(MappedClass, ActivityNode, ActivityObject):
         for t in avail:
             today = datetime.today()
             start = datetime(
-                today.year, today.month, today.day, 
+                today.year, today.month, today.day,
                 t['start_time'].hour, t['start_time'].minute, 0)
             end = datetime(
-                today.year, today.month, today.day, 
-                t['end_time'].hour, t['end_time'].minute, 0)            
+                today.year, today.month, today.day,
+                t['end_time'].hour, t['end_time'].minute, 0)
 
             loctime1 = usertimezone.localize(start)
             loctime2 = usertimezone.localize(end)
-            convtime1 = loctime1.astimezone(chosentimezone)           
+            convtime1 = loctime1.astimezone(chosentimezone)
             convtime2 = loctime2.astimezone(chosentimezone)
 
             dif_days_start = convtime1.weekday() - today.weekday()
@@ -437,7 +439,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
                     end_time = convtime2.time()))
 
         return sorted(
-            retlist, 
+            retlist,
             key=lambda k:(week_day.index(k['week_day']), k['start_time']))
 
     def get_skills(self):
@@ -456,12 +458,12 @@ class User(MappedClass, ActivityNode, ActivityObject):
         for el in self.availability:
             start, end = (el.get('start_time'), el.get('end_time'))
             (starth, startm) = (start.get('h'), start.get('m'))
-            (endh, endm) = (end.get('h'), end.get('m')) 
+            (endh, endm) = (end.get('h'), end.get('m'))
             newdict = dict(
                 week_day  = el.get('week_day'),
                 start_time= time(starth,startm,0),
                 end_time  = time(endh,endm,0))
-            retval.append(newdict) 
+            retval.append(newdict)
         return retval
 
     def get_inactive_periods(self, include_past_periods=False):
@@ -470,7 +472,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             d1, d2 = (el.get('start_date'), el.get('end_date'))
             newdict = dict(start_date = d1, end_date = d2)
             if include_past_periods or newdict['end_date'] > datetime.today():
-                retval.append(newdict) 
+                retval.append(newdict)
         return retval
 
     def url(self):
