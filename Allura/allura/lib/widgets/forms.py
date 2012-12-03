@@ -552,7 +552,7 @@ class AddUserSkillForm(ForgeForm):
         return super(ForgeForm, self).display(**kw)
 
 class SelectSubCategoryForm(ForgeForm):
-    defaults=dict(ForgeForm.defaults, submit_text="Confirm")
+    defaults=dict(ForgeForm.defaults, submit_text="Continue")
 
     class fields(ew_core.NameList):
         selected_category=ew.SingleSelectField(
