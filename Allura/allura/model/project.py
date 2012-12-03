@@ -60,7 +60,7 @@ class TroveCategory(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name='trove_category'
-        indexes = [ 'trove_cat_id', 'trove_parent_id' ]
+        indexes = [ 'trove_cat_id', 'trove_parent_id', 'shortname' ]
 
     _id=FieldProperty(S.ObjectId)
     trove_cat_id = FieldProperty(int, if_missing=None)
