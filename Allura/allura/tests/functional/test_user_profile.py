@@ -1,5 +1,6 @@
 from formencode.variabledecode import variable_encode
 
+from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
 
@@ -22,6 +23,14 @@ class TestUserProfile(TestController):
         self.app.get('/u/test-user', extra_environ=dict(
                 username='test-user'))
         response = self.app.get('/u/test-user/profile/')
+        assert 'Email Addresses' not in response
+
+    @td.with_user_project('test-user')
+    def test_missing_user(self):
+        User.query.remove(dict(username='test-user'))
+        p = Project.query.get(shortname='u/test-user')
+        assert p is not None and p.is_user_project
+        response = self.app.get('/u/test-user/profile/', status=404)
         assert 'Email Addresses' not in response
 
     @td.with_user_project('test-admin')
