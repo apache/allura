@@ -192,12 +192,27 @@ class TestTaskdCleanupCommand(object):
 
     def setUp(self):
         self.cmd_class = taskd_cleanup.TaskdCleanupCommand
+        self.old_check_taskd_status = self.cmd_class._check_taskd_status
         self.cmd_class._check_taskd_status = lambda x, p: 'OK'
+        self.old_check_task = self.cmd_class._check_task
         self.cmd_class._check_task = lambda x, p, t: 'OK'
+        self.old_busy_tasks = self.cmd_class._busy_tasks
         self.cmd_class._busy_tasks = lambda x: []
+        self.old_taskd_pids = self.cmd_class._taskd_pids
         self.cmd_class._taskd_pids = lambda x: ['1111']
+        self.old_kill_stuck_taskd = self.cmd_class._kill_stuck_taskd
         self.cmd_class._kill_stuck_taskd = Mock()
+        self.old_complete_suspicious_tasks = self.cmd_class._complete_suspicious_tasks
         self.cmd_class._complete_suspicious_tasks = lambda x: []
+
+    def tearDown(self):
+        # need to clean up setUp mocking for unit tests below to work properly
+        self.cmd_class._check_taskd_status = self.old_check_taskd_status
+        self.cmd_class._check_task = self.old_check_task
+        self.cmd_class._busy_tasks = self.old_busy_tasks
+        self.cmd_class._taskd_pids = self.old_taskd_pids
+        self.cmd_class._kill_stuck_taskd = self.old_kill_stuck_taskd
+        self.cmd_class._complete_suspicious_tasks = self.old_complete_suspicious_tasks
 
     def test_forsaken_tasks(self):
         # forsaken task
@@ -266,3 +281,21 @@ class TestTaskdCleanupCommand(object):
         assert cmd.suspicious_tasks == [task1], cmd.suspicious_tasks
         assert cmd.error_tasks == [], cmd.error_tasks
         assert task1.state == 'complete'
+
+
+# taskd_cleanup unit tests
+def test_status_log_retries():
+    cmd = taskd_cleanup.TaskdCleanupCommand('taskd_command')
+    cmd._taskd_status = Mock()
+    cmd._taskd_status.return_value = ''
+    cmd.options = Mock(num_retry=10)
+    cmd._check_taskd_status(123)
+    expected_calls = [call(123, False if i == 0 else True) for i in range(10)]
+    assert cmd._taskd_status.mock_calls == expected_calls
+
+    cmd._taskd_status = Mock()
+    cmd._taskd_status.return_value = ''
+    cmd.options = Mock(num_retry=3)
+    cmd._check_task(123, Mock())
+    expected_calls = [call(123, False if i == 0 else True) for i in range(3)]
+    assert cmd._taskd_status.mock_calls == expected_calls

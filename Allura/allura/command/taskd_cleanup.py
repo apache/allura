@@ -1,4 +1,5 @@
 import os
+import time
 import signal
 import socket
 import subprocess
@@ -13,6 +14,9 @@ class TaskdCleanupCommand(base.Command):
     parser.add_option('-k', '--kill-stuck-taskd',
             dest='kill', action='store_true',
             help='automatically kill stuck taskd processes')
+    parser.add_option('-n', '--num-retry-status-check',
+            dest='num_retry', type='int', default=5,
+            help='number of retries to read taskd status log after sending USR1 signal (5 by default)')
     usage = '<ini file> [-k] <taskd status log file>'
     min_args = 2
     max_args = 2
@@ -109,8 +113,9 @@ class TaskdCleanupCommand(base.Command):
             tasks = [pid for pid in stdout.split('\n') if pid != ''][:-1]
         return tasks
 
-    def _taskd_status(self, pid):
-        os.kill(int(pid), signal.SIGUSR1)
+    def _taskd_status(self, pid, retry=False):
+        if not retry:
+            os.kill(int(pid), signal.SIGUSR1)
         p = subprocess.Popen(['tail', '-n1', self.taskd_status_log],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
@@ -121,17 +126,25 @@ class TaskdCleanupCommand(base.Command):
         return stdout
 
     def _check_taskd_status(self, pid):
-        status = self._taskd_status(pid)
-        if ('taskd pid %s' % pid) not in status:
-            return 'STUCK'
-        return 'OK'
+        for i in range(self.options.num_retry):
+            retry = False if i == 0 else True
+            status = self._taskd_status(pid, retry)
+            if ('taskd pid %s' % pid) in status:
+                return 'OK'
+            base.log.info('retrying after one second')
+            time.sleep(1)
+        return 'STUCK'
 
     def _check_task(self, taskd_pid, task):
-        status = self._taskd_status(taskd_pid)
-        line = 'taskd pid %s is currently handling task %s' % (taskd_pid, task)
-        if line not in status:
-            return 'FAIL'
-        return 'OK'
+        for i in range(self.options.num_retry):
+            retry = False if i == 0 else True
+            status = self._taskd_status(taskd_pid, retry)
+            line = 'taskd pid %s is currently handling task %s' % (taskd_pid, task)
+            if line in status:
+                return 'OK'
+            base.log.info('retrying after one second')
+            time.sleep(1)
+        return 'FAIL'
 
     def _kill_stuck_taskd(self, pid):
         os.kill(int(pid), signal.SIGKILL)
