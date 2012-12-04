@@ -5,6 +5,7 @@ import pkg_resources
 from pylons import c, g, request
 from formencode import validators
 from tg import expose, redirect, validate, response
+from webob import exc
 
 from allura import version
 from allura.app import Application
@@ -59,7 +60,10 @@ class UserProfileController(BaseController):
 
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
-        return dict(user=c.project.user_project_of)
+        user = c.project.user_project_of
+        if not user:
+            raise exc.HTTPNotFound()
+        return dict(user=user)
     # This will be fully implemented in a future iteration
     # @expose('jinja:allura.ext.user_profile:templates/user_subscriptions.html')
     # def subscriptions(self):
