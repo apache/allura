@@ -476,7 +476,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return retval
 
     def url(self):
-        return plugin.AuthenticationProvider.get(request).project_url(self)
+        return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
     @memoize
     def icon_url(self):
@@ -568,13 +568,14 @@ class User(MappedClass, ActivityNode, ActivityObject):
     @classmethod
     def register(cls, doc, make_project=True):
         from allura import model as M
-        from forgewiki import model as WM
-        user = plugin.AuthenticationProvider.get(request).register_user(doc)
+        auth_provider = plugin.AuthenticationProvider.get(request)
+        user = auth_provider.register_user(doc)
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
         if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
-            p = n.register_project('u/' + user.username, user=user, user_project=True)
+            n.register_project(auth_provider.user_project_shortname(user),
+                               user=user, user_project=True)
         return user
 
     def private_project(self):
@@ -582,12 +583,14 @@ class User(MappedClass, ActivityNode, ActivityObject):
         Returns the personal user-project for the user
         '''
         from .project import Project
-        p = Project.query.get(shortname='u/%s' % self.username, deleted=False)
+        auth_provider = plugin.AuthenticationProvider.get(request)
+        project_shortname = auth_provider.user_project_shortname(self)
+        p = Project.query.get(shortname=project_shortname, deleted=False)
         if not p and self != User.anonymous():
             # create user-project on demand if it is missing
             from allura import model as M
             n = M.Neighborhood.query.get(name='Users')
-            p = n.register_project('u/' + self.username, user=self, user_project=True)
+            p = n.register_project(project_shortname, user=self, user_project=True)
         return p
 
     @property

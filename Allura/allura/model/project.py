@@ -292,7 +292,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''
         user = None
         if self.is_user_project:
-            user = plugin.AuthenticationProvider.get(request).user_by_project_url(self.shortname[2:])
+            user = plugin.AuthenticationProvider.get(request).user_by_project_shortname(self.shortname[2:])
         return user
 
     @LazyProperty

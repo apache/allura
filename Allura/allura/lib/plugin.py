@@ -144,19 +144,19 @@ class AuthenticationProvider(object):
             },
         ]
 
-    def project_url(self, user):
+    def user_project_shortname(self, user):
         '''
         :param user: a :class:`User <allura.model.auth.User>`
         :rtype: str
         '''
-        raise NotImplementedError, 'project_url'
+        raise NotImplementedError, 'user_project_shortname'
 
-    def user_by_project_url(self, shortname):
+    def user_by_project_shortname(self, shortname):
         '''
         :param str: shortname
         :rtype: user: a :class:`User <allura.model.auth.User>`
         '''
-        raise NotImplementedError, 'user_by_project_url'
+        raise NotImplementedError, 'user_by_project_shortname'
 
     def update_notifications(self, user):
         raise NotImplemented, 'update_notifications'
@@ -207,10 +207,10 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         hashpass = sha256(salt + password.encode('utf-8')).digest()
         return 'sha256' + salt + b64encode(hashpass)
 
-    def project_url(self, user):
-        return '/u/' + user.username.replace('_', '-') + '/'
+    def user_project_shortname(self, user):
+        return 'u/' + user.username.replace('_', '-')
 
-    def user_by_project_url(self, shortname):
+    def user_by_project_shortname(self, shortname):
         from allura import model as M
         return M.User.query.get(username=shortname)
 
@@ -625,101 +625,101 @@ class ThemeProvider(object):
         from allura.lib.widgets.forms import PasswordChangeForm
         return PasswordChangeForm(action='/auth/prefs/change_password')
 
-    @LazyProperty 
-    def personal_data_form(self): 
-        ''' 
-        :return: None, or an easywidgets Form to render on the user preferences page 
-        ''' 
-        from allura.lib.widgets.forms import PersonalDataForm 
+    @LazyProperty
+    def personal_data_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page
+        '''
+        from allura.lib.widgets.forms import PersonalDataForm
         return PersonalDataForm()
 
-    @LazyProperty 
-    def add_telnumber_form(self): 
-        ''' 
-        :return: None, or an easywidgets Form to render on the user preferences page to 
+    @LazyProperty
+    def add_telnumber_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page to
                  allow adding a telephone number.
-        ''' 
-        from allura.lib.widgets.forms import AddTelNumberForm 
+        '''
+        from allura.lib.widgets.forms import AddTelNumberForm
         return AddTelNumberForm()
 
-    @LazyProperty 
-    def add_website_form(self): 
-        ''' 
-        :return: None, or an easywidgets Form to render on the user preferences page to 
+    @LazyProperty
+    def add_website_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page to
                  allow adding a personal website url.
-        ''' 
-        from allura.lib.widgets.forms import AddWebsiteForm 
+        '''
+        from allura.lib.widgets.forms import AddWebsiteForm
         return AddWebsiteForm()
 
-    @LazyProperty 
-    def skype_account_form(self): 
-        ''' 
-        :return: None, or an easywidgets Form to render on the user preferences page to 
+    @LazyProperty
+    def skype_account_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page to
                  allow setting the user's Skype account.
-        ''' 
-        from allura.lib.widgets.forms import SkypeAccountForm 
+        '''
+        from allura.lib.widgets.forms import SkypeAccountForm
         return SkypeAccountForm()
 
-    @LazyProperty 
-    def remove_textvalue_form(self): 
-        ''' 
-        :return: None, or an easywidgets Form to render on the user preferences page to 
+    @LazyProperty
+    def remove_textvalue_form(self):
+        '''
+        :return: None, or an easywidgets Form to render on the user preferences page to
                  allow removing a single text value from a list.
-        ''' 
-        from allura.lib.widgets.forms import RemoveTextValueForm 
+        '''
+        from allura.lib.widgets.forms import RemoveTextValueForm
         return RemoveTextValueForm()
 
-    @LazyProperty 
+    @LazyProperty
     def add_socialnetwork_form(self):
         '''
-        :return: None, or an easywidgets Form to render on  the user preferences page to 
+        :return: None, or an easywidgets Form to render on  the user preferences page to
                  allow adding a social network account.
         '''
         from allura.lib.widgets.forms import AddSocialNetworkForm
         return AddSocialNetworkForm(action='/auth/prefs/add_social_network')
 
-    @LazyProperty 
+    @LazyProperty
     def remove_socialnetwork_form(self):
         '''
-        :return: None, or an easywidgets Form to render on  the user preferences page to 
+        :return: None, or an easywidgets Form to render on  the user preferences page to
                  allow removing a social network account.
         '''
         from allura.lib.widgets.forms import RemoveSocialNetworkForm
         return RemoveSocialNetworkForm(action='/auth/prefs/remove_social_network')
 
-    @LazyProperty 
-    def add_timeslot_form(self): 
-        ''' 
+    @LazyProperty
+    def add_timeslot_form(self):
+        '''
         :return: None, or an easywidgets Form to render on the user preferences page
                  to allow creating a new availability timeslot
-        ''' 
-        from allura.lib.widgets.forms import AddTimeSlotForm 
+        '''
+        from allura.lib.widgets.forms import AddTimeSlotForm
         return AddTimeSlotForm()
 
-    @LazyProperty 
-    def remove_timeslot_form(self): 
-        ''' 
+    @LazyProperty
+    def remove_timeslot_form(self):
+        '''
         :return: None, or an easywidgets Form to render on the user preferences page
                  to remove a timeslot
-        ''' 
-        from allura.lib.widgets.forms import RemoveTimeSlotForm 
+        '''
+        from allura.lib.widgets.forms import RemoveTimeSlotForm
         return RemoveTimeSlotForm()
 
-    @LazyProperty 
-    def add_inactive_period_form(self): 
-        ''' 
+    @LazyProperty
+    def add_inactive_period_form(self):
+        '''
         :return: None, or an easywidgets Form to render on the user preferences page
                  to allow creating a new period of inactivity
-        ''' 
+        '''
         from allura.lib.widgets.forms import AddInactivePeriodForm
         return AddInactivePeriodForm()
 
-    @LazyProperty 
-    def remove_inactive_period_form(self): 
-        ''' 
+    @LazyProperty
+    def remove_inactive_period_form(self):
+        '''
         :return: None, or an easywidgets Form to render on the user preferences page
                  to allow removing an existing period of inactivity
-        ''' 
+        '''
         from allura.lib.widgets.forms import RemoveInactivePeriodForm
         return RemoveInactivePeriodForm()
 
@@ -735,7 +735,7 @@ class ThemeProvider(object):
     @LazyProperty
     def remove_trove_category(self):
         '''
-        :return: None, or an easywidgets Form to render on the page to remove 
+        :return: None, or an easywidgets Form to render on the page to remove
                  an existing trove_category
         '''
         from allura.lib.widgets.forms import RemoveTroveCategoryForm

@@ -69,7 +69,9 @@ class NeighborhoodController(object):
             # create user-project if it is missing
             user = M.User.query.get(username=pname)
             if user:
-                project = self.neighborhood.register_project('u/' + user.username, user=user, user_project=True)
+                project = self.neighborhood.register_project(
+                    plugin.AuthenticationProvider.get(request).user_project_shortname(user),
+                    user=user, user_project=True)
         if project is None:
             # look for neighborhood tools matching the URL
             project = self.neighborhood.neighborhood_project
