@@ -583,7 +583,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         '''
         from .project import Project
         p = Project.query.get(shortname='u/%s' % self.username, deleted=False)
-        if not p:
+        if not p and self != User.anonymous():
             # create user-project on demand if it is missing
             from allura import model as M
             n = M.Neighborhood.query.get(name='Users')
