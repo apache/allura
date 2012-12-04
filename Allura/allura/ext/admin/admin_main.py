@@ -261,6 +261,7 @@ class ProjectAdminController(BaseController):
                external_homepage='',
                support_page='',
                support_page_url='',
+               twitter_handle='',
                removal='',
                moved_to_url='',
                export_controlled=False,
@@ -317,6 +318,10 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project support page').info('')
             M.AuditLog.log('change project support page to %s', support_page)
             c.project.support_page = support_page
+        if twitter_handle != c.project.social_account('Twitter'):
+            h.log_action(log, 'change project twitter handle').info('')
+            M.AuditLog.log('change project twitter handle to %s', twitter_handle)
+            c.project.set_social_account('Twitter', twitter_handle)
         if support_page_url != c.project.support_page_url:
             h.log_action(log, 'change project support page url').info('')
             M.AuditLog.log('change project support page url to %s', support_page_url)
