@@ -383,7 +383,10 @@ class TestForum(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/testforum/moderate/')
-        n = M.Notification.query.get(text='This is a *test thread*')
+        n = M.Notification.query.get(subject='[test:discussion] Test Thread')
+        post = FM.ForumPost.query.get(text='This is a *test thread*')
+        assert post.url_paginated() in n.text
+        assert '[Test Thread](' in n.text
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
 
@@ -475,7 +478,7 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Post subject'
         thread = self.app.post('/discussion/save_new_topic', params=params).follow()
-        assert M.Notification.query.find(dict(text='Post text')).count() == 1
+        assert M.Notification.query.find(dict(subject='[test:discussion] Post subject')).count() == 1
         r = self.app.get('/discussion/testforum/')
         f = r.html.find('form',{'class':'follow_form'})
         subscribe_url = f.get('action')
@@ -496,7 +499,7 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Reply 2'
         thread_reply = self.app.post(str(rep_url), params=params)
-        assert M.Notification.query.find(dict(text='Reply 2')).count() == 1
+        assert M.Notification.query.find(dict(subject='[test:discussion] Re: Post subject')).count() == 1
 
     def get_table_rows(self, response, closest_id):
         tbody = response.html.find('div', {'id': closest_id}).find('tbody')
