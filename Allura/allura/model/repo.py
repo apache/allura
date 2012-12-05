@@ -343,7 +343,7 @@ class Commit(RepoObject):
         return copied
 
     def get_path(self, path):
-        if path[0] == '/': path = path[1:]
+        path = path.lstrip('/')
         parts = path.split('/')
         cur = self.tree
         for part in parts:
