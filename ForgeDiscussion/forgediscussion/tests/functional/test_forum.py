@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import mock
 import random
 import logging
 from email.mime.text import MIMEText
@@ -368,7 +369,8 @@ class TestForum(TestController):
                 'delete': 'Delete Marked'})
         _check()
 
-    def test_posting(self):
+    @mock.patch('forgediscussion.controllers.root.g.spam_checker')
+    def test_posting(self, spam_checker):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()
@@ -380,6 +382,8 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
         r = self.app.post('/discussion/save_new_topic', params=params)
+        spam_checker.check.call_args[0] == 'Test Thread\nThis is a *test thread*', \
+            spam_checker.check.call_args[0]
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/testforum/moderate/')
