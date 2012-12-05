@@ -5,7 +5,7 @@ from datetime import datetime
 
 import bson
 import pymongo
-from pylons import c, request
+from pylons import c, request, g
 from ming import schema as S
 from ming.orm import state, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
@@ -654,7 +654,7 @@ class Feed(MappedClass):
             app_config_id=artifact.app_config_id,
             tool_name=artifact.app_config.tool_name,
             title=title,
-            description=description,
+            description=g.markdown.convert(description),
             link=link,
             pubdate=pubdate,
             author_name=author_name,

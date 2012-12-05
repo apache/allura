@@ -182,6 +182,10 @@ class TestRootController(TestController):
         assert 'Nothing to see' in response
         response = self.app.get('/blog/%s/my-post/feed.atom' % d)
         assert 'Nothing to see' in response
+        self._post(title='test', text='*sometext*')
+        response = self.app.get('/blog/feed')
+        assert '&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in response
+
 
     def test_related_artifacts(self):
         self._post(title='one')
