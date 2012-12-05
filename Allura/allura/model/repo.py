@@ -611,7 +611,16 @@ class Blob(object):
         if lc:
             entry = lc.entry_by_name(self.name)
             last_commit = self.repo.commit(entry.commit_info.id)
-            return last_commit.get_parent()
+            prev_commit = last_commit.get_parent()
+            try:
+                tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'))
+            except KeyError:
+                return None
+            lc = tree and LastCommit.get(tree)
+            entry = lc and lc.entry_by_name(self.name)
+            if entry:
+                prev_commit = self.repo.commit(entry.commit_info.id)
+                return prev_commit
         return None
 
     @LazyProperty
