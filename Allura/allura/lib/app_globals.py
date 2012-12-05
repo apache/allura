@@ -33,7 +33,6 @@ from allura.lib.markdown_extensions import ForgeExtension
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
-from allura.lib import spam
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.async import Connection, MockAMQ
@@ -177,9 +176,11 @@ class Globals(object):
         """
         akismet_key = config.get('spam.akismet_key')
         if akismet_key:
-            checker = spam.akismetservice.Akismet(akismet_key, config.get('base_url'))
+            from allura.lib.spam import akismetservice
+            checker = akismetservice.Akismet(akismet_key, config.get('base_url'))
             checker.verify_key()
         else:
+            from allura.lib import spam
             checker = spam.FakeSpamChecker()
         return checker
 
