@@ -6,5 +6,9 @@
        alt="{{h.text.truncate(b._commit._id, 10)}}"
        title="{{h.text.truncate(b._commit._id, 10)}}"/>
 {% else %}
-  {{g.highlight(diff, lexer='diff')}}
+  {% if session.diformat == 'sidebyside' %}
+    {{diff|safe}}
+  {% else %}
+    {{g.highlight(diff, lexer='diff')}}
+  {% endif%}
 {% endif %}

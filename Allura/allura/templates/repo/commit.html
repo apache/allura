@@ -56,6 +56,25 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     }
     $(document).ready(function() {
       document.diff_queue_timer = setInterval(load_diff, WAIT_FOR);
+
+      $('.switch-diff-format-link').click(function() {
+        var diformat = $(this).attr('data-diformat');
+        var href = $(this).attr('href');
+        var diffid = $(this).attr('data-diffid');
+        self = $(this);
+        if (diformat == 'sidebyside') {
+          href = href + '&diformat=regular';
+          $('#' + diffid).load(href, function() {
+            self.attr('data-diformat', 'regular');
+          });
+        } else {
+          href = href + '&diformat=sidebyside';
+          $('#' + diffid).load(href, function() {
+            self.attr('data-diformat', 'sidebyside');
+          });
+        }
+        return false;
+      });
     });
   </script>
 {% endblock %}
@@ -86,6 +105,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             {% if type in ('added', 'changed') %}
                 <a href="{{commit.url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
                 <a class="commit-diff-link" href="{{commit.url()}}tree/{{h.really_unicode(file)}}?diff={{prev[0]._id if prev else ''}}">Diff</a>
+                <a class="commit-diff-link switch-diff-format-link" data-diformat={{session.diformat}} data-diffid="diff-{{loop.index}}" href="{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id if prev else ''}}">Switch regular/side-by-side view</a>
             {% elif type == 'removed' %}
                 <a href="{{prev[0].url()}}tree/{{h.really_unicode(file)}}">{{h.really_unicode(file)}}</a>
             {% elif type == 'copied' %}

@@ -11,6 +11,7 @@ from webob import exc
 import tg
 from tg import redirect, expose, flash, url, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg import session as web_session
 from formencode import validators
 from bson import ObjectId
 from ming.base import Object
@@ -529,10 +530,10 @@ class FileBrowser(BaseController):
             return self.raw()
         elif 'diff' in kw:
             tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/diff.html')
-            return self.diff(kw['diff'])
+            return self.diff(kw['diff'], kw.pop('diformat', None))
         elif 'barediff' in kw:
             tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/barediff.html')
-            return self.diff(kw['barediff'])
+            return self.diff(kw['barediff'], kw.pop('diformat', None))
         else:
             force_display = 'force' in kw
             context = self._blob.context()
@@ -559,7 +560,7 @@ class FileBrowser(BaseController):
             'Content-Disposition', 'attachment;filename=' + filename)
         return iter(self._blob)
 
-    def diff(self, commit):
+    def diff(self, commit, fmt=None):
         try:
             path, filename = os.path.split(self._blob.path())
             a_ci = c.app.repo.commit(commit)
@@ -569,19 +570,27 @@ class FileBrowser(BaseController):
             a = []
             apath = ''
         b = self._blob
+
+        if not self._blob.has_html_view:
+            diff = "Cannot display: file marked as a binary type."
+            return dict(a=a, b=b, diff=diff)
+
         la = list(a)
         lb = list(b)
+        adesc = (u'a' + h.really_unicode(apath)).encode('utf-8')
+        bdesc = (u'b' + h.really_unicode(b.path())).encode('utf-8')
 
-        diff = "Cannot display: file marked as a binary type."
-        if self._blob.has_html_view:
-            diff = ''.join(difflib.unified_diff(
-                   la, lb,
-                   ('a' + apath).encode('utf-8'),
-                   ('b' + b.path()).encode('utf-8')))
-
-        return dict(
-            a=a, b=b,
-            diff=diff)
+        if not fmt:
+            fmt = web_session.get('diformat', '')
+        else:
+            web_session['diformat'] = fmt
+            web_session.save()
+        if fmt == 'sidebyside':
+            hd = difflib.HtmlDiff(tabsize=4)
+            diff = hd.make_table(la, lb, adesc, bdesc, context=True)
+        else:
+            diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
+        return dict(a=a, b=b, diff=diff)
 
 def topo_sort(children, parents, dates, head_ids):
     to_visit = sorted(list(set(head_ids)), key=lambda x: dates[x])

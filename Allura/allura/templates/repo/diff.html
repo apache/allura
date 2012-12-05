@@ -28,8 +28,24 @@
   </div>
   {% else %}
   <div class="clip grid-19">
-    <h3><span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span></h3>
-    {{g.highlight(diff, lexer='diff')}}
+    <h3>
+      <span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span>
+      <span class="fright">
+        {% if session.diformat == 'sidebyside' %}
+          {% set switch_url = request.url.replace('&diformat=sidebyside', '') + '&diformat=regular' %}
+          {% set switch_text = 'regular' %}
+        {% else %}
+          {% set switch_url = request.url.replace('&diformat=regular', '') + '&diformat=sidebyside' %}
+          {% set switch_text = 'side-by-side' %}
+        {% endif %}
+        <a href="{{ switch_url }}">Switch to {{ switch_text }} view</a>
+      <span>
+      </h3>
+    {% if session.diformat == 'sidebyside' %}
+      {{diff|safe}}
+    {% else %}
+      {{g.highlight(diff, lexer='diff')}}
+    {% endif %}
   </div>
   {% endif %}
 {% endblock %}
