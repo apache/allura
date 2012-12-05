@@ -489,7 +489,7 @@ class Tree(RepoObject):
         return dict(
                 kind=dirent.type,
                 name=dirent.name,
-                href=dirent.name + '/',
+                href=dirent.name,
                 last_commit=dict(
                         author=dirent.commit_info.author,
                         author_email=dirent.commit_info.author_email,
@@ -607,11 +607,11 @@ class Blob(object):
 
     @LazyProperty
     def prev_commit(self):
-        lc = self.repo.get_last_commit(self)
-        if lc['id']:
-            last_commit = self.repo.commit(lc.id)
-            if last_commit.parent_ids:
-                return self.repo.commit(last_commit.parent_ids[0])
+        lc = LastCommit.get(self.tree)
+        if lc:
+            entry = lc.entry_by_name(self.name)
+            last_commit = self.repo.commit(entry.commit_info.id)
+            return last_commit.get_parent()
         return None
 
     @LazyProperty
