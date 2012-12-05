@@ -181,9 +181,9 @@ def parse_options():
     parser.add_argument('--diffs', action='store_true', dest='diffs',
             default=False, help='Refresh diffs as well as LCDs')
     parser.add_argument('--all', action='store_const', dest='step',
-            const=1, default=100, help='Refresh diffs as well as LCDs')
+            const=1, default=100, help='Refresh the LCD for every commit instead of every 100th')
     parser.add_argument('--step', action='store', dest='step',
-            type=int, default=100, help='Refresh diffs as well as LCDs')
+            type=int, default=100, help='Refresh the LCD for every Nth commit instead of every 100th')
     return parser.parse_args()
 
 if __name__ == '__main__':
