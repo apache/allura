@@ -1,0 +1,44 @@
+/* Styles for side-by-side diffs. Trying to match pygments styles for regular diffs */
+
+table.diff {
+  background: #f8f8f8;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+table.diff colgroup,
+table.diff td.diff_next,
+table.diff th.diff_next,
+.inline-diff-body table.diff thead { display: none; }
+
+table.diff,
+table.diff tr,
+table.diff td {
+  border: 0;
+  color: gray;
+  margin: 0;
+  padding: 0;
+  vertical-align: text-top;
+  white-space: pre-wrap;
+}
+
+table.diff td { padding: 0 .2em; }
+
+/* line number */
+table.diff td.diff_header {
+  background-color: #ebebeb;
+  display:inline-block;
+  padding: 0 .5em;
+  border-width: 0 1px 0 0;
+  border-style: solid;
+  border-color: #ddd;
+  height: 100%;
+  width: 2em;
+}
+
+/* colors */
+table.diff tr:hover { background-color: #ff9; }
+
+table.diff tr td span.diff_add { color: #000; background-color: #dfd; }
+table.diff tr td span.diff_sub { color: #000; background-color: #fdd; }
+table.diff tr td span.diff_chg { color: #000; background-color: #ff9; }

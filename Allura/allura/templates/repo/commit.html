@@ -1,5 +1,7 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
 
+{% do g.register_forge_css('css/forge/diff.css') %}
+
 {% block title %}
   {{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{commit.shorthand_id()}}
 {% endblock %}

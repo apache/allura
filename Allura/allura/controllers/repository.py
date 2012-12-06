@@ -588,6 +588,7 @@ class FileBrowser(BaseController):
         if fmt == 'sidebyside':
             hd = difflib.HtmlDiff(tabsize=4)
             diff = hd.make_table(la, lb, adesc, bdesc, context=True)
+            diff = diff.replace('&nbsp;', ' ')
         else:
             diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
         return dict(a=a, b=b, diff=diff)
