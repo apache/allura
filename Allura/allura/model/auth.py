@@ -5,7 +5,6 @@ import logging
 import urllib
 import hmac
 import hashlib
-import pytz
 from urlparse import urlparse
 from email import header
 from hashlib import sha256
@@ -22,6 +21,7 @@ from ming import Field, collection
 from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
+from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
@@ -582,14 +582,19 @@ class User(MappedClass, ActivityNode, ActivityObject):
         '''
         Returns the personal user-project for the user
         '''
-        from .project import Project
+        from allura import model as M
+        n = M.Neighborhood.query.get(name='Users')
         auth_provider = plugin.AuthenticationProvider.get(request)
         project_shortname = auth_provider.user_project_shortname(self)
-        p = Project.query.get(shortname=project_shortname, deleted=False)
+        p = M.Project.query.get(shortname=project_shortname, neighborhood_id=n._id)
+        if p and p.deleted:
+            # really delete it, since registering a new project would conflict with the "deleted" one
+            log.info('completely deleting user project (was already flagged as deleted) %s', project_shortname)
+            p.delete()
+            ThreadLocalORMSession.flush_all()
+            p = None
         if not p and self != User.anonymous():
             # create user-project on demand if it is missing
-            from allura import model as M
-            n = M.Neighborhood.query.get(name='Users')
             p = n.register_project(project_shortname, user=self, user_project=True)
         return p
 

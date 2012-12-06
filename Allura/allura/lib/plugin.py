@@ -427,7 +427,7 @@ class ProjectRegistrationProvider(object):
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
-            raise forge_exc.ProjectConflict()
+            raise forge_exc.ProjectConflict('%s already exists in nbhd %s' % (shortname, neighborhood._id))
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''
