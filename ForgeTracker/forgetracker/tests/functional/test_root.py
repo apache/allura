@@ -823,6 +823,25 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/1/', dict(page=1, limit=2))
         assert_true('Page 2 of 2' in r)
 
+    def test_discussion_feed(self):
+        summary = 'test discussion paging'
+        ticket_view = self.new_ticket(summary=summary).follow()
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'ticket discussion post content'
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
+        self.app.post(f['action'].encode('utf-8'), params=params,
+            headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/feed.rss')
+        post = M.Post.query.find().first()
+        assert '/p/test/bugs/1/?limit=50#' + post.slug in r
+
     def test_bulk_edit_index(self):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='accepted')

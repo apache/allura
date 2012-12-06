@@ -621,7 +621,7 @@ class Feed(MappedClass):
 
 
     @classmethod
-    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None):
+    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None):
         """
         Create a Feed item.  Returns the item.
         But if anon doesn't have read access, create does not happen and None is returned
@@ -643,6 +643,10 @@ class Feed(MappedClass):
         if description is None: description = title
         if pubdate is None:
             pubdate = datetime.utcnow()
+
+        if link is None:
+            link=artifact.url()
+
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -651,7 +655,7 @@ class Feed(MappedClass):
             tool_name=artifact.app_config.tool_name,
             title=title,
             description=description,
-            link=artifact.url(),
+            link=link,
             pubdate=pubdate,
             author_name=author_name,
             author_link=author_link or author.url())
