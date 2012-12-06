@@ -10,9 +10,6 @@ from optparse import OptionParser
 from pprint import pprint
 from datetime import datetime
 
-import os.path
-scriptDir=os.path.dirname(__file__)
-sys.path.append(os.path.join(scriptDir, '..', 'Allura'))
 from allura.lib.import_api import AlluraImportApiClient
 
 
