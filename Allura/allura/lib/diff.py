@@ -9,7 +9,7 @@ class HtmlSideBySideDiff(object):
     <th colspan="2">%s</th>
     <th colspan="2">%s</th>
   </thead>
-  %s
+%s
 </table>
 '''.strip()
 
@@ -22,7 +22,7 @@ class HtmlSideBySideDiff(object):
 </tr>'''.strip()
 
     def __init__(self, tabsize=4):
-        self._tabsize = 4
+        self._tabsize = tabsize
 
     def _render_change(self, aline, bline, anum=None, bnum=None, astyle=None, bstyle=None):
         astyle = (' class="%s"' % astyle) if astyle else ''
@@ -43,13 +43,13 @@ class HtmlSideBySideDiff(object):
         # this is needed to be able to highlight entire <td> in the table,
         # rather then highlighting only chunk inside the <span>
         flag = ''
-        if line.startswith('\0+'):
+        if line.startswith('\0+') and line.endswith('\1'):
             line = line.lstrip('\0+').rstrip('\1')
             flag = 'diff-add'
-        elif line.startswith('\0-'):
+        elif line.startswith('\0-') and line.endswith('\1'):
             line = line.lstrip('\0-').rstrip('\1')
             flag = 'diff-rem'
-        elif '\0^' in line:
+        elif '\0^' in line or '\0+' in line or '\0-' in line:
             flag = 'diff-chg'
 
         # replace all other marks with <span>'s
