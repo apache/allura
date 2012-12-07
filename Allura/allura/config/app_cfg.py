@@ -36,7 +36,7 @@ class ForgeConfig(AppConfig):
         AppConfig.__init__(self)
         self.root_controller = root_controller
         self.package = allura
-        self.renderers = [ 'json', 'genshi', 'mako', 'jinja' ]
+        self.renderers = [ 'json', 'genshi', 'jinja' ]
         self.default_renderer = 'genshi'
         self.use_sqlalchemy = False
         self.use_toscawidgets = True
