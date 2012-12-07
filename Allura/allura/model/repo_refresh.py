@@ -11,7 +11,7 @@ import tg
 from pylons import g,c
 
 from ming.base import Object
-from ming.orm import mapper, session
+from ming.orm import mapper, session, ThreadLocalORMSession
 
 from allura.lib import utils
 from allura.lib import helpers as h
@@ -104,6 +104,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
         for i, oid in enumerate(reversed(commit_ids)):
             ci = cache.get(Commit, dict(_id=oid))
             compute_lcds(ci, cache)
+            ThreadLocalORMSession.flush_all()
             if (i+1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i+1), ci._id)
 
