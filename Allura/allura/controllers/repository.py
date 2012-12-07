@@ -31,6 +31,7 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
+from allura.lib.diff import HtmlSideBySideDiff
 
 from .base import BaseController
 
@@ -586,8 +587,8 @@ class FileBrowser(BaseController):
             web_session['diformat'] = fmt
             web_session.save()
         if fmt == 'sidebyside':
-            hd = difflib.HtmlDiff(tabsize=4)
-            diff = hd.make_table(la, lb, adesc, bdesc, context=True)
+            hd = HtmlSideBySideDiff()
+            diff = hd.make_table(la, lb, adesc, bdesc)
             diff = diff.replace('&nbsp;', ' ')
         else:
             diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
