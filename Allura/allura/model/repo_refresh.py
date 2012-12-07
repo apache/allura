@@ -102,7 +102,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
     if repo._refresh_precompute:
         cache = ModelCache()
         for i, oid in enumerate(reversed(commit_ids)):
-            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            ci = cache.get(Commit, dict(_id=oid))
             compute_lcds(ci, cache)
             if (i+1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i+1), ci._id)
