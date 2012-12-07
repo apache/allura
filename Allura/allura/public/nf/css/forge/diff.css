@@ -1,31 +1,34 @@
 /* Styles for side-by-side diffs. Trying to match pygments styles for regular diffs */
 
-table.diff {
+table.side-by-side-diff {
   background: #f8f8f8;
   margin: 0 !important;
   width: 100% !important;
 }
 
-table.diff colgroup,
-table.diff td.diff_next,
-table.diff th.diff_next,
-.inline-diff-body table.diff thead { display: none; }
+.inline-diff-body table.side-by-side-diff thead { display: none; }
 
-table.diff,
-table.diff tr,
-table.diff td {
+table.side-by-side-diff,
+table.side-by-side-diff tr,
+table.side-by-side-diff td {
   border: 0;
   color: gray;
   margin: 0;
   padding: 0;
   vertical-align: text-top;
-  white-space: pre-wrap;
 }
 
-table.diff td { padding: 0 .2em; }
+table.side-by-side-diff tr td pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 0;
+  margin: 0;
+}
+
+table.side-by-side-diff td { padding: 0 .2em; }
 
 /* line number */
-table.diff td.diff_header {
+table.side-by-side-diff td.lineno {
   background-color: #ebebeb;
   display:inline-block;
   padding: 0 .5em;
@@ -37,8 +40,12 @@ table.diff td.diff_header {
 }
 
 /* colors */
-table.diff tr:hover { background-color: #ff9; }
+table.side-by-side-diff tr:hover { background-color: #eff23d; }
 
-table.diff tr td span.diff_add { color: #000; background-color: #dfd; }
-table.diff tr td span.diff_sub { color: #000; background-color: #fdd; }
-table.diff tr td span.diff_chg { color: #000; background-color: #ff9; }
+table.side-by-side-diff tr td.diff-add { color: #000; background-color: #dfd; }
+table.side-by-side-diff tr td.diff-rem { color: #000; background-color: #fdd; }
+table.side-by-side-diff tr td.diff-chg { color: #000; background-color: #ff9; }
+table.side-by-side-diff tr td.diff-gap { background-color: #def; text-align: center; }
+table.side-by-side-diff tr td span.diff-add { color: #000; background-color: #afa; }
+table.side-by-side-diff tr td span.diff-rem { color: #000; background-color: #faa; }
+table.side-by-side-diff tr td span.diff-chg { color: #000; background-color: #eff23d; }
