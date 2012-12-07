@@ -24,6 +24,7 @@ from pylons import c, g
 from tg import config
 import pymongo
 import jinja2
+from paste.deploy.converters import asbool
 
 from ming import schema as S
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty, session
@@ -77,7 +78,9 @@ class Notification(MappedClass):
     ref = RelationProperty('ArtifactReference')
 
     view = jinja2.Environment(
-            loader=jinja2.PackageLoader('allura', 'templates'))
+            loader=jinja2.PackageLoader('allura', 'templates'),
+            auto_reload=asbool(config.get('auto_reload_templates', True)),
+    )
 
     @classmethod
     def post(cls, artifact, topic, **kw):
