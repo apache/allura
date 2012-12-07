@@ -7,10 +7,10 @@ This file complements development/deployment.ini.
 Please note that **all the argument values are strings**. If you want to
 convert them into boolean, for example, you should use the
 :func:`paste.deploy.converters.asbool` function, as in::
-    
+
     from paste.deploy.converters import asbool
     setting = asbool(global_conf.get('the_setting'))
- 
+
 """
 import logging
 import pkg_resources
@@ -76,7 +76,7 @@ class ForgeConfig(AppConfig):
         bcc = self._setup_bytecode_cache()
         jinja2_env = jinja2.Environment(
             loader=PackagePathLoader(),
-            auto_reload=self.auto_reload_templates,
+            auto_reload=config.auto_reload_templates,
             autoescape=True,
             bytecode_cache=bcc,
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
