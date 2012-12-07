@@ -162,6 +162,16 @@ class TestRootController(_TestCase):
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
 
+    def test_diff_view_mode(self):
+        ci = self._get_ci()
+        fn = 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a'
+        r = self.app.get(ci + fn + '&diformat=regular')
+        assert fn + '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
+
+        r = self.app.get(ci + fn + '&diformat=sidebyside')
+        assert fn + '&amp;diformat=regular">Switch to regular view</a>' in r
+        assert '<table class="side-by-side-diff">' in r
+
     def test_refresh(self):
         notification = M.Notification.query.find(
             dict(subject='[test:src-git] 4 new commits to test Git')).first()
