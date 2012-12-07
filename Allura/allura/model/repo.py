@@ -209,6 +209,8 @@ class Commit(RepoObject):
         try:
             cache = getattr(c, 'model_cache', '') or ModelCache()
             ci = cache.get(Commit, dict(_id=self.parent_ids[index]))
+            if not ci:
+                return None
             ci.set_context(self.repo)
             return ci
         except IndexError as e:
@@ -366,13 +368,14 @@ class Commit(RepoObject):
         '''
         diff_info = DiffInfoDoc.m.get(_id=self._id)
         diffs = set()
-        for d in diff_info.differences:
-            diffs.add(d.name.strip('/'))
-            node_path = os.path.dirname(d.name)
-            while node_path:
-                diffs.add(node_path)
-                node_path = os.path.dirname(node_path)
-            diffs.add('')  # include '/' if there are any changes
+        if diff_info:
+            for d in diff_info.differences:
+                diffs.add(d.name.strip('/'))
+                node_path = os.path.dirname(d.name)
+                while node_path:
+                    diffs.add(node_path)
+                    node_path = os.path.dirname(node_path)
+                diffs.add('')  # include '/' if there are any changes
         return diffs
 
     @LazyProperty
@@ -481,6 +484,8 @@ class Tree(RepoObject):
             return old_style_results
         # finally, use the new implentation that auto-vivifies
         last_commit = LastCommit.get(self)
+        if not last_commit:
+            return []
         sorted_entries = sorted(last_commit.entries, cmp=lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name))
         mapped_entries = [self._dirent_map(e) for e in sorted_entries]
         return mapped_entries
