@@ -72,7 +72,6 @@ setup(
                             ]},
     message_extractors={'allura': [
             ('**.py', 'python', None),
-            ('templates/**.mako', 'mako', None),
             ('templates/**.html', 'genshi', None),
             ('public/**', 'ignore', None)]},
 
