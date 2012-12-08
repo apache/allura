@@ -50,7 +50,6 @@ class BasetestNeighborhoodRootController(WsgiDispatchController, NeighborhoodCon
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
-        self.p_nbhd = M.Neighborhood.query.get(name='Projects')
         proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
@@ -58,7 +57,8 @@ class BasetestNeighborhoodRootController(WsgiDispatchController, NeighborhoodCon
             setattr(self, attr, getattr(proxy_root, attr))
         self.gsearch = proxy_root.search
         self.rest = RestController()
-        super(BasetestNeighborhoodRootController, self).__init__()
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        super(BasetestNeighborhoodRootController, self).__init__(p_nbhd)
 
     def _setup_request(self):
         pass
