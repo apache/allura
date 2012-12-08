@@ -20,9 +20,11 @@ class TestAuth(TestController):
 
     def test_login(self):
         result = self.app.get('/auth/')
-        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'))
+        r = self.app.post('/auth/send_verification_link', params=dict(a='test@example.com'),
+                          extra_environ={'HTTP_REFERER':'/'})
         email = M.User.query.get(username='test-admin').email_addresses[0]
-        r = self.app.post('/auth/send_verification_link', params=dict(a=email))
+        r = self.app.post('/auth/send_verification_link', params=dict(a=email),
+                          extra_environ={'HTTP_REFERER':'/'})
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/auth/verify_addr', params=dict(a='foo'))
         assert json.loads(self.webflash(r))['status'] == 'error', self.webflash(r)
@@ -128,7 +130,7 @@ class TestAuth(TestController):
         subscribed = M.Mailbox.subscribed(project_id=p_id, app_config_id=t_id)
         assert not subscribed, "User already subscribed for tool %s" % t_id
         form.fields[field_name + '.subscribed'][0].value = 'on'
-        form.submit()
+        form.submit(extra_environ={'HTTP_REFERER':'/'})
         subscribed = M.Mailbox.subscribed(project_id=p_id, app_config_id=t_id)
         assert subscribed, "User is not subscribed for tool %s" % t_id
 
@@ -142,19 +144,21 @@ class TestAuth(TestController):
         s = M.Mailbox.query.get(_id=s_id)
         assert s, "User has not subscription with Mailbox._id = %s" % s_id
         form.fields[field_name + '.subscribed'][0].value = None
-        form.submit()
+        form.submit(extra_environ={'HTTP_REFERER':'/'})
         s = M.Mailbox.query.get(_id=s_id)
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     def test_api_key(self):
          r = self.app.get('/auth/prefs/')
          assert 'No API token generated' in r
-         r = self.app.post('/auth/prefs/gen_api_token', status=302)
+         r = self.app.post('/auth/prefs/gen_api_token', status=302,
+                           extra_environ={'HTTP_REFERER':'/'})
          r = self.app.get('/auth/prefs/')
          assert 'No API token generated' not in r
          assert 'API Key:' in r
          assert 'Secret Key:' in r
-         r = self.app.post('/auth/prefs/del_api_token', status=302)
+         r = self.app.post('/auth/prefs/del_api_token', status=302,
+                           extra_environ={'HTTP_REFERER':'/'})
          r = self.app.get('/auth/prefs/')
          assert 'No API token generated' in r
 

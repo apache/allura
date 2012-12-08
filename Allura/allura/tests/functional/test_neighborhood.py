@@ -679,10 +679,11 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/_admin/awards', extra_environ=dict(username='root'))
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='FOO', full='A basic foo award'),
-                          extra_environ=dict(username='root'), upload_files=[upload])
+                          extra_environ=dict(username='root', HTTP_REFERER='/'),
+                          upload_files=[upload])
         r = self.app.post('/adobe/_admin/awards/create',
                           params=dict(short='BAR', full='A basic bar award with no icon'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root', HTTP_REFERER='/'))
         foo_id = str(M.Award.query.find(dict(short='FOO')).first()._id)
         bar_id = str(M.Award.query.find(dict(short='BAR')).first()._id)
         r = self.app.post('/adobe/_admin/awards/%s/update' % bar_id,
@@ -696,12 +697,12 @@ class TestNeighborhood(TestController):
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root', HTTP_REFERER='/'))
         self.app.get('/adobe/_admin/awards/%s/adobe-1' % foo_id, extra_environ=dict(username='root'))
         self.app.post('/adobe/_admin/awards/%s/adobe-1/revoke' % foo_id,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root', HTTP_REFERER='/'))
         self.app.post('/adobe/_admin/awards/%s/delete' % foo_id,
-                          extra_environ=dict(username='root'))
+                          extra_environ=dict(username='root', HTTP_REFERER='/'))
 
     def test_add_a_project_link(self):
         # Install Home tool for all neighborhoods

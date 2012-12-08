@@ -90,9 +90,12 @@ class TestDiscuss(TestController):
         r = self.app.get(thread_link)
         assert 'Tis a reply' in r, r
         permalinks = [post.find('form')['action'].encode('utf-8') for post in r.html.findAll('div',{'class':'edit_post_form reply'})]
-        self.app.post(permalinks[1]+'flag')
-        self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
-        self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
+        self.app.post(permalinks[1]+'flag',
+                      extra_environ={'HTTP_REFERER':'/'})
+        self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'),
+                      extra_environ={'HTTP_REFERER':'/'})
+        self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'),
+                      extra_environ={'HTTP_REFERER':'/'})
 
     def test_post_paging(self):
         home = self.app.get('/wiki/_discuss/')
@@ -118,7 +121,7 @@ class TestDiscuss(TestController):
             if field.has_key('name'):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[reply_form.find('textarea')['name']] = 'zzz'
-        self.app.post(post_link, params)
+        self.app.post(post_link, params, extra_environ={'HTTP_REFERER':'/'})
         assert create_activity.call_count == 1, create_activity.call_count
         assert create_activity.call_args[0][1] == 'modified'
         r = self.app.get(thread_url)
@@ -151,6 +154,7 @@ class TestAttachment(TestController):
 
     def test_attach(self):
         r = self.app.post(self.post_link + 'attach',
+                          extra_environ={'HTTP_REFERER':'/'},
                           upload_files=[('file_info', 'test.txt', 'HiThere!')])
         r = self.app.get(self.thread_link)
         for alink in r.html.findAll('a'):
@@ -162,5 +166,7 @@ class TestAttachment(TestController):
         r = self.app.get(alink)
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',
+                          extra_environ={'HTTP_REFERER': '/'},
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
-        r = self.app.post(alink, params=dict(delete='on'))
+        r = self.app.post(alink, params=dict(delete='on'),
+                          extra_environ={'HTTP_REFERER': '/'},)
