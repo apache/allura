@@ -43,14 +43,15 @@ textile==2.1.5
 # dep of colander
 translationstring==0.4
 TimerMiddleware==0.4
-TurboGears2==2.1.5
-WebOb==1.0.8
+TurboGears2==2.2.0
+WebOb==1.1.1
 # part of the stdlib, but with a version number.  see http://guide.python-distribute.org/pip.html#listing-installed-packages
 wsgiref==0.1.2
 
 # tg2 deps (not used directly)
 Babel==0.9.6
 Beaker==1.5.4
+crank==0.6.4
 Mako==0.3.2
 MarkupSafe==0.15
 Pylons==1.0
