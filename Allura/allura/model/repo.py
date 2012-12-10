@@ -886,7 +886,8 @@ class ModelCache(object):
         elif len(self._cache[cls]) >= self.max_size:
             # remove the least-recently-used cache item
             key, instance = self._cache[cls].popitem(last=False)
-            session(instance).expunge(instance)
+            if instance and session(instance):
+                session(instance).expunge(instance)
 
     def size(self):
         return sum([len(c) for c in self._cache.values()])
