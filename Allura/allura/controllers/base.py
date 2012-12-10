@@ -1,15 +1,9 @@
-from tg import expose
-from webob import exc
-from tg.controllers.dispatcher import ObjectDispatcher
+from crank.objectdispatcher import ObjectDispatcher
 
 
 class BaseController(object):
-    @expose()
-    def _lookup(self, name, *remainder):
-        """Provide explicit default lookup to avoid dispatching backtracking
-        and possible loops."""
-        raise exc.HTTPNotFound, name
-
+    # in previous versions of TG, we needed to override _lookup for special workaround handling
+    pass
 
 class DispatchIndex(object):
     """Rewrite default url dispatching for controller.

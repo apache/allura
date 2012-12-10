@@ -14,6 +14,7 @@ from allura import model as M
 # CommentController methods exposed:
 #     reply, delete
 
+
 class TestRootController(TestController):
 
     def _post(self, slug='', **kw):
@@ -45,6 +46,10 @@ class TestRootController(TestController):
         self._post(slug, title='new title')
         assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'renamed'
+
+    def test_simple(self):
+        response = self.app.get('/blog/')
+        assert False
 
     def test_root_index(self):
         self._post()
@@ -79,7 +84,7 @@ class TestRootController(TestController):
 
     def test_validation(self):
         r = self._post(title='')
-        assert 'You must provide a Title' in r
+        assert 'You must provide a Title' in r, r
 
     def test_root_new_search(self):
         self._post()

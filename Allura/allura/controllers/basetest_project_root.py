@@ -10,7 +10,7 @@ from webob import exc
 from tg import expose
 from tg.decorators import without_trailing_slash
 
-import  ming.orm.ormsession
+import ming.orm.ormsession
 
 import allura
 from allura.lib.base import WsgiDispatchController
@@ -30,7 +30,7 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
-class BasetestProjectRootController(WsgiDispatchController, ProjectController):
+class BasetestProjectRootController(WsgiDispatchController):
     '''Root controller for testing -- it behaves just like a
     ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -47,8 +47,8 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     '''
 
     def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
+        #setattr(self, 'feed.rss', ProjectController.feed)
+        #setattr(self, 'feed.atom', ProjectController.feed)
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)
@@ -63,6 +63,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         super(BasetestProjectRootController, self).__init__()
 
     def _setup_request(self):
+        pass
         # This code fixes a race condition in our tests
         c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
         c.memoize_cache = {}
