@@ -1,8 +1,0 @@
-[other]
-
-custom = custom value
-
-[hooks]
-
-changegroup.external = .hg/external-changegroup
-commit = python:hgext.notify.hook

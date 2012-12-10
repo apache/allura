@@ -1,4 +1,0 @@
-[hooks]
-; = [the next line is required for site integration, do not remove/modify] = 
-changegroup = curl -s http://localhost:8080/auth/refresh_repo/p/allura/code/
-
