@@ -481,7 +481,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
     @memoize
     def icon_url(self):
         icon_url = None
-        private_project = self.private_project()
+        try:
+            private_project = self.private_project()
+        except:
+            log.warn('Error getting/creating user-project for %s', self.username, exc_info=True)
+            private_project = None
         if private_project and private_project.icon:
             icon_url = self.url()+'user_icon'
         elif self.preferences.email_address:
