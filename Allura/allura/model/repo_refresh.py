@@ -307,57 +307,45 @@ def unknown_commit_ids(all_commit_ids):
 def compute_diffs(repo_id, tree_cache, rhs_ci):
     '''compute simple differences between a commit and its first parent'''
     if rhs_ci.tree_id is None: return tree_cache
-    def _walk_tree(tree, tree_index):
-        for x in tree.blob_ids: yield x.id
-        for x in tree.other_ids: yield x.id
-        for x in tree.tree_ids:
-            yield x.id
-            for xx in _walk_tree(tree_index[x.id], tree_index):
-                yield xx
 
-    treedoc = TreesDoc.m.get(_id=rhs_ci._id)
+    def _update_cache(lhs_tree_ids, rhs_tree_ids):
+        # crazy cache logic that I'm not certain I understand
+        new_tree_ids = [
+            tid for tid in chain(lhs_tree_ids, rhs_tree_ids)
+            if tid not in tree_cache ]
+        tree_index = dict(
+            (t._id, t) for t in TreeDoc.m.find(dict(_id={'$in': new_tree_ids}),validate=False))
+        tree_index.update(tree_cache)
+        rhs_tree_ids_set = set(rhs_tree_ids)
+        tree_cache.clear()
+        tree_cache.update(
+            (id, t) for id,t in tree_index.iteritems() if id in rhs_tree_ids_set)
+        return tree_index
 
-    # FIXME: There are cases of missing TreesDoc records in production
-    #        that should be fixed, but this is a quick-and-dirty patch
-    #        to at least staunch the bleeding.  A "generate-if-missing"
-    #        fix, and/or, even better, a cleanup / regen sweep plus
-    #        audit to ensure there're no more bugs causing them to be
-    #        missed should be done.
-    if not treedoc:
-        return tree_cache
-
-    rhs_tree_ids = treedoc.tree_ids
-
-    if rhs_ci.parent_ids:
-        lhs_ci = CommitDoc.m.get(_id=rhs_ci.parent_ids[0])
-    else:
-        lhs_ci = None
-    if lhs_ci is not None:
-        lhs_tree_ids = TreesDoc.m.get(_id=lhs_ci._id).tree_ids
-    else:
-        lhs_tree_ids = []
-    new_tree_ids = [
-        tid for tid in chain(lhs_tree_ids, rhs_tree_ids)
-        if tid not in tree_cache ]
-    tree_index = dict(
-        (t._id, t) for t in TreeDoc.m.find(dict(_id={'$in': new_tree_ids}),validate=False))
-    tree_index.update(tree_cache)
-    rhs_tree_ids_set = set(rhs_tree_ids)
-    tree_cache.clear()
-    tree_cache.update(
-        (id, t) for id,t in tree_index.iteritems() if id in rhs_tree_ids_set)
-    rhs_tree = tree_index[rhs_ci.tree_id]
-    if lhs_ci is None:
-        lhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
-    else:
-        lhs_tree = tree_index[lhs_ci.tree_id]
-    differences = []
+    empty_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
     commit_info = get_commit_info(rhs_ci)
-    for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
-        differences.append(
-            dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
-    # Set last commit data
-    rhs_tree = tree_index[rhs_ci.tree_id]
+    differences = []
+    rhs_treesdoc = TreesDoc.m.get(_id=rhs_ci._id)
+    if not rhs_treesdoc:
+        # FIXME: These sometimes don't exist for unknown reasons; they should be auto-gen'ed
+        log.error('Missing TreesDoc: %s', rhs_ci)
+        return tree_cache
+    for lhs_cid in rhs_ci.parent_ids:
+        lhs_ci = CommitDoc.m.get(_id=lhs_cid)
+        if lhs_ci is None:
+            log.error('Commit ID referenced as parent but not found: %s parent of %s', lhs_cid, rhs_ci)
+            continue
+        lhs_treesdoc = TreesDoc.m.get(_id=lhs_cid)
+        if not lhs_treesdoc:
+            # FIXME: These sometimes don't exist for unknown reasons; they should be auto-gen'ed
+            log.error('Missing TreesDoc: %s', rhs_ci)
+            continue
+        tree_index = _update_cache(lhs_treesdoc.tree_ids, rhs_treesdoc.tree_ids)
+        rhs_tree = tree_index[rhs_ci.tree_id]
+        lhs_tree = tree_index.get(lhs_ci.tree_id, empty_tree)
+        for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
+            differences.append(
+                dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
     # Build the diffinfo
     di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
