@@ -6,8 +6,10 @@ class HtmlSideBySideDiff(object):
     table_tmpl = '''
 <table class="side-by-side-diff">
   <thead>
-    <th colspan="2">%s</th>
-    <th colspan="2">%s</th>
+    <th class="lineno"></th>
+    <th>%s</th>
+    <th class="lineno"></th>
+    <th>%s</th>
   </thead>
 %s
 </table>

@@ -4,13 +4,13 @@ table.side-by-side-diff {
   background: #f8f8f8;
   margin: 0 !important;
   width: 100% !important;
+  table-layout: fixed;
 }
-
-.inline-diff-body table.side-by-side-diff thead { display: none; }
 
 table.side-by-side-diff,
 table.side-by-side-diff tr,
-table.side-by-side-diff td {
+table.side-by-side-diff td,
+table.side-by-side-diff th {
   border: 0;
   color: gray;
   margin: 0;
@@ -30,12 +30,14 @@ table.side-by-side-diff td { padding: 0 .2em; }
 /* line number */
 table.side-by-side-diff td.lineno {
   background-color: #ebebeb;
-  display:inline-block;
   padding: 0 .5em;
   border-width: 0 1px 0 0;
   border-style: solid;
   border-color: #ddd;
-  height: 100%;
+  width: 2em;
+}
+table.side-by-side-diff th.lineno {
+  padding: 0 .5em;
   width: 2em;
 }
 
