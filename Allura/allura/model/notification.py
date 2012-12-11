@@ -168,9 +168,8 @@ class Notification(MappedClass):
             d['text'] = ''
         try:
             ''' Add addional text to the notification e-mail based on the artifact type '''
-            if artifact.__mongometa__.name in ['forum', 'ticket']:
-                template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
-                d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact, post=post, h=h))
+            template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
+            d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact, post=post, h=h))
         except jinja2.TemplateNotFound:
             pass
         except:

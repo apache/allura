@@ -185,7 +185,7 @@ def test_attachment_methods():
     p = t.post(text=u'test message', forum= None, subject= '', file_info=fs)
     ThreadLocalORMSession.flush_all()
     n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
-    assert_equals(u'test message\n\n\nAttachment: fake.txt (37 Bytes; text/plain)', n.text)
+    assert '\nAttachment: fake.txt (37 Bytes; text/plain)' in n.text
 
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
