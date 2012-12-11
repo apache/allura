@@ -879,3 +879,23 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 });
             });
         ''' % dict(project_name=project_name, project_unixname=project_unixname))
+
+
+class MoveTicketForm(ForgeForm):
+    defaults = dict(
+        ForgeForm.defaults,
+        action='',
+        method='post',
+        submit_text='Move')
+
+    class fields(ew_core.NameList):
+        tracker = ew.SingleSelectField(
+            label='Tracker mount point',
+            options = [])
+
+    def __init__(self, *args, **kwargs):
+        trackers = kwargs.pop('trackers', [])
+        super(MoveTicketForm, self).__init__(*args, **kwargs)
+        self.fields.tracker.options = (
+            [ew.Option(py_value=v, label=l, selected=s)
+             for v, l, s in sorted(trackers, key=lambda x: x[1])])

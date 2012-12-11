@@ -1,0 +1,9 @@
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Move ticket #{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+
+{% block header %}Move ticket #{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+
+{% block content %}
+  {{ form.display() }}
+{% endblock %}

@@ -6,6 +6,7 @@ from urllib import urlencode, unquote
 from urllib2 import urlopen
 from webob import exc
 import json
+from itertools import ifilter
 
 # Non-stdlib imports
 import pkg_resources
@@ -135,6 +136,7 @@ class W:
     options_admin = OptionsAdmin()
     search_help_modal = SearchHelp()
     vote_form = w.VoteForm()
+    move_ticket_form = w.forms.MoveTicketForm
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -1264,6 +1266,25 @@ class TicketController(BaseController):
             votes_up=self.ticket.votes_up,
             votes_down=self.ticket.votes_down,
             votes_percent=self.ticket.votes_up_percent)
+
+    @expose('jinja:forgetracker:templates/tracker/move_ticket.html')
+    def move(self, **post_data):
+        require_access(self.ticket.app, 'admin')
+        # collect all 'Tickets' instances in all user project for which his has admin perms
+        trackers = []
+        projects = c.user.my_projects()
+        projects = ifilter(lambda p: has_access(p, 'admin'), projects)
+        for p in projects:
+            for ac in p.app_configs:
+                if ac.tool_name == 'Tickets':
+                    trac = (str(ac._id),
+                            '%s/%s' % (p.shortname, ac.options['mount_point']),
+                            bool(self.ticket.app.config == ac))
+                    trackers.append(trac)
+        return {
+            'ticket': self.ticket,
+            'form': W.move_ticket_form(trackers=trackers),
+        }
 
 
 class AttachmentController(ac.AttachmentController):
