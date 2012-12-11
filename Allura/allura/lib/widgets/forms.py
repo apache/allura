@@ -104,35 +104,35 @@ class PasswordChangeForm(ForgeForm):
 class PersonalDataForm(ForgeForm):
     class fields(ew_core.NameList):
         sex = ew.SingleSelectField(
-            label='Gender', 
+            label='Gender',
             options=[ew.Option(py_value=v,label=v,selected=False)
                      for v in ['Male', 'Female', 'Unknown', 'Other']],
             validator=formencode.All(
                 V.OneOfValidator(['Male', 'Female', 'Unknown', 'Other']),
                 fev.UnicodeString(not_empty=True)))
         birthdate = ew.TextField(
-            label='Birth date', 
+            label='Birth date',
             validator=V.DateValidator(),
             attrs=dict(value=None))
         exp = _HTMLExplanation(
             text="Use the format DD/MM/YYYY",
             show_errors=False)
         country = ew.SingleSelectField(
-            label='Country of residence', 
+            label='Country of residence',
             validator=V.MapValidator(country_names, not_empty=False),
             options = [
                 ew.Option(
                     py_value=" ", label=" -- Unknown -- ", selected=False)] +\
                 [ew.Option(py_value=c, label=n, selected=False)
-                 for c,n in sorted(country_names.items(), 
+                 for c,n in sorted(country_names.items(),
                                    key=lambda (k,v):v)],
             attrs={'onchange':'selectTimezone(this.value)'})
         city = ew.TextField(
-            label='City of residence', 
+            label='City of residence',
             attrs=dict(value=None),
             validator=fev.UnicodeString(not_empty=False))
         timezone=ew.SingleSelectField(
-            label='Timezone', 
+            label='Timezone',
             attrs={'id':'tz'},
             validator=V.OneOfValidator(common_timezones, not_empty=False),
             options=[
@@ -179,7 +179,7 @@ class PersonalDataForm(ForgeForm):
                 opt.selected = False
 
         return super(ForgeForm, self).display(**kw)
-        
+
     def resources(self):
         def _append(x, y):
             return x + y
@@ -189,7 +189,7 @@ var $allTimezones = $("#tz").clone();
 var $t = {};
 ''' + \
     reduce(_append, [
-        '$t["'+ el +'"] = ' + str([name.encode('utf-8') 
+        '$t["'+ el +'"] = ' + str([name.encode('utf-8')
                                   for name in country_timezones[el]]) + ";\n"
         for el in country_timezones]) + '''
 function selectTimezone($country){
@@ -212,7 +212,7 @@ class AddTelNumberForm(ForgeForm):
             label='New telephone number',
             attrs={'value':''},
             validator=fev.UnicodeString(not_empty=True))
-        
+
     def display(self, **kw):
         initial_value = kw.get('initial_value','')
         self.fields['newnumber'].attrs['value'] = initial_value
@@ -226,7 +226,7 @@ class AddWebsiteForm(ForgeForm):
             label='New website url',
             attrs={'value':''},
             validator=fev.URL())
-        
+
     def display(self, **kw):
         initial_value = kw.get('initial_value','')
         self.fields['newwebsite'].attrs['value'] = initial_value
@@ -286,7 +286,7 @@ class AddSocialNetworkForm(ForgeForm):
 
     class fields(ew_core.NameList):
         socialnetwork = ew.SingleSelectField(
-            label='Social network', 
+            label='Social network',
             options=[ew.Option(py_value=name, label=name)
                      for name in socialnetworks],
             validator=formencode.All(
@@ -347,7 +347,7 @@ class AddInactivePeriodForm(ForgeForm):
         d = super(AddInactivePeriodForm, self).to_python(kw, state)
         if d['startdate'] > d['enddate']:
                 raise formencode.Invalid(
-                   'Invalid period: start date greater than end date.', 
+                   'Invalid period: start date greater than end date.',
                     kw, state)
         return d
 
@@ -386,7 +386,7 @@ class RemoveInactivePeriodForm(ForgeForm):
 class AddTimeSlotForm(ForgeForm):
     class fields(ew_core.NameList):
         weekday = ew.SingleSelectField(
-            label='Weekday', 
+            label='Weekday',
             options=[ew.Option(py_value=wd, label=wd)
                      for wd in weekdays],
             validator=formencode.All(
@@ -409,7 +409,7 @@ class AddTimeSlotForm(ForgeForm):
         if (d['starttime']['h'], d['starttime']['m']) > \
            (d['endtime']['h'], d['endtime']['m']):
                 raise formencode.Invalid(
-                   'Invalid period: start time greater than end time.', 
+                   'Invalid period: start time greater than end time.',
                     kw, state)
         return d
 
