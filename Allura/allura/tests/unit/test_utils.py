@@ -135,8 +135,10 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
         expected = '''
 <table class="side-by-side-diff">
   <thead>
-    <th colspan="2">file a</th>
-    <th colspan="2">file b</th>
+    <th class="lineno"></th>
+    <th>file a</th>
+    <th class="lineno"></th>
+    <th>file b</th>
   </thead>
 <tr>
   <td class="lineno">1</td>
