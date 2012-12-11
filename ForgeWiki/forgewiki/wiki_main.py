@@ -617,7 +617,7 @@ class PageController(BaseController):
     @expose()
     @require_post()
     def update(self, title=None, text=None,
-               labels=None, labels_old=None,
+               labels=None,
                viewable_by=None,
                new_viewable_by=None,**kw):
         activity_verb = 'created'

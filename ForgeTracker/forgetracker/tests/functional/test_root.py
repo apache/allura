@@ -294,7 +294,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'',
             'assigned_to':'',
             'labels':u'yellow,greén'.encode('utf-8'),
-            'labels_old':u'yellow,greén'.encode('utf-8'),
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
@@ -307,7 +306,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'',
             'assigned_to':'',
             'labels':'yellow',
-            'labels_old':'yellow',
             'comment': ''
         })
         response = self.app.get('/bugs/1/')
@@ -394,7 +392,6 @@ class TestFunctionalController(TrackerTestController):
                 'title':'aaa',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.new_ticket(summary='bbb')
         ThreadLocalORMSession.flush_all()
@@ -448,7 +445,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'',
             'assigned_to':'test-admin',
             'labels':'',
-            'labels_old':'',
             'comment': ''
         }).follow()
         assert 'test-admin' in str(response.html.find('div', {'class': 'grid-5 ticket-assigned-to'}))
@@ -496,7 +492,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'aaa',
             'assigned_to':'',
             'labels':'',
-            'labels_old':'',
             'custom_fields._number':'',
             'comment': ''
         }).follow()
@@ -508,7 +503,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'aaa',
             'assigned_to':'',
             'labels':'',
-            'labels_old':'',
             'custom_fields._number':'4',
             'comment': ''
         }).follow()
@@ -537,7 +531,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'aaaé',
             'assigned_to':'',
             'labels':'',
-            'labels_old':'',
             'comment': ''
         })
         ticket_view = self.app.get('/p/test/bugs/1/')
@@ -553,7 +546,6 @@ class TestFunctionalController(TrackerTestController):
             '_milestone':'1.0',
             'assigned_to':'',
             'labels':'',
-            'labels_old':'',
             'comment': ''
         })
         ThreadLocalORMSession.flush_all()
