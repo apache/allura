@@ -220,8 +220,7 @@ class Commit(RepoObject):
         '''
         Returns a generator that walks up the commit tree along
         the first-parent ancestory, starting with this commit.'''
-        yield self
-        ancestor = self.get_parent()
+        ancestor = self
         while ancestor:
             yield ancestor
             ancestor = ancestor.get_parent()
