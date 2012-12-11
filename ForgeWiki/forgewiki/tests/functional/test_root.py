@@ -96,7 +96,6 @@ class TestRootController(TestController):
                 'title':'foo/bar',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'}).follow()
         assert 'foo-bar' in response
         assert 'foo-bar' in response.request.url
@@ -108,7 +107,6 @@ class TestRootController(TestController):
                 'title':'page.dot',
                 'text':'text1',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'}).follow()
         assert 'page.dot' in r
 
@@ -120,7 +118,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'text1',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         assert '/p/test/wiki/Home/' in self.app.get('/wiki/tést/Home/')
         self.app.get('/wiki/tést/notthere/', status=404)
@@ -133,7 +130,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'text1',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post(
             '/wiki/tést/update',
@@ -141,7 +137,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'text2',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/tést/history')
         assert 'tést' in response
@@ -166,7 +161,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/tést/revert', params=dict(version='1'))
         response = self.app.get('/wiki/tést/')
@@ -181,7 +175,6 @@ class TestRootController(TestController):
                 'title':'TEST',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
@@ -193,7 +186,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
@@ -208,7 +200,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
@@ -223,7 +214,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         assert 'tést' in response
 
@@ -235,7 +225,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'yellow,green',
-                'labels_old':'yellow,green',
                 'viewable_by-0.id':'all'})
         assert 'tést' in response
         response = self.app.post(
@@ -244,7 +233,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'yellow',
-                'labels_old':'yellow',
                 'viewable_by-0.id':'all'})
         assert 'tést' in response
 
@@ -258,7 +246,6 @@ class TestRootController(TestController):
                 'title': 'tést',
                 'text': 'sometext',
                 'labels': labels,
-                'labels_old': labels,
                 'viewable_by-0.id': 'all'})
         r = self.app.get('/wiki/browse_tags/')
         assert 'results of 100 ' in r
@@ -277,7 +264,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         content = file(__file__).read()
         self.app.post('/wiki/tést/attach', upload_files=[('file_info', 'test_root.py', content)])
@@ -291,7 +277,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         file_name = 'test_root.py'
         file_data = file(__file__).read()
@@ -306,7 +291,6 @@ class TestRootController(TestController):
                 'title':'TEST',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
@@ -352,19 +336,16 @@ class TestRootController(TestController):
                 'title':'TEST',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/bbb/update', params={
                 'title':'bbb',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
 
         h.set_context('test', 'wiki', neighborhood='Projects')
@@ -387,7 +368,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('div',{'id':'new_post_holder'})
@@ -405,7 +385,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
@@ -425,7 +404,6 @@ class TestRootController(TestController):
                 'title':'tést',
                 'text':'sometext',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         wiki_page = self.app.get('/wiki/tést/')
         assert wiki_page.html.find('div',{'class':'editbox'})
@@ -452,7 +430,6 @@ class TestRootController(TestController):
             'title':'space page',
             'text':'''There is a space in the title!''',
             'labels':'',
-            'labels_old':'',
             'viewable_by-0.id':'all'}
         self.app.post('/wiki/space%20page/update', params=params)
         self.app.get('/wiki/TEST/')
@@ -471,7 +448,6 @@ class TestRootController(TestController):
 * Here is a link to [attach](TEST/attachment/test_root.py)
 ''',
             'labels':'',
-            'labels_old':'',
             'viewable_by-0.id':'all'}
         self.app.post('/wiki/TEST/update', params=params)
         content = file(__file__).read()
@@ -523,13 +499,11 @@ class TestRootController(TestController):
                 'title':'aaa',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.post('/wiki/bbb/update', params={
                 'title':'bbb',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
@@ -549,7 +523,6 @@ class TestRootController(TestController):
 * Handmaid mailto <a href="mailto:yoda@jedi.org">Email Yoda</a>
 ''',
             'labels':'',
-            'labels_old':'',
             'viewable_by-0.id':'all'}
         self.app.post('/wiki/test_mailto/update', params=params)
         r = self.app.get('/wiki/test_mailto/')

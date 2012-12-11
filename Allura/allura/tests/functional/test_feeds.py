@@ -32,7 +32,7 @@ class TestFeeds(TestController):
                 title=title,
                 text="Nothing much",
                 labels='',
-                labels_old=''),
+                ),
             status=302)
         self.app.get('/wiki/%s/' % title)
 
@@ -51,7 +51,6 @@ class TestFeeds(TestController):
                 'title':'Root',
                 'text':'',
                 'labels':'',
-                'labels_old':'',
                 'viewable_by-0.id':'all'})
         self.app.get('/wiki/Root/feed.rss')
         self.app.get('/wiki/Root/feed.atom')
@@ -69,7 +68,6 @@ class TestFeeds(TestController):
                 assigned_to='',
                 ticket_num='',
                 labels='',
-                labels_old='',
                 summary='This is a new ticket',
                 status='unread',
                 milestone='',

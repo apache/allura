@@ -203,7 +203,7 @@ class ProjectAdminController(BaseController):
 
     @expose()
     @require_post()
-    def update_labels(self, labels=None, labels_old=None, **kw):
+    def update_labels(self, labels=None, **kw):
         require_access(c.project, 'admin')
         c.project.labels = labels.split(',')
         M.AuditLog.log('updated labels')
