@@ -503,14 +503,30 @@ def compute_lcds(commit, cache):
         lcd = LastCommit.get(tree)  # auto-vivify LCD
 
 def _walk_commit_tree(commit, cache):
+    def _clone_tree(tree):
+        '''
+        Since the Tree instances stick around in our cache,
+        subsequent calls to set_context are overwriting our
+        in-use copies and confusing the walk.  So, make an
+        memory-only copy for our use.
+        '''
+        new_tree = Tree(
+                _id=tree._id,
+                tree_ids=tree.tree_ids,
+                blob_ids=tree.blob_ids,
+                other_ids=tree.other_ids,
+            )
+        session(new_tree).expunge(new_tree)
+        return new_tree
+
     def _walk_tree(tree):
         yield tree
         for x in tree.tree_ids:
-            sub_tree = cache.get(Tree, dict(_id=x.id))
+            sub_tree = _clone_tree(cache.get(Tree, dict(_id=x.id)))
             sub_tree.set_context(tree, x.name)
             for xx in _walk_tree(sub_tree):
                 yield xx
-    top_tree = cache.get(Tree, dict(_id=commit.tree_id))
+    top_tree = _clone_tree(cache.get(Tree, dict(_id=commit.tree_id)))
     top_tree.set_context(commit)
     return _walk_tree(top_tree)
 

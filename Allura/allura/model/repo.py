@@ -744,10 +744,10 @@ class LastCommit(RepoObject):
             if path in commit.changed_paths:
                 cache._get_misses += 1
                 # tree was changed but no LCD found; have to build
-                tree = commit.tree
+                changed_tree = commit.tree
                 if path != '':
-                    tree = tree.get_obj_by_path(path)
-                return cls.build(tree, commit_ids)
+                    changed_tree = changed_tree.get_obj_by_path(path)
+                return cls.build(changed_tree, commit_ids)
             cache._get_walks += 1
             gw += 1
             cache._get_walks_max = max(cache._get_walks_max, gw)
