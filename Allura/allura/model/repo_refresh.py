@@ -497,38 +497,34 @@ def compute_lcds(commit, cache):
     if not trees:
         log.error('Missing TreesDoc for %s; skipping compute_lcd' % commit)
         return
-    _update_tree_cache(trees.tree_ids, cache)
     c.model_cache = cache
-    for tree in _walk_commit_tree(commit, cache):
-        lcd = LastCommit.get(tree)  # auto-vivify LCD
+    _update_tree_cache(trees.tree_ids, cache)
+    tree = _pull_tree(cache, commit.tree_id, commit)
+    _compute_lcds(tree, cache)
 
-def _walk_commit_tree(commit, cache):
-    def _clone_tree(tree):
-        '''
-        Since the Tree instances stick around in our cache,
-        subsequent calls to set_context are overwriting our
-        in-use copies and confusing the walk.  So, make an
-        memory-only copy for our use.
-        '''
-        new_tree = Tree(
-                _id=tree._id,
-                tree_ids=tree.tree_ids,
-                blob_ids=tree.blob_ids,
-                other_ids=tree.other_ids,
-            )
-        session(new_tree).expunge(new_tree)
-        return new_tree
+def _compute_lcds(tree, cache):
+    lcd = LastCommit.get(tree)  # auto-vivify LCD
+    for x in tree.tree_ids:
+        sub_tree = _pull_tree(cache, x.id, tree, x.name)
+        _compute_lcds(sub_tree, cache)
 
-    def _walk_tree(tree):
-        yield tree
-        for x in tree.tree_ids:
-            sub_tree = _clone_tree(cache.get(Tree, dict(_id=x.id)))
-            sub_tree.set_context(tree, x.name)
-            for xx in _walk_tree(sub_tree):
-                yield xx
-    top_tree = _clone_tree(cache.get(Tree, dict(_id=commit.tree_id)))
-    top_tree.set_context(commit)
-    return _walk_tree(top_tree)
+def _pull_tree(cache, tree_id, *context):
+    '''
+    Since the Tree instances stick around in our cache,
+    subsequent calls to set_context are overwriting our
+    in-use copies and confusing the walk.  So, make an
+    memory-only copy for our use.
+    '''
+    cache_tree = cache.get(Tree, dict(_id=tree_id))
+    new_tree = Tree(
+            _id=cache_tree._id,
+            tree_ids=cache_tree.tree_ids,
+            blob_ids=cache_tree.blob_ids,
+            other_ids=cache_tree.other_ids,
+        )
+    session(new_tree).expunge(new_tree)
+    new_tree.set_context(*context)
+    return new_tree
 
 def _update_tree_cache(tree_ids, cache):
     current_ids = set(tree_ids)
