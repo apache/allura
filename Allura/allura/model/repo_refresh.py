@@ -18,6 +18,7 @@ from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
 from allura.model.repo import LastCommitDoc, CommitRunDoc
 from allura.model.repo import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
+from allura.model.auth import User
 
 log = logging.getLogger(__name__)
 
