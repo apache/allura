@@ -346,6 +346,13 @@ def compute_diffs(repo_id, tree_cache, rhs_ci):
         for name, lhs_id, rhs_id in _diff_trees(lhs_tree, rhs_tree, tree_index):
             differences.append(
                 dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
+    else:
+        # no parents, so everything in rhs is new
+        tree_index = _update_cache([], rhs_treesdoc.tree_ids)
+        rhs_tree = tree_index[rhs_ci.tree_id]
+        for name, lhs_id, rhs_id in _diff_trees(empty_tree, rhs_tree, tree_index):
+            differences.append(
+                dict(name=name, lhs_id=lhs_id, rhs_id=rhs_id))
     # Build the diffinfo
     di = DiffInfoDoc(dict(
             _id=rhs_ci._id,
