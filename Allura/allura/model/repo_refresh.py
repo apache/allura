@@ -110,12 +110,21 @@ def refresh_repo(repo, all_commits=False, notify=True):
             if (i+1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i+1), ci._id)
 
+    for commit in commit_ids:
+        new = repo.commit(commit)
+        user = User.by_email_address(new.committed.email)
+        if user is None:
+            user = User.by_username(new.committed.name)
+        if user is not None:
+            for l in g.statslisteners:
+                l.newCommit(new, repo.app_config.project, user)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event(
             'repo_refreshed',
             commit_number=len(commit_ids),
             new=bool(new_commit_ids))
+
     # Send notifications
     if notify:
         send_notifications(repo, commit_ids)

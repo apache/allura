@@ -348,7 +348,7 @@ class VersionedArtifact(Artifact):
 
     version = FieldProperty(S.Int, if_missing=0)
 
-    def commit(self):
+    def commit(self, update_stats=True):
         '''Save off a snapshot of the artifact and increment the version #'''
         self.version += 1
         try:
@@ -373,6 +373,15 @@ class VersionedArtifact(Artifact):
         session(ss).insert_now(ss, state(ss))
         log.info('Snapshot version %s of %s',
                  self.version, self.__class__)
+        if update_stats: 
+            if self.version > 1:
+                for l in g.statslisteners:
+                    l.modifiedArtifact(
+                        self.type_s, self.mod_date, self.project, c.user)
+            else :
+                for l in g.statslisteners:
+                    l.newArtifact(
+                        self.type_s, self.mod_date, self.project, c.user)
         return ss
 
     def get_version(self, n):

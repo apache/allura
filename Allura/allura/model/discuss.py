@@ -203,7 +203,7 @@ class Thread(Artifact, ActivityObject):
     def add_post(self, **kw):
         """Helper function to avoid code duplication."""
         p = self.post(**kw)
-        p.commit()
+        p.commit(update_stats=False)
         self.num_replies += 1
         if not self.first_post:
             self.first_post_id = p._id

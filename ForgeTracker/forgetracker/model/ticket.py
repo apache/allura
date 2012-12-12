@@ -435,6 +435,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ('Status', old.status, self.status) ]
             if old.status != self.status and self.status in c.app.globals.set_of_closed_status_names:
                 h.log_action(log, 'closed').info('')
+                for l in g.statslisteners:
+                    l.ticketEvent("closed", self, self.project, self.assigned_to)
             for key in self.custom_fields:
                 fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
@@ -447,6 +449,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 changes.append('Owner updated: %r => %r' % (
                         o and o.username, n and n.username))
                 self.subscribe(user=n)
+                for l in g.statslisteners :
+                    l.ticketEvent("assigned", self, self.project, n)
+                    if o: l.ticketEvent("revoked", self, self.project, o)
             if old.description != self.description:
                 changes.append('Description updated:')
                 changes.append('\n'.join(
@@ -459,7 +464,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         else:
             self.subscribe()
             if self.assigned_to_id:
-                self.subscribe(user=User.query.get(_id=self.assigned_to_id))
+                user = User.query.get(_id=self.assigned_to_id)
+                for l in g.statslisteners :
+                    l.ticketEvent("assigned", self, self.project, user)
+                self.subscribe(user=user)
             description = ''
             subject = self.email_subject
             Thread.new(discussion_id=self.app_config.discussion_id,
