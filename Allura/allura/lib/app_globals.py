@@ -167,6 +167,24 @@ class Globals(object):
         self._zarkov = None
 
     @LazyProperty
+    def spam_checker(self):
+        """Return an Akismet spam checker if config defines an Akismet API key.
+        Otherwise, return a no-op spam checker.
+
+        Eventually we may support checkers for other services like Mollom and
+        Defensio.
+        """
+        akismet_key = config.get('spam.akismet_key')
+        if akismet_key:
+            from allura.lib.spam import akismetservice
+            checker = akismetservice.Akismet(akismet_key, config.get('base_url'))
+            checker.verify_key()
+        else:
+            from allura.lib import spam
+            checker = spam.FakeSpamChecker()
+        return checker
+
+    @LazyProperty
     def director(self):
         """Return activitystream director"""
         if asbool(config.get('activitystream.recording.enabled', False)):

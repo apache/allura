@@ -107,6 +107,7 @@ setup(
 
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
+    taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand
     task = allura.command.taskd:TaskCommand
     models = allura.command:ShowModelsCommand
     reindex = allura.command:ReindexCommand

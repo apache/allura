@@ -1,5 +1,6 @@
 import re
 import os, allura
+from mock import patch
 from urllib import quote
 
 from bson import ObjectId

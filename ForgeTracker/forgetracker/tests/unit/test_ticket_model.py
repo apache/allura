@@ -128,4 +128,4 @@ class TestTicketModel(TrackerTestWithModel):
             pubdate=t.created_date)
         assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
         assert_equal(f.title, 'test ticket')
-        assert_equal(f.description, 'test description')
+        assert_equal(f.description, '<div class="markdown_content"><p>test description</p></div>')

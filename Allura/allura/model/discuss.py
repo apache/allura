@@ -207,7 +207,11 @@ class Thread(Artifact, ActivityObject):
         self.num_replies += 1
         if not self.first_post:
             self.first_post_id = p._id
-        Feed.post(self, title=p.subject, description=p.text)
+        link = None
+        if self.app.tool_label == 'Tickets':
+            link = self.artifact.url() + p.url_paginated()[len(self.url()):]
+
+        Feed.post(self, title=p.subject, description=p.text, link=link)
         return p
 
     def post(self, text, message_id=None, parent_id=None,

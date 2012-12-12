@@ -75,6 +75,6 @@ class TestFeeds(TestController):
                 milestone='',
                 description='This is another description'), extra_environ=dict(username='root'))
         r = self.app.get('/bugs/1/feed.atom')
-        assert '=&gt;' in r
+        assert '=&amp;gt' in r
         assert '\n+' in r
 

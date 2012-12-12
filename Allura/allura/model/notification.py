@@ -118,6 +118,7 @@ class Notification(MappedClass):
         idx = artifact.index()
         subject_prefix = '[%s:%s] ' % (
             c.project.shortname, c.app.config.options.mount_point)
+        post = ''
         if topic == 'message':
             post = kwargs.pop('post')
             text = post.text
@@ -168,7 +169,7 @@ class Notification(MappedClass):
         try:
             ''' Add addional text to the notification e-mail based on the artifact type '''
             template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
-            d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact))
+            d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact, post=post, h=h))
         except jinja2.TemplateNotFound:
             pass
         except:

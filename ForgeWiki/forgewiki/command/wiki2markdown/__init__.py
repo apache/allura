@@ -1,8 +1,9 @@
+from allura.command import base as allura_base
+from allura.lib import helpers as h
+
 from forgewiki.command.base import WikiCommand
 from forgewiki.command.wiki2markdown.extractors import MySQLExtractor
 from forgewiki.command.wiki2markdown.loaders import MediawikiLoader
-from allura.command import base as allura_base
-
 
 class Wiki2MarkDownCommand(WikiCommand):
     """Import MediaWiki to Allura Wiki tool"""
@@ -23,6 +24,13 @@ class Wiki2MarkDownCommand(WikiCommand):
                 help='Neighborhood name to load data')
     parser.add_option('-p', '--project', dest='project', default='',
                 help='Project shortname to load data into')
+    parser.add_option('-a', '--attachments-dir', dest='attachments_dir',
+                help='Path to directory with mediawiki attachments dump',
+                default='')
+
+    parser.add_option('--db_config_prefix', dest='db_config_prefix',
+                      help='Key prefix (e.g. "legacy.") in ini file to use instead of commandline db params')
+
     parser.add_option('-s', '--source', dest='source', default='',
                 help='Database type to extract from (only mysql for now)')
     parser.add_option('--db_name', dest='db_name', default='mediawiki',
@@ -35,9 +43,7 @@ class Wiki2MarkDownCommand(WikiCommand):
                 help='User for database connection')
     parser.add_option('--password', dest='password', default='',
                 help='Password for database connection')
-    parser.add_option('-a', '--attachments-dir', dest='attachments_dir',
-                help='Path to directory with mediawiki attachments dump',
-                default='')
+
 
     def command(self):
         self.basic_setup()
@@ -66,6 +72,12 @@ class Wiki2MarkDownCommand(WikiCommand):
             exit(2)
 
         if self.options.extract:
+            if self.options.db_config_prefix:
+                for k, v in h.config_with_prefix(self.config, self.options.db_config_prefix).iteritems():
+                    if k == 'port':
+                        v = int(v)
+                    setattr(self.options, k, v)
+
             if self.options.source == 'mysql':
                 self.extractor = MySQLExtractor(self.options)
             elif self.options.source in ('sqlite', 'postgres', 'sql-dump'):
