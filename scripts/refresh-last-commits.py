@@ -113,6 +113,7 @@ def refresh_repo_lcds(commit_ids, options):
         #        lcd_cache._hits[M.repo.LastCommit] * 100 / lcd_cache._accesses[M.repo.LastCommit],
         #        len(lcd_cache._cache[M.repo.LastCommit]),
         #    )
+        ThreadLocalORMSession.flush_all()
         if len(timings) % debug_step == 0:
             mt = max(timings)
             tt = sum(timings)
@@ -136,7 +137,6 @@ def refresh_repo_lcds(commit_ids, options):
                     len(lcd_cache.get(M.repo.TreesDoc, dict(_id=commit._id)).tree_ids))
             lcd_cache._get_walks_max = 0
             lcd_cache._build_walks_max = 0
-            ThreadLocalORMSession.flush_all()
             ThreadLocalORMSession.close_all()
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
