@@ -1117,7 +1117,9 @@ class TicketController(BaseController):
             else:
                 self.ticket.assigned_to_id = None
             changes['assigned_to'] = self.ticket.assigned_to
+        changes['private'] = 'Yes' if self.ticket.private else 'No'
         self.ticket.private = post_data.get('private', False)
+        changes['private'] = 'Yes' if self.ticket.private else 'No'
 
         if 'attachment' in post_data:
             attachment = post_data['attachment']
