@@ -170,6 +170,19 @@ class Globals(object):
         # Zarkov logger
         self._zarkov = None
 
+        self.show_userstats = False
+        # Set listeners to update stats
+        self.statslisteners = []
+        for ep in pkg_resources.iter_entry_points("allura.stats"):
+            if ep.name.lower() == 'userstats':
+                self.show_userstats = config.get(
+                    'user.stats.enable','false')=='true'
+                if self.show_userstats:
+                    self.statslisteners.append(ep.load()().listener)
+            else:
+                self.statslisteners.append(ep.load()().listener)
+
+
     @LazyProperty
     def spam_checker(self):
         """Return a SpamFilter implementation.

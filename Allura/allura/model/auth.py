@@ -11,6 +11,7 @@ from hashlib import sha256
 import uuid
 from pytz import timezone
 from datetime import timedelta, date, datetime, time
+from pkg_resources import iter_entry_points
 
 import iso8601
 import pymongo
@@ -34,6 +35,13 @@ from .session import project_orm_session
 from .timeline import ActivityNode, ActivityObject
 
 log = logging.getLogger(__name__)
+
+#This is just to keep the UserStats module completely optional
+has_user_stats_module = False
+for ep in iter_entry_points("allura.stats"):
+    if ep.name.lower() == 'userstats':
+        from forgeuserstats.model.stats import UserStats
+        has_user_stats_module = True
 
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -331,6 +339,13 @@ class User(MappedClass, ActivityNode, ActivityObject):
         level = S.OneOf('low', 'high', 'medium'),
         comment=str)])
 
+    #Statistics
+    if has_user_stats_module:
+        stats_id = ForeignIdProperty('UserStats', if_missing=None)
+        stats = RelationProperty('UserStats', via='stats_id')
+    else:
+        stats_id = FieldProperty(S.ObjectId, if_missing=None)
+
     @property
     def activity_name(self):
         return self.display_name or self.username
@@ -577,6 +592,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
         user = auth_provider.register_user(doc)
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
+        if user:
+            for l in g.statslisteners:
+                l.newUser(user)
         if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project(auth_provider.user_project_shortname(user),

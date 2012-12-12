@@ -1,0 +1,423 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}User stats{% endblock %}
+
+{% block header %}
+    Statistics about {{user.display_name}}'s contribution
+    {% if category %}
+        in projects of category {{category.fullname}}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if user %}
+
+    <h2>General statistics</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Date</th>
+          <th>Time interval</th>
+        </tr>
+      </thead>
+      <tbody> 
+        <tr>
+          <td>Registration date</td>
+          <td>{{registration_date.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td> 
+           <td>{{days}} day{% if days != 1 %}s{% endif %} ago</td>
+        </tr>
+        {% if last_login %}
+          <tr>
+            <td>Last login</td>
+            <td>{{last_login.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td>
+            <td>{{last_login_days}} day{% if last_login_days != 1 %}s{% endif %} ago</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <h2>Contribution statistics</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Total value</th>
+          <th>Average per-month value</th>
+          <th>Last 30 days</th>
+          {% if days >= 30 %}
+            <th>Trend</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if not category %}
+          <tr>
+            <td>Logins</td>
+            <td>{{totlogins}}</td>
+            <td>{{permonthlogins}}</td>
+            <td>{{lastmonth_logins}}</td>
+            {% if days >= 30 %}
+              <td style="text-align:center;">
+                {% if lastmonth_logins > permonthlogins %}
+                  <img src="{{g.forge_static('images/up.png')}}"/>
+                {% elif lastmonth_logins == permonthlogins %}
+                  <img src="{{g.forge_static('images/equal.png')}}"/>
+                {% else %}
+                  <img src="{{g.forge_static('images/down.png')}}"/>
+                {%endif%}
+              </td>
+            {% endif %}
+          </tr>
+        {% endif %}
+        <tr>
+          <td>
+            {% if totcommits.number > 0 %}
+              <a href="/userstats/{{user.username}}/metric/commits/">Commits number</a>
+            {% else %}
+              Commits number
+            {% endif %}
+          </td>
+          <td>{{totcommits.number}}</td>
+          <td>{{permonthcommits.number}}</td>
+          <td>{{lastmonthcommits.number}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if permonthcommits.number > permonthcommits.number %}
+                  <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif permonthcommits.number == permonthcommits.number %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if totcommits.lines > 0 %}
+              <a href="/userstats/{{user.username}}/metric/commits/">Added/modified LOCs</a>
+            {% else %}
+              Added/modified LOCs
+            {% endif %}
+          </td>
+          <td>{{totcommits.lines}}</td>
+          <td>{{permonthcommits.lines}}</td>
+          <td>{{lastmonthcommits.lines}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if permonthcommits.lines > permonthcommits.lines %}
+                  <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif permonthcommits.lines == permonthcommits.lines %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if totartifacts.created > 0 %}
+              <a href="/userstats/{{user.username}}/metric/artifacts/">Total number of created artifacts</a>
+            {% else %}
+              Total number of created artifacts
+            {% endif %}
+          </td>
+          <td>{{totartifacts.created}}</td>
+          <td>{{permonthartifacts.created}}</td>
+          <td>{{lastmonthartifacts.created}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthartifacts.created > permonthartifacts.created %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthartifacts.created == permonthartifacts.created %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if totartifacts.modified > 0 %}
+              <a href="/userstats/{{user.username}}/metric/artifacts/">Total number of edited artifacts</a>
+            {% else %}
+              Total number of edited artifacts
+            {% endif %}
+          </td>
+          <td>{{totartifacts.modified}}</td>
+          <td>{{permonthartifacts.modified}}</td>
+          <td>{{lastmonthartifacts.modified}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthartifacts.modified > permonthartifacts.modified %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthartifacts.modified == permonthartifacts.modified %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        
+        {% for key, value in artifacts_by_type.items() %}
+          <tr>
+            <td>
+              {% if value.created > 0 %}
+                <a href="/userstats/{{user.username}}/metric/artifacts/">Created {{key}} artifacts</a>
+              {% else %}
+                Created {{key}} artifacts
+              {% endif %}
+            </td>
+            <td>{{value.created}}</td>
+            <td>{{value.pmcreated}}</td>
+            <td>
+              {% if lastmonth_artifacts_by_type.get(key) %}
+                 {{lastmonth_artifacts_by_type[key].created}}
+              {% else %}
+                 0
+              {% endif %}
+            </td>
+            {% if days >= 30 %}
+              <td style="text-align:center;">
+                {% if lastmonth_artifacts_by_type.get(key) %}
+                  {% if lastmonth_artifacts_by_type[key].created > value.pmcreated %}
+                    <img src="{{g.forge_static('images/up.png')}}"/>
+                  {% elif lastmonth_artifacts_by_type[key].created == value.pmcreated %}
+                    <img src="{{g.forge_static('images/equal.png')}}"/>
+                  {% else %}
+                    <img src="{{g.forge_static('images/down.png')}}"/>
+                  {%endif%}
+                {%else%} Down {%endif%}
+              </td>
+            {% endif %}
+          </tr>
+          <tr>
+            <td>
+              {% if value.modified > 0 %}
+                <a href="/userstats/{{user.username}}/metric/artifacts/">Edited {{key}} artifacts</a>
+              {% else %}
+                Edited {{key}} artifacts
+              {% endif %}
+            </td>
+            <td>{{value.modified}}</td>
+            <td>{{value.pmmodified}}</td>
+            <td>
+              {% if lastmonth_artifacts_by_type.get(key) %}
+                 {{lastmonth_artifacts_by_type[key].modified}}
+              {% else %}
+                 0
+              {% endif %}
+            </td>
+            {% if days >= 30 %}
+              <td style="text-align:center;">
+                {% if lastmonth_artifacts_by_type.get(key) %}
+                  {% if lastmonth_artifacts_by_type[key].modified > value.pmmodified %}
+                    <img src="{{g.forge_static('images/up.png')}}"/>
+                  {% elif lastmonth_artifacts_by_type[key].modified == value.pmmodified %}
+                    <img src="{{g.forge_static('images/equal.png')}}"/>
+                  {% else %}
+                    <img src="{{g.forge_static('images/down.png')}}"/>
+                  {%endif%}
+                {%else%} Down {%endif%}
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+
+        <tr>
+          <td>
+            {% if tottickets.assigned > 0 %}
+              <a href="/userstats/{{user.username}}/metric/tickets/">Assigned tickets</a>
+            {% else %}
+              Assigned tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.assigned}}</td>
+          <td>{{permonthtickets.assigned}}</td>
+          <td>{{lastmonthtickets.assigned}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.assigned > permonthtickets.assigned %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.assigned == permonthtickets.assigned %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if tottickets.revoked > 0 %}
+              <a href="/userstats/{{user.username}}/metric/tickets/">Revoked tickets</a>
+            {% else %}
+              Revoked tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.revoked}}</td>
+          <td>{{permonthtickets.revoked}}</td>
+          <td>{{lastmonthtickets.revoked}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.revoked > permonthtickets.revoked %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.revoked == permonthtickets.revoked %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if tottickets.solved > 0 %}
+              <a href="/userstats/{{user.username}}/metric/tickets/">Solved tickets</a>
+            {% else %}
+              Solved tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.solved}}</td>
+          <td>{{permonthtickets.solved}}</td>
+          <td>{{lastmonthtickets.solved}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.solved > permonthtickets.solved %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.solved == permonthtickets.solved %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {% if tottickets.averagesolvingtime > 0 %}
+              <a href="/userstats/{{user.username}}/metric/tickets/">Average tickets solving time</a>
+            {% else %}
+              Average tickets solving time
+            {% endif %}
+          </td>
+          <td>
+            {% if tottickets.averagesolvingtime %}
+              {{tottickets.averagesolvingtime.days}} days, 
+              {{tottickets.averagesolvingtime.hours}} hours,
+              {{tottickets.averagesolvingtime.minutes}} min
+            {% else %}n/a{% endif %}
+          </td>
+          <td>n/a</td>
+          <td>
+            {% if lastmonthtickets.averagesolvingtime %}
+              {{lastmonthtickets.averagesolvingtime.days}} days, 
+              {{lastmonthtickets.averagesolvingtime.hours}} hours,
+              {{lastmonthtickets.averagesolvingtime.minutes}} min
+            {% else %}n/a{% endif %}
+          </td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.averagesolvingtime > tottickets.averagesolvingtime %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.averagesolvingtime == tottickets.averagesolvingtime %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+
+    {% if categories %}
+        <h2>Prefered categories</h2>
+        <p>
+          The following table shows the number projects tagged as belonging to each single category in which this user is involved.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Category name</th>
+              <th>Number of projects</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat, count in categories %}
+              <tr>
+                <td><a href="/userstats/{{user.username}}/category/{{cat.fullname}}">{{cat.fullname}}</a></td>
+                <td>{{count}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+         
+        {% if categories|length > 1 %}
+          <p>
+            The same data listed in the previous table is graphically presented by the following histogram.
+          </p>
+          <p>
+            <img src="/userstats/{{user.username}}/categories_graph"/>
+          </p>
+        {% else %}
+          The following table shows the number projects tagged as belonging to each single category in which this user is involved.
+        {% endif %}
+    {% endif %}
+    {% if category %}
+        <div class="grid-20"><a href="/userstats/{{user.username}}">Go back to general statistics</a></div>
+    {% else %}
+      <h2>Overview</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+            <th>Average per-user value</th>
+            <th>Maximum per-user value</th>
+            <th>Rank bar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Code</td>
+            <td>{{codecontribution}} LOC{% if codecontribution != 1 %}s{% endif %}/month</td>
+            <td>{{averagecodecontrib}} LOC{% if averagecodecontrib != 1 %}s{% endif %}/month</td>
+            <td>{{maxcodecontrib}} LOC{% if maxcodecontrib != 1 %}s{% endif %}/month</td>
+            <td><img src="/userstats/{{user.username}}/code_ranking_bar"/> {{codepercentage}} %</td>
+          </tr>
+          <tr>
+            <td>Discussion</td>
+            <td>{{discussioncontribution}} contr./month</td>
+            <td>{{averagedisccontrib}} contr./month</td>
+            <td>{{maxdisccontrib}} contr./month</td>
+            <td><img src="/userstats/{{user.username}}/discussion_ranking_bar"/> {{discussionpercentage}} %</td>
+          </tr>
+          <tr>
+            <td>Solved issues</td>
+            <td>{{ticketcontribution}} %</td>
+            <td>{{averageticketcontrib}} %</td>
+            <td>{{maxticketcontrib}} %</td>
+            <td><img src="/userstats/{{user.username}}/tickets_ranking_bar"/> {{ticketspercentage}} %</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Note</h3>
+      <p>
+         The above table compares the average monthly contribution of this user with the average monthly contributions of the
+         other users of the forge. The progressbar and the percentage refer to the user's position in an overall ranking of the
+         users of this forge. For example, a value of 100% in the field "Code" is associated to the user who has the highest
+         average number of committed LOCs per month. Of course, this doesn't consider the quality of the contributions.
+      </p>
+    {% endif %}
+  {% else %}
+    Invalid user!
+  {% endif %}
+
+{% endblock %}

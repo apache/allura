@@ -296,6 +296,7 @@ class PostController(BaseController):
             self.post.edit_count = self.post.edit_count + 1
             self.post.last_edit_date = datetime.utcnow()
             self.post.last_edit_by_id = c.user._id
+            self.post.commit()
             g.director.create_activity(c.user, 'modified', self.post,
                     target=self.post.thread.artifact or self.post.thread,
                     related_nodes=[self.post.app_config.project])
