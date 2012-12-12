@@ -1100,10 +1100,9 @@ class TicketController(BaseController):
         changes = changelog()
         comment = post_data.pop('comment', None)
         labels = post_data.pop('labels', None) or []
-        if labels:
-            changes['labels'] = self.ticket.labels
-            changes['labels'] = labels
+        changes['labels'] = self.ticket.labels
         self.ticket.labels = labels
+        changes['labels'] = self.ticket.labels
         for k in ['summary', 'description', 'status']:
             changes[k] = getattr(self.ticket, k)
             setattr(self.ticket, k, post_data.pop(k, ''))

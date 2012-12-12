@@ -299,6 +299,7 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
         assert_true(u'greén' in response)
+        assert_true('<li><strong>labels</strong>:  --&gt; yellow, greén</li>' in response)
         self.app.post('/bugs/1/update_ticket',{
             'summary':'zzz',
             'description':'bbb',
@@ -310,8 +311,18 @@ class TestFunctionalController(TrackerTestController):
         })
         response = self.app.get('/bugs/1/')
         assert_true('yellow' in response)
-        # the following assert is no longer true since "green" is shown in changelog
-        # assert_true('green' not in response)
+        assert_true('<li><strong>labels</strong>: yellow, greén --&gt; yellow</li>' in response)
+        self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz',
+            'description':'bbb',
+            'status':'ccc',
+            '_milestone':'',
+            'assigned_to':'',
+            'labels':'',
+            'comment': ''
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('<li><strong>labels</strong>: yellow --&gt; </li>' in response)
 
     def test_new_attachment(self):
         file_name = 'test_root.py'
