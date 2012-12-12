@@ -236,6 +236,20 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/rest/p/test/bugs/')
         assert 'Private Ticket' not in r
 
+        # update private ticket
+        self.app.post('/bugs/1/update_ticket_from_widget',{
+            'ticket_form.summary':'Public Ticket',
+            'ticket_form.description':'',
+            'ticket_form.status':'open',
+            'ticket_form._milestone':'1.0',
+            'ticket_form.assigned_to':'',
+            'ticket_form.labels':'',
+            'ticket_form.comment': 'gotta be secret about this now',
+            'ticket_form.private': 'on',
+        })
+        response = self.app.get('/bugs/1/')
+        assert_true('<li><strong>private</strong>: No --&gt; Yes</li>' in response)
+
     @td.with_tool('test', 'Tickets', 'doc-bugs')
     def test_two_trackers(self):
         summary = 'test two trackers'
