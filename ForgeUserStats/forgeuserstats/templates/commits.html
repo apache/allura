@@ -1,0 +1,42 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}User stats{% endblock %}
+
+{% block header %}
+    Statistics about {{user.display_name}}'s contribution – Code contribution
+{% endblock %}
+
+{% block content %}
+
+  {% if user %}
+    <div class="grid-20">
+      <ul><li><a href="/userstats/{{user.username}}">Go back to general statistics</a></li></ul>
+    </div>
+
+    {% if data %}
+    <div class="grid-20">
+      <h2>Statistics by category</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Number of commits</th>
+            <th>Lines of code</th>
+          </tr>
+        </thead>
+        <tbody> 
+          {% for cat, el in data.items() %}
+            <tr>
+              <td>{% if cat %}{{cat.fullname}}{% else %}All categories{% endif %}</td>
+              <td>{{el.number}}</td>
+              <td>{{el.lines}}</td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+    <div class="grid-20"><a href="/userstats/{{user.username}}">Go back to general statistics</a></div>
+  {% endif %}
+{% endblock %}
