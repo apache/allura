@@ -162,6 +162,7 @@ class MetadataAdmin(ff.AdminForm):
         delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
         undelete = ew.InputField(field_type="hidden", label='Undelete')
         tracking_id = ew.InputField(field_type="text", label="Analytics Tracking ID")
+        twitter_handle = ew.InputField(field_type="text", label='Twitter Handle')
 
 class AuditLog(ew_core.Widget):
     template='jinja:allura.ext.admin:templates/widgets/audit.html'

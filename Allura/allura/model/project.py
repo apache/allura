@@ -131,6 +131,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     external_homepage=FieldProperty(str, if_missing='')
     support_page=FieldProperty(str, if_missing='')
     support_page_url=FieldProperty(str, if_missing='')
+    socialnetworks=FieldProperty([dict(socialnetwork=str,accounturl=str)])
     removal=FieldProperty(str, if_missing='')
     moved_to_url=FieldProperty(str, if_missing='')
     removal_changed_date = FieldProperty(datetime, if_missing=datetime.utcnow)
@@ -684,6 +685,28 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for role_name in role_names:
             r = ProjectRole.by_name(role_name, self)
             pr.roles.append(r._id)
+
+    @property
+    def twitter_handle(self):
+        return self.social_account('Twitter').accounturl
+
+    def social_account(self, socialnetwork):
+        try:
+            account = (sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
+        except StopIteration:
+            return None
+        else:
+            return account
+
+    def set_social_account(self, socialnetwork, accounturl):
+        account = self.social_account(socialnetwork)
+        if account:
+            account.accounturl = accounturl
+        else:
+            self.socialnetworks.append(dict(
+                socialnetwork=socialnetwork,
+                accounturl=accounturl
+                ))
 
 class AppConfig(MappedClass):
     """
