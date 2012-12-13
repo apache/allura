@@ -320,8 +320,7 @@ class PostController(BaseController):
     def reply(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
-        self.thread.post(parent_id=self.post._id, **kw)
-        self.thread.num_replies += 1
+        self.thread.add_post(parent_id=self.post._id, **kw)
         redirect(request.referer)
 
     @h.vardec

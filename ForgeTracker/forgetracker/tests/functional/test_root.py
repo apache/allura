@@ -841,6 +841,24 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/feed.rss')
         post = M.Post.query.find().first()
         assert '/p/test/bugs/1/?limit=50#' + post.slug in r
+        r = self.app.get('/bugs/1/')
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_form = r.html.find('form', {'action': post_link + 'reply'})
+        params = dict()
+        inputs = post_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[post_form.find('textarea')['name']] = 'Tis a reply'
+        r = self.app.post(post_link + 'reply',
+            params=params,
+            headers={'Referer':post_link.encode("utf-8")})
+        r = self.app.get('/bugs/feed.rss')
+        assert 'Tis a reply' in r
+        assert 'ticket discussion post content' in r
+        r = self.app.get('/bugs/1/feed.rss')
+        assert 'Tis a reply' in r
+        assert 'ticket discussion post content' in r
 
     def test_bulk_edit_index(self):
         self.new_ticket(summary='test first ticket', status='open')

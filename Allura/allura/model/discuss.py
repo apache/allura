@@ -210,7 +210,9 @@ class Thread(Artifact, ActivityObject):
         link = None
         if self.app.tool_label == 'Tickets':
             link = self.artifact.url() + p.url_paginated()[len(self.url()):]
-
+            if self.ref:
+                Feed.post(self.ref.artifact, title=p.subject, description=p.text, link=link)
+                return p
         Feed.post(self, title=p.subject, description=p.text, link=link)
         return p
 
