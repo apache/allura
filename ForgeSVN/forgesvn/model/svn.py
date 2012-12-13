@@ -166,8 +166,11 @@ class SVNImplementation(M.RepositoryImplementation):
         if not (asbool(tg.config.get('scm.svn.hotcopy', True)) and
                 source_url.startswith('file://')):
             return False
+        # check for svn version 1.7 or later
         stdout, stderr = self.check_call(['svn', '--version'])
-        return bool(re.search('version 1.7', stdout))
+        pattern = r'version (?P<maj>\d+)\.(?P<min>\d+)'
+        m = re.search(pattern, stdout)
+        return m and (int(m.group('maj')) * 10 + int(m.group('min'))) >= 17
 
     def check_call(self, cmd):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
