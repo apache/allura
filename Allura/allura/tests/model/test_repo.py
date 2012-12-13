@@ -660,3 +660,24 @@ class TestModelCache(unittest.TestCase):
                     'foo': tree4,
                 },
             })
+
+    def test_pruning_query_vs_instance(self):
+        cache = M.repo.ModelCache(max_queries=3, max_instances=2)
+        # ensure cache expires as LRU
+        tree1 = mock.Mock(_id='keep', val='bar')
+        tree2 = mock.Mock(_id='tree2', val='fuz')
+        tree3 = mock.Mock(_id='tree3', val='b4r')
+        tree4 = mock.Mock(_id='tree4', val='zaz')
+        cache.set(M.repo.Tree, {'keep_query_1': 'bar'}, tree1)
+        cache.set(M.repo.Tree, {'drop_query_1': 'bar'}, tree2)
+        cache.set(M.repo.Tree, {'keep_query_2': 'bar'}, tree1)  # should refresh tree1 in _instance_cache
+        cache.set(M.repo.Tree, {'drop_query_2': 'bar'}, tree3)  # should drop tree2, not tree1, from _instance_cache
+        self.assertEqual(cache._query_cache[M.repo.Tree], {
+                (('drop_query_1', 'bar'),): 'tree2',
+                (('keep_query_2', 'bar'),): 'keep',
+                (('drop_query_2', 'bar'),): 'tree3',
+            })
+        self.assertEqual(cache._instance_cache[M.repo.Tree], {
+                'keep': tree1,
+                'tree3': tree3,
+            })

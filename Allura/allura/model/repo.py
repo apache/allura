@@ -904,12 +904,12 @@ class ModelCache(object):
 
     def set(self, cls, query, val):
         _query = self._normalize_query(query)
-        self._touch(cls, _query)
         _id = self._query_cache[cls].get(_query, getattr(val, '_id', None))
         if _id is None:
             _id = 'None_%s' % bson.ObjectId()
         self._query_cache[cls][_query] = _id
         self._instance_cache[cls][_id] = val
+        self._touch(cls, _query)
         self._check_sizes(cls)
 
     def _touch(self, cls, query):
