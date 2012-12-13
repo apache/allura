@@ -153,14 +153,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         for combo in product(
                 ['file:///myfile', 'http://myfile'],
                 [True, False],
-                ['version 1.7', 'version 1.6']):
+                ['version 1.7', 'version 1.6', 'version 2.0.3']):
             source_url = combo[0]
             tg.config = {'scm.svn.hotcopy': combo[1]}
             stdout = combo[2]
             obj.check_call.return_value = stdout, ''
             expected = (source_url.startswith('file://') and
                     tg.config['scm.svn.hotcopy'] and
-                    stdout == 'version 1.7')
+                    stdout != 'version 1.6')
             result = func(obj, source_url)
             assert result == expected
 
