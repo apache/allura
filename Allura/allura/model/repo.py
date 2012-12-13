@@ -858,6 +858,8 @@ class ModelCache(object):
 
         self._query_cache = defaultdict(OrderedDict)  # keyed by query, holds _id
         self._instance_cache = defaultdict(OrderedDict)  # keyed by _id
+        self._synthetic_ids = defaultdict(set)
+        self._synthetic_id_queries = defaultdict(set)
 
         # temporary, for performance testing
         self._query_hits = defaultdict(int)
@@ -891,24 +893,37 @@ class ModelCache(object):
         _query = self._normalize_query(query)
         self._touch(cls, _query)
         if _query not in self._query_cache[cls]:
-            self.set(cls, _query, self._model_query(cls).get(**query))
-        else:
-            self._query_hits[cls] += 1
+            val = self._model_query(cls).get(**query)
+            self.set(cls, _query, val)
+            return val
+        self._query_hits[cls] += 1
         _id = self._query_cache[cls][_query]
-        if _id not in self._instance_cache[cls]:
-            model_query = getattr(cls, 'query', getattr(cls, 'm', None))
-            self.set(cls, _query, self._model_query(cls).get(**query))
-        else:
+        if _id is None:
             self._instance_hits[cls] += 1
+            return None
+        if _id not in self._instance_cache[cls]:
+            val = self._model_query(cls).get(**query)
+            self.set(cls, _query, val)
+            return val
+        self._instance_hits[cls] += 1
         return self._instance_cache[cls][_id]
 
     def set(self, cls, query, val):
         _query = self._normalize_query(query)
-        _id = self._query_cache[cls].get(_query, getattr(val, '_id', None))
-        if _id is None:
-            _id = 'None_%s' % bson.ObjectId()
-        self._query_cache[cls][_query] = _id
-        self._instance_cache[cls][_id] = val
+        if val is not None:
+            _id = getattr(val, '_model_cache_id',
+                    getattr(val, '_id',
+                        self._query_cache[cls].get(_query,
+                            None)))
+            if _id is None:
+                _id = val._model_cache_id = bson.ObjectId()
+                self._synthetic_ids[cls].add(_id)
+            if _id in self._synthetic_ids:
+                self._synthetic_id_queries[cls].add(_query)
+            self._query_cache[cls][_query] = _id
+            self._instance_cache[cls][_id] = val
+        else:
+            self._query_cache[cls][_query] = None
         self._touch(cls, _query)
         self._check_sizes(cls)
 
@@ -930,21 +945,47 @@ class ModelCache(object):
 
     def _check_sizes(self, cls):
         if self.num_queries(cls) > self._max_queries[cls]:
-            self._remove_least_recently_used(self._query_cache[cls])
+            _id = self._remove_least_recently_used(self._query_cache[cls])
+            if _id in self._instance_cache[cls]:
+                instance = self._instance_cache[cls][_id]
+                self._try_flush(instance, expunge=False)
         if self.num_instances(cls) > self._max_instances[cls]:
             instance = self._remove_least_recently_used(self._instance_cache[cls])
-            try:
-                inst_session = session(instance)
-            except AttributeError:
-                inst_session = None
-            if inst_session:
-                inst_session.flush(instance)
+            self._try_flush(instance, expunge=True)
+
+    def _try_flush(self, instance, expunge=False):
+        try:
+            inst_session = session(instance)
+        except AttributeError:
+            inst_session = None
+        if inst_session:
+            inst_session.flush(instance)
+            if expunge:
                 inst_session.expunge(instance)
 
     def _remove_least_recently_used(self, cache):
         # last-used (most-recently-used) is last in cache, so take first
         key, val = cache.popitem(last=False)
         return val
+
+    def expire_new_instances(self, cls):
+        '''
+        Expire any instances that were "new" or had no _id value.
+
+        If a lot of new instances of a class are being created, it's possible
+        for a query to pull a copy from mongo when a copy keyed by the synthetic
+        ID is still in the cache, potentially causing de-sync between the copies
+        leading to one with missing data overwriting the other.  Clear new
+        instances out of the cache relatively frequently (depending on the query
+        and instance cache sizes) to avoid this.
+        '''
+        for _query in self._synthetic_id_queries[cls]:
+            self._query_cache[cls].pop(_query)
+        self._synthetic_id_queries[cls] = set()
+        for _id in self._synthetic_ids[cls]:
+            instance = self._instance_cache[cls].pop(_id)
+            self._try_flush(instance, expunge=True)
+        self._synthetic_ids[cls] = set()
 
     def num_queries(self, cls=None):
         if cls is None:

@@ -99,17 +99,21 @@ def refresh_repo_lcds(commit_ids, options):
                 print '  Processed %d commits (max: %f, avg: %f, tot: %f, cl: %d)' % (
                         len(timings), mt, at, tt, len(tree_cache))
     lcd_cache = M.repo.ModelCache(
-            max_instances={M.repo.LastCommit: 10000},
-            max_queries={M.repo.LastCommit: 20000},
+            max_instances={M.repo.LastCommit: 4000},
+            max_queries={M.repo.LastCommit: 10000},
         )
     timings = []
     print 'Processing last commits'
     debug_step = int(pow(10, max(0, int(log10(len(commit_ids)) - log10(options.step) - 1))))
-    for i, commit_id in enum_step(commit_ids, options.step):
+    _cids = commit_ids[options.skip:]
+    for i, commit_id in enum_step(_cids, options.step):
         commit = M.repo.Commit.query.get(_id=commit_id)
         with time(timings):
             M.repo_refresh.compute_lcds(commit, lcd_cache)
-        ThreadLocalORMSession.flush_all()
+            ThreadLocalORMSession.flush_all()
+            # ensure new LCDs get fully refreshed in the cache
+            # so that every commit sees the same copy
+            lcd_cache.expire_new_instances(M.repo.LastCommit)
         if len(timings) % debug_step == 0:
             _print_stats(lcd_cache, timings, debug_step, commit)
             lcd_cache._get_walks_max = 0
@@ -197,6 +201,8 @@ def parse_options():
             const=1, default=100, help='Refresh the LCD for every commit instead of every 100th')
     parser.add_argument('--step', action='store', dest='step',
             type=int, default=100, help='Refresh the LCD for every Nth commit instead of every 100th')
+    parser.add_argument('--skip', action='store', dest='skip',
+            type=int, default=0, help='Skip a number of commits')
     return parser.parse_args()
 
 if __name__ == '__main__':
