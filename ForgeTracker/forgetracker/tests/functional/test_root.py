@@ -1057,6 +1057,17 @@ class TestFunctionalController(TrackerTestController):
         # not found and has not import_id
         self.app.get('/p/test/bugs/42042/', status=404)
 
+    @td.with_tool('test', 'Tickets', 'bugs2')
+    @td.with_tool('test2', 'Tickets', 'bugs')
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_ticket(self):
+        self.new_ticket(summary='test')
+        r = self.app.get('/p/test/bugs/1/move')
+        trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
+        trackers = set([t.text for t in trackers])
+        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        assert trackers == expected, trackers
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
