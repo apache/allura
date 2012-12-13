@@ -523,6 +523,6 @@ def _pull_tree(cache, tree_id, *context):
 
 def _update_tree_cache(tree_ids, cache):
     current_ids = set(tree_ids)
-    cached_ids = set([k[0][1] for k in cache.keys(Tree, as_dict=False)])
+    cached_ids = set(cache.instance_ids(Tree))
     new_ids = current_ids - cached_ids
     cache.batch_load(Tree, {'_id': {'$in': list(new_ids)}})

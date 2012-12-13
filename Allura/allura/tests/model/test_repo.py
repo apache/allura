@@ -525,99 +525,138 @@ class TestModelCache(unittest.TestCase):
     def setUp(self):
         self.cache = M.repo.ModelCache()
 
-    def test_normalize_key(self):
-        self.assertEqual(self.cache._normalize_key({'foo': 1, 'bar': 2}), (('bar', 2), ('foo', 1)))
+    def test_normalize_query(self):
+        self.assertEqual(self.cache._normalize_query({'foo': 1, 'bar': 2}), (('bar', 2), ('foo', 1)))
+
+    def test_model_query(self):
+        q = mock.Mock(spec_set=['query'], query='foo')
+        m = mock.Mock(spec_set=['m'], m='bar')
+        n = mock.Mock(spec_set=['foo'], foo='qux')
+        self.assertEquals(self.cache._model_query(q), 'foo')
+        self.assertEquals(self.cache._model_query(m), 'bar')
+        self.assertRaises(AttributeError, self.cache._model_query, [n])
 
     @mock.patch.object(M.repo.Tree.query, 'get')
     @mock.patch.object(M.repo.LastCommit.query, 'get')
     def test_get(self, lc_get, tr_get):
-        tr_get.return_value = 'bar'
-        lc_get.return_value = 'qux'
+        tree = tr_get.return_value = mock.Mock(_id='foo', val='bar')
+        lcd = lc_get.return_value = mock.Mock(_id='foo', val='qux')
 
         val = self.cache.get(M.repo.Tree, {'_id': 'foo'})
         tr_get.assert_called_with(_id='foo')
-        self.assertEqual(val, 'bar')
+        self.assertEqual(val, tree)
 
         val = self.cache.get(M.repo.LastCommit, {'_id': 'foo'})
         lc_get.assert_called_with(_id='foo')
-        self.assertEqual(val, 'qux')
+        self.assertEqual(val, lcd)
 
     @mock.patch.object(M.repo.Tree.query, 'get')
-    def test_get_no_dup(self, tr_get):
-        tr_get.return_value = 'bar'
+    def test_get_no_query(self, tr_get):
+        tree1 = tr_get.return_value = mock.Mock(_id='foo', val='bar')
         val = self.cache.get(M.repo.Tree, {'_id': 'foo'})
         tr_get.assert_called_once_with(_id='foo')
-        self.assertEqual(val, 'bar')
+        self.assertEqual(val, tree1)
 
-        tr_get.return_value = 'qux'
+        tree2 = tr_get.return_value = mock.Mock(_id='foo', val='qux')
         val = self.cache.get(M.repo.Tree, {'_id': 'foo'})
         tr_get.assert_called_once_with(_id='foo')
-        self.assertEqual(val, 'bar')
+        self.assertEqual(val, tree1)
 
     @mock.patch.object(M.repo.TreesDoc.m, 'get')
     def test_get_doc(self, tr_get):
-        tr_get.return_value = 'bar'
+        trees = tr_get.return_value = mock.Mock(_id='foo', val='bar')
         val = self.cache.get(M.repo.TreesDoc, {'_id': 'foo'})
         tr_get.assert_called_once_with(_id='foo')
-        self.assertEqual(val, 'bar')
+        self.assertEqual(val, trees)
 
     def test_set(self):
-        self.cache.set(M.repo.Tree, {'_id': 'foo'}, 'test_set')
-        self.assertEqual(self.cache._cache, {M.repo.Tree: {(('_id', 'foo'),): 'test_set'}})
+        tree = mock.Mock(_id='foo', val='test_set')
+        self.cache.set(M.repo.Tree, {'val': 'test_set'}, tree)
+        self.assertEqual(self.cache._query_cache, {M.repo.Tree: {(('val', 'test_set'),): 'foo'}})
+        self.assertEqual(self.cache._instance_cache, {M.repo.Tree: {'foo': tree}})
 
-    def test_keys(self):
-        self.cache._cache[M.repo.Tree][(('_id', 'test_keys'), ('text', 'tko'))] = 'foo'
-        self.cache._cache[M.repo.Tree][(('fubar', 'scm'),)] = 'bar'
-        self.assertEqual(self.cache.keys(M.repo.Tree), [{'_id': 'test_keys', 'text': 'tko'}, {'fubar': 'scm'}])
-        self.assertEqual(self.cache.keys(M.repo.LastCommit), [])
+    @mock.patch('bson.ObjectId')
+    def test_set_none_id(self, obj_id):
+        obj_id.return_value = 'OBJID'
+        tree = mock.Mock(_id=None, val='test_set')
+        self.cache.set(M.repo.Tree, {'val': 'test_set'}, tree)
+        self.assertEqual(self.cache._query_cache, {M.repo.Tree: {(('val', 'test_set'),): 'None_OBJID'}})
+        self.assertEqual(self.cache._instance_cache, {M.repo.Tree: {'None_OBJID': tree}})
 
-    def test_keys_not_as_dict(self):
-        self.cache._cache[M.repo.Tree][(('_id', 'test_keys'), ('text', 'tko'))] = 'foo'
-        self.cache._cache[M.repo.Tree][(('fubar', 'scm'),)] = 'bar'
-        self.assertEqual(self.cache.keys(M.repo.Tree, as_dict=False), [(('_id', 'test_keys'), ('text', 'tko')), (('fubar', 'scm'),)])
-        self.assertEqual(self.cache.keys(M.repo.LastCommit), [])
+    @mock.patch('bson.ObjectId')
+    def test_set_none_val(self, obj_id):
+        obj_id.return_value = 'OBJID'
+        self.cache.set(M.repo.Tree, {'val': 'test_set'}, None)
+        self.assertEqual(self.cache._query_cache, {M.repo.Tree: {(('val', 'test_set'),): 'None_OBJID'}})
+        self.assertEqual(self.cache._instance_cache, {M.repo.Tree: {'None_OBJID': None}})
+
+    def test_instance_ids(self):
+        tree1 = mock.Mock(_id='id1', val='tree1')
+        tree2 = mock.Mock(_id='id2', val='tree2')
+        self.cache.set(M.repo.Tree, {'val': 'tree1'}, tree1)
+        self.cache.set(M.repo.Tree, {'val': 'tree2'}, tree2)
+        self.assertEqual(set(self.cache.instance_ids(M.repo.Tree)), set(['id1', 'id2']))
+        self.assertEqual(self.cache.instance_ids(M.repo.LastCommit), [])
 
     @mock.patch.object(M.repo.Tree.query, 'find')
     def test_batch_load(self, tr_find):
         # cls, query, attrs
-        m1 = mock.Mock(foo=1, qux=3)
-        m2 = mock.Mock(foo=2, qux=5)
+        m1 = mock.Mock(_id='id1', foo=1, qux=3)
+        m2 = mock.Mock(_id='id2', foo=2, qux=5)
         tr_find.return_value = [m1, m2]
 
         self.cache.batch_load(M.repo.Tree, {'foo': {'$in': 'bar'}})
         tr_find.assert_called_with({'foo': {'$in': 'bar'}})
-        self.assertEqual(self.cache._cache[M.repo.Tree], {
-                (('foo', 1),): m1,
-                (('foo', 2),): m2,
+        self.assertEqual(self.cache._query_cache[M.repo.Tree], {
+                (('foo', 1),): 'id1',
+                (('foo', 2),): 'id2',
+            })
+        self.assertEqual(self.cache._instance_cache[M.repo.Tree], {
+                'id1': m1,
+                'id2': m2,
             })
 
     @mock.patch.object(M.repo.Tree.query, 'find')
     def test_batch_load_attrs(self, tr_find):
         # cls, query, attrs
-        m1 = mock.Mock(foo=1, qux=3)
-        m2 = mock.Mock(foo=2, qux=5)
+        m1 = mock.Mock(_id='id1', foo=1, qux=3)
+        m2 = mock.Mock(_id='id2', foo=2, qux=5)
         tr_find.return_value = [m1, m2]
 
         self.cache.batch_load(M.repo.Tree, {'foo': {'$in': 'bar'}}, ['qux'])
         tr_find.assert_called_with({'foo': {'$in': 'bar'}})
-        self.assertEqual(self.cache._cache[M.repo.Tree], {
-                (('qux', 3),): m1,
-                (('qux', 5),): m2,
+        self.assertEqual(self.cache._query_cache[M.repo.Tree], {
+                (('qux', 3),): 'id1',
+                (('qux', 5),): 'id2',
+            })
+        self.assertEqual(self.cache._instance_cache[M.repo.Tree], {
+                'id1': m1,
+                'id2': m2,
             })
 
     def test_pruning(self):
-        self.cache.max_size = 3
+        cache = M.repo.ModelCache(max_queries=3, max_instances=2)
         # ensure cache expires as LRU
-        self.cache.set(M.repo.Tree, {'_id': 'foo'}, 'bar')
-        self.cache.set(M.repo.Tree, {'_id': 'qux'}, 'zaz')
-        self.cache.set(M.repo.Tree, {'_id': 'f00'}, 'b4r')
-        self.cache.set(M.repo.Tree, {'_id': 'foo'}, 'zaz')
-        self.cache.get(M.repo.Tree, {'_id': 'f00'})
-        self.cache.set(M.repo.Tree, {'_id': 'mee'}, 'you')
-        self.assertEqual(self.cache._cache, {
+        tree1 = mock.Mock(_id='foo', val='bar')
+        tree2 = mock.Mock(_id='qux', val='fuz')
+        tree3 = mock.Mock(_id='f00', val='b4r')
+        tree4 = mock.Mock(_id='foo', val='zaz')
+        cache.set(M.repo.Tree, {'_id': 'foo'}, tree1)
+        cache.set(M.repo.Tree, {'_id': 'qux'}, tree2)
+        cache.set(M.repo.Tree, {'_id': 'f00'}, tree3)
+        cache.set(M.repo.Tree, {'_id': 'foo'}, tree4)
+        cache.get(M.repo.Tree, {'_id': 'f00'})
+        cache.set(M.repo.Tree, {'val': 'b4r'}, tree3)
+        self.assertEqual(cache._query_cache, {
                 M.repo.Tree: {
-                    (('_id', 'foo'),): 'zaz',
-                    (('_id', 'f00'),): 'b4r',
-                    (('_id', 'mee'),): 'you',
+                    (('_id', 'foo'),): 'foo',
+                    (('_id', 'f00'),): 'f00',
+                    (('val', 'b4r'),): 'f00',
+                },
+            })
+        self.assertEqual(cache._instance_cache, {
+                M.repo.Tree: {
+                    'f00': tree3,
+                    'foo': tree4,
                 },
             })

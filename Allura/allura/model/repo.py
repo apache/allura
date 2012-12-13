@@ -7,6 +7,7 @@ from itertools import chain
 from datetime import datetime
 from collections import defaultdict, OrderedDict
 from difflib import SequenceMatcher, unified_diff
+import bson
 
 from pylons import c
 import pymongo.errors
@@ -830,17 +831,37 @@ class ModelCache(object):
     '''
     Cache model instances based on query params passed to get.
     '''
-    def __init__(self, max_size=2000):
+    def __init__(self, max_instances=None, max_queries=None):
         '''
-        The max_size of the cache is tracked separately for
-        each model class stored.  I.e., you can have 2000
-        Commit instances and 2000 Tree instances in the cache
-        at once with the default value.
+        By default, each model type can have 2000 instances and
+        8000 queries.  You can override these for specific model
+        types by passing in a dict() for either max_instances or
+        max_queries keyed by the class(es) with the max values.
+        Classes not in the dict() will use the default 2000/8000
+        default.
+
+        If you pass in a number instead of a dict, that value will
+        be used as the max for all classes.
         '''
-        self._cache = defaultdict(OrderedDict)
-        self.max_size = max_size
+        max_instances_default = 2000
+        max_queries_default = 8000
+        if isinstance(max_instances, int):
+            max_instances_default = max_instances
+        if isinstance(max_queries, int):
+            max_queries_default = max_queries
+        self._max_instances = defaultdict(lambda:max_instances_default)
+        self._max_queries = defaultdict(lambda:max_queries_default)
+        if hasattr(max_instances, 'items'):
+            self._max_instances.update(max_instances)
+        if hasattr(max_queries, 'items'):
+            self._max_queries.update(max_queries)
+
+        self._query_cache = defaultdict(OrderedDict)  # keyed by query, holds _id
+        self._instance_cache = defaultdict(OrderedDict)  # keyed by _id
+
         # temporary, for performance testing
-        self._hits = defaultdict(int)
+        self._query_hits = defaultdict(int)
+        self._instance_hits = defaultdict(int)
         self._accesses = defaultdict(int)
         self._get_calls = 0
         self._get_walks = 0
@@ -851,59 +872,94 @@ class ModelCache(object):
         self._build_walks = 0
         self._build_walks_max = 0
 
-    def _normalize_key(self, key):
-        _key = key
-        if not isinstance(_key, tuple):
-            _key = tuple(sorted(_key.items(), key=lambda k: k[0]))
-        return _key
+    def _normalize_query(self, query):
+        _query = query
+        if not isinstance(_query, tuple):
+            _query = tuple(sorted(_query.items(), key=lambda k: k[0]))
+        return _query
 
-    def get(self, cls, key):
-        _key = self._normalize_key(key)
-        self._manage_cache(cls, _key)
-        self._accesses[cls] += 1
-        if _key not in self._cache[cls]:
-            query = getattr(cls, 'query', getattr(cls, 'm', None))
-            self.set(cls, _key, query.get(**key))
+    def _model_query(self, cls):
+        if hasattr(cls, 'query'):
+            return cls.query
+        elif hasattr(cls, 'm'):
+            return cls.m
         else:
-            self._hits[cls] += 1
-        return self._cache[cls][_key]
+            raise AttributeError('%s has neither "query" nor "m" attribute' % cls)
 
-    def set(self, cls, key, val):
-        _key = self._normalize_key(key)
-        self._manage_cache(cls, _key)
-        self._cache[cls][_key] = val
+    def get(self, cls, query):
+        self._accesses[cls] += 1
+        _query = self._normalize_query(query)
+        self._touch(cls, _query)
+        if _query not in self._query_cache[cls]:
+            self.set(cls, _query, self._model_query(cls).get(**query))
+        else:
+            self._query_hits[cls] += 1
+        _id = self._query_cache[cls][_query]
+        if _id not in self._instance_cache[cls]:
+            model_query = getattr(cls, 'query', getattr(cls, 'm', None))
+            self.set(cls, _query, self._model_query(cls).get(**query))
+        else:
+            self._instance_hits[cls] += 1
+        return self._instance_cache[cls][_id]
 
-    def _manage_cache(self, cls, key):
+    def set(self, cls, query, val):
+        _query = self._normalize_query(query)
+        self._touch(cls, _query)
+        _id = self._query_cache[cls].get(_query, getattr(val, '_id', None))
+        if _id is None:
+            _id = 'None_%s' % bson.ObjectId()
+        self._query_cache[cls][_query] = _id
+        self._instance_cache[cls][_id] = val
+        self._check_sizes(cls)
+
+    def _touch(self, cls, query):
         '''
         Keep track of insertion order, prevent duplicates,
         and expire from the cache in a FIFO manner.
         '''
-        if key in self._cache[cls]:
-            # refresh access time in cache
-            val = self._cache[cls].pop(key)
-            self._cache[cls][key] = val
-        elif len(self._cache[cls]) >= self.max_size:
-            # remove the least-recently-used cache item
-            key, instance = self._cache[cls].popitem(last=False)
+        _query = self._normalize_query(query)
+        if _query not in self._query_cache[cls]:
+            return
+        _id = self._query_cache[cls].pop(_query)
+        self._query_cache[cls][_query] = _id
+
+        if _id not in self._instance_cache[cls]:
+            return
+        val = self._instance_cache[cls].pop(_id)
+        self._instance_cache[cls][_id] = val
+
+    def _check_sizes(self, cls):
+        if self.num_queries(cls) > self._max_queries[cls]:
+            self._remove_least_recently_used(self._query_cache[cls])
+        if self.num_instances(cls) > self._max_instances[cls]:
+            instance = self._remove_least_recently_used(self._instance_cache[cls])
             try:
                 inst_session = session(instance)
             except AttributeError:
                 inst_session = None
             if inst_session:
+                inst_session.flush(instance)
                 inst_session.expunge(instance)
 
-    def size(self):
-        return sum([len(c) for c in self._cache.values()])
+    def _remove_least_recently_used(self, cache):
+        # last-used (most-recently-used) is last in cache, so take first
+        key, val = cache.popitem(last=False)
+        return val
 
-    def keys(self, cls, as_dict=True):
-        '''
-        Returns all the cache keys for a given class.  Each
-        cache key will be a dict.
-        '''
-        if as_dict:
-            return [dict(k) for k in self._cache[cls].keys()]
+    def num_queries(self, cls=None):
+        if cls is None:
+            return sum([len(c) for c in self._query_cache.values()])
         else:
-            return self._cache[cls].keys()
+            return len(self._query_cache[cls])
+
+    def num_instances(self, cls=None):
+        if cls is None:
+            return sum([len(c) for c in self._instance_cache.values()])
+        else:
+            return len(self._instance_cache[cls])
+
+    def instance_ids(self, cls):
+        return self._instance_cache[cls].keys()
 
     def batch_load(self, cls, query, attrs=None):
         '''
@@ -915,6 +971,6 @@ class ModelCache(object):
         '''
         if attrs is None:
             attrs = query.keys()
-        for result in cls.query.find(query):
+        for result in self._model_query(cls).find(query):
             keys = {a: getattr(result, a) for a in attrs}
             self.set(cls, keys, result)
