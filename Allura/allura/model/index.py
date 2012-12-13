@@ -127,22 +127,24 @@ class Shortlink(object):
     def from_links(cls, *links):
         '''Convert a sequence of shortlinks to the matching Shortlink objects'''
         if len(links):
+            result = {}
             # Parse all the links
             parsed_links = dict((link, cls._parse_link(link)) for link in links)
             links_by_artifact = defaultdict(list)
             project_ids = set()
-            for link, d in parsed_links.iteritems():
-                project_ids.add(d['project_id'])
-                links_by_artifact[unquote(d['artifact'])].append(d)
+            for link, d in parsed_links.items():
+                if d:
+                    project_ids.add(d['project_id'])
+                    links_by_artifact[unquote(d['artifact'])].append(d)
+                else:
+                    result[link] = parsed_links.pop(link)
             q = cls.query.find(dict(
                     link={'$in': links_by_artifact.keys()},
                     project_id={'$in': list(project_ids)}
                 ), validate=False)
-            result = {}
             matches_by_artifact = dict(
                 (link, list(matches))
                 for link, matches in groupby(q, key=lambda s:unquote(s.link)))
-            result = {}
             for link, d in parsed_links.iteritems():
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
