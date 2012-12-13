@@ -98,6 +98,7 @@ def test_artifactlink():
     assert M.Shortlink.lookup('[TestPage2]')
     assert M.Shortlink.lookup('[wiki:TestPage2]')
     assert M.Shortlink.lookup('[test:wiki:TestPage2]')
+    assert not M.Shortlink.lookup('[test:wiki:TestPage2:foo]')
     assert not M.Shortlink.lookup('[Wiki:TestPage2]')
     assert not M.Shortlink.lookup('[TestPage2_no_such_page]')
     c.project.uninstall_app('wiki')
