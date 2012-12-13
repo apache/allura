@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 import pkg_resources
-from itertools import count
+from itertools import count, product
 from datetime import datetime
 
 from pylons import c
@@ -144,6 +144,25 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert len(repo.log())
 
         shutil.rmtree(dirname)
+
+    @mock.patch('forgesvn.model.svn.tg')
+    def test_can_hotcopy(self, tg):
+        from forgesvn.model.svn import SVNImplementation
+        func = SVNImplementation.can_hotcopy
+        obj = mock.Mock(spec=SVNImplementation)
+        for combo in product(
+                ['file:///myfile', 'http://myfile'],
+                [True, False],
+                ['version 1.7', 'version 1.6']):
+            source_url = combo[0]
+            tg.config = {'scm.svn.hotcopy': combo[1]}
+            stdout = combo[2]
+            obj.check_call.return_value = stdout, ''
+            expected = (source_url.startswith('file://') and
+                    tg.config['scm.svn.hotcopy'] and
+                    stdout == 'version 1.7')
+            result = func(obj, source_url)
+            assert result == expected
 
     @mock.patch('forgesvn.model.svn.g.post_event')
     def test_clone(self, post_event):

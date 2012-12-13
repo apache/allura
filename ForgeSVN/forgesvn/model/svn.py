@@ -159,7 +159,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 source_url.startswith('file://')):
             return False
         stdout, stderr = self.check_call(['svn', '--version'])
-        return re.search('version 1.7', stdout):
+        return bool(re.search('version 1.7', stdout))
 
     def check_call(self, cmd):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
