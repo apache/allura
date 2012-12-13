@@ -182,10 +182,6 @@ def test_markdown_links():
     text = g.markdown.convert('See [test:wiki:Home]')
     assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 
-def test_markdown_error():
-    r = g.markdown_wiki.convert('[:::]')
-    assert 'The markdown supplied could not be parsed correctly.' in r, r
-
 def test_markdown_and_html():
     r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
     assert '<div style="float: left;">blah</div>' in r, r
