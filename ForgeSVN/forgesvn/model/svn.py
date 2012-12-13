@@ -9,10 +9,10 @@ from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
-from glob import glob
 
 import tg
 import pysvn
+from paste.deploy.converters import asbool
 from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
 
@@ -22,7 +22,6 @@ from ming.utils import LazyProperty
 
 from allura import model as M
 from allura.lib import helpers as h
-from allura.model.repository import GitLikeTree
 from allura.model.auth import User
 from allura.lib.utils import svn_path_exists
 
@@ -155,6 +154,22 @@ class SVNImplementation(M.RepositoryImplementation):
             self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
             shutil.rmtree(fullname+'/tmp')
 
+    def can_hotcopy(self, source_url):
+        if not (asbool(tg.config.get('scm.svn.hotcopy', True)) and
+                source_url.startswith('file://')):
+            return False
+        stdout, stderr = self.check_call(['svn', '--version'])
+        return re.search('version 1.7', stdout):
+
+    def check_call(self, cmd):
+        p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate(input='p\n')
+        if p.returncode != 0:
+            self._repo.status = 'ready'
+            session(self._repo).flush(self._repo)
+            raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
+        return stdout, stderr
+
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
         self.init(default_dirs=False, skip_special_files=True)
@@ -166,36 +181,28 @@ class SVNImplementation(M.RepositoryImplementation):
                 fp.write('#!/bin/sh\n')
             os.chmod(fn, 0755)
 
-        def check_call(cmd):
-            p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate(input='p\n')
-            if p.returncode != 0:
-                self._repo.status = 'ready'
-                session(self._repo).flush(self._repo)
-                raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
-
         self._repo.status = 'importing'
         session(self._repo).flush(self._repo)
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
 
-        if source_url.startswith('file://'):
+        if self.can_hotcopy(source_url):
             # src repo is on the local filesystem - use hotcopy (faster)
             source_path, dest_path = source_url[7:], self._url[7:]
             fullname = os.path.join(self._repo.fs_path, self._repo.name)
             # hotcopy expects dest dir to not exist yet
             if os.path.exists(fullname):
                 shutil.rmtree(fullname)
-            check_call(['svnadmin', 'hotcopy', source_path, dest_path])
+            self.check_call(['svnadmin', 'hotcopy', source_path, dest_path])
             # make sure new repo has a pre-revprop-change hook,
             # otherwise the sync will fail
             set_hook('pre-revprop-change')
-            check_call(['svnsync', '--non-interactive', '--allow-non-empty',
+            self.check_call(['svnsync', '--non-interactive', '--allow-non-empty',
               'initialize', self._url, source_url])
         else:
             set_hook('pre-revprop-change')
-            check_call(['svnsync', 'init', self._url, source_url])
-            check_call(['svnsync', '--non-interactive', 'sync', self._url])
+            self.check_call(['svnsync', 'init', self._url, source_url])
+            self.check_call(['svnsync', '--non-interactive', 'sync', self._url])
 
         log.info('... %r cloned', self._repo)
         if not svn_path_exists("file://%s%s/%s" %
