@@ -19,9 +19,10 @@ class Akismet(akismet.Akismet):
         if user:
             kw['comment_author'] = user.display_name or user.username
             kw['comment_author_email'] = user.email_addresses[0] if user.email_addresses else ''
-        kw['user_ip'] = request.environ['HTTP_X_REMOTE_ADDR']
-        kw['user_agent'] = request.environ['HTTP_USER_AGENT']
-        kw['referrer'] = request.environ['HTTP_REFERER']
+        user_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
+        kw['user_ip'] = user_ip.split(',')[0].strip()
+        kw['user_agent'] = request.headers.get('USER_AGENT')
+        kw['referrer'] = request.headers.get('REFERER')
         res = self.comment_check(text, data=kw, build_data=False)
         log.info("spam=%s (akismet): %s" % (str(res), log_msg))
         return res

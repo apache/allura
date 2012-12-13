@@ -153,6 +153,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import jinja2
         import markdown
         import ming
+        import psycopg2
         import pymongo
         import socket
         import urllib2
@@ -172,6 +173,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
                 'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
                 'sort', 'where'),
+            Timer('postgres', psycopg2._psycopg.cursor, 'execute'),
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             # urlopen and socket io may or may not overlap partially
             Timer('urlopen', urllib2, 'urlopen'),
