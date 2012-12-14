@@ -108,7 +108,7 @@
     {{theme_macros.footer(g.year(), g.theme_href(''))}}
     <div id="messages">
         {% for n in h.pop_user_notifications() %}
-          <section class="message info">
+          <section class="message {{ n.subject or 'info' }}">
             <header>Notification:</header>
             <div class="content">{{ n.text }}</div>
           </section>

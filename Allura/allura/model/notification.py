@@ -118,7 +118,7 @@ class Notification(MappedClass):
         '''
 
         from allura.model import Project
-        idx = artifact.index()
+        idx = artifact.index() if artifact else None
         subject_prefix = '[%s:%s] ' % (
             c.project.shortname, c.app.config.options.mount_point)
         post = ''
@@ -146,6 +146,11 @@ class Notification(MappedClass):
                 in_reply_to=post.parent_id,
                 author_id=author._id,
                 pubdate=datetime.utcnow())
+        elif topic == 'flash':
+            n = cls(topic=topic,
+                    text=kwargs['text'],
+                    subject=kwargs.pop('subject', ''))
+            return n
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
                     idx['title_s'],c.user.get_pref('display_name')))
