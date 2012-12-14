@@ -254,6 +254,16 @@ class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController)
     nf = NewForgeController()
     search = SearchController()
 
+class ToolListController(object):
+    """Renders a list of all tools of a given type in the current project."""
+
+    @expose('jinja:allura:templates/tool_list.html')
+    def _default(self, tool_name, *args, **kw):
+        tool_name = tool_name.lower()
+        entries = [e for e in c.project.sitemap()
+                if e.tool_name and e.tool_name.lower() == tool_name]
+        return dict(entries=entries, type=entries[0].tool_name.capitalize() if entries else None)
+
 class ProjectController(object):
 
     def __init__(self):
@@ -261,12 +271,13 @@ class ProjectController(object):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, '_nav.json', self._nav)
         self.screenshot = ScreenshotsController()
+        self._list = ToolListController()
 
     @expose('json:')
     def _nav(self):
         return dict(menu=[
                 dict(name=s.label, url=s.url, icon=s.ui_icon)
-                for s in c.project.sitemap()])
+                for s in c.project.grouped_navbar_entries()])
 
     @expose()
     def _lookup(self, name, *remainder):
