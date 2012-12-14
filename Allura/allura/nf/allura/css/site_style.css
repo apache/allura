@@ -370,6 +370,29 @@ td, td img {
   transform: rotate(45deg);
 }
 
+.tool-count {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  height: 13px;
+  width: 13px;
+  line-height: 13px;
+  bottom: 17px;
+  left: 64%;
+  font-size: 11px;
+  font-weight: bold;
+  color: white;
+  padding: 1px;
+  border: 1px solid #9F0000;
+  background-color: #A70000;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -o-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -khtml-border-radius: 2px;
+  border-radius: 2px;
+}
+
 .nowrap {
   white-space: nowrap;
 }

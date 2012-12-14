@@ -33,7 +33,8 @@ class ConfigOption(object):
 
 class SitemapEntry(object):
 
-    def __init__(self, label, url=None, children=None, className=None, ui_icon=None, small=None):
+    def __init__(self, label, url=None, children=None, className=None,
+            ui_icon=None, small=None, tool_name=None):
         self.label = label
         self.className = className
         if url is not None:
@@ -44,6 +45,8 @@ class SitemapEntry(object):
         if children is None:
             children = []
         self.children = children
+        self.tool_name = tool_name
+        self.matching_urls = []
 
     def __getitem__(self, x):
         """
@@ -92,6 +95,10 @@ class SitemapEntry(object):
                 self.children.append(e)
                 child_index[lbl] = e
 
+    def matches_url(self, request):
+        """Return true if this SitemapEntry 'matches' the url of `request`."""
+        return self.url in request.upath_info or any([
+            url in request.upath_info for url in self.matching_urls])
 
 class Application(object):
     """

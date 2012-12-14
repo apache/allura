@@ -99,15 +99,15 @@ class TestProjectAdmin(TestController):
                     'new.mount_point':'test-tool2',
                     'new.mount_label':'Test Tool2'})
         assert 'error' not in self.webflash(r)
-        # check the nav - the similarly named tool should NOT be active
+        # check the nav - tools of same type are grouped
         r = self.app.get('/p/test/test-tool/Home/')
-        active_link = r.html.findAll('span',{'class':'diamond'})
+        active_link = r.html.findAll('span', {'class':'diamond'})
         assert len(active_link) == 1
-        assert active_link[0].parent['href'] == '/p/test/test-tool/'
-        r = self.app.get('/p/test/test-tool2/Home/')
-        active_link = r.html.findAll('span',{'class':'diamond'})
-        assert len(active_link) == 1
-        assert active_link[0].parent['href'] == '/p/test/test-tool2/'
+        assert active_link[0].parent['href'] == '/p/test/_list/wiki'
+        # check tool-count of grouped tools
+        tool_count = active_link[0].findNextSibling('span')
+        assert tool_count['class'] == u'tool-count', tool_count['class']
+        assert tool_count.text == u'2', tool_count.text
         # check can't create dup tool
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
