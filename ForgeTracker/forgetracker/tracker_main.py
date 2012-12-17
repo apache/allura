@@ -79,6 +79,12 @@ def _mongo_col_to_solr_col(name):
         return 'assigned_to_s'
     elif name == 'custom_fields._milestone':
         return '_milestone_s'
+    elif name == 'reported_by':
+        return 'reported_by_s'
+    elif name == 'created_date':
+        return 'created_date_dt'
+    elif name == 'mod_date':
+        return 'mod_date_dt'
     else:
         for field in c.app.globals.sortable_custom_fields_shown_in_search():
             if name == field['name']:
@@ -329,11 +335,38 @@ class ForgeTrackerApp(Application):
 ### Controllers ###
 
 def mongo_columns():
-    columns = [dict(name='ticket_num', sort_name='ticket_num', label='Ticket Number', active=True),
-               dict(name='summary', sort_name='summary', label='Summary', active=True),
-               dict(name='_milestone', sort_name='custom_fields._milestone', label='Milestone', active=True),
-               dict(name='status', sort_name='status', label='Status', active=True),
-               dict(name='assigned_to', sort_name='assigned_to_username', label='Owner', active=True)]
+    columns = [dict(name='ticket_num',
+                    sort_name='ticket_num',
+                    label='Ticket Number',
+                    active=c.app.globals.show_in_search['ticket_num']),
+               dict(name='summary',
+                    sort_name='summary',
+                    label='Summary',
+                    active=c.app.globals.show_in_search['summary']),
+               dict(name='_milestone',
+                    sort_name='custom_fields._milestone',
+                    label='Milestone',
+                    active=c.app.globals.show_in_search['_milestone']),
+               dict(name='status',
+                    sort_name='status',
+                    label='Status',
+                    active=c.app.globals.show_in_search['status']),
+               dict(name='assigned_to',
+                    sort_name='assigned_to_username',
+                    label='Owner',
+                    active=c.app.globals.show_in_search['assigned_to']),
+               dict(name='reported_by',
+                    sort_name='reported_by',
+                    label='Creator',
+                    active=c.app.globals.show_in_search['reported_by']),
+               dict(name='created_date',
+                    sort_name='created_date',
+                    label='Created',
+                    active=c.app.globals.show_in_search['created_date']),
+               dict(name='mod_date',
+                    sort_name='mod_date',
+                    label='Updated',
+                    active=c.app.globals.show_in_search['mod_date'])]
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(
             dict(name=field['name'], sort_name=field['name'], label=field['label'], active=True))
@@ -342,11 +375,38 @@ def mongo_columns():
     return columns
 
 def solr_columns():
-    columns = [dict(name='ticket_num', sort_name='ticket_num_i', label='Ticket Number', active=True),
-               dict(name='summary', sort_name='snippet_s', label='Summary', active=True),
-               dict(name='_milestone', sort_name='_milestone_s', label='Milestone', active=True),
-               dict(name='status', sort_name='status_s', label='Status', active=True),
-               dict(name='assigned_to', sort_name='assigned_to_s', label='Owner', active=True)]
+    columns = [dict(name='ticket_num',
+                    sort_name='ticket_num_i',
+                    label='Ticket Number',
+                    active=c.app.globals.show_in_search['ticket_num']),
+               dict(name='summary',
+                    sort_name='snippet_s',
+                    label='Summary',
+                    active=c.app.globals.show_in_search['summary']),
+               dict(name='_milestone',
+                    sort_name='_milestone_s',
+                    label='Milestone',
+                    active=c.app.globals.show_in_search['_milestone']),
+               dict(name='status',
+                    sort_name='status_s',
+                    label='Status',
+                    active=c.app.globals.show_in_search['status']),
+               dict(name='assigned_to',
+                    sort_name='assigned_to_s',
+                    label='Owner',
+                    active=c.app.globals.show_in_search['assigned_to']),
+               dict(name='reported_by',
+                    sort_name='reported_by_s',
+                    label='Creator',
+                    active=c.app.globals.show_in_search['reported_by']),
+               dict(name='created_date',
+                    sort_name='created_date_dt',
+                    label='Created',
+                    active=c.app.globals.show_in_search['created_date']),
+               dict(name='mod_date',
+                    sort_name='mod_date_dt',
+                    label='Updated',
+                    active=c.app.globals.show_in_search['mod_date'])]
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
     if c.app.config.options.get('EnableVoting'):
@@ -1222,7 +1282,9 @@ class TrackerAdminController(DefaultAdminController):
     @expose('jinja:forgetracker:templates/tracker/admin_fields.html')
     def fields(self, **kw):
         c.form = W.field_admin
-        return dict(app=self.app, globals=self.app.globals)
+        c.app = self.app
+        columns = dict((column, get_label(column)) for column in self.app.globals['show_in_search'].keys())
+        return dict(app=self.app, globals=self.app.globals, columns=columns)
 
     @expose('jinja:forgetracker:templates/tracker/admin_options.html')
     def options(self, **kw):
@@ -1244,6 +1306,16 @@ class TrackerAdminController(DefaultAdminController):
             self.app.config.options[k] = v
         flash('Options updated')
         redirect(c.project.url() + 'admin/tools')
+
+    @expose()
+    @require_post()
+    def allow_default_field(self, **post_data):
+        for column in self.app.globals['show_in_search'].keys():
+            if post_data.has_key(column) and post_data[column] == 'on':
+                self.app.globals['show_in_search'][column] = True
+            else:
+                self.app.globals['show_in_search'][column] = False
+        redirect(request.referer)
 
     @expose()
     def update_tickets(self, **post_data):

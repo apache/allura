@@ -1281,8 +1281,8 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         self.new_ticket(summary='test custom fields', **kw)
         r = self.app.get('/bugs/')
-        assert r.html.find('table', 'ticket-list').findAll('th')[5].text == 'Code Review'
-        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[5].text == 'Test Admin'
+        assert r.html.find('table', 'ticket-list').findAll('th')[8].text == 'Code Review'
+        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[8].text == 'Test Admin'
 
 class TestHelpTextOptions(TrackerTestController):
     def _set_options(self, new_txt='', search_txt=''):
@@ -1314,6 +1314,38 @@ class TestHelpTextOptions(TrackerTestController):
         assert len(r.html.findAll(attrs=dict(id='search-ticket-help-msg'))) == 0
         r = self.app.get('/bugs/new/')
         assert len(r.html.findAll(attrs=dict(id='new-ticket-help-msg'))) == 0
+
+class test_show_default_fields(TrackerTestController):
+    def test_show_default_fields(self):
+        r = self.app.get('/admin/bugs/fields')
+        assert '<td>Ticket Number</td> <td><input type="checkbox" name="ticket_num" checked ></td>' in r
+        assert '<td>Summary</td> <td><input type="checkbox" name="summary" checked ></td>' in r
+        assert '<td>Milestone</td> <td><input type="checkbox" name="_milestone" checked ></td>' in r
+        assert '<td>Status</td> <td><input type="checkbox" name="status" checked ></td>' in r
+        assert '<td>Owner</td> <td><input type="checkbox" name="assigned_to" checked ></td>' in r
+        assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" checked ></td>' in r
+        assert '<td>Created</td> <td><input type="checkbox" name="created_date" checked ></td>' in r
+        assert '<td>Updated</td> <td><input type="checkbox" name="mod_date" checked ></td>' in r
+        self.new_ticket(summary='test')
+        M.MonQTask.run_ready()
+        r = self.app.get('/bugs/search', params=dict(q='test'))
+        assert '<td><a href="/p/test/bugs/1/">1</a></td>' in r
+        p = M.Project.query.get(shortname='test')
+        app = p.app_instance('bugs')
+        app.globals.show_in_search['ticket_num'] = False
+        r = self.app.get('/bugs/search', params=dict(q='test'))
+        assert '<td><a href="/p/test/bugs/1/">1</a></td>' not in r
+        self.app.post('/admin/bugs/allow_default_field', params={'status': 'on'})
+        r = self.app.get('/admin/bugs/fields')
+        assert '<td>Ticket Number</td> <td><input type="checkbox" name="ticket_num" ></td>' in r
+        assert '<td>Summary</td> <td><input type="checkbox" name="summary" ></td>' in r
+        assert '<td>Milestone</td> <td><input type="checkbox" name="_milestone" ></td>' in r
+        assert '<td>Status</td> <td><input type="checkbox" name="status" checked ></td>' in r
+        assert '<td>Owner</td> <td><input type="checkbox" name="assigned_to" ></td>' in r
+        assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" ></td>' in r
+        assert '<td>Created</td> <td><input type="checkbox" name="created_date" ></td>' in r
+        assert '<td>Updated</td> <td><input type="checkbox" name="mod_date" ></td>' in r
+
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})

@@ -1,3 +1,4 @@
+{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
 <div id="ticket_search_results_holder" style="clear:both">
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
@@ -31,6 +32,12 @@
                 <td class="{{t.open_or_closed}}">{{t.status}}</td>
               {% elif col['name'] == 'assigned_to' %}
                 <td>{% if t.assigned_to_id %}{{t.assigned_to.display_name}}{% endif %}</td>
+              {% elif col['name'] == 'reported_by' %}
+              <td>{% if t.reported_by %}{{t.reported_by.display_name}}{% endif %}</td>
+              {% elif col['name'] == 'created_date' %}
+              <td>{% if t.created_date %}{{abbr_date(t.created_date)}}{% endif %}</td>
+              {% elif col['name'] == 'mod_date' %}
+              <td>{% if t.mod_date %}{{abbr_date(t.mod_date)}}{% endif %}</td>
               {% elif col['name'] == 'votes' %}
                 <td>{{ t.votes }}</td>
               {% else %}

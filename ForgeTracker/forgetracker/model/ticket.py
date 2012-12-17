@@ -56,6 +56,14 @@ class Globals(MappedClass):
     _bin_counts_expire = FieldProperty(datetime)
     _milestone_counts = FieldProperty([dict(name=str,hits=int,closed=int)])
     _milestone_counts_expire = FieldProperty(datetime)
+    show_in_search = FieldProperty({str: bool}, if_missing={'ticket_num': True,
+                                                            'summary': True,
+                                                            '_milestone': True,
+                                                            'status': True,
+                                                            'assigned_to': True,
+                                                            'reported_by': True,
+                                                            'created_date': True,
+                                                            'mod_date': True})
 
     @classmethod
     def next_ticket_num(cls):

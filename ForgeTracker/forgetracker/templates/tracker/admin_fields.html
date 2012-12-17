@@ -10,6 +10,23 @@
 
 {% block content %}
   {{c.form.display(value=globals, action='set_custom_fields')}}
+<h1>Default fields</h1>
+<form name="show_fields_in_search" method="POST" action="allow_default_field">
+    <table>
+        <thead>
+        <tr>
+            <th>Filed name</th>
+            <th>Show in search</th>
+        </tr>
+        </thead>
+        {%for column in columns.keys()%}
+        <tr>
+            <td>{{columns[column]}}</td> <td><input type="checkbox" name="{{column}}" {%if globals.show_in_search[column]%}checked {%endif%}></td>
+        </tr>
+        {%endfor%}
+        <tr><td><input type="submit" value="Save"></td><td></td></tr>
+    </table>
+</form>
 {% endblock %}
 
 {% block extra_css %}
