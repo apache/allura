@@ -1068,6 +1068,28 @@ class TestFunctionalController(TrackerTestController):
         expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
         assert trackers == expected, trackers
 
+    def test_move_ticket_bad_data(self):
+        self.new_ticket(summary='test')
+        r = self.app.post('/p/test/bugs/1/move').follow()  # empty POST
+        assert 'Select valid tracker' in r, r
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': 'invalid tracker id'}).follow()
+        assert 'Select valid tracker' in r,r
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(tracker.config._id)}).follow()
+        assert 'Ticket already in a selected tracker' in r, r
+
+    def test_move_ticket_access(self):
+        self.new_ticket(summary='test')
+        self.app.get('/p/test/bugs/1/move',
+                extra_environ={'username': 'test-user'},
+                status=403)
+        self.app.post('/p/test/bugs/1/move',
+                extra_environ={'username': 'test-user'},
+                status=403)
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):

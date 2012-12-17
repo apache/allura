@@ -15,6 +15,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
 from formencode import validators
 from bson import ObjectId
+from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
 
 from ming import schema
@@ -1270,10 +1271,35 @@ class TicketController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/move_ticket.html')
     def move(self, **post_data):
         require_access(self.ticket.app, 'admin')
+        if request.method == 'POST':
+            t_id = str(post_data.pop('tracker', ''))
+            try:
+                t_id = ObjectId(t_id)
+            except InvalidId:
+                t_id = None
+
+            tracker = M.AppConfig.query.get(_id=t_id)
+            if tracker is None:
+                flash('Select valid tracker', 'error')
+                redirect(request.referer)
+
+            if tracker == self.ticket.app.config:
+                flash('Ticket already in a selected tracker', 'info')
+                redirect(request.referer)
+
+            if not has_access(tracker, 'admin')():
+                flash('You should have admin access to destination tracker', 'error')
+                redirect(request.referer)
+
+            # new_ticket = self.ticket.move(tracker)
+            new_ticket = self.ticket
+            flash('Ticket successfully moved')
+            redirect(new_ticket.url())
+
         # collect all 'Tickets' instances in all user project for which his has admin perms
         trackers = []
         projects = c.user.my_projects()
-        projects = ifilter(lambda p: has_access(p, 'admin'), projects)
+        projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
         for p in projects:
             for ac in p.app_configs:
                 if ac.tool_name == 'Tickets':
