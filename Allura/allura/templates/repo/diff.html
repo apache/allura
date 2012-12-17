@@ -34,7 +34,7 @@
       <span class="fright">
         {% if session.diformat == 'sidebyside' %}
           {% set switch_url = request.url.replace('&diformat=sidebyside', '') + '&diformat=regular' %}
-          {% set switch_text = 'regular' %}
+          {% set switch_text = 'unified' %}
         {% else %}
           {% set switch_url = request.url.replace('&diformat=regular', '') + '&diformat=sidebyside' %}
           {% set switch_text = 'side-by-side' %}

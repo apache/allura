@@ -169,7 +169,7 @@ class TestRootController(_TestCase):
         assert fn + '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
 
         r = self.app.get(ci + fn + '&diformat=sidebyside')
-        assert fn + '&amp;diformat=regular">Switch to regular view</a>' in r
+        assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
         assert '<table class="side-by-side-diff">' in r
 
     def test_refresh(self):
