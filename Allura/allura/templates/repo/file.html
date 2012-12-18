@@ -65,7 +65,7 @@
     <img src="?format=raw" alt=""/>
   {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
     <p><a href="?format=raw">Download this file</a></p>
-    <div class="clip grid-19">
+    <div class="clip grid-19 codebrowser">
       <h3>
         <span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(blob.name)}}</span>
         &nbsp;&nbsp;

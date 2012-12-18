@@ -147,7 +147,7 @@ class TestRootController(_TestCase):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
         assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div', {'class':'clip grid-19'}))
+        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
@@ -183,7 +183,7 @@ class TestRootController(_TestCase):
     def test_file_force_display(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')
-        content = str(resp.html.find('div', {'class':'clip grid-19'}))
+        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
         assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content
 
@@ -196,7 +196,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/index.html')
         header = r.html.find('h2', {'class': 'dark title'}).contents[2]
         assert 'index.html' in header, header
-        content = str(r.html.find('div', {'class': 'clip grid-19'}))
+        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index.html'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
@@ -210,7 +210,7 @@ class TestRootController(_TestCase):
         header = r.html.find('h2', {'class': 'dark title'})
         assert 'index' in header.contents[3], header.contents[3]
         assert 'index.htm' in header.contents[4], header.contents[4]
-        content = str(r.html.find('div', {'class': 'clip grid-19'}))
+        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index/index.htm'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content

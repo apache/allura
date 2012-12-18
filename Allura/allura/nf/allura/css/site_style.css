@@ -2748,6 +2748,7 @@ h1.title .viewer:hover {
 table.codehilitetable {
     background: #F8F8F8;
     margin-left:0px;
+    width:740px;
 }
 
 td.linenos {
@@ -2779,7 +2780,10 @@ div.codehilite pre {
 }
 div.codehilite pre div.code_block {
     padding-left:10px;
-    width: 97%;
+    width: 100%;
+}
+div.codebrowser{
+    overflow-x: auto;
 }
 input.nofloat {
     float: none;
