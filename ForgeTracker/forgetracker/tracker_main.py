@@ -1291,8 +1291,7 @@ class TicketController(BaseController):
                 flash('You should have admin access to destination tracker', 'error')
                 redirect(request.referer)
 
-            # new_ticket = self.ticket.move(tracker)
-            new_ticket = self.ticket
+            new_ticket = self.ticket.move(tracker)
             flash('Ticket successfully moved')
             redirect(new_ticket.url())
 

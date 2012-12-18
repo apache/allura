@@ -522,6 +522,53 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 attachment.filename, attachment.file,
                 content_type=attachment.type)
 
+    def move(self, app_config):
+        '''Move ticket from current tickets app to tickets app with given app_config'''
+        self.globals.invalidate_bin_counts()
+        app = app_config.project.app_instance(app_config)
+        prior_url = self.url()
+        prior_app = self.app
+
+        # ensure unique ticket_num
+        while True:
+            with h.push_context(app_config.project_id, app_config_id=app_config._id):
+                ticket_num = app.globals.next_ticket_num()
+            self.ticket_num = ticket_num
+            self.app_config_id = app_config._id
+            try:
+                session(self).flush(self)
+                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, self.url()))
+                break
+            except OperationFailure, err:
+                if 'duplicate' in err.args[0]:
+                    log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
+                    session(self).expunge(self)
+                    continue
+
+        prior_cfs = [
+            (cf['name'], cf['type'], cf['label'])
+            for cf in prior_app.globals.custom_fields or []]
+        new_cfs = [
+            (cf['name'], cf['type'], cf['label'])
+            for cf in app.globals.custom_fields or []]
+        skipped_fields = []
+        for cf in prior_cfs:
+            if cf not in new_cfs:
+                skipped_fields.append(cf)
+
+        message = 'Ticket moved from %s' % prior_url
+        if skipped_fields:
+            message += '\n\nCan\'t be converted:\n'
+            for cf in skipped_fields:
+                name = cf[0]
+                message += '\n- **%s**: %s' % (name, self.custom_fields[name])
+        self.discussion_thread.post(text=message)
+
+        # need this to reset app_config RelationProperty on ticket to a new one
+        session(self).expunge(self)
+        return Ticket.query.find(dict(
+            app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
+
     def __json__(self):
         return dict(super(Ticket,self).__json__(),
             created_date=self.created_date,

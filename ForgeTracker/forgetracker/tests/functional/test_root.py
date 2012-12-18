@@ -1068,6 +1068,14 @@ class TestFunctionalController(TrackerTestController):
         expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
         assert trackers == expected, trackers
 
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        r = self.app.post('/p/test/bugs/1/move/',
+                params={'tracker': str(tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test2/bugs2/1/')
+        summary = r.html.findAll('h2', {'class': 'dark title'})[0].contents[0].strip()
+        assert_equal(summary, '#1 test')
+
     def test_move_ticket_bad_data(self):
         self.new_ticket(summary='test')
         r = self.app.post('/p/test/bugs/1/move').follow()  # empty POST

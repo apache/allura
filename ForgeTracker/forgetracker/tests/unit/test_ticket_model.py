@@ -7,7 +7,9 @@ from nose.tools import raises, assert_raises, assert_equal
 
 from forgetracker.model import Ticket
 from forgetracker.tests.unit import TrackerTestWithModel
-from allura.model import Feed
+from allura.model import Feed, Post
+from allura.lib import helpers as h
+from allura.tests import decorators as td
 
 
 class TestTicketModel(TrackerTestWithModel):
@@ -129,3 +131,58 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
         assert_equal(f.title, 'test ticket')
         assert_equal(f.description, '<div class="markdown_content"><p>test description</p></div>')
+
+    @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
+    @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
+    def test_ticket_move(self):
+        app1 = c.project.app_instance('bugs')
+        app2 = c.project.app_instance('bugs2')
+        with h.push_context(c.project._id, app_config_id=app1.config._id):
+            ticket = Ticket.new()
+            ticket.summary = 'test ticket'
+            ticket.description = 'test description'
+
+        assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 1)
+        assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 0)
+
+        t = ticket.move(app2.config)
+        assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 0)
+        assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 1)
+        assert_equal(t.summary, 'test ticket')
+        assert_equal(t.description, 'test description')
+        assert_equal(t.url(), '/p/test/bugs2/1/')
+
+        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        assert post is not None, 'No comment about ticket moving'
+        message = 'Ticket moved from /p/test/bugs/1/'
+        assert_equal(post.text, message)
+
+    @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
+    @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
+    def test_ticket_move_with_different_custom_fields(self):
+        app1 = c.project.app_instance('bugs')
+        app2 = c.project.app_instance('bugs2')
+        app1.globals.custom_fields.extend([
+            {'name': '_test', 'type': 'string', 'label': 'Test field'},
+            {'name': '_test2', 'type': 'string', 'label': 'Test field 2'}])
+        app2.globals.custom_fields.append(
+            {'name': '_test', 'type': 'string', 'label': 'Test field'})
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        with h.push_context(c.project._id, app_config_id=app1.config._id):
+            ticket = Ticket.new()
+            ticket.summary = 'test ticket'
+            ticket.description = 'test description'
+            ticket.custom_fields['_test'] = 'test val'
+            ticket.custom_fields['_test2'] = 'test val 2'
+
+        t = ticket.move(app2.config)
+        assert_equal(t.summary, 'test ticket')
+        assert_equal(t.description, 'test description')
+        assert_equal(t.custom_fields['_test'], 'test val')
+        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        assert post is not None, 'No comment about ticket moving'
+        message = 'Ticket moved from /p/test/bugs/1/'
+        message += '\n\nCan\'t be converted:\n'
+        message += '\n- **_test2**: test val 2'
+        assert_equal(post.text, message)
