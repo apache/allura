@@ -552,16 +552,33 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             (cf['name'], cf['type'], cf['label'])
             for cf in app.globals.custom_fields or []]
         skipped_fields = []
+        user_fields = []
         for cf in prior_cfs:
-            if cf not in new_cfs:
+            if cf not in new_cfs:  # can't convert
                 skipped_fields.append(cf)
+            elif cf[1] == 'user':  # can convert and field type == user
+                user_fields.append(cf)
 
+        messages = []
+        for cf in skipped_fields:
+            name = cf[0]
+            messages.append('- **%s**: %s' % (name, self.custom_fields[name]))
+        for cf in user_fields:
+            name = cf[0]
+            username = self.custom_fields[name]
+            user = app_config.project.user_in_project(username)
+            if not user or user == User.anonymous():
+                messages.append('- **%s**: %s (user not in project)' % (name, username))
+                self.custom_fields[name] = ''
+        # special case: not custom user field (assigned_to_id)
+        user = self.assigned_to
+        if user and not app_config.project.user_in_project(user.username):
+            messages.append('- **assigned_to**: %s (user not in project)' % user.username)
+            self.assigned_to_id = None
         message = 'Ticket moved from %s' % prior_url
-        if skipped_fields:
-            message += '\n\nCan\'t be converted:\n'
-            for cf in skipped_fields:
-                name = cf[0]
-                message += '\n- **%s**: %s' % (name, self.custom_fields[name])
+        if messages:
+            message += '\n\nCan\'t be converted:\n\n'
+        message += '\n'.join(messages)
         self.discussion_thread.post(text=message)
 
         # need this to reset app_config RelationProperty on ticket to a new one

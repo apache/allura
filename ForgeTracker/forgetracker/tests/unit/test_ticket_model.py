@@ -7,7 +7,7 @@ from nose.tools import raises, assert_raises, assert_equal
 
 from forgetracker.model import Ticket
 from forgetracker.tests.unit import TrackerTestWithModel
-from allura.model import Feed, Post
+from allura.model import Feed, Post, User
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 
@@ -141,6 +141,7 @@ class TestTicketModel(TrackerTestWithModel):
             ticket = Ticket.new()
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
+            ticket.assigned_to_id = User.by_username('test-user')._id
 
         assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 1)
         assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 0)
@@ -150,6 +151,7 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 1)
         assert_equal(t.summary, 'test ticket')
         assert_equal(t.description, 'test description')
+        assert_equal(t.assigned_to.username, 'test-user')
         assert_equal(t.url(), '/p/test/bugs2/1/')
 
         post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
@@ -185,4 +187,39 @@ class TestTicketModel(TrackerTestWithModel):
         message = 'Ticket moved from /p/test/bugs/1/'
         message += '\n\nCan\'t be converted:\n'
         message += '\n- **_test2**: test val 2'
+        assert_equal(post.text, message)
+
+    @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
+    @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
+    def test_ticket_move_with_users_not_in_project(self):
+        app1 = c.project.app_instance('bugs')
+        app2 = c.project.app_instance('bugs2')
+        app1.globals.custom_fields.extend([
+            {'name': '_user_field', 'type': 'user', 'label': 'User field'},
+            {'name': '_user_field_2', 'type': 'user', 'label': 'User field 2'}])
+        app2.globals.custom_fields.extend([
+            {'name': '_user_field', 'type': 'user', 'label': 'User field'},
+            {'name': '_user_field_2', 'type': 'user', 'label': 'User field 2'}])
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        from allura.websetup import bootstrap
+        bootstrap.create_user('test-user-0')
+        with h.push_context(c.project._id, app_config_id=app1.config._id):
+            ticket = Ticket.new()
+            ticket.summary = 'test ticket'
+            ticket.description = 'test description'
+            ticket.custom_fields['_user_field'] = 'test-user'  # in project
+            ticket.custom_fields['_user_field_2'] = 'test-user-0'  # not in project
+            ticket.assigned_to_id = User.by_username('test-user-0')._id  # not in project
+
+        t = ticket.move(app2.config)
+        assert_equal(t.assigned_to_id, None)
+        assert_equal(t.custom_fields['_user_field'], 'test-user')
+        assert_equal(t.custom_fields['_user_field_2'], '')
+        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        assert post is not None, 'No comment about ticket moving'
+        message = 'Ticket moved from /p/test/bugs/1/'
+        message += '\n\nCan\'t be converted:\n'
+        message += '\n- **_user_field_2**: test-user-0 (user not in project)'
+        message += '\n- **assigned_to**: test-user-0 (user not in project)'
         assert_equal(post.text, message)
