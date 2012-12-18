@@ -1,9 +1,6 @@
 #-*- python -*-
-import html2text
 import re
 from BeautifulSoup import BeautifulSoup
-
-html2text.BODY_WIDTH = 0
 
 _inline_img = re.compile(r'\[\[(File|Image):([^\]|]+)[^]]*\]\]', re.UNICODE)
 _inline_img_markdown = r'[[img src=\2]]'
@@ -44,11 +41,15 @@ def _convert_toc(wiki_html):
 
 def mediawiki2markdown(source):
     try:
+        import html2text
         from mediawiki import wiki2html
     except ImportError:
-        raise ImportError('GPL library "mediawiki" from https://github.com/zikzakmedia/python-mediawiki.git '
-                                 'is required for this operation')
-
+        raise ImportError("""This operation requires GPL libraries:
+        "mediawiki" (https://github.com/zikzakmedia/python-mediawiki.git)
+        "html2text" (https://github.com/aaronsw/html2text.git)""")
+    
+    html2text.BODY_WIDTH = 0
+    
     wiki_content = wiki2html(source, True)
     wiki_content = _convert_toc(wiki_content)
     markdown_text = html2text.html2text(wiki_content)
