@@ -74,6 +74,10 @@
       </ul>
       <div class="clear">&nbsp;</div>
       <input type="submit" value="Save">
+      (applies to this page only)
+      {% if h.has_access(c.app, 'configure') %}
+          <a href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/fields">Change field settings permanently.</a>
+      {% endif %}
     </form>
     {{widget.fields['lightbox'].display()}}
   {% endif %}
