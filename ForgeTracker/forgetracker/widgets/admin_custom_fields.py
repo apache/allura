@@ -87,7 +87,7 @@ class CustomFieldAdmin(ew.CompoundField):
         ew.TextField(name='label'),
         ew.Checkbox(
             name='show_in_search',
-            label='Show in search',
+            label='Show in list view',
             show_label=True,
             suppress_label=True),
         CustomFieldAdminDetail() ]
