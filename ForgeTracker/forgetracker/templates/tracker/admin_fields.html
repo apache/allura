@@ -15,13 +15,13 @@
     <table>
         <thead>
         <tr>
-            <th>Filed name</th>
+            <th>Field name</th>
             <th>Show in search</th>
         </tr>
         </thead>
-        {%for column in columns.keys()%}
+        {%for column, full_name in columns.iteritems() %}
         <tr>
-            <td>{{columns[column]}}</td> <td><input type="checkbox" name="{{column}}" {%if globals.show_in_search[column]%}checked {%endif%}></td>
+            <td>{{full_name}}</td> <td><input type="checkbox" name="{{column}}" {%if globals.show_in_search[column]%}checked {%endif%}></td>
         </tr>
         {%endfor%}
         <tr><td><input type="submit" value="Save"></td><td></td></tr>
