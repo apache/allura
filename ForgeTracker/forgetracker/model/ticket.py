@@ -63,7 +63,9 @@ class Globals(MappedClass):
                                                             'assigned_to': True,
                                                             'reported_by': True,
                                                             'created_date': True,
-                                                            'mod_date': True})
+                                                            'mod_date': True,
+                                                            'labels': True,
+                                                            })
 
     @classmethod
     def next_ticket_num(cls):

@@ -85,6 +85,8 @@ def _mongo_col_to_solr_col(name):
         return 'created_date_dt'
     elif name == 'mod_date':
         return 'mod_date_dt'
+    elif name == 'labels':
+        return 'labels_s'
     else:
         for field in c.app.globals.sortable_custom_fields_shown_in_search():
             if name == field['name']:
@@ -366,7 +368,12 @@ def mongo_columns():
                dict(name='mod_date',
                     sort_name='mod_date',
                     label='Updated',
-                    active=c.app.globals.show_in_search['mod_date'])]
+                    active=c.app.globals.show_in_search['mod_date']),
+               dict(name='labels',
+                   sort_name='labels',
+                   label='Labels',
+                   active=c.app.globals.show_in_search['labels']),
+               ]
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(
             dict(name=field['name'], sort_name=field['name'], label=field['label'], active=True))
@@ -406,7 +413,12 @@ def solr_columns():
                dict(name='mod_date',
                     sort_name='mod_date_dt',
                     label='Updated',
-                    active=c.app.globals.show_in_search['mod_date'])]
+                    active=c.app.globals.show_in_search['mod_date']),
+               dict(name='labels',
+                   sort_name='labels_s',
+                   label='Labels',
+                   active=c.app.globals.show_in_search['labels']),
+               ]
     for field in c.app.globals.sortable_custom_fields_shown_in_search():
         columns.append(dict(name=field['name'], sort_name=field['sortable_name'], label=field['label'], active=True))
     if c.app.config.options.get('EnableVoting'):

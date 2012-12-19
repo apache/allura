@@ -1326,6 +1326,7 @@ class test_show_default_fields(TrackerTestController):
         assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" checked ></td>' in r
         assert '<td>Created</td> <td><input type="checkbox" name="created_date" checked ></td>' in r
         assert '<td>Updated</td> <td><input type="checkbox" name="mod_date" checked ></td>' in r
+        assert '<td>Labels</td> <td><input type="checkbox" name="labels" checked ></td>' in r
         self.new_ticket(summary='test')
         M.MonQTask.run_ready()
         r = self.app.get('/bugs/search', params=dict(q='test'))
@@ -1345,6 +1346,7 @@ class test_show_default_fields(TrackerTestController):
         assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" ></td>' in r
         assert '<td>Created</td> <td><input type="checkbox" name="created_date" ></td>' in r
         assert '<td>Updated</td> <td><input type="checkbox" name="mod_date" ></td>' in r
+        assert '<td>Labels</td> <td><input type="checkbox" name="labels" ></td>' in r
 
 
 def sidebar_contains(response, text):

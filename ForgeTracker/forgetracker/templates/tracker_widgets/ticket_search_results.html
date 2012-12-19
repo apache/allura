@@ -38,6 +38,13 @@
               <td>{% if t.created_date %}{{abbr_date(t.created_date)}}{% endif %}</td>
               {% elif col['name'] == 'mod_date' %}
               <td>{% if t.mod_date %}{{abbr_date(t.mod_date)}}{% endif %}</td>
+              {% elif col['name'] == 'labels' %}
+              <td>
+                  {%- for l in t.labels -%}
+                  <a href="{{c.app.url}}search?q=labels:{{h.urlquoteplus(l)}}">{{l}}</a>
+                    {%- if not loop.last -%},{%- endif -%}
+                  {%- endfor -%}
+              </td>
               {% elif col['name'] == 'votes' %}
                 <td>{{ t.votes }}</td>
               {% else %}
