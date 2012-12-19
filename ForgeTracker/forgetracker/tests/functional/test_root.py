@@ -366,6 +366,29 @@ class TestFunctionalController(TrackerTestController):
         deleted_form = self.app.get('/bugs/1/')
         assert file_name not in deleted_form
 
+    def test_delete_attachment_from_comments(self):
+        ticket_view = self.new_ticket(summary='test ticket').follow()
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'test comment'
+        self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1))
+        post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
+        self.app.post(post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert '<input class="submit delete_attachment file" type="submit" value="X"/>' in r
+        form = r.forms[5].submit()
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert '<input class="submit delete_attachment" type="submit" value="X"/>' not in r
+
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()

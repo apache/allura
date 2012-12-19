@@ -2183,10 +2183,15 @@ div.attachment_thumb {
   position: relative;
   padding: 10px;
 }
-div.attachment_thumb .delete_attachment {
+div.attachment_thumb .delete_attachment .pic {
   position: absolute;
   top: 0;
   left: 100px;
+}
+div.attachment_thumb .file {
+    position: absolute;
+    top: 0;
+    right: -40px;
 }
 div.attachment_thumb .file_type {
   border: 1px solid #ccc;
