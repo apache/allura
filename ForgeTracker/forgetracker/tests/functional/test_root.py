@@ -1323,10 +1323,10 @@ class test_show_default_fields(TrackerTestController):
         assert '<td>Milestone</td> <td><input type="checkbox" name="_milestone" checked ></td>' in r
         assert '<td>Status</td> <td><input type="checkbox" name="status" checked ></td>' in r
         assert '<td>Owner</td> <td><input type="checkbox" name="assigned_to" checked ></td>' in r
-        assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" checked ></td>' in r
+        assert '<td>Creator</td> <td><input type="checkbox" name="reported_by" ></td>' in r
         assert '<td>Created</td> <td><input type="checkbox" name="created_date" checked ></td>' in r
         assert '<td>Updated</td> <td><input type="checkbox" name="mod_date" checked ></td>' in r
-        assert '<td>Labels</td> <td><input type="checkbox" name="labels" checked ></td>' in r
+        assert '<td>Labels</td> <td><input type="checkbox" name="labels" ></td>' in r
         self.new_ticket(summary='test')
         M.MonQTask.run_ready()
         r = self.app.get('/bugs/search', params=dict(q='test'))

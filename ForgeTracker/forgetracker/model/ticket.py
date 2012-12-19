@@ -61,10 +61,10 @@ class Globals(MappedClass):
                                                             '_milestone': True,
                                                             'status': True,
                                                             'assigned_to': True,
-                                                            'reported_by': True,
+                                                            'reported_by': False,
                                                             'created_date': True,
                                                             'mod_date': True,
-                                                            'labels': True,
+                                                            'labels': False,
                                                             })
 
     @classmethod
