@@ -524,27 +524,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     def move(self, app_config):
         '''Move ticket from current tickets app to tickets app with given app_config'''
-        self.globals.invalidate_bin_counts()
         app = app_config.project.app_instance(app_config)
         prior_url = self.url()
         prior_app = self.app
-
-        # ensure unique ticket_num
-        while True:
-            with h.push_context(app_config.project_id, app_config_id=app_config._id):
-                ticket_num = app.globals.next_ticket_num()
-            self.ticket_num = ticket_num
-            self.app_config_id = app_config._id
-            try:
-                session(self).flush(self)
-                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, self.url()))
-                break
-            except OperationFailure, err:
-                if 'duplicate' in err.args[0]:
-                    log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
-                    session(self).expunge(self)
-                    continue
-
         prior_cfs = [
             (cf['name'], cf['type'], cf['label'])
             for cf in prior_app.globals.custom_fields or []]
@@ -558,7 +540,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 skipped_fields.append(cf)
             elif cf[1] == 'user':  # can convert and field type == user
                 user_fields.append(cf)
-
         messages = []
         for cf in skipped_fields:
             name = cf[0]
@@ -584,6 +565,23 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 custom_fields[fn] = None if ft == 'user' else ''
             custom_fields[fn] = old_val
         self.custom_fields = custom_fields
+
+        self.globals.invalidate_bin_counts()
+        # move ticket. ensure unique ticket_num
+        while True:
+            with h.push_context(app_config.project_id, app_config_id=app_config._id):
+                ticket_num = app.globals.next_ticket_num()
+            self.ticket_num = ticket_num
+            self.app_config_id = app_config._id
+            try:
+                session(self).flush(self)
+                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, self.url()))
+                break
+            except OperationFailure, err:
+                if 'duplicate' in err.args[0]:
+                    log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
+                    session(self).expunge(self)
+                    continue
 
         message = 'Ticket moved from %s' % prior_url
         if messages:
