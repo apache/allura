@@ -562,10 +562,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         messages = []
         for cf in skipped_fields:
             name = cf[0]
-            messages.append('- **%s**: %s' % (name, self.custom_fields[name]))
+            messages.append('- **%s**: %s' % (name, self.custom_fields.get(name, '')))
         for cf in user_fields:
             name = cf[0]
-            username = self.custom_fields[name]
+            username = self.custom_fields.get(name, None)
             user = app_config.project.user_in_project(username)
             if not user or user == User.anonymous():
                 messages.append('- **%s**: %s (user not in project)' % (name, username))
@@ -575,6 +575,16 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if user and not app_config.project.user_in_project(user.username):
             messages.append('- **assigned_to**: %s (user not in project)' % user.username)
             self.assigned_to_id = None
+
+        custom_fields = {}
+        for cf in new_cfs:
+            fn, ft, fl = cf
+            old_val = self.custom_fields.get(fn, None)
+            if old_val is None:
+                custom_fields[fn] = None if ft == 'user' else ''
+            custom_fields[fn] = old_val
+        self.custom_fields = custom_fields
+
         message = 'Ticket moved from %s' % prior_url
         if messages:
             message += '\n\nCan\'t be converted:\n\n'
