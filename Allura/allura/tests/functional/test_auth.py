@@ -574,11 +574,13 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_inactivity(self):
-        from datetime import datetime
+        from datetime import datetime, timedelta
 
         #Add inactivity period
-        startdate = datetime(2012, 12, 14)
-        enddate = datetime(2012, 12, 20)
+        now = datetime.utcnow().date()
+        now = datetime(now.year, now.month, now.day)
+        startdate = now + timedelta(days=1)
+        enddate = now + timedelta(days=7)
         result = self.app.get('/auth/prefs')
         r = self.app.post('/auth/prefs/add_inactive_period',
              params=dict(
