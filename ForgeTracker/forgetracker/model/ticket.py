@@ -582,12 +582,17 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
                     session(self).expunge(self)
                     continue
+        # move ticket's discussion thread, thus all new commnets will go to a new ticket's feed
+        self.discussion_thread.discussion.app_config_id = app_config._id
+        self.discussion_thread.app_config_id = app_config._id
+        session(self.discussion_thread.discussion).flush(self.discussion_thread.discussion)
+        session(self.discussion_thread).flush(self.discussion_thread)
 
         message = 'Ticket moved from %s' % prior_url
         if messages:
             message += '\n\nCan\'t be converted:\n\n'
         message += '\n'.join(messages)
-        self.discussion_thread.post(text=message)
+        self.discussion_thread.add_post(text=message)
 
         # need this to reset app_config RelationProperty on ticket to a new one
         session(self).expunge(self)
