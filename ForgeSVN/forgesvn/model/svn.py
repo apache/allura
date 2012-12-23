@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
-from glob import glob
+import tempfile
 
 import tg
 import pysvn
@@ -145,15 +145,22 @@ class SVNImplementation(M.RepositoryImplementation):
         self._repo.status = 'ready'
         # make first commit with dir structure
         if default_dirs:
-            self._repo._impl._svn.checkout('file://'+fullname, fullname+'/tmp')
-            os.mkdir(fullname+'/tmp/trunk')
-            os.mkdir(fullname+'/tmp/tags')
-            os.mkdir(fullname+'/tmp/branches')
-            self._repo._impl._svn.add(fullname+'/tmp/trunk')
-            self._repo._impl._svn.add(fullname+'/tmp/tags')
-            self._repo._impl._svn.add(fullname+'/tmp/branches')
-            self._repo._impl._svn.checkin([fullname+'/tmp/trunk',fullname+'/tmp/tags',fullname+'/tmp/branches'],'Initial commit')
-            shutil.rmtree(fullname+'/tmp')
+            tmp_working_dir = tempfile.mkdtemp(prefix='allura-svn-r1-',
+                                               dir=tg.config.get('scm.svn.tmpdir', '/tmp'))
+            log.info('tmp dir = %s', tmp_working_dir)
+            self._repo._impl._svn.checkout('file://'+fullname, tmp_working_dir)
+            os.mkdir(tmp_working_dir+'/trunk')
+            os.mkdir(tmp_working_dir+'/tags')
+            os.mkdir(tmp_working_dir+'/branches')
+            self._repo._impl._svn.add(tmp_working_dir+'/trunk')
+            self._repo._impl._svn.add(tmp_working_dir+'/tags')
+            self._repo._impl._svn.add(tmp_working_dir+'/branches')
+            self._repo._impl._svn.checkin([tmp_working_dir+'/trunk',
+                                           tmp_working_dir+'/tags',
+                                           tmp_working_dir+'/branches'],
+                                        'Initial commit')
+            shutil.rmtree(tmp_working_dir)
+            log.info('deleted %s', tmp_working_dir)
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
