@@ -111,10 +111,12 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Converts exceptions to HTTP errors, shows traceback in debug mode
     app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
     # Redirect some status codes to /error/document
-    if asbool(config['debug']):
-        app = StatusCodeRedirect(app, base_config.handle_status_codes)
-    else:
-        app = StatusCodeRedirect(app, base_config.handle_status_codes + [500])
+    if config.get('override_root') != 'task':
+        # "task" wsgi would get a 2nd request to /error/document if we used this middleware
+        if asbool(config['debug']):
+            app = StatusCodeRedirect(app, base_config.handle_status_codes)
+        else:
+            app = StatusCodeRedirect(app, base_config.handle_status_codes + [500])
     # Redirect 401 to the login page
     app = LoginRedirectMiddleware(app)
     # Add instrumentation
