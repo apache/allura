@@ -587,17 +587,20 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         self.discussion_thread.app_config_id = app_config._id
         session(self.discussion_thread.discussion).flush(self.discussion_thread.discussion)
         session(self.discussion_thread).flush(self.discussion_thread)
+        # need this to reset app_config RelationProperty on ticket to a new one
+        session(self.discussion_thread.discussion).expunge(self.discussion_thread.discussion)
+        session(self.discussion_thread).expunge(self.discussion_thread)
+        session(self).expunge(self)
+        ticket = Ticket.query.find(dict(
+            app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
 
         message = 'Ticket moved from %s' % prior_url
         if messages:
             message += '\n\nCan\'t be converted:\n\n'
         message += '\n'.join(messages)
-        self.discussion_thread.add_post(text=message)
-
-        # need this to reset app_config RelationProperty on ticket to a new one
-        session(self).expunge(self)
-        return Ticket.query.find(dict(
-            app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
+        with h.push_context(ticket.project_id, app_config_id=app_config._id):
+            ticket.discussion_thread.add_post(text=message)
+        return ticket
 
     def __json__(self):
         return dict(super(Ticket,self).__json__(),

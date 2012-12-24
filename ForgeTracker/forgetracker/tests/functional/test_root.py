@@ -1075,6 +1075,68 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(r.request.path, '/p/test2/bugs2/1/')
         summary = r.html.findAll('h2', {'class': 'dark title'})[0].contents[0].strip()
         assert_equal(summary, '#1 test')
+        ac_id = tracker.config._id
+        ticket = tm.Ticket.query.find({
+            'app_config_id': ac_id,
+            'ticket_num': 1}).first()
+        assert ticket is not None, "Can't find moved ticket"
+        assert_equal(ticket.discussion_thread.app_config_id, ac_id)
+        assert_equal(ticket.discussion_thread.discussion.app_config_id, ac_id)
+        post = ticket.discussion_thread.last_post
+        assert_equal(post.text, 'Ticket moved from /p/test/bugs/1/')
+
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_ticket_feed(self):
+        self.new_ticket(summary='test')
+        p = M.Project.query.get(shortname='test2')
+        ac_id = p.app_instance('bugs2').config._id
+        r = self.app.post('/p/test/bugs/1/move/',
+                params={'tracker': str(ac_id)}).follow()
+
+        ticket = tm.Ticket.query.find({
+            'app_config_id': ac_id,
+            'ticket_num': 1}).first()
+        post = ticket.discussion_thread.last_post
+        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        msg = 'Ticket moved from /p/test/bugs/1/'
+        assert_equal(post.text, msg)
+        # auto comment content and link to it should be in a ticket's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert msg in r, r
+        assert ticket_link in r, r
+        # auto comment content and link to it should be in a tracker's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert msg in r, r
+        assert ticket_link in r, r
+
+        # post comment and make sure that it appears on the feeds
+        r = self.app.get('/p/test2/bugs2/1/')
+        for f in r.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'ticket discussion post content'
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
+        r = self.app.get('/p/test2/bugs2/1/', dict(page=1))
+        assert_true(post_content in r)
+        comments_cnt = len(r.html.findAll(attrs={'class': 'discussion-post'}))
+        assert_equal(comments_cnt, 2)  # moved auto comment + new comment
+        post = ticket.discussion_thread.last_post
+        # content and link to the ticket should be in a tracker's feed
+        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        r = self.app.get('/p/test2/bugs2/feed')
+        assert post_content in r, r
+        assert ticket_link in r, r
+        # content and link to the ticket should be in a ticket's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert post_content in r, r
+        assert ticket_link in r, r
 
     def test_move_ticket_bad_data(self):
         self.new_ticket(summary='test')
