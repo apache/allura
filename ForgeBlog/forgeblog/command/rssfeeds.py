@@ -3,7 +3,6 @@ from datetime import datetime
 import re
 
 import feedparser
-import html2text
 from bson import ObjectId
 
 import base
@@ -18,6 +17,14 @@ from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 from allura.lib.decorators import exceptionless
+
+## Everything in this file depends on html2text,
+## so import attempt is placed in global scope.
+try:
+    import html2text
+except ImportError:
+    raise ImportError("""Importing RSS feeds requires GPL library "html2text":
+    https://github.com/brondsem/html2text""")
 
 html2text.BODY_WIDTH = 0
 

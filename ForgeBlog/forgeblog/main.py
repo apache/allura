@@ -6,9 +6,10 @@ import urllib2
 # Non-stdlib imports
 import pkg_resources
 import pymongo
-from tg import expose, validate, redirect, flash
+from tg import config, expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import g, c, request, response
+from paste.deploy.converters import asbool
 import formencode
 from formencode import validators
 from webob import exc
@@ -123,10 +124,13 @@ class ForgeBlogApp(Application):
         return links
 
     def admin_menu(self):
+        import sys
         admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
         # temporarily disabled until some bugs are fixed
-        links = [SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal')]
-        links += super(ForgeBlogApp, self).admin_menu(force_options=True)
+        links = super(ForgeBlogApp, self).admin_menu(force_options=True)
+        # We don't want external feeds in menu unless they're enabled
+        if asbool(config.get('forgeblog.exfeed', 'false')):
+            links.insert(0, SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal'))
         return links
         #return super(ForgeBlogApp, self).admin_menu(force_options=True)
 
