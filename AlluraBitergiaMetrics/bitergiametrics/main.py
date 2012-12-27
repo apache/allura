@@ -89,6 +89,7 @@ class BitergiaMetricsApp(Application):
 #            SitemapEntry(' Lines added/removed', self.config.url() + 'lines_added_removed'),
 #            SitemapEntry('Tickets', base),
             SitemapEntry(' Tickets Evolution ', self.config.url() + 'its_milestone0'),
+            SitemapEntry(' Mailing Evolution ', self.config.url() + 'mls_milestone0'),
 #            SitemapEntry(' Open & closed', self.config.url() + 'open_closed'),
 #            SitemapEntry('Tools', self.config.url() + 'open_closed'),
 #            SitemapEntry(' Bicho', self.config.url() + 'bicho'),
@@ -140,6 +141,12 @@ class RootController(BaseController):
     @with_trailing_slash
     def its_milestone0(self, page=0, limit=10, **kw):
         return dict()
+    
+    @expose('jinja:bitergiametrics:templates/metrics/mls_milestone0.html')
+    @with_trailing_slash
+    def mls_milestone0(self, page=0, limit=10, **kw):
+        return dict()
+
 
     # Tools management
     @expose('jinja:bitergiametrics:templates/metrics/bicho.html')
