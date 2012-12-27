@@ -1,0 +1,8 @@
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{{value.html_text|safe}}
+{{lib.related_artifacts(value)}}
+<em class="grid-19">
+Showing METRICS for the project
+</em>
+

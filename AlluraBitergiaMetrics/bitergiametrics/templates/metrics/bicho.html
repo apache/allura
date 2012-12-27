@@ -1,0 +1,19 @@
+{% extends g.theme.master %}
+{% block title %}
+	{{c.project.name}} / {{c.app.config.options.mount_label}}
+{% endblock %} 
+{% block header%}
+	{{c.project.name}} / {{c.app.config.options.mount_label}}:
+	Bitergia Bicho Tool Config
+{% endblock %} 
+
+{% block content %}
+
+<form method="get">
+Now <input type="checkbox" name="when" value="now" checked>
+<input type=submit value="Launch bicho">
+</form>
+
+When: {{when}}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{
+"project_name" :"Allura", 
+"project_url" :"http://incubator.apache.org/allura/",
+"scm_url":"https://github.com/apache/incubator-allura",
+"scm_name":"git://git.apache.org/incubator-allura.git",
+"scm_type":"git",
+"its_url":"http://sourceforge.net/p/allura/tickets/",
+"its_name":"http://sourceforge.net/p/allura/tickets/",
+"its_type":"Allura issue tracking",
+"blog_url":"http://blog.bitergia.com/2012/11/13/some-charts-about-allura/"
+}

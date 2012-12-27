@@ -1,0 +1,37 @@
+{% extends g.theme.master %}
+
+{% do g.register_app_css('vizgrimoire.css', compress=False) %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Tickets{% endblock %}
+
+{% block content %}
+
+ <script type="text/javascript" src="{{g.app_static('jquery-1.7.1.min.js')}}"></script>
+
+    <div align=center>
+        <a href="{{g.app_static('allura/data/json/its-milestone0.json')}}">Tickets</a>
+    </div>
+    
+    <div>
+     <div style="float:right">
+      <h1>ENVISION</h1>
+      <div id="its-envision"></div>
+     </div>
+     <div>
+      <div id="its-open-flotr2" style="width:200px;height:200px"></div>
+      <div id="its-openers-flotr2" style="width:200px;height:200px"></div>
+      <div id="its-closed-flotr2" style="width:200px;height:200px"></div>
+      <div id="its-closers-flotr2" style="width:200px;height:200px"></div>
+     </div>
+    </div>
+      
+    <div id="report-config" data-its-data-file="{{g.app_static('allura/data/json/its-milestone0.json')}}"></div>
+      
+    <div align=right>
+        Powered by <a href="http://www.bitergia.com"><img src="{{g.app_static('bitergia-logo-peq.png')}}" border=0></a>
+    </div>
+    
+    <script type="text/javascript" src="{{g.app_static('vizgrimoire.min.js')}}"></script>    
+
+{% endblock %}

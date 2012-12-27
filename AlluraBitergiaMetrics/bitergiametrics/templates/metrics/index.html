@@ -1,0 +1,20 @@
+{% extends g.theme.master %}
+
+{% do g.register_app_css('metrics.css', compress=False) %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}{% endblock %}
+
+{% block content %}
+
+<p><h1>Allura Metrics</h1></p>
+
+<p>
+Proof of concept of how some parameters of the evolution of a software project can be visualized. 
+Allura integation. Visualization is still preliminary and incomplete. 
+</p>
+<div align=right>
+Powered by <a href="http://www.bitergia.com"><img src="{{g.app_static('bitergia-logo-peq.png')}}" border=0></a>
+</div>
+{% endblock %}
