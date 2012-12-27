@@ -91,7 +91,7 @@ The forge consists of several components, all of which need to be running to hav
 We have a custom config ready for use.
 
     (anvil)~$ cd ~/src
-    (anvil)~/src$ wget http://apache.mirrors.tds.net/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
+    (anvil)~/src$ wget http://archive.apache.org/dist/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
     (anvil)~/src$ tar xf apache-solr-1.4.1.tgz
     (anvil)~/src$ cd apache-solr-1.4.1/example/
     (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/forge/solr_config/conf
