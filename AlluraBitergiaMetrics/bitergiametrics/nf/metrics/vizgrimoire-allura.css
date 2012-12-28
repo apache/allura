@@ -1,0 +1,10 @@
+.envision-component table, .info-pill table  {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+}      
+.envision-component table thead tr th, table tr td,
+.info-pill table {
+    padding: 2px; 
+}
+.info-pill h1 {font-size: 100%;}

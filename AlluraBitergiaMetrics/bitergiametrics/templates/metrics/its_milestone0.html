@@ -5,44 +5,51 @@
 
 {% block header %}{{c.project.name}} / {{c.app.config.options.mount_label}}: Tickets{% endblock %}
 
+{% block extra_css %}
+<style type="text/css">
+.envision-component table, .info-pill table  {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+}      
+.envision-component table thead tr th, table tr td,
+.info-pill table {
+    padding: 2px; 
+}
+.info-pill h1 {font-size: 100%;}
+</style>
+{% endblock %}
+
+
 {% block content %}
 
- <script type="text/javascript" src="{{g.app_static('jquery-1.7.1.min.js')}}"></script>
-    <style>
-    <!--
-      .envision-component table  {
-          width: 100%;
-          height: 100%;
-          margin: 0px;
-      }      
-      .envision-component table thead tr th, table tr td {
-          padding: 2px; 
-      }
-    -->
-    </style>
- 
+    <script type="text/javascript" src="{{g.app_static('jquery-1.7.1.min.js')}}"></script>
+     
     <div align=center>
         <a href="{{g.app_static('allura/data/json/its-milestone0.json')}}">Tickets</a>
     </div>
     
-   <div style="float:left">
-     <div style="float:left;margin:20px;">
-      <div id="its-envision"></div>
-     </div>
-     <div style="float:left">
-      <div id="its-open-flotr2" style="width:200px;height:200px"></div>
-      <div id="its-openers-flotr2" style="width:200px;height:200px"></div>
-      <div id="its-closed-flotr2" style="width:200px;height:200px"></div>
-      <div id="its-closers-flotr2" style="width:200px;height:200px"></div>     
-     </div>
+    <div style="float:left">
+        <div style="float:left;margin:20px;">
+            <div id="its-envision"></div>
+        </div>
+        <div style="float:left">
+            <div id="its-open-flotr2" style="width:200px;height:200px"></div>
+            <div id="its-openers-flotr2" style="width:200px;height:200px"></div>
+            <div id="its-closed-flotr2" style="width:200px;height:200px"></div>
+            <div id="its-closers-flotr2" style="width:200px;height:200px"></div>     
+        </div>
+        <div style="float:left;width:200px;margin-left:10px">            
+            <div id="its-top-pie"></div>
+        </div>       
     </div>
       
-    <div id="report-config" data-its-data-file="{{g.app_static('allura/data/json/its-milestone0.json')}}"></div>
-      
+    <div style="clear:both"></div>      
     <div align=right>
         Powered by <a href="http://www.bitergia.com"><img src="{{g.app_static('bitergia-logo-peq.png')}}" border=0></a>
     </div>
     
+    <div id="report-config" data-global-data-dir="{{g.app_static('allura/data/json')}}"></div>    
     <script type="text/javascript" src="{{g.app_static('vizgrimoire.min.js')}}"></script>    
 
 {% endblock %}

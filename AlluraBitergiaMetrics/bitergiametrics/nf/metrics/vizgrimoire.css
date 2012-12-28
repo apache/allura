@@ -285,6 +285,28 @@ h3 {
   margin-top: -2px;
   /* align envision and flotr2 graphs*/
   margin-bottom: 200px;
+}
+
+/*
+	OTHER STYLES TO BE ORGANIZED
+*/
+.graph .flotr-grid-label {
+    font-size: 0.6em
+}
+
+.graph {
+	height:200px;
+	width:200px;
+}
+
+.bubbles {
+	height:400px;
+	width:900px;
+}
+
+.radar {
+	height:400px;
+	width:500px;
 }/* Shared CSS Style in all Envision Bitergia Reports */
 
 .envision-component-container {
