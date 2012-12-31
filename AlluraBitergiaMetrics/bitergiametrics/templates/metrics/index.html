@@ -8,7 +8,7 @@
 
 {% block extra_css %}
 <style type="text/css">
-.envision-component table, .info-pill table  {
+.envision-component table, .info-pill table, .flotr-legend table {
     width: 100%;
     height: 100%;
     margin: 0px;
@@ -51,7 +51,7 @@ Proof of concept of how some parameters of the evolution of a software project c
 <div style="float:right"">
     Powered by <a href="http://www.bitergia.com"><img src="{{g.app_static('bitergia-logo-peq.png')}}" border=0></a>
 </div>
-<div id="report-config" data-global-data-dir="{{g.app_static('allura/data/json')}}"></div>
+<div id="report-config" data-global-data-dir="{{g.app_static('allura/data/json')}}/"></div>
 
 <script type="text/javascript" src="{{g.app_static('vizgrimoire.min.js')}}"></script>    
 {% endblock %}

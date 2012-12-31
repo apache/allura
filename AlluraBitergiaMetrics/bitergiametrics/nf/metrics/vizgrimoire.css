@@ -307,6 +307,11 @@ h3 {
 .radar {
 	height:400px;
 	width:500px;
+}
+
+.demographics {
+	height:400px;
+	width:400px;
 }/* Shared CSS Style in all Envision Bitergia Reports */
 
 .envision-component-container {
