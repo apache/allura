@@ -591,8 +591,8 @@ class TestPreferences(TestController):
         assert len(user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
 
         #Add second inactivity period
-        startdate2 = datetime(2012, 12, 24)
-        enddate2 = datetime(2012, 12, 28)
+        startdate2 =  now + timedelta(days=24)
+        enddate2 = now + timedelta(days=28)
         r = self.app.post('/auth/prefs/add_inactive_period',
              params=dict(
                  startdate=startdate2.strftime('%d/%m/%Y'),
