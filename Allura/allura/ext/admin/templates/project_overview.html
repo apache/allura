@@ -16,10 +16,12 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength-min.js')}}"></script>
+  <script type="text/javascript" src="{{g.forge_static('js/jquery.maxlength.min.js')}}"></script>
   <script type="text/javascript">
     /*global confirm: true*/
     $(document).ready(function () {
+      $.maxlength.setDefaults({feedbackText : '{r} characters left'})
+      
       var $metadata_form = $('#metadata_form');
       var $removal_original = $('input[name=removal]:checked');
       var $removal_delete_cb = $('#removal_delete_cb');
@@ -41,8 +43,8 @@
       // manage url input state for support page and removal
       update_url($support_page_url_cb, $support_page_url);
       update_url($removal_moved_cb, $moved_to_url);
-      $('input[name=summary]').maxlength({maxCharacters: 70});
-      $('textarea[name=short_description]').maxlength({maxCharacters: 1000});
+      $('input[name=summary]').maxlength({max: 70});
+      $('textarea[name=short_description]').maxlength({max: 1000});
       $('input[name=support_page]').change(function(){
         update_url($support_page_url_cb, $support_page_url);
       });
