@@ -2180,6 +2180,7 @@ nav .ico {
 div.attachment_thumb {
   float: left;
   margin: .5em;
+  margin-right: 1.5em;
   position: relative;
   padding: 10px;
 }
