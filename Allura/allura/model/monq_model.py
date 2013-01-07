@@ -155,7 +155,8 @@ class MonQTask(MappedClass):
         '''Get the highest-priority, oldest, ready task and lock it to the
         current process.  If no task is available and waitfunc is supplied, call
         the waitfunc before trying to get the task again.  If waitfunc is None
-        and no tasks are available, return None.
+        and no tasks are available, return None.  If waitfunc raises a
+        StopIteration, stop waiting for a task
         '''
         sort = [
                 ('priority', ming.DESCENDING),
@@ -180,7 +181,10 @@ class MonQTask(MappedClass):
                     raise
             if waitfunc is None:
                 return None
-            waitfunc()
+            try:
+                waitfunc()
+            except StopIteration:
+                return None
 
     @classmethod
     def timeout_tasks(cls, older_than):

@@ -86,7 +86,7 @@ class TaskdCommand(base.Command):
                 if self.keep_running:
                     return func()
                 else:
-                    return None
+                    raise StopIteration
             return waitfunc_checks_running
 
         if pylons.g.amq_conn:
