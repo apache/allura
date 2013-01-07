@@ -443,26 +443,25 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         grouped_nav = OrderedDict()
         # count how many tools of each type we have
         counts = Counter([e.tool_name.lower() for e in sitemap if e.tool_name])
+        grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
         for e in sitemap:
             # if it's not a tool, add to navbar and continue
             if not e.tool_name:
                 grouped_nav[id(e)] = e
                 continue
             tool_name = e.tool_name.lower()
-            # tool of a type we don't have in the navbar yet
-            if tool_name not in grouped_nav:
-                # there's more than one tool of this type
-                if counts.get(tool_name, 1) > 1:
+            if counts.get(tool_name, 1) <= grouping_threshold:
+                # don't need grouping, so just add it by label
+                grouped_nav[e.label] = e
+            else:
+                # tool of a type we don't have in the navbar yet
+                if tool_name not in grouped_nav:
                     # change label to be the tool name (type)
                     e.label = tool_name.capitalize()
-                    # add tool url to list of urls that will match this nav entry
-                    e.matching_urls.append(e.url)
                     # change url to point to tool list page
                     e.url = self.url() + '_list/' + tool_name
-                grouped_nav[tool_name] = e
-            else:
-                # already have a tool of this type in the nav; add this tool's
-                # url to the list of urls that match this nav entry
+                    grouped_nav[tool_name] = e
+                # add tool url to list of urls that will match this nav entry
                 grouped_nav[tool_name].matching_urls.append(e.url)
         return grouped_nav.values()
 

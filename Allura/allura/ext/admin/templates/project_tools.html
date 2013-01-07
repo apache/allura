@@ -115,6 +115,14 @@
 {{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
 {{c.mount_delete.display(content='<h1>Confirm Delete</h1>')}}
 <div><!--dummy-->
+
+<h3 style="clear:left">Grouping</h3>
+<form method="POST" action="configure_tool_grouping" id="configure_grouping_form">
+    <label>Threshold for grouping tools by type:
+        <input name="grouping_threshold" value="{{c.project.get_tool_data('allura', 'grouping_threshold', 1)}}"/>
+    </label>
+    <br/><input type="submit" value="Change"/>
+</form>
 {% endblock %}
 
 {% block extra_js %}
@@ -131,6 +139,13 @@
 <style type="text/css">
 .pad .fourcol .fleft {
   min-height: 200px;
+}
+
+#configure_grouping_form {
+    padding-left: 10px;
+}
+#configure_grouping_form input[name=grouping_threshold] {
+    width: 1.5em;
 }
 </style>
 {% endblock %}

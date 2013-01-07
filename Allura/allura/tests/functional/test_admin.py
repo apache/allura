@@ -175,6 +175,19 @@ class TestProjectAdmin(TestController):
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
 
+    def test_grouping_threshold(self):
+        r = self.app.get('/admin/tools')
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '1')
+        r = self.app.post('/admin/configure_tool_grouping', params={
+                'grouping_threshold': '2',
+            }).follow()
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '2')
+        r = self.app.get('/admin/tools')
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '2')
+
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'
         file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)

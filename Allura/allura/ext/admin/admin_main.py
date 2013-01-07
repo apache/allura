@@ -203,6 +203,18 @@ class ProjectAdminController(BaseController):
 
     @expose()
     @require_post()
+    def configure_tool_grouping(self, grouping_threshold='1', **kw):
+        try:
+            grouping_threshold = int(grouping_threshold)
+            if grouping_threshold < 1:
+                raise ValueError('Invalid threshold')
+            c.project.set_tool_data('allura', grouping_threshold=grouping_threshold)
+        except ValueError as e:
+            flash('Invalid threshold', 'error')
+        redirect('tools')
+
+    @expose()
+    @require_post()
     def update_labels(self, labels=None, **kw):
         require_access(c.project, 'admin')
         c.project.labels = labels.split(',')
