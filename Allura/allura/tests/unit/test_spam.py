@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import mock
 import unittest
+import urllib
 
 try:
     from allura.lib.spam.akismetservice import Akismet
@@ -11,18 +14,22 @@ except ImportError:
 class TestAkismet(unittest.TestCase):
     def setUp(self):
         self.akismet = Akismet()
-        self.akismet.comment_check = mock.Mock()
+        def side_effect(*args, **kw):
+            # side effect to test that data being sent to
+            # akismet can be successfully urlencoded
+            urllib.urlencode(kw.get('data', {}))
+        self.akismet.comment_check = mock.Mock(side_effect=side_effect)
         self.fake_artifact = mock.Mock(**{'url.return_value': 'artifact url'})
-        self.fake_user = mock.Mock(display_name='Some User',
+        self.fake_user = mock.Mock(display_name=u'Søme User',
                 email_addresses=['user@domain'])
         self.fake_headers = dict(
             REMOTE_ADDR='fallback ip',
             X_FORWARDED_FOR='some ip',
             USER_AGENT='some browser',
             REFERER='some url')
-        self.content = 'spam text'
+        self.content = u'spåm text'
         self.expected_data = dict(
-            comment_content=self.content,
+            comment_content=self.content.encode('utf8'),
             comment_type='comment',
             user_ip='some ip',
             user_agent='some browser',
@@ -65,7 +72,7 @@ class TestAkismet(unittest.TestCase):
         c.user = None
         self.akismet.check(self.content, user=self.fake_user)
         expected_data = self.expected_data
-        expected_data.update(comment_author='Some User',
+        expected_data.update(comment_author=u'Søme User'.encode('utf8'),
                 comment_author_email='user@domain')
         self.akismet.comment_check.assert_called_once_with(self.content,
                 data=expected_data, build_data=False)
@@ -77,7 +84,7 @@ class TestAkismet(unittest.TestCase):
         c.user = self.fake_user
         self.akismet.check(self.content)
         expected_data = self.expected_data
-        expected_data.update(comment_author='Some User',
+        expected_data.update(comment_author=u'Søme User'.encode('utf8'),
                 comment_author_email='user@domain')
         self.akismet.comment_check.assert_called_once_with(self.content,
                 data=expected_data, build_data=False)

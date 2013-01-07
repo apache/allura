@@ -3,6 +3,8 @@ import logging
 from pylons import request
 from pylons import tmpl_context as c
 
+from allura.lib import helpers as h
+
 import akismet
 
 log = logging.getLogger(__name__)
@@ -23,6 +25,9 @@ class Akismet(akismet.Akismet):
         kw['user_ip'] = user_ip.split(',')[0].strip()
         kw['user_agent'] = request.headers.get('USER_AGENT')
         kw['referrer'] = request.headers.get('REFERER')
+        # kw will be urlencoded, need to utf8-encode
+        for k, v in kw.items():
+            kw[k] = h.really_unicode(v).encode('utf8')
         res = self.comment_check(text, data=kw, build_data=False)
         log.info("spam=%s (akismet): %s" % (str(res), log_msg))
         return res
