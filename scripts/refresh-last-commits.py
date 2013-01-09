@@ -118,7 +118,6 @@ def refresh_repo_lcds(commit_ids, options):
             _print_stats(lcd_cache, timings, debug_step, commit)
             lcd_cache._get_walks_max = 0
             lcd_cache._build_walks_max = 0
-            ThreadLocalORMSession.close_all()
     ThreadLocalORMSession.flush_all()
 
 
