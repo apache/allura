@@ -1,6 +1,13 @@
 # Some packages must be optional due to license incompatibility with Apache
 # License v2
 
+# for ForgeWiki mediawiki importer, as well as ForgeBlog external feed
+# importer
+# Use the bleeding edge since stable release 3.200.3 doesn't have
+# https://github.com/aaronsw/html2text/commit/a5c0f3317edd1c9b61f89539b6a6e8363cf99225
+# or many other escaping/formatting improvements
+-e git://github.com/brondsem/html2text.git#egg=html2text # GPL
+
 # for ForgeWiki's mediawiki importer:
 -e git://github.com/zikzakmedia/python-mediawiki.git#egg=python-mediawiki   # GPL
 MySQL-python  # GPL

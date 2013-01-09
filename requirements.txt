@@ -1,10 +1,4 @@
 # requirements for local development, or other deployment instances
 
-# note: this is a GPL library
-# use the bleeding edge since stable release 3.200.3 doesn't have
-# https://github.com/aaronsw/html2text/commit/a5c0f3317edd1c9b61f89539b6a6e8363cf99225
-# or many other escaping/formatting improvements
--e git://github.com/brondsem/html2text.git#egg=html2text
-
 # Include our common requirements
 -r requirements-common.txt
