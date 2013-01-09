@@ -161,6 +161,7 @@ class Globals(object):
             registration=_cache_eps('allura.project_registration'),
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
+            spam=_cache_eps('allura.spam'),
             )
 
         # Zarkov logger
@@ -168,21 +169,10 @@ class Globals(object):
 
     @LazyProperty
     def spam_checker(self):
-        """Return an Akismet spam checker if config defines an Akismet API key.
-        Otherwise, return a no-op spam checker.
-
-        Eventually we may support checkers for other services like Mollom and
-        Defensio.
+        """Return a SpamFilter implementation.
         """
-        akismet_key = config.get('spam.akismet_key')
-        if akismet_key:
-            from allura.lib.spam import akismetservice
-            checker = akismetservice.Akismet(akismet_key, config.get('base_url'))
-            checker.verify_key()
-        else:
-            from allura.lib import spam
-            checker = spam.FakeSpamChecker()
-        return checker
+        from allura.lib import spam
+        return spam.SpamFilter.get(config, self.entry_points['spam'])
 
     @LazyProperty
     def director(self):
