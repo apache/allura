@@ -198,6 +198,7 @@ class SVNImplementation(M.RepositoryImplementation):
                  self._repo, source_url)
 
         if self.can_hotcopy(source_url):
+            log.info('... cloning %s via hotcopy', source_url)
             # src repo is on the local filesystem - use hotcopy (faster)
             source_path, dest_path = source_url[7:], self._url[7:]
             fullname = os.path.join(self._repo.fs_path, self._repo.name)
