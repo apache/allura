@@ -104,6 +104,10 @@ setup(
     [allura.theme]
     allura = allura.lib.plugin:ThemeProvider
 
+    [allura.spam]
+    #akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
+    #mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand
