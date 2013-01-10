@@ -185,7 +185,7 @@ class UserStats(MappedClass):
         j = getElementIndex(cat.messages, art_type = art_type)
         if j is None:
             return dict(created=0, modified=0)
-        return dict(created=cat[j].created, modified=cat[j].modified)
+        return dict(created=cat.messages[j].created, modified=cat.messages[j].modified)
 
     def getTickets(self, category = None):
         i = getElementIndex(self.general, category = category)
