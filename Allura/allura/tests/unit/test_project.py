@@ -19,15 +19,17 @@ class TestProject(unittest.TestCase):
         ]
         p.url = Mock(return_value='proj_url/')
         p.sitemap = Mock(return_value=sitemap_entries)
+        entries = p.grouped_navbar_entries()
         expected = [
             ('Tickets', 'proj_url/_list/tickets', 3),
             ('wiki', 'wiki url', 0),
             ('Discussion', 'proj_url/_list/discussion', 2),
             ('subproject', 'subproject url', 0),
         ]
-        actual = [(e.label, e.url, len(e.matching_urls))
-                for e in p.grouped_navbar_entries()]
+        expected_ticket_urls = ['bugs url', 'features url', 'support url']
+        actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
         self.assertEqual(expected, actual)
+        self.assertEqual(entries[0].matching_urls, expected_ticket_urls)
 
     def test_grouped_navbar_threshold(self):
         p = M.Project()
@@ -43,6 +45,7 @@ class TestProject(unittest.TestCase):
         p.url = Mock(return_value='proj_url/')
         p.sitemap = Mock(return_value=sitemap_entries)
         p.tool_data['allura'] = {'grouping_threshold': 2}
+        entries = p.grouped_navbar_entries()
         expected = [
             ('Tickets', 'proj_url/_list/tickets', 3),
             ('wiki', 'wiki url', 0),
@@ -50,6 +53,7 @@ class TestProject(unittest.TestCase):
             ('subproject', 'subproject url', 0),
             ('help', 'help url', 0),
         ]
-        actual = [(e.label, e.url, len(e.matching_urls))
-                for e in p.grouped_navbar_entries()]
+        expected_ticket_urls = ['bugs url', 'features url', 'support url']
+        actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
         self.assertEqual(expected, actual)
+        self.assertEqual(entries[0].matching_urls, expected_ticket_urls)

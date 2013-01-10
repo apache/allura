@@ -458,11 +458,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 if tool_name not in grouped_nav:
                     # change label to be the tool name (type)
                     e.label = tool_name.capitalize()
+                    # add tool url to list of urls that will match this nav entry
+                    # have to do this before changing the url to the list page
+                    e.matching_urls.append(e.url)
                     # change url to point to tool list page
                     e.url = self.url() + '_list/' + tool_name
                     grouped_nav[tool_name] = e
-                # add tool url to list of urls that will match this nav entry
-                grouped_nav[tool_name].matching_urls.append(e.url)
+                else:
+                    # add tool url to list of urls that will match this nav entry
+                    grouped_nav[tool_name].matching_urls.append(e.url)
         return grouped_nav.values()
 
     def parent_iter(self):
