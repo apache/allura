@@ -711,6 +711,7 @@ class LastCommit(RepoObject):
         if lcd is None and create:
             commit = cache.get(Commit, {'_id': last_commit_id})
             lcd = cls._build(commit.get_path(path))
+            cache.set(cls, {'path': path, 'commit_id': last_commit_id}, lcd)
         return lcd
 
     @classmethod
@@ -722,12 +723,28 @@ class LastCommit(RepoObject):
         path = tree.path().strip('/')
         entries = []
         tree_nodes = set([n.name for n in tree.tree_ids])
+        prev_lcd = None
+        parent = tree.commit.get_parent()
+        if parent:
+            try:
+                prev_lcd = cls.get(parent.get_path(path), create=False)
+            except KeyError as e:
+                prev_lcd = None  # will fail if path was added this commit
         for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
-            commit_id = tree.repo.commits(os.path.join(path, node.name), tree.commit._id, limit=1)
+            not_changed = os.path.join(path, node.name) not in tree.commit.changed_paths
+            if not_changed and prev_lcd:
+                commit_id = prev_lcd.entry_by_name(node.name).commit_id
+            else:
+                commit_id = tree.repo.commits(os.path.join(path, node.name), tree.commit._id, limit=1)
+                if commit_id:
+                    commit_id = commit_id[0]
+                else:
+                    log.error('Tree node not recognized by SCM: %s @ %s', os.path.join(path, node.name), tree.commit._id)
+                    commit_id = tree.commit._id
             entries.append(dict(
                     name=node.name,
                     type='DIR' if node.name in tree_nodes else 'BLOB',
-                    commit_id=commit_id[0],
+                    commit_id=commit_id,
                 ))
         lcd = cls(
                 commit_id=tree.commit._id,
@@ -735,6 +752,11 @@ class LastCommit(RepoObject):
                 entries=entries,
             )
         return lcd
+
+    def entry_by_name(self, name):
+        for node in self.entries:
+            if node.name == name:
+                return node
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
