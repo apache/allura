@@ -80,20 +80,13 @@ LastCommitDoc_old = collection(
 LastCommitDoc = collection(
     'repo_last_commit', main_doc_session,
     Field('_id', S.ObjectId()),
-    Field('commit_ids', [str]),
+    Field('commit_id', str),
     Field('path', str),
-    Index('commit_ids', 'path'),
+    Index('commit_id', 'path'),
     Field('entries', [dict(
         type=str,
         name=str,
-        commit_info=dict(
-            id=str,
-            date=datetime,
-            author=str,
-            author_email=str,
-            author_url=str,
-            shortlink=str,
-            summary=str))]))
+        commit_id=str)]))
 
 # List of all trees contained within a commit
 # TreesDoc._id = CommitDoc._id
@@ -349,7 +342,8 @@ class Commit(RepoObject):
         parts = path.split('/')
         cur = self.tree
         for part in parts:
-            cur = cur[part]
+            if part != '':
+                cur = cur[part]
         return cur
 
     @LazyProperty
@@ -466,45 +460,44 @@ class Tree(RepoObject):
         each node.  Eventually, ls_old can be removed and this can be
         replaced with the following:
 
-            last_commit = LastCommit.get(self)
-            return sorted(last_commit.entries, cmp=lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name))
+            return self._lcd_map(LastCommit.get(self))
         '''
         # look for existing new format first
-        last_commit = LastCommit.query.get(
-                commit_ids=self.commit._id,
-                path=self.path().strip('/'),
-            )
+        last_commit = LastCommit.get(self, create=True)
         if last_commit:
-            sorted_entries = sorted(last_commit.entries, cmp=lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name))
-            mapped_entries = [self._dirent_map(e) for e in sorted_entries]
-            return mapped_entries
+            return self._lcd_map(last_commit)
         # otherwise, try old format
         old_style_results = self.ls_old()
         if old_style_results:
             return old_style_results
         # finally, use the new implentation that auto-vivifies
-        last_commit = LastCommit.get(self)
-        if not last_commit:
-            return []
-        sorted_entries = sorted(last_commit.entries, cmp=lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name))
-        mapped_entries = [self._dirent_map(e) for e in sorted_entries]
-        return mapped_entries
+        return self._lcd_map(LastCommit.get(self))
 
-    def _dirent_map(self, dirent):
-        return dict(
-                kind=dirent.type,
-                name=dirent.name,
-                href=dirent.name,
-                last_commit=dict(
-                        author=dirent.commit_info.author,
-                        author_email=dirent.commit_info.author_email,
-                        author_url=dirent.commit_info.author_url,
-                        date=dirent.commit_info.date,
-                        href=self.repo.url_for_commit(dirent.commit_info['id']),
-                        shortlink=dirent.commit_info.shortlink,
-                        summary=dirent.commit_info.summary,
-                    ),
-            )
+    def _lcd_map(self, lcd):
+        if lcd is None:
+            return []
+        cmp_entries = lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name)
+        commit_ids = [e.commit_id for e in lcd.entries]
+        commits = Commit.query.find(dict(_id={'$in': commit_ids}))
+        commit_infos = {c._id: c.info for c in commits}
+        results = []
+        for entry in sorted(lcd.entries, cmp=cmp_entries):
+            commit_info = commit_infos[entry.commit_id]
+            results.append(dict(
+                    kind=entry.type,
+                    name=entry.name,
+                    href=entry.name,
+                    last_commit=dict(
+                            author=commit_info['author'],
+                            author_email=commit_info['author_email'],
+                            author_url=commit_info['author_url'],
+                            date=commit_info['date'],
+                            href=self.repo.url_for_commit(commit_info['id']),
+                            shortlink=commit_info['shortlink'],
+                            summary=commit_info['summary'],
+                        ),
+                ))
+        return results
 
     def ls_old(self):
         # Load last commit info
@@ -706,121 +699,42 @@ class Blob(object):
 
 class LastCommit(RepoObject):
     def __repr__(self):
-        return '<LastCommit /%s [%s]>' % (self.path, ',\n    '.join(self.commit_ids))
+        return '<LastCommit /%s %s>' % (self.path, self.commit_id)
 
     @classmethod
-    def get(cls, tree):
-        '''Find the LastCommitDoc for the given tree.
-
-        Climbs the commit tree until either:
-
-        1) An LCD is found for the given tree.  (If the LCD was not found for the
-           tree's commit, the commits traversed while searching for it are
-           added to the LCD for faster retrieval in the future.)
-
-        2) The commit in which the tree was most recently modified is found.
-           In this case, we know that the LCD hasn't been constructed for this
-           (chain of) commit(s), and it will have to be built.
-        '''
+    def get(cls, tree, create=True):
+        '''Find or build the LastCommitDoc for the given tree.'''
         cache = getattr(c, 'model_cache', '') or ModelCache()
         path = tree.path().strip('/')
-        commit_ids = []
-        cache._get_calls += 1
-        gw = 0
-        for commit in tree.commit.climb_commit_tree():
-            last_commit = cache.get(LastCommit, dict(
-                    commit_ids=commit._id,
-                    path=path,
-                ))
-            if last_commit:
-                cache._get_hits += 1
-                # found our LCD; add any traversed commits to it
-                if commit_ids:
-                    last_commit.commit_ids.extend(commit_ids)
-                    for commit_id in commit_ids:
-                        cache.set(LastCommit, dict(commit_ids=commit_id, path=path), last_commit)
-                return last_commit
-            commit_ids.append(commit._id)
-            if path in commit.changed_paths:
-                cache._get_misses += 1
-                # tree was changed but no LCD found; have to build
-                changed_tree = commit.tree
-                if path != '':
-                    changed_tree = changed_tree.get_obj_by_path(path)
-                return cls.build(changed_tree, commit_ids)
-            cache._get_walks += 1
-            gw += 1
-            cache._get_walks_max = max(cache._get_walks_max, gw)
+        last_commit_id = tree.repo.commits(path, tree.commit._id, limit=1)[0]
+        lcd = cache.get(cls, {'path': path, 'commit_id': last_commit_id})
+        if lcd is None and create:
+            commit = cache.get(Commit, {'_id': last_commit_id})
+            lcd = cls._build(commit.get_path(path))
+        return lcd
 
     @classmethod
-    def build(cls, tree, commit_ids=[]):
+    def _build(cls, tree):
         '''
           Build the LCD record, presuming that this tree is where it was most
           recently changed.
-
-          To build the LCD, we climb the commit tree, keeping track of which
-          entries we still need info about.  (For multi-parent commits, it
-          doesn't matter which parent we follow because those would be merge
-          commits and ought to have the diff info populated for any file
-          touched by the merge.)  At each step of the walk, we check the following:
-
-            1) If the current tree has an LCD record, we can pull all the remaining
-               info we need from it, and we're done.
-
-            2) If the tree was modified in this commit, then we pull the info for
-               all changed entries, then continue up the tree.  Once we have data
-               for all entries, we're done.
-
-          (It may be possible to optimize this for SVN, if SVN can return all of
-          the LCD info from a single call and if that turns out to be more efficient
-          than walking up the tree.  It is unclear if those hold without testing.)
         '''
-        cache = getattr(c, 'model_cache', '') or ModelCache()
-        unfilled = set([n.name for n in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
-        tree_nodes = set([n.name for n in tree.tree_ids])
         path = tree.path().strip('/')
-        lcd = cls(
-                    commit_ids=commit_ids,
-                    path=path,
-                    entries=[],
-                )
-        cache._build_calls += 1
-        bw = 0
-        for commit in tree.commit.climb_commit_tree():
-            partial_lcd = cache.get(LastCommit, dict(
-                    commit_ids=commit._id,
-                    path=path,
+        entries = []
+        tree_nodes = set([n.name for n in tree.tree_ids])
+        for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
+            commit_id = tree.repo.commits(os.path.join(path, node.name), tree.commit._id, limit=1)
+            entries.append(dict(
+                    name=node.name,
+                    type='DIR' if node.name in tree_nodes else 'BLOB',
+                    commit_id=commit_id[0],
                 ))
-            for name in list(unfilled):
-                if os.path.join(path, name) in commit.changed_paths:
-                    # changed in this commit, so gather the data
-                    lcd.entries.append(dict(
-                            type=name in tree_nodes and 'DIR' or 'BLOB',
-                            name=name,
-                            commit_info=commit.info,
-                        ))
-                    unfilled.remove(name)
-                elif partial_lcd:
-                    # the partial LCD should contain anything we're missing
-                    entry = partial_lcd.entry_by_name(name)
-                    assert entry
-                    lcd.entries.append(entry)
-                    unfilled.remove(name)
-
-            if not unfilled:
-                break
-            cache._build_walks += 1
-            bw += 1
-            cache._build_walks_max = max(cache._build_walks_max, bw)
-        for commit_id in commit_ids:
-            cache.set(LastCommit, dict(commit_ids=commit_id, path=path), lcd)
+        lcd = cls(
+                commit_id=tree.commit._id,
+                path=path,
+                entries=entries,
+            )
         return lcd
-
-    def entry_by_name(self, name):
-        for entry in self.entries:
-            if entry.name == name:
-                return entry
-        return None
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
@@ -873,6 +787,8 @@ class ModelCache(object):
         self._build_calls = 0
         self._build_walks = 0
         self._build_walks_max = 0
+        self._skipped_trees = 0
+        self._processed_trees = 0
 
     def _normalize_query(self, query):
         _query = query
