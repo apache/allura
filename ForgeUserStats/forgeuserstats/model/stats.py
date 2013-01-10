@@ -431,7 +431,7 @@ class UserStats(MappedClass):
         return len(self.lastmonth.logins)
 
     def checkOldArtifacts(self):
-        now = datetime.now()
+        now = datetime.utcnow()
         for m in self.lastmonth.messages:
             if now - m.datetime > timedelta(30):
                 self.lastmonth.messages.remove(m)
