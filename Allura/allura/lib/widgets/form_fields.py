@@ -433,3 +433,18 @@ class Lightbox(ew_core.Widget):
                 return false;
             });
         ''' % (self.name, self.trigger))
+
+class LabeledHiddenField(ew.HiddenField):
+    '''Jinja2 implementation of InputField seems to ignore show_label=True.'''
+    template=ew.Snippet('''<label>{{ label|e }}<input {{widget.j2_attrs({
+        'type':'hidden',
+        'name':name,
+        'class':css_class,
+        'value':value}, attrs)}}></label>''', 'jinja2')
+
+class LabelOnlyField(ew.InputField):
+    template=ew.Snippet('<label>{{ label|e }}</label>', 'jinja2')
+    defaults=dict(
+        name=None,
+        label='',
+        show_errors=False)

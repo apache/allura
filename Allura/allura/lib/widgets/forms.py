@@ -240,7 +240,7 @@ class SkypeAccountForm(ForgeForm):
             label='Skype account',
             attrs={'value':''},
             validator=fev.UnicodeString(not_empty=False))
-        
+
     def display(self, **kw):
         initial_value = kw.get('initial_value','')
         self.fields['skypeaccount'].attrs['value'] = initial_value
@@ -253,23 +253,17 @@ class RemoveTextValueForm(ForgeForm):
         initial_value = kw.get('value','')
         label = kw.get('label','')
         description = kw.get('description')
-        
+
         self.fields = [
             ew.RowField(
                 show_errors=False,
-                hidden_fields=[
-                    ew.HiddenField(
-                        name="oldvalue",
-                        attrs={'value':initial_value},
-                        show_errors=False)
-                ],
                 fields=[
-                    ew.HTMLField(
-                        text=label,
+                    ffw.LabelOnlyField(label=label),
+                    ffw.LabeledHiddenField(
+                        name='oldvalue',
+                        label=initial_value,
+                        attrs={'value':initial_value},
                         show_errors=False),
-                    ew.HTMLField(
-                        show_label=False,
-                        text=initial_value),
                     ew.SubmitButton(
                         show_label=False,
                         attrs={'value':'Remove'},
@@ -308,26 +302,21 @@ class RemoveSocialNetworkForm(ForgeForm):
     def display(self, **kw):
         account = kw.get('account','')
         socialnetwork = kw.get('socialnetwork','')
-        
+
         self.fields = [
             ew.RowField(
                 show_errors=False,
-                hidden_fields=[
-                    ew.HiddenField(
+                fields=[
+                    ffw.LabeledHiddenField(
+                        label='%s account' % socialnetwork,
+                        name="socialnetwork",
+                        attrs={'value':socialnetwork},
+                        show_errors=False),
+                    ffw.LabeledHiddenField(
+                        label=account,
                         name="account",
                         attrs={'value':account},
                         show_errors=False),
-                    ew.HiddenField(
-                        name="socialnetwork",
-                        attrs={'value':socialnetwork},
-                        show_errors=False)],
-                fields=[
-                    ew.HTMLField(
-                        text='%s account' % socialnetwork,
-                        show_errors=False),
-                    ew.HTMLField(
-                        show_label=False,
-                        text=account),
                     ew.SubmitButton(
                         show_label=False,
                         attrs={'value':'Remove'},
@@ -375,21 +364,18 @@ class RemoveInactivePeriodForm(ForgeForm):
                 show_label=False,
                 show_errors=False,
                 fields=[
-                    ew.HTMLField(text=startdate.strftime('%d/%m/%Y'),
-                                 show_errors=False),
-                    ew.HTMLField(text=enddate.strftime('%d/%m/%Y'),
-                                 show_errors=False),
-                    ew.SubmitButton(
-                        attrs={'value':'Remove'},
-                        show_errors=False)],
-                hidden_fields=[
-                    ew.HiddenField(
+                    ffw.LabeledHiddenField(
+                        label=startdate.strftime('%d/%m/%Y'),
                         name='startdate',
                         attrs={'value':startdate.strftime('%d/%m/%Y')},
                         show_errors=False),
-                    ew.HiddenField(
+                    ffw.LabeledHiddenField(
+                        label=enddate.strftime('%d/%m/%Y'),
                         name='enddate',
                         attrs={'value':enddate.strftime('%d/%m/%Y')},
+                        show_errors=False),
+                    ew.SubmitButton(
+                        attrs={'value':'Remove'},
                         show_errors=False)])]
         return super(ForgeForm, self).display(**kw)
 
@@ -443,22 +429,24 @@ class RemoveTimeSlotForm(ForgeForm):
                 show_errors=False,
                 show_label=False,
                 fields=[
-                    ew.HTMLField(text=weekday),
-                    ew.HTMLField(text=starttime.strftime('%H:%M')),
-                    ew.HTMLField(text=endtime.strftime('%H:%M')),
+                    ffw.LabeledHiddenField(
+                        label=weekday,
+                        name='weekday',
+                        attrs={'value':weekday},
+                        show_errors=False),
+                    ffw.LabeledHiddenField(
+                        label=starttime.strftime('%H:%M'),
+                        name='starttime',
+                        attrs={'value':starttime.strftime('%H:%M')},
+                        show_errors=False),
+                    ffw.LabeledHiddenField(
+                        label=endtime.strftime('%H:%M'),
+                        name='endtime',
+                        attrs={'value':endtime.strftime('%H:%M')},
+                        show_errors=False),
                     ew.SubmitButton(
                         show_errors=False,
-                        attrs={'value':'Remove'})],
-                hidden_fields=[
-                    ew.HiddenField(
-                        name='weekday', 
-                        attrs={'value':weekday}),
-                    ew.HiddenField(
-                        name='starttime',
-                        attrs={'value':starttime.strftime('%H:%M')}),
-                    ew.HiddenField(
-                        name='endtime',
-                        attrs={'value':endtime.strftime('%H:%M')})])]
+                        attrs={'value':'Remove'})])]
         return super(ForgeForm, self).display(**kw)
 
     @ew_core.core.validator
@@ -474,7 +462,7 @@ class RemoveTroveCategoryForm(ForgeForm):
 
     def display(self, **kw):
         cat = kw.get('category')
-        
+
         self.fields = [
             ew.RowField(
                 show_errors=False,
@@ -488,7 +476,7 @@ class RemoveTroveCategoryForm(ForgeForm):
                         attrs={'value':'Remove'})],
                 hidden_fields=[
                     ew.HiddenField(
-                        name='categoryid', 
+                        name='categoryid',
                         attrs={'value':cat.trove_cat_id})])]
         return super(ForgeForm, self).display(**kw)
 
@@ -513,7 +501,7 @@ class AddTroveCategoryForm(ForgeForm):
 
     def display(self, **kw):
         upper_category = kw.get('uppercategory_id',0)
-        
+
         self.fields['uppercategory_id'].attrs['value'] = upper_category
         return super(ForgeForm, self).display(**kw)
 
@@ -547,7 +535,7 @@ class AddUserSkillForm(ForgeForm):
 
     def display(self, **kw):
         category = kw.get('selected_skill')
-        
+
         self.fields["selected_skill"].attrs['value']=category
         return super(ForgeForm, self).display(**kw)
 
@@ -562,7 +550,7 @@ class SelectSubCategoryForm(ForgeForm):
 
     def display(self, **kw):
         categories = kw.get('categories')
-        
+
         self.fields['selected_category'].options= \
             [ew.Option(py_value=el.trove_cat_id,label=el.fullname)
              for el in categories]
@@ -591,15 +579,9 @@ class RemoveSkillForm(ForgeForm):
                         show_errors=False)
                 ],
                 fields=[
-                    ew.HTMLField(
-                        text=skill['skill'].fullpath,
-                        show_errors=False),
-                    ew.HTMLField(
-                        text=skill['level'],
-                        show_errors=False),
-                    ew.HTMLField(
-                        text=comment,
-                        show_errors=False),
+                    ffw.LabelOnlyField(label=skill['skill'].fullpath),
+                    ffw.LabelOnlyField(label=skill['level']),
+                    ffw.LabelOnlyField(label=comment),
                     ew.SubmitButton(
                         show_label=False,
                         attrs={'value':'Remove'},
