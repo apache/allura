@@ -702,14 +702,27 @@ class LastCommit(RepoObject):
         return '<LastCommit /%s %s>' % (self.path, self.commit_id)
 
     @classmethod
+    def _last_commit_id(cls, commit, path):
+        if not commit.repo:
+            import ipdb; ipdb.set_trace()
+        commit_id = list(commit.repo.commits(path, commit._id, limit=1))
+        if commit_id:
+            commit_id = commit_id[0]
+        else:
+            log.error('Tree node not recognized by SCM: %s @ %s', path, commit._id)
+            commit_id = commit._id
+        return commit_id
+
+    @classmethod
     def get(cls, tree, create=True):
         '''Find or build the LastCommitDoc for the given tree.'''
         cache = getattr(c, 'model_cache', '') or ModelCache()
         path = tree.path().strip('/')
-        last_commit_id = tree.repo.commits(path, tree.commit._id, limit=1)[0]
+        last_commit_id = cls._last_commit_id(tree.commit, path)
         lcd = cache.get(cls, {'path': path, 'commit_id': last_commit_id})
         if lcd is None and create:
             commit = cache.get(Commit, {'_id': last_commit_id})
+            commit.set_context(tree.repo)
             lcd = cls._build(commit.get_path(path))
             cache.set(cls, {'path': path, 'commit_id': last_commit_id}, lcd)
         return lcd
@@ -735,12 +748,7 @@ class LastCommit(RepoObject):
             if not_changed and prev_lcd:
                 commit_id = prev_lcd.entry_by_name(node.name).commit_id
             else:
-                commit_id = tree.repo.commits(os.path.join(path, node.name), tree.commit._id, limit=1)
-                if commit_id:
-                    commit_id = commit_id[0]
-                else:
-                    log.error('Tree node not recognized by SCM: %s @ %s', os.path.join(path, node.name), tree.commit._id)
-                    commit_id = tree.commit._id
+                commit_id = cls._last_commit_id(tree.commit, os.path.join(path, node.name))
             entries.append(dict(
                     name=node.name,
                     type='DIR' if node.name in tree_nodes else 'BLOB',
