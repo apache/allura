@@ -11,6 +11,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.exceptions import ToolError
+from mock import Mock
 
 
 def setUp():
@@ -69,3 +70,12 @@ def test_subproject():
     ThreadLocalORMSession.flush_all()
     sp.delete()
     ThreadLocalORMSession.flush_all()
+
+@td.with_wiki
+def test_default_tools():
+    c.project.neighborhood.default_tools = 'wiki:Wiki, tickets:Ticket'
+    c.project.install_app = Mock()
+    assert c.project.sitemap()[0].label == 'Wiki'
+    assert c.project.install_app.call_args[0][0] == 'tickets'
+    assert c.project.ordered_mounts()[0]['ac'].tool_name == 'Wiki'
+    assert c.project.install_app.call_args[0][0] == 'tickets'

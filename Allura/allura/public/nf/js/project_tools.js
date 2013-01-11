@@ -55,7 +55,7 @@
         return false;
     });
     // sorting
-    $('#sortable').sortable({items: ".fleft"}).bind( "sortupdate", function (e) {
+    $('#sortable').sortable({items: ".fleft:not(.isnt_sorted)"}).bind( "sortupdate", function (e) {
         var sortables = $('#sortable .fleft');
         var tools = 0;
         var subs = 0;

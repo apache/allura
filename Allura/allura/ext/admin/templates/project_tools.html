@@ -51,7 +51,8 @@
             {% set app = mount['ac'].load()(c.project, mount['ac']) %}
             {% set links = app.admin_menu() %}
             {% set label = mount['ac'].options['mount_label'] if mount['ac'].options['mount_label'] != 'Tool Name' else mount['ac'].options['mount_point'] %}
-            <div class="fleft">
+
+            <div class="fleft {%if app.tool_label.lower() in app.project.neighborhood.get_default_tools().keys()%}isnt_sorted{%endif%}">
                 <ul class="deck">
                     <li class="tcenter">
                         <span class="tool_title">{{ label }}</span><br />
@@ -62,7 +63,7 @@
                         <a href="{{ link.url }}" class="{{ link.className }}">{{ link.label }}</a>
                     </li>
                     {% endfor %}
-                    {% if app.uninstallable %}
+                    {% if app.uninstallable and not (app.tool_label.lower() in app.project.neighborhood.get_default_tools().keys()) %}
                     <li>
                       <form method="post" action="update_mounts" id="mounts_edit_2-{{loop.index0}}">
                         <input type="hidden" class="mount_point"
