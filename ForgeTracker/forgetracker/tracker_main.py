@@ -1301,7 +1301,7 @@ class TicketController(BaseController):
         projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
         for p in projects:
             for ac in p.app_configs:
-                if ac.tool_name == 'Tickets':
+                if ac.tool_name.lower() == 'tickets':
                     trac = (str(ac._id),
                             '%s/%s' % (p.shortname, ac.options['mount_point']),
                             bool(self.ticket.app.config == ac))

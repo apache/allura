@@ -142,9 +142,11 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
             ticket.assigned_to_id = User.by_username('test-user')._id
+            ticket.discussion_thread.add_post(text='test comment')
 
         assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 1)
         assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 0)
+        assert_equal(Post.query.find(dict(thread_id=ticket.discussion_thread._id)).count(), 1)
 
         t = ticket.move(app2.config)
         assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 0)
@@ -154,10 +156,16 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(t.assigned_to.username, 'test-user')
         assert_equal(t.url(), '/p/test/bugs2/1/')
 
-        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id,
+                                    text={'$ne': 'test comment'})).first()
         assert post is not None, 'No comment about ticket moving'
         message = 'Ticket moved from /p/test/bugs/1/'
         assert_equal(post.text, message)
+
+        post = Post.query.find(dict(text='test comment')).first()
+        assert_equal(post.thread.discussion.app_config_id, app2.config._id)
+        assert_equal(post.thread.app_config_id, app2.config._id)
+        assert_equal(post.app_config_id, app2.config._id)
 
     @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
     @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
