@@ -102,15 +102,14 @@ class TaskdCleanupCommand(base.Command):
         })
 
     def _taskd_pids(self):
-        p = subprocess.Popen(['pgrep', '-f', '/paster taskd'],
+        # space after "taskd" to ensure no match on taskd_cleanup (ourself)
+        p = subprocess.Popen(['pgrep', '-f', '/paster taskd '],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         tasks = []
         if p.returncode == 0:
-            # p.communicate() returns self-process too,
-            # so we need to skip last pid
-            tasks = [pid for pid in stdout.split('\n') if pid != ''][:-1]
+            tasks = [pid for pid in stdout.split('\n') if pid != '']
         return tasks
 
     def _taskd_status(self, pid, retry=False):
