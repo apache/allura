@@ -22,6 +22,7 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeWiki \
     ForgeActivity \
     ForgeShortUrl \
+    ForgeUserStats \
     "
 fi
 
