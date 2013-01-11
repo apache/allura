@@ -182,7 +182,7 @@ class UserStats(MappedClass):
         if i is None:
             return dict(created=0, modified=0)
         cat = self.general[i]
-        j = getElementIndex(cat.messages, art_type = art_type)
+        j = getElementIndex(cat.messages, messagetype = art_type)
         if j is None:
             return dict(created=0, modified=0)
         return dict(created=cat.messages[j].created, modified=cat.messages[j].modified)
