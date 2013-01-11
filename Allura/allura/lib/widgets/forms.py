@@ -641,6 +641,7 @@ class NeighborhoodOverviewForm(ForgeForm):
         icon = ew.FileField()
         tracking_id = ew.TextField()
         project_list_url = ew.TextField(validator=fev.URL())
+        default_tools = ffw.AutoResizeTextarea()
 
     def from_python(self, value, state):
         if value.features['css'] == "picker":

@@ -80,7 +80,8 @@ class TestNeighborhood(TestController):
             'tracking_id': 'U-123456',
             'homepage': '[Homepage]',
             'project_list_url': 'http://fake.org/project_list',
-            'project_template': '{"name": "template"}'
+            'project_template': '{"name": "template"}',
+            'default_tools': 'wiki:Wiki'
 
         }
         self.app.post('/p/_admin/update', params=params,
@@ -100,6 +101,41 @@ class TestNeighborhood(TestController):
         assert check_log('change neighborhood project template to '
                          '{"name": "template"}')
         assert check_log('update neighborhood tracking_id')
+
+    @td.with_wiki
+    def test_default_tools(self):
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      default_tools='wiki:Wiki, tickets:Ticket'),
+                          extra_environ=dict(username='root'))
+        assert 'error' not in self.webflash(r)
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      default_tools='w!iki:Wiki, tickets:Ticket'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.default_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      default_tools='wiki:Wiki,'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.default_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      default_tools='badname,'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.default_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.get('/p/test/admin/tools')
+        assert '<div class="fleft isnt_sorted">' in r
+        delete_tool = r.html.find('a', {'class':'mount_delete'})
+        assert_equal(len(delete_tool), 1)
 
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))

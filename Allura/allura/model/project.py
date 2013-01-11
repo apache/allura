@@ -391,9 +391,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         from allura.app import SitemapEntry
         entries = []
 
+        default_tools_order =self.neighborhood.get_default_tools_order()
+        i = len(default_tools_order)
+        self.install_default_tools()
+
         # Set menu mode
-        delta_ordinal = 0
-        max_ordinal = 0
+        delta_ordinal = i
+        max_ordinal = i
 
         if self.is_user_project:
             entries.append({'ordinal': delta_ordinal, 'entry':SitemapEntry('Profile', "%sprofile/" % self.url(), ui_icon="tool-home")})
@@ -421,7 +425,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     entry = sm.bind_app(app)
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
-                    ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
+                    if not self.is_nbhd_project and (entry.tool_name.lower() in default_tools_order):
+                        ordinal = default_tools_order.index(entry.tool_name.lower())
+                    else:
+                        ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
@@ -432,6 +439,20 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
         return [e['entry'] for e in entries]
+
+    def install_default_tools(self):
+        default_tools = self.neighborhood.get_default_tools()
+        default_tools_order =self.neighborhood.get_default_tools_order()
+        installed_tools = [tool.tool_name.lower() for tool in self.app_configs]
+        i = 0
+        if not self.is_nbhd_project:
+            for tool in default_tools_order:
+                if tool not in installed_tools:
+                    try:
+                        self.install_app(tool, tool, default_tools[tool], i)
+                    except Exception:
+                        log.error(tool + ' is not available')
+                i += 1
 
     def grouped_navbar_entries(self):
         """Return a ``allura.app.SitemapEntry`` list suitable for rendering
@@ -578,14 +599,21 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''Returns an array of a projects mounts (tools and sub-projects) in
         toolbar order.'''
         result = []
+        default_tools_order = self.neighborhood.get_default_tools_order()
+        i = len(default_tools_order)
+        self.install_default_tools()
+
         for sub in self.direct_subprojects:
-            result.append({'ordinal':int(sub.ordinal), 'sub':sub, 'rank':1})
+            result.append({'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
-                ordinal = ac.options.get('ordinal', 0)
+                if not self.is_nbhd_project and (ac.tool_name.lower() in default_tools_order):
+                    ordinal = default_tools_order.index(ac.tool_name.lower())
+                else:
+                    ordinal = int(ac.options.get('ordinal', 0)) + i
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
-                result.append({'ordinal':int(ordinal), 'ac':ac, 'rank':rank})
+                result.append({'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
         return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
     def first_mount(self, required_access=None):

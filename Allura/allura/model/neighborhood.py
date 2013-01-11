@@ -66,6 +66,7 @@ class Neighborhood(MappedClass):
         max_projects=S.Int,
         css=str,
         google_analytics=bool))
+    default_tools = FieldProperty(str, if_missing='summary:Summary, files:Files, reviews:Reviews, support:Support')
 
     def parent_security_context(self):
         return None
@@ -236,3 +237,16 @@ class Neighborhood(MappedClass):
 
     def migrate_css_for_picker(self):
         self.css = ""
+
+    def get_default_tools(self):
+        default_tools = self.default_tools.replace(' ', '').split(',')
+        try:
+            return dict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in default_tools)
+        except Exception:
+            return dict()
+
+    def get_default_tools_order(self):
+        if not len(self.default_tools.strip()):
+            return []
+        default_tools = self.default_tools.replace(' ', '').split(',')
+        return [tool.split(':')[0].lower() for tool in default_tools]
