@@ -475,16 +475,19 @@ class UserStats(MappedClass):
         self.checkOldArtifacts()
 
     def addCommit(self, newcommit, project):
-        def _addCommitData(stats, topics, languages, newblob, oldblob = None):
+        def _computeLines(newblob, oldblob = None):
             if oldblob:
                 listold = list(oldblob)
             else:
                 listold = []
-            listnew = list(newblob)
+            if newblob:
+                listnew = list(newblob)
+            else:
+                listnew = []
 
             if oldblob is None:
                 lines = len(listnew)
-            elif newblob.has_html_view:
+            elif newblob and newblob.has_html_view:
                 diff = difflib.unified_diff(
                     listold, listnew,
                     ('old' + oldblob.path()).encode('utf-8'),
@@ -492,7 +495,9 @@ class UserStats(MappedClass):
                 lines = len([l for l in diff if len(l) > 0 and l[0] == '+'])-1
             else:
                 lines = 0
-            
+            return lines
+
+        def _addCommitData(stats, topics, languages, lines):          
             lt = topics + [None]
             ll = languages + [None]
             for t in lt:
@@ -518,7 +523,6 @@ class UserStats(MappedClass):
                     else:
                         stats.general[i]['commits'][j].lines += lines
                         stats.general[i]['commits'][j].number += 1
-            return lines
 
         topics = [t for t in project.trove_topic if t]
         languages = [l for l in project.trove_language if l]
@@ -532,16 +536,18 @@ class UserStats(MappedClass):
         for changed in d.changed:
             newblob = newcommit.tree.get_blob_by_path(changed)
             oldblob = oldcommit.tree.get_blob_by_path(changed)
-            totlines+=_addCommitData(self, topics, languages, newblob, oldblob)
+            totlines+=_computeLines(newblob, oldblob)
 
         for copied in d.copied:
             newblob = newcommit.tree.get_blob_by_path(copied['new'])
             oldblob = oldcommit.tree.get_blob_by_path(copied['old'])
-            totlines+=_addCommitData(self, topics, languages, newblob, oldblob)
+            totlines+=_computeLines(newblob, oldblob)
 
         for added in d.added:
             newblob = newcommit.tree.get_blob_by_path(added)
-            totlines+=_addCommitData(self, topics, languages, newblob)
+            totlines+=_computeLines(newblob)
+
+        _addCommitData(self, topics, languages, totlines)
 
         self.lastmonth.commits.append(dict(
             datetime=now, 
