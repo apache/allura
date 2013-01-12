@@ -1,13 +1,16 @@
 import pkg_resources
+import unittest
 
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 
-from alluratest.controller import TestController
+from alluratest.controller import TestController, setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from allura.lib import helpers as h
 from allura.model import User
+from allura import model as M
 
+from forgegit.tests import with_git
 from forgewiki import model as WM
 from forgetracker import model as TM
 
@@ -171,3 +174,40 @@ class TestStats(TestController):
         assert tickets['revoked'] == initial_tickets['revoked'] + 1
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 3
+
+class TestGitCommit(unittest.TestCase, TestController):
+
+    def setUp(self):
+        setup_basic_test()
+        for ep in pkg_resources.iter_entry_points("allura.stats"):
+            if ep.name.lower() == 'userstats':
+                g.statslisteners = [ep.load()().listener]
+
+        self.user = User.register(dict(username='testuser',
+            display_name='Test'),
+            make_project=False)
+        self.user.set_password('testpassword')
+        addr = M.EmailAddress.upsert('rcopeland@geek.net')
+        self.user.claim_address('rcopeland@geek.net')
+        self.setup_with_tools()
+
+    @with_git
+    @td.with_wiki
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgeuserstats', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.name = 'testgit.git'
+        self.repo = c.app.repo
+        self.repo.refresh()
+        self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
+        self.rev.repo = self.repo
+
+    def test_commit(self):
+        commits = self.user.stats.getCommits()
+        assert commits['number'] == 4
+        lmcommits = self.user.stats.getLastMonthCommits()
+        assert lmcommits['number'] == 4
+
