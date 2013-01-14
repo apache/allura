@@ -1,5 +1,6 @@
 import logging
 
+from allura.lib.decorators import exceptionless
 
 log = logging.getLogger(__name__)
 
@@ -22,4 +23,6 @@ class SpamFilter(object):
         if not method:
             return cls(config)
         result = entry_points[method]
-        return result(config)
+        filter_obj = result(config)
+        filter_obj.check = exceptionless(False, log=log)(filter_obj.check)
+        return filter_obj
