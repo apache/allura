@@ -16,25 +16,16 @@ from forgetracker import model as TM
 
 class TestStats(TestController):
 
-    test_username = 'teststats'
-    test_password = 'foo'
-
-    def setUp(self):
-        super(TestStats, self).setUp()
-        for ep in pkg_resources.iter_entry_points("allura.stats"):
-            if ep.name.lower() == 'userstats':
-                g.statslisteners = [ep.load()().listener]
-
-        self.user = User.register(dict(username=self.test_username,
+    @td.with_user_project('test-user')
+    def test_init_values(self):
+        user = User.register(dict(username='test-new-user',
             display_name='Test Stats'),
             make_project=False)
-        self.user.set_password(self.test_password)
-        
-    def test_init_values(self):
-        artifacts = self.user.stats.getArtifacts()
-        tickets = self.user.stats.getTickets()
-        commits = self.user.stats.getCommits()
-        assert self.user.stats.tot_logins_count == 0
+
+        artifacts = user.stats.getArtifacts()
+        tickets = user.stats.getTickets()
+        commits = user.stats.getCommits()
+        assert user.stats.tot_logins_count == 0
         assert artifacts['created'] == 0
         assert artifacts['modified'] == 0
         assert tickets['assigned'] == 0
@@ -44,10 +35,10 @@ class TestStats(TestController):
         assert commits['number'] == 0
         assert commits['lines'] == 0
 
-        lmartifacts = self.user.stats.getLastMonthArtifacts()
-        lmtickets = self.user.stats.getLastMonthTickets()
-        lmcommits = self.user.stats.getLastMonthCommits()
-        assert self.user.stats.getLastMonthLogins() == 0
+        lmartifacts = user.stats.getLastMonthArtifacts()
+        lmtickets = user.stats.getLastMonthTickets()
+        lmcommits = user.stats.getLastMonthCommits()
+        assert user.stats.getLastMonthLogins() == 0
         assert lmartifacts['created'] == 0
         assert lmartifacts['modified'] == 0
         assert lmtickets['assigned'] == 0
@@ -58,12 +49,13 @@ class TestStats(TestController):
         assert lmcommits['lines'] == 0
 
     def test_login(self):
-        init_logins = self.user.stats.tot_logins_count
+        user = User.by_username('test-user')
+        init_logins = c.user.stats.tot_logins_count
         r = self.app.post('/auth/do_login', params=dict(
-                username=self.test_username, password=self.test_password))
+                username=user.username, password='foo'))
 
-        assert self.user.stats.tot_logins_count == 1 + init_logins
-        assert self.user.stats.getLastMonthLogins() == 1 + init_logins
+        assert user.stats.tot_logins_count == 1 + init_logins
+        assert user.stats.getLastMonthLogins() == 1 + init_logins
 
     @td.with_user_project('test-admin')
     @td.with_wiki
@@ -163,7 +155,7 @@ class TestStats(TestController):
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 2
 
-        ticket.assigned_to_id = self.user._id
+        ticket.assigned_to_id = User.by_username('test-user')._id
         ticket.commit()
 
         tickets = c.user.stats.getTickets()
@@ -179,16 +171,11 @@ class TestGitCommit(unittest.TestCase, TestController):
 
     def setUp(self):
         setup_basic_test()
-        for ep in pkg_resources.iter_entry_points("allura.stats"):
-            if ep.name.lower() == 'userstats':
-                g.statslisteners = [ep.load()().listener]
 
-        self.user = User.register(dict(username='testuser',
-            display_name='Test'),
-            make_project=False)
-        self.user.set_password('testpassword')
+        user = User.by_username('test-admin')
+        user.set_password('testpassword')
         addr = M.EmailAddress.upsert('rcopeland@geek.net')
-        self.user.claim_address('rcopeland@geek.net')
+        user.claim_address('rcopeland@geek.net')
         self.setup_with_tools()
 
     @with_git
@@ -205,9 +192,10 @@ class TestGitCommit(unittest.TestCase, TestController):
         self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
         self.rev.repo = self.repo
 
+    @td.with_user_project('test-admin')
     def test_commit(self):
-        commits = self.user.stats.getCommits()
+        commits = c.user.stats.getCommits()
         assert commits['number'] == 4
-        lmcommits = self.user.stats.getLastMonthCommits()
+        lmcommits = c.user.stats.getLastMonthCommits()
         assert lmcommits['number'] == 4
 
