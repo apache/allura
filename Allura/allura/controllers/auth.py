@@ -6,6 +6,8 @@ from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash
 from pylons import c, g, request, response
 from webob import exc as wexc
+from ew import jinja2_ew as ew
+from jinja2.filters import escape as j2_escape
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -397,7 +399,7 @@ class PreferencesController(BaseController):
                 continue
             title = mb.artifact_title
             if mb.artifact_url:
-                title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
+                title = ew.LinkField(label=j2_escape(mb.artifact_title), href=j2_escape(mb.artifact_url)).display()
             subscriptions.append(dict(
                     subscription_id=mb._id,
                     project_name=project.name,

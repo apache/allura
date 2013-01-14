@@ -4,6 +4,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
+from allura.lib.widgets import form_fields as ffw
 from allura import model as M
 
 from .form_fields import SubmitButton
@@ -17,12 +18,12 @@ class _SubscriptionTable(ew.TableField):
         topic = ew.HiddenField()
         artifact_index_id = ew.HiddenField()
     class fields(ew_core.NameList):
-        project_name = ew.HTMLField(label='Project', show_label=True)
-        mount_point = ew.HTMLField(label='App', show_label=True)
-        topic = ew.HTMLField(label='Topic', show_label=True)
-        type = ew.HTMLField(label='Type', show_label=True)
-        frequency = ew.HTMLField(label='Frequency', show_label=True)
-        artifact_title = ew.HTMLField(label='Artifact', show_label=True)
+        project_name = ffw.DisplayOnlyField(label='Project', show_label=True, with_hidden_input=False)
+        mount_point = ffw.DisplayOnlyField(label='App', show_label=True, with_hidden_input=False)
+        topic = ffw.DisplayOnlyField(label='Topic', show_label=True, with_hidden_input=False)
+        type = ffw.DisplayOnlyField(label='Type', show_label=True, with_hidden_input=False)
+        frequency = ffw.DisplayOnlyField(label='Frequency', show_label=True, with_hidden_input=False)
+        artifact_title = ffw.DisplayOnlyField(label='Artifact', show_label=True, with_hidden_input=False)
         # unsubscribe = SubmitButton()
         subscribed = ew.Checkbox(suppress_label=True)
 

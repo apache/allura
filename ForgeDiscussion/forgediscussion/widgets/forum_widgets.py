@@ -24,8 +24,9 @@ class _ForumsTable(ew.TableField):
     class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
     class fields(ew_core.NameList):
-        num_topics=ew.HTMLField(show_label=True, label='Topics')
-        num_posts=ew.HTMLField(show_label=True, label='Posts')
+        num_topics=ffw.DisplayOnlyField(show_label=True, label='Topics')
+        num_posts=ffw.DisplayOnlyField(show_label=True, label='Posts')
+        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
         last_post=ew.HTMLField(text="${value and value.summary()}",
                                show_label=True)
         subscribed=ew.Checkbox(suppress_label=True, show_label=True)
@@ -39,9 +40,11 @@ class ForumSubscriptionForm(ew.SimpleForm):
 
 class _ThreadsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Replies')
-        num_views=ew.HTMLField(show_label=True)
+        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
+        num_views=ffw.DisplayOnlyField(show_label=True)
+        # XXX XSS this use of HTMLField is potentially insecure, but I'm not sure what values flags can take
         flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
+        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
         last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
         subscription=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, ew.LinkField(
@@ -57,9 +60,11 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Replies')
-        num_views=ew.HTMLField(show_label=True)
+        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
+        num_views=ffw.DisplayOnlyField(show_label=True)
+        # XXX XSS this use of HTMLField is potentially insecure, but I'm not sure what values flags can take
         flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
+        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
         last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
     fields.insert(0, ew.LinkField(
             label='Subject', text="${value['subject']}",

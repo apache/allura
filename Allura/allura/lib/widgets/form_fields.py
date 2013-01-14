@@ -435,21 +435,22 @@ class Lightbox(ew_core.Widget):
         ''' % (self.name, self.trigger))
 
 
-class LabeledHiddenField(ew.HiddenField):
+class DisplayOnlyField(ew.HiddenField):
     '''
-    Jinja2 implementation of InputField seems to ignore show_label=True.
-
-    FIXME: This should be fixed in EasyWidgets and this class removed.
+    Render a field as plain text, optionally with a hidden field to preserve the value.
     '''
-    template=ew.Snippet('''<label>{{ label|e }}<input {{widget.j2_attrs({
-        'type':'hidden',
-        'name':name,
-        'class':css_class,
-        'value':value}, attrs)}}></label>''', 'jinja2')
-
-class LabelOnlyField(ew.InputField):
-    template=ew.Snippet('<label>{{ label|e }}</label>', 'jinja2')
+    template=ew.Snippet('''{{ (text or value or attrs.value)|e }}
+        {%- if with_hidden_input is none and name or with_hidden_input -%}
+        <input {{
+            widget.j2_attrs({
+                'type':'hidden',
+                'name':name,
+                'value':value,
+                'class':css_class}, attrs)
+        }}>
+        {%- endif %}''', 'jinja2')
     defaults=dict(
-        name=None,
-        label='',
-        show_errors=False)
+        ew.HiddenField.defaults,
+        text=None,
+        value=None,
+        with_hidden_input=None)

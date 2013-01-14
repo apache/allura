@@ -258,8 +258,8 @@ class RemoveTextValueForm(ForgeForm):
             ew.RowField(
                 show_errors=False,
                 fields=[
-                    ffw.LabelOnlyField(label=label),
-                    ffw.LabeledHiddenField(
+                    ffw.DisplayOnlyField(text=label),
+                    ffw.DisplayOnlyField(
                         name='oldvalue',
                         label=initial_value,
                         attrs={'value':initial_value},
@@ -307,13 +307,12 @@ class RemoveSocialNetworkForm(ForgeForm):
             ew.RowField(
                 show_errors=False,
                 fields=[
-                    ffw.LabeledHiddenField(
-                        label='%s account' % socialnetwork,
+                    ffw.DisplayOnlyField(
+                        text='%s account' % socialnetwork,
                         name="socialnetwork",
                         attrs={'value':socialnetwork},
                         show_errors=False),
-                    ffw.LabeledHiddenField(
-                        label=account,
+                    ffw.DisplayOnlyField(
                         name="account",
                         attrs={'value':account},
                         show_errors=False),
@@ -364,13 +363,11 @@ class RemoveInactivePeriodForm(ForgeForm):
                 show_label=False,
                 show_errors=False,
                 fields=[
-                    ffw.LabeledHiddenField(
-                        label=startdate.strftime('%d/%m/%Y'),
+                    ffw.DisplayOnlyField(
                         name='startdate',
                         attrs={'value':startdate.strftime('%d/%m/%Y')},
                         show_errors=False),
-                    ffw.LabeledHiddenField(
-                        label=enddate.strftime('%d/%m/%Y'),
+                    ffw.DisplayOnlyField(
                         name='enddate',
                         attrs={'value':enddate.strftime('%d/%m/%Y')},
                         show_errors=False),
@@ -429,18 +426,15 @@ class RemoveTimeSlotForm(ForgeForm):
                 show_errors=False,
                 show_label=False,
                 fields=[
-                    ffw.LabeledHiddenField(
-                        label=weekday,
+                    ffw.DisplayOnlyField(
                         name='weekday',
                         attrs={'value':weekday},
                         show_errors=False),
-                    ffw.LabeledHiddenField(
-                        label=starttime.strftime('%H:%M'),
+                    ffw.DisplayOnlyField(
                         name='starttime',
                         attrs={'value':starttime.strftime('%H:%M')},
                         show_errors=False),
-                    ffw.LabeledHiddenField(
-                        label=endtime.strftime('%H:%M'),
+                    ffw.DisplayOnlyField(
                         name='endtime',
                         attrs={'value':endtime.strftime('%H:%M')},
                         show_errors=False),
@@ -579,9 +573,9 @@ class RemoveSkillForm(ForgeForm):
                         show_errors=False)
                 ],
                 fields=[
-                    ffw.LabelOnlyField(label=skill['skill'].fullpath),
-                    ffw.LabelOnlyField(label=skill['level']),
-                    ffw.LabelOnlyField(label=comment),
+                    ffw.DisplayOnlyField(text=skill['skill'].fullpath),
+                    ffw.DisplayOnlyField(text=skill['level']),
+                    ffw.DisplayOnlyField(text=comment),
                     ew.SubmitButton(
                         show_label=False,
                         attrs={'value':'Remove'},

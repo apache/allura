@@ -166,8 +166,9 @@ class _ThreadsTable(ew.TableField):
     class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Posts')
-        num_views=ew.HTMLField(show_label=True)
+        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Posts')
+        num_views=ffw.DisplayOnlyField(show_label=True)
+        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
         last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
         subscription=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, ew.LinkField(
