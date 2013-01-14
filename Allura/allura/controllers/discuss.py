@@ -323,7 +323,8 @@ class PostController(BaseController):
     def reply(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
-        self.thread.add_post(parent_id=self.post._id, **kw)
+        p = self.thread.add_post(parent_id=self.post._id, **kw)
+        is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
         redirect(request.referer)
 
     @h.vardec
@@ -475,6 +476,7 @@ class PostRestController(PostController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         post = self.thread.post(parent_id=self.post._id, **kw)
+        is_spam = g.spam_checker.check(kw['text'], artifact=post, user=c.user)
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
 

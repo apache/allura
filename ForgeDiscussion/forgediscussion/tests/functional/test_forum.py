@@ -422,7 +422,8 @@ class TestForum(TestController):
                 extra_environ=dict(username='*anonymous')).follow()
         assert 'Post awaiting moderation' in r
 
-    def test_thread(self):
+    @mock.patch('forgediscussion.controllers.root.g.spam_checker')
+    def test_thread(self, spam_checker):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()
@@ -446,6 +447,7 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
+        spam_checker.check.call_args[0] == 'bbb', spam_checker.check.call_args[0]
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
