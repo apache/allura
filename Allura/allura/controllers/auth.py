@@ -397,14 +397,11 @@ class PreferencesController(BaseController):
                 continue
             if app_config is None:
                 continue
-            title = mb.artifact_title
-            if mb.artifact_url:
-                title = ew.LinkField(label=j2_escape(mb.artifact_title), href=j2_escape(mb.artifact_url)).display()
             subscriptions.append(dict(
                     subscription_id=mb._id,
                     project_name=project.name,
                     mount_point=app_config.options['mount_point'],
-                    artifact_title=title,
+                    artifact_title=dict(text=mb.artifact_title, href=mb.artifact_url),
                     topic=mb.topic,
                     type=mb.type,
                     frequency=mb.frequency.unit,

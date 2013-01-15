@@ -454,3 +454,55 @@ class DisplayOnlyField(ew.HiddenField):
         text=None,
         value=None,
         with_hidden_input=None)
+
+class LinkField(ew.LinkField):
+    '''
+    A safer jinja2 implementation of LinkField which allows a mapping value which
+    contains the href and text values separately, as well as a flag to render
+    the field as plaintext if no href value is specified.  Both the href and
+    text values will be escaped properly.
+
+    The HREF of the link will be first one of value['href'], attrs['href'],
+    href, or value (if value is not a mapping) that is set.
+
+    The text of the link will be first one of value['text'], text, label, or
+    value (if value is not a mapping) that is set.
+
+    If plaintext_if_no_href is True and none of value['href'], attrs['href'],
+    nor href are set, then the field will be rendered as plaintext using the
+    text of the link, above.
+
+    Examples:
+
+        This renders as: <a href="http://example.com/">http://example.com/</a>
+
+            LinkField().display(value="http://example.com/")
+
+        The following all render as: <a href="/foo">bar</a>
+
+            LinkField(href='/foo').display(value='bar')
+            LinkField(text='bar').display(value='/foo')
+            LinkField().display(value=dict(href='/foo', text='bar'))
+            LinkField(label='bar').display(value=dict(href='/foo'))
+            LinkField(href='/foo').display(value=dict(text='bar'))
+            LinkField(attrs={'href':'/foo'}).display(value='bar')
+            LinkField(plaintext_if_no_href=True).display(value=dict(href='/foo', text='bar'))
+            LinkField(plaintext_if_no_href=True).display(href='/foo', value='bar')
+
+        These render as the plaintext: bar
+
+            LinkField(plaintext_if_no_href=True).display(value=dict(text='bar'))
+            LinkField(plaintext_if_no_href=True, label='bar').display(value=dict())
+            LinkField(plaintext_if_no_href=True, label='foo').display(value='bar')
+    '''
+    template=ew.Snippet('''{% if plaintext_if_no_href and not (value['href'] or attrs['href'] or href) -%}
+            {{ (value['text'] or (value is not mapping and value or None) or text or label)|e }}
+        {%- elif value is mapping -%}
+            <a {{ widget.j2_attrs({'href':value['href'] or href}, attrs) }}>{{ (value['text'] or text or label)|e }}</a>
+        {%- else -%}
+            <a {{ widget.j2_attrs({'href':href or value}, attrs) }}>{{ (text or label or value)|e }}</a>
+        {%- endif %}''', 'jinja2')
+    defaults=dict(
+        ew.LinkField.defaults,
+        value=None,
+        plaintext_if_no_href=False)
