@@ -6,8 +6,6 @@ from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash
 from pylons import c, g, request, response
 from webob import exc as wexc
-from ew import jinja2_ew as ew
-from jinja2.filters import escape as j2_escape
 
 import allura.tasks.repo_tasks
 from allura import model as M
@@ -328,7 +326,7 @@ class UserSkillsController(BaseController):
         return dict(
             skills_list = l,
             selected_skill = selected_skill,
-            parents = parents, 
+            parents = parents,
             add_details_fields=(len(l)==0))
 
     @expose()

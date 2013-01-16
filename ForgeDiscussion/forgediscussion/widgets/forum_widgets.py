@@ -26,9 +26,7 @@ class _ForumsTable(ew.TableField):
     class fields(ew_core.NameList):
         num_topics=ffw.DisplayOnlyField(show_label=True, label='Topics')
         num_posts=ffw.DisplayOnlyField(show_label=True, label='Posts')
-        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
-        last_post=ew.HTMLField(text="${value and value.summary()}",
-                               show_label=True)
+        last_post=ffw.DisplayOnlyField(show_label=True)
         subscribed=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, _ForumSummary())
 
@@ -40,16 +38,12 @@ class ForumSubscriptionForm(ew.SimpleForm):
 
 class _ThreadsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
+        subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
         num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
         num_views=ffw.DisplayOnlyField(show_label=True)
-        # XXX XSS this use of HTMLField is potentially insecure, but I'm not sure what values flags can take
-        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
-        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
+        flags=ffw.DisplayOnlyField(show_label=True)
+        last_post=ffw.DisplayOnlyField(show_label=True)
         subscription=ew.Checkbox(suppress_label=True, show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
     defaults=dict(DW._ThreadsTable.defaults, div_id='forum_threads')
 
 class ThreadSubscriptionForm(DW.SubscriptionForm):
@@ -60,15 +54,11 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
+        subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
         num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
         num_views=ffw.DisplayOnlyField(show_label=True)
-        # XXX XSS this use of HTMLField is potentially insecure, but I'm not sure what values flags can take
-        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
-        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
+        flags=ffw.DisplayOnlyField(show_label=True)
+        last_post=ffw.DisplayOnlyField(show_label=True)
     defaults=dict(DW._ThreadsTable.defaults, div_id='announcements')
     name='announcements'
 

@@ -462,7 +462,7 @@ class RemoveTroveCategoryForm(ForgeForm):
                 show_errors=False,
                 show_label=False,
                 fields=[
-                    ew.LinkField(
+                    ffw.LinkField(
                         text=cat.fullname,
                         href="/categories/%s" % cat.shortname),
                     ew.SubmitButton(

@@ -166,14 +166,12 @@ class _ThreadsTable(ew.TableField):
     class hidden_fields(ew_core.NameList):
         _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew_core.NameList):
-        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Posts')
-        num_views=ffw.DisplayOnlyField(show_label=True)
-        # XXX XSS this use of HTMLField is potentially insecure, as value.summary() doesn't properly escape its data
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
-        subscription=ew.Checkbox(suppress_label=True, show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
+        subscription=ew.Checkbox(suppress_label=True)
+        subject=ffw.DisplayOnlyField(label='Topic')
+        url=ffw.DisplayOnlyField()
+        num_replies=ffw.DisplayOnlyField(label='Posts')
+        num_views=ffw.DisplayOnlyField(label='Views')
+        last_post=ffw.DisplayOnlyField(label='Last Post')
 
 class SubscriptionForm(ew.SimpleForm):
     template='jinja:allura:templates/widgets/subscription_form.html'
