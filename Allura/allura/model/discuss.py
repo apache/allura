@@ -502,13 +502,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def primary(self):
         return self.thread.primary()
 
-    def summary(self):
-        # XXX XSS security hole here: display_name can be manipulated to
-        # contain unescaped HTML, opening a potential XSS attack
-        return '<a href="%s">%s</a> %s' % (
-            self.author().url(), self.author().get_pref('display_name'),
-            h.ago(self.timestamp))
-
     def url(self):
         if self.thread:
             return self.thread.url() + h.urlquote(self.slug) + '/'

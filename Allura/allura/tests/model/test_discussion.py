@@ -131,7 +131,6 @@ def test_post_methods():
     assert p.parent is None
     assert p.subject == 'Test Thread'
     assert p.attachments.count() == 0
-    assert 'Test Admin' in p.summary()
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
     assert p.link_text() == p.subject
