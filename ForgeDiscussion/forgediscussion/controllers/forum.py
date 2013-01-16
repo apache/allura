@@ -151,16 +151,28 @@ class ForumPostController(PostController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
+        log.debug('Moderating post on project "%s"', c.project.shortname)
+        log.debug('... requiring access on %r', self.post.thread)
         require_access(self.post.thread, 'moderate')
+        log.debug('... self.thread.discussion.deleted = %s', self.thread.discussion.deleted)
+        log.debug('... has_access(c.app, "configure") = %s', has_access(c.app, 'configure')())
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')
+        log.debug('... validating kw: %s', kw)
         args = self.W.moderate_post.validate(kw, None)
+        log.debug('... calculating thread stats')
         tasks.calc_thread_stats.post(self.post.thread._id)
+        log.debug('... calculating forum stats')
         tasks.calc_forum_stats(self.post.discussion.shortname)
+        log.debug('... "promote" in args?: %s', 'promote' in args)
         if args.pop('promote', None):
+            log.debug('... promoting thread')
             new_thread = self.post.promote()
+            log.debug('... recalculating thread stats')
             tasks.calc_thread_stats.post(new_thread._id)
+            log.debug('... redirecting to referrer: %s', request.referer)
             redirect(request.referer)
+        log.debug('... calling moderate() on superclass')
         super(ForumPostController, self).moderate(**kw)
 
 class ForumModerationController(ModerationController):
