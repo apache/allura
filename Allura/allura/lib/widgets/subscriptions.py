@@ -23,7 +23,7 @@ class _SubscriptionTable(ew.TableField):
         topic = ffw.DisplayOnlyField(label='Topic', show_label=True, with_hidden_input=False)
         type = ffw.DisplayOnlyField(label='Type', show_label=True, with_hidden_input=False)
         frequency = ffw.DisplayOnlyField(label='Frequency', show_label=True, with_hidden_input=False)
-        artifact_title = ffw.LinkField(label='Artifact', show_label=True, plaintext_if_no_href=True)
+        artifact_title = ew.LinkField(label='Artifact', show_label=True, plaintext_if_no_href=True)
         # unsubscribe = SubmitButton()
         subscribed = ew.Checkbox(suppress_label=True)
 
