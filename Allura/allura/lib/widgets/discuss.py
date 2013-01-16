@@ -163,9 +163,8 @@ class NewTopicPost(EditPost):
 
 class _ThreadsTable(ew.TableField):
     template='jinja:allura:templates/widgets/threads_table.html'
-    class hidden_fields(ew_core.NameList):
-        _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew_core.NameList):
+        _id=ew.HiddenField(validator=V.Ming(M.Thread))
         subscription=ew.Checkbox(suppress_label=True)
         subject=ffw.DisplayOnlyField(label='Topic')
         url=ffw.DisplayOnlyField()

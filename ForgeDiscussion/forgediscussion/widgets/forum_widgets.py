@@ -21,9 +21,8 @@ class _ForumSummary(ew_core.Widget):
         label=None)
 
 class _ForumsTable(ew.TableField):
-    class hidden_fields(ew_core.NameList):
-        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
     class fields(ew_core.NameList):
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
         num_topics=ffw.DisplayOnlyField(show_label=True, label='Topics')
         num_posts=ffw.DisplayOnlyField(show_label=True, label='Posts')
         last_post=ffw.DisplayOnlyField(show_label=True)
@@ -38,7 +37,9 @@ class ForumSubscriptionForm(ew.SimpleForm):
 
 class _ThreadsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
         subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
+        url=ffw.DisplayOnlyField()
         num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
         num_views=ffw.DisplayOnlyField(show_label=True)
         flags=ffw.DisplayOnlyField(show_label=True)
@@ -54,7 +55,9 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
         subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
+        url=ffw.DisplayOnlyField()
         num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
         num_views=ffw.DisplayOnlyField(show_label=True)
         flags=ffw.DisplayOnlyField(show_label=True)
