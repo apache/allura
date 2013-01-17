@@ -299,14 +299,14 @@ class SVNImplementation(M.RepositoryImplementation):
         if hasattr(log_entry, 'date'):
             log_date = datetime.utcfromtimestamp(log_entry.date)
         user = Object(
-            name=log_entry.get('author', '--none--'),
+            name=h.really_unicode(log_entry.get('author', '--none--')),
             email='',
            date=log_date)
         args = dict(
             tree_id=None,
             committed=user,
             authored=user,
-            message=log_entry.get("message", "--none--"),
+            message=h.really_unicode(log_entry.get("message", "--none--")),
             parent_ids=[],
             child_ids=[])
         if revno > 1:
