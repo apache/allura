@@ -10,11 +10,6 @@ Sources:
  http://www.webreference.com/html/reference/character/isolat1.html
 
 1.0 Initial Release (2004-11-28)
-
-The author hereby irrevocably places this work in the public domain.
-To the extent that this statement does not divest the copyright,
-the copyright holder hereby grants irrevocably to every recipient
-all rights in this work otherwise reserved under copyright.
 """
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
