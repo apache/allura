@@ -593,8 +593,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
         if user:
-            for l in g.statslisteners:
-                l.newUser(user)
+            g.statsUpdater.newUser(user)
         if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project(auth_provider.user_project_shortname(user),

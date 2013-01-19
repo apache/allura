@@ -30,6 +30,7 @@ from ming.utils import LazyProperty
 import allura.tasks.event_tasks
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
+from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
@@ -165,23 +166,19 @@ class Globals(object):
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
             spam=_cache_eps('allura.spam'),
+            stats=_cache_eps('allura.stats'),
             )
 
         # Zarkov logger
         self._zarkov = None
 
-        self.show_userstats = False
+        self.show_userstats = config.get('user.stats.enable','false')=='true'
         # Set listeners to update stats
-        self.statslisteners = []
-        for ep in pkg_resources.iter_entry_points("allura.stats"):
-            if ep.name.lower() == 'userstats':
-                self.show_userstats = config.get(
-                    'user.stats.enable','false')=='true'
-                if self.show_userstats:
-                    self.statslisteners.append(ep.load()().listener)
-            else:
-                self.statslisteners.append(ep.load()().listener)
-
+        statslisteners = []
+        ep = self.entry_points['stats'].get('userstats')
+        if self.show_userstats and ep:
+            statslisteners.append(ep().listener)
+        self.statsUpdater = PostEvent(statslisteners)
 
     @LazyProperty
     def spam_checker(self):
