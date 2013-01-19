@@ -37,13 +37,6 @@ from .timeline import ActivityNode, ActivityObject
 
 log = logging.getLogger(__name__)
 
-#This is just to keep the UserStats module completely optional
-has_user_stats_module = False
-for ep in iter_entry_points("allura.stats"):
-    if ep.name.lower() == 'userstats':
-        from forgeuserstats.model.stats import UserStats
-        has_user_stats_module = True
-
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     Returns a bytestring version of 's', encoded as specified in 'encoding'.
@@ -341,15 +334,19 @@ class User(MappedClass, ActivityNode, ActivityObject):
         comment=str)])
 
     #Statistics
-    if has_user_stats_module:
-        stats_id = ForeignIdProperty('UserStats', if_missing=None)
-        stats = RelationProperty('UserStats', via='stats_id')
-    else:
-        stats_id = FieldProperty(S.ObjectId, if_missing=None)
+    stats_id = FieldProperty(S.ObjectId, if_missing=None)
 
     @property
     def activity_name(self):
         return self.display_name or self.username
+
+    @property
+    def stats(self):
+        if g.show_userstats:
+            from forgeuserstats.model.stats import UserStats
+            return UserStats.query.get(_id=self.stats_id)
+        else: 
+            return None
 
     def get_pref(self, pref_name):
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
