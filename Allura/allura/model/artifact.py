@@ -375,13 +375,11 @@ class VersionedArtifact(Artifact):
                  self.version, self.__class__)
         if update_stats: 
             if self.version > 1:
-                for l in g.statslisteners:
-                    l.modifiedArtifact(
-                        self.type_s, self.mod_date, self.project, c.user)
+                g.statsUpdater.modifiedArtifact(
+                    self.type_s, self.mod_date, self.project, c.user)
             else :
-                for l in g.statslisteners:
-                    l.newArtifact(
-                        self.type_s, self.mod_date, self.project, c.user)
+                g.statsUpdater.newArtifact(
+                    self.type_s, self.mod_date, self.project, c.user)
         return ss
 
     def get_version(self, n):
