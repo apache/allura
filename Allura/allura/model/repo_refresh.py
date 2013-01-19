@@ -118,8 +118,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
         if user is None:
             user = User.by_username(new.committed.name)
         if user is not None:
-            for l in g.statslisteners:
-                l.newCommit(new, repo.app_config.project, user)
+            g.statsUpdater.newCommit(new, repo.app_config.project, user)
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)
