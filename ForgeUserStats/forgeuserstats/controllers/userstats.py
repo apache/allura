@@ -228,7 +228,6 @@ def _getDataForCategory(category, stats):
             solved='n/a',
             averagesolvingtime='n/a')
         for key in artifacts_by_type:
-            value = artifacts_by_type[key]
             artifacts_by_type[key]['pmcreated'] = 'n/a'
             artifacts_by_type[key]['pmmodified']= 'n/a'
 
