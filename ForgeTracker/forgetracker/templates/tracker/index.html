@@ -21,6 +21,15 @@
 {% endblock %}
 
 {% block content %}
+    {%if h.has_access(c.app, 'delete')%}
+        <div class="grid-18">
+            {%if deleted%}
+                <a href="?deleted=False">Hide deleted tickets</a>
+            {%else%}
+                <a  href="?deleted=True">Show deleted tickets</a>
+            {%endif%}
+        </div>
+    {%endif%}
   {% if help_msg %}
     <div id="search-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
   {% endif %}
@@ -37,4 +46,5 @@
     {% else %}
       <p>No open tickets found.</p>
     {% endif %}
+
 {% endblock %}

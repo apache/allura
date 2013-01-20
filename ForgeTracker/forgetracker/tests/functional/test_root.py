@@ -135,6 +135,11 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
         assert '<small>1</small>' in r
 
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/bugs/')
+        assert '<small>1</small>' in r
+
+
     def test_milestone_progress(self):
         self.new_ticket(summary='Ticket 1', **{'_milestone':'1.0'})
         self.new_ticket(summary='Ticket 2', **{'_milestone':'1.0',
@@ -1056,6 +1061,36 @@ class TestFunctionalController(TrackerTestController):
 
         # not found and has not import_id
         self.app.get('/p/test/bugs/42042/', status=404)
+
+    def test_deleted_tickets(self):
+        self.new_ticket(summary='Test ticket')
+        r = self.app.get('/bugs/')
+        assert '<a href="/p/test/bugs/1/">Test ticket</a>' in r
+        assert '<a  href="?deleted=True">Show deleted tickets</a>' in r
+        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
+        assert '<a  href="?deleted=True">Show deleted tickets</a>' not in r
+        self.app.post('/bugs/1/delete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' not in r
+
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+        r = self.app.get('/bugs/?deleted=True')
+        assert '<a href="/p/test/bugs/1/?deleted=True">Test ticket' in r
+        assert '<a href="?deleted=False">Hide deleted tickets</a>' in r
+        ticket = tm.Ticket.query.find().first()
+        assert 'deleted=True' in ticket.url()
+        r = self.app.get('/p/test/bugs/1/?deleted=True')
+        assert '#1 Test ticket' in r
+        r = self.app.get('/p/test/bugs/1/', status=404)
+
+        self.app.post('/bugs/1/undelete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+        self.app.post('/bugs/1/undelete')
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' not in r
 
     @td.with_tool('test', 'Tickets', 'bugs2')
     @td.with_tool('test2', 'Tickets', 'bugs')

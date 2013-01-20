@@ -140,7 +140,7 @@ class Globals(MappedClass):
             return d
         mongo_query = {'custom_fields.%s' % fld_name: m_name}
         r = Ticket.query.find(dict(
-            mongo_query, app_config_id=c.app.config._id))
+            mongo_query, app_config_id=c.app.config._id, deleted=False))
         tickets = [t for t in r if security.has_access(t, 'read')]
         d['hits'] = len(tickets)
         d['closed'] = sum(1 for t in tickets
@@ -461,7 +461,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             pubdate=self.created_date)
 
     def url(self):
-        return self.app_config.url() + str(self.ticket_num) + '/'
+        s = self.app_config.url() + str(self.ticket_num) + '/'
+        if self.deleted:
+            s += '?deleted=True'
+        return s
 
     def shorthand_id(self):
         return '#' + str(self.ticket_num)
@@ -621,14 +624,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             custom_fields=self.custom_fields)
 
     @classmethod
-    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, **kw):
+    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False, **kw):
         """
         Query tickets, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_search which does a solr search
         """
         limit, page, start = g.handle_paging(limit, page, default=25)
-        q = cls.query.find(dict(query, app_config_id=app_config._id))
+        q = cls.query.find(dict(query, app_config_id=app_config._id, deleted=deleted))
         q = q.sort('ticket_num')
         if sort:
             field, direction = sort.split()
@@ -706,7 +709,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             tickets = []
             for tn in ticket_numbers:
                 if tn in ticket_for_num:
-                    if security.has_access(ticket_for_num[tn], 'read', user, app_config.project):
+                    if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project) and
+                       (ticket_for_num[tn].deleted==False)):
                         tickets.append(ticket_for_num[tn])
                     else:
                         count = count -1

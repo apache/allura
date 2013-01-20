@@ -142,7 +142,7 @@ class W:
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'update', 'create', 'save_searches',
-                    'unmoderated_post', 'post', 'moderate', 'admin']
+                    'unmoderated_post', 'post', 'moderate', 'admin', 'delete']
     config_options = Application.config_options + [
         ConfigOption('EnableVoting', bool, False),
         ConfigOption('TicketMonitoringEmail', str, ''),
@@ -298,6 +298,7 @@ class ForgeTrackerApp(Application):
             M.ACE.allow(role_developer, 'create'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_developer, 'save_searches'),
+            M.ACE.allow(role_developer, 'delete'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
             ]
@@ -456,12 +457,17 @@ class RootController(BaseController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', **kw):
+    @validate(dict(deleted=validators.StringBool(if_empty=False)))
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', deleted=False, **kw):
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
+
         kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.config, c.user,
                                         c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
-                                        page=page, **kw)
+                                        page=page, deleted={'$in':show_deleted}, **kw)
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
@@ -469,6 +475,7 @@ class RootController(BaseController):
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         result['url_q'] = c.app.globals.not_closed_query
         result['url_sort'] = ''
+        result['deleted'] = deleted
         if sort:
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
@@ -781,9 +788,9 @@ class RootController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/stats.html')
     def stats(self, dates=None, **kw):
         globals = c.app.globals
-        total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
-        open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
-        closed = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_closed_status_names)})).count()
+        total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False)).count()
+        open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False, status={'$in': list(globals.set_of_open_status_names)})).count()
+        closed = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False, status={'$in': list(globals.set_of_closed_status_names)})).count()
         now = datetime.utcnow()
         week = timedelta(weeks=1)
         fortnight = timedelta(weeks=2)
@@ -1091,9 +1098,13 @@ class TicketController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/ticket.html')
     @validate(dict(
             page=validators.Int(if_empty=0),
-            limit=validators.Int(if_empty=10)))
-    def index(self, page=0, limit=10, **kw):
-        if self.ticket is not None:
+            limit=validators.Int(if_empty=10),
+            deleted=validators.StringBool(if_empty=False)))
+    def index(self, page=0, limit=10, deleted=False, **kw):
+        if ((self.ticket is not None) and
+           (not self.ticket.deleted or (self.ticket.deleted and
+                                        has_access(self.ticket,'delete') and
+                                        deleted))):
             c.ticket_form = W.ticket_form
             c.thread = W.thread
             c.attachment_list = W.attachment_list
@@ -1165,6 +1176,30 @@ class TicketController(BaseController):
             for k in data['custom_fields']:
                 data['custom_fields.'+k] = data['custom_fields'][k]
         self._update_ticket(data)
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def delete(self):
+        require_access(self.ticket, 'delete')
+        M.Shortlink.query.remove(dict(ref_id=self.ticket.index_id()))
+        self.ticket.deleted = True
+        self.ticket.status = 'deleted'
+        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+        self.ticket.summary += suffix
+        flash('Ticket successfully deleted')
+        return dict(location='../'+str(self.ticket.ticket_num)+'/?deleted=True')
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def undelete(self):
+        require_access(self.ticket, 'delete')
+        self.ticket.deleted = False
+        self.ticket.status = 'open'
+        M.Shortlink.from_artifact(self.ticket)
+        flash('Ticket successfully restored')
+        return dict(location='../'+str(self.ticket.ticket_num))
 
     @require_post()
     def _update_ticket(self, post_data):

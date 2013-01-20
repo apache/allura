@@ -11,7 +11,7 @@
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
 {% endblock %}
 
-{% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+{% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% if ticket.deleted %}<span> (deleted)</span>{% endif %}{% endblock %}
 
 {% block actions %}
 <a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
@@ -21,8 +21,13 @@
 {% if h.has_access(ticket.app, 'admin') %}
   <a href="move" title="Move"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
 {% endif %}
-{% if h.has_access(ticket, 'update') %}
+{% if h.has_access(ticket, 'update') and not ticket.deleted%}
   <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
+  {%if h.has_access(ticket, 'delete') and not ticket.deleted%}
+    <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+  {% endif %}
+{%elif h.has_access(ticket, 'delete') and ticket.deleted%}
+  <a class="post-link" href="undelete" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
 {% endif %}
 {% endblock %}
 
@@ -164,6 +169,8 @@
           var title_actions = title_holder.find('small');
           var vote = $('#vote');
           var discussion_comment_textarea = $('#new_post_holder').find('form').find('textarea');
+          var delete_holder = $('span.delete');
+
           $('a.edit_ticket').click(function () {
             var not_posted_comment = discussion_comment_textarea.val();
             form_holder.show();
@@ -173,6 +180,7 @@
             title_actions.hide();
             title_actions.appendTo(document.body);
             title_holder.text('\u00A0');
+            delete_holder.appendTo(title_holder)
             vote.hide();
             $('a.edit_ticket').addClass('btn_activate');
             $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
@@ -191,6 +199,13 @@
             vote.show();
             $('a.edit_ticket').removeClass('btn_activate');
             return false;
+          });
+          $('.post-link').click(function(evt) {
+                        var cval = $.cookie('_session_id');
+                        evt.preventDefault();
+                        $.post(this.href, {_session_id:cval}, function(val)
+                                { window.location = val.location; },
+                                'json');
           });
           // delete attachments
           $('div.attachment_thumb a.delete_attachment').click(function () {
@@ -220,6 +235,10 @@
   }
   .markdown_edit textarea {
     height: 100px;
+  }
+  span.delete {
+    position: absolute;
+    left: 750px;
   }
 </style>
 {% endblock %}
