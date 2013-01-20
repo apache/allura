@@ -19,7 +19,7 @@
   {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
 {% endif %}
 {% if h.has_access(ticket.app, 'admin') %}
-  <a href="move" title="Move"><b data-icons="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
+  <a href="move" title="Move"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
 {% endif %}
 {% if h.has_access(ticket, 'update') %}
   <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
