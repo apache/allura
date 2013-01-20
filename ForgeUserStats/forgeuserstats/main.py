@@ -32,25 +32,25 @@ class UserStatsListener(EventsListener):
             stats = UserStats.create(user)
 
         if event_type == "assigned": 
-            stats.addAssignedTicket(ticket, project)
+            stats.addAssignedTicket(ticket.mod_date, project)
         elif event_type == "revoked":
-            stats.addRevokedTicket(ticket, project)
+            stats.addRevokedTicket(ticket.mod_date, project)
         elif event_type == "closed":
-            stats.addClosedTicket(ticket, project)
+            stats.addClosedTicket(ticket.created_date,ticket.mod_date,project)
 
     def newCommit(self, newcommit, project, user):
         stats = user.stats
         if not stats:
             stats = UserStats.create(user)
 
-        stats.addCommit(newcommit, project)
+        stats.addCommit(newcommit, datetime.utcnow(), project)
 
     def addUserLogin(self, user):
         stats = user.stats
         if not stats:
             stats = UserStats.create(user)
 
-        stats.addLogin()
+        stats.addLogin(datetime.utcnow())
 
     def newOrganization(self, organization):
         pass
