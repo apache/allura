@@ -16,38 +16,6 @@ from forgetracker import model as TM
 
 class TestStats(TestController):
 
-    @td.with_user_project('test-user')
-    def test_init_values(self):
-        user = User.register(dict(username='test-new-user',
-            display_name='Test Stats'),
-            make_project=False)
-
-        artifacts = user.stats.getArtifacts()
-        tickets = user.stats.getTickets()
-        commits = user.stats.getCommits()
-        assert user.stats.tot_logins_count == 0
-        assert artifacts['created'] == 0
-        assert artifacts['modified'] == 0
-        assert tickets['assigned'] == 0
-        assert tickets['solved'] == 0
-        assert tickets['revoked'] == 0
-        assert tickets['averagesolvingtime'] is None
-        assert commits['number'] == 0
-        assert commits['lines'] == 0
-
-        lmartifacts = user.stats.getLastMonthArtifacts()
-        lmtickets = user.stats.getLastMonthTickets()
-        lmcommits = user.stats.getLastMonthCommits()
-        assert user.stats.getLastMonthLogins() == 0
-        assert lmartifacts['created'] == 0
-        assert lmartifacts['modified'] == 0
-        assert lmtickets['assigned'] == 0
-        assert lmtickets['solved'] == 0
-        assert lmtickets['revoked'] == 0
-        assert lmtickets['averagesolvingtime'] is None
-        assert lmcommits['number'] == 0
-        assert lmcommits['lines'] == 0
-
     def test_login(self):
         user = User.by_username('test-user')
         init_logins = c.user.stats.tot_logins_count
@@ -198,4 +166,3 @@ class TestGitCommit(unittest.TestCase, TestController):
         assert commits['number'] == 4
         lmcommits = c.user.stats.getLastMonthCommits()
         assert lmcommits['number'] == 4
-
