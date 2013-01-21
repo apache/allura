@@ -206,6 +206,8 @@ def test_markdown_toc():
 
 @with_setup(setUp)
 def test_markdown_links():
+    text = g.markdown.convert('See [18:13:49]')
+    assert 'See <span>[18:13:49]</span>' in text, text
     h.set_context('test', 'wiki', neighborhood='Projects')
     text = g.markdown.convert('Read [here](Home) about our project')
     assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text

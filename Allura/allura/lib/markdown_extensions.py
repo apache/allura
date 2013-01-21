@@ -95,6 +95,10 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             title = markdown.inlinepatterns.dequote(self.unescape(title))
             el.set('title', title)
 
+        if 'notfound' in classes and not self.ext._use_wiki:
+            text = el.text
+            el = markdown.util.etree.Element('span')
+            el.text = '[%s]' % text
         return el
 
     def _expand_alink(self, link, is_link_with_brackets):
@@ -107,7 +111,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         if shortlink:
             href = shortlink.url
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
-        elif self.ext._use_wiki and is_link_with_brackets:
+        elif is_link_with_brackets:
             href = h.urlquote(link)
             classes += ' notfound'
         attach_link = link.split('/attachment/')
