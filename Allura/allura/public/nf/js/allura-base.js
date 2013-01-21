@@ -16,7 +16,8 @@
             });
     });
     if(window.location.hash) {
-        $(window.location.hash + '.title-pane').removeClass('closed');
+        // Nested comment (reply) hash link contains a /, which must be escaped
+        $(window.location.hash.replace('/', '\\/') + '.title-pane').removeClass('closed');
     }
 
     // Setup editable widgets
