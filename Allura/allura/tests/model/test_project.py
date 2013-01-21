@@ -72,10 +72,9 @@ def test_subproject():
     ThreadLocalORMSession.flush_all()
 
 @td.with_wiki
-def test_default_tools():
-    c.project.neighborhood.default_tools = 'wiki:Wiki, tickets:Ticket'
+def test_anchored_tools():
+    c.project.neighborhood.anchored_tools = 'wiki:Wiki, tickets:Ticket'
     c.project.install_app = Mock()
     assert c.project.sitemap()[0].label == 'Wiki'
     assert c.project.install_app.call_args[0][0] == 'tickets'
     assert c.project.ordered_mounts()[0]['ac'].tool_name == 'Wiki'
-    assert c.project.install_app.call_args[0][0] == 'tickets'

@@ -391,9 +391,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         from allura.app import SitemapEntry
         entries = []
 
-        default_tools_order =self.neighborhood.get_default_tools_order()
-        i = len(default_tools_order)
-        self.install_default_tools()
+        anchored_tools =self.neighborhood.get_anchored_tools()
+        i = len(anchored_tools)
+        self.install_anchored_tools()
 
         # Set menu mode
         delta_ordinal = i
@@ -425,8 +425,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     entry = sm.bind_app(app)
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
-                    if not self.is_nbhd_project and (entry.tool_name.lower() in default_tools_order):
-                        ordinal = default_tools_order.index(entry.tool_name.lower())
+                    if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
+                        ordinal = anchored_tools.keys().index(entry.tool_name.lower())
                     else:
                         ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if ordinal > max_ordinal:
@@ -440,18 +440,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         entries = sorted(entries, key=lambda e: e['ordinal'])
         return [e['entry'] for e in entries]
 
-    def install_default_tools(self):
-        default_tools = self.neighborhood.get_default_tools()
-        default_tools_order =self.neighborhood.get_default_tools_order()
+    def install_anchored_tools(self):
+        anchored_tools = self.neighborhood.get_anchored_tools()
         installed_tools = [tool.tool_name.lower() for tool in self.app_configs]
         i = 0
         if not self.is_nbhd_project:
-            for tool in default_tools_order:
+            for tool in anchored_tools.keys():
                 if tool not in installed_tools:
                     try:
-                        self.install_app(tool, tool, default_tools[tool], i)
+                        self.install_app(tool, tool, anchored_tools[tool], i)
                     except Exception:
-                        log.error(tool + ' is not available')
+                        log.error('%s is not available' % tool, exc_info=True)
                 i += 1
 
     def grouped_navbar_entries(self):
@@ -599,17 +598,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''Returns an array of a projects mounts (tools and sub-projects) in
         toolbar order.'''
         result = []
-        default_tools_order = self.neighborhood.get_default_tools_order()
-        i = len(default_tools_order)
-        self.install_default_tools()
+        anchored_tools = self.neighborhood.get_anchored_tools()
+        i = len(anchored_tools)
+        self.install_anchored_tools()
 
         for sub in self.direct_subprojects:
             result.append({'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
-                if not self.is_nbhd_project and (ac.tool_name.lower() in default_tools_order):
-                    ordinal = default_tools_order.index(ac.tool_name.lower())
+                if not self.is_nbhd_project and (ac.tool_name.lower() in anchored_tools.keys()):
+                    ordinal = anchored_tools.keys().index(ac.tool_name.lower())
                 else:
                     ordinal = int(ac.options.get('ordinal', 0)) + i
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
