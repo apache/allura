@@ -521,24 +521,24 @@ class NeighborhoodAdminController(object):
         tracking_id = kw.get('tracking_id', '')
         h.log_if_changed(nbhd, 'tracking_id', tracking_id,
                         'update neighborhood tracking_id')
-        default_tools = kw.get('default_tools', '')
+        anchored_tools = kw.get('anchored_tools', '')
         validate_tools = dict()
         result = True
-        if default_tools.strip() != '':
+        if anchored_tools.strip() != '':
             try:
-                validate_tools = dict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in default_tools.replace(' ', '').split(','))
+                validate_tools = dict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools.replace(' ', '').split(','))
             except Exception:
-                flash('Default tools "%s" is invalid' % default_tools,'error')
+                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
                 result = False
 
 
         for tool in validate_tools.keys():
             if not h.re_path_portion.match(tool):
-                flash('Default tools "%s" is invalid' % default_tools,'error')
+                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
                 result = False
         if result:
-            h.log_if_changed(nbhd, 'default_tools', default_tools,
-                             'update neighborhood default tools')
+            h.log_if_changed(nbhd, 'anchored_tools', anchored_tools,
+                             'update neighborhood anchored tools')
 
         if icon is not None and icon != '':
             if self.neighborhood.icon:

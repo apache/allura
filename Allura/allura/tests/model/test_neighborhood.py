@@ -67,7 +67,6 @@ def test_neighborhood():
     neighborhood.features['css'] = 'custom'
     assert neighborhood.allow_custom_css
 
-    neighborhood.default_tools = 'wiki:Wiki, tickets:Tickets'
-    assert neighborhood.get_default_tools()['wiki'] == 'Wiki'
-    assert neighborhood.get_default_tools()['tickets'] == 'Tickets'
-    assert neighborhood.get_default_tools_order() == ['wiki', 'tickets']
+    neighborhood.anchored_tools = 'wiki:Wiki, tickets:Tickets'
+    assert neighborhood.get_anchored_tools()['wiki'] == 'Wiki'
+    assert neighborhood.get_anchored_tools()['tickets'] == 'Tickets'
