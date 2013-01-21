@@ -382,7 +382,7 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
         r = self.app.post('/discussion/save_new_topic', params=params)
-        spam_checker.check.call_args[0] == 'Test Thread\nThis is a *test thread*', \
+        assert spam_checker.check.call_args[0] == ('Test Thread\nThis is a *test thread*',), \
             spam_checker.check.call_args[0]
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
@@ -447,7 +447,7 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
-        spam_checker.check.call_args[0] == 'bbb', spam_checker.check.call_args[0]
+        assert spam_checker.check.call_args[0] == ('bbb',), spam_checker.check.call_args[0]
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
