@@ -1098,13 +1098,15 @@ class TicketController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/ticket.html')
     @validate(dict(
             page=validators.Int(if_empty=0),
-            limit=validators.Int(if_empty=10),
-            deleted=validators.StringBool(if_empty=False)))
+            limit=validators.Int(if_empty=10)))
     def index(self, page=0, limit=10, deleted=False, **kw):
-        if ((self.ticket is not None) and
-           (not self.ticket.deleted or (self.ticket.deleted and
-                                        has_access(self.ticket,'delete') and
-                                        deleted))):
+        ticket_visible = False
+        if self.ticket is not None:
+            ticket_visible = (not self.ticket.deleted or
+                              (self.ticket.deleted and
+                               has_access(self.ticket,'delete')))
+
+        if ticket_visible:
             c.ticket_form = W.ticket_form
             c.thread = W.thread
             c.attachment_list = W.attachment_list
@@ -1188,7 +1190,7 @@ class TicketController(BaseController):
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.ticket.summary += suffix
         flash('Ticket successfully deleted')
-        return dict(location='../'+str(self.ticket.ticket_num)+'/?deleted=True')
+        return dict(location='../'+str(self.ticket.ticket_num))
 
     @without_trailing_slash
     @expose('json:')

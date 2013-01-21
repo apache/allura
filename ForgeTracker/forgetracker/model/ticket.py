@@ -160,6 +160,10 @@ class Globals(MappedClass):
                 for field in self.custom_fields
                 if field.get('show_in_search')]
 
+    def has_deleted_tickets(self):
+        return  Ticket.query.find(dict(
+            app_config_id=c.app.config._id, deleted=True)).count() > 0
+
 
 class TicketHistory(Snapshot):
 
@@ -461,10 +465,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             pubdate=self.created_date)
 
     def url(self):
-        s = self.app_config.url() + str(self.ticket_num) + '/'
-        if self.deleted:
-            s += '?deleted=True'
-        return s
+        return self.app_config.url() + str(self.ticket_num) + '/'
 
     def shorthand_id(self):
         return '#' + str(self.ticket_num)

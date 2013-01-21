@@ -1062,35 +1062,43 @@ class TestFunctionalController(TrackerTestController):
         # not found and has not import_id
         self.app.get('/p/test/bugs/42042/', status=404)
 
-    def test_deleted_tickets(self):
+    def test_ticket_delete(self):
         self.new_ticket(summary='Test ticket')
-        r = self.app.get('/bugs/')
-        assert '<a href="/p/test/bugs/1/">Test ticket</a>' in r
-        assert '<a  href="?deleted=True">Show deleted tickets</a>' in r
-        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        assert '<a  href="?deleted=True">Show deleted tickets</a>' not in r
-        self.app.post('/bugs/1/delete', extra_environ=dict(username='*anonymous'))
-        r = self.app.get('/bugs/')
-        assert 'No open tickets found.' not in r
-
         self.app.post('/bugs/1/delete')
-        r = self.app.get('/bugs/')
-        assert 'No open tickets found.' in r
-        r = self.app.get('/bugs/?deleted=True')
-        assert '<a href="/p/test/bugs/1/?deleted=True">Test ticket' in r
-        assert '<a href="?deleted=False">Hide deleted tickets</a>' in r
-        ticket = tm.Ticket.query.find().first()
-        assert 'deleted=True' in ticket.url()
-        r = self.app.get('/p/test/bugs/1/?deleted=True')
-        assert '#1 Test ticket' in r
-        r = self.app.get('/p/test/bugs/1/', status=404)
-
-        self.app.post('/bugs/1/undelete', extra_environ=dict(username='*anonymous'))
         r = self.app.get('/bugs/')
         assert 'No open tickets found.' in r
         self.app.post('/bugs/1/undelete')
         r = self.app.get('/bugs/')
         assert 'No open tickets found.' not in r
+
+    def test_ticket_delete_without_permission(self):
+        self.new_ticket(summary='Test ticket')
+        self.app.post('/bugs/1/delete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert '<a href="/p/test/bugs/1/">Test ticket</a>' in r
+        self.app.post('/bugs/1/delete')
+        self.app.post('/bugs/1/undelete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+
+    def test_deleted_ticket_visible(self):
+        self.new_ticket(summary='Test ticket')
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/p/test/bugs/1/')
+        assert '#1 Test ticket' in r
+        self.app.get('/p/test/bugs/1/', extra_environ=dict(username='*anonymous'), status=404)
+
+    def test_show_hide_deleted_tickets(self):
+        self.new_ticket(summary='Test ticket')
+        r = self.app.get('/p/test/bugs/')
+        assert 'Show deleted tickets' not in r
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/p/test/bugs/')
+        assert 'Show deleted tickets' in r
+        assert 'No open tickets found' in r
+        r = self.app.get('/bugs/?deleted=True')
+        assert '<a href="/p/test/bugs/1/">Test ticket' in r
+        assert '<a href="?deleted=False">Hide deleted tickets</a>' in r
 
     @td.with_tool('test', 'Tickets', 'bugs2')
     @td.with_tool('test2', 'Tickets', 'bugs')
