@@ -1100,13 +1100,8 @@ class TicketController(BaseController):
             page=validators.Int(if_empty=0),
             limit=validators.Int(if_empty=10)))
     def index(self, page=0, limit=10, deleted=False, **kw):
-        ticket_visible = False
-        if self.ticket is not None:
-            ticket_visible = (not self.ticket.deleted or
-                              (self.ticket.deleted and
-                               has_access(self.ticket,'delete')))
-
-        if ticket_visible:
+        ticket_visible = self.ticket and not self.ticket.deleted
+        if ticket_visible or has_access(self.ticket, 'delete'):
             c.ticket_form = W.ticket_form
             c.thread = W.thread
             c.attachment_list = W.attachment_list
