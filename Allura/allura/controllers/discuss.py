@@ -1,4 +1,3 @@
-import logging
 from urllib import unquote
 from datetime import datetime
 
@@ -21,8 +20,6 @@ from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
 from .attachments import AttachmentsController, AttachmentController
-
-log = logging.getLogger(__name__)
 
 class pass_validator(object):
     def validate(self, v, s):
@@ -332,20 +329,13 @@ class PostController(BaseController):
     @require_post()
     @validate(pass_validator, error_handler=index)
     def moderate(self, **kw):
-        log.debug('Moderating post on project "%s"', c.project.shortname)
-        log.debug('... requiring access on %r', self.post.thread)
         require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
-            log.debug('... deleting post')
             self.post.delete()
-            log.debug('... updating thread stats')
             self.thread.update_stats()
         elif kw.pop('spam', None):
-            log.debug('... marking post as spam')
             self.post.status = 'spam'
-            log.debug('... updating thread stats')
             self.thread.update_stats()
-        log.debug('... redirecting to referrer: %s', request.referer)
         redirect(request.referer)
 
     @h.vardec
