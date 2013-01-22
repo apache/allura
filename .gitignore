@@ -28,5 +28,6 @@ env
 Allura/allura/templates/home
 Allura/allura/templates/var
 Allura/production.ini
+Allura/forced_upgrade.ini
 scripts/teamforge-export/
 report.clonedigger
