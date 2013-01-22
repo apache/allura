@@ -464,7 +464,9 @@ class Tree(RepoObject):
         # look for existing new format first
         last_commit = LastCommit.get(self, create=True)
         if last_commit:
-            session(last_commit).flush(last_commit)
+            s = session(last_commit)
+            if s:
+                s.flush(last_commit)
             return self._lcd_map(last_commit)
         # otherwise, try old format
         old_style_results = self.ls_old()
@@ -611,8 +613,7 @@ class Blob(object):
     def prev_commit(self):
         lc = LastCommit.get(self.tree)
         if lc:
-            entry = lc.by_name[self.name]
-            last_commit = self.repo.commit(entry.commit_id)
+            last_commit = self.repo.commit(lc.by_name[self.name])
             prev_commit = last_commit.get_parent()
             try:
                 tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'))

@@ -237,18 +237,12 @@ class GitImplementation(M.RepositoryImplementation):
         return doc
 
     def commits(self, path=None, rev=None, skip=None, limit=None):
-        #params = dict(paths=path)
-        #if rev is not None:
-        #    params['rev'] = rev
-        #if skip is not None:
-        #    params['skip'] = skip
-        #if limit is not None:
-        #    params['max_count'] = limit
-        #return [c.hexsha for c in self._git.iter_commits(**params)]
         if rev is None:
             rev = 'HEAD'
         if skip is None:
             skip = 0
+        if path is not None:
+            path = path.strip('/')
         max = skip + limit if limit is not None else None
         commit = self.commit(rev)
         i = 0
@@ -257,7 +251,7 @@ class GitImplementation(M.RepositoryImplementation):
                 if i >= skip:
                     yield commit._id
                 i += 1
-                if max is not None and i > max:
+                if max is not None and i >= max:
                     break
             commit = commit.get_parent()
 

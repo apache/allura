@@ -58,7 +58,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
         if (i+1) % 100 == 0:
             log.info('Refresh child info %d for parents of %s', (i+1), ci._id)
 
-    if repo.tool.lower() != 'svn':
+    if repo._refresh_precompute:
         # Refresh commit runs
         commit_run_ids = commit_ids
         # Check if the CommitRuns for the repo are in a good state by checking for
@@ -103,6 +103,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
         cache = ModelCache()
         for i, oid in enumerate(reversed(commit_ids)):
             ci = cache.get(Commit, dict(_id=oid))
+            ci.set_context(repo)
             compute_lcds(ci, cache)
             ThreadLocalORMSession.flush_all()
             if (i+1) % 100 == 0:

@@ -619,26 +619,6 @@ class TestRepoObject(_TestWithRepoAndCommit):
         assert obj0 is obj1
         assert isnew0 and not isnew1
 
-    def test_set_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-    def test_get_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc0 = M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc0 == lc1
-
-    def test_get_last_commit_missing(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc1 is None
-
     def test_artifact_methods(self):
         assert self.ci.index_id() == 'allura/model/repo/Commit#foo', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()

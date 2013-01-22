@@ -44,6 +44,8 @@ class TestNewGit(unittest.TestCase):
         #     tool = 'git',
         #     status = 'creating')
         self.repo.refresh()
+        # refresh sets c.model_cache, which can cause persistence between tests
+        c.model_cache = None
         self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
         self.rev.repo = self.repo
         ThreadLocalORMSession.flush_all()
@@ -113,6 +115,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tool = 'git',
             status = 'creating')
         self.repo.refresh()
+        # refresh sets c.model_cache, which can cause persistence between tests
+        c.model_cache = None
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -256,32 +260,32 @@ class TestGitCommit(unittest.TestCase):
 
     def test_commits(self):
         # path only
-        commits = self.repo.commits()
+        commits = list(self.repo.commits())
         assert len(commits) == 4, 'Returned %s commits' % len(commits)
         assert "9a7df788cf800241e3bb5a849c8870f2f8259d98" in commits, commits
-        commits = self.repo.commits('README')
+        commits = list(self.repo.commits('README'))
         assert len(commits) == 2, 'Returned %s README commits' % len(commits)
         assert "1e146e67985dcd71c74de79613719bef7bddca4a" in commits, commits
         assert "df30427c488aeab84b2352bdf88a3b19223f9d7a" in commits, commits
-        assert self.repo.commits('does/not/exist') == []
+        assert list(self.repo.commits('does/not/exist')) == []
         # with path and start rev
-        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
         assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a'], commits
         # skip and limit
-        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
+        commits = list(self.repo.commits(None, rev=None, skip=1, limit=2))
         assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8']
-        commits = self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1)
+        commits = list(self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1))
         assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1)
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1))
         assert commits == []
         # path to dir
-        commits = self.repo.commits('a/b/c/')
+        commits = list(self.repo.commits('a/b/c/'))
         assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8', '9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('a/b/c/', skip=1)
+        commits = list(self.repo.commits('a/b/c/', skip=1))
         assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('a/b/c/', limit=1)
+        commits = list(self.repo.commits('a/b/c/', limit=1))
         assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8']
-        commits = self.repo.commits('not/exist/')
+        commits = list(self.repo.commits('not/exist/'))
         assert commits == []
 
     def test_commits_count(self):
