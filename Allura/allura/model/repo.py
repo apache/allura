@@ -84,7 +84,6 @@ LastCommitDoc = collection(
     Field('path', str),
     Index('commit_id', 'path'),
     Field('entries', [dict(
-        type=str,
         name=str,
         commit_id=str)]))
 
@@ -465,6 +464,7 @@ class Tree(RepoObject):
         # look for existing new format first
         last_commit = LastCommit.get(self, create=True)
         if last_commit:
+            session(last_commit).flush(last_commit)
             return self._lcd_map(last_commit)
         # otherwise, try old format
         old_style_results = self.ls_old()
@@ -476,27 +476,31 @@ class Tree(RepoObject):
     def _lcd_map(self, lcd):
         if lcd is None:
             return []
-        cmp_entries = lambda a,b: cmp(b.type,a.type) or cmp(a.name,b.name)
         commit_ids = [e.commit_id for e in lcd.entries]
         commits = Commit.query.find(dict(_id={'$in': commit_ids}))
         commit_infos = {c._id: c.info for c in commits}
+        by_name = lambda n: n.name
+        tree_names = sorted([n.name for n in self.tree_ids])
+        blob_names = sorted([n.name for n in chain(self.blob_ids, self.other_ids)])
+
         results = []
-        for entry in sorted(lcd.entries, cmp=cmp_entries):
-            commit_info = commit_infos[entry.commit_id]
-            results.append(dict(
-                    kind=entry.type,
-                    name=entry.name,
-                    href=entry.name,
-                    last_commit=dict(
-                            author=commit_info['author'],
-                            author_email=commit_info['author_email'],
-                            author_url=commit_info['author_url'],
-                            date=commit_info['date'],
-                            href=self.repo.url_for_commit(commit_info['id']),
-                            shortlink=commit_info['shortlink'],
-                            summary=commit_info['summary'],
-                        ),
-                ))
+        for type, names in (('DIR', tree_names), ('BLOB', blob_names)):
+            for name in names:
+                commit_info = commit_infos[lcd.by_name[name]]
+                results.append(dict(
+                        kind=type,
+                        name=name,
+                        href=name,
+                        last_commit=dict(
+                                author=commit_info['author'],
+                                author_email=commit_info['author_email'],
+                                author_url=commit_info['author_url'],
+                                date=commit_info['date'],
+                                href=self.repo.url_for_commit(commit_info['id']),
+                                shortlink=commit_info['shortlink'],
+                                summary=commit_info['summary'],
+                            ),
+                    ))
         return results
 
     def ls_old(self):
@@ -607,17 +611,17 @@ class Blob(object):
     def prev_commit(self):
         lc = LastCommit.get(self.tree)
         if lc:
-            entry = lc.entry_by_name(self.name)
-            last_commit = self.repo.commit(entry.commit_info.id)
+            entry = lc.by_name[self.name]
+            last_commit = self.repo.commit(entry.commit_id)
             prev_commit = last_commit.get_parent()
             try:
                 tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'))
             except KeyError:
                 return None
             lc = tree and LastCommit.get(tree)
-            entry = lc and lc.entry_by_name(self.name)
-            if entry:
-                prev_commit = self.repo.commit(entry.commit_info.id)
+            commit_id = lc and lc.by_name[self.name]
+            if commit_id:
+                prev_commit = self.repo.commit(commit_id)
                 return prev_commit
         return None
 
@@ -703,8 +707,6 @@ class LastCommit(RepoObject):
 
     @classmethod
     def _last_commit_id(cls, commit, path):
-        if not commit.repo:
-            import ipdb; ipdb.set_trace()
         commit_id = list(commit.repo.commits(path, commit._id, limit=1))
         if commit_id:
             commit_id = commit_id[0]
@@ -735,7 +737,6 @@ class LastCommit(RepoObject):
         '''
         path = tree.path().strip('/')
         entries = []
-        tree_nodes = set([n.name for n in tree.tree_ids])
         prev_lcd = None
         parent = tree.commit.get_parent()
         if parent:
@@ -746,12 +747,11 @@ class LastCommit(RepoObject):
         for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
             not_changed = os.path.join(path, node.name) not in tree.commit.changed_paths
             if not_changed and prev_lcd:
-                commit_id = prev_lcd.entry_by_name(node.name).commit_id
+                commit_id = prev_lcd.by_name[node.name]
             else:
                 commit_id = cls._last_commit_id(tree.commit, os.path.join(path, node.name))
             entries.append(dict(
                     name=node.name,
-                    type='DIR' if node.name in tree_nodes else 'BLOB',
                     commit_id=commit_id,
                 ))
         lcd = cls(
@@ -761,10 +761,9 @@ class LastCommit(RepoObject):
             )
         return lcd
 
-    def entry_by_name(self, name):
-        for node in self.entries:
-            if node.name == name:
-                return node
+    @LazyProperty
+    def by_name(self):
+        return {n.name: n.commit_id for n in self.entries}
 
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
