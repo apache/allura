@@ -445,10 +445,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         installed_tools = [tool.tool_name.lower() for tool in self.app_configs]
         i = 0
         if not self.is_nbhd_project:
-            for tool in anchored_tools.keys():
+            for tool, label in anchored_tools.iteritems():
                 if tool not in installed_tools:
                     try:
-                        self.install_app(tool, tool, anchored_tools[tool], i)
+                        self.install_app(tool, tool, label, i)
                     except Exception:
                         log.error('%s is not available' % tool, exc_info=True)
                 i += 1

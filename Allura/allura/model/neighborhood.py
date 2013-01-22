@@ -244,4 +244,5 @@ class Neighborhood(MappedClass):
         try:
             return OrderedDict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools)
         except Exception:
+            log.info("anchored_tools isn't valid", exc_info=True)
             return dict()
