@@ -18,5 +18,9 @@ class NewForgeController(object):
         if neighborhood is None or project is None:
             raise exc.HTTPBadRequest()
         h.set_context(project, app, neighborhood=neighborhood)
-        html = g.markdown_wiki.convert(markdown)
+
+        if app == 'wiki':
+            html = g.markdown_wiki.convert(markdown)
+        else:
+            html = g.markdown.convert(markdown)
         return html
