@@ -363,8 +363,9 @@ class Commit(RepoObject):
         diffs = set()
         if diff_info:
             for d in diff_info.differences:
-                diffs.add(d.name.strip('/'))
-                node_path = os.path.dirname(d.name)
+                node = d.name.strip('/')
+                diffs.add(node)
+                node_path = os.path.dirname(node)
                 while node_path:
                     diffs.add(node_path)
                     node_path = os.path.dirname(node_path)
