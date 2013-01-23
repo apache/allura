@@ -493,10 +493,10 @@ def compute_lcds(commit, cache):
     if not trees:
         log.error('Missing TreesDoc for %s; skipping compute_lcd' % commit)
         return
-    c.model_cache = cache
-    _update_tree_cache(trees.tree_ids, cache)
-    tree = _pull_tree(cache, commit.tree_id, commit)
-    _compute_lcds(tree, cache)
+    with h.push_config(c, model_cache=cache):
+        _update_tree_cache(trees.tree_ids, cache)
+        tree = _pull_tree(cache, commit.tree_id, commit)
+        _compute_lcds(tree, cache)
 
 def _compute_lcds(tree, cache):
     cache._processed_trees += 1

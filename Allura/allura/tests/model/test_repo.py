@@ -79,7 +79,6 @@ class TestLastCommit(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        c.model_cache = M.repo.ModelCache()
         self.repo = mock.Mock('repo', _commits=OrderedDict(), _last_commit=None)
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
         self.repo.commits = self._commits

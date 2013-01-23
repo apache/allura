@@ -80,6 +80,7 @@ def setup_unit_test():
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     c.memoize_cache = {}
     c.queued_messages = None
+    c.model_cache = None
     ThreadLocalORMSession.close_all()
 
 def setup_global_objects():

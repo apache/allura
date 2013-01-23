@@ -44,8 +44,6 @@ class TestNewGit(unittest.TestCase):
         #     tool = 'git',
         #     status = 'creating')
         self.repo.refresh()
-        # refresh sets c.model_cache, which can cause persistence between tests
-        c.model_cache = None
         self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
         self.rev.repo = self.repo
         ThreadLocalORMSession.flush_all()
@@ -115,8 +113,6 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             tool = 'git',
             status = 'creating')
         self.repo.refresh()
-        # refresh sets c.model_cache, which can cause persistence between tests
-        c.model_cache = None
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
