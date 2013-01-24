@@ -463,17 +463,18 @@ class Tree(RepoObject):
             return self._lcd_map(LastCommit.get(self))
         '''
         # look for existing new format first
-        last_commit = LastCommit.get(self, create=True)
+        last_commit = LastCommit.get(self, create=False)
         if last_commit:
-            s = session(last_commit)
-            if s:
-                s.flush(last_commit)
             return self._lcd_map(last_commit)
         # otherwise, try old format
         old_style_results = self.ls_old()
         if old_style_results:
             return old_style_results
         # finally, use the new implentation that auto-vivifies
+        last_commit = LastCommit.get(self, create=True)
+        # ensure that the LCD is saved, even if
+        # there is an error later in the request
+        session(last_commit).flush(last_commit)
         return self._lcd_map(LastCommit.get(self))
 
     def _lcd_map(self, lcd):
