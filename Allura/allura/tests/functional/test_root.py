@@ -32,9 +32,9 @@ class TestRootController(TestController):
 
     def test_index(self):
         response = self.app.get('/')
-        assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Projects')
-        projects = response.html.findAll('div',{'class':'border card'})
-        assert projects[0].find('a').get('href') == '/adobe/adobe-1/'
+        assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Neighborhoods')
+        nbhds = response.html.findAll('td',{'class':'nbhd'})
+        assert nbhds[0].find('a').get('href') == '/adobe/'
         cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'

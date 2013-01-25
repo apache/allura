@@ -22,7 +22,7 @@
         </thead>
         <tbody>
         {% for nbhd in neighborhoods %}
-            <tr><td><a href="{{nbhd.url()}}">{{nbhd.name}}</a></td></tr>
+            <tr><td class="nbhd"><a href="{{nbhd.url()}}">{{nbhd.name}}</a></td></tr>
         {% else %}
             <tr><td class="no-nbhds">No neighborhoods found</td></tr>
         {% endfor %}
