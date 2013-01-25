@@ -79,21 +79,14 @@ class RootController(WsgiDispatchController):
     def _cleanup_request(self):
         pass
 
-    @expose('jinja:allura:templates/project_list.html')
+    @expose('jinja:allura:templates/neighborhood_list.html')
     @with_trailing_slash
     def index(self, **kw):
         """Handle the front-page."""
-        c.project_summary = W.project_summary
-        projects = M.Project.query.find(
-            dict(is_root=True,
-                 is_nbhd_project=False,
-                 deleted=False)).sort('shortname').all()
         neighborhoods = M.Neighborhood.query.find().sort('name')
-        psort = [ (n, [ p for p in projects if p.neighborhood_id==n._id ])
-                  for n in neighborhoods ]
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [
             SitemapEntry(cat.label, '/browse/'+cat.name) for cat in categories
         ]
-        return dict(projects=psort,title="All Projects",text=None)
+        return dict(neighborhoods=neighborhoods,title="All Neighborhoods")
 

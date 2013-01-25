@@ -1,0 +1,31 @@
+{% extends g.theme.master %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block header %}{{title}}{% endblock %}
+
+{% block extra_css %}
+  <style type="text/css">
+      .no-nbhds {
+          text-align: center;
+          font-style: italic;
+      }
+  </style>
+{% endblock %}
+
+{% block content %}
+    {{ text if text }}
+
+    <table>
+        <thead>
+            <tr><th>Neighborhood</th></tr>
+        </thead>
+        <tbody>
+        {% for nbhd in neighborhoods %}
+            <tr><td><a href="{{nbhd.url()}}">{{nbhd.name}}</a></td></tr>
+        {% else %}
+            <tr><td class="no-nbhds">No neighborhoods found</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
