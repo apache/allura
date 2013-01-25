@@ -255,7 +255,6 @@ class GitImplementation(M.RepositoryImplementation):
                     break
             commit = commit.get_parent()
 
-
     def commits_count(self, path=None, rev=None):
         commit = self._git.commit(rev)
         return commit.count(path)

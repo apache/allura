@@ -747,16 +747,26 @@ class LastCommit(RepoObject):
                 prev_lcd = cls.get(parent.get_path(path), create=False)
             except KeyError as e:
                 prev_lcd = None  # will fail if path was added this commit
-        for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids):
-            not_changed = os.path.join(path, node.name) not in tree.commit.changed_paths
-            if not_changed and prev_lcd:
-                commit_id = prev_lcd.by_name[node.name]
-            else:
-                commit_id = cls._last_commit_id(tree.commit, os.path.join(path, node.name))
-            entries.append(dict(
-                    name=node.name,
-                    commit_id=commit_id,
-                ))
+        entries = {}
+        nodes = set([node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
+        changed = set([node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths])
+        if prev_lcd:
+            # get unchanged entries from previously computed LCD
+            entries = prev_lcd.by_name
+        else:
+            # no previously computed LCD, so get unchanged entries from SCM
+            # (but only ask for the ones that we know we need)
+            unchanged = [os.path.join(path, node) for node in nodes - changed]
+            entries = tree.commit.repo.last_commit_ids(tree.commit, unchanged)
+            if entries is None:
+                # something strange went wrong; bail out and possibly try again later
+                return None
+            # paths are fully-qualified; shorten them back to just node names
+            entries = {os.path.basename(path):commit_id for path,commit_id in entries.iteritems()}
+        # update with the nodes changed in this tree's commit
+        entries.update({node: tree.commit._id for node in changed})
+        # convert to a list of dicts, since mongo doesn't handle arbitrary keys well (i.e., . and $ not allowed)
+        entries = [{'name':name, 'commit_id':value} for name,value in entries.iteritems()]
         lcd = cls(
                 commit_id=tree.commit._id,
                 path=path,

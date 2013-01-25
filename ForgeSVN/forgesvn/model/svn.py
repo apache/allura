@@ -416,27 +416,8 @@ class SVNImplementation(M.RepositoryImplementation):
         log.debug('Compute tree for %d paths', len(infos))
         tree_ids = []
         blob_ids = []
-        chg_revno = infos[0][1]['last_changed_rev'].number
-        cur_revno = self._revno(commit._id)
-        commit_ids = [self._oid(revno) for revno in range(chg_revno, cur_revno+1)]
-        lcd = M.repo.LastCommit.query.get(
-                commit_ids=self._oid(chg_revno),
-                path=tree_path.strip('/'),
-            )
-        if lcd:
-            lcd.commit_ids = list(set(lcd.commit_ids + commit_ids))
-            lcd_is_new = False
-        else:
-            # we can't use the normal auto-vivification, because
-            # SVN repos don't have their diff infos filled out :(
-            lcd = M.repo.LastCommit(
-                commit_ids=commit_ids,
-                path=tree_path.strip('/'),
-            )
-            lcd_is_new = True
+        lcd_entries = []
         for path, info in infos[1:]:
-            last_commit_id = self._oid(info['last_changed_rev'].number)
-            last_commit = M.repo.Commit.query.get(_id=last_commit_id)
             if info.kind == pysvn.node_kind.dir:
                 tree_ids.append(Object(
                         id=self._tree_oid(commit._id, path),
@@ -447,26 +428,26 @@ class SVNImplementation(M.RepositoryImplementation):
                         name=path))
             else:
                 assert False
-            if lcd_is_new:
-                lcd.entries.append(dict(
-                        name=path,
-                        type='DIR' if info.kind == pysvn.node_kind.dir else 'BLOB',
-                        commit_info=last_commit.info,
-                    ))
-        session(lcd).flush(lcd)
+            lcd_entries.append(dict(
+                    name=path,
+                    commit_id=self._oid(info.last_changed_rev.number),
+                ))
         tree, is_new = RM.Tree.upsert(tree_id,
                 tree_ids=tree_ids,
                 blob_ids=blob_ids,
                 other_ids=[],
             )
         if is_new:
-            trees_doc = RM.TreesDoc.m.get(_id=commit._id)
-            if not trees_doc:
-                trees_doc = RM.TreesDoc(dict(
-                    _id=commit._id,
-                    tree_ids=[]))
-            trees_doc.tree_ids.append(tree_id)
-            trees_doc.m.save(safe=False)
+            commit_id = self._oid(infos[0][1].last_changed_rev.number)
+            path = tree_path.strip('/')
+            RM.TreesDoc.m.update_partial(
+                    {'_id': commit._id},
+                    {'$addToSet': {'tree_ids': tree_id}},
+                    upsert=True)
+            RM.LastCommitDoc.m.update_partial(
+                    {'commit_id': commit_id, 'path': path},
+                    {'commit_id': commit_id, 'path': path, 'entries': lcd_entries},
+                    upsert=True)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
@@ -593,5 +574,34 @@ class SVNImplementation(M.RepositoryImplementation):
             log.info('ClientError processing commits for path %s, rev %s, treating as empty', path, rev, exc_info=True)
             return 0
 
+    def last_commit_ids(self, commit, paths):
+        '''
+        Return a mapping {path: commit_id} of the _id of the last
+        commit to touch each path, starting from the given commit.
+
+        Since SVN Diffs are computed on-demand, we can't walk the
+        commit tree to find these.  However, we can ask SVN for it
+        with a single call, so it shouldn't be too expensive.
+
+        NB: This assumes that all paths are direct children of a
+        single common parent path (i.e., you are only asking for
+        a subset of the nodes of a single tree, one level deep).
+        '''
+        tree_path = os.path.commonprefix(paths).strip('/')
+        rev = self._revision(commit._id)
+        try:
+            infos = self._svn.info2(
+                self._url + tree_path,
+                revision=rev,
+                depth=pysvn.depth.immediates)
+        except pysvn.ClientError:
+            log.exception('Error computing tree for %s: %s(%s)',
+                          self._repo, commit, tree_path)
+            return None
+        entries = {}
+        for path, info in infos[1:]:
+            if path in paths:
+                entries[path] = self._oid(info.last_changed_rev.number)
+        return entries
 
 Mapper.compile_all()

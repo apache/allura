@@ -82,6 +82,8 @@ class TestLastCommit(unittest.TestCase):
         self.repo = mock.Mock('repo', _commits=OrderedDict(), _last_commit=None)
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
         self.repo.commits = self._commits
+        lcids = M.repository.RepositoryImplementation.last_commit_ids.__func__
+        self.repo.last_commit_ids = lambda *a, **k: lcids(self.repo, *a, **k)
 
     def _build_tree(self, commit, path, tree_paths):
         tree_nodes = []
