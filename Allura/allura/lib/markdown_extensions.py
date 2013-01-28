@@ -108,7 +108,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             classes = 'alink'
         href = link
         shortlink = M.Shortlink.lookup(link)
-        if shortlink:
+        if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
             href = shortlink.url
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
         elif is_link_with_brackets:

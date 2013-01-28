@@ -24,9 +24,9 @@
     {%if h.has_access(c.app, 'delete') and c.app.globals.has_deleted_tickets()%}
         <p>
             {%if deleted%}
-                <a href="?deleted=False">Hide deleted tickets</a>
+                <a href="{{tg.url('', dict(q=q, limit=limit, sort=sort, deleted=False))}}">Hide deleted tickets</a>
             {%else%}
-                <a  href="?deleted=True">Show deleted tickets</a>
+                <a  href="{{tg.url('', dict(q=q, limit=limit, sort=sort, deleted=True))}}">Show deleted tickets</a>
             {%endif%}
         </p>
     {%endif%}

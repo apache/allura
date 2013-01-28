@@ -60,7 +60,8 @@ search_validators = dict(
     project=validators.StringBool(if_empty=False),
     limit=validators.Int(if_invalid=None),
     page=validators.Int(if_empty=0),
-    sort=validators.UnicodeString(if_empty=None))
+    sort=validators.UnicodeString(if_empty=None),
+    deleted=validators.StringBool(if_empty=False))
 
 def _mongo_col_to_solr_col(name):
     if name == 'ticket_num':
@@ -559,7 +560,12 @@ class RootController(BaseController):
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/search.html')
     @validate(validators=search_validators)
-    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, **kw):
+    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, deleted=False, **kw):
+        require(has_access(c.app, 'read'))
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
+
         if query and not q:
             q = query
         c.bin_form = W.bin_form
@@ -569,12 +575,13 @@ class RootController(BaseController):
             bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, deleted=show_deleted, **kw)
         result['columns'] = columns or solr_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
         result['bin'] = bin
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch', '').strip()
+        result['deleted'] = deleted
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -582,10 +589,13 @@ class RootController(BaseController):
     @h.vardec
     @expose()
     @validate(validators=search_validators)
-    def search_feed(self, q=None, query=None, project=None, page=0, sort=None, **kw):
+    def search_feed(self, q=None, query=None, project=None, page=0, sort=None, deleted=False, **kw):
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
         if query and not q:
             q = query
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, deleted=show_deleted, **kw)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url), description='You searched for %s' % q, language=u'en')
@@ -689,7 +699,7 @@ class RootController(BaseController):
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'update')
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, deleted=[False], **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         result['columns'] = solr_columns()
@@ -1181,7 +1191,6 @@ class TicketController(BaseController):
         require_access(self.ticket, 'delete')
         M.Shortlink.query.remove(dict(ref_id=self.ticket.index_id()))
         self.ticket.deleted = True
-        self.ticket.status = 'deleted'
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.ticket.summary += suffix
         flash('Ticket successfully deleted')
@@ -1193,7 +1202,7 @@ class TicketController(BaseController):
     def undelete(self):
         require_access(self.ticket, 'delete')
         self.ticket.deleted = False
-        self.ticket.status = 'open'
+        self.ticket.summary = re.sub(' \d+:\d+:\d+ \d+-\d+-\d+$','',self.ticket.summary)
         M.Shortlink.from_artifact(self.ticket)
         flash('Ticket successfully restored')
         return dict(location='../'+str(self.ticket.ticket_num))
@@ -1560,7 +1569,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):
-        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort)
+        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort, deleted=[False])
         results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
                               for t in results['tickets']]
         return results
@@ -1625,15 +1634,21 @@ class MilestoneController(BaseController):
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),
-            sort=validators.UnicodeString(if_empty=None)))
-    def index(self, q=None, columns=None, page=0, query=None, sort=None, **kw):
+            sort=validators.UnicodeString(if_empty=None),
+            deleted=validators.StringBool(if_empty=False)))
+    def index(self, q=None, columns=None, page=0, query=None, sort=None, deleted=False, **kw):
         require(has_access(c.app, 'read'))
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
+
         result = TM.Ticket.paged_query(c.app.config, c.user,
-            self.mongo_query, page=page, sort=sort, **kw)
+            self.mongo_query, page=page, sort=sort, deleted={'$in':show_deleted}, **kw)
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
+        result['deleted'] = deleted
         progress = c.app.globals.milestone_count(self.progress_key)
         result.pop('q')
         result.update(

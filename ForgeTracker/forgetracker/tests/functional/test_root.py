@@ -453,7 +453,7 @@ class TestFunctionalController(TrackerTestController):
 
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = wm.Page.query.find(dict(title='aaa')).first()
-        a.text = '\n[bugs:#1]\n'
+        a.text = '\n[bugs:#1]\n[bugs:#2]\n'
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -467,6 +467,16 @@ class TestFunctionalController(TrackerTestController):
         assert 'Related' in response
         assert 'Wiki: aaa' in response
         assert 'Ticket: #2' in response
+
+        b = tm.Ticket.query.find(dict(ticket_num=2)).first()
+        b.deleted = True
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/1/')
+        assert 'Ticket: #2' not in response
+        response = self.app.get('/wiki/aaa/')
+        assert 'alink notfound' in response
 
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
@@ -1067,9 +1077,11 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/bugs/1/delete')
         r = self.app.get('/bugs/')
         assert 'No open tickets found.' in r
+        assert tm.Ticket.query.get(ticket_num=1).summary != 'Test ticket'
         self.app.post('/bugs/1/undelete')
         r = self.app.get('/bugs/')
         assert 'No open tickets found.' not in r
+        assert tm.Ticket.query.get(ticket_num=1).summary == 'Test ticket'
 
     def test_ticket_delete_without_permission(self):
         self.new_ticket(summary='Test ticket')
@@ -1098,7 +1110,7 @@ class TestFunctionalController(TrackerTestController):
         assert 'No open tickets found' in r
         r = self.app.get('/bugs/?deleted=True')
         assert '<a href="/p/test/bugs/1/">Test ticket' in r
-        assert '<a href="?deleted=False">Hide deleted tickets</a>' in r
+        assert 'Hide deleted tickets' in r
 
     @td.with_tool('test', 'Tickets', 'bugs2')
     @td.with_tool('test2', 'Tickets', 'bugs')

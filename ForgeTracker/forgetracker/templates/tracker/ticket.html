@@ -169,7 +169,6 @@
           var title_actions = title_holder.find('small');
           var vote = $('#vote');
           var discussion_comment_textarea = $('#new_post_holder').find('form').find('textarea');
-          var delete_holder = $('span.delete');
 
           $('a.edit_ticket').click(function () {
             var not_posted_comment = discussion_comment_textarea.val();
@@ -180,7 +179,6 @@
             title_actions.hide();
             title_actions.appendTo(document.body);
             title_holder.text('\u00A0');
-            delete_holder.appendTo(title_holder)
             vote.hide();
             $('a.edit_ticket').addClass('btn_activate');
             $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
@@ -235,10 +233,6 @@
   }
   .markdown_edit textarea {
     height: 100px;
-  }
-  span.delete {
-    position: absolute;
-    left: 750px;
   }
 </style>
 {% endblock %}

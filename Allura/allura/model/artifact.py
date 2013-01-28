@@ -129,7 +129,7 @@ class Artifact(MappedClass):
                 app = ac.project.app_instance(ac) if ac else None
                 if app:
                     artifact.set_context(app.repo)
-            if artifact not in related_artifacts:
+            if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) == False):
                 related_artifacts.append(artifact)
         return related_artifacts
 

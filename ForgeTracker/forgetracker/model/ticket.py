@@ -658,7 +658,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             **kw)
 
     @classmethod
-    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, **kw):
+    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, deleted=[False], **kw):
         """Query tickets from Solr, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_query which does a mongo search.
@@ -711,7 +711,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             for tn in ticket_numbers:
                 if tn in ticket_for_num:
                     if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project) and
-                       (ticket_for_num[tn].deleted==False)):
+                       (ticket_for_num[tn].deleted in deleted)):
                         tickets.append(ticket_for_num[tn])
                     else:
                         count = count -1
