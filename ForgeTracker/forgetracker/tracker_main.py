@@ -562,9 +562,6 @@ class RootController(BaseController):
     @validate(validators=search_validators)
     def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, deleted=False, **kw):
         require(has_access(c.app, 'read'))
-        show_deleted = [False]
-        if deleted and has_access(c.app, 'delete'):
-            show_deleted = [False,True]
 
         if query and not q:
             q = query
@@ -575,7 +572,7 @@ class RootController(BaseController):
             bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, deleted=show_deleted, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
         result['columns'] = columns or solr_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
@@ -590,12 +587,9 @@ class RootController(BaseController):
     @expose()
     @validate(validators=search_validators)
     def search_feed(self, q=None, query=None, project=None, page=0, sort=None, deleted=False, **kw):
-        show_deleted = [False]
-        if deleted and has_access(c.app, 'delete'):
-            show_deleted = [False,True]
         if query and not q:
             q = query
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, deleted=show_deleted, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url), description='You searched for %s' % q, language=u'en')
@@ -699,7 +693,7 @@ class RootController(BaseController):
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'update')
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, deleted=[False], **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, show_deleted=False, **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         result['columns'] = solr_columns()
@@ -1569,7 +1563,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):
-        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort, deleted=[False])
+        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort, show_deleted=False)
         results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
                               for t in results['tickets']]
         return results
