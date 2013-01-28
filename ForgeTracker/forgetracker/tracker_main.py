@@ -935,7 +935,6 @@ class BinController(BaseController):
     @validate(validators=dict(bin=V.Ming(TM.Bin)))
     def delbin(self, bin=None):
         require(lambda:bin.app_config_id==self.app.config._id)
-        self.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
 
