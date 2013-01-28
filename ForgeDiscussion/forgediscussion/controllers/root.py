@@ -130,7 +130,8 @@ class RootController(BaseController, DispatchIndex):
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
                     'mount_point_s:%s'% c.app.config.options.mount_point,
-                    '-deleted_b:true'])
+                    '-deleted_b:true'],
+                short_timeout=True)
             if results: count=results.hits
         c.search_results = self.W.search_results
         if results is not None:

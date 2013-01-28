@@ -71,12 +71,15 @@ class Globals(object):
         # Setup SOLR
         self.solr_server = config.get('solr.server')
         if asbool(config.get('solr.mock')):
-            self.solr = MockSOLR()
+            self.solr = self.solr_short_timeout = MockSOLR()
         elif self.solr_server:
             self.solr = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
-                    commitWithin=config.get('solr.commitWithin'))
+                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.long_timeout', 60)))
+            self.solr_short_timeout = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
+                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.short_timeout', 10)))
         else: # pragma no cover
             self.solr = None
+            self.solr_short_timeout = None
         self.use_queue = asbool(config.get('use_queue', False))
 
         # Load login/logout urls; only used for SFX logins

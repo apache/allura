@@ -35,10 +35,13 @@ def solarize(obj):
     return doc
 
 @try_solr
-def search(q,**kw):
-    return g.solr.search(q, **kw)
+def search(q,short_timeout=False,**kw):
+    if short_timeout:
+        return g.solr_short_timeout.search(q, **kw)
+    else:
+        return g.solr.search(q, **kw)
 
-def search_artifact(atype, q, history=False, rows=10, **kw):
+def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
 
     Raises ValueError if SOLR returns an error.
@@ -56,7 +59,10 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
     if not history:
         fq.append('is_history_b:False')
     try:
-        return g.solr.search(q, fq=fq, rows=rows, **kw)
+        if short_timeout:
+            return g.solr_short_timeout.search(q, fq=fq, rows=rows, **kw)
+        else:
+            return g.solr.search(q, fq=fq, rows=rows, **kw)
     except pysolr.SolrError, e:
         raise ValueError('Error running search query: %s' % e.message)
 
