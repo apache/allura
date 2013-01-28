@@ -699,7 +699,6 @@ class RootController(BaseController):
     @expose()
     @require_post()
     def update_tickets(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
         tickets = TM.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
@@ -751,6 +750,7 @@ class RootController(BaseController):
             if message != '':
                 ticket.discussion_thread.post(message)
                 ticket.commit()
+        c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
 
 # tickets
@@ -1148,7 +1148,6 @@ class TicketController(BaseController):
         if not post_data.get('summary'):
             flash('You must provide a Name','error')
             redirect('.')
-        c.app.globals.invalidate_bin_counts()
         if 'labels' in post_data:
             post_data['labels'] = post_data['labels'].split(',')
         else:
@@ -1160,7 +1159,6 @@ class TicketController(BaseController):
     @h.vardec
     @validate(W.ticket_form, error_handler=index)
     def update_ticket_from_widget(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
         data = post_data['ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
@@ -1238,6 +1236,7 @@ class TicketController(BaseController):
             self.ticket.discussion_thread.post(text=comment)
         g.director.create_activity(c.user, 'modified', self.ticket,
                 related_nodes=[c.project])
+        c.app.globals.invalidate_bin_counts()
         redirect('.')
 
     @expose()
@@ -1491,7 +1490,6 @@ class RootRestController(BaseController):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require_access(c.app, 'create')
-        c.app.globals.invalidate_bin_counts()
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         ticket = TM.Ticket(
@@ -1499,6 +1497,7 @@ class RootRestController(BaseController):
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
         ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         redirect(str(ticket.ticket_num)+'/')
 
     @expose('json:')
@@ -1561,10 +1560,10 @@ class TicketRestController(BaseController):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require_access(self.ticket, 'update')
-        c.app.globals.invalidate_bin_counts()
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         self.ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         redirect('.')
 
 class MilestoneController(BaseController):
@@ -1645,7 +1644,6 @@ class MilestoneController(BaseController):
     @expose()
     @require_post()
     def update_tickets(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
         tickets = TM.Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
@@ -1677,4 +1675,5 @@ class MilestoneController(BaseController):
             for k, v in custom_values.iteritems():
                 ticket.custom_fields[k] = v
 
+        c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
