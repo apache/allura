@@ -1094,11 +1094,17 @@ class TestFunctionalController(TrackerTestController):
         assert 'No open tickets found.' in r
 
     def test_deleted_ticket_visible(self):
-        self.new_ticket(summary='Test ticket')
+        self.new_ticket(summary='test')
         self.app.post('/bugs/1/delete')
         r = self.app.get('/p/test/bugs/1/')
-        assert '#1 Test ticket' in r
+        assert '#1 test' in r
         self.app.get('/p/test/bugs/1/', extra_environ=dict(username='*anonymous'), status=404)
+        r = self.app.get('/p/test/bugs/',params=dict(q='test',deleted='True'))
+        assert '<td><a href="/p/test/bugs/1/">test' in r
+        assert '<tr class=" deleted">' in r
+        r = self.app.get('/p/test/bugs/',params=dict(q='test',deleted='True'),
+                         extra_environ=dict(username='*anonymous'))
+        assert 'No open tickets found.' in r
 
     def test_show_hide_deleted_tickets(self):
         self.new_ticket(summary='Test ticket')
