@@ -61,7 +61,7 @@ class SearchController(BaseController):
                 for pid in pids )
             search_query = '%s AND is_history_b:%s AND (%s) AND -deleted_b:true' % (
                 q, history, project_match)
-            results = search.search(search_query, is_history_b=history)
+            results = search.search(search_query, is_history_b=history, short_timeout=True)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 

@@ -120,7 +120,7 @@ class Globals(MappedClass):
         self._bin_counts_data = []
         for b in Bin.query.find(dict(
                 app_config_id=self.app_config_id)):
-            r = search_artifact(Ticket, b.terms, rows=0)
+            r = search_artifact(Ticket, b.terms, rows=0, with_timeout=False)
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         self._bin_counts_expire = \
@@ -684,7 +684,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         try:
             if q:
                 matches = search_artifact(
-                    cls, q,
+                    cls, q, short_timeout=True,
                     rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw)
             else:
                 matches = None

@@ -167,7 +167,7 @@ class RootController(BaseController):
                     'type_s:%s' % ShortUrl.type_s]
             if not has_access(c.app, 'view_private'):
                 query.append('private_b:False')
-            results = search(q, fq=query)
+            results = search(q, fq=query, short_timeout=True)
 
             if results:
                 count = results.hits

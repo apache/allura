@@ -72,7 +72,7 @@ class UserProfileController(BaseController):
     #     subs = Subscriptions.query.find({'user_id':user._id}).all()
     #     for sub in subs:
     #         for s in sub.subscriptions:
-    #             r = g.solr.search(s.artifact_index_id)
+    #             r = g.solr_short_timeout.search(s.artifact_index_id)
     #             print r.docs
     #     return dict(user=user)
 

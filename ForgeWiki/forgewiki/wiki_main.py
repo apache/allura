@@ -303,7 +303,7 @@ class RootController(BaseController, DispatchIndex):
             q = ''
         else:
             results = search(
-                q, rows=limit, start=start,
+                q, short_timeout=True, rows=limit, start=start,
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,

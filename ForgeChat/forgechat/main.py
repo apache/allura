@@ -132,7 +132,8 @@ class RootController(BaseController):
                 fq=[
                     'is_history_b:%s' % history,
                     'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ])
+                    'mount_point_s:%s'% c.app.config.options.mount_point ],
+                short_timeout=True)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 
