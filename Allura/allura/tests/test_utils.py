@@ -29,6 +29,19 @@ class TestChunkedIterator(unittest.TestCase):
         assert len(chunks) > 1, chunks
         assert len(chunks[0]) == 2, chunks[0]
 
+    def test_filter_on_sort_key(self):
+        from allura import model as M
+        query = {'username': {'$in': ['sample-user-1', 'sample-user-2', 'sample-user-3']}}
+        chunks = [
+            chunk for chunk in utils.chunked_find(M.User,
+                                                  query,
+                                                  2,
+                                                  sort_key='username')
+            ]
+        assert len(chunks) == 2, chunks
+        assert len(chunks[0]) == 2, chunks[0]
+        assert len(chunks[1]) == 1, chunks[1]
+
 
 class TestChunkedList(unittest.TestCase):
     def test_chunked_list(self):
@@ -178,5 +191,3 @@ class TestCodeStats(unittest.TestCase):
         assert stats['line_count'] == 8
         assert stats['data_line_count'] == 5
         assert stats['code_size'] == len(blob.text)
-
-
