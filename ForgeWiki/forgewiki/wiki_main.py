@@ -17,7 +17,7 @@ from ming.orm import session
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
-from allura.lib.search import search
+from allura.lib.search import search, SolrError
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
@@ -296,23 +296,28 @@ class RootController(BaseController, DispatchIndex):
         'local wiki search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
+        search_error = None
         results = []
         count=0
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
         else:
-            results = search(
-                q, short_timeout=True, rows=limit, start=start,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point,
-                    '-deleted_b:true'])
+            try:
+                results = search(
+                    q, short_timeout=True, ignore_errors=False,
+                    rows=limit, start=start,
+                    fq=[
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point,
+                        '-deleted_b:true'])
+            except SolrError as e:
+                search_error = e
             if results: count=results.hits
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page)
+                    count=count, limit=limit, page=page, search_error=search_error)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')

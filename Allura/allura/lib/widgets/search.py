@@ -10,7 +10,8 @@ class SearchResults(ew_core.Widget):
         results=None,
         limit=None,
         page=0,
-        count=0)
+        count=0,
+        search_error=None)
 
     class fields(ew_core.NameList):
         page_list=ffw.PageList()

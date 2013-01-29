@@ -20,7 +20,7 @@ from ming.orm import session
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
@@ -191,20 +191,25 @@ class RootController(BaseController):
     def search(self, q=None, history=None, **kw):
         'local tool search'
         results = []
+        search_error = None
         count=0
         if not q:
             q = ''
         else:
-            results = search(
-                q,
-                fq=[
-                    'state_s:published',
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ],
-                short_timeout=True)
+            try:
+                results = search(
+                    q,
+                    fq=[
+                        'state_s:published',
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point ],
+                    short_timeout=True,
+                    ignore_errors=False)
+            except SearchError as e:
+                search_error = e
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
 
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash

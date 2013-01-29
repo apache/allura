@@ -24,7 +24,7 @@ from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.model.timeline import ActivityObject
 
 from allura.lib import security
-from allura.lib.search import search_artifact
+from allura.lib.search import search_artifact, SearchError
 from allura.lib import utils
 from allura.lib import helpers as h
 
@@ -689,8 +689,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             else:
                 matches = None
             solr_error = None
-        except ValueError, e:
-            solr_error = e.args[0]
+        except SearchError as e:
+            solr_error = e
             matches = []
         if matches:
             count = matches.hits

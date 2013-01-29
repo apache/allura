@@ -11,6 +11,9 @@
   </div>
 </form>
 <div style="clear:both">&nbsp;</div>
+{% if search_error %}
+<div class="grid-19">{{ search_error }}</div>
+{% endif %}
 <div class="grid-19">
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
 </div>

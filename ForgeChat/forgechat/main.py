@@ -14,7 +14,7 @@ from formencode import validators
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 from allura import model as M
@@ -123,19 +123,24 @@ class RootController(BaseController):
     def search(self, q=None, history=None, **kw):
         'local tool search'
         results = []
+        search_error = None
         count=0
         if not q:
             q = ''
         else:
-            results = search(
-                q,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ],
-                short_timeout=True)
+            try:
+                results = search(
+                    q,
+                    fq=[
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point ],
+                    short_timeout=True,
+                    ignore_errors=False)
+            except SearchError as e:
+                search_error = e
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
 
     @expose()
     def _lookup(self, y, m, d, *rest):

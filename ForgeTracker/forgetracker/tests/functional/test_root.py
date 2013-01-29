@@ -17,6 +17,7 @@ from forgetracker import model as tm
 
 from allura.lib.security import has_access
 from allura.lib import helpers as h
+from allura.lib.search import SearchError
 from allura.tests import decorators as td
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -753,7 +754,7 @@ class TestFunctionalController(TrackerTestController):
     @patch('forgetracker.tracker_main.search_artifact')
     def test_save_invalid_search(self, search_artifact):
         err = 'Error running search query: [Reason: undefined field label]'
-        search_artifact.side_effect = ValueError(err)
+        search_artifact.side_effect = SearchError(err)
         r = self.app.post('/admin/bugs/bins/save_bin',{
             'summary': 'This is not too long.',
             'terms': 'label:foo',
