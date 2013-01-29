@@ -5,15 +5,14 @@ from os import path
 
 import pylons
 from webob import Request
-
+from mock import Mock
 from pygments import highlight
-from pygments.lexers import PythonLexer, get_lexer_for_filename
-from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_for_filename
 
-from ming.orm import state
 from alluratest.controller import setup_unit_test
 
 from allura.lib import utils
+
 
 class TestChunkedIterator(unittest.TestCase):
 
@@ -29,6 +28,16 @@ class TestChunkedIterator(unittest.TestCase):
             chunk for chunk in utils.chunked_find(M.User, {}, 2) ]
         assert len(chunks) > 1, chunks
         assert len(chunks[0]) == 2, chunks[0]
+
+
+class TestChunkedList(unittest.TestCase):
+    def test_chunked_list(self):
+        l = range(10)
+        chunks = list(utils.chunked_list(l, 3))
+        self.assertEqual(len(chunks), 4)
+        self.assertEqual(len(chunks[0]), 3)
+        self.assertEqual([el for sublist in chunks for el in sublist], l)
+
 
 class TestAntispam(unittest.TestCase):
 
@@ -102,6 +111,7 @@ class TestTruthyCallable(unittest.TestCase):
         assert bool(true_predicate) == True
         assert bool(false_predicate) == False
 
+
 class TestCaseInsensitiveDict(unittest.TestCase):
 
     def test_everything(self):
@@ -119,6 +129,7 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == dict(foo=1, bar=2)
         assert d != dict(Foo=1, bar=2)
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
+
 
 class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
     def test_render(self):
@@ -143,3 +154,29 @@ class TestIsTextFile(unittest.TestCase):
         assert not utils.is_text_file(open(path.join(
             here_dir,
             'data/test_mime/bin_file')).read())
+
+
+class TestCodeStats(unittest.TestCase):
+
+    def setUp(self):
+        setup_unit_test()
+
+    def test_generate_code_stats(self):
+        blob = Mock()
+        blob.text = \
+"""class Person(object):
+
+    def __init__(self, name='Alice'):
+        self.name = name
+
+    def greetings(self):
+        print "Hello, %s" % self.name
+\t\t"""
+        blob.size = len(blob.text)
+
+        stats = utils.generate_code_stats(blob)
+        assert stats['line_count'] == 8
+        assert stats['data_line_count'] == 5
+        assert stats['code_size'] == len(blob.text)
+
+
