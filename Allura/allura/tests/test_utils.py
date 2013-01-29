@@ -6,11 +6,13 @@ from os import path
 import pylons
 from webob import Request
 from mock import Mock
+from nose.tools import assert_equal
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
 
 from alluratest.controller import setup_unit_test
 
+from allura import model as M
 from allura.lib import utils
 
 
@@ -23,24 +25,22 @@ class TestChunkedIterator(unittest.TestCase):
             p = M.User.upsert('sample-user-%d' % i)
 
     def test_can_iterate(self):
-        from allura import model as M
-        chunks = [
-            chunk for chunk in utils.chunked_find(M.User, {}, 2) ]
+        chunks = list(utils.chunked_find(M.User, {}, 2))
         assert len(chunks) > 1, chunks
         assert len(chunks[0]) == 2, chunks[0]
 
     def test_filter_on_sort_key(self):
-        from allura import model as M
         query = {'username': {'$in': ['sample-user-1', 'sample-user-2', 'sample-user-3']}}
-        chunks = [
-            chunk for chunk in utils.chunked_find(M.User,
-                                                  query,
-                                                  2,
-                                                  sort_key='username')
-            ]
+        chunks = list(utils.chunked_find(M.User,
+                                         query,
+                                         2,
+                                         sort_key='username'))
         assert len(chunks) == 2, chunks
         assert len(chunks[0]) == 2, chunks[0]
         assert len(chunks[1]) == 1, chunks[1]
+        assert_equal(chunks[0][0].username, 'sample-user-1')
+        assert_equal(chunks[0][1].username, 'sample-user-2')
+        assert_equal(chunks[1][0].username, 'sample-user-3')
 
 
 class TestChunkedList(unittest.TestCase):
