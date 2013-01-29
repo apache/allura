@@ -174,7 +174,9 @@ def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
     while True:
         if sort_key:
             if max_id:
-                query[sort_key] = {'$gt': max_id}
+                if sort_key not in query:
+                    query[sort_key] = {}
+                query[sort_key]['$gt'] = max_id
             q = cls.query.find(query).limit(pagesize).sort(sort_key, sort_dir)
         else:
             # skipping requires scanning, even for an indexed query
