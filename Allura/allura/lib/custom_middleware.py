@@ -16,6 +16,9 @@ from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
+
+tool_entry_points = list(pkg_resources.iter_entry_points('allura'))
+
 class StaticFilesMiddleware(object):
     '''Custom static file middleware
 
@@ -29,7 +32,7 @@ class StaticFilesMiddleware(object):
         self.script_name = script_name
         self.directories = [
             (self.script_name + ep.name.lower() + '/', ep)
-            for ep in pkg_resources.iter_entry_points('allura') ]
+            for ep in tool_entry_points]
 
     def __call__(self, environ, start_response):
         environ['static.script_name'] = self.script_name
@@ -150,7 +153,6 @@ class SSLMiddleware(object):
 
 class AlluraTimerMiddleware(TimerMiddleware):
     def timers(self):
-        import allura
         import genshi
         import jinja2
         import markdown
@@ -177,7 +179,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'sort', 'where'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
-            Timer('sidebar', allura.app.Application, 'sidebar_menu'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
                 'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
@@ -186,7 +187,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
-        ]
+        ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
     def before_logging(self, stat_record):
         if hasattr(c, "app") and hasattr(c.app, "config"):
