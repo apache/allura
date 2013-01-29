@@ -120,7 +120,7 @@ class Globals(MappedClass):
         self._bin_counts_data = []
         for b in Bin.query.find(dict(
                 app_config_id=self.app_config_id)):
-            r = search_artifact(Ticket, b.terms, rows=0, with_timeout=False)
+            r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False)
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         self._bin_counts_expire = \
