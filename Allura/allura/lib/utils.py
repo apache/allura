@@ -159,15 +159,31 @@ class StatsHandler(TimedRotatingHandler):
         record.exc_info = None # Never put tracebacks in the rtstats log
         TimedRotatingHandler.emit(self, record)
 
-def chunked_find(cls, query=None, pagesize=1024, sort_key=None, sort_dir=1):
+
+def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
+    '''
+    Execute a mongo query against the specified class, yield some results at
+    a time (avoids mongo cursor timeouts if the total result set is very large).
+
+    Pass an indexed sort_key for efficient queries.  Default _id should work
+    in most cases.
+    '''
     if query is None: query = {}
     page = 0
+    max_id = None
     while True:
-        q = cls.query.find(query).skip(pagesize * page).limit(pagesize)
         if sort_key:
-            q.sort(sort_key, sort_dir)
+            if max_id:
+                query[sort_key] = {'$gt': max_id}
+            q = cls.query.find(query).limit(pagesize).sort(sort_key, sort_dir)
+        else:
+            # skipping requires scanning, even for an indexed query
+            q = cls.query.find(query).limit(pagesize).skip(pagesize * page)
         results = (q.all())
-        if not results: break
+        if not results:
+            break
+        if sort_key:
+            max_id = results[-1][sort_key]
         yield results
         page += 1
 
