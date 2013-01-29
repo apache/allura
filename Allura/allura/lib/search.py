@@ -37,7 +37,7 @@ def search(q,short_timeout=False,ignore_errors=True,**kw):
         else:
             return g.solr.search(q, **kw)
     except (SolrError, socket.error) as e:
-        log.exception('Error in solr indexing')
+        log.exception('Error in solr search')
         if not ignore_errors:
             match = re.search(r'<pre>(.*)</pre>', str(e))
             raise SearchError('Error running search query: %s' % (match.group(1) if match else e))
@@ -45,7 +45,7 @@ def search(q,short_timeout=False,ignore_errors=True,**kw):
 def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
 
-    Raises ValueError if SOLR returns an error.
+    Raises SearchError if SOLR returns an error.
     """
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
