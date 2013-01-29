@@ -35,41 +35,6 @@ def permanent_redirect(url):
     except exc.HTTPFound, err:
         raise exc.HTTPMovedPermanently(location=err.location)
 
-def cache_forever():
-    headers = [
-        (k,v) for k,v in response.headers.items()
-        if k.lower() not in ('pragma', 'cache-control') ]
-    delta = CACHE_CONTROL.apply(
-        headers,
-        public=True,
-        max_age=60*60*24*365)
-    EXPIRES.update(headers, delta=delta)
-    response.headers.pop('cache-control', None)
-    response.headers.pop('pragma', None)
-    response.headers.update(headers)
-
-class memoize_on_request(object):
-
-    def __init__(self, *key, **kwargs):
-        self.key = key
-        self.include_func_in_key = kwargs.pop(
-            'include_func_in_key', False)
-        assert not kwargs, 'Extra args'
-
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            cache = c.memoize_cache
-            if self.include_func_in_key:
-                key = (func, self.key, args, tuple(kwargs.iteritems()))
-            else:
-                key = (self.key, args, tuple(kwargs.iteritems()))
-            if key in cache:
-                result = cache[key]
-            else:
-                result = cache[key] = func(*args, **kwargs)
-            return result
-        wrapper.__name__ = 'wrap(%s)' % func.__name__
-        return wrapper
 
 def guess_mime_type(filename):
     '''Guess MIME type based on filename.
@@ -475,11 +440,3 @@ def take_while_true(source):
         yield x
         x = source()
 
-def index_matching(pred, seq):
-    '''Return the index of the first item from seq matching the predicate.
-
-    If no items match the predicate, None is returned instead.'''
-    for i,x in enumerate(seq):
-        if pred(x):
-            return i
-    return None
