@@ -6,6 +6,6 @@
 {% block short_url_content %}{% endblock %}
 {% block content %}
 {{c.search_results.display(results=results,q=q,history=history,
-count=count,limit=limit,page=page)}}
+count=count,limit=limit,page=page,search_error=search_error)}}
 {% endblock %}
 

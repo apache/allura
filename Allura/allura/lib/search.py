@@ -1,4 +1,5 @@
 import re
+import socket
 import cPickle as pickle
 from logging import getLogger
 from pprint import pformat
@@ -6,7 +7,7 @@ from itertools import islice, chain
 
 import markdown
 from pylons import c,g
-import pysolr
+from pysolr import SolrError
 
 from . import helpers as h
 from .markdown_extensions import ForgeExtension
@@ -26,14 +27,20 @@ def solarize(obj):
     doc['text'] = text
     return doc
 
-def search(q,short_timeout=False,**kw):
+class SearchError(SolrError):
+    pass
+
+def search(q,short_timeout=False,ignore_errors=True,**kw):
     try:
         if short_timeout:
             return g.solr_short_timeout.search(q, **kw)
         else:
             return g.solr.search(q, **kw)
-    except pysolr.SolrError as e:
+    except (SolrError, socket.error) as e:
         log.exception('Error in solr indexing')
+        if not ignore_errors:
+            match = re.search(r'<pre>(.*)</pre>', str(e))
+            raise SearchError('Error running search query: %s' % (match.group(1) if match else e))
 
 def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
@@ -52,13 +59,7 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw)
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     if not history:
         fq.append('is_history_b:False')
-    try:
-        if short_timeout:
-            return g.solr_short_timeout.search(q, fq=fq, rows=rows, **kw)
-        else:
-            return g.solr.search(q, fq=fq, rows=rows, **kw)
-    except pysolr.SolrError, e:
-        raise ValueError('Error running search query: %s' % e.message)
+    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 def find_shortlinks(text):
     md = markdown.Markdown(

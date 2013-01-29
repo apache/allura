@@ -27,7 +27,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
-from allura.lib.search import search_artifact
+from allura.lib.search import search_artifact, SearchError
 from allura.lib.decorators import require_post
 from allura.lib.security import (require_access, has_access, require,
                                  require_authenticated)
@@ -926,7 +926,7 @@ class BinController(BaseController):
             # Test the search by running it
             with h.push_config(c, app=self.app):
                 search_artifact(TM.Ticket, bin.terms, rows=0, short_timeout=True)
-        except ValueError, e:
+        except SearchError as e:
             # Search threw an error.
             # Save the error on the bin object for displaying
             # in the template.
@@ -999,7 +999,7 @@ class BinController(BaseController):
                         try:
                             with h.push_config(c, app=self.app):
                                 search_artifact(TM.Ticket, bin.terms, rows=0, short_timeout=True)
-                        except ValueError, e:
+                        except SearchError as e:
                             # Search threw an error.
                             # Save the error on the bin object for displaying
                             # in the template.

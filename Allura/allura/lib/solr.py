@@ -1,5 +1,6 @@
 import shlex
 import pysolr
+from pysolr import SolrError
 
 
 class Solr(pysolr.Solr):

@@ -11,7 +11,9 @@
     <input type="submit" value="Search"/>
   </form>
   <div style="clear: both">&nbsp;</div>
-  {% if count==0 and q %}
+  {% if search_error %}
+  <p>{{ search_error }}</p>
+  {% elif count==0 and q %}
   <p>No results.</p>
   {% elif count==1 and q %}
   <p>{{count}} result.</p>
