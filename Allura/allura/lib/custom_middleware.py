@@ -150,23 +150,17 @@ class SSLMiddleware(object):
 class AlluraTimerMiddleware(TimerMiddleware):
     def timers(self):
         import allura
-        import forgesvn
         import genshi
-        import git
         import jinja2
         import markdown
-        import mercurial
         import ming
         import pymongo
         import socket
         import urllib2
 
-        return self.repo_impl_timers() + [
-            Timer('git', git.Repo, 'rev_parse', 'iter_commits', 'commit'),
+        return self.scm_lib_timers() + self.repo_impl_timers() + [
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
-            Timer('hg', mercurial.hg.localrepo.localrepository, 'heads',
-                'branchtags', 'tags'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
                 'get'),
@@ -180,8 +174,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
                 'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
                 'sort', 'where'),
-            Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
-                'checkin', 'info2', 'log', 'cat', 'list'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
             Timer('sidebar', allura.app.Application, 'sidebar_menu'),
@@ -199,6 +191,23 @@ class AlluraTimerMiddleware(TimerMiddleware):
         if hasattr(c, "app") and hasattr(c.app, "config"):
             stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
+
+    def scm_lib_timers(self):
+        import forgesvn
+        timers = [Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
+                    'checkin', 'info2', 'log', 'cat', 'list')]
+        try:
+            import git
+            timers.append(Timer('git', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
+        except ImportError:
+            pass
+        try:
+            import mercurial
+            timers.append(Timer('hg', mercurial.hg.localrepo.localrepository, 'heads',
+                'branchtags', 'tags'))
+        except ImportError:
+            pass
+        return timers
 
     def repo_impl_timers(self):
         from forgegit.model.git_repo import GitImplementation
