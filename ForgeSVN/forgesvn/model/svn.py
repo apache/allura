@@ -96,6 +96,36 @@ class SVNCalledProcessError(Exception):
             (self.cmd, self.returncode, self.stdout, self.stderr)
 
 
+class SVNLibWrapper(object):
+    """Wrapper around pysvn, used for instrumentation."""
+    def __init__(self, client):
+        self.client = client
+
+    def checkout(self, *args, **kw):
+        return self.client.checkout(*args, **kw)
+
+    def add(self, *args, **kw):
+        return self.client.add(*args, **kw)
+
+    def checkin(self, *args, **kw):
+        return self.client.checkin(*args, **kw)
+
+    def info2(self, *args, **kw):
+        return self.client.info2(*args, **kw)
+
+    def log(self, *args, **kw):
+        return self.client.log(*args, **kw)
+
+    def cat(self, *args, **kw):
+        return self.client.cat(*args, **kw)
+
+    def list(self, *args, **kw):
+        return self.client.list(*args, **kw)
+
+    def __getattr__(self, name):
+        return getattr(self.client, name)
+
+
 class SVNImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
@@ -113,7 +143,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     @LazyProperty
     def _svn(self):
-        return pysvn.Client()
+        return SVNLibWrapper(pysvn.Client())
 
     @LazyProperty
     def _url(self):
