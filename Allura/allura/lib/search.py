@@ -13,14 +13,6 @@ from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
 
-def try_solr(func):
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except: # pragma no cover
-            log.exception('Error in solr indexing')
-    return inner
-
 def solarize(obj):
     if obj is None: return None
     doc = obj.index()
@@ -34,12 +26,14 @@ def solarize(obj):
     doc['text'] = text
     return doc
 
-@try_solr
 def search(q,short_timeout=False,**kw):
-    if short_timeout:
-        return g.solr_short_timeout.search(q, **kw)
-    else:
-        return g.solr.search(q, **kw)
+    try:
+        if short_timeout:
+            return g.solr_short_timeout.search(q, **kw)
+        else:
+            return g.solr.search(q, **kw)
+    except pysolr.SolrError as e:
+        log.exception('Error in solr indexing')
 
 def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
