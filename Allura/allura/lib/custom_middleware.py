@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from contextlib import contextmanager
 
 import tg
 import pkg_resources
@@ -193,36 +194,37 @@ class AlluraTimerMiddleware(TimerMiddleware):
         return stat_record
 
     def scm_lib_timers(self):
-        import forgesvn
-        timers = [Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
-                    'checkin', 'info2', 'log', 'cat', 'list')]
-        try:
+        timers = []
+        with pass_on_exc(ImportError):
+            import forgesvn
+            timers.append(Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
+                        'checkin', 'info2', 'log', 'cat', 'list'))
+        with pass_on_exc(ImportError):
             import git
             timers.append(Timer('git', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
-        except ImportError:
-            pass
-        try:
+        with pass_on_exc(ImportError):
             import mercurial
             timers.append(Timer('hg', mercurial.hg.localrepo.localrepository, 'heads',
                 'branchtags', 'tags'))
-        except ImportError:
-            pass
         return timers
 
     def repo_impl_timers(self):
-        from forgegit.model.git_repo import GitImplementation
-        from forgesvn.model.svn import SVNImplementation
-
-        repo_impl_timers = [
-            Timer('git_impl', GitImplementation, '*'),
-            Timer('svn_impl', SVNImplementation, '*'),
-        ]
-
-        try:
+        timers= []
+        with pass_on_exc(ImportError):
+            from forgegit.model.git_repo import GitImplementation
+            timers.append(Timer('git_impl', GitImplementation, '*'))
+        with pass_on_exc(ImportError):
+            from forgesvn.model.svn import SVNImplementation
+            timers.append(Timer('svn_impl', SVNImplementation, '*'))
+        with pass_on_exc(ImportError):
             from forgehg.model.hg import HgImplementation
-            repo_impl_timers.append(
-                    Timer('hg_impl', HgImplementation, '*'))
-        except ImportError:
-            pass
+            timers.append(Timer('hg_impl', HgImplementation, '*'))
+        return timers
 
-        return repo_impl_timers
+
+@contextmanager
+def pass_on_exc(exc):
+    try:
+        yield
+    except exc:
+        pass
