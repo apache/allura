@@ -93,11 +93,7 @@ def refresh_repo_lcds(commit_ids, options):
             with time(timings):
                 M.repo_refresh.compute_diffs(c.app.repo._id, tree_cache, commit)
             if len(timings) % 1000 == 0:
-                mt = max(timings)
-                tt = sum(timings)
-                at = tt / len(timings)
-                print '  Processed %d commits (max: %f, avg: %f, tot: %f, cl: %d)' % (
-                        len(timings), mt, at, tt, len(tree_cache))
+                _print_stats(timings, 1000)
     lcd_cache = M.repo.ModelCache(
             max_instances={M.repo.LastCommit: 4000},
             max_queries={M.repo.LastCommit: 10000},
@@ -116,39 +112,17 @@ def refresh_repo_lcds(commit_ids, options):
             # so that every commit sees the same copy
             lcd_cache.expire_new_instances(M.repo.LastCommit)
         if len(timings) % debug_step == 0:
-            _print_stats(lcd_cache, timings, debug_step, commit)
-            lcd_cache._get_walks_max = 0
-            lcd_cache._build_walks_max = 0
+            _print_stats(timings, debug_step)
     ThreadLocalORMSession.flush_all()
 
 
-def _print_stats(lcd_cache, timings, debug_step, commit):
+def _print_stats(timings, debug_step):
     mt = max(timings)
     tt = sum(timings)
     at = tt / len(timings)
     mat = sum(timings[-debug_step:]) / debug_step
-    laccs = lcd_cache._accesses[M.repo.LastCommit]
-    lqhits = lcd_cache._query_hits[M.repo.LastCommit]
-    lqavg = lqhits * 100 / laccs if laccs > 0 else 0
-    lihits = lcd_cache._instance_hits[M.repo.LastCommit]
-    liavg = lihits * 100 / laccs if laccs > 0 else 0
-    oaccs = sum([v for k,v in lcd_cache._accesses.items() if k != M.repo.LastCommit])
-    oqhits = sum([v for k,v in lcd_cache._query_hits.items() if k != M.repo.LastCommit])
-    oqavg = oqhits * 100 / oaccs if oaccs > 0 else 0
-    oihits = sum([v for k,v in lcd_cache._instance_hits.items() if k != M.repo.LastCommit])
-    oiavg = oihits * 100 / oaccs if oaccs > 0 else 0
-    gper = lcd_cache._get_hits * 100 / lcd_cache._get_calls if lcd_cache._get_calls > 0 else 0
-    print '  Processed %d commits (max: %f avg: %f mavg: %f tot: %f lq: %d/%d li: %d/%d qhit: %d/%d ihit: %d/%d mgw: %d gh: %d mbw: %d ts: %d ps: %d)' % (
-            len(timings), mt, at, mat, tt,
-            lcd_cache.num_queries(), lcd_cache.num_queries(M.repo.LastCommit),
-            lcd_cache.num_instances(), lcd_cache.num_instances(M.repo.LastCommit),
-            oqavg, lqavg,
-            oiavg, liavg,
-            lcd_cache._get_walks_max, gper,
-            lcd_cache._build_walks_max,
-            len(lcd_cache.get(M.repo.TreesDoc, dict(_id=commit._id)).tree_ids),
-            lcd_cache._skipped_trees * 100 / lcd_cache._processed_trees)
-
+    print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f)' % (
+            len(timings), mt, at, mat, tt)
 
 @contextmanager
 def time(timings):

@@ -819,21 +819,6 @@ class ModelCache(object):
         self._synthetic_ids = defaultdict(set)
         self._synthetic_id_queries = defaultdict(set)
 
-        # temporary, for performance testing
-        self._query_hits = defaultdict(int)
-        self._instance_hits = defaultdict(int)
-        self._accesses = defaultdict(int)
-        self._get_calls = 0
-        self._get_walks = 0
-        self._get_walks_max = 0
-        self._get_hits = 0
-        self._get_misses = 0
-        self._build_calls = 0
-        self._build_walks = 0
-        self._build_walks_max = 0
-        self._skipped_trees = 0
-        self._processed_trees = 0
-
     def _normalize_query(self, query):
         _query = query
         if not isinstance(_query, tuple):
@@ -849,23 +834,19 @@ class ModelCache(object):
             raise AttributeError('%s has neither "query" nor "m" attribute' % cls)
 
     def get(self, cls, query):
-        self._accesses[cls] += 1
         _query = self._normalize_query(query)
         self._touch(cls, _query)
         if _query not in self._query_cache[cls]:
             val = self._model_query(cls).get(**query)
             self.set(cls, _query, val)
             return val
-        self._query_hits[cls] += 1
         _id = self._query_cache[cls][_query]
         if _id is None:
-            self._instance_hits[cls] += 1
             return None
         if _id not in self._instance_cache[cls]:
             val = self._model_query(cls).get(**query)
             self.set(cls, _query, val)
             return val
-        self._instance_hits[cls] += 1
         return self._instance_cache[cls][_id]
 
     def set(self, cls, query, val):
