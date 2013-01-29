@@ -149,16 +149,24 @@ class SSLMiddleware(object):
 
 class AlluraTimerMiddleware(TimerMiddleware):
     def timers(self):
+        import allura
+        import forgesvn
         import genshi
+        import git
         import jinja2
         import markdown
+        import mercurial
         import ming
         import pymongo
         import socket
         import urllib2
 
-        return [
+        return self.repo_impl_timers() + [
+            Timer('git', git.Repo, 'rev_parse', 'iter_commits', 'commit'),
+            Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
+            Timer('hg', mercurial.hg.localrepo.localrepository, 'heads',
+                'branchtags', 'tags'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
                 'get'),
@@ -172,20 +180,40 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
                 'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
                 'sort', 'where'),
-            Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
+            Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
+                'checkin', 'info2', 'log', 'cat', 'list'),
             # urlopen and socket io may or may not overlap partially
-            Timer('urlopen', urllib2, 'urlopen'),
             Timer('render', genshi.Stream, 'render'),
+            Timer('sidebar', allura.app.Application, 'sidebar_menu'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
                 'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
                 'flush', debug_each_call=False),
+            Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
-            Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
+            Timer('urlopen', urllib2, 'urlopen'),
         ]
 
     def before_logging(self, stat_record):
         if hasattr(c, "app") and hasattr(c.app, "config"):
             stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
+
+    def repo_impl_timers(self):
+        from forgegit.model.git_repo import GitImplementation
+        from forgesvn.model.svn import SVNImplementation
+
+        repo_impl_timers = [
+            Timer('git_impl', GitImplementation, '*'),
+            Timer('svn_impl', SVNImplementation, '*'),
+        ]
+
+        try:
+            from forgehg.model.hg import HgImplementation
+            repo_impl_timers.append(
+                    Timer('hg_impl', HgImplementation, '*'))
+        except ImportError:
+            pass
+
+        return repo_impl_timers
