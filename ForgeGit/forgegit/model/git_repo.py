@@ -1,8 +1,10 @@
 import os
+import sys
 import shutil
 import string
 import logging
 import random
+import itertools
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
@@ -239,21 +241,16 @@ class GitImplementation(M.RepositoryImplementation):
     def commits(self, path=None, rev=None, skip=None, limit=None):
         if rev is None:
             rev = 'HEAD'
-        if skip is None:
-            skip = 0
+        start = skip or 0
+        stop = start + limit if limit is not None else None
+        predicate = None
         if path is not None:
             path = path.strip('/')
-        max = skip + limit if limit is not None else None
-        commit = self.commit(rev)
-        i = 0
-        while commit:
-            if path is None or path in commit.changed_paths:
-                if i >= skip:
-                    yield commit._id
-                i += 1
-                if max is not None and i >= max:
-                    break
-            commit = commit.get_parent()
+            predicate = lambda c: path in c.changed_paths
+
+        iter_tree = self.commit(rev).climb_commit_tree(predicate)
+        for commit in itertools.islice(iter_tree, start, stop):
+            yield commit._id
 
     def commits_count(self, path=None, rev=None):
         commit = self._git.commit(rev)

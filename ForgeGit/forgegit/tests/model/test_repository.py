@@ -266,12 +266,12 @@ class TestGitCommit(unittest.TestCase):
         assert list(self.repo.commits('does/not/exist')) == []
         # with path and start rev
         commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
-        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a'], commits
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         # skip and limit
         commits = list(self.repo.commits(None, rev=None, skip=1, limit=2))
-        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8']
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'])
         commits = list(self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1))
-        assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
+        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
         commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1))
         assert commits == []
         # path to dir

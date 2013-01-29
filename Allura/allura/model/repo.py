@@ -209,13 +209,15 @@ class Commit(RepoObject):
         except IndexError as e:
             return None
 
-    def climb_commit_tree(self):
+    def climb_commit_tree(self, predicate=None):
         '''
         Returns a generator that walks up the commit tree along
-        the first-parent ancestory, starting with this commit.'''
+        the first-parent ancestory, starting with this commit,
+        optionally filtering by a predicate.'''
         ancestor = self
         while ancestor:
-            yield ancestor
+            if predicate is None or predicate(ancestor):
+                yield ancestor
             ancestor = ancestor.get_parent()
 
     def url(self):
