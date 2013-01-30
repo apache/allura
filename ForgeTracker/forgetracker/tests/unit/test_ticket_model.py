@@ -163,7 +163,7 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(post.text, message)
 
         post = Post.query.find(dict(text='test comment')).first()
-        assert_equal(post.thread.discussion.app_config_id, app2.config._id)
+        assert_equal(post.thread.discussion_id, app2.config.discussion_id)
         assert_equal(post.thread.app_config_id, app2.config._id)
         assert_equal(post.app_config_id, app2.config._id)
 
