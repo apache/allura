@@ -172,12 +172,12 @@ class Globals(object):
         # Zarkov logger
         self._zarkov = None
 
-        self.show_userstats = config.get('user.stats.enable','false')=='true'
+        self.show_userstats = config.get('userstats.enable','false')=='true'
         # Set listeners to update stats
         statslisteners = []
-        ep = self.entry_points['stats'].get('userstats')
-        if self.show_userstats and ep:
-            statslisteners.append(ep().listener)
+        for name, ep in self.entry_points['stats'].iteritems():
+            if config.get('%s.enable' % name,'false')=='true':
+                statslisteners.append(ep().listener)
         self.statsUpdater = PostEvent(statslisteners)
 
     @LazyProperty
