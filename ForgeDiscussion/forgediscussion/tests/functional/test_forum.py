@@ -419,9 +419,14 @@ class TestForum(TestController):
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
-        r = self.app.post('/discussion/save_new_topic', params=params,
-                extra_environ=dict(username='*anonymous')).follow()
+        thread = self.app.post('/discussion/save_new_topic', params=params,
+                               extra_environ=dict(username='*anonymous')).follow()
+
+        r = self.app.get(thread.request.url, extra_environ=dict(username='*anonymous'))
         assert 'Post awaiting moderation' in r
+        r = self.app.get(thread.request.url)
+        assert '<div class="display_post moderate">' in r
+        assert 'Post content' in r
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')
         link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())

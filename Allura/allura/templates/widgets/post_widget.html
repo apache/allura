@@ -22,8 +22,8 @@
        </p>
       </div>
       <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
-        <div class="display_post">
-          {% if value.status == 'pending' %}
+        <div class="display_post{%if (value.status == 'pending') and h.has_access(value, 'moderate')()%} moderate{%endif%}">
+          {% if (value.status == 'pending') and not h.has_access(value, 'moderate')() %}
             <b>Post awaiting moderation.</b>
           {% else %}
             {% if show_subject %}
@@ -130,3 +130,11 @@
   </div>
   {% endif %}
 </div>
+
+{% block extra_css %}
+<style type="text/css">
+    div.moderate {
+        color:grey;
+    }
+</style>
+{% endblock %}
