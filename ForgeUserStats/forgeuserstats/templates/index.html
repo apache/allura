@@ -85,9 +85,9 @@
           <td>{{lastmonthcommits.number}}</td>
           {% if days >= 30 %}
             <td style="text-align:center;">
-              {% if permonthcommits.number > permonthcommits.number %}
+              {% if lastmonthcommits.number > permonthcommits.number %}
                   <img src="{{g.forge_static('images/up.png')}}"/>
-              {% elif permonthcommits.number == permonthcommits.number %}
+              {% elif lastmonthcommits.number == permonthcommits.number %}
                 <img src="{{g.forge_static('images/equal.png')}}"/>
               {% else %}
                 <img src="{{g.forge_static('images/down.png')}}"/>
@@ -108,9 +108,9 @@
           <td>{{lastmonthcommits.lines}}</td>
           {% if days >= 30 %}
             <td style="text-align:center;">
-              {% if permonthcommits.lines > permonthcommits.lines %}
+              {% if lastmonthcommits.lines > permonthcommits.lines %}
                   <img src="{{g.forge_static('images/up.png')}}"/>
-              {% elif permonthcommits.lines == permonthcommits.lines %}
+              {% elif lastmonthcommits.lines == permonthcommits.lines %}
                 <img src="{{g.forge_static('images/equal.png')}}"/>
               {% else %}
                 <img src="{{g.forge_static('images/down.png')}}"/>
@@ -193,7 +193,7 @@
                   {% else %}
                     <img src="{{g.forge_static('images/down.png')}}"/>
                   {%endif%}
-                {%else%} Down {%endif%}
+                {%else%} <img src="{{g.forge_static('images/down.png')}}"/> {%endif%}
               </td>
             {% endif %}
           </tr>
@@ -224,7 +224,7 @@
                   {% else %}
                     <img src="{{g.forge_static('images/down.png')}}"/>
                   {%endif%}
-                {%else%} Down {%endif%}
+                {%else%} <img src="{{g.forge_static('images/down.png')}}"/> {%endif%}
               </td>
             {% endif %}
           </tr>
