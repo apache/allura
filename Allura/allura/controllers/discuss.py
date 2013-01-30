@@ -449,6 +449,9 @@ class ModerationController(BaseController):
                         posted.spam()
                     elif approve and posted.status != 'ok':
                         posted.status = 'ok'
+                        posted.thread.last_post_date = max(
+                            posted.thread.last_post_date,
+                            posted.mod_date)
                         posted.thread.num_replies += 1
         redirect(request.referer)
 
