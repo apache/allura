@@ -531,6 +531,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         app = app_config.project.app_instance(app_config)
         prior_url = self.url()
         prior_app = self.app
+        for attach in self.attachments:
+            attach.app_config_id = app_config._id
         prior_cfs = [
             (cf['name'], cf['type'], cf['label'])
             for cf in prior_app.globals.custom_fields or []]
@@ -592,6 +594,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         for post in self.discussion_thread.posts:
             post.app_config_id = app_config._id
             post.app_id = app_config._id
+            for attach in post.attachments:
+                attach.app_config_id = app_config._id
 
         session(self.discussion_thread).flush(self.discussion_thread)
         # need this to reset app_config RelationProperty on ticket to a new one

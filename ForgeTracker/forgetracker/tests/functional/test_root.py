@@ -1277,6 +1277,30 @@ class TestFunctionalController(TrackerTestController):
         assert_in('[test:bugs]', n.subject)
         assert_in('[test:bugs]', n.reply_to_address)
 
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_attachment(self):
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('attachment', file_name, file_data)
+        ticket_view = self.new_ticket(summary='test move attachment').follow()
+        self.app.post('/bugs/1/update_ticket',
+                      {'summary':'test'},
+                      upload_files=[upload])
+        r =self.app.get('/p/test/bugs/1/')
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        r = self.app.post(post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'This is a textfile')])
+        p = M.Project.query.get(shortname='test2')
+        ac_id = p.app_instance('bugs2').config._id
+        r = self.app.post('/p/test/bugs/1/move/',
+                          params={'tracker': str(ac_id)}).follow()
+
+        app_config_id = tm.Ticket.query.find().first().app_config_id
+        assert 'test_root.py' in r
+        assert 'test.txt' in r
+        for attach in M.BaseAttachment.query.find():
+            assert attach.app_config_id == app_config_id
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
