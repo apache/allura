@@ -1222,6 +1222,29 @@ class TestFunctionalController(TrackerTestController):
                 extra_environ={'username': 'test-user'},
                 status=403)
 
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_and_delete_tool(self):
+        """See [#5708] for details."""
+        # create two tickets and ensure they are viewable
+        self.new_ticket(summary='test 1')
+        self.new_ticket(summary='test 2')
+        self.app.get('/p/test/bugs/1/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+
+        # move ticket 1 to 'dummy' tracker
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+        # delete 'dummy' tracker
+        p.uninstall_app('dummy')
+
+        # remaining tickets in 'bugs' tracker should still be viewable
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/1/', status=404)  # shouldn't fail
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
