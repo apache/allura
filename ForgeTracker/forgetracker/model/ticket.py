@@ -587,16 +587,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     session(self).expunge(self)
                     continue
         # move ticket's discussion thread, thus all new commnets will go to a new ticket's feed
-        self.discussion_thread.discussion.app_config_id = app_config._id
         self.discussion_thread.app_config_id = app_config._id
+        self.discussion_thread.discussion_id = app_config.discussion_id
         for post in self.discussion_thread.posts:
             post.app_config_id = app_config._id
             post.app_id = app_config._id
 
-        session(self.discussion_thread.discussion).flush(self.discussion_thread.discussion)
         session(self.discussion_thread).flush(self.discussion_thread)
         # need this to reset app_config RelationProperty on ticket to a new one
-        session(self.discussion_thread.discussion).expunge(self.discussion_thread.discussion)
         session(self.discussion_thread).expunge(self.discussion_thread)
         session(self).expunge(self)
         ticket = Ticket.query.find(dict(
