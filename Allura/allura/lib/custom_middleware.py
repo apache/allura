@@ -198,14 +198,14 @@ class AlluraTimerMiddleware(TimerMiddleware):
         timers = []
         with pass_on_exc(ImportError):
             import forgesvn
-            timers.append(Timer('svn', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
+            timers.append(Timer('svn_lib.{method_name}', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
                         'checkin', 'info2', 'log', 'cat', 'list'))
         with pass_on_exc(ImportError):
             import git
-            timers.append(Timer('git', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
+            timers.append(Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
         with pass_on_exc(ImportError):
             import mercurial
-            timers.append(Timer('hg', mercurial.hg.localrepo.localrepository, 'heads',
+            timers.append(Timer('hg_lib.{method_name}', mercurial.hg.localrepo.localrepository, 'heads',
                 'branchtags', 'tags'))
         return timers
 
@@ -213,13 +213,13 @@ class AlluraTimerMiddleware(TimerMiddleware):
         timers= []
         with pass_on_exc(ImportError):
             from forgegit.model.git_repo import GitImplementation
-            timers.append(Timer('git_impl', GitImplementation, '*'))
+            timers.append(Timer('git_tool.{method_name}', GitImplementation, '*'))
         with pass_on_exc(ImportError):
             from forgesvn.model.svn import SVNImplementation
-            timers.append(Timer('svn_impl', SVNImplementation, '*'))
+            timers.append(Timer('svn_tool.{method_name}', SVNImplementation, '*'))
         with pass_on_exc(ImportError):
             from forgehg.model.hg import HgImplementation
-            timers.append(Timer('hg_impl', HgImplementation, '*'))
+            timers.append(Timer('hg_tool.{method_name}', HgImplementation, '*'))
         return timers
 
 
