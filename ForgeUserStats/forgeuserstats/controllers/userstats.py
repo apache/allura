@@ -15,16 +15,15 @@ class ForgeUserStatsController(BaseController):
         if not self.user:
             return ForgeUserStatsController(user=user), remainder
         if part == "category":
-            return ForgeUserStatsCatController(self.user, self.stats, None), remainder
+            return ForgeUserStatsCatController(self.user, None), remainder
         if part == "metric":
-            return ForgeUserStatsMetricController(self.user, self.stats), remainder
+            return ForgeUserStatsMetricController(self.user), remainder
 
     def __init__(self, user=None):
         self.user = user
         if self.user:
-            self.stats = self.user.stats
-            if not self.stats:
-                self.stats = UserStats.create(self.user)
+            if not user.stats:
+                UserStats.create(self.user)
 
         super(ForgeUserStatsController, self).__init__()
 
@@ -33,7 +32,7 @@ class ForgeUserStatsController(BaseController):
     def index(self, **kw):
         if not self.user: 
             return dict(user=None)
-        stats = self.stats
+        stats = self.user.stats
 
         ret_dict = _getDataForCategory(None, stats)
         ret_dict['user'] = self.user
@@ -107,25 +106,24 @@ class ForgeUserStatsController(BaseController):
 
     @expose()
     def code_ranking_bar(self):
-        return create_progress_bar(self.stats.codeRanking())
+        return create_progress_bar(self.user.stats.codeRanking())
 
     @expose()
     def discussion_ranking_bar(self):
-        return create_progress_bar(self.stats.discussionRanking())
+        return create_progress_bar(self.user.stats.discussionRanking())
 
     @expose()
     def tickets_ranking_bar(self):
-        return create_progress_bar(self.stats.ticketsRanking())
+        return create_progress_bar(self.user.stats.ticketsRanking())
 
 class ForgeUserStatsCatController(BaseController):
     @expose()
     def _lookup(self, category, *remainder):
-        cat = M.TroveCategory.query.get(fullname=category)
+        cat = M.TroveCategory.query.get(shortname=category)
         return ForgeUserStatsCatController(self.user, cat), remainder
 
-    def __init__(self, user, stats, category):
+    def __init__(self, user, category):
         self.user = user
-        self.stats = stats
         self.category = category
         super(ForgeUserStatsCatController, self).__init__()
 
@@ -134,7 +132,7 @@ class ForgeUserStatsCatController(BaseController):
     def index(self, **kw):
         if not self.user:
             return dict(user=None)
-        stats = self.stats
+        stats = self.user.stats
         
         cat_id = None
         if self.category: 
@@ -148,9 +146,8 @@ class ForgeUserStatsCatController(BaseController):
 
 class ForgeUserStatsMetricController(BaseController):
 
-    def __init__(self, user, stats):
+    def __init__(self, user):
         self.user = user
-        self.stats = stats
         super(ForgeUserStatsMetricController, self).__init__()
 
     @expose('jinja:forgeuserstats:templates/commits.html')
@@ -158,7 +155,7 @@ class ForgeUserStatsMetricController(BaseController):
     def commits(self, **kw):
         if not self.user:
             return dict(user=None)
-        stats = self.stats
+        stats = self.user.stats
         
         commits = stats.getCommitsByCategory()
         return dict(user = self.user,
@@ -170,7 +167,7 @@ class ForgeUserStatsMetricController(BaseController):
         if not self.user:
             return dict(user=None)
 
-        stats = self.stats       
+        stats = self.user.stats       
         artifacts = stats.getArtifactsByCategory(detailed=True)
         return dict(user = self.user, data = artifacts) 
 
@@ -180,7 +177,7 @@ class ForgeUserStatsMetricController(BaseController):
         if not self.user: 
             return dict(user=None)
 
-        artifacts = self.stats.getTicketsByCategory()
+        artifacts = self.user.stats.getTicketsByCategory()
         return dict(user = self.user, data = artifacts) 
 
 def _getDataForCategory(category, stats):
