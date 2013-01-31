@@ -1245,6 +1245,38 @@ class TestFunctionalController(TrackerTestController):
         self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
         self.app.get('/p/test/bugs/1/', status=404)  # shouldn't fail
 
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_email_notifications(self):
+        """See [#5691] for details"""
+        # create two tickets and ensure they are viewable
+        self.new_ticket(summary='test 1')
+        self.new_ticket(summary='test 2')
+        self.app.get('/p/test/bugs/1/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+
+        # move ticket 1 to 'dummy' tracker
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+        # comment ticket 2
+        M.Notification.query.remove()
+        r = self.app.get('/p/test/bugs/2/')
+        field_name = None  # comment text textarea name
+        for name, field in r.forms[2].fields.iteritems():
+            if field[0].tag == 'textarea':
+                field_name = name
+        assert field_name, "Can't find comment field"
+        r.forms[2].fields[field_name][0].value = 'Hi there'
+        r.forms[2].submit()
+
+        # notification for ticket 2 should reference [test:bugs], not [test:dummy]
+        n = M.Notification.query.find().all()[0]
+        assert_in('[test:bugs]', n.subject)
+        assert_in('[test:bugs]', n.reply_to_address)
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
