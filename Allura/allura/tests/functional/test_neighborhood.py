@@ -132,6 +132,11 @@ class TestNeighborhood(TestController):
         assert 'error' in self.webflash(r)
         assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
 
+        r = self.app.get('/p/test/admin/overview')
+        top_nav = r.html.find(id='top_nav')
+        assert top_nav.find(href='/p/test/wiki/'), top_nav
+        assert top_nav.find(href='/p/test/tickets/'), top_nav
+
         r = self.app.get('/p/test/admin/tools')
         assert '<div class="fleft isnt_sorted">' in r
         delete_tool = r.html.find('a', {'class':'mount_delete'})
