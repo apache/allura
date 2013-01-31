@@ -32,8 +32,12 @@
     {% endif %}
     <label class="grid-4">Project List URL</label>
     <div class="grid-14">{{widget.display_field(widget.fields.project_list_url)}}</div>
-    <label class="grid-4">Anchored tools (Example: wiki:Wiki,tickets:Tracker)</label>
-    <div class="grid-14">{{widget.display_field(widget.fields.anchored_tools)}}</div>
+	<label class="grid-4">Anchored tools</label>
+	<div class="grid-14">{{widget.display_field(widget.fields.anchored_tools)}}
+		<br/>
+		Anchored tools will be inserted at the beginning of all projects, and cannot be removed by a project.
+		If you change the anchored tools, already-inserted tools will stay on all those projects.  Example: "wiki:Wiki, sometool:The Label"
+	</div>
     <label class="grid-4">&nbsp;</label>
     <div class="grid-14"><input type="submit" value="Save"/></div>
   </form>
