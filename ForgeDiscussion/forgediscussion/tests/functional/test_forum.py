@@ -363,7 +363,8 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/moderate')
         slug = r.html.find('input', {'name': 'post-0.full_slug'})
         if slug is None: slug = '' #FIXME this makes the test keep passing, but clearly something isn't found
-        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+        r = self.app.post('/discussion/testforum/moderate/save_'
+                          'moderation', params={
                 'post-0.full_slug': slug,
                 'post-0.checked': 'on',
                 'delete': 'Delete Marked'})
@@ -421,6 +422,10 @@ class TestForum(TestController):
         r = self.app.post('/discussion/save_new_topic', params=params,
                 extra_environ=dict(username='*anonymous')).follow()
         assert 'Post awaiting moderation' in r
+        r = self.app.get('/discussion/testforum/moderate/')
+        post = FM.ForumPost.query.get(text='Post content')
+        link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
+        assert link in r, link
 
     @mock.patch('forgediscussion.controllers.root.g.spam_checker')
     def test_thread(self, spam_checker):

@@ -18,7 +18,7 @@
         <th>Subject</th>
         <th>Text</th>
         <th>Attachments</th>
-        {% if c.app.config.tool_name != 'Discussion' %}<th>Artifact</th>{% endif %}
+        <th>Artifact</th>
       </tr>
     </thead>
     <tbody>
@@ -36,7 +36,13 @@
           <td>{{post.thread.subject or '(no subject)'}}</td>
           <td>{{h.text.truncate(post.text,200)}}</td>
           <td>{{post.attachments|length}}</td>
-          {% if c.app.config.tool_name != 'Discussion' %}<td><a href="{{post.thread.artifact.url()}}">[{{post.thread.artifact.shorthand_id()}}]</a></td>{% endif %}
+          <td>
+          {% if c.app.config.tool_name.lower() != 'discussion' %}
+            <a href="{{post.thread.artifact.url()}}">[{{post.thread.artifact.shorthand_id()}}]</a>
+          {%else%}
+            <a href="{{post.url_paginated()}}">[{{post.shorthand_id()}}]</a>
+          {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
