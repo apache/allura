@@ -13,6 +13,11 @@
 {% block content %}
   {% if user %}
 
+    {% if category %}
+       <ul>
+         <li><a href="/userstats/{{user.username}}">Go back to general statistics</a></li>
+       </ul>
+    {% endif %}
     <h2>General statistics</h2>
     <table>
       <thead>
@@ -352,7 +357,7 @@
           <tbody>
             {% for cat, count in categories %}
               <tr>
-                <td><a href="/userstats/{{user.username}}/category/{{cat.fullname}}">{{cat.fullname}}</a></td>
+                <td><a href="/userstats/{{user.username}}/category/{{cat.shortname}}">{{cat.fullname}}</a></td>
                 <td>{{count}}</td>
               </tr>
             {% endfor %}
@@ -368,9 +373,7 @@
           </p>
         {% endif %}
     {% endif %}
-    {% if category %}
-        <div class="grid-20"><a href="/userstats/{{user.username}}">Go back to general statistics</a></div>
-    {% else %}
+    {% if not category %}
       <h2>Overview</h2>
       <table>
         <thead>
