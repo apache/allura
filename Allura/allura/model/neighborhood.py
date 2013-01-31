@@ -240,9 +240,11 @@ class Neighborhood(MappedClass):
         self.css = ""
 
     def get_anchored_tools(self):
-        anchored_tools = self.anchored_tools.replace(' ', '').split(',')
+        if not self.anchored_tools:
+            return dict()
         try:
+            anchored_tools = [at.strip() for at in self.anchored_tools.split(',')]
             return OrderedDict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools)
         except Exception:
-            log.info("anchored_tools isn't valid", exc_info=True)
+            log.warning("anchored_tools isn't valid", exc_info=True)
             return dict()
