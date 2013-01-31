@@ -393,7 +393,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
         anchored_tools =self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
-        self.install_anchored_tools()
+        new_tools = self.install_anchored_tools()
 
         # Set menu mode
         delta_ordinal = i
@@ -409,7 +409,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             if ordinal > max_ordinal:
                 max_ordinal = ordinal
             entries.append({'ordinal':sub.ordinal + delta_ordinal,'entry':SitemapEntry(sub.name, sub.url())})
-        for ac in self.app_configs:
+        for ac in self.app_configs + [a.config for a in new_tools]:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
             # Tool could've been uninstalled in the meantime
@@ -444,14 +444,16 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         anchored_tools = self.neighborhood.get_anchored_tools()
         installed_tools = [tool.tool_name.lower() for tool in self.app_configs]
         i = 0
+        new_tools = []
         if not self.is_nbhd_project:
             for tool, label in anchored_tools.iteritems():
                 if tool not in installed_tools:
                     try:
-                        self.install_app(tool, tool, label, i)
+                        new_tools.append(self.install_app(tool, tool, label, i))
                     except Exception:
                         log.error('%s is not available' % tool, exc_info=True)
                 i += 1
+        return new_tools
 
     def grouped_navbar_entries(self):
         """Return a ``allura.app.SitemapEntry`` list suitable for rendering

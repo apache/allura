@@ -11,7 +11,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.exceptions import ToolError
-from mock import Mock
+from mock import MagicMock
 
 
 def setUp():
@@ -74,7 +74,7 @@ def test_subproject():
 @td.with_wiki
 def test_anchored_tools():
     c.project.neighborhood.anchored_tools = 'wiki:Wiki, tickets:Ticket'
-    c.project.install_app = Mock()
+    c.project.install_app = MagicMock()
     assert c.project.sitemap()[0].label == 'Wiki'
     assert c.project.install_app.call_args[0][0] == 'tickets'
     assert c.project.ordered_mounts()[0]['ac'].tool_name == 'Wiki'
