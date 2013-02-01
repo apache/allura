@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
+from urlparse import urlparse
 
 import pkg_resources
 from pylons import c, g, request
@@ -336,9 +337,11 @@ class ProjectAdminController(BaseController):
             M.AuditLog.log('change project twitter handle to %s', twitter_handle)
             c.project.set_social_account('Twitter', twitter_handle)
         if facebook_page != c.project.social_account('Facebook'):
-            h.log_action(log, 'change project facebook page').info('')
-            M.AuditLog.log('change project facebook page to %s', facebook_page)
-            c.project.set_social_account('Facebook', facebook_page)
+            parsed = urlparse(facebook_page)
+            if 'facebook.com' in parsed.netloc:
+                h.log_action(log, 'change project facebook page').info('')
+                M.AuditLog.log('change project facebook page to %s', facebook_page)
+                c.project.set_social_account('Facebook', facebook_page)
         if support_page_url != c.project.support_page_url:
             h.log_action(log, 'change project support page url').info('')
             M.AuditLog.log('change project support page url to %s', support_page_url)
