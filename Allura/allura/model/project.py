@@ -757,6 +757,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def twitter_handle(self):
         return self.social_account('Twitter').accounturl
 
+    @property
+    def facebook_page(self):
+        return self.social_account('Facebook').accounturl
+
     def social_account(self, socialnetwork):
         try:
             account = (sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
