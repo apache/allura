@@ -314,7 +314,7 @@ class ForgeTrackerApp(Application):
                     milestones=[
                         dict(name='1.0', complete=False, due_date=None),
                         dict(name='2.0', complete=False, due_date=None)]) ])
-        c.app.globals.invalidate_bin_counts()
+        self.globals.update_bin_counts()
         # create default search bins
         TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query,
                 app_config_id = self.config._id, custom_fields = dict())
@@ -681,6 +681,7 @@ class RootController(BaseController):
             require_access(c.app, 'create')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,
                 related_nodes=[c.project])
         redirect(str(ticket.ticket_num)+'/')
@@ -1021,8 +1022,8 @@ class BinController(BaseController):
             # page so the user can fix the errors.
             return dict(bins=saved_bins, count=len(bins), app=self.app,
                     new_bin=new_bin, errors=errors)
-        # No errors, redirect to search bin list page.
         self.app.globals.invalidate_bin_counts()
+        # No errors, redirect to search bin list page.
         redirect('.')
 
 class changelog(object):
@@ -1325,6 +1326,7 @@ class TicketController(BaseController):
                 redirect(request.referer)
 
             new_ticket = self.ticket.move(tracker)
+            c.app.globals.invalidate_bin_counts()
             flash('Ticket successfully moved')
             redirect(new_ticket.url())
 
