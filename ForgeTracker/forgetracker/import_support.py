@@ -250,7 +250,7 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
 
     def perform_import(self, doc, options, **post_data):
-        log.info('import called: %s', options) 
+        log.info('import called: %s', options)
         self.init_options(options)
         self.validate_user_mapping()
 
@@ -263,12 +263,12 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         log.info('Import id: %s', c.api_token.api_key)
 
         artifacts = project_doc['trackers'][tracker_names[0]]['artifacts']
-        
+
         if self.option('create_users'):
             users = self.collect_users(artifacts)
             unknown_users = self.find_unknown_users(users)
             self.make_user_placeholders(unknown_users)
-        
+
         M.session.artifact_orm_session._get().skip_mod_date = True
         for a in artifacts:
             comments = a.pop('comments', [])
@@ -283,5 +283,6 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
                 except Exception, e:
                     self.warnings.append('Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)
+        c.app.globals.invalidate_bin_counts()
 
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
