@@ -1279,8 +1279,9 @@ class TestFunctionalController(TrackerTestController):
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_move_attachment(self):
-        file_name = 'test_root.py'
-        file_data = file(__file__).read()
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+        file_data = file(file_path).read()
         upload = ('attachment', file_name, file_data)
         ticket_view = self.new_ticket(summary='test move attachment').follow()
         self.app.post('/bugs/1/update_ticket',
@@ -1289,17 +1290,21 @@ class TestFunctionalController(TrackerTestController):
         r =self.app.get('/p/test/bugs/1/')
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'attach',
-                          upload_files=[('file_info', 'test.txt', 'This is a textfile')])
+                          upload_files=[('file_info', 'test.txt', 'test')])
         p = M.Project.query.get(shortname='test2')
         ac_id = p.app_instance('bugs2').config._id
         r = self.app.post('/p/test/bugs/1/move/',
                           params={'tracker': str(ac_id)}).follow()
 
         app_config_id = tm.Ticket.query.find().first().app_config_id
-        assert 'test_root.py' in r
+        assert 'neo-icon-set-454545-256x350.png' in r
         assert 'test.txt' in r
+        assert '/attachment/neo-icon-set-454545-256x350.png/thumb' in r
+
         for attach in M.BaseAttachment.query.find():
             assert attach.app_config_id == app_config_id
+            assert attach.url() in r
+
 
 
 class TestMilestoneAdmin(TrackerTestController):

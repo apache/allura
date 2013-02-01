@@ -526,13 +526,20 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 attachment.filename, attachment.file,
                 content_type=attachment.type)
 
+    def _move_attach(self,attachments,attach_metadata,app_config_id):
+        for attach in attachments:
+            attach.app_config_id = app_config_id
+            attach_thumb = BaseAttachment.query.get(filename=attach.filename, **attach_metadata)
+            if attach_thumb:
+                attach_thumb.app_config_id = app_config_id
+
     def move(self, app_config):
         '''Move ticket from current tickets app to tickets app with given app_config'''
         app = app_config.project.app_instance(app_config)
         prior_url = self.url()
         prior_app = self.app
-        for attach in self.attachments:
-            attach.app_config_id = app_config._id
+        attachments = self.attachments
+        attach_metadata = BaseAttachment.metadata_for(self)
         prior_cfs = [
             (cf['name'], cf['type'], cf['label'])
             for cf in prior_app.globals.custom_fields or []]
@@ -588,14 +595,19 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
                     session(self).expunge(self)
                     continue
+
+        attach_metadata['type'] = 'thumbnail'
+        self._move_attach(attachments,attach_metadata,app_config._id)
+
         # move ticket's discussion thread, thus all new commnets will go to a new ticket's feed
         self.discussion_thread.app_config_id = app_config._id
         self.discussion_thread.discussion_id = app_config.discussion_id
         for post in self.discussion_thread.posts:
+            attach_metadata = BaseAttachment.metadata_for(post)
+            attach_metadata['type'] = 'thumbnail'
             post.app_config_id = app_config._id
             post.app_id = app_config._id
-            for attach in post.attachments:
-                attach.app_config_id = app_config._id
+            self._move_attach(post.attachments,attach_metadata,app_config._id)
 
         session(self.discussion_thread).flush(self.discussion_thread)
         # need this to reset app_config RelationProperty on ticket to a new one
