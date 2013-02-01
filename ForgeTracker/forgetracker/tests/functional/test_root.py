@@ -1287,7 +1287,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/bugs/1/update_ticket',
                       {'summary':'test'},
                       upload_files=[upload])
-        r =self.app.get('/p/test/bugs/1/')
+        r = self.app.get('/p/test/bugs/1/')
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'test')])
