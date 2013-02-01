@@ -28,5 +28,8 @@ setup(name='ForgeTracker',
 
       [easy_widgets.resources]
       ew_resources=forgetracker.config.resources:register_ew_resources
+
+      [paste.paster_command]
+      fix-discussion = forgetracker.command.fix_discussion:FixDiscussion
       """,
       )
