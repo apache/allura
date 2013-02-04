@@ -260,7 +260,7 @@ class Commit(RepoObject):
                     continue
                 diff = SequenceMatcher(None, removed_blob.text,
                                        added_blob.text)
-                ratio = diff.ratio()
+                ratio = diff.real_quick_ratio()
                 if ratio > best['ratio']:
                     best['ratio'] = ratio
                     best['name'] = added_name
