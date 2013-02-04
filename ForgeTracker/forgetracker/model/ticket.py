@@ -127,6 +127,8 @@ class Globals(MappedClass):
         self._bin_counts_invalidated = None
 
     def bin_count(self, name):
+        # not sure why we expire bin counts after an hour even if unchanged
+        # I guess a catch-all in case invalidate_bin_counts is missed
         if self._bin_counts_expire < datetime.utcnow():
             self.invalidate_bin_counts()
         for d in self._bin_counts_data:
@@ -149,6 +151,11 @@ class Globals(MappedClass):
 
     def invalidate_bin_counts(self):
         '''Force expiry of bin counts and queue them to be updated.'''
+        # To prevent multiple calls to this method from piling on redundant
+        # tasks, we set _bin_counts_invalidated when we post the task, and
+        # the task clears it when it's done.  However, in the off chance
+        # that the task fails or is interrupted, we ignore the flag if it's
+        # older than 5 minutes.
         invalidation_expiry = datetime.utcnow() - timedelta(minutes=5)
         if self._bin_counts_invalidated is not None and \
            self._bin_counts_invalidated > invalidation_expiry:

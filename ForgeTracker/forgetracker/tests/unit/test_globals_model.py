@@ -1,3 +1,8 @@
+import mock
+from nose.tools import assert_equal
+from datetime import datetime, timedelta
+
+import forgetracker
 from forgetracker.model import Globals
 from forgetracker.tests.unit import TrackerTestWithModel
 from pylons import c
@@ -26,6 +31,70 @@ class TestGlobalsModel(TrackerTestWithModel):
         assert Globals.next_ticket_num() == 1
         h.set_context('test', 'doc-bugs', neighborhood='Projects')
         assert Globals.next_ticket_num() == 1
+
+    @mock.patch('forgetracker.model.ticket.datetime')
+    def test_bin_count(self, mock_dt):
+        now = datetime.utcnow()
+        mock_dt.utcnow.return_value = now
+        gbl = Globals()
+        gbl._bin_counts_data = [{'summary': 'foo', 'hits': 1}, {'summary': 'bar', 'hits': 2}]
+        gbl.invalidate_bin_counts = mock.Mock()
+
+        # not expired, finds bin
+        gbl._bin_counts_expire = now + timedelta(minutes=5)
+        bin = gbl.bin_count('bar')
+        assert_equal(bin['hits'], 2)
+        assert not gbl.invalidate_bin_counts.called
+
+        # expired, returns value for missing bin
+        gbl._bin_counts_expire = now - timedelta(minutes=5)
+        bin = gbl.bin_count('qux')
+        assert_equal(bin['hits'], 0)
+        assert gbl.invalidate_bin_counts.called
+
+    @mock.patch('forgetracker.tasks.update_bin_counts')
+    @mock.patch('forgetracker.model.ticket.datetime')
+    def test_invalidate_bin_counts(self, mock_dt, mock_task):
+        now = datetime.utcnow().replace(microsecond=0)
+        mock_dt.utcnow.return_value = now
+        gbl = Globals()
+
+        # invalidated recently, don't dog-pile
+        gbl._bin_counts_invalidated = now - timedelta(minutes=1)
+        gbl.invalidate_bin_counts()
+        assert not mock_task.post.called
+
+        # invalidated too long ago, call again
+        gbl._bin_counts_invalidated = now - timedelta(minutes=6)
+        gbl.invalidate_bin_counts()
+        assert mock_task.post.called
+        assert_equal(gbl._bin_counts_invalidated, now)
+
+        # never invalidated
+        mock_task.reset_mock()
+        gbl._bin_counts_invalidated = None
+        gbl.invalidate_bin_counts()
+        assert mock_task.post.called
+        assert_equal(gbl._bin_counts_invalidated, now)
+
+    @mock.patch('forgetracker.model.ticket.Bin')
+    @mock.patch('forgetracker.model.ticket.search_artifact')
+    @mock.patch('forgetracker.model.ticket.datetime')
+    def test_update_bin_counts(self, mock_dt, mock_search, mock_bin):
+        now = datetime.utcnow().replace(microsecond=0)
+        mock_dt.utcnow.return_value = now
+        gbl = Globals()
+        gbl._bin_counts_invalidated = now - timedelta(minutes=1)
+        mock_bin.query.find.return_value = [mock.Mock(summary='foo', terms='bar')]
+        mock_search().hits = 5
+
+        assert_equal(gbl._bin_counts_data, [])  # sanity pre-check
+        gbl.update_bin_counts()
+        assert mock_bin.query.find.called
+        mock_search.assert_called_with(forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False)
+        assert_equal(gbl._bin_counts_data, [{'summary': 'foo', 'hits': 5}])
+        assert_equal(gbl._bin_counts_expire, now + timedelta(minutes=60))
+        assert_equal(gbl._bin_counts_invalidated, None)
 
 
 class TestCustomFields(TrackerTestWithModel):
