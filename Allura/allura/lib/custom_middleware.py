@@ -189,7 +189,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
             Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
-            Timer('sm_ratio.{method_name}', allura.model.repo.SequenceMatcher, '*'),
+            Timer('sequencematcher.{method_name}', allura.model.repo.SequenceMatcher, 'ratio', 'quick_ratio', 'real_quick_ratio'),
             Timer('unified_diff', allura.model.repo, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
