@@ -13,6 +13,7 @@ from webob import exc, Request
 import pysolr
 
 from allura.lib import helpers as h
+import allura.model.repo
 
 log = logging.getLogger(__name__)
 
@@ -187,6 +188,9 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
+            Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
+            Timer('sm_ratio.{method_name}', allura.model.repo.SequenceMatcher, '*'),
+            Timer('unified_diff', allura.model.repo, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
     def before_logging(self, stat_record):
