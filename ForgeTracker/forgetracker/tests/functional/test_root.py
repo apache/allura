@@ -1283,27 +1283,34 @@ class TestFunctionalController(TrackerTestController):
         file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
         file_data = file(file_path).read()
         upload = ('attachment', file_name, file_data)
-        ticket_view = self.new_ticket(summary='test move attachment').follow()
+        self.new_ticket(summary='test move attachment')
+
+        # attach an image to the ticket
         self.app.post('/bugs/1/update_ticket',
                       {'summary':'test'},
                       upload_files=[upload])
+        # attach a txt file to the comment
         r = self.app.get('/p/test/bugs/1/')
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         r = self.app.post(post_link + 'attach',
                           upload_files=[('file_info', 'test.txt', 'test')])
+        # move ticket
         p = M.Project.query.get(shortname='test2')
-        ac_id = p.app_instance('bugs2').config._id
+        bugs2 = p.app_instance('bugs2')
         r = self.app.post('/p/test/bugs/1/move/',
-                          params={'tracker': str(ac_id)}).follow()
+                          params={'tracker': str(bugs2.config._id)}).follow()
 
-        app_config_id = tm.Ticket.query.find().first().app_config_id
-        assert 'neo-icon-set-454545-256x350.png' in r
-        assert 'test.txt' in r
-        assert '/attachment/neo-icon-set-454545-256x350.png/thumb' in r
-
+        attachs = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
+        ta = str(attachs[1])  # ticket's attachments
+        ca = str(attachs[2])  # comment's attachments
+        assert_in('<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
+        assert_in('<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
+        p = M.Post.query.find().sort('timestamp', 1).first()
+        assert_in('<a href="/p/test2/bugs2/_discuss/thread/%s/%s/attachment/test.txt"' % (p.thread_id, p.slug), ca)
         for attach in M.BaseAttachment.query.find():
-            assert attach.app_config_id == app_config_id
-            assert attach.url() in r
+            assert_equal(attach.app_config_id, bugs2.config._id)
+            if attach.attachment_type == 'DiscussionAttachment':
+                assert_equal(attach.discussion_id, bugs2.config.discussion_id)
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_comments(self):
