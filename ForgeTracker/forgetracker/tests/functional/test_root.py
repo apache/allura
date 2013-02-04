@@ -1305,6 +1305,27 @@ class TestFunctionalController(TrackerTestController):
             assert attach.app_config_id == app_config_id
             assert attach.url() in r
 
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_comments(self):
+        """Comments should move along with the ticket"""
+        self.new_ticket(summary='test ticket')
+        r = self.app.get('/p/test/bugs/1/')
+        field_name = None  # comment text textarea name
+        for name, field in r.forms[2].fields.iteritems():
+            if field[0].tag == 'textarea':
+                field_name = name
+        assert field_name, "Can't find comment field"
+        r.forms[2].fields[field_name][0].value = 'I am comment'
+        r.forms[2].submit()
+        r = self.app.get('/p/test/bugs/1/')
+        assert_in('I am comment', r)
+
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+        assert_in('I am comment', r)
 
 
 class TestMilestoneAdmin(TrackerTestController):
