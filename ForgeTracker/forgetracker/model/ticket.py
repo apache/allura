@@ -607,6 +607,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             attach_metadata['type'] = 'thumbnail'
             post.app_config_id = app_config._id
             post.app_id = app_config._id
+            post.discussion_id = app_config.discussion_id
             self._move_attach(post.attachments, attach_metadata, app_config._id)
 
         session(self.discussion_thread).flush(self.discussion_thread)
