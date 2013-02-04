@@ -32,12 +32,12 @@ def setup_with_tools():
 def test_app_globals():
     g.oid_session()
     g.oid_session()
-    h.set_context('test', 'wiki', neighborhood='Projects')
-    assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
-    assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
-    assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
+    with h.push_context('test', 'wiki', neighborhood='Projects'):
+        assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
+        assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
+        assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
-@with_setup(setUp)
+
 def test_macros():
     file_name = 'neo-icon-set-454545-256x350.png'
     file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
@@ -204,21 +204,24 @@ def test_markdown_toc():
 </li>
 </ul>''' in r, r
 
-@with_setup(setUp)
+
+@td.with_wiki
 def test_markdown_links():
     text = g.markdown.convert('See [18:13:49]')
     assert 'See <span>[18:13:49]</span>' in text, text
-    h.set_context('test', 'wiki', neighborhood='Projects')
-    text = g.markdown.convert('Read [here](Home) about our project')
-    assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text
-    text = g.markdown.convert('[Go home](test:wiki:Home)')
-    assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text, text
-    text = g.markdown.convert('See [test:wiki:Home]')
-    assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
+    with h.push_context('test', 'wiki', neighborhood='Projects'):
+        text = g.markdown.convert('Read [here](Home) about our project')
+        assert '<a class="" href="/p/test/wiki/Home/">here</a>' in text, text
+        text = g.markdown.convert('[Go home](test:wiki:Home)')
+        assert '<a class="" href="/p/test/wiki/Home/">Go home</a>' in text, text
+        text = g.markdown.convert('See [test:wiki:Home]')
+        assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
+
 
 def test_markdown_and_html():
     r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
     assert '<div style="float: left;">blah</div>' in r, r
+
 
 def test_markdown_within_html():
     r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
@@ -226,38 +229,20 @@ def test_markdown_within_html():
 <p><strong>blah</strong></p>
 </div>''' in r, r
 
-@with_setup(setUp)
-def test_markdown():
+
+@td.with_wiki
+def test_markdown_basics():
     'Just a test to get coverage in our markdown extension'
-    h.set_context('test', 'wiki', neighborhood='Projects')
-    text = g.markdown.convert('# Foo!\n[Home]')
-    assert '<a class="alink" href=' in text, text
-    text = g.markdown.convert('# Foo!\n[Rooted]')
-    assert '<a href=' not in text, text
-    text = g.markdown.convert('This is http://sf.net')
-    assert '<a href=' in text, text
-    tgt = 'http://everything2.com/?node=nate+oostendorp'
-    s = g.markdown.convert('This is %s' % tgt)
-    assert_equal(
-        s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
-    assert '<a href=' in g.markdown.convert('This is http://sf.net')
-    # assert '<a href=' in g.markdown_wiki.convert('This is a WikiPage')
-    # assert '<a href=' not in g.markdown_wiki.convert('This is a WIKIPAGE')
+    with h.push_context('test', 'wiki', neighborhood='Projects'):
+        text = g.markdown.convert('# Foo!\n[Home]')
+        assert '<a class="alink" href=' in text, text
+        text = g.markdown.convert('# Foo!\n[Rooted]')
+        assert '<a href=' not in text, text
+
     assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
-    r = g.markdown.convert('[[projects]]')
-    assert '[[projects]]' in r, r
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
-        r = g.markdown_wiki.convert('[[projects]]')
-        assert '<div class="border card">' in r, r
-    r = g.markdown.convert('[[include ref=Home id=foo]]')
-    assert '<div id="foo">' in r, r
-    assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
-    assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
-    h.set_context('--init--', 'wiki', neighborhood='Projects')
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
-    assert 'WikiPage Home modified by Test Admin' in r, r
-    g.markdown.convert("<class 'foo'>") # should not raise an exception
+
+    g.markdown.convert("<class 'foo'>")  # should not raise an exception
     assert '<br>' not in g.markdown.convert('''# Header
 
 Some text in a regular paragraph
@@ -272,7 +257,39 @@ Some text in a regular paragraph
 def foo(): pass
 ~~~~''')
 
-@with_setup(setUp)
+
+def test_markdown_autolink():
+    #with h.set_context('test', 'wiki', neighborhood='Projects')
+    text = g.markdown.convert('This is http://sf.net')
+    assert '<a href=' in text, text
+    tgt = 'http://everything2.com/?node=nate+oostendorp'
+    s = g.markdown.convert('This is %s' % tgt)
+    assert_equal(
+        s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
+    assert '<a href=' in g.markdown.convert('This is http://sf.net')
+
+
+def test_macro_projects():
+    r = g.markdown.convert('[[projects]]')
+    assert '[[projects]]' in r, r
+    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
+        r = g.markdown_wiki.convert('[[projects]]')
+        assert '<div class="border card">' in r, r
+
+@td.with_wiki
+def test_macro_include():
+    r = g.markdown.convert('[[include ref=Home id=foo]]')
+    assert '<div id="foo">' in r, r
+    assert 'href="../foo"' in g.markdown.convert('[My foo](foo)')
+    assert 'href="..' not in g.markdown.convert('[My foo](./foo)')
+
+
+def test_macro_nbhd_feeds():
+    with h.push_context('--init--', 'wiki', neighborhood='Projects'):
+        r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+        assert 'WikiPage Home modified by ' in r, r
+
+
 def test_sort_alpha():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
 
@@ -281,7 +298,7 @@ def test_sort_alpha():
         project_list = get_project_names(r)
         assert project_list == sorted(project_list)
 
-@with_setup(setUp)
+
 def test_sort_registered():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
 
@@ -291,7 +308,7 @@ def test_sort_registered():
         ids = get_projects_property_in_the_same_order(project_names, '_id')
         assert ids == sorted(ids, reverse=True)
 
-@with_setup(setUp)
+
 def test_sort_updated():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
 
@@ -301,7 +318,7 @@ def test_sort_updated():
         updated_at = get_projects_property_in_the_same_order(project_names, 'last_updated')
         assert updated_at == sorted(updated_at, reverse=True)
 
-@with_setup(setUp)
+
 def test_filtering():
     # set up for test
     from random import choice
@@ -317,7 +334,7 @@ def test_filtering():
         project_names = get_project_names(r)
         assert [test_project.name, ] == project_names
 
-@with_setup(setUp)
+
 def test_projects_macro():
     two_column_style = 'width: 330px;'
 
@@ -335,11 +352,11 @@ def test_projects_macro():
         r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
 
-@with_setup(setUp)
+
+@td.with_wiki
 def test_limit_tools_macro():
-    g.set_app('wiki')
     p_nbhd = M.Neighborhood.query.get(name='Adobe')
-    with h.push_context(p_nbhd.neighborhood_project._id):
+    with h.push_context(p_nbhd.neighborhood_project._id, 'wiki'):
         r = g.markdown_wiki.convert('[[projects]]')
         assert '<span>Admin</span>' in r
         r = g.markdown_wiki.convert('[[projects grid_view_tools=wiki]]')
@@ -349,7 +366,6 @@ def test_limit_tools_macro():
 
 @td.with_user_project('test-admin')
 @td.with_user_project('test-user-1')
-@with_setup(setUp)
 def test_myprojects_macro():
     h.set_context('u/%s' % (c.user.username), 'wiki', neighborhood='Users')
     r = g.markdown_wiki.convert('[[my_projects]]')
@@ -368,7 +384,8 @@ def test_myprojects_macro():
         proj_title = '<h2><a href="%s">%s</a></h2>' % (p.url(), p.name)
         assert proj_title in r
 
-@with_setup(setUp)
+
+@td.with_wiki
 def test_hideawards_macro():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
 
