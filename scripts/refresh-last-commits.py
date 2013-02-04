@@ -135,9 +135,9 @@ def repo_type_list(s):
     repo_types = []
     for repo_type in s.split(','):
         repo_type = repo_type.strip()
-        if repo_type not in ['svn', 'git', 'hg']:
+        if repo_type not in ['git', 'hg']:
             raise argparse.ArgumentTypeError(
-                    '{} is not a valid repo type.'.format(repo_type))
+                    '{0} is not a valid repo type.'.format(repo_type))
         repo_types.append(repo_type)
     return repo_types
 
@@ -156,9 +156,9 @@ def parse_options():
             help='Restrict update to projects for which the shortname matches '
             'the provided regex.')
     parser.add_argument('--repo-types', action='store', type=repo_type_list,
-            default=['svn', 'git', 'hg'], dest='repo_types',
+            default=['git', 'hg'], dest='repo_types',
             help='Only refresh last commits for repos of the given type(s). Defaults to: '
-            'svn,git,hg. Example: --repo-types=git,hg')
+            'git,hg. Example: --repo-types=git')
     parser.add_argument('--mount_point', default='', dest='mount_point',
             help='Restrict update to repos at the given tool mount point. ')
     parser.add_argument('--clean', action='store_true', dest='clean',
