@@ -20,6 +20,7 @@ def setUp(self):
 def break_discussion():
     """Emulate buggy 'ticket move' behavior"""
     project = M.Project.query.get(shortname='test')
+    tracker = M.AppConfig.query.find({'options.mount_point': 'bugs'}).first()
     discussion = M.Discussion(name='fake discussion')
     app_config = M.AppConfig()
     app_config.tool_name = 'Tickets'
@@ -38,6 +39,8 @@ def break_discussion():
     t.summary = 'ticket 2'
     # moved ticket attached to wrong discussion
     t.discussion_thread.discussion_id = discussion._id
+    t.discussion_thread.add_post(text='comment 1')
+    t.discussion_thread.add_post(text='comment 2')
     session(t).flush(t)
 
 def test_fix_discussion():
@@ -56,3 +59,7 @@ def test_fix_discussion():
     t2 = TM.Ticket.query.get(ticket_num=2)
     assert_equal(t1.discussion_thread.discussion.app_config_id, tracker._id)
     assert_equal(t2.discussion_thread.discussion_id, tracker.discussion_id)
+    for p in t2.discussion_thread.posts:
+        assert_equal(p.app_config_id, tracker._id)
+        assert_equal(p.app_id, tracker._id)
+        assert_equal(p.discussion_id, tracker.discussion_id)

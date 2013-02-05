@@ -66,7 +66,7 @@ class FixDiscussion(base.Command):
                         % (ticket._id, ticket.ticket_num, ticket.summary))
                 if ticket.discussion_thread.discussion.app_config_id != tracker._id:
                     # Some tickets were moved from this tracker,
-                    # and Discussion instance for entire tracker was mived too.
+                    # and Discussion instance for entire tracker was moved too.
                     # Should move it back.
                     base.log.info("Some tickets were moved from this tracker. "
                             "Moving tracker's discussion instance back.")
@@ -78,5 +78,7 @@ class FixDiscussion(base.Command):
                     base.log.info("Ticket was moved from another tracker. "
                             "Bind ticket's comment thread to tracker's Discussion instance.")
                     ticket.discussion_thread.discussion_id = tracker.discussion_id
+                    for post in ticket.discussion_thread.posts:
+                        post.discussion_id = tracker.discussion_id
 
             ThreadLocalORMSession.flush_all()
