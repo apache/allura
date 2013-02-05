@@ -38,7 +38,8 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
-        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
+        # this has to be before the 'escape' processor, otherwise weird placeholders are inserted for escaped chars within urls, and then the autolink can't match the whole url
+        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:]+)'), '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
         md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
@@ -280,6 +281,9 @@ class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
         old_link = mo.group(2)
         result = markdown.util.etree.Element('a')
         result.text = old_link
+        # since this is run before the builtin 'escape' processor, we have to do our own unescaping
+        for char in markdown.Markdown.ESCAPED_CHARS:
+            old_link = old_link.replace('\\' + char, char)
         result.set('href', old_link)
         return result
 
