@@ -430,7 +430,6 @@ def _diff_trees(lhs, rhs, index, *path):
             continue
         elif rhs_id is None:  # removed
             yield (_fq(o.name), o.id, None)
-            continue  # FIXME This is a temporary work-around for #5733 and breaks moved/renamed directories
             rhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
         else:  # changed
             rhs_tree = index[rhs_id]
