@@ -13,7 +13,7 @@ import tg
 import git
 import gitdb
 from pylons import app_globals as g
-from pylons import c
+from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
