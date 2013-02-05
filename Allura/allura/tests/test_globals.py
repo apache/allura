@@ -259,14 +259,18 @@ def foo(): pass
 
 
 def test_markdown_autolink():
-    #with h.set_context('test', 'wiki', neighborhood='Projects')
-    text = g.markdown.convert('This is http://sf.net')
-    assert '<a href=' in text, text
+    assert '<a href=' in g.markdown.convert('This is http://sf.net')
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(
         s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
-    assert '<a href=' in g.markdown.convert('This is http://sf.net')
+
+
+def test_markdown_autolink_with_escape():
+    # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
+    # (it occurs during html2text conversion during project migrations)
+    r = g.markdown.convert('a http://www.phpmyadmin.net/home\_page/security/\#target b')
+    assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
 def test_macro_projects():
