@@ -590,13 +590,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ticket_num = app.globals.next_ticket_num()
             self.ticket_num = ticket_num
             self.app_config_id = app_config._id
+            new_url = app_config.url() + str(self.ticket_num) + '/'
             try:
                 session(self).flush(self)
-                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, self.url()))
+                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, new_url))
                 break
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
-                    log.warning('Try to create duplicate ticket %s when moving from %s' % (self.url(), prior_url))
+                    log.warning('Try to create duplicate ticket %s when moving from %s' % (new_url, prior_url))
                     session(self).expunge(self)
                     continue
 
