@@ -622,9 +622,11 @@ class Blob(object):
             try:
                 tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'))
             except KeyError:
-                return None
-            lc = tree and LastCommit.get(tree)
-            commit_id = lc and lc.by_name[self.name]
+                return None  # parent tree added this commit
+            if not tree or self.name not in tree.by_name:
+                return None  # tree or file added this commit
+            lc = LastCommit.get(tree)
+            commit_id = lc and lc.by_name.get(self.name)
             if commit_id:
                 prev_commit = self.repo.commit(commit_id)
                 return prev_commit
