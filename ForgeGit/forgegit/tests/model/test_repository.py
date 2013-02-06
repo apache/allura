@@ -283,6 +283,16 @@ class TestGitCommit(unittest.TestCase):
         assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8']
         commits = list(self.repo.commits('not/exist/'))
         assert commits == []
+        # with missing add record
+        commit = M.repo.Commit.query.get(_id='df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        commit.changed_paths = []
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
+        # with missing add record & no parent
+        commit = M.repo.Commit.query.get(_id='9a7df788cf800241e3bb5a849c8870f2f8259d98')
+        commit.changed_paths = ['a']
+        commits = list(self.repo.commits('a/b/c/hello.txt', '9a7df788cf800241e3bb5a849c8870f2f8259d98'))
+        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
 
     def test_commits_count(self):
         commits = self.repo.commits_count()

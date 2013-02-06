@@ -123,6 +123,18 @@ class RepositoryImplementation(object):
             changed = paths & set(commit.changed_paths)
             result.update({path: commit._id for path in changed})
             paths = paths - changed
+
+            # Hacky work-around for DiffInfoDocs previously having been
+            # computed wrong (not including children of added trees).
+            # Can be removed once all projects have had diffs / LCDs refreshed.
+            parent = commit.get_parent()
+            if parent:
+                changed = set([path for path in paths if not parent.has_path(path)])
+                result.update({path: commit._id for path in changed})
+                paths = paths - changed
+            else:
+                result.update({path: commit._id for path in paths})
+
             commit = commit.get_parent()
         return result
 

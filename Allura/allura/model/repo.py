@@ -347,6 +347,13 @@ class Commit(RepoObject):
                 cur = cur[part]
         return cur
 
+    def has_path(self, path):
+        try:
+            self.get_path(path)
+            return True
+        except KeyError:
+            return False
+
     @LazyProperty
     def changed_paths(self):
         '''

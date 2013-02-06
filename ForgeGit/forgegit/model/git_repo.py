@@ -243,10 +243,22 @@ class GitImplementation(M.RepositoryImplementation):
             rev = 'HEAD'
         start = skip or 0
         stop = start + limit if limit is not None else None
+
+        def _pred(c):
+            '''
+            Work-around for potentially b0rked changed_paths.
+            This could be replaced with lambda c: path in c.changed_paths
+            once all projects have had their DiffInfoDocs refreshed.'''
+            if path in c.changed_paths:
+                return True
+            parent = c.get_parent()
+            if c.has_path(path) and not (parent and parent.has_path(path)):
+                return True  # added in this commit, inspite of changed_paths
+            return False
         predicate = None
         if path is not None:
             path = path.strip('/')
-            predicate = lambda c: path in c.changed_paths
+            predicate = _pred
 
         iter_tree = self.commit(rev).climb_commit_tree(predicate)
         for commit in itertools.islice(iter_tree, start, stop):

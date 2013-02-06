@@ -284,6 +284,19 @@ class TestLastCommit(unittest.TestCase):
         self.assertEqual(lcd.by_name['file3'], commit3._id)
         self.assertEqual(lcd.by_name['file4'], commit4._id)
 
+    def test_missing_add_record(self):
+        commit1 = self._add_commit('Commit 1', ['file1'])
+        commit2 = self._add_commit('Commit 2', ['file2'])
+        commit2.changed_paths = []
+        result = self.repo.last_commit_ids(commit2, ['file2'])
+        assert_equal(result, {'file2': commit2._id})
+
+    def test_missing_add_record_first_commit(self):
+        commit1 = self._add_commit('Commit 1', ['file1'])
+        commit1.changed_paths = []
+        result = self.repo.last_commit_ids(commit1, ['file1'])
+        assert_equal(result, {'file1': commit1._id})
+
 
 class TestModelCache(unittest.TestCase):
     def setUp(self):
