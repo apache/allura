@@ -119,7 +119,7 @@ class RepositoryImplementation(object):
         '''
         paths = set(paths)
         result = {}
-        while commit:
+        while paths and commit:
             changed = paths & set(commit.changed_paths)
             result.update({path: commit._id for path in changed})
             paths = paths - changed
