@@ -8,10 +8,11 @@ from contextlib import contextmanager
 
 import faulthandler
 from pylons import c
-from ming.orm import ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession, session
 
 from allura import model as M
 from allura.lib.utils import chunked_find, chunked_list
+from allura.tasks.repo_tasks import refresh
 
 log = logging.getLogger(__name__)
 
@@ -50,20 +51,22 @@ def main(options):
                             c.app.repo.tool.lower())
                     continue
 
-                ci_ids = list(reversed(list(c.app.repo.all_commit_ids())))
-                if options.clean:
-                    if options.diffs:
-                        # delete DiffInfoDocs
-                        i = M.repo.DiffInfoDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
-                        log.info("Deleting %i DiffInfoDoc docs, by repo id...", i)
+                c.app.repo.status = 'analyzing'
+                session(c.app.repo).flush(c.app.repo)
+                try:
+                    ci_ids = list(reversed(list(c.app.repo.all_commit_ids())))
+                    if options.clean:
+                        if options.diffs:
+                            # delete DiffInfoDocs
+                            i = M.repo.DiffInfoDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
+                            log.info("Deleting %i DiffInfoDoc docs, by repo id...", i)
+                            M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
+
+                        # delete LastCommitDocs
+                        i = M.repo.LastCommitDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
+                        log.info("Deleting %i LastCommitDoc docs, by repo id...", i)
                         M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
 
-                    # delete LastCommitDocs
-                    i = M.repo.LastCommitDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
-                    log.info("Deleting %i LastCommitDoc docs, by repo id...", i)
-                    M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
-
-                try:
                     log.info('Refreshing all last commits in %r', c.app.repo)
                     if options.profile:
                         import cProfile
@@ -71,9 +74,15 @@ def main(options):
                                 globals(), locals(), '/tmp/refresh_lcds.profile')
                     else:
                         refresh_repo_lcds(ci_ids, options)
+                    new_commit_ids = app.repo.unknown_commit_ids()
+                    if len(new_commit_ids) > 0:
+                        refresh.post()
                 except:
                     log.exception('Error refreshing %r', c.app.repo)
                     raise
+                finally:
+                    c.app.repo.status = 'ready'
+                    session(c.app.repo).flush(c.app.repo)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
