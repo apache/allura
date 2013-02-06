@@ -94,6 +94,20 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
 
+    def test_moderate(self):
+        r = self._make_post('Test post')
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post = M.Post.query.find().first()
+        post.status = 'pending'
+        self.app.post(post_link + 'moderate', params=dict(spam='spam'))
+        post = M.Post.query.find().first()
+        assert post.status == 'spam'
+        self.app.post(post_link + 'moderate', params=dict(approve='approve'))
+        post = M.Post.query.find().first()
+        assert post.status == 'ok'
+        self.app.post(post_link + 'moderate', params=dict(delete='delete'))
+        assert M.Post.query.find().count() == 0
+
     def test_post_paging(self):
         home = self.app.get('/wiki/_discuss/')
         thread_link = [ a for a in home.html.findAll('a')

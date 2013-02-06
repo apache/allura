@@ -426,6 +426,12 @@ class TestForum(TestController):
         assert 'Post awaiting moderation' in r
         r = self.app.get(thread.request.url)
         assert '<div class="display_post moderate">' in r
+        assert '<a href="" class="edit_post little_link" style="display:none">' in r
+        assert '<a href="" class="reply_post btn" style="display:none">' in r
+        assert 'class="little_link shortlink" style="display:none">' in r
+        assert 'name="delete"' in r
+        assert 'name="approve"' in r
+        assert 'name="spam"' in r
         assert 'Post content' in r
         r = self.app.get('/discussion/testforum/moderate/')
         post = FM.ForumPost.query.get(text='Post content')

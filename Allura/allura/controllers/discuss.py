@@ -332,11 +332,12 @@ class PostController(BaseController):
         require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
             self.post.delete()
-            self.thread.update_stats()
         elif kw.pop('spam', None):
             self.post.status = 'spam'
-            self.thread.update_stats()
-        redirect(request.referer)
+        elif kw.pop('approve', None):
+            self.post.status = 'ok'
+        self.thread.update_stats()
+        return dict(result ='success')
 
     @h.vardec
     @expose()
