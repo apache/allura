@@ -32,6 +32,7 @@ def main(options):
         M.repo.TreesDoc.m.remove({})
         M.repo.DiffInfoDoc.m.remove({})
         M.repo.CommitRunDoc.m.remove({})
+        M.repo.LastCommitDoc.m.remove({})
 
     for chunk in chunked_find(M.Project, q_project):
         for p in chunk:
@@ -72,9 +73,6 @@ def main(options):
                         i = M.repo.TreeDoc.m.find({"_id": {"$in": tree_ids_chunk}}).count()
                         log.info("Deleting %i TreeDoc docs...", i)
                         M.repo.TreeDoc.m.remove({"_id": {"$in": tree_ids_chunk}})
-                        i = M.repo.LastCommitDoc.m.find({"object_id": {"$in": tree_ids_chunk}}).count()
-                        log.info("Deleting %i LastCommitDoc docs...", i)
-                        M.repo.LastCommitDoc.m.remove({"object_id": {"$in": tree_ids_chunk}})
                     del tree_ids
 
                     # delete these after TreeDoc and LastCommitDoc so that if
@@ -83,11 +81,10 @@ def main(options):
                     log.info("Deleting %i TreesDoc docs...", i)
                     M.repo.TreesDoc.m.remove({"_id": {"$in": ci_ids}})
 
-                    # delete LastCommitDocs for non-trees
-                    repo_lastcommit_re = re.compile("^{}:".format(c.app.repo._id))
-                    i = M.repo.LastCommitDoc.m.find(dict(_id=repo_lastcommit_re)).count()
+                    # delete LastCommitDocs
+                    i = M.repo.LastCommitDoc.m.find(dict(commit_ids={'$in': ci_ids})).count()
                     log.info("Deleting %i remaining LastCommitDoc docs, by repo id...", i)
-                    M.repo.LastCommitDoc.m.remove(dict(_id=repo_lastcommit_re))
+                    M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': ci_ids}))
 
                     i = M.repo.DiffInfoDoc.m.find({"_id": {"$in": ci_ids}}).count()
                     log.info("Deleting %i DiffInfoDoc docs...", i)

@@ -54,8 +54,7 @@ class Globals(MappedClass):
     _bin_counts = FieldProperty(schema.Deprecated) # {str:int})
     _bin_counts_data = FieldProperty([dict(summary=str, hits=int)])
     _bin_counts_expire = FieldProperty(datetime)
-    _milestone_counts = FieldProperty([dict(name=str,hits=int,closed=int)])
-    _milestone_counts_expire = FieldProperty(datetime)
+    _bin_counts_invalidated = FieldProperty(datetime)
     show_in_search = FieldProperty({str: bool}, if_missing={'ticket_num': True,
                                                             'summary': True,
                                                             '_milestone': True,
@@ -115,7 +114,7 @@ class Globals(MappedClass):
                 return fld
         return None
 
-    def _refresh_counts(self):
+    def update_bin_counts(self):
         # Refresh bin counts
         self._bin_counts_data = []
         for b in Bin.query.find(dict(
@@ -125,10 +124,13 @@ class Globals(MappedClass):
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
+        self._bin_counts_invalidated = None
 
     def bin_count(self, name):
+        # not sure why we expire bin counts after an hour even if unchanged
+        # I guess a catch-all in case invalidate_bin_counts is missed
         if self._bin_counts_expire < datetime.utcnow():
-            self._refresh_counts()
+            self.invalidate_bin_counts()
         for d in self._bin_counts_data:
             if d['summary'] == name: return d
         return dict(summary=name, hits=0)
@@ -148,10 +150,19 @@ class Globals(MappedClass):
         return d
 
     def invalidate_bin_counts(self):
-        '''Expire it just a bit in the future to allow data to propagate through
-        the search task
-        '''
-        self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
+        '''Force expiry of bin counts and queue them to be updated.'''
+        # To prevent multiple calls to this method from piling on redundant
+        # tasks, we set _bin_counts_invalidated when we post the task, and
+        # the task clears it when it's done.  However, in the off chance
+        # that the task fails or is interrupted, we ignore the flag if it's
+        # older than 5 minutes.
+        invalidation_expiry = datetime.utcnow() - timedelta(minutes=5)
+        if self._bin_counts_invalidated is not None and \
+           self._bin_counts_invalidated > invalidation_expiry:
+            return
+        self._bin_counts_invalidated = datetime.utcnow()
+        from forgetracker import tasks  # prevent circular import
+        tasks.update_bin_counts.post(self.app_config_id)
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
@@ -481,7 +492,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             app_config_id=self.app_config_id, artifact_id=self._id, type='attachment'))
 
     def update(self, ticket_form):
-        self.globals.invalidate_bin_counts()
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
         self.labels = ticket_form.pop('labels', [])
@@ -583,7 +593,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             custom_fields[fn] = old_val
         self.custom_fields = custom_fields
 
-        self.globals.invalidate_bin_counts()
         # move ticket. ensure unique ticket_num
         while True:
             with h.push_context(app_config.project_id, app_config_id=app_config._id):

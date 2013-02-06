@@ -76,7 +76,7 @@ class Repository(M.Repository):
         while ci is not None and limit > 0:
             yield ci._id
             limit -= 1
-            ci = ci.parent()
+            ci = ci.get_parent()
 
     def latest(self, branch=None):
         if self._impl is None: return None
@@ -416,15 +416,8 @@ class SVNImplementation(M.RepositoryImplementation):
         log.debug('Compute tree for %d paths', len(infos))
         tree_ids = []
         blob_ids = []
+        lcd_entries = []
         for path, info in infos[1:]:
-            last_commit_id = self._oid(info['last_changed_rev'].number)
-            last_commit = M.repo.Commit.query.get(_id=last_commit_id)
-            M.repo_refresh.set_last_commit(
-                self._repo._id,
-                re.sub(r'/?$', '/', tree_path),  # force it to end with /
-                path,
-                self._tree_oid(commit._id, path),
-                M.repo_refresh.get_commit_info(last_commit))
             if info.kind == pysvn.node_kind.dir:
                 tree_ids.append(Object(
                         id=self._tree_oid(commit._id, path),
@@ -435,19 +428,26 @@ class SVNImplementation(M.RepositoryImplementation):
                         name=path))
             else:
                 assert False
+            lcd_entries.append(dict(
+                    name=path,
+                    commit_id=self._oid(info.last_changed_rev.number),
+                ))
         tree, is_new = RM.Tree.upsert(tree_id,
                 tree_ids=tree_ids,
                 blob_ids=blob_ids,
                 other_ids=[],
             )
         if is_new:
-            trees_doc = RM.TreesDoc.m.get(_id=commit._id)
-            if not trees_doc:
-                trees_doc = RM.TreesDoc(dict(
-                    _id=commit._id,
-                    tree_ids=[]))
-            trees_doc.tree_ids.append(tree_id)
-            trees_doc.m.save(safe=False)
+            commit_id = self._oid(infos[0][1].last_changed_rev.number)
+            path = tree_path.strip('/')
+            RM.TreesDoc.m.update_partial(
+                    {'_id': commit._id},
+                    {'$addToSet': {'tree_ids': tree_id}},
+                    upsert=True)
+            RM.LastCommitDoc.m.update_partial(
+                    {'commit_id': commit_id, 'path': path},
+                    {'commit_id': commit_id, 'path': path, 'entries': lcd_entries},
+                    upsert=True)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
@@ -574,5 +574,34 @@ class SVNImplementation(M.RepositoryImplementation):
             log.info('ClientError processing commits for path %s, rev %s, treating as empty', path, rev, exc_info=True)
             return 0
 
+    def last_commit_ids(self, commit, paths):
+        '''
+        Return a mapping {path: commit_id} of the _id of the last
+        commit to touch each path, starting from the given commit.
+
+        Since SVN Diffs are computed on-demand, we can't walk the
+        commit tree to find these.  However, we can ask SVN for it
+        with a single call, so it shouldn't be too expensive.
+
+        NB: This assumes that all paths are direct children of a
+        single common parent path (i.e., you are only asking for
+        a subset of the nodes of a single tree, one level deep).
+        '''
+        tree_path = os.path.commonprefix(paths).strip('/')
+        rev = self._revision(commit._id)
+        try:
+            infos = self._svn.info2(
+                self._url + tree_path,
+                revision=rev,
+                depth=pysvn.depth.immediates)
+        except pysvn.ClientError:
+            log.exception('Error computing tree for %s: %s(%s)',
+                          self._repo, commit, tree_path)
+            return None
+        entries = {}
+        for path, info in infos[1:]:
+            if path in paths:
+                entries[path] = self._oid(info.last_changed_rev.number)
+        return entries
 
 Mapper.compile_all()

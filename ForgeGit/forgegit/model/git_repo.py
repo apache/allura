@@ -1,8 +1,10 @@
 import os
+import sys
 import shutil
 import string
 import logging
 import random
+import itertools
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
@@ -11,6 +13,7 @@ import tg
 import git
 import gitdb
 from pylons import app_globals as g
+from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
 
 from ming.base import Object
@@ -120,12 +123,13 @@ class GitImplementation(M.RepositoryImplementation):
             if ref.name == rev:
                 rev = ref.object_id
                 break
-        result = M.repo.Commit.query.get(_id=rev)
+        cache = getattr(c, 'model_cache', '') or M.repo.ModelCache()
+        result = cache.get(M.repo.Commit, dict(_id=rev))
         if result is None:
             # find the id by branch/tag name
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
-                result = M.repo.Commit.query.get(_id=impl.hexsha)
+                result = cache.get(M.repo.Commit, dict(_id=impl.hexsha))
             except Exception:
                 url = ''
                 try:
@@ -235,14 +239,18 @@ class GitImplementation(M.RepositoryImplementation):
         return doc
 
     def commits(self, path=None, rev=None, skip=None, limit=None):
-        params = dict(paths=path)
-        if rev is not None:
-            params['rev'] = rev
-        if skip is not None:
-            params['skip'] = skip
-        if limit is not None:
-            params['max_count'] = limit
-        return [c.hexsha for c in self._git.iter_commits(**params)]
+        if rev is None:
+            rev = 'HEAD'
+        start = skip or 0
+        stop = start + limit if limit is not None else None
+        predicate = None
+        if path is not None:
+            path = path.strip('/')
+            predicate = lambda c: path in c.changed_paths
+
+        iter_tree = self.commit(rev).climb_commit_tree(predicate)
+        for commit in itertools.islice(iter_tree, start, stop):
+            yield commit._id
 
     def commits_count(self, path=None, rev=None):
         commit = self._git.commit(rev)

@@ -5,6 +5,7 @@ import pkg_resources
 from itertools import count, product
 from datetime import datetime
 
+from collections import defaultdict
 from pylons import c
 import mock
 from nose.tools import assert_equal
@@ -527,14 +528,15 @@ class TestRepo(_TestWithRepo):
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
         self.repo._impl.refresh_commit_info = refresh_commit_info
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
-        self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
-        self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
+        _id = lambda oid: getattr(oid, '_id', str(oid))
+        self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
+        self.repo.url_for_commit = lambda oid: 'ci/' + _id(oid) + '/'
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "master,branch:  by Test Committer http://localhost/#" in n.text
+                assert "master,branch:  by Test Committer http://localhost/ci/foo99" in n.text
                 break
         else:
             assert False, 'Did not find notification'
@@ -619,26 +621,6 @@ class TestRepoObject(_TestWithRepoAndCommit):
         assert obj0 is obj1
         assert isnew0 and not isnew1
 
-    def test_set_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-    def test_get_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc0 = M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc0 == lc1
-
-    def test_get_last_commit_missing(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc1 is None
-
     def test_artifact_methods(self):
         assert self.ci.index_id() == 'allura/model/repo/Commit#foo', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()
@@ -686,12 +668,22 @@ class TestCommit(_TestWithRepo):
         rb.cleanup()
         assert self.repo.count_revisions(self.ci) == 1
 
+    def _unique_blobs(self):
+        def counter():
+            counter.i += 1
+            return counter.i
+        counter.i = 0
+        blobs = defaultdict(counter)
+        from cStringIO import StringIO
+        return lambda blob: StringIO(str(blobs[blob.path()]))
+
     def test_compute_diffs(self):
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
+        self.repo._impl.open_blob = self._unique_blobs()
         M.repo_refresh.refresh_commit_trees(self.ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
         # self.ci.compute_diffs()
-        assert self.ci.diffs.added == [ 'a' ]
+        assert_equal(self.ci.diffs.added, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
@@ -701,7 +693,7 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.removed == [ 'a' ]
+        assert_equal(ci.diffs.removed, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == ci.diffs.added
@@ -717,8 +709,8 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == [ 'b' ]
-        assert ci.diffs.removed == [ 'a' ]
+        assert_equal(ci.diffs.added, [ 'b', 'b/a', 'b/a/a', 'b/a/b', 'b/b' ])
+        assert_equal(ci.diffs.removed, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
@@ -734,13 +726,13 @@ class TestCommit(_TestWithRepo):
                 u'/b/a/z': u'Death Star will destroy you\nALL',  # moved from /b/b and modified
             }
             from cStringIO import StringIO
-            return StringIO(blobs[blob.path()])
+            return StringIO(blobs.get(blob.path(), ''))
         self.repo._impl.open_blob = open_blob
 
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
         M.repo_refresh.refresh_commit_trees(self.ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
-        assert self.ci.diffs.added == ['a']
+        assert_equal(self.ci.diffs.added, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
@@ -757,8 +749,8 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == ['b']
-        assert ci.diffs.removed == ['a']
+        assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
+        assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
@@ -773,18 +765,19 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == ci.diffs.changed == []
-        assert ci.diffs.removed == ['b/a/a']
+        assert_equal(ci.diffs.added, [])
+        assert_equal(ci.diffs.changed, [])
+        assert_equal(ci.diffs.removed, ['b/a/a'])
         # see mock for open_blob
-        assert len(ci.diffs.copied) == 2
-        assert ci.diffs.copied[0]['old'] == 'b/a/b'
-        assert ci.diffs.copied[0]['new'] == 'b/c'
-        assert ci.diffs.copied[0]['ratio'] == 1
-        assert ci.diffs.copied[0]['diff'] == ''
-        assert ci.diffs.copied[1]['old'] == 'b/b'
-        assert ci.diffs.copied[1]['new'] == 'b/a/z'
-        assert ci.diffs.copied[1]['ratio'] < 1
-        assert '+++' in ci.diffs.copied[1]['diff']
+        assert_equal(len(ci.diffs.copied), 2)
+        assert_equal(ci.diffs.copied[0]['old'], 'b/a/b')
+        assert_equal(ci.diffs.copied[0]['new'], 'b/c')
+        assert_equal(ci.diffs.copied[0]['ratio'], 1)
+        assert_equal(ci.diffs.copied[0]['diff'], '')
+        assert_equal(ci.diffs.copied[1]['old'], 'b/b')
+        assert_equal(ci.diffs.copied[1]['new'], 'b/a/z')
+        assert ci.diffs.copied[1]['ratio'] < 1, ci.diffs.copied[1]['ratio']
+        assert '+++' in ci.diffs.copied[1]['diff'], ci.diffs.copied[1]['diff']
 
     def test_context(self):
         self.ci.context()

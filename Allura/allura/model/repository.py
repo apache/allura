@@ -112,6 +112,20 @@ class RepositoryImplementation(object):
         '''Return count of the commits related to path'''
         raise NotImplementedError, 'commits_count'
 
+    def last_commit_ids(self, commit, paths):
+        '''
+        Return a mapping {path: commit_id} of the _id of the last
+        commit to touch each path, starting from the given commit.
+        '''
+        paths = set(paths)
+        result = {}
+        while commit:
+            changed = paths & set(commit.changed_paths)
+            result.update({path: commit._id for path in changed})
+            paths = paths - changed
+            commit = commit.get_parent()
+        return result
+
     @classmethod
     def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
@@ -227,6 +241,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.commits(path, rev, skip, limit)
     def commits_count(self, path=None, rev=None):
         return self._impl.commits_count(path, rev)
+    def last_commit_ids(self, commit, paths):
+        return self._impl.last_commit_ids(commit, paths)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -444,21 +460,6 @@ class Repository(Artifact, ActivityObject):
             'status':'open'}
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
-
-    def get_last_commit(self, obj):
-        from .repo import LastCommitDoc
-        lc = LastCommitDoc.m.get(
-            repo_id=self._id, object_id=obj._id)
-        if lc is None:
-            return dict(
-                author=None,
-                author_email=None,
-                author_url=None,
-                date=None,
-                id=None,
-                shortlink=None,
-                summary=None)
-        return lc.commit_info
 
     @property
     def forks(self):
