@@ -1,3 +1,4 @@
+import re
 import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -6,7 +7,9 @@ from tg import expose, validate, flash, config, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from ming.orm import session
 import pymongo
-from pylons import c, g
+import bson
+import tg
+from pylons import c, g, request
 from formencode import validators
 
 from allura.lib import helpers as h
@@ -26,6 +29,9 @@ class W:
     page_size = ffw.PageSize()
 
 class SiteAdminController(object):
+
+    def __init__(self):
+        self.task_manager = TaskManagerController()
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
@@ -68,6 +74,7 @@ class SiteAdminController(object):
             stats=stats[:int(limit)])
 
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
+    @without_trailing_slash
     def api_tickets(self, **data):
         import json
         import dateutil.parser
@@ -151,6 +158,7 @@ class SiteAdminController(object):
         return False
 
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
+    @without_trailing_slash
     def add_subscribers(self, **data):
         if request.method == 'POST':
             url = data['artifact_url']
@@ -174,6 +182,7 @@ class SiteAdminController(object):
         return data
 
     @expose('jinja:allura:templates/site_admin_new_projects.html')
+    @without_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=100)))
     def new_projects(self, page=0, limit=100, **kwargs):
@@ -194,6 +203,7 @@ class SiteAdminController(object):
         }
 
     @expose('jinja:allura:templates/site_admin_reclone_repo.html')
+    @without_trailing_slash
     @validate(dict(prefix=validators.NotEmpty(),
                    shortname=validators.NotEmpty(),
                    mount_point=validators.NotEmpty()))
@@ -230,3 +240,63 @@ class SiteAdminController(object):
             shortname = ''
             mount_point = ''
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+
+class TaskManagerController(object):
+
+    def _check_security(self):
+        with h.push_context(config.get('site_admin_project', 'allura'),
+                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
+            require_access(c.project, 'admin')
+
+    @expose('jinja:allura:templates/site_admin_task_list.html')
+    @without_trailing_slash
+    def index(self, page_num=1, hours=1, state=None, task_name=None, host=None):
+        now = datetime.utcnow()
+        try:
+            page_num = int(page_num)
+        except ValueError as e:
+            page_num = 1
+        try:
+            hours = int(hours)
+        except ValueError as e:
+            hours = 1
+        start_dt = now - timedelta(hours=(page_num-1)*hours)
+        end_dt = now - timedelta(hours=page_num*hours)
+        start = bson.ObjectId.from_datetime(start_dt)
+        end = bson.ObjectId.from_datetime(end_dt)
+        query = {'_id': {'$lt': start, '$gt': end}}
+        if state:
+            query['state'] = state
+        if task_name:
+            query['task_name'] = re.compile(re.escape(task_name))
+        if host:
+            query['process'] = re.compile(re.escape(host))
+
+        tasks = list(M.monq_model.MonQTask.query.find(query).sort('_id', -1))
+        for task in tasks:
+            task.project = M.Project.query.get(_id=task.context.project_id)
+            task.user = M.User.query.get(_id=task.context.user_id)
+        newer_url = tg.url(params=dict(request.params, page_num=page_num - 1)).lstrip('/')
+        older_url = tg.url(params=dict(request.params, page_num=page_num + 1)).lstrip('/')
+        return dict(
+                tasks=tasks,
+                page_num=page_num,
+                hours=hours,
+                newer_url=newer_url,
+                older_url=older_url,
+                window_start=start_dt,
+                window_end=end_dt,
+            )
+
+    @expose('jinja:allura:templates/site_admin_task_view.html')
+    @without_trailing_slash
+    def view(self, task_id):
+        try:
+            task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
+        except bson.InvalidId as e:
+            task = None
+        if task:
+            task.project = M.Project.query.get(_id=task.context.project_id)
+            task.app_config = M.AppConfig.query.get(_id=task.context.app_config_id)
+            task.user = M.User.query.get(_id=task.context.user_id)
+        return dict(task=task)

@@ -272,6 +272,12 @@ class Globals(object):
         return Credentials.get()
 
     def handle_paging(self, limit, page, default=50):
+        limit = self.manage_paging_preference(limit, default)
+        page = max(int(page), 0)
+        start = page * int(limit)
+        return (limit, page, start)
+
+    def manage_paging_preference(self, limit, default=50):
         if limit:
             if c.user in (None, M.User.anonymous()):
                 session['results_per_page'] = int(limit)
@@ -283,9 +289,7 @@ class Globals(object):
                 limit = 'results_per_page' in session and session['results_per_page'] or default
             else:
                 limit = c.user.get_pref('results_per_page') or default
-        page = max(int(page), 0)
-        start = page * int(limit)
-        return (limit, page, start)
+        return limit
 
     def document_class(self, neighborhood):
         classes = ''
