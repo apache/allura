@@ -269,37 +269,31 @@ class Post(HierWidget):
                     this.parentNode.submit();
                     return false;
                 });
-
-                if($('.moderate_post', post)){
-                    $('.moderate_post', post).click(function(e){
-                        e.preventDefault();
-                        var mod = $(this).text();
-                        var id_post = $(post).attr('id');
-                        var session_id = $('input[name=_session_id]').val();
-                        $.ajax({
-                            type: 'POST',
-                            url: this.parentNode.action,
-                            data: jQuery(this.parentNode).serialize(),
-                            success: function() {
-                                if (mod == 'Delete'){
-                                    $(post).remove();
-                                }
-                                else if (mod == 'Approve'){
-                                    $('a.reply_post', post).show();
-                                    $('a.shortlink', post).show();
-                                    $('a.edit_post', post).show();
-                                    $('div.moderate', post).removeClass('moderate');
-                                    $('form.moderate_spam', post).hide();
-                                    $('form.moderate_approve', post).hide();
-                                }
-                                else if (mod == 'Spam'){
-                                    $(post).remove();
-                                }
+                $('.moderate_post', post).click(function(e){
+                    e.preventDefault();
+                    var mod = $(this).text();
+                    var id_post = $(post).attr('id');
+                    $.ajax({
+                        type: 'POST',
+                        url: this.parentNode.action,
+                        data: jQuery(this.parentNode).serialize(),
+                        success: function() {
+                            if (mod == 'Delete'){
+                                $(post).remove();
                             }
-                        });
+                            else if (mod == 'Approve'){
+                                $('a.reply_post', post).show();
+                                $('div.little_link', post).show();
+                                $('div.moderate', post).removeClass('moderate');
+                                $('form.moderate_spam', post).hide();
+                                $('form.moderate_approve', post).hide();
+                            }
+                            else if (mod == 'Spam'){
+                                $(post).remove();
+                            }
+                        }
                     });
-                };
-
+                });
 
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function (ele) {

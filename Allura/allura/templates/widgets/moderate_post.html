@@ -3,13 +3,15 @@
     <a href="" class="moderate_post little_link"><span>Delete</span></a>
 </form>
 <br/>
-<form method="POST" class="moderate_approve" action="{{action}}" {%if status != 'pending'%} style="display:none"{%endif%}>
-    <input type="hidden" name="approve" value="True"/>
-    <a href="" class="moderate_post little_link"><span>Approve</span></a>
-</form>
-<br/>
-<form method="POST" class="moderate_spam" action="{{action}}" {%if status != 'pending'%} style="display:none"{%endif%}>
-    <input type="hidden" name="spam" value="True"/>
-    <a href="" class="moderate_post little_link"><span>Spam</span></a>
-</form>
+{%if status == 'pending'%}
+    <form method="POST" class="moderate_approve" action="{{action}}">
+        <input type="hidden" name="approve" value="True"/>
+        <a href="" class="moderate_post little_link"><span>Approve</span></a>
+    </form>
+    <br/>
+    <form method="POST" class="moderate_spam" action="{{action}}">
+        <input type="hidden" name="spam" value="True"/>
+        <a href="" class="moderate_post little_link"><span>Spam</span></a>
+    </form>
+{%endif%}
 <br/>

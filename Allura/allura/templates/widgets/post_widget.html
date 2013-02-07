@@ -79,13 +79,15 @@
           <a href="" class="reply_post btn"{%if value.status == 'pending'%} style="display:none"{%endif%}><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         {% endif %}
         <div style="clear:both">
-            <a href="{{shortlink_url}}" class="little_link shortlink"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Link</span></a><br/>
-          {% if h.has_access(value, 'moderate')()%}
-            <a href="" class="edit_post little_link"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Edit</span></a><br/>
-          {% endif %}
-          {% if h.has_access(value, 'moderate')()%}
+            <div class="little_link"{%if value.status == 'pending'%} style="display:none"{%endif%}>
+                <a href="{{shortlink_url}}" class="little_link shortlink"><span>Link</span></a><br/>
+                {% if h.has_access(value, 'moderate')()%}
+                    <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
+                {% endif %}
+            </div>
+            {% if h.has_access(value.thread, 'moderate')() %}
             {{widgets.moderate_post.display(value=value, action=value.url()+'moderate', status = value.status)}}
-          {% endif %}
+            {%endif%}
           {% if h.has_access(value.thread, 'post')() %}
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
