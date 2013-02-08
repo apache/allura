@@ -14,7 +14,8 @@ def task(func):
     '''Decorator to add some methods to task functions'''
     def post(*args, **kwargs):
         from allura import model as M
-        return M.MonQTask.post(func, args, kwargs)
+        delay = kwargs.pop('delay', 0)
+        return M.MonQTask.post(func, args, kwargs, delay=delay)
     func.post = post
     return func
 

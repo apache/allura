@@ -2,7 +2,7 @@ import sys
 import time
 import traceback
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pymongo
 from pylons import c, g
@@ -113,7 +113,8 @@ class MonQTask(MappedClass):
              args=None,
              kwargs=None,
              result_type='forget',
-             priority=10):
+             priority=10,
+             delay=0):
         '''Create a new task object based on the current context.'''
         if args is None: args = ()
         if kwargs is None: kwargs = {}
@@ -141,7 +142,8 @@ class MonQTask(MappedClass):
             kwargs=kwargs,
             process=None,
             result=None,
-            context=context)
+            context=context,
+            time_queue=datetime.utcnow() + timedelta(seconds=delay))
         session(obj).flush(obj)
         try:
             if g.amq_conn:
@@ -164,6 +166,7 @@ class MonQTask(MappedClass):
         while True:
             try:
                 query = dict(state=state)
+                query['time_queue'] = {'$lt': datetime.utcnow()}
                 if only:
                     query['task_name'] = {'$in': only}
                 obj = cls.query.find_and_modify(
