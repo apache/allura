@@ -166,16 +166,21 @@ class Commit(RepoObject):
 
     @LazyProperty
     def tree(self):
-        if self.tree_id is None:
+        return self.get_tree(create=True)
+
+    def get_tree(self, create=True):
+        if self.tree_id is None and create:
             self.tree_id = self.repo.compute_tree_new(self)
         if self.tree_id is None:
             return None
         cache = getattr(c, 'model_cache', '') or ModelCache()
         t = cache.get(Tree, dict(_id=self.tree_id))
-        if t is None:
+        if t is None and create:
             self.tree_id = self.repo.compute_tree_new(self)
             t = Tree.query.get(_id=self.tree_id)
-        if t is not None: t.set_context(self)
+            cache.set(Tree, dict(_id=self.tree_id), t)
+        if t is not None:
+            t.set_context(self)
         return t
 
     @LazyProperty
@@ -338,13 +343,14 @@ class Commit(RepoObject):
                 added.remove(rename_info['new'])
         return copied
 
-    def get_path(self, path):
+    def get_path(self, path, create=True):
         path = path.lstrip('/')
         parts = path.split('/')
-        cur = self.tree
-        for part in parts:
-            if part != '':
-                cur = cur[part]
+        cur = self.get_tree(create)
+        if cur is not None:
+            for part in parts:
+                if part != '':
+                    cur = cur[part]
         return cur
 
     def has_path(self, path):
@@ -622,17 +628,17 @@ class Blob(object):
 
     @LazyProperty
     def prev_commit(self):
-        lc = LastCommit.get(self.tree)
+        lc = LastCommit.get(self.tree, create=False)
         if lc:
             last_commit = self.repo.commit(lc.by_name[self.name])
             prev_commit = last_commit.get_parent()
             try:
-                tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'))
+                tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'), create=False)
             except KeyError:
                 return None  # parent tree added this commit
             if not tree or self.name not in tree.by_name:
                 return None  # tree or file added this commit
-            lc = LastCommit.get(tree)
+            lc = LastCommit.get(tree, create=False)
             commit_id = lc and lc.by_name.get(self.name)
             if commit_id:
                 prev_commit = self.repo.commit(commit_id)
@@ -648,11 +654,11 @@ class Blob(object):
             while next:
                 cur = next[0]
                 next = cur.context()['next']
-                other_blob = cur.get_path(path)
+                other_blob = cur.get_path(path, create=False)
                 if other_blob is None or other_blob._id != self._id:
                     return cur
         except:
-            log.exception('Lookup prev_commit')
+            log.exception('Lookup next_commit')
             return None
 
     @LazyProperty
@@ -690,8 +696,8 @@ class Blob(object):
         path = self.path()
         prev = self.prev_commit
         next = self.next_commit
-        if prev is not None: prev = prev.get_path(path)
-        if next is not None: next = next.get_path(path)
+        if prev is not None: prev = prev.get_path(path, create=False)
+        if next is not None: next = next.get_path(path, create=False)
         return dict(
             prev=prev,
             next=next)
