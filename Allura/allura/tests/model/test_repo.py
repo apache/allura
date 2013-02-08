@@ -128,6 +128,7 @@ class TestLastCommit(unittest.TestCase):
                 repo=self.repo,
             )
         commit.tree = self._build_tree(commit, '/', tree_paths)
+        commit.get_tree = lambda c: commit.tree
         diffinfo = M.repo.DiffInfoDoc(dict(
                 _id=commit._id,
                 differences=[{'name': p} for p in diff_paths or tree_paths],
