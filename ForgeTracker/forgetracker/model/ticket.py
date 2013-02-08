@@ -162,7 +162,7 @@ class Globals(MappedClass):
             return
         self._bin_counts_invalidated = datetime.utcnow()
         from forgetracker import tasks  # prevent circular import
-        tasks.update_bin_counts.post(self.app_config_id)
+        tasks.update_bin_counts.post(self.app_config_id, delay=5)
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
