@@ -1,6 +1,9 @@
 import datetime
 import unittest
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock, call
+from nose.tools import assert_equal
+
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.controllers.repository import topo_sort
@@ -118,3 +121,200 @@ class TestTree(unittest.TestCase):
         getitem.assert_called_with('some')
         getitem().__getitem__.assert_called_with('path')
         getitem().__getitem__().__getitem__.assert_called_with('file.txt')
+
+
+class TestBlob(unittest.TestCase):
+    def test_context_no_create(self):
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.path = Mock(return_value='path')
+        blob.prev_commit = Mock()
+        blob.next_commit = Mock()
+        context = blob.context()
+        blob.prev_commit.get_path.assert_called_with('path', create=False)
+        blob.next_commit.get_path.assert_called_with('path', create=False)
+
+    @patch.object(M.repo.LastCommit, 'get')
+    def test_prev_commit_no_create(self, lc_get):
+        lc_get.return_value = None
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        pc = blob.prev_commit
+        lc_get.assert_called_once_with(blob.tree, create=False)
+        assert not blob.repo.commit.called
+        assert_equal(pc, None)
+
+        lc_get.reset_mock()
+        _lcd = Mock()
+        _lcd.by_name = {'blob': 'cid'}
+        lc_get.return_value = _lcd
+        _lc = Mock()
+        _pc = _lc.get_parent()
+        _pc.get_path.side_effect = KeyError
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.name = 'blob'
+        blob.tree.path.return_value = 'path/'
+        blob.repo.commit.return_value = _lc
+        pc = blob.prev_commit
+        blob.repo.commit.assert_called_once_with('cid')
+        lc_get.assert_called_once_with(blob.tree, create=False)
+        _pc.get_path.assert_called_once_with('path', create=False)
+        assert_equal(pc, None)
+
+        lc_get.reset_mock()
+        _lcd = Mock()
+        _lcd.by_name = {'blob': 'cid'}
+        lc_get.return_value = _lcd
+        _lc = Mock()
+        _pc = _lc.get_parent()
+        _pc.get_path.return_value = None
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.name = 'blob'
+        blob.tree.path.return_value = 'path/'
+        blob.repo.commit.return_value = _lc
+        pc = blob.prev_commit
+        blob.repo.commit.assert_called_once_with('cid')
+        lc_get.assert_called_once_with(blob.tree, create=False)
+        _pc.get_path.assert_called_once_with('path', create=False)
+        assert_equal(pc, None)
+
+        lc_get.reset_mock()
+        _lcd = Mock()
+        _lcd.by_name = {'blob': 'cid'}
+        lc_get.return_value = _lcd
+        _lc = Mock()
+        _pc = _lc.get_parent()
+        _pc.get_path.return_value = Mock(by_name=['foo'])
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.name = 'blob'
+        blob.tree.path.return_value = 'path/'
+        blob.repo.commit.return_value = _lc
+        pc = blob.prev_commit
+        blob.repo.commit.assert_called_once_with('cid')
+        lc_get.assert_called_once_with(blob.tree, create=False)
+        _pc.get_path.assert_called_once_with('path', create=False)
+        assert_equal(pc, None)
+
+        lc_get.reset_mock()
+        _lcd = Mock()
+        _lcd.by_name = {'blob': 'cid'}
+        lc_get.return_value = _lcd
+        _lc = Mock()
+        _pc = _lc.get_parent()
+        _tree = Mock(by_name=['blob'])
+        _pc.get_path.return_value = _tree
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.name = 'blob'
+        blob.tree.path.return_value = 'path/'
+        blob.repo.commit.return_value = _lc
+        pc = blob.prev_commit
+        assert_equal(lc_get.call_args_list, [call(blob.tree, create=False), call(_tree, create=False)])
+        _pc.get_path.assert_called_once_with('path', create=False)
+        assert_equal(blob.repo.commit.call_args_list, [call('cid'), call('cid')])
+        assert_equal(pc, _lc)
+
+    def test_next_commit_no_create(self):
+        blob = M.repo.Blob(MagicMock(), MagicMock(), MagicMock())
+        blob._id = 'blob1'
+        blob.path = Mock(return_value='path')
+        blob.commit.context().__getitem__.return_value = None
+        nc = blob.next_commit
+        assert_equal(nc, None)
+
+        _next = MagicMock()
+        _next.context().__getitem__.return_value = None
+        _next.get_path.return_value = Mock(_id='blob2')
+        blob = M.repo.Blob(MagicMock(), MagicMock(), MagicMock())
+        blob._id = 'blob1'
+        blob.path = Mock(return_value='path')
+        blob.commit.context().__getitem__.return_value = [_next]
+        nc = blob.next_commit
+        _next.get_path.assert_called_with('path', create=False)
+        assert_equal(nc, _next)
+
+
+class TestCommit(unittest.TestCase):
+    def test_get_path_no_create(self):
+        commit = M.repo.Commit()
+        commit.get_tree = MagicMock()
+        commit.get_path('foo/', create=False)
+        commit.get_tree.assert_called_with(False)
+        commit.get_tree().__getitem__.assert_called_with('foo')
+        commit.get_tree().__getitem__.assert_not_called_with('')
+
+    def test_get_tree_no_create(self):
+        c.model_cache = Mock()
+        c.model_cache.get.return_value = None
+        commit = M.repo.Commit()
+        commit.repo = Mock()
+
+        commit.tree_id = None
+        tree = commit.get_tree(create=False)
+        assert not commit.repo.compute_tree_new.called
+        assert not c.model_cache.get.called
+        assert_equal(tree, None)
+
+        commit.tree_id = 'tree'
+        tree = commit.get_tree(create=False)
+        assert not commit.repo.compute_tree_new.called
+        c.model_cache.get.assert_called_with(M.repo.Tree, dict(_id='tree'))
+        assert_equal(tree, None)
+
+        _tree = Mock()
+        c.model_cache.get.return_value = _tree
+        tree = commit.get_tree(create=False)
+        _tree.set_context.assert_called_with(commit)
+        assert_equal(tree, _tree)
+
+    @patch.object(M.repo.Tree.query, 'get')
+    def test_get_tree_create(self, tree_get):
+        c.model_cache = Mock()
+        c.model_cache.get.return_value = None
+        commit = M.repo.Commit()
+        commit.repo = Mock()
+
+        commit.repo.compute_tree_new.return_value = None
+        commit.tree_id = None
+        tree = commit.get_tree()
+        commit.repo.compute_tree_new.assert_called_once_with(commit)
+        assert not c.model_cache.get.called
+        assert not tree_get.called
+        assert_equal(tree, None)
+
+        commit.repo.compute_tree_new.reset_mock()
+        commit.repo.compute_tree_new.return_value = 'tree'
+        _tree = Mock()
+        c.model_cache.get.return_value = _tree
+        tree = commit.get_tree()
+        commit.repo.compute_tree_new.assert_called_once_with(commit)
+        assert not tree_get.called
+        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree'))
+        _tree.set_context.assert_called_once_with(commit)
+        assert_equal(tree, _tree)
+
+        commit.repo.compute_tree_new.reset_mock()
+        c.model_cache.get.reset_mock()
+        commit.tree_id = 'tree2'
+        tree = commit.get_tree()
+        assert not commit.repo.compute_tree_new.called
+        assert not tree_get.called
+        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree2'))
+        _tree.set_context.assert_called_once_with(commit)
+        assert_equal(tree, _tree)
+
+        commit.repo.compute_tree_new.reset_mock()
+        c.model_cache.get.reset_mock()
+        c.model_cache.get.return_value = None
+        tree_get.return_value = _tree
+        tree = commit.get_tree()
+        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree2'))
+        commit.repo.compute_tree_new.assert_called_once_with(commit)
+        assert_equal(commit.tree_id, 'tree')
+        tree_get.assert_called_once_with(_id='tree')
+        c.model_cache.set.assert_called_once_with(M.repo.Tree, dict(_id='tree'), _tree)
+        _tree.set_context.assert_called_once_with(commit)
+        assert_equal(tree, _tree)
+
+    def test_tree_create(self):
+        commit = M.repo.Commit()
+        commit.get_tree = Mock()
+        tree = commit.tree
+        commit.get_tree.assert_called_with(create=True)
