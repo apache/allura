@@ -166,7 +166,7 @@ class MonQTask(MappedClass):
         while True:
             try:
                 query = dict(state=state)
-                query['time_queue'] = {'$lt': datetime.utcnow()}
+                query['time_queue'] = {'$lte': datetime.utcnow()}
                 if only:
                     query['task_name'] = {'$in': only}
                 obj = cls.query.find_and_modify(
