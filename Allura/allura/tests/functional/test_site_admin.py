@@ -1,7 +1,5 @@
-import os, allura
-
+from allura import model as M
 from allura.tests import TestController
-from nose.tools import assert_equal
 
 
 class TestSiteAdmin(TestController):
@@ -74,3 +72,18 @@ class TestSiteAdmin(TestController):
     def test_reclone_repo_default_value(self):
         r = self.app.get('/nf/admin/reclone_repo')
         assert 'value="p"' in r
+
+    def test_task_list(self):
+        r = self.app.get('/nf/admin/task_manager', extra_environ=dict(username='*anonymous'), status=302)
+        import math
+        task = M.MonQTask.post(math.ceil, (12.5,))
+        r = self.app.get('/nf/admin/task_manager?page_num=1')
+        assert 'math.ceil' in r, r
+
+    def test_task_view(self):
+        import math
+        task = M.MonQTask.post(math.ceil, (12.5,))
+        url = '/nf/admin/task_manager/view/%s' % task._id
+        r = self.app.get(url, extra_environ=dict(username='*anonymous'), status=302)
+        r = self.app.get(url)
+        assert 'math.ceil' in r, r

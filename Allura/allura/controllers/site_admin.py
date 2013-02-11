@@ -250,21 +250,23 @@ class TaskManagerController(object):
 
     @expose('jinja:allura:templates/site_admin_task_list.html')
     @without_trailing_slash
-    def index(self, page_num=1, hours=1, state=None, task_name=None, host=None):
+    def index(self, page_num=1, minutes=10, state=None, task_name=None, host=None):
         now = datetime.utcnow()
         try:
             page_num = int(page_num)
         except ValueError as e:
             page_num = 1
         try:
-            hours = int(hours)
+            minutes = int(minutes)
         except ValueError as e:
-            hours = 1
-        start_dt = now - timedelta(hours=(page_num-1)*hours)
-        end_dt = now - timedelta(hours=page_num*hours)
+            minutes = 1
+        start_dt = now - timedelta(minutes=(page_num-1)*minutes)
+        end_dt = now - timedelta(minutes=page_num*minutes)
         start = bson.ObjectId.from_datetime(start_dt)
         end = bson.ObjectId.from_datetime(end_dt)
-        query = {'_id': {'$lt': start, '$gt': end}}
+        query = {'_id': {'$gt': end}}
+        if page_num > 1:
+            query['_id']['$lt'] = start
         if state:
             query['state'] = state
         if task_name:
@@ -281,7 +283,7 @@ class TaskManagerController(object):
         return dict(
                 tasks=tasks,
                 page_num=page_num,
-                hours=hours,
+                minutes=minutes,
                 newer_url=newer_url,
                 older_url=older_url,
                 window_start=start_dt,
@@ -293,7 +295,7 @@ class TaskManagerController(object):
     def view(self, task_id):
         try:
             task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
-        except bson.InvalidId as e:
+        except bson.errors.InvalidId as e:
             task = None
         if task:
             task.project = M.Project.query.get(_id=task.context.project_id)
