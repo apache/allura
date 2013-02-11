@@ -1,3 +1,32 @@
+"""
+Provides ScriptTask, a base class for implementing a command-line script that
+can be run as a task.
+
+To use, subclass ScriptTask and implement two methods::
+
+    class MyScript(ScriptTask):
+        @classmethod
+        def parser(cls):
+            '''Define and return an argparse.ArgumentParser instance'''
+            pass
+
+        @classmethod
+        def execute(cls, options):
+            '''Your main code goes here.'''
+            pass
+
+To call as a script::
+
+    if __name__ == '__main__':
+        MyScript.main()
+
+To call as a task::
+
+    # post the task with cmd-line-style args
+    MyScript.post('-p myproject --dry-run')
+
+"""
+
 import argparse
 import copy_reg
 import logging
@@ -11,6 +40,7 @@ from allura.lib.decorators import task
 log = logging.getLogger(__name__)
 
 
+# make methods picklable
 def reduce_method(m):
     return (getattr, (m.__self__, m.__func__.__name__))
 copy_reg.pickle(types.MethodType, reduce_method)
