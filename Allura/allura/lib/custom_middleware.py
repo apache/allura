@@ -180,6 +180,10 @@ class AlluraTimerMiddleware(TimerMiddleware):
                 'sort', 'where'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
+            Timer('repo.Blob.{method_name}', allura.model.repo.Blob, '*'),
+            Timer('repo.Commit.{method_name}', allura.model.repo.Commit, '*'),
+            Timer('repo.LastCommit.{method_name}', allura.model.repo.LastCommit, '*'),
+            Timer('repo.Tree.{method_name}', allura.model.repo.Tree, '*'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
                 'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
