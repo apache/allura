@@ -129,11 +129,11 @@
         {% for i in indexes %}
         <tr>
             <td class="first-column-headers"></td>
-            <td>{{ (task.args[i] or '')|truncate }}</td>
+            <td>{{ task.args[i] }}</td>
             <td class="spacer"></td>
             {% if kwargs[i] %}
             <th class="second-column-headers side-header">{{ kwargs[i][0] }}</th>
-            <td>{{ (kwargs[i][1] or '')|truncate }}</td>
+            <td>{{ kwargs[i][1] }}</td>
             {% else %}
             <td class="second-column-headers"></td>
             <td></td>
