@@ -282,11 +282,8 @@ class Post(HierWidget):
                                 $(post).remove();
                             }
                             else if (mod == 'Approve'){
-                                $('a.reply_post', post).show();
-                                $('div.little_link', post).show();
+                                $('a.reply_post, a.shortlink, form.moderate_spam, form.moderate_approve', post).toggle();
                                 $('div.moderate', post).removeClass('moderate');
-                                $('form.moderate_spam', post).hide();
-                                $('form.moderate_approve', post).hide();
                             }
                             else if (mod == 'Spam'){
                                 $(post).remove();

@@ -79,8 +79,8 @@
           <a href="" class="reply_post btn"{%if value.status == 'pending'%} style="display:none"{%endif%}><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         {% endif %}
         <div style="clear:both">
-            <div class="little_link"{%if value.status == 'pending'%} style="display:none"{%endif%}>
-                <a href="{{shortlink_url}}" class="little_link shortlink"><span>Link</span></a><br/>
+            <div class="little_link">
+                <a href="{{shortlink_url}}" class="little_link shortlink"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Link</span></a><br/>
                 {% if h.has_access(value, 'moderate')()%}
                     <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
                 {% endif %}
