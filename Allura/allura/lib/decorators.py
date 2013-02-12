@@ -1,3 +1,4 @@
+import inspect
 import sys
 import json
 import logging
@@ -12,11 +13,20 @@ from webob import exc
 
 def task(func):
     '''Decorator to add some methods to task functions'''
+    if inspect.isclass(func):
+        return taskclass(func)
     def post(*args, **kwargs):
         from allura import model as M
         return M.MonQTask.post(func, args, kwargs)
     func.post = post
     return func
+
+def taskclass(cls):
+    def post(*args, **kwargs):
+        from allura import model as M
+        return M.MonQTask.post(cls, args[1:], kwargs)
+    cls.post = classmethod(post)
+    return cls
 
 class event_handler(object):
     '''Decorator to register event handlers'''

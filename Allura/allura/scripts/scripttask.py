@@ -28,28 +28,13 @@ To call as a task::
 """
 
 import argparse
-import copy_reg
 import logging
-import pickle
 import sys
-import types
 
 from allura.lib.decorators import task
 
 
 log = logging.getLogger(__name__)
-
-
-# make methods picklable
-def reduce_method(m):
-    return (getattr, (m.__self__, m.__func__.__name__))
-copy_reg.pickle(types.MethodType, reduce_method)
-
-
-@task
-def dispatcher(pickled_method, *args, **kw):
-    method = pickle.loads(pickled_method)
-    return method(*args, **kw)
 
 
 class Writer(object):
@@ -62,6 +47,17 @@ class Writer(object):
 
 class ScriptTask(object):
     """Base class for a command-line script that is also executable as a task."""
+
+    class __metaclass__(type):
+        @property
+        def __doc__(cls):
+            return cls.parser().format_help()
+        def __new__(meta, classname, bases, classDict):
+            return task(type.__new__(meta, classname, bases, classDict))
+
+    def __new__(cls, arg_string):
+        cls._execute_task(arg_string)
+
     @classmethod
     def _execute_task(cls, arg_string):
         try:
@@ -87,11 +83,6 @@ class ScriptTask(object):
     def parser(cls):
         """Return an argument parser appropriate for your script."""
         return argparse.ArgumentParser(description="Default no-op parser")
-
-    @classmethod
-    def post(cls, arg_string=''):
-        pickled_method = pickle.dumps(cls._execute_task)
-        return dispatcher.post(pickled_method, arg_string)
 
     @classmethod
     def main(cls):

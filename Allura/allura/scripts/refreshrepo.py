@@ -28,14 +28,6 @@ class RefreshRepo(ScriptTask):
             q_project['shortname'] = {'$regex': options.project_regex}
 
         log.info('Refreshing repositories')
-        if options.clean_all:
-            log.info('Removing all repository objects')
-            M.repo.CommitDoc.m.remove({})
-            M.repo.TreeDoc.m.remove({})
-            M.repo.TreesDoc.m.remove({})
-            M.repo.DiffInfoDoc.m.remove({})
-            M.repo.CommitRunDoc.m.remove({})
-
         for chunk in chunked_find(M.Project, q_project):
             for p in chunk:
                 log.info("Refreshing repos for project '%s'." % p.shortname)
@@ -115,7 +107,6 @@ class RefreshRepo(ScriptTask):
                     except:
                         log.exception('Error refreshing %r', c.app.repo)
             ThreadLocalORMSession.flush_all()
-            ThreadLocalORMSession.close_all()
 
     @classmethod
     def parser(cls):
@@ -150,9 +141,6 @@ class RefreshRepo(ScriptTask):
         parser.add_argument('--clean', action='store_true', dest='clean',
                 default=False, help='Remove repo-related mongo docs (for '
                 'project(s) being refreshed only) before doing the refresh.')
-        parser.add_argument('--clean-all', action='store_true', dest='clean_all',
-                default=False, help='Remove ALL repo-related mongo docs before '
-                'refresh.')
         parser.add_argument('--all', action='store_true', dest='all', default=False,
                 help='Refresh all commits (not just the ones that are new).')
         parser.add_argument('--notify', action='store_true', dest='notify',
