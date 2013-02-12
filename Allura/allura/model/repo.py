@@ -489,8 +489,11 @@ class Tree(RepoObject):
         last_commit = LastCommit.get(self, create=True)
         # ensure that the LCD is saved, even if
         # there is an error later in the request
-        session(last_commit).flush(last_commit)
-        return self._lcd_map(LastCommit.get(self))
+        if last_commit:
+            session(last_commit).flush(last_commit)
+            return self._lcd_map(last_commit)
+        else:
+            return []
 
     def _lcd_map(self, lcd):
         if lcd is None:
@@ -505,7 +508,9 @@ class Tree(RepoObject):
         results = []
         for type, names in (('DIR', tree_names), ('BLOB', blob_names)):
             for name in names:
-                commit_info = commit_infos[lcd.by_name[name]]
+                commit_info = commit_infos.get(lcd.by_name.get(name))
+                if not commit_info:
+                    continue
                 results.append(dict(
                         kind=type,
                         name=name,
