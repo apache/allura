@@ -433,7 +433,6 @@ class CommitBrowser(BaseController):
             path = path.lstrip('/')
         params = dict(path=path, rev=self._commit._id)
         commits = list(c.app.repo.commits(limit=limit, **params))
-        count = c.app.repo.commits_count(**params)
         revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
         c.log_widget = self.log_widget
         return dict(
@@ -441,7 +440,6 @@ class CommitBrowser(BaseController):
             branch=None,
             log=revisions,
             limit=limit,
-            count=count,
             **kw)
 
 

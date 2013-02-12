@@ -41,6 +41,5 @@
   </table>
   {% if show_paging %}
       <a class="page_list" href="{{c.last_commit.url()}}log{{tg.url(params=request.params)}}">Older ></a>
-      {{widget.fields['page_size'].display(limit=limit, page=page, count=count)}}
   {% endif %}
 </div>
