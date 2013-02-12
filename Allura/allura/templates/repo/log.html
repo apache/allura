@@ -13,7 +13,7 @@
 {% block content %}
   <br style="clear:both"/>
   {% if log %}
-    {{c.log_widget.display(value=log, limit=limit, page=page, count=count)}}
+    {{c.log_widget.display(value=log, limit=limit, count=count)}}
   {% else %}
     <p><b>No (more) commits</b></p>
   {% endif %}

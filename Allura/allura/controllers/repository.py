@@ -305,7 +305,7 @@ class MergeRequestsController(object):
         return MergeRequestController(num), remainder
 
 class MergeRequestController(object):
-    log_widget=SCMLogWidget()
+    log_widget=SCMLogWidget(show_paging=False)
     thread_widget=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
@@ -428,12 +428,11 @@ class CommitBrowser(BaseController):
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
-    def log(self, limit=25, page=0, path=None, **kw):
-        limit, page, start = g.handle_paging(limit, page, default=25)
+    def log(self, limit=25, path=None, **kw):
         if path:
             path = path.lstrip('/')
         params = dict(path=path, rev=self._commit._id)
-        commits = list(c.app.repo.commits(skip=start, limit=limit, **params))
+        commits = list(c.app.repo.commits(limit=limit, **params))
         count = c.app.repo.commits_count(**params)
         revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
         c.log_widget = self.log_widget
@@ -441,7 +440,6 @@ class CommitBrowser(BaseController):
             username=c.user._id and c.user.username,
             branch=None,
             log=revisions,
-            page=page,
             limit=limit,
             count=count,
             **kw)
