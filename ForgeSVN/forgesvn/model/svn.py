@@ -396,7 +396,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def compute_tree_new(self, commit, tree_path='/'):
         from allura.model import repo as RM
-        tree_path = tree_path[:-1]
+        tree_path = '/' + tree_path.strip('/')  # always leading slash, never trailing
         tree_id = self._tree_oid(commit._id, tree_path)
         tree = RM.Tree.query.get(_id=tree_id)
         if tree:
@@ -587,7 +587,7 @@ class SVNImplementation(M.RepositoryImplementation):
         single common parent path (i.e., you are only asking for
         a subset of the nodes of a single tree, one level deep).
         '''
-        tree_path = os.path.commonprefix(paths).strip('/')
+        tree_path = '/' + os.path.commonprefix(paths).strip('/')  # always leading slash, never trailing
         rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
