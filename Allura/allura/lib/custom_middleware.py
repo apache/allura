@@ -212,7 +212,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             import git
             timers.append(Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
         with pass_on_exc(ImportError):
-            import mercurial
+            import mercurial.hg
             timers.append(Timer('hg_lib.{method_name}', mercurial.hg.localrepo.localrepository, 'heads',
                 'branchtags', 'tags'))
         return timers
