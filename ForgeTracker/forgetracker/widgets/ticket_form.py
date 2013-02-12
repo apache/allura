@@ -32,6 +32,13 @@ class GenericTicketForm(ew.SimpleForm):
     def display_field_by_name(self, idx, ignore_errors=False):
         field = self.fields[idx]
         ctx = self.context_for(field)
+        if idx == '_milestone':
+            milestone_value = ctx.value
+            for milestone in field.options:
+                if milestone.status and (milestone.py_value != milestone_value):
+                    del field.options[field.options.index(milestone)]
+            ctx = self.context_for(field)
+
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
@@ -111,10 +118,11 @@ class TicketCustomField(object):
     def _milestone(field):
         options = []
         for m in field.milestones:
-            if not m.complete:
-                options.append(ew.Option(
-                        label=m.name,
-                        py_value=m.name))
+            options.append(ew.Option(
+                label=m.name,
+                py_value=m.name,
+                status=bool(m.complete)))
+
         ssf = ew.SingleSelectField(
             label=field.label, name=str(field.name),
             options=options)

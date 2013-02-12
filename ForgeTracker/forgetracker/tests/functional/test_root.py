@@ -74,6 +74,24 @@ class TestMilestones(TrackerTestController):
         app = p.app_instance('bugs')
         assert len(app.globals.custom_fields) == 1, len(app.globals.custom_fields)
 
+    def test_closed_milestone(self):
+        self.new_ticket(summary='bar', _milestone='1.0', status='closed')
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'1.0',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Closed',
+            'milestones-0.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        r = self.app.get('/bugs/1/')
+        assert '<option selected value="1.0">1.0</option>' in r
+        r = self.app.get('/bugs/new/')
+        assert  '<option value="2.0">2.0</option>' in r
+        assert '<option selected value="1.0">1.0</option>' not in r
+
+
 def post_install_create_ticket_permission(app):
     """Set to authenticated permission to create tickets but not update"""
     role = M.ProjectRole.by_name('*authenticated')._id
