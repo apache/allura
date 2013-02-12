@@ -35,11 +35,12 @@
             <a href="{{commit.url()}}tree/">Tree</a>
           </td>
         </tr>
+        {% do c.__setattr__('last_commit', commit) %}
       {% endfor %}
     </tbody>
   </table>
   {% if show_paging %}
-      {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
+      <a class="page_list" href="{{c.last_commit.url()}}log{{tg.url(params=request.params)}}">Older ></a>
       {{widget.fields['page_size'].display(limit=limit, page=page, count=count)}}
   {% endif %}
 </div>
