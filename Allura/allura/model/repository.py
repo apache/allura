@@ -134,8 +134,10 @@ class RepositoryImplementation(object):
                 paths = paths - changed
             else:
                 result.update({path: commit._id for path in paths})
+                paths = set()
+            # end hacky work-around
 
-            commit = commit.get_parent()
+            commit = parent
         return result
 
     @classmethod

@@ -550,9 +550,9 @@ class SVNImplementation(M.RepositoryImplementation):
             opts['limit'] = skip + limit
         try:
             revs = self._svn.log(path, **opts)
-        except pysvn.ClientError:
-            log.info('ClientError processing commits for path %s, rev %s, skip=%s, limit=%s, treating as empty',
-                    path, rev, skip, limit, exc_info=True)
+        except pysvn.ClientError as e:
+            log.exception('ClientError processing commits for SVN: path %s, rev %s, skip=%s, limit=%s, treating as empty',
+                    path, rev, skip, limit)
             return []
         if skip:
             # pysvn has already limited result for us, we just need to skip
@@ -570,8 +570,8 @@ class SVNImplementation(M.RepositoryImplementation):
             opts['revision_end'] = pysvn.Revision(pysvn.opt_revision_kind.number, 0)
         try:
             return len(self._svn.log(path, **opts))
-        except pysvn.ClientError:
-            log.info('ClientError processing commits for path %s, rev %s, treating as empty', path, rev, exc_info=True)
+        except pysvn.ClientError as e:
+            log.exception('ClientError processing commits for SVN: path %s, rev %s, treating as empty', path, rev)
             return 0
 
     def last_commit_ids(self, commit, paths):
