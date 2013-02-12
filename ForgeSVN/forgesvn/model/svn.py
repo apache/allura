@@ -410,7 +410,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
-            log.exception('Error computing tree for %s: %s(%s)',
+            log.exception('Error computing tree for: %s: %s(%s)',
                           self._repo, commit, tree_path)
             return None
         log.debug('Compute tree for %d paths', len(infos))
@@ -595,7 +595,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 revision=rev,
                 depth=pysvn.depth.immediates)
         except pysvn.ClientError:
-            log.exception('Error computing tree for %s: %s(%s)',
+            log.exception('Error computing tree for: %s: %s(%s)',
                           self._repo, commit, tree_path)
             return None
         entries = {}
