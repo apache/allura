@@ -29,6 +29,7 @@ To call as a task::
 
 import argparse
 import logging
+import shlex
 import sys
 
 from allura.lib.decorators import task
@@ -66,7 +67,7 @@ class ScriptTask(object):
             sys.stdout = Writer(log.info)
             sys.stderr = Writer(log.error)
             try:
-                options = cls.parser().parse_args(arg_string.split(' '))
+                options = cls.parser().parse_args(shlex.split(arg_string or ''))
             except SystemExit:
                 raise Exception("Error parsing args: '%s'" % arg_string)
             cls.execute(options)
