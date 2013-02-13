@@ -42,7 +42,7 @@ pytidylib==0.2.1
 textile==2.1.5
 # dep of colander
 translationstring==0.4
-TimerMiddleware==0.4.1
+TimerMiddleware==0.4.2
 TurboGears2==2.1.5
 WebOb==1.0.8
 # part of the stdlib, but with a version number.  see http://guide.python-distribute.org/pip.html#listing-installed-packages
