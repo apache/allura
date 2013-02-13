@@ -15,6 +15,7 @@ import gitdb
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
+from paste.deploy.converters import asbool
 
 from ming.base import Object
 from ming.orm import Mapper, session, mapper
@@ -93,6 +94,11 @@ class GitImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
+    def can_hotcopy(self, source_url):
+        enabled = asbool(tg.config.get('scm.git.hotcopy', True))
+        is_local = os.path.exists(source_url)
+        return enabled and is_local
+
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
         self._repo.status = 'cloning'
@@ -103,10 +109,17 @@ class GitImplementation(M.RepositoryImplementation):
             fullname = self._setup_paths(create_repo_dir=False)
             if os.path.exists(fullname):
                 shutil.rmtree(fullname)
-            repo = git.Repo.clone_from(
-                source_url,
-                to_path=fullname,
-                bare=True)
+            if self.can_hotcopy(source_url):
+                shutil.copytree(source_url, fullname)
+                post_receive = os.path.join(self._repo.full_fs_path, 'hooks', 'post-receive')
+                if os.path.exists(post_receive):
+                    os.rename(post_receive, post_receive + '-user')
+                repo = git.Repo(fullname)
+            else:
+                repo = git.Repo.clone_from(
+                    source_url,
+                    to_path=fullname,
+                    bare=True)
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
         except:

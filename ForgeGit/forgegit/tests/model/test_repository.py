@@ -5,6 +5,7 @@ import pkg_resources
 
 import mock
 from pylons import tmpl_context as c, app_globals as g
+import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal
@@ -147,28 +148,57 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     @mock.patch('forgegit.model.git_repo.g.post_event')
     def test_clone(self, post_event):
-        repo = GM.Repository(
-            name='testgit.git',
-            fs_path='/tmp/',
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
-        repo_path = pkg_resources.resource_filename(
-            'forgegit', 'tests/data/testgit.git')
-        dirname = os.path.join(repo.fs_path, repo.name)
-        if os.path.exists(dirname):
+        with h.push_config(tg.config, **{'scm.git.hotcopy': 'False'}):
+            repo = GM.Repository(
+                name='testgit.git',
+                fs_path='/tmp/',
+                url_path = '/test/',
+                tool = 'git',
+                status = 'creating')
+            repo_path = pkg_resources.resource_filename(
+                'forgegit', 'tests/data/testgit.git')
+            dirname = os.path.join(repo.fs_path, repo.name)
+            if os.path.exists(dirname):
+                shutil.rmtree(dirname)
+            repo.init()
+            repo._impl.clone_from(repo_path)
+            assert len(repo.log())
+            assert not os.path.exists('/tmp/testgit.git/hooks/update')
+            assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
+            assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
+            assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+            with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+            self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+            self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
-        repo.init()
-        repo._impl.clone_from(repo_path)
-        assert len(repo.log())
-        assert not os.path.exists('/tmp/testgit.git/hooks/update')
-        assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
-        assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
-        with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
-        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
-        self.assertIn('exec $DIR/post-receive-user\n', c)
-        shutil.rmtree(dirname)
+
+    @mock.patch('forgegit.model.git_repo.git.Repo.clone_from')
+    @mock.patch('forgegit.model.git_repo.g.post_event')
+    def test_hotcopy(self, post_event, clone_from):
+        with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
+            repo = GM.Repository(
+                name='testgit.git',
+                fs_path='/tmp/',
+                url_path = '/test/',
+                tool = 'git',
+                status = 'creating')
+            repo_path = pkg_resources.resource_filename(
+                'forgegit', 'tests/data/testgit.git')
+            dirname = os.path.join(repo.fs_path, repo.name)
+            if os.path.exists(dirname):
+                shutil.rmtree(dirname)
+            repo.init()
+            repo._impl.clone_from(repo_path)
+            assert not clone_from.called
+            assert len(repo.log())
+            assert os.path.exists('/tmp/testgit.git/hooks/update')
+            assert os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
+            assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
+            assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+            with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+            self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+            self.assertIn('exec $DIR/post-receive-user\n', c)
+            shutil.rmtree(dirname)
 
     def test_index(self):
         i = self.repo.index()
