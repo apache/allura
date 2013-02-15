@@ -234,7 +234,7 @@ class ForgeTrackerApp(Application):
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
-                        small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
+                        className='milestones'))
 
         links = []
         if has_access(self, 'create')():
@@ -263,7 +263,7 @@ class ForgeTrackerApp(Application):
         return """\
         $(function() {
             $.ajax({
-                url:'%sbin_counts',
+                url:'%(app_url)sbin_counts',
                 success: function(data) {
                     $.each(data.bin_counts, function(i, item) {
                         var $span = $('.search_bin span:contains("' + item.label + '")');
@@ -273,7 +273,20 @@ class ForgeTrackerApp(Application):
                     });
                 }
             });
-        });""" % c.app.url
+            if ($('.milestones').length > 0) {
+                $.ajax({
+                    url: '%(app_url)smilestone_counts',
+                    success: function(data) {
+                        $.each(data.milestone_counts, function(i, item) {
+                            var $span = $('.milestones span:contains("' + item.name + '")');
+                            if ($span) {
+                                $span.after('<small>' + item.count + '</small>').fadeIn('fast');
+                            }
+                        });
+                    }
+                });
+            }
+        });""" % {'app_url': c.app.url}
 
     def has_custom_field(self, field):
         '''Checks if given custom field is defined. (Custom field names
@@ -455,6 +468,17 @@ class RootController(BaseController):
                         (label, c.project.shortname))
             bin_counts.append(dict(label=label, count=count))
         return dict(bin_counts=bin_counts)
+
+    @expose('json:')
+    def milestone_counts(self, *args, **kw):
+        milestone_counts = []
+        for fld in c.app.globals.milestone_fields:
+            for m in getattr(fld, "milestones", []):
+                if m.complete: continue
+                count = c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']
+                name = h.text.truncate(m.name, 72)
+                milestone_counts.append({'name': name, 'count': count})
+        return {'milestone_counts': milestone_counts}
 
     @with_trailing_slash
     @h.vardec
