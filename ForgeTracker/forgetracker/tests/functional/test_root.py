@@ -129,17 +129,23 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0',
                                                               'private': '1'})
-        r = self.app.get('/bugs/')
-        assert '<small>2</small>' in r
+        r = self.app.get('/bugs/milestone_counts')
+        counts = {
+            'milestone_counts': [
+                {'name': '1.0', 'count': 2},
+                {'name': '2.0', 'count': 0}
+        ]}
+        assert_equal(r.body, json.dumps(counts))
         # Private tickets shouldn't be included in counts if user doesn't
         # have read access to private tickets.
-        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        assert '<small>1</small>' in r
+        r = self.app.get('/bugs/milestone_counts',
+                extra_environ=dict(username='*anonymous'))
+        counts['milestone_counts'][0]['count'] = 1
+        assert_equal(r.body, json.dumps(counts))
 
         self.app.post('/bugs/1/delete')
-        r = self.app.get('/bugs/')
-        assert '<small>1</small>' in r
-
+        r = self.app.get('/bugs/milestone_counts')
+        assert_equal(r.body, json.dumps(counts))
 
     def test_milestone_progress(self):
         self.new_ticket(summary='Ticket 1', **{'_milestone':'1.0'})
@@ -266,9 +272,9 @@ class TestFunctionalController(TrackerTestController):
         assert_true(summary in ticket_view)
         index_view = self.app.get('/doc-bugs/')
         assert_true(summary in index_view)
-        assert_true(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
+        assert_true(sidebar_contains(index_view, '<span>1.0</span>'))
         index_view = self.app.get('/bugs/')
-        assert_false(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
+        assert_true(sidebar_contains(index_view, '<span>1.0</span>'))
         assert_false(summary in index_view)
 
     def test_render_ticket(self):
