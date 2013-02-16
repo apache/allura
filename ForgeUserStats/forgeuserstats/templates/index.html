@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-  {% if user %}
+  {% if user and (user.stats.visible or (c.user == user)) %}
 
     {% if category %}
        <ul>
@@ -418,7 +418,18 @@
       </p>
     {% endif %}
   {% else %}
-    Invalid user!
+    {% if not user.stats.visible %}
+      <h2>Statistics not available</h2>
+      <div class="grid-20"> 
+        This user has set his or her preferences so that personal statistics are not visible
+        to other users of the forge.
+      </div>
+    {% else %}
+      <h2>Invalid user</h2>
+      <div class="grid-20"> 
+        You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
+      </div>
+    {% endif %}
   {% endif %}
 
 {% endblock %}

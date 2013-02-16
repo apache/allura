@@ -58,6 +58,7 @@ class F(object):
     remove_inactive_period_form = forms.RemoveInactivePeriodForm()
     save_skill_form = forms.AddUserSkillForm()
     remove_skill_form = forms.RemoveSkillForm()
+    set_statistics = forms.StatsPreferencesForm()
 
 class AuthController(BaseController):
 
@@ -721,6 +722,27 @@ class SubscriptionsController(BaseController):
                **kw):
         if 'email_format' in preferences:
             c.user.set_pref('email_format', preferences['email_format'])
+        redirect('.')
+
+    @h.vardec
+    @expose()
+    @require_post()
+    @validate(F.set_statistics, error_handler=index)
+    def set_statistics(self, **kw):
+        require_authenticated()
+        c.user.stats.visible = kw.get('visible', True)
+        flash('Your preferences about statistics were successfully updated!')
+        redirect('.#Statistics')
+
+    @expose()
+    @require_post()
+    def upload_sshkey(self, key=None):
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.upload_sshkey(c.user.username, key)
+        except AssertionError, ae:
+            flash('Error uploading key: %s' % ae, 'error')
+        flash('Key uploaded')
         redirect('.')
 
     @h.vardec
