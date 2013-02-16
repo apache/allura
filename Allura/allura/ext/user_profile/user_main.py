@@ -64,7 +64,7 @@ class UserProfileController(BaseController):
         user = c.project.user_project_of
         if not user:
             raise exc.HTTPNotFound()
-        if g.show_userstats:
+        if g.show_userstats and user.stats.visible:
             from forgeuserstats.main import ForgeUserStatsApp
             link, description = ForgeUserStatsApp.createlink(user)
         else:
