@@ -5,6 +5,7 @@ from allura.controllers import BaseController
 import allura.model as M
 from allura.lib.graphics.graphic_methods import create_histogram, create_progress_bar
 from forgeuserstats.model.stats import UserStats
+from pylons import c
 
 class ForgeUserStatsController(BaseController):
 
@@ -33,6 +34,8 @@ class ForgeUserStatsController(BaseController):
         if not self.user: 
             return dict(user=None)
         stats = self.user.stats
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
 
         ret_dict = _getDataForCategory(None, stats)
         ret_dict['user'] = self.user
@@ -133,6 +136,8 @@ class ForgeUserStatsCatController(BaseController):
         if not self.user:
             return dict(user=None)
         stats = self.user.stats
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
         
         cat_id = None
         if self.category: 
@@ -156,6 +161,8 @@ class ForgeUserStatsMetricController(BaseController):
         if not self.user:
             return dict(user=None)
         stats = self.user.stats
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
         
         commits = stats.getCommitsByCategory()
         return dict(user = self.user,
@@ -166,6 +173,8 @@ class ForgeUserStatsMetricController(BaseController):
     def artifacts(self, **kw):
         if not self.user:
             return dict(user=None)
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
 
         stats = self.user.stats       
         artifacts = stats.getArtifactsByCategory(detailed=True)
@@ -176,6 +185,8 @@ class ForgeUserStatsMetricController(BaseController):
     def tickets(self, **kw):
         if not self.user: 
             return dict(user=None)
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
 
         artifacts = self.user.stats.getTicketsByCategory()
         return dict(user = self.user, data = artifacts) 

@@ -21,6 +21,7 @@ class Stats(MappedClass):
 
     _id=FieldProperty(S.ObjectId)
 
+    visible = FieldProperty(bool, if_missing = True)
     registration_date = FieldProperty(datetime)
     general = FieldProperty([dict(
         category = S.ObjectId,
