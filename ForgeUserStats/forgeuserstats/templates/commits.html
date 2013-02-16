@@ -38,7 +38,7 @@
     </div>
     {% endif %}
   {% else %}
-    {% if not user.stats.visible %}
+    {% if user %}
       <h2>Statistics not available</h2>
       <div class="grid-20"> 
         This user has set his or her preferences so that personal statistics are not visible
