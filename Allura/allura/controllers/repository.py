@@ -432,13 +432,17 @@ class CommitBrowser(BaseController):
         if path:
             path = path.lstrip('/')
         params = dict(path=path, rev=self._commit._id)
-        commits = list(c.app.repo.commits(limit=limit, **params))
-        revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
+        commits = list(c.app.repo.commits(limit=limit+1, **params))
+        next_commit = None
+        if len(commits) > limit:
+            next_commit = M.repo.Commit.query.get(_id=commits.pop())
+        revisions = sorted(M.repo.Commit.query.find({'_id': {'$in': commits}}), key=lambda c:commits.index(c._id))
         c.log_widget = self.log_widget
         return dict(
             username=c.user._id and c.user.username,
             branch=None,
             log=revisions,
+            next_commit=next_commit,
             limit=limit,
             **kw)
 

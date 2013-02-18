@@ -35,11 +35,10 @@
             <a href="{{commit.url()}}tree/">Tree</a>
           </td>
         </tr>
-        {% do c.__setattr__('last_commit', commit) %}
       {% endfor %}
     </tbody>
   </table>
-  {% if show_paging %}
-      <a class="page_list" href="{{c.last_commit.url()}}log{{tg.url(params=request.params)}}">Older ></a>
+  {% if show_paging and next_commit %}
+      <a class="page_list" href="{{next_commit.url()}}log{{tg.url(params=request.params)}}">Older ></a>
   {% endif %}
 </div>
