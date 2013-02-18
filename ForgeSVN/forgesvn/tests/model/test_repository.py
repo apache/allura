@@ -208,12 +208,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             print entry.message
             print entry.diffs
 
+    def test_paged_diffs(self):
+        entry = self.repo.log(2, limit=1)[0]
+        self.assertEqual(entry.diffs, entry.paged_diffs())
+        self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
+        expected =  dict(
+                copied=[], changed=[], removed=[],
+                added=['/a/b', '/a/b/c'], total=4)
+        self.assertEqual(expected, entry.paged_diffs(start=1, end=3))
+
     def test_diff_create_file(self):
         entry = self.repo.log(1, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=[], added=['/README']))
+                removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
         entry = self.repo.log(2, limit=1)[0]
@@ -222,21 +231,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 copied=[], changed=[], removed=[],
                 added=[
                     '/a', '/a/b', '/a/b/c',
-                    '/a/b/c/hello.txt']))
+                    '/a/b/c/hello.txt'], total=4))
 
     def test_diff_modify_file(self):
         entry = self.repo.log(3, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=['/README'],
-                removed=[], added=[]))
+                removed=[], added=[], total=1))
 
     def test_diff_delete(self):
         entry = self.repo.log(4, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=['/a/b/c/hello.txt'], added=[]))
+                removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
         # Copies are currently only detected as 'add'
@@ -244,7 +253,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=[], added=['/b']))
+                removed=[], added=['/b'], total=1))
 
     def test_commit(self):
         entry = self.repo.commit(1)

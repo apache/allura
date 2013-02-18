@@ -263,6 +263,9 @@ class Commit(RepoObject):
 
     @LazyProperty
     def diffs(self):
+        return self.paged_diffs()
+
+    def paged_diffs(self, start=0, end=None):
         di = DiffInfoDoc.m.get(_id=self._id)
         if di is None:
             return Object(added=[], removed=[], changed=[], copied=[])
@@ -270,7 +273,7 @@ class Commit(RepoObject):
         removed = []
         changed = []
         copied = []
-        for change in di.differences:
+        for change in di.differences[start:end]:
             if change.rhs_id is None:
                 removed.append(change.name)
             elif change.lhs_id is None:
@@ -280,7 +283,8 @@ class Commit(RepoObject):
         copied = self._diffs_copied(added, removed)
         return Object(
             added=added, removed=removed,
-            changed=changed, copied=copied)
+            changed=changed, copied=copied,
+            total=len(di.differences))
 
     def _diffs_copied(self, added, removed):
         '''Return list with file renames diffs.
