@@ -112,6 +112,10 @@ class RepositoryImplementation(object):
         '''Return count of the commits related to path'''
         raise NotImplementedError, 'commits_count'
 
+    def tarball(self, revision):
+        '''Create a tarball for the revision'''
+        raise NotImplementedError, 'tarball'
+
     def last_commit_ids(self, commit, paths):
         '''
         Return a mapping {path: commit_id} of the _id of the last
@@ -224,6 +228,13 @@ class Repository(Artifact, ActivityObject):
     @classmethod
     def default_url_path(cls, project, tool):
         return project.url()
+
+    @property
+    def tarball_path(self):
+        return os.path.join(tg.config.get('scm.repos.tarball.root', '/'),
+                            self.tool,
+                            self.project.url()[1:],
+                            self.name)
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (
@@ -478,6 +489,9 @@ class Repository(Artifact, ActivityObject):
     @property
     def forks(self):
         return self.query.find({'upstream_repo.name': self.url()}).all()
+
+    def tarball(self, revision):
+        self._impl.tarball(revision)
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses=['open', 'merged', 'rejected']

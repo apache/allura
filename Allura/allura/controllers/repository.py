@@ -425,6 +425,11 @@ class CommitBrowser(BaseController):
             result.update(self._commit.context())
         return result
 
+    @expose()
+    def tarball(self, **kw):
+        allura.tasks.repo_tasks.tarball.post(revision=self._revision)
+        redirect(redirect(request.referer))
+
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),

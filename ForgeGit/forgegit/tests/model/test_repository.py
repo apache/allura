@@ -238,6 +238,12 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
+    def test_tarball(self):
+        assert_equal(self.repo.tarball_path, '/tmp/tarball/git/p/test/testgit.git')
+        self.repo.tarball('HEAD')
+        assert os.path.isfile("/tmp/tarball/git/p/test/testgit.git/test-src-git-HEAD.tar")
+
+
 class TestGitCommit(unittest.TestCase):
 
     def setUp(self):

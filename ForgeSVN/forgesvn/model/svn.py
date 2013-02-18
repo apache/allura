@@ -10,6 +10,8 @@ from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
 import tempfile
+import tarfile
+from shutil import rmtree
 
 import tg
 import pysvn
@@ -607,5 +609,23 @@ class SVNImplementation(M.RepositoryImplementation):
             if path in paths:
                 entries[path] = self._oid(info.last_changed_rev.number)
         return entries
+
+    def tarball(self, commit):
+        shortname = self._repo.project.shortname
+        mount_point = self._repo.app.config.options.mount_point
+        if not os.path.exists(self._repo.tarball_path):
+            os.makedirs(self._repo.tarball_path)
+        path = os.path.join(self._repo.tarball_path, commit)
+        if os.path.exists(path):
+            rmtree(path)
+        self._svn.export(self._url,
+                         path,
+                         revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
+        filename = '%s-%s-%s.tar' % (shortname, mount_point, commit)
+        tar = tarfile.open(os.path.join(self._repo.tarball_path, filename), "w")
+        tar.add(path, arcname=commit)
+        tar.close()
+        rmtree(path)
+
 
 Mapper.compile_all()

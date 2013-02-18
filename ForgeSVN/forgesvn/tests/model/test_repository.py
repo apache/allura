@@ -265,6 +265,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         ci = mock.Mock(_id='deadbeef:100')
         self.assertEqual(self.repo.count_revisions(ci), 100)
 
+    def test_tarball(self):
+        assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/p/test/testsvn')
+        self.repo.tarball('1')
+        assert os.path.isfile("/tmp/tarball/svn/p/test/testsvn/test-src-1.tar")
+
 
 class TestSVNRev(unittest.TestCase):
 
