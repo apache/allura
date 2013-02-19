@@ -67,8 +67,8 @@ class Command(command.Command):
     def setup_globals(self):
         import allura.lib.app_globals
         self.registry.prepare()
-        self.registry.register(pylons.c, EmptyClass())
-        self.registry.register(pylons.g, self.globals)
+        self.registry.register(pylons.tmpl_context, EmptyClass())
+        self.registry.register(pylons.app_globals, self.globals)
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
         pylons.tmpl_context.queued_messages = None
 
