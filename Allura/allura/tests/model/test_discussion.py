@@ -7,7 +7,8 @@ import time
 from datetime import datetime, timedelta
 from cgi import FieldStorage
 
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 from mock import patch

@@ -1,9 +1,6 @@
-import pylons
 import difflib
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import g #g is a namespace for globally accessable app helpers
-from pylons import c as context
+from pylons import app_globals as g #g is a namespace for globally accessable app helpers
+from pylons import tmpl_context as context
 
 from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session

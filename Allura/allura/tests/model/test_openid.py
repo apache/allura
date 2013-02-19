@@ -5,7 +5,8 @@ Model tests for openid_model
 import time
 
 import mock
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from webob import Request
 from openid.association import Association
 

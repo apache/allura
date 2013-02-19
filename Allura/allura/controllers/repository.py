@@ -6,7 +6,8 @@ import difflib
 from urllib import quote, unquote
 from collections import defaultdict
 
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from webob import exc
 import tg
 from tg import redirect, expose, flash, url, validate

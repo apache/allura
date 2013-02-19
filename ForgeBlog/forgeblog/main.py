@@ -8,7 +8,8 @@ import pkg_resources
 import pymongo
 from tg import config, expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from paste.deploy.converters import asbool
 import formencode
 from formencode import validators

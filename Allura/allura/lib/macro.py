@@ -5,7 +5,8 @@ import string
 import logging
 
 import pymongo
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 
 from . import helpers as h
 from . import security

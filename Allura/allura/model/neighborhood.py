@@ -8,10 +8,8 @@ from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import request, c
+from pylons import request
+from pylons import tmpl_context as c
 
 from allura.lib import plugin
 

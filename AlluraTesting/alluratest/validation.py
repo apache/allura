@@ -17,7 +17,8 @@ import mock
 import beaker.session
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, url, request, response, session
+from pylons import tmpl_context as c, app_globals as g
+from pylons import url, request, response, session
 import webtest
 from webtest import TestApp
 from webob import Request, Response

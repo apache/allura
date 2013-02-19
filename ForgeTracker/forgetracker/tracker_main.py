@@ -12,7 +12,8 @@ from itertools import ifilter
 import pkg_resources
 from tg import expose, validate, redirect, flash, url, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from formencode import validators
 from bson import ObjectId
 from bson.errors import InvalidId

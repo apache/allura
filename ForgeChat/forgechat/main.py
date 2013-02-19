@@ -8,7 +8,8 @@ from datetime import date, time, datetime, timedelta
 import pkg_resources
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 
 # Pyforge-specific imports

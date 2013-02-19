@@ -9,7 +9,8 @@ pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 from webob import exc
 

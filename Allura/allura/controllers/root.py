@@ -8,7 +8,8 @@ import pkg_resources
 from tg import expose, flash, redirect, session, config, response, request, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.flash import TGFlash
-from pylons import c, g, cache
+from pylons import tmpl_context as c, app_globals as g
+from pylons import cache
 
 import ew
 import ming
