@@ -2,9 +2,6 @@
 import os
 import urllib
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 import mock
 import beaker.session
 from formencode import variabledecode

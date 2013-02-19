@@ -1,8 +1,5 @@
 import logging
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from tg import expose, validate, config

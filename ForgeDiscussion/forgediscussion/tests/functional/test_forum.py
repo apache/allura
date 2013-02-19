@@ -7,9 +7,6 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pylons import tmpl_context as c, app_globals as g
 from nose.tools import assert_equal
 

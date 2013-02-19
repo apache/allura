@@ -13,15 +13,12 @@ from datetime import datetime, timedelta
 import tg
 import genshi.template
 import chardet
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from pylons import response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
@@ -588,11 +585,11 @@ def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
     if text == '':
         text = '<p><em>Empty File</em></p>'
     else:
-        fmt = pylons.g.pypeline_markup.can_render(name)
+        fmt = g.pypeline_markup.can_render(name)
         if fmt == 'markdown':
-            text = pylons.g.markdown.convert(text)
+            text = g.markdown.convert(text)
         else:
-            text = pylons.g.pypeline_markup.render(name, text)
+            text = g.pypeline_markup.render(name, text)
         if not fmt:
             if code_mode and linenumbers_style == INLINE:
                 text = _add_inline_line_numbers_to_text(text)
@@ -647,5 +644,5 @@ def log_if_changed(artifact, attr, new_val, message):
 
 def get_tool_package(tool_name):
     "Return package for given tool (e.g. 'forgetracker' for 'tickets')"
-    app = pylons.g.entry_points['tool'].get(tool_name.lower())
+    app = g.entry_points['tool'].get(tool_name.lower())
     return app.__module__.split('.')[0] if app else ''
