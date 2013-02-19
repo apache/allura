@@ -3,7 +3,7 @@
 Model tests for auth
 """
 from nose.tools import with_setup, assert_equal
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 
 from pymongo.errors import DuplicateKeyError

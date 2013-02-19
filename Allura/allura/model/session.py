@@ -31,7 +31,7 @@ class ArtifactSessionExtension(SessionExtension):
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
         if not getattr(self.session, 'disable_artifact_index', False):
-            from pylons import g
+            from pylons import app_globals as g
             from .index import ArtifactReference, Shortlink
             from .session import main_orm_session
             # Ensure artifact references & shortlinks exist for new objects

@@ -1,4 +1,4 @@
-from pylons import c
+from pylons import tmpl_context as c
 from formencode import validators as fev
 from formencode import All
 import formencode

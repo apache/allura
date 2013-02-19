@@ -8,7 +8,7 @@ import bson
 
 import tg
 
-from pylons import g,c
+from pylons import tmpl_context as c, app_globals as g
 
 from ming.base import Object
 from ming.orm import mapper, session, ThreadLocalORMSession

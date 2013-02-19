@@ -5,7 +5,7 @@ from tg import expose, redirect, flash, config, validate, request, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from allura.lib import helpers as h
 from allura import model as M
 

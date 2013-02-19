@@ -6,7 +6,7 @@ from urllib import quote
 from bson import ObjectId
 
 from nose.tools import with_setup, assert_equal
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 
 from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects

@@ -7,7 +7,7 @@ from itertools import chain, islice
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
 import pymongo

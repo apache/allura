@@ -13,7 +13,7 @@ from allura.lib.widgets.search import SearchResults
 
 from webob import exc
 import pylons
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from datetime import datetime
 from formencode import validators
 from formencode.compound import All

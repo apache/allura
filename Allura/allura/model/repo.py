@@ -9,7 +9,7 @@ from collections import defaultdict, OrderedDict
 from difflib import SequenceMatcher, unified_diff
 import bson
 
-from pylons import c
+from pylons import tmpl_context as c
 import pymongo.errors
 
 from ming import Field, collection, Index

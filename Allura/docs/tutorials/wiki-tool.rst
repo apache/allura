@@ -52,7 +52,7 @@ setting the pylons context object `c` before your test.  An example of this
 technique follows::
 
     import mock
-    from pylons import c, g
+    from pylons import tmpl_context as c, app_globals as g
 
     from allura.lib.app_globals import Globals
     from allura import model as M

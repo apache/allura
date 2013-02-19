@@ -6,7 +6,7 @@ from random import randint
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError
 
 from ming import schema

@@ -10,7 +10,7 @@ import pkg_resources
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from nose.tools import assert_equal
 
 from allura import model as M

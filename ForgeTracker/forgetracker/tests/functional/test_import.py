@@ -7,7 +7,7 @@ import ming
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import g
+from pylons import app_globals as g
 
 from allura import model as M
 from alluratest.controller import TestRestApiBase

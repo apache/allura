@@ -16,7 +16,7 @@ from datetime import datetime
 from jinja2 import Template
 
 import pylons, webob
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.lib import security, utils

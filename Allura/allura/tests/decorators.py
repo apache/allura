@@ -4,7 +4,7 @@ from allura import model as M
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from pylons import c
+from pylons import tmpl_context as c
 
 def with_user_project(username):
     def _with_user_project(func):

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 import tg
 import pkg_resources
 from paste import fileapp
-from pylons import c
+from pylons import tmpl_context as c
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request

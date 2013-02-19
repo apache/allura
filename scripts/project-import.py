@@ -10,7 +10,7 @@ import sys
 import colander as col
 
 from ming.orm import session, ThreadLocalORMSession
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from tg import config
 
 from allura import model as M

@@ -1,4 +1,4 @@
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 
 import ew as ew_core
 from ew import jinja2_ew as ew

@@ -2,7 +2,7 @@ import sys
 from collections import defaultdict
 from itertools import groupby
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError
 
 from ming.orm import mapper, session, Mapper

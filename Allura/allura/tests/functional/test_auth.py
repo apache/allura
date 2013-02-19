@@ -5,7 +5,7 @@ import mock
 from nose.tools import assert_equal
 
 from datadiff.tools import assert_equal
-from pylons import c
+from pylons import tmpl_context as c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M

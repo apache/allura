@@ -1,6 +1,6 @@
 import logging
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from bson import ObjectId
 
 from allura.lib import helpers as h

@@ -1,6 +1,6 @@
 import logging
 import warnings
-from pylons import g
+from pylons import app_globals as g
 from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin

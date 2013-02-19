@@ -2,7 +2,7 @@ import sys
 import logging
 from collections import OrderedDict
 
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import session
 from bson import ObjectId
 

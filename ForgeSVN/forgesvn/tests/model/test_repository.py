@@ -6,7 +6,7 @@ from itertools import count, product
 from datetime import datetime
 
 from collections import defaultdict
-from pylons import c
+from pylons import tmpl_context as c
 import mock
 from nose.tools import assert_equal
 import tg

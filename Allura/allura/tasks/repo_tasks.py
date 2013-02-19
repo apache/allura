@@ -2,7 +2,7 @@ import shutil
 import logging
 import traceback
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp

@@ -1,7 +1,7 @@
 import re
 import unittest
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 import mock
 from ming.base import Object
 

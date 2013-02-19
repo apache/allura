@@ -7,7 +7,7 @@ from urllib import unquote
 
 import bson
 import pymongo
-from pylons import c
+from pylons import tmpl_context as c
 
 from ming import collection, Field, Index
 from ming import schema as S

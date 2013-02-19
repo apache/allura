@@ -7,7 +7,7 @@ import mock
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal

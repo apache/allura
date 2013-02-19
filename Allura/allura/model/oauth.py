@@ -1,7 +1,7 @@
 import logging
 
 import oauth2 as oauth
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from ming import schema as S
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
