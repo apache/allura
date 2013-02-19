@@ -2,12 +2,9 @@
 """WSGI middleware initialization for the allura application."""
 import mimetypes
 
-import pylons
 import pylons.middleware
 import tg
 import tg.error
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 import pkg_resources
 from tg import config
 from paste.deploy.converters import asbool
@@ -171,8 +168,8 @@ def get_tg_vars(context):
     import pylons, tg
     from allura.lib import helpers as h
     from urllib import quote, quote_plus
-    context.setdefault('g', pylons.g)
-    context.setdefault('c', pylons.c)
+    context.setdefault('g', pylons.app_globals)
+    context.setdefault('c', pylons.tmpl_context)
     context.setdefault('h', h)
     context.setdefault('request', pylons.request)
     context.setdefault('response', pylons.response)

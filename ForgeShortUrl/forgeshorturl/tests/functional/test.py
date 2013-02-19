@@ -1,5 +1,3 @@
-import pylons
-pylons.c = pylons.tmpl_context
 from pylons import tmpl_context as c
 from allura.tests import decorators as td
 from alluratest.controller import TestController

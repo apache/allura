@@ -1,7 +1,4 @@
 from datetime import datetime, timedelta
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
 

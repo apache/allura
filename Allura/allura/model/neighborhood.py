@@ -9,7 +9,7 @@ from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 
 from pylons import request
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
 
@@ -223,11 +223,11 @@ class Neighborhood(MappedClass):
            if 'addopt-icon-theme' in css_form_dict:
                if css_form_dict['addopt-icon-theme'] == "dark":
                   icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               pylons.g.theme_href(''),
+                               g.theme_href(''),
                                'images/neo-icon-set-ffffff-256x350.png')
                elif css_form_dict['addopt-icon-theme'] == "white":
                   icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               pylons.g.theme_href(''),
+                               g.theme_href(''),
                                'images/neo-icon-set-454545-256x350.png')
 
            css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;} %s\n" % (css_form_dict['titlebarcolor'], icon_theme)

@@ -4,9 +4,6 @@ import logging
 import pymongo
 from urllib import urlencode, unquote
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g

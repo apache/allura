@@ -1,6 +1,4 @@
 import pymongo
-import pylons
-pylons.c = pylons.tmpl_context
 from pylons import tmpl_context as c
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime

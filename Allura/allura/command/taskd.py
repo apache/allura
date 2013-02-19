@@ -74,7 +74,7 @@ class TaskdCommand(base.Command):
 
         def waitfunc_amqp():
             try:
-                return pylons.g.amq_conn.queue.get(timeout=poll_interval)
+                return pylons.app_globals.amq_conn.queue.get(timeout=poll_interval)
             except Queue.Empty:
                 return None
 
@@ -89,14 +89,14 @@ class TaskdCommand(base.Command):
                     raise StopIteration
             return waitfunc_checks_running
 
-        if pylons.g.amq_conn:
+        if pylons.app_globals.amq_conn:
             waitfunc = waitfunc_amqp
         else:
             waitfunc = waitfunc_noq
         waitfunc = check_running(waitfunc)
         while self.keep_running:
-            if pylons.g.amq_conn:
-                pylons.g.amq_conn.reset()
+            if pylons.app_globals.amq_conn:
+                pylons.app_globals.amq_conn.reset()
             try:
                 while self.keep_running:
                     self.task = M.MonQTask.get(

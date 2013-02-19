@@ -15,7 +15,7 @@ class WsgiDispatchController(TGController):
     """
 
     def _setup_request(self):
-        '''Responsible for setting all the values we need to be set on pylons.c'''
+        '''Responsible for setting all the values we need to be set on pylons.tmpl_context'''
         raise NotImplementedError, '_setup_request'
 
     def _cleanup_request(self):

@@ -5,9 +5,6 @@ import difflib
 from datetime import datetime, timedelta
 
 import pymongo
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
 

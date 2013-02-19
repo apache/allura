@@ -223,9 +223,9 @@ class ShortURLAdminController(DefaultAdminController):
         else:
             require_access(self.app, 'create')
         if request.method == 'POST':
-            if pylons.c.form_errors:
+            if c.form_errors:
                 error_msg = 'Error: '
-                for msg in list(pylons.c.form_errors):
+                for msg in list(c.form_errors):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
                     error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')
