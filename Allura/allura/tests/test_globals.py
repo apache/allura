@@ -20,7 +20,7 @@ from forgeblog import model as BM
 
 
 def setUp():
-    """Method called by nose before running each test"""
+    """Method called by nose once before running the package.  Some functions need it run again to reset data"""
     setup_basic_test()
     setup_with_tools()
 
@@ -38,6 +38,7 @@ def test_app_globals():
         assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
 
 
+@with_setup(teardown=setUp) # reset everything we changed
 def test_macros():
     file_name = 'neo-icon-set-454545-256x350.png'
     file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
