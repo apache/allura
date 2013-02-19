@@ -10,9 +10,7 @@ from allura import model as M
 from forgewiki import model as WM
 from allura.lib import helpers as h
 
-import pylons
-pylons.c = pylons.tmpl_context
-from pylons import c as context
+from pylons import tmpl_context as context
 
 
 class TestMySQLExtractor(object):

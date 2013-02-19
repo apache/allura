@@ -4,7 +4,8 @@ from datetime import datetime
 from urlparse import urlparse
 
 import pkg_resources
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from paste.deploy.converters import asbool
 from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash

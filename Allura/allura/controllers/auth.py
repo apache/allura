@@ -4,7 +4,8 @@ from urllib import urlencode
 import bson
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from webob import exc as wexc
 
 import allura.tasks.repo_tasks

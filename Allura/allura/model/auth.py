@@ -14,7 +14,8 @@ from datetime import timedelta, date, datetime, time
 
 import iso8601
 import pymongo
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 
 from ming import schema as S
 from ming import Field, collection

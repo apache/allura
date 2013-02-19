@@ -5,7 +5,8 @@ import logging
 from urllib import unquote
 
 import pkg_resources
-from pylons import c, request, response
+from pylons import tmpl_context as c
+from pylons import request, response
 from webob import exc
 from tg import expose
 from tg.decorators import without_trailing_slash

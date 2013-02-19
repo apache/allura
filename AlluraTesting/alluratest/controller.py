@@ -11,7 +11,8 @@ from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, url, request, response, session
+from pylons import tmpl_context as c, app_globals as g
+from pylons import url, request, response, session
 import tg
 from webtest import TestApp
 from webob import Request, Response

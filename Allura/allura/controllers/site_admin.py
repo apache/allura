@@ -9,7 +9,8 @@ from ming.orm import session
 import pymongo
 import bson
 import tg
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 
 from allura.lib import helpers as h
