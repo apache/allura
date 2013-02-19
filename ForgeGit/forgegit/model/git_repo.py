@@ -239,30 +239,14 @@ class GitImplementation(M.RepositoryImplementation):
         return doc
 
     def commits(self, path=None, rev=None, skip=None, limit=None):
-        if rev is None:
-            rev = 'HEAD'
-        start = skip or 0
-        stop = start + limit if limit is not None else None
-
-        def _pred(c):
-            '''
-            Work-around for potentially b0rked changed_paths.
-            This could be replaced with lambda c: path in c.changed_paths
-            once all projects have had their DiffInfoDocs refreshed.'''
-            if path in c.changed_paths:
-                return True
-            parent = c.get_parent()
-            if c.has_path(path) and not (parent and parent.has_path(path)):
-                return True  # added in this commit, inspite of changed_paths
-            return False
-        predicate = None
-        if path is not None:
-            path = path.strip('/')
-            predicate = _pred
-
-        iter_tree = self.commit(rev).climb_commit_tree(predicate)
-        for commit in itertools.islice(iter_tree, start, stop):
-            yield commit._id
+        params = dict(paths=path)
+        if rev is not None:
+            params['rev'] = rev
+        if skip is not None:
+            params['skip'] = skip
+        if limit is not None:
+            params['max_count'] = limit
+        return (c.hexsha for c in self._git.iter_commits(**params))
 
     def commits_count(self, path=None, rev=None):
         commit = self._git.commit(rev)
