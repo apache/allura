@@ -1,6 +1,6 @@
 import logging
 
-from pylons import c
+from pylons import tmpl_context as c
 from allura.lib.decorators import task
 
 log = logging.getLogger(__name__)

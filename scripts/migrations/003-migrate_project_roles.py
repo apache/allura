@@ -3,7 +3,7 @@ central ProjectRole collection.
 '''
 import logging
 
-from pylons import c
+from pylons import tmpl_context as c
 
 from ming.orm import session, state
 from allura import model as M

@@ -3,7 +3,7 @@ from optparse import OptionParser
 from pprint import pformat
 
 import bson
-from pylons import c
+from pylons import tmpl_context as c
 from ming.base import Object
 
 from allura import model as M

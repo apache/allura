@@ -1,4 +1,4 @@
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M

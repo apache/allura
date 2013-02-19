@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pymongo
 from pymongo.errors import DuplicateKeyError
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from ming import schema
 from ming.orm.base import session

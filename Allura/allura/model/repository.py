@@ -14,7 +14,7 @@ from itertools import izip
 
 import tg
 from paste.deploy.converters import asbool
-from pylons import c
+from pylons import tmpl_context as c
 from pylons import app_globals as g
 import pymongo.errors
 

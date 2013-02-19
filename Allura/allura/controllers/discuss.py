@@ -3,7 +3,7 @@ from datetime import datetime
 
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from formencode import validators
 from webob import exc
 

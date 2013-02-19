@@ -1,6 +1,6 @@
 from allura.lib.widgets import form_fields as ffw
 
-from pylons import c
+from pylons import tmpl_context as c
 from formencode import validators as fev
 
 import ew as ew_core

@@ -1,6 +1,6 @@
 from datetime import datetime
 from nose.tools import assert_equal
-from pylons import c
+from pylons import tmpl_context as c
 
 from forgeblog import model as M
 from forgeblog.tests.unit import BlogTestWithModel

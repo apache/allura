@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import forgetracker
 from forgetracker.model import Globals
 from forgetracker.tests.unit import TrackerTestWithModel
-from pylons import c
+from pylons import tmpl_context as c
 from allura.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession

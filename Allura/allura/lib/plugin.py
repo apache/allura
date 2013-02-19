@@ -21,7 +21,7 @@ except ImportError:
     ldap = modlist = None
 import pkg_resources
 from tg import config
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from bson.tz_util import FixedOffset
 

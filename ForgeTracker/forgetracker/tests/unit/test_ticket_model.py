@@ -1,4 +1,4 @@
-from pylons import c
+from pylons import tmpl_context as c
 from datetime import datetime
 
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -58,7 +58,7 @@ class TestTicketModel(TrackerTestWithModel):
             raise AssertionError('Expected schema.Invalid to be thrown')
 
     def test_private_ticket(self):
-        from pylons import c
+        from pylons import tmpl_context as c
         from allura.model import ProjectRole, User
         from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
         from allura.lib.security import Credentials, has_access

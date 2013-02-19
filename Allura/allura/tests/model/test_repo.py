@@ -3,7 +3,7 @@ from collections import defaultdict, OrderedDict
 import unittest
 import mock
 from nose.tools import assert_equal
-from pylons import c
+from pylons import tmpl_context as c
 from bson import ObjectId
 from ming.orm import session
 

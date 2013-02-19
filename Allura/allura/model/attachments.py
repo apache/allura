@@ -1,4 +1,4 @@
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import FieldProperty
 from ming import schema as S
 

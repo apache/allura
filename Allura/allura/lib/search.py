@@ -6,7 +6,7 @@ from pprint import pformat
 from itertools import islice, chain
 
 import markdown
-from pylons import c,g
+from pylons import tmpl_context as c, app_globals as g
 from pysolr import SolrError
 
 from . import helpers as h

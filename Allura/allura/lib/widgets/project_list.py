@@ -1,7 +1,7 @@
 import ew as ew_core
 import ew.jinja2_ew as ew
 
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 
 from allura import model as M
 from allura.lib.security import Credentials

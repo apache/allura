@@ -3,7 +3,7 @@ import pymongo
 
 from tg import expose, validate, redirect
 from tg import request
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from formencode import validators
 

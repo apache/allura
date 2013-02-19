@@ -3,7 +3,7 @@ import logging
 import re
 
 import faulthandler
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M

@@ -6,7 +6,7 @@ import pkg_resources
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from datadiff.tools import assert_equal
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from contextlib import contextmanager
 
 import faulthandler
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession, session
 
 from allura import model as M

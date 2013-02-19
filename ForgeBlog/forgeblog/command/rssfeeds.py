@@ -9,7 +9,7 @@ import base
 from allura.command import base as allura_base
 
 from ming.orm import session
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura import model as M
 from forgeblog import model as BM

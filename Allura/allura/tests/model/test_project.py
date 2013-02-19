@@ -3,7 +3,7 @@
 Model tests for project
 """
 from nose.tools import with_setup
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M

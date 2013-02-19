@@ -8,7 +8,7 @@ import mock
 import pylons
 pylons.c = pylons.tmpl_context
 pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
 from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper

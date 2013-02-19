@@ -1,5 +1,5 @@
 from nose.tools import assert_raises
-from pylons import c
+from pylons import tmpl_context as c
 from bson import ObjectId
 
 from allura.lib.helpers import set_context

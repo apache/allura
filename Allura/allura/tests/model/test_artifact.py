@@ -5,7 +5,7 @@ Model tests for artifact
 import re
 from datetime import datetime
 
-from pylons import c
+from pylons import tmpl_context as c
 from nose.tools import assert_raises
 from nose import with_setup
 

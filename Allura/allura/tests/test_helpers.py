@@ -1,7 +1,7 @@
 from os import path
 from mock import Mock, patch
 
-from pylons import c
+from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 
 from allura import model as M
