@@ -1,9 +1,10 @@
 import re
+import json
 import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from tg import expose, validate, flash, config, request
+from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from ming.orm import session
 import pymongo
@@ -11,9 +12,11 @@ import bson
 import tg
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from formencode import validators
+from formencode import validators, Invalid
 
 from allura.lib import helpers as h
+from allura.lib import validators as v
+from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura import model as M
@@ -303,3 +306,37 @@ class TaskManagerController(object):
             task.app_config = M.AppConfig.query.get(_id=task.context.app_config_id)
             task.user = M.User.query.get(_id=task.context.user_id)
         return dict(task=task)
+
+    @expose('jinja:allura:templates/site_admin_task_new.html')
+    @without_trailing_slash
+    def new(self, **kw):
+        """Render the New Task form"""
+        return dict(
+            form_errors=c.form_errors or {},
+            form_values=c.form_values or {},
+        )
+
+    @expose()
+    @require_post()
+    @validate(v.CreateTaskSchema(), error_handler=new)
+    def create(self, task, task_args=None, user=None, path=None):
+        """Post a new task"""
+        args = task_args.get("args", ())
+        kw = task_args.get("kwargs", {})
+        config_dict = path
+        if user:
+            config_dict['user'] = user
+        with h.push_config(c, **config_dict):
+            task = task.post(*args, **kw)
+        redirect('view', task_id=task._id)
+
+    @expose('json:')
+    def task_doc(self, task_name):
+        """Return a task's docstring"""
+        error, doc = None, None
+        try:
+            task = v.TaskValidator.to_python(task_name)
+            doc = task.__doc__ or 'No doc string available'
+        except Invalid as e:
+            error = str(e)
+        return dict(doc=doc, error=error)
