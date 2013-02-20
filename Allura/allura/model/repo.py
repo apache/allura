@@ -428,6 +428,9 @@ class Tree(RepoObject):
         obj = self.by_name[name]
         if obj['type'] == 'blob':
             return Blob(self, name, obj['id'])
+        if obj['type'] == 'submodule':
+            log.info('Skipping submodule "%s"' % name)
+            raise KeyError, name
         obj = cache.get(Tree, dict(_id=obj['id']))
         if obj is None:
             oid = self.repo.compute_tree_new(self.commit, self.path() + name + '/')
