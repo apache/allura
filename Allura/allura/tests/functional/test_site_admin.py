@@ -1,6 +1,8 @@
+import json
+
 from allura import model as M
 from allura.tests import TestController
-
+from allura.lib.decorators import task
 
 class TestSiteAdmin(TestController):
 
@@ -87,3 +89,41 @@ class TestSiteAdmin(TestController):
         r = self.app.get(url, extra_environ=dict(username='*anonymous'), status=302)
         r = self.app.get(url)
         assert 'math.ceil' in r, r
+
+    def test_task_new(self):
+        r = self.app.get('/nf/admin/task_manager/new')
+        assert 'New Task' in r, r
+
+    def test_task_create(self):
+        project = M.Project.query.get(shortname='test')
+        app = project.app_instance('admin')
+        user = M.User.by_username('root')
+
+        task_args = dict(
+                args=['foo'],
+                kwargs=dict(bar='baz'))
+
+        r = self.app.post('/nf/admin/task_manager/create', params=dict(
+            task='allura.tests.functional.test_site_admin.test_task',
+            task_args=json.dumps(task_args),
+            user='root',
+            path='/p/test/admin',
+            ), status=302)
+        task = M.MonQTask.query.find({}).sort('_id', -1).next()
+        assert str(task._id) in r.location
+        assert task.context['project_id'] == project._id
+        assert task.context['app_config_id'] == app.config._id
+        assert task.context['user_id'] == user._id
+        assert task.args == task_args['args']
+        assert task.kwargs == task_args['kwargs']
+
+    def test_task_doc(self):
+        r = self.app.get('/nf/admin/task_manager/task_doc', params=dict(
+            task_name='allura.tests.functional.test_site_admin.test_task'))
+        assert json.loads(r.body)['doc'] == 'test_task doc string'
+
+
+@task
+def test_task(*args, **kw):
+    """test_task doc string"""
+    pass

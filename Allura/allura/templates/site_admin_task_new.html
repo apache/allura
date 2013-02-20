@@ -1,0 +1,112 @@
+{% set page="task_manager" %}
+{% set sidebar_rel = '../' %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block extra_css %}
+<style>
+  form {
+    margin: 1em;
+  }
+  form > div {
+    margin-bottom: 1em;
+  }
+  form > div > *{
+    display: inline-block;
+    vertical-align: top;
+  }
+  form > div input,
+  form > div textarea,
+  form > .input {
+    display: block;
+    width: 300px;
+  }
+  form > div label {
+    width: 100px;
+  }
+  .error {
+    width: 300px;
+    background: none;
+    border: none;
+    color: #f00;
+    margin: 0;
+    padding: 0 0 0 .8em;
+  }
+  pre.doc {
+    clear: left;
+  }
+  .note {
+    font-size: small;
+    font-style: italic;
+  }
+</style>
+{% endblock %}
+
+{% macro error(field) %}
+  {% if form_errors.get(field) %}
+  <span class="error">{{form_errors.get(field)}}</span>
+  {% endif %}
+{% endmacro %}
+
+{% block content %}
+<h2>New Task</h2>
+<form method="POST" action="create" id="newtask">
+  <div>
+    <label>Task Name *</label>
+    <div class="input">
+      <input name="task" value="{{form_values.get('task', '')}}" />
+      <span class="note">Dotted python path to task callable</span>
+    </div>
+    {{error('task')}}
+  </div>
+  <div>
+    <label>c.user</label>
+    <div class="input">
+      <input name="user" value="{{form_values.get('user', '')}}" />
+      <span class="note">Username</span>
+    </div>
+    {{error('user')}}
+  </div>
+  <div>
+    <label>c.project/c.app</label>
+    <div class="input">
+      <input name="path" value="{{form_values.get('path', '')}}" />
+      <span class="note">e.g. /p/allura or /p/allura/git</span>
+    </div>
+    {{error('path')}}
+  </div>
+  <div>
+    <label>Task args/kwargs</label>
+    <div class="input">
+      <textarea name="task_args" rows="4">{{form_values.get('task_args', '{\n    "args": [],\n    "kwargs": {}\n}')}}</textarea>
+    </div>
+    {{error('task_args')}}
+  </div>
+
+  <input type="submit" /><br/>
+
+  <pre class="doc"></pre>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(function() {
+    var $task = $('input[name=task]');
+    $task.blur(function() {
+      $.get("task_doc", {task_name: $task.val()}, function(data) {
+        $task.parent().siblings('.error').remove();
+        $('pre.doc').empty();
+        if (data.error) {
+          $task.parent().after('<span class="error">' + data.error + '</span>');
+        }
+        if (data.doc) {
+          $('pre.doc').html(data.doc);
+        }
+      });
+    });
+    if ($task.val().trim() !== '') {
+      $task.blur();
+    }
+  });
+</script>
+{% endblock %}
