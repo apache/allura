@@ -67,7 +67,7 @@ class TestTaskValidator(unittest.TestCase):
 
 
 class TestPathValidator(unittest.TestCase):
-    val = v.PathValidator
+    val = v.PathValidator(strip=True, if_missing={}, if_empty={})
 
     def test_valid_project(self):
         project = M.Project.query.get(shortname='test')
@@ -102,3 +102,6 @@ class TestPathValidator(unittest.TestCase):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('/p/test/badapp')
         self.assertEqual(str(cm.exception), 'Invalid app mount point: badapp')
+
+    def test_no_input(self):
+        self.assertEqual({}, self.val.to_python(''))

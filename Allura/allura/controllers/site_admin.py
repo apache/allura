@@ -328,7 +328,7 @@ class TaskManagerController(object):
             config_dict['user'] = user
         with h.push_config(c, **config_dict):
             task = task.post(*args, **kw)
-        redirect('view', task_id=task._id)
+        redirect('view/%s' % task._id)
 
     @expose('json:')
     def task_doc(self, task_name):

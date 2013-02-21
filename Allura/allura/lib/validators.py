@@ -138,7 +138,7 @@ class CreateTaskSchema(fe.Schema):
     task = TaskValidator(not_empty=True, strip=True)
     task_args = JsonConverter(if_missing=dict(args=[], kwargs={}))
     user = UserValidator(strip=True, if_missing=None)
-    path = PathValidator(strip=True, if_missing={})
+    path = PathValidator(strip=True, if_missing={}, if_empty={})
 
 class DateValidator(fev.FancyValidator):
     def _to_python(self, value, state):
