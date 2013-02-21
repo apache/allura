@@ -207,7 +207,7 @@ def test_markdown_toc():
 
 
 @td.with_wiki
-def test_markdown_links():
+def test_wiki_artifact_links():
     text = g.markdown.convert('See [18:13:49]')
     assert 'See <span>[18:13:49]</span>' in text, text
     with h.push_context('test', 'wiki', neighborhood='Projects'):
@@ -218,6 +218,15 @@ def test_markdown_links():
         text = g.markdown.convert('See [test:wiki:Home]')
         assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 
+def test_markdown_links():
+    text = g.markdown.convert('Read [here](http://foobar.sf.net/) about our project')
+    assert_in('href="http://foobar.sf.net/">here</a> about', text)
+
+    text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
+    assert_in('href="/p/foobar/blah">here</a> about', text)
+
+    text = g.markdown.convert('Read <http://foobar.sf.net/> about our project')
+    assert_in('href="http://foobar.sf.net/">http://foobar.sf.net/</a> about', text)
 
 def test_markdown_and_html():
     r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
@@ -233,7 +242,6 @@ def test_markdown_within_html():
 
 @td.with_wiki
 def test_markdown_basics():
-    'Just a test to get coverage in our markdown extension'
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         text = g.markdown.convert('# Foo!\n[Home]')
         assert '<a class="alink" href=' in text, text
@@ -260,16 +268,30 @@ def foo(): pass
 
 
 def test_markdown_autolink():
-    #with h.set_context('test', 'wiki', neighborhood='Projects')
-    text = g.markdown.convert('This is http://sf.net')
-    assert '<a href=' in text, text
     tgt = 'http://everything2.com/?node=nate+oostendorp'
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(
         s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
-    assert_not_in('href', g.markdown.convert('literal `http://sf.net` literal'))
-    assert_not_in('href', g.markdown.convert('    preformatted http://sf.net'))
+    # beginning of doc
+    assert_in('<a href=', g.markdown.convert('http://sf.net abc'))
+    # beginning of a line
+    assert_in('<br />\n<a href="http://', g.markdown.convert('foobar\nhttp://sf.net abc'))
+    # no conversion of these urls:
+    assert_in('a blahttp://sdf.com z',
+              g.markdown.convert('a blahttp://sdf.com z'))
+    assert_in('literal <code>http://sf.net</code> literal',
+              g.markdown.convert('literal `http://sf.net` literal'))
+    assert_in('<pre>preformatted http://sf.net\n</pre>',
+              g.markdown.convert('    :::text\n'
+                                 '    preformatted http://sf.net'))
+
+
+def test_markdown_autolink_with_escape():
+    # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
+    # (it occurs during html2text conversion during project migrations)
+    r = g.markdown.convert('a http://www.phpmyadmin.net/home\_page/security/\#target b')
+    assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
 def test_macro_projects():
