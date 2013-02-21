@@ -5,7 +5,7 @@ from urllib import quote
 
 from bson import ObjectId
 
-from nose.tools import with_setup, assert_equal
+from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.orm import ThreadLocalORMSession
@@ -268,6 +268,8 @@ def test_markdown_autolink():
     assert_equal(
         s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
     assert '<a href=' in g.markdown.convert('This is http://sf.net')
+    assert_not_in('href', g.markdown.convert('literal `http://sf.net` literal'))
+    assert_not_in('href', g.markdown.convert('    preformatted http://sf.net'))
 
 
 def test_macro_projects():
