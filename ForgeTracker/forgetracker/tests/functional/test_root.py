@@ -1084,6 +1084,34 @@ class TestFunctionalController(TrackerTestController):
         a = r.html.find('a', {'class': 'edit_ticket'})
         assert a.text == 'Edit'
 
+    def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        # authenticated user has 'create' permission, but not 'update'
+        role = M.ProjectRole.by_name('*authenticated')._id
+        create_permission = M.ACE.allow(role, 'create')
+        update_permission = M.ACE.allow(role, 'update')
+        acl = tracker.config.acl
+        acl.append(create_permission)
+        if update_permission in acl:
+            acl.remove(update_permission)
+        # test-user creates private ticket
+        env = {'username': 'test-user'}
+        post_data = {
+            'ticket_form.summary': 'Private ticket title',
+            'ticket_form.private': True
+        }
+        self.app.post('/bugs/save_ticket', post_data, extra_environ=env)
+        # ... and can see it
+        r = self.app.get('/bugs/1/', extra_environ=env)
+        assert 'Private ticket title' in r
+        assert '<label class="simple">Private:</label> Yes' in r, 'Ticket is not private'
+        # ... and can't see 'Edit' link
+        assert r.html.find('a', {'class': 'edit_ticket'}) is None, "Found 'Edit' link"
+        # ... and can't actually edit it
+        self.app.post('/bugs/1/update_ticket', {'summary': 'should fail'},
+                      extra_environ=env, status=403)
+
     def test_imported_tickets_redirect(self):
         self.new_ticket(summary='Imported ticket')
         ticket = tm.Ticket.query.get(ticket_num=1)

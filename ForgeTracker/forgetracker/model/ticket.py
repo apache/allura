@@ -413,7 +413,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             role_creator = self.reported_by.project_role()._id
             self.acl = [
                 ACE.allow(role_developer, ALL_PERMISSIONS),
-                ACE.allow(role_creator, ALL_PERMISSIONS),
+                ACE.allow(role_creator, 'read'),
+                ACE.allow(role_creator, 'post'),
+                ACE.allow(role_creator, 'unmoderated_post'),
                 DENY_ALL]
         else:
             self.acl = []
