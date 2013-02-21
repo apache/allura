@@ -97,7 +97,8 @@ class GitImplementation(M.RepositoryImplementation):
     def can_hotcopy(self, source_url):
         enabled = asbool(tg.config.get('scm.git.hotcopy', True))
         is_local = os.path.exists(source_url)
-        return enabled and is_local
+        requested = self._repo.app.config.options.get('hotcopy', False)
+        return enabled and is_local and requested
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
