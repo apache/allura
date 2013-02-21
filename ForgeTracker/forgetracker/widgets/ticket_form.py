@@ -35,7 +35,7 @@ class GenericTicketForm(ew.SimpleForm):
         if idx == '_milestone':
             milestone_value = ctx.value
             for milestone in field.options:
-                if milestone.status and (milestone.py_value != milestone_value):
+                if milestone.complete and (milestone.py_value != milestone_value):
                     del field.options[field.options.index(milestone)]
             ctx = self.context_for(field)
 
@@ -121,7 +121,7 @@ class TicketCustomField(object):
             options.append(ew.Option(
                 label=m.name,
                 py_value=m.name,
-                status=bool(m.complete)))
+                complete=bool(m.complete)))
 
         ssf = ew.SingleSelectField(
             label=field.label, name=str(field.name),
