@@ -121,7 +121,7 @@ def test_macros():
 
     c.project = curr_project
     r = g.markdown_wiki.convert('[[download_button]]')
-    assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p></div>' % p_test._id)
+    assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
     h.set_context('--init--', 'wiki', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
     assert 'WikiPage Home modified by' in r, r
@@ -149,7 +149,7 @@ def test_macros():
 
 def test_macro_project_admins():
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p></div>')
+    assert_equal(r, '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p>\n</div>')
 
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
