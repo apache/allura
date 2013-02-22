@@ -82,14 +82,18 @@ class TestTicketModel(TrackerTestWithModel):
 
         t.private = True
         assert t.acl == [ACE.allow(role_developer, ALL_PERMISSIONS),
-                         ACE.allow(role_creator, ALL_PERMISSIONS),
+                         ACE.allow(role_creator, 'read'),
+                         ACE.allow(role_creator, 'post'),
+                         ACE.allow(role_creator, 'unmoderated_post'),
                          DENY_ALL]
         assert has_access(t, 'read', user=admin)()
         assert has_access(t, 'create', user=admin)()
         assert has_access(t, 'update', user=admin)()
         assert has_access(t, 'read', user=creator)()
-        assert has_access(t, 'create', user=creator)()
-        assert has_access(t, 'update', user=creator)()
+        assert has_access(t, 'post', user=creator)()
+        assert has_access(t, 'unmoderated_post', user=creator)()
+        assert not has_access(t, 'create', user=creator)()
+        assert not has_access(t, 'update', user=creator)()
         assert has_access(t, 'read', user=developer)()
         assert has_access(t, 'create', user=developer)()
         assert has_access(t, 'update', user=developer)()
