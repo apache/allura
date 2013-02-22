@@ -748,6 +748,13 @@ class LastCommit(RepoObject):
         return commit_id
 
     @classmethod
+    def _prev_commit_id(cls, commit, path):
+        commit_id = list(commit.repo.commits(path, commit._id, skip=1, limit=1))
+        if not commit_id:
+            return None
+        return commit_id[0]
+
+    @classmethod
     def get(cls, tree, create=True):
         '''Find or build the LastCommitDoc for the given tree.'''
         cache = getattr(c, 'model_cache', '') or ModelCache()
@@ -770,12 +777,10 @@ class LastCommit(RepoObject):
         path = tree.path().strip('/')
         entries = []
         prev_lcd = None
-        parent = tree.commit.get_parent()
-        if parent:
-            try:
-                prev_lcd = cls.get(parent.get_path(path), create=False)
-            except KeyError as e:
-                prev_lcd = None  # will fail if path was added this commit
+        prev_lcd_cid = cls._prev_commit_id(tree.commit, path)
+        if prev_lcd_cid:
+            cache = getattr(c, 'model_cache', '') or ModelCache()
+            prev_lcd = cache.get(cls, {'path': path, 'commit_id': prev_lcd_cid})
         entries = {}
         nodes = set([node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
         changed = set([node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths])

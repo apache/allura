@@ -499,9 +499,11 @@ def compute_lcds(commit, cache):
         _compute_lcds(tree, cache)
 
 def _compute_lcds(tree, cache):
-    if tree.path().strip('/') not in tree.commit.changed_paths:
+    path = tree.path().strip('/')
+    if path not in tree.commit.changed_paths:
         return
-    lcd = LastCommit.get(tree, create=True)  # auto-vivify LCD
+    if not cache.get(LastCommit, dict(commit_id=tree.commit._id, path=path)):
+        lcd = LastCommit._build(tree)
     for x in tree.tree_ids:
         sub_tree = _pull_tree(cache, x.id, tree, x.name)
         _compute_lcds(sub_tree, cache)
