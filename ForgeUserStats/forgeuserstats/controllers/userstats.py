@@ -173,6 +173,7 @@ class ForgeUserStatsMetricController(BaseController):
     def artifacts(self, **kw):
         if not self.user:
             return dict(user=None)
+        stats = self.user.stats
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
 
@@ -185,6 +186,7 @@ class ForgeUserStatsMetricController(BaseController):
     def tickets(self, **kw):
         if not self.user: 
             return dict(user=None)
+        stats = self.user.stats
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
 
