@@ -1,0 +1,114 @@
+{% extends g.theme.master %}
+
+{% block title %}Organizations involved in {{c.project.name}}{% endblock %}
+
+{% block header %}Organizations involved in {{c.project.name}}{% endblock %}
+
+{% block content %}
+
+  <div class="grid-20">
+    <h2>Involved organizations</h2>
+  </div>
+
+  <div class="grid-20">
+    <h3>Organizations cooperating at the project as main partners</h3>
+    {% if cooperations %}
+      {% if is_admin %}
+        <table>
+          <thead>
+            <tr>
+              <th>Organization</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for oc in cooperations %}
+              <tr>{{forms.new_change_status_form().display(collaboration=oc)}}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table>
+          <thead>
+            <tr>
+              <th>Organization</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for oc in cooperations %}
+              <tr>
+                <td><a href="{{oc.organization.url()}}">{{oc.organization.fullname}}</a></td>
+                <td>{{oc.status.capitalize()}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% else %}
+      <p>There are no organizations involved as main cooperators in this project.</p>
+    {% endif %}
+  </div>
+
+  <div class="grid-20">
+    <h3>Other organizations participating at the project</h3>
+    {% if participations %}
+      {% if is_admin %}
+        <table>
+          <thead>
+            <tr>
+              <th>Organization</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for oc in participations %}
+              <tr>{{forms.new_change_status_form().display(collaboration=oc)}}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <table>
+          <thead>
+            <tr>
+              <th>Organization</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for oc in participations %}
+              <tr>
+                <td><a href="{{oc.organization.url()}}">{{oc.organization.fullname}}</a></td>
+                <td>{{oc.status.capitalize()}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% else %}
+      <p>There are no organizations involved as participants in this project.</p>
+    {% endif %}
+  </div>
+
+  {% if is_admin %}
+    <div class="grid-20">
+      <h2>Invite an organization</h2>
+    </div>
+    <div class="grid-20">
+      {{forms.search_form.display()}}
+    </div>
+  {% else %}
+    {% if user_organizations %}
+      <div class="grid-20">
+        <h2>Send collaboration request</h2>
+      </div>
+      <div class="grid-20">
+        {{forms.collaboration_request_form.display(organizations=user_organizations)}}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

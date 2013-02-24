@@ -1,0 +1,34 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}Search results{% endblock %}
+
+{% block header %}Search results{% endblock %}
+
+{% block content %}
+
+  <div class="grid-20">
+    <h2>Results</h2>
+    {% if not orglist %}
+      <p>
+        Your entered the search string "{{search_string}}", but there isn't any organization
+        matching your query. Try to change your search string.
+      </p>
+    {% else %}
+      <p>
+        Your search for "{{search_string}}" produced {{orglist|length}} result{% if orglist|length != 1 %}s{% endif %}: 
+      </p>
+      <ul>
+        {% for o in orglist %}
+          <li><a href="{{o.url()}}">{{o.fullname}}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+  <div class="grid-20">
+    <h2>Perform a new search</h2>
+    {{forms.search_form.display()}}
+  </div>
+
+{% endblock %}
+
