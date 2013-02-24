@@ -69,6 +69,11 @@ class RootController(WsgiDispatchController):
         if n and not n.url_prefix.startswith('//'):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
+
+        ep = g.entry_points["organizations"].get('organization')
+        if ep and g.show_organizations:
+            self.organization = ep().root
+
         super(RootController, self).__init__()
 
     def _setup_request(self):

@@ -331,6 +331,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
         level = S.OneOf('low', 'high', 'medium'),
         comment=str)])
 
+    #Organizations
+    memberships = RelationProperty('Membership')
+
     @property
     def activity_name(self):
         return self.display_name or self.username
@@ -340,6 +343,16 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def set_pref(self, pref_name, pref_value):
         return plugin.UserPreferencesProvider.get().set_pref(self, pref_name, pref_value)
+
+    def get_current_organizations(self):
+        if hasattr(self, 'memberships'):
+            return [m for m in self.memberships if m.status=='active']
+        return []
+
+    def get_past_organizations(self):
+        if hasattr(self, 'memberships'):
+            return [m for m in self.memberships if m.status=='closed']
+        return []
 
     def add_socialnetwork(self, socialnetwork, accounturl):
         if socialnetwork == 'Twitter' and not accounturl.startswith('http'):

@@ -165,10 +165,13 @@ class Globals(object):
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
             spam=_cache_eps('allura.spam'),
+            organizations=_cache_eps('allura.organization'),
             )
 
         # Zarkov logger
         self._zarkov = None
+
+        self.show_organizations = config.get('organizations.enable')=='true'
 
     @LazyProperty
     def spam_checker(self):

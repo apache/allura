@@ -3,6 +3,9 @@
     <div class="wrapper">
         <nav>
           {% if c.user._id %}
+            {%if g.show_organizations %}
+              <a href="/organization/">Organizations</a>
+            {% endif %}
             <a href="/auth/prefs/">Account</a>
             <a href="{{c.user.url()}}">{{name}}</a>
             <a href="{{logout_url}}">Log Out</a>

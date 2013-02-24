@@ -166,6 +166,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project=FieldProperty(bool, if_missing=False)
 
+    organizations=RelationProperty('ProjectInvolvement')
+
     # transient properties
     notifications_disabled = False
 
@@ -718,6 +720,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 apps = [('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search'),
                         ('activity', 'activity', 'Activity')]
+        if g.show_organizations:
+            apps+=[('organizationstool', 'organizationstool', 'Organizations')]
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id

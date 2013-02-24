@@ -6,7 +6,7 @@ from urllib import unquote
 
 import pkg_resources
 from pylons import tmpl_context as c
-from pylons import request, response
+from pylons import request, response, g
 from webob import exc
 from tg import expose
 from tg.decorators import without_trailing_slash
@@ -59,6 +59,8 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         self.security = SecurityTests()
         for attr in ('index', 'browse', 'auth', 'nf', 'error'):
             setattr(self, attr, getattr(proxy_root, attr))
+        if g.show_organizations:
+            self.organization = proxy_root.organization
         self.gsearch = proxy_root.search
         self.rest = RestController()
         super(BasetestProjectRootController, self).__init__()

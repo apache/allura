@@ -91,6 +91,11 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
   background-repeat: no-repeat;
 }
 
+.ui-icon-tool-organizationstool {
+  background-image: url("../images/org_24.png");
+  background-repeat: no-repeat;
+}
+
 .ui-icon-tool-chat {
   background-image: url("../images/chat_24.png");
   background-repeat: no-repeat;
@@ -139,7 +144,12 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #top_nav .ui-icon-tool-chat {
   background-image: url("../images/chat_32.png");
 }
-
+#top_nav .ui-icon-tool-organizationstool {
+  background-image: url("../images/org_32.png");
+}
+.big_icon.ui-icon-tool-organizationstool {
+  background-image: url("../images/org_48.png");
+}
 .big_icon.ui-icon-tool-home {
   background-image: url("../images/home_48.png");
 }
