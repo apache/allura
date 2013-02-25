@@ -152,14 +152,14 @@ class RefreshLastCommits(ScriptTask):
     def _clean(cls, commit_ids, clean_diffs):
         if clean_diffs:
             # delete DiffInfoDocs
-            i = M.repo.DiffInfoDoc.m.find(dict(commit_ids={'$in': commit_ids})).count()
+            i = M.repo.DiffInfoDoc.m.find(dict(_id={'$in': commit_ids})).count()
             log.info("Deleting %i DiffInfoDoc docs for %i commits...", i, len(commit_ids))
-            M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': commit_ids}))
+            M.repo.DiffInfoDoc.m.remove(dict(_id={'$in': commit_ids}))
 
         # delete LastCommitDocs
-        i = M.repo.LastCommitDoc.m.find(dict(commit_ids={'$in': commit_ids})).count()
+        i = M.repo.LastCommitDoc.m.find(dict(commit_id={'$in': commit_ids})).count()
         log.info("Deleting %i LastCommitDoc docs for %i commits...", i, len(commit_ids))
-        M.repo.LastCommitDoc.m.remove(dict(commit_ids={'$in': commit_ids}))
+        M.repo.LastCommitDoc.m.remove(dict(commit_id={'$in': commit_ids}))
 
     @classmethod
     def _print_stats(cls, processed, timings, debug_step):
