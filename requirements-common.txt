@@ -48,7 +48,7 @@ WebOb==1.0.8
 # part of the stdlib, but with a version number.  see http://guide.python-distribute.org/pip.html#listing-installed-packages
 wsgiref==0.1.2
 numpy==1.6.1
-matplotlib==1.1.1rc
+matplotlib==1.1.1
 
 # tg2 deps (not used directly)
 Babel==0.9.6
