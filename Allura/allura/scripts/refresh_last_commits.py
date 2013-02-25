@@ -55,6 +55,8 @@ class RefreshLastCommits(ScriptTask):
                 default=False, help='Log names of projects that would have their ')
         parser.add_argument('--diffs', action='store_true', dest='diffs',
                 default=False, help='Refresh / clean diffs as well as LCDs')
+        parser.add_argument('--limit', action='store', type=int, dest='limit',
+                default=False, help='Limit of how many commits to process')
         return parser
 
     @classmethod
@@ -111,7 +113,6 @@ class RefreshLastCommits(ScriptTask):
                         c.app.repo.status = 'ready'
                         session(c.app.repo).flush(c.app.repo)
             ThreadLocalORMSession.flush_all()
-            ThreadLocalORMSession.close_all()
 
     @classmethod
     def refresh_repo_lcds(cls, commit_ids, options):
@@ -143,6 +144,8 @@ class RefreshLastCommits(ScriptTask):
                 ThreadLocalORMSession.flush_all()
             if i % 100 == 0:
                 cls._print_stats(i, timings, 100)
+            if i >= options.limit:
+                break
         ThreadLocalORMSession.flush_all()
 
     @classmethod
