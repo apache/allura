@@ -5,7 +5,7 @@ from allura.controllers import BaseController
 import allura.model as M
 from allura.lib.graphics.graphic_methods import create_histogram, create_progress_bar
 from forgeuserstats.model.stats import UserStats
-from pylons import c
+from pylons import tmpl_context as c
 
 class ForgeUserStatsController(BaseController):
 
