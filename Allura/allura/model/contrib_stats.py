@@ -1,5 +1,6 @@
 import pymongo
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 
 import bson
 from ming import schema as S
