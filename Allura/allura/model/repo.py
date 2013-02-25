@@ -765,7 +765,6 @@ class LastCommit(RepoObject):
             commit = cache.get(Commit, {'_id': last_commit_id})
             commit.set_context(tree.repo)
             lcd = cls._build(commit.get_path(path))
-            cache.set(cls, {'path': path, 'commit_id': last_commit_id}, lcd)
         return lcd
 
     @classmethod
@@ -774,12 +773,12 @@ class LastCommit(RepoObject):
           Build the LCD record, presuming that this tree is where it was most
           recently changed.
         '''
+        cache = getattr(c, 'model_cache', '') or ModelCache()
         path = tree.path().strip('/')
         entries = []
         prev_lcd = None
         prev_lcd_cid = cls._prev_commit_id(tree.commit, path)
         if prev_lcd_cid:
-            cache = getattr(c, 'model_cache', '') or ModelCache()
             prev_lcd = cache.get(cls, {'path': path, 'commit_id': prev_lcd_cid})
         entries = {}
         nodes = set([node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
@@ -806,6 +805,7 @@ class LastCommit(RepoObject):
                 path=path,
                 entries=entries,
             )
+        cache.set(cls, {'path': path, 'commit_id': tree.commit._id}, lcd)
         return lcd
 
     @LazyProperty
