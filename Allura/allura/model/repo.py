@@ -392,6 +392,31 @@ class Commit(RepoObject):
         return diffs
 
     @LazyProperty
+    def added_paths(self):
+        '''
+        Returns a list of paths added in this commit.
+        Leading and trailing slashes are removed, and
+        the list is complete, meaning that if a directory
+        with subdirectories is added, all of the child
+        paths are included (this relies on the DiffInfoDoc
+        being complete).
+
+        Example:
+
+            If the directory /foo/bar/ is added in the commit
+            which contains a subdirectory /foo/bar/baz/ with
+            the file /foo/bar/baz/qux.txt, this would return:
+            ['foo/bar', 'foo/bar/baz', 'foo/bar/baz/qux.txt']
+        '''
+        diff_info = DiffInfoDoc.m.get(_id=self._id)
+        diffs = set()
+        if diff_info:
+            for d in diff_info.differences:
+                if d.lhs_id is None:
+                    diffs.add(d.name.strip('/'))
+        return diffs
+
+    @LazyProperty
     def info(self):
         return dict(
             id=self._id,
@@ -749,6 +774,11 @@ class LastCommit(RepoObject):
 
     @classmethod
     def _prev_commit_id(cls, commit, path):
+        if not commit.parent_ids or path in commit.added_paths:
+            return None  # new paths by definition have no previous LCD
+        lcid_cache = getattr(c, 'lcid_cache', '')
+        if lcid_cache != '' and path in lcid_cache:
+            return lcid_cache[path]
         commit_id = list(commit.repo.commits(path, commit._id, skip=1, limit=1))
         if not commit_id:
             return None
@@ -773,23 +803,23 @@ class LastCommit(RepoObject):
           Build the LCD record, presuming that this tree is where it was most
           recently changed.
         '''
-        cache = getattr(c, 'model_cache', '') or ModelCache()
+        model_cache = getattr(c, 'model_cache', '') or ModelCache()
         path = tree.path().strip('/')
         entries = []
         prev_lcd = None
         prev_lcd_cid = cls._prev_commit_id(tree.commit, path)
         if prev_lcd_cid:
-            prev_lcd = cache.get(cls, {'path': path, 'commit_id': prev_lcd_cid})
+            prev_lcd = model_cache.get(cls, {'path': path, 'commit_id': prev_lcd_cid})
         entries = {}
         nodes = set([node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
         changed = set([node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths])
+        unchanged = [os.path.join(path, node) for node in nodes - changed]
         if prev_lcd:
             # get unchanged entries from previously computed LCD
             entries = prev_lcd.by_name
-        else:
+        elif unchanged:
             # no previously computed LCD, so get unchanged entries from SCM
             # (but only ask for the ones that we know we need)
-            unchanged = [os.path.join(path, node) for node in nodes - changed]
             entries = tree.commit.repo.last_commit_ids(tree.commit, unchanged)
             if entries is None:
                 # something strange went wrong; bail out and possibly try again later
@@ -805,7 +835,7 @@ class LastCommit(RepoObject):
                 path=path,
                 entries=entries,
             )
-        cache.set(cls, {'path': path, 'commit_id': tree.commit._id}, lcd)
+        model_cache.set(cls, {'path': path, 'commit_id': tree.commit._id}, lcd)
         return lcd
 
     @LazyProperty

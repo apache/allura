@@ -11,6 +11,7 @@ from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession, session
 
 from allura import model as M
+from allura.lib import helpers as h
 from allura.lib.utils import chunked_find
 from allura.tasks.repo_tasks import refresh
 from allura.scripts import ScriptTask
@@ -127,10 +128,11 @@ class RefreshLastCommits(ScriptTask):
                 if i % 1000 == 0:
                     cls._print_stats(i, timings, 1000)
 
-        lcd_cache = M.repo.ModelCache(
+        model_cache = M.repo.ModelCache(
                 max_instances={M.repo.LastCommit: 4000},
                 max_queries={M.repo.LastCommit: 4000},
             )
+        lcid_cache = {}
         timings = []
         print 'Processing last commits'
         for i, commit_id in enumerate(commit_ids):
@@ -140,7 +142,7 @@ class RefreshLastCommits(ScriptTask):
                 continue
             commit.set_context(c.app.repo)
             with time(timings):
-                M.repo_refresh.compute_lcds(commit, lcd_cache)
+                M.repo_refresh.compute_lcds(commit, model_cache, lcid_cache)
                 ThreadLocalORMSession.flush_all()
             if i % 100 == 0:
                 cls._print_stats(i, timings, 100)

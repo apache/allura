@@ -100,11 +100,12 @@ def refresh_repo(repo, all_commits=False, notify=True):
                 log.info('Compute diffs %d: %s', (i+1), ci._id)
 
     if repo._refresh_precompute:
-        cache = ModelCache()
+        model_cache = ModelCache()
+        lcid_cache = {}
         for i, oid in enumerate(reversed(commit_ids)):
-            ci = cache.get(Commit, dict(_id=oid))
+            ci = model_cache.get(Commit, dict(_id=oid))
             ci.set_context(repo)
-            compute_lcds(ci, cache)
+            compute_lcds(ci, model_cache, lcid_cache)
             ThreadLocalORMSession.flush_all()
             if (i+1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i+1), ci._id)
@@ -485,18 +486,20 @@ def last_known_commit_id(all_commit_ids, new_commit_ids):
     return all_commit_ids[all_commit_ids.index(new_commit_ids[0]) - 1]
 
 
-def compute_lcds(commit, cache):
+def compute_lcds(commit, model_cache, lcid_cache):
     '''
     Compute LastCommit data for every Tree node under this tree.
     '''
-    trees = cache.get(TreesDoc, dict(_id=commit._id))
+    trees = model_cache.get(TreesDoc, dict(_id=commit._id))
     if not trees:
         log.error('Missing TreesDoc for %s; skipping compute_lcd' % commit)
         return
-    with h.push_config(c, model_cache=cache):
-        _update_tree_cache(trees.tree_ids, cache)
-        tree = _pull_tree(cache, commit.tree_id, commit)
-        _compute_lcds(tree, cache)
+    with h.push_config(c, model_cache=model_cache, lcid_cache=lcid_cache):
+        _update_tree_cache(trees.tree_ids, model_cache)
+        tree = _pull_tree(model_cache, commit.tree_id, commit)
+        _compute_lcds(tree, model_cache)
+        for changed_path in tree.commit.changed_paths:
+            lcid_cache[changed_path] = tree.commit._id
 
 def _compute_lcds(tree, cache):
     path = tree.path().strip('/')
