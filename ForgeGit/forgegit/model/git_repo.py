@@ -238,6 +238,8 @@ class GitImplementation(M.RepositoryImplementation):
                 blob_ids=[],
                 other_ids=[]))
         for o in tree:
+            if o.type == 'submodule':
+                continue
             obj = Object(
                 name=h.really_unicode(o.name),
                 id=o.hexsha)
