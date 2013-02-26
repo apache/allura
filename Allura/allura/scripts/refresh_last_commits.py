@@ -146,7 +146,7 @@ class RefreshLastCommits(ScriptTask):
                 ThreadLocalORMSession.flush_all()
             if i % 100 == 0:
                 cls._print_stats(i, timings, 100)
-            if i >= options.limit:
+            if options.limit and i >= options.limit:
                 break
         ThreadLocalORMSession.flush_all()
 
