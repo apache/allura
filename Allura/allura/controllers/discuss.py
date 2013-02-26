@@ -1,5 +1,6 @@
 from urllib import unquote
 from datetime import datetime
+import logging
 
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
@@ -20,6 +21,8 @@ from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
 from .attachments import AttachmentsController, AttachmentController
+
+log = logging.getLogger(__name__)
 
 class pass_validator(object):
     def validate(self, v, s):
@@ -144,6 +147,8 @@ class ThreadController(BaseController):
 
     def _check_security(self):
         require_access(self.thread, 'read')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'read')
 
     def __init__(self, discussion_controller, thread_id):
         self._discussion_controller = discussion_controller
@@ -179,6 +184,8 @@ class ThreadController(BaseController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
         require_access(self.thread, 'post')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')
@@ -202,6 +209,8 @@ class ThreadController(BaseController):
     @require_post()
     def tag(self, labels, **kw):
         require_access(self.thread, 'post')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'post')
         self.thread.labels = labels.split(',')
         redirect(request.referer)
 

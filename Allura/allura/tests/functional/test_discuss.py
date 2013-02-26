@@ -3,7 +3,6 @@ from mock import patch
 from allura.tests import TestController
 from allura import model as M
 
-
 class TestDiscuss(TestController):
 
     def test_subscribe_unsubscribe(self):
@@ -93,6 +92,32 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'flag')
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
+
+    def test_permissions(self):
+        home = self.app.get('/wiki/_discuss/')
+        thread_url = [ a for a in home.html.findAll('a')
+                 if 'thread' in a['href'] ][0]['href']
+        thread_id = thread_url.rstrip('/').split('/')[-1]
+        thread = M.Thread.query.get(_id=thread_id)
+
+        # ok initially
+        non_admin = 'test-user'
+        self.app.get(thread_url, status=200,
+                     extra_environ=dict(username=non_admin))
+
+        # set wiki page private
+        from forgewiki.model import Page
+        page = Page.query.get(_id=thread.ref.artifact._id)  # need to look up the page directly, so ming is aware of our change
+        role_admin = M.ProjectRole.by_name('Admin')._id
+        page.acl = [
+            M.ACE.allow(role_admin, M.ALL_PERMISSIONS),
+            M.DENY_ALL,
+        ]
+
+        self.app.get(thread_url, status=200, # ok
+                     extra_environ=dict(username='test-admin'))
+        self.app.get(thread_url, status=403, # forbidden
+                     extra_environ=dict(username=non_admin))
 
     def test_moderate(self):
         r = self._make_post('Test post')
