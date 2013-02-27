@@ -15,7 +15,7 @@
 
     {% if category %}
        <ul>
-         <li><a href="/userstats/{{user.username}}">Go back to general statistics</a></li>
+         <li><a href="{{c.project.url()}}userstats">Go back to general statistics</a></li>
        </ul>
     {% endif %}
     <h2>General statistics</h2>
@@ -80,7 +80,7 @@
         <tr>
           <td>
             {% if totcommits.number > 0 %}
-              <a href="/userstats/{{user.username}}/metric/commits/">Commits number</a>
+              <a href="{{c.project.url()}}userstats/commits/">Commits number</a>
             {% else %}
               Commits number
             {% endif %}
@@ -103,7 +103,7 @@
         <tr>
           <td>
             {% if totcommits.lines > 0 %}
-              <a href="/userstats/{{user.username}}/metric/commits/">Added/modified LOCs</a>
+              <a href="{{c.project.url()}}userstats/commits/">Added/modified LOCs</a>
             {% else %}
               Added/modified LOCs
             {% endif %}
@@ -126,7 +126,7 @@
         <tr>
           <td>
             {% if totartifacts.created > 0 %}
-              <a href="/userstats/{{user.username}}/metric/artifacts/">Total number of created artifacts</a>
+              <a href="{{c.project.url()}}userstats/artifacts/">Total number of created artifacts</a>
             {% else %}
               Total number of created artifacts
             {% endif %}
@@ -149,7 +149,7 @@
         <tr>
           <td>
             {% if totartifacts.modified > 0 %}
-              <a href="/userstats/{{user.username}}/metric/artifacts/">Total number of edited artifacts</a>
+              <a href="{{c.project.url()}}userstats/artifacts/">Total number of edited artifacts</a>
             {% else %}
               Total number of edited artifacts
             {% endif %}
@@ -174,7 +174,7 @@
           <tr>
             <td>
               {% if value.created > 0 %}
-                <a href="/userstats/{{user.username}}/metric/artifacts/">Created {{key}} artifacts</a>
+                <a href="{{c.project.url()}}userstats/artifacts/">Created {{key}} artifacts</a>
               {% else %}
                 Created {{key}} artifacts
               {% endif %}
@@ -205,7 +205,7 @@
           <tr>
             <td>
               {% if value.modified > 0 %}
-                <a href="/userstats/{{user.username}}/metric/artifacts/">Edited {{key}} artifacts</a>
+                <a href="{{c.project.url()}}userstats/artifacts/">Edited {{key}} artifacts</a>
               {% else %}
                 Edited {{key}} artifacts
               {% endif %}
@@ -238,7 +238,7 @@
         <tr>
           <td>
             {% if tottickets.assigned > 0 %}
-              <a href="/userstats/{{user.username}}/metric/tickets/">Assigned tickets</a>
+              <a href="{{c.project.url()}}userstats/tickets/">Assigned tickets</a>
             {% else %}
               Assigned tickets
             {% endif %}
@@ -261,7 +261,7 @@
         <tr>
           <td>
             {% if tottickets.revoked > 0 %}
-              <a href="/userstats/{{user.username}}/metric/tickets/">Revoked tickets</a>
+              <a href="{{c.project.url()}}userstats/tickets/">Revoked tickets</a>
             {% else %}
               Revoked tickets
             {% endif %}
@@ -284,7 +284,7 @@
         <tr>
           <td>
             {% if tottickets.solved > 0 %}
-              <a href="/userstats/{{user.username}}/metric/tickets/">Solved tickets</a>
+              <a href="{{c.project.url()}}userstats/tickets/">Solved tickets</a>
             {% else %}
               Solved tickets
             {% endif %}
@@ -307,7 +307,7 @@
         <tr>
           <td>
             {% if tottickets.averagesolvingtime > 0 %}
-              <a href="/userstats/{{user.username}}/metric/tickets/">Average tickets solving time</a>
+              <a href="{{c.project.url()}}userstats/tickets/">Average tickets solving time</a>
             {% else %}
               Average tickets solving time
             {% endif %}
@@ -357,7 +357,7 @@
           <tbody>
             {% for cat, count in categories %}
               <tr>
-                <td><a href="/userstats/{{user.username}}/category/{{cat.shortname}}">{{cat.fullname}}</a></td>
+                <td><a href="{{c.project.url()}}userstats/category/{{cat.shortname}}">{{cat.fullname}}</a></td>
                 <td>{{count}}</td>
               </tr>
             {% endfor %}
@@ -369,7 +369,7 @@
             The same data listed in the previous table is graphically presented by the following histogram.
           </p>
           <p>
-            <img src="/userstats/{{user.username}}/categories_graph"/>
+            <img src="{{c.project.url()}}userstats/categories_graph"/>
           </p>
         {% endif %}
     {% endif %}
@@ -391,21 +391,21 @@
             <td>{{codecontribution}} LOC{% if codecontribution != 1 %}s{% endif %}/month</td>
             <td>{{averagecodecontrib}} LOC{% if averagecodecontrib != 1 %}s{% endif %}/month</td>
             <td>{{maxcodecontrib}} LOC{% if maxcodecontrib != 1 %}s{% endif %}/month</td>
-            <td><img src="/userstats/{{user.username}}/code_ranking_bar"/> {{codepercentage}} %</td>
+            <td><img src="{{c.project.url()}}userstats/code_ranking_bar"/> {{codepercentage}} %</td>
           </tr>
           <tr>
             <td>Discussion</td>
             <td>{{discussioncontribution}} contr./month</td>
             <td>{{averagedisccontrib}} contr./month</td>
             <td>{{maxdisccontrib}} contr./month</td>
-            <td><img src="/userstats/{{user.username}}/discussion_ranking_bar"/> {{discussionpercentage}} %</td>
+            <td><img src="{{c.project.url()}}userstats/discussion_ranking_bar"/> {{discussionpercentage}} %</td>
           </tr>
           <tr>
             <td>Solved issues</td>
             <td>{{ticketcontribution}} %</td>
             <td>{{averageticketcontrib}} %</td>
             <td>{{maxticketcontrib}} %</td>
-            <td><img src="/userstats/{{user.username}}/tickets_ranking_bar"/> {{ticketspercentage}} %</td>
+            <td><img src="{{c.project.url()}}userstats/tickets_ranking_bar"/> {{ticketspercentage}} %</td>
           </tr>
         </tbody>
       </table>

@@ -177,7 +177,7 @@ class Globals(object):
         statslisteners = []
         for name, ep in self.entry_points['stats'].iteritems():
             if config.get('%s.enable' % name,'false')=='true':
-                statslisteners.append(ep().listener)
+                statslisteners.append(ep())
         self.statsUpdater = PostEvent(statslisteners)
 
     @LazyProperty

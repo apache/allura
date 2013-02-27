@@ -60,6 +60,11 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
   background-repeat: no-repeat;
 }
 
+.ui-icon-tool-userstats {
+  background-image: url("../images/stats_24.png");
+  background-repeat: no-repeat;
+}
+
 .ui-icon-tool-admin, .ui-icon-admin {
   background-image: url("../images/admin_24.png");
   background-repeat: no-repeat;
@@ -118,6 +123,10 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 #top_nav .ui-icon-tool-stats {
   background-image: url("../images/stats_32.png");
 }
+#top_nav .ui-icon-tool-userstats {
+  background-image: url("../images/stats_32.png");
+}
+
 #top_nav .ui-icon-tool-admin, #top_nav .ui-icon-admin {
   background-image: url("../images/admin_32.png");
 }
@@ -152,6 +161,10 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 .big_icon.ui-icon-tool-stats {
   background-image: url("../images/stats_48.png");
 }
+.big_icon.ui-icon-tool-userstats {
+  background-image: url("../images/stats_48.png");
+}
+
 .big_icon.ui-icon-tool-admin, .big_icon.ui-icon-admin {
   background-image: url("../images/admin_48.png");
 }

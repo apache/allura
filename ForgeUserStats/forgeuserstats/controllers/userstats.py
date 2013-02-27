@@ -1,4 +1,4 @@
-from tg import expose
+from tg import expose, validate, redirect
 from tg.decorators import with_trailing_slash
 from datetime import datetime
 from allura.controllers import BaseController
@@ -6,33 +6,86 @@ import allura.model as M
 from allura.lib.graphics.graphic_methods import create_histogram, create_progress_bar
 from forgeuserstats.model.stats import UserStats
 from pylons import tmpl_context as c
+from allura.lib.security import require_access
+from forgeuserstats.widgets.forms import StatsPreferencesForm
+from allura.lib.decorators import require_post
+from allura.lib import validators as V
 
-class ForgeUserStatsController(BaseController):
+stats_preferences_form = StatsPreferencesForm()
+
+class ForgeUserStatsCatController(BaseController):
 
     @expose()
-    def _lookup(self, part, *remainder):
-        user = M.User.query.get(username=part)
+    def _lookup(self, category, *remainder):
+        cat = M.TroveCategory.query.get(shortname=category)
+        return ForgeUserStatsCatController(category = cat), remainder
 
-        if not self.user:
-            return ForgeUserStatsController(user=user), remainder
-        if part == "category":
-            return ForgeUserStatsCatController(self.user, None), remainder
-        if part == "metric":
-            return ForgeUserStatsMetricController(self.user), remainder
-
-    def __init__(self, user=None):
-        self.user = user
-        if self.user:
-            if not user.stats:
-                UserStats.create(self.user)
-
-        super(ForgeUserStatsController, self).__init__()
+    def __init__(self, category = None):
+        self.category = category
+        super(ForgeUserStatsCatController, self).__init__()
 
     @expose('jinja:forgeuserstats:templates/index.html')
     @with_trailing_slash
     def index(self, **kw):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return None
+        stats = self.user.stats
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
+        
+        cat_id = None
+        if self.category: 
+            cat_id = self.category._id
+        ret_dict = _getDataForCategory(cat_id, stats)
+        ret_dict['user'] = self.user
+        ret_dict['registration_date'] = stats.registration_date
+        ret_dict['category'] = self.category
+        return ret_dict
+
+class ForgeUserStatsController(BaseController):
+
+    category = ForgeUserStatsCatController()            
+    
+    @expose('jinja:forgeuserstats:templates/settings.html')
+    @with_trailing_slash
+    def settings(self, **kw):
+        require_access(c.project, 'admin')
+
+        self.user = c.project.user_project_of
         if not self.user: 
             return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+        return dict(
+            user = self.user, 
+            form = StatsPreferencesForm(
+                action = c.project.url() + 'userstats/change_settings'))
+      
+    @expose()
+    @require_post()
+    @validate(stats_preferences_form, error_handler=settings)
+    def change_settings(self, **kw):
+        require_access(c.project, 'admin')
+
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+        visible = kw.get('visible')
+        self.user.stats.visible = visible
+        redirect(c.project.url() + 'userstats/settings')
+
+    @expose('jinja:forgeuserstats:templates/index.html')
+    @with_trailing_slash
+    def index(self, **kw):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+
         stats = self.user.stats
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
@@ -79,11 +132,71 @@ class ForgeUserStatsController(BaseController):
             stats.getMaxAndAverageDiscussionContribution()
         ret_dict['maxticketcontrib'], ret_dict['averageticketcontrib'] =\
             stats.getMaxAndAverageTicketsSolvingPercentage()
-
+        
         return ret_dict
+
+
+    @expose('jinja:forgeuserstats:templates/commits.html')
+    @with_trailing_slash
+    def commits(self, **kw):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+        stats = self.user.stats
+
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
+        
+        commits = stats.getCommitsByCategory()
+        return dict(
+            user = self.user,
+            data = commits) 
+
+    @expose('jinja:forgeuserstats:templates/artifacts.html')
+    @with_trailing_slash
+    def artifacts(self, **kw):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+        stats = self.user.stats
+
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
+
+        stats = self.user.stats       
+        artifacts = stats.getArtifactsByCategory(detailed=True)
+        return dict(
+            user = self.user,
+            data = artifacts)
+
+    @expose('jinja:forgeuserstats:templates/tickets.html')
+    @with_trailing_slash
+    def tickets(self, **kw):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return dict(user=None)
+        if not self.user.stats:
+            UserStats.create(self.user)
+        stats = self.user.stats
+
+        if (not stats.visible) and (c.user != self.user):
+            return dict(user=self.user)
+
+        artifacts = self.user.stats.getTicketsByCategory()
+        return dict(
+            user=self.user,
+            data=artifacts)
 
     @expose()
     def categories_graph(self):
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return None
+
         categories = {}
         for p in self.user.my_projects():
             for cat in p.trove_topic:
@@ -109,89 +222,27 @@ class ForgeUserStatsController(BaseController):
 
     @expose()
     def code_ranking_bar(self):
-        return create_progress_bar(self.user.stats.codeRanking())
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return None
+        stats = self.user.stats
+        return create_progress_bar(stats.codeRanking())
 
     @expose()
     def discussion_ranking_bar(self):
-        return create_progress_bar(self.user.stats.discussionRanking())
+        self.user = c.project.user_project_of
+        if not self.user: 
+            return None
+        stats = self.user.stats
+        return create_progress_bar(stats.discussionRanking())
 
     @expose()
     def tickets_ranking_bar(self):
-        return create_progress_bar(self.user.stats.ticketsRanking())
-
-class ForgeUserStatsCatController(BaseController):
-    @expose()
-    def _lookup(self, category, *remainder):
-        cat = M.TroveCategory.query.get(shortname=category)
-        return ForgeUserStatsCatController(self.user, cat), remainder
-
-    def __init__(self, user, category):
-        self.user = user
-        self.category = category
-        super(ForgeUserStatsCatController, self).__init__()
-
-    @expose('jinja:forgeuserstats:templates/index.html')
-    @with_trailing_slash
-    def index(self, **kw):
-        if not self.user:
-            return dict(user=None)
-        stats = self.user.stats
-        if (not stats.visible) and (c.user != self.user):
-            return dict(user=self.user)
-        
-        cat_id = None
-        if self.category: 
-            cat_id = self.category._id
-        ret_dict = _getDataForCategory(cat_id, stats)
-        ret_dict['user'] = self.user
-        ret_dict['registration_date'] = stats.registration_date
-        ret_dict['category'] = self.category
-        
-        return ret_dict
-
-class ForgeUserStatsMetricController(BaseController):
-
-    def __init__(self, user):
-        self.user = user
-        super(ForgeUserStatsMetricController, self).__init__()
-
-    @expose('jinja:forgeuserstats:templates/commits.html')
-    @with_trailing_slash
-    def commits(self, **kw):
-        if not self.user:
-            return dict(user=None)
-        stats = self.user.stats
-        if (not stats.visible) and (c.user != self.user):
-            return dict(user=self.user)
-        
-        commits = stats.getCommitsByCategory()
-        return dict(user = self.user,
-                    data = commits) 
-
-    @expose('jinja:forgeuserstats:templates/artifacts.html')
-    @with_trailing_slash
-    def artifacts(self, **kw):
-        if not self.user:
-            return dict(user=None)
-        stats = self.user.stats
-        if (not stats.visible) and (c.user != self.user):
-            return dict(user=self.user)
-
-        stats = self.user.stats       
-        artifacts = stats.getArtifactsByCategory(detailed=True)
-        return dict(user = self.user, data = artifacts) 
-
-    @expose('jinja:forgeuserstats:templates/tickets.html')
-    @with_trailing_slash
-    def tickets(self, **kw):
+        self.user = c.project.user_project_of
         if not self.user: 
-            return dict(user=None)
+            return None
         stats = self.user.stats
-        if (not stats.visible) and (c.user != self.user):
-            return dict(user=self.user)
-
-        artifacts = self.user.stats.getTicketsByCategory()
-        return dict(user = self.user, data = artifacts) 
+        return create_progress_bar(stats.ticketsRanking())
 
 def _getDataForCategory(category, stats):
     totcommits = stats.getCommits(category)
