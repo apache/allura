@@ -11,7 +11,7 @@
 
   {% if user and (user.stats.visible or (c.user == user)) %}
     <div class="grid-20">
-      <ul><li><a href="/userstats/{{user.username}}">Go back to general statistics</a></li></ul>
+      <ul><li><a href="{{c.project.url()}}userstats">Go back to general statistics</a></li></ul>
     </div>
 
     {% if data %}

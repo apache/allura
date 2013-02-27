@@ -129,15 +129,6 @@
     <ul><li><a href="/auth/prefs/user_skills">Click here to check and change your skills list</a></li></ul>
   </div>
 
-  {% if g.show_userstats %}
-    <a name="Statistics"></a>
-    <div class="grid-20">
-      <h2>Contribution statistics</h2>
-      <ul><li><a href="/userstats/{{c.user.username}}">Click here to check your personal statistics</a></li></ul>
-      {{g.theme.statistics_form.display(user=c.user)}}
-    </div>
-  {% endif %}
-
   {% if g.theme.password_change_form %}
   <div class="grid-20">
     <h2>Change Password</h2>
