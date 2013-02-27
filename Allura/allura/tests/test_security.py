@@ -1,5 +1,24 @@
+from pylons import tmpl_context as c
+from nose.tools import assert_equal
+
+from ming.odm import ThreadLocalODMSession
 from allura.tests import decorators as td
 from allura.tests import TestController
+
+from allura.lib.security import Credentials, all_allowed, has_access
+from allura import model as M
+from forgewiki import model as WM
+
+
+def _deny(obj, role, perm):
+    obj.acl.insert(0, M.ACE.deny(role._id, perm))
+    ThreadLocalODMSession.flush_all()
+    Credentials.get().clear()
+
+def _add_to_group(user, role):
+    user.project_role().roles.append(role._id)
+    ThreadLocalODMSession.flush_all()
+    Credentials.get().clear()
 
 class TestSecurity(TestController):
 
@@ -25,3 +44,78 @@ class TestSecurity(TestController):
         self.app.get('/security/test-admin/needs_artifact_access_fail', status=200)
         self.app.get('/security/test-admin/needs_artifact_access_ok', status=200)
 
+    @td.with_wiki
+    def test_all_allowed(self):
+        wiki = c.project.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        admin_role = M.ProjectRole.by_name('Admin')
+        dev_role = M.ProjectRole.by_name('Developer')
+        member_role = M.ProjectRole.by_name('Member')
+        auth_role = M.ProjectRole.by_name('*authenticated')
+        anon_role = M.ProjectRole.by_name('*anonymous')
+        test_user = M.User.by_username('test-user')
+
+        assert_equal(all_allowed(wiki, admin_role), set(['configure', 'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'admin', 'delete']))
+        assert_equal(all_allowed(wiki, dev_role), set(['read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete']))
+        assert_equal(all_allowed(wiki, member_role), set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
+        assert_equal(all_allowed(wiki, auth_role), set(['read', 'post', 'unmoderated_post']))
+        assert_equal(all_allowed(wiki, anon_role), set(['read']))
+        assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))
+
+        _add_to_group(test_user, member_role)
+
+        assert_equal(all_allowed(wiki, test_user), set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
+
+        _deny(wiki, auth_role, 'unmoderated_post')
+
+        assert_equal(all_allowed(wiki, member_role), set(['read', 'create', 'edit', 'post']))
+        assert_equal(all_allowed(wiki, test_user), set(['read', 'create', 'edit', 'post']))
+
+    @td.with_wiki
+    def test_weird_allow_vs_deny(self):
+        '''
+        Test weird interaction of DENYs and ALLOWs in has_access.
+        '''
+        wiki = c.project.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        auth_role = M.ProjectRole.by_name('*authenticated')
+        test_user = M.User.by_username('test-user')
+
+
+        # DENY for auth_role on page prevents chaining of auth_role for 'read'
+        # but anon_role still chains so ALLOW read for anon_role on wiki applies
+        # and authed user can still read.  'post' and 'unmoderated_post' don't
+        # match DENY rule so they chain as normal.
+        #
+        # This behavior seems wrong and should probably be fixed at some point,
+        # but this test is here to confirm that all_allowed matches has_access.
+        assert has_access(page, 'read', test_user)()
+        assert has_access(page, 'post', test_user)()
+        assert has_access(page, 'unmoderated_post', test_user)()
+        assert_equal(all_allowed(page, test_user), set(['read', 'post', 'unmoderated_post']))
+
+        _deny(page, auth_role, 'read')
+
+        assert has_access(page, 'read', test_user)()
+        assert has_access(page, 'post', test_user)()
+        assert has_access(page, 'unmoderated_post', test_user)()
+        assert_equal(all_allowed(page, test_user), set(['read', 'post', 'unmoderated_post']))
+
+
+        # Same thing applies to ALLOW vs DENY on the same ACL;
+        # an ALLOW on any applicable role overrides a DENY on any other.
+        #
+        # In this case it's reasonable since you might want to DENY read for
+        # *anon but ALLOW it for *auth.  *anon ALLOW overriding *auth DENY is
+        # just an unfortunate side-effect of not having a true heiarchy of roles.
+        assert has_access(wiki, 'read', test_user)()
+        assert has_access(wiki, 'post', test_user)()
+        assert has_access(wiki, 'unmoderated_post', test_user)()
+        assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))
+
+        _deny(wiki, auth_role, 'read')
+
+        assert has_access(wiki, 'read', test_user)()
+        assert has_access(wiki, 'post', test_user)()
+        assert has_access(wiki, 'unmoderated_post', test_user)()
+        assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))

@@ -409,14 +409,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     def _set_private(self, bool_flag):
         if bool_flag:
-            role_developer = ProjectRole.by_name('Developer')._id
-            role_creator = self.reported_by.project_role()._id
-            self.acl = [
-                ACE.allow(role_developer, ALL_PERMISSIONS),
-                ACE.allow(role_creator, 'read'),
-                ACE.allow(role_creator, 'post'),
-                ACE.allow(role_creator, 'unmoderated_post'),
-                DENY_ALL]
+            role_developer = ProjectRole.by_name('Developer')
+            role_creator = self.reported_by.project_role()
+            _allow_all = lambda role, perms: [ACE.allow(role._id, perm) for perm in perms]
+            # maintain existing access for developers and the ticket creator,
+            # but revoke all access for everyone else
+            self.acl = _allow_all(role_developer, security.all_allowed(self, role_developer)) \
+                     + _allow_all(role_creator, security.all_allowed(self, role_creator)) \
+                     + [DENY_ALL]
         else:
             self.acl = []
     private = property(_get_private, _set_private)
