@@ -1,0 +1,19 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}User stats – Settings{% endblock %}
+
+{% block header %}
+    Statistics about {{user.display_name}}'s contribution – Settings
+{% endblock %}
+
+{% block content %}
+
+    <div class="grid-20">
+      In this page you can set the visibility of your personal statistics. If you decide to hide your personal statistics to 
+      other users, data collected about your contributions to projects hosted on this forge will be available only for your
+      personal use. 
+      {{form.display(user = user)}}
+    </div>
+
+{% endblock %}
