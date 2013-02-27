@@ -23,7 +23,11 @@ setup(name='ForgeUserStats',
       ],
       entry_points="""
       # -*- Entry points: -*-
-      [allura.stats]
+      [allura]
       userstats=forgeuserstats.main:ForgeUserStatsApp
+
+      [allura.stats]
+      userstats=forgeuserstats.main:UserStatsListener
+
       """,
       )

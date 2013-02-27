@@ -64,14 +64,7 @@ class UserProfileController(BaseController):
         user = c.project.user_project_of
         if not user:
             raise exc.HTTPNotFound()
-        if g.show_userstats and user.stats.visible:
-            from forgeuserstats.main import ForgeUserStatsApp
-            link, description = ForgeUserStatsApp.createlink(user)
-        else:
-            link, description = None, None
-        return dict(user=user,
-                    statslinkurl = link,
-                    statslinkdescription = description)
+        return dict(user=user)
     # This will be fully implemented in a future iteration
     # @expose('jinja:allura.ext.user_profile:templates/user_subscriptions.html')
     # def subscriptions(self):

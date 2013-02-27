@@ -736,14 +736,6 @@ class ThemeProvider(object):
         return RemoveInactivePeriodForm()
 
     @LazyProperty
-    def statistics_form(self):
-        '''
-        :return: None, or an easywidgets Form to render on the user preferences page
-        '''
-        from allura.lib.widgets.forms import StatsPreferencesForm
-        return StatsPreferencesForm(action='/auth/prefs/set_statistics')
-
-    @LazyProperty
     def add_trove_category(self):
         '''
         :return: None, or an easywidgets Form to render on the page to create a
