@@ -266,6 +266,17 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/')
         assert '<div id="access_urls"' in r
 
+    def test_tarball(self):
+        ci = self._get_ci()
+        r = self.app.get(ci + 'tree/')
+        assert 'Download tarball' in r
+        r = self.app.get(ci + 'tarball')
+        assert 'Please wait' in r
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get(ci + 'tarball_status')
+        assert '{"status": "ready"}' in r
+
 
 class TestRestController(_TestCase):
 

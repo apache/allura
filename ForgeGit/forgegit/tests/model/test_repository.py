@@ -240,8 +240,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_tarball(self):
         assert_equal(self.repo.tarball_path, '/tmp/tarball/git/p/test/testgit.git')
+        assert_equal(self.repo.tarball_url('HEAD'), 'file://git/p/test/testgit.git/test-src-git-HEAD.tar')
         self.repo.tarball('HEAD')
         assert os.path.isfile("/tmp/tarball/git/p/test/testgit.git/test-src-git-HEAD.tar")
+        self.repo.set_tarball_status('HEAD', 'ready')
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
 
 
 class TestGitCommit(unittest.TestCase):

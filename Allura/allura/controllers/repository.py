@@ -425,10 +425,27 @@ class CommitBrowser(BaseController):
             result.update(self._commit.context())
         return result
 
-    @expose()
+    @expose('jinja:allura:templates/repo/tarball.html')
     def tarball(self, **kw):
-        allura.tasks.repo_tasks.tarball.post(revision=self._revision)
-        redirect(redirect(request.referer))
+        if tg.config.get('scm.repos.tarball.enable', 'false') != 'true':
+            return
+        c.app.repo.set_tarball_status(self._revision, None)
+        shortname = c.app.repo.project.shortname
+        mount_point = c.app.repo.app.config.options.mount_point
+        filename = '%s-%s-%s.tar' % (shortname, mount_point, self._revision)
+        if (os.path.isfile(os.path.join(c.app.repo.tarball_path, filename)) and
+                (c.app.repo.get_tarball_status(self._revision) == 'ready')):
+            redirect(c.app.repo.tarball_url(self._revision))
+        else:
+            allura.tasks.repo_tasks.tarball.post(revision=self._revision)
+        return dict(commit=self._commit)
+
+    @expose('json:')
+    def tarball_status(self):
+        if tg.config.get('scm.repos.tarball.enable', 'false') != 'true':
+            return
+        return dict(status=c.app.repo.get_tarball_status(self._revision))
+
 
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash

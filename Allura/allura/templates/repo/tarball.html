@@ -1,0 +1,64 @@
+{% extends 'allura:templates/repo/repo_master.html' %}
+
+{% do g.register_forge_css('css/forge/diff.css') %}
+
+{% block title %}
+{{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{commit.shorthand_id()}}
+{% endblock %}
+
+{% block header -%}
+Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
+{%- endblock %}
+
+{% block actions %}
+<a href="{{commit.url()}}log/">
+    <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
+</a>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script type="text/javascript">(function() {
+    var tarball_status = document.getElementById('tarball_status');
+    if (tarball_status) {
+        var opts = {
+            lines: 9, // The number of lines to draw
+            length: 4, // The length of each line
+            width: 2, // The line thickness
+            radius: 3, // The radius of the inner circle
+            rotate: 0, // The rotation offset
+            color: '#555', // #rgb or #rrggbb
+            speed: 1, // Rounds per second
+            trail: 60, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: 10, // Top position relative to parent in px
+            left: 10 // Left position relative to parent in px
+        };
+        var spinner = new Spinner(opts).spin(tarball_status);
+        function check_status() {
+            $.get('{{commit.url()}}tarball_status', function(data) {
+                if (data.status === 'ready') {
+                    window.clearInterval(status_checker);
+                    spinner.opts.speed = 0;
+                    spinner.opts.opacity = 1;
+                    spinner.spin(tarball_status);
+                    $('#tarball_status h2').html(' <a href="{{commit.url()}}tree">Click here to return to repository</a>');
+                    window.location.href = '{{c.app.repo.tarball_url(commit._id)}}';
+                }
+            });
+        }
+        // Check tarball status every 5 seconds
+        var status_checker = window.setInterval(check_status, 5000);
+    }
+}());
+</script>
+{% endblock %}
+
+{% block content %}
+<div id='tarball_status'>
+    <h2>Please wait..</h2>
+</div>
+{% endblock %}

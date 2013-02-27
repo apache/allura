@@ -105,12 +105,18 @@ def reclone_repo(*args, **kwargs):
 
 @task
 def tarball(revision=None):
+    from ming.orm import ThreadLocalORMSession
+
     log = logging.getLogger(__name__)
+    c.app.repo.set_tarball_status(revision, None)
     if revision:
         repo = c.app.repo
         try:
             repo.tarball(revision)
+            c.app.repo.set_tarball_status(revision, 'ready')
+            ThreadLocalORMSession.flush_all()
         except:
+            c.app.repo.set_tarball_status(revision, None)
             log.error('Could not create tarball for repository %s:%s revision %s' % (c.project.shortname, c.app.config.options.mount_point, revision), exc_info=True)
     else:
         log.warn('Creation of tarball for %s:%s skipped because revision is not specified' % (c.project.shortname, c.app.config.options.mount_point))

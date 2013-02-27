@@ -267,8 +267,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_tarball(self):
         assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/p/test/testsvn')
+        assert_equal(self.repo.tarball_url('1'), 'file://svn/p/test/testsvn/test-src-1.tar')
         self.repo.tarball('1')
         assert os.path.isfile("/tmp/tarball/svn/p/test/testsvn/test-src-1.tar")
+        self.repo.set_tarball_status('1', 'ready')
+        assert_equal(self.repo.get_tarball_status('1'), 'ready')
 
 
 class TestSVNRev(unittest.TestCase):

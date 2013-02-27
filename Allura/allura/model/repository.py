@@ -207,6 +207,7 @@ class Repository(Artifact, ActivityObject):
     branches = FieldProperty([dict(name=str,object_id=str, count=int)])
     repo_tags = FieldProperty([dict(name=str,object_id=str, count=int)])
     upstream_repo = FieldProperty(dict(name=str,url=str))
+    tarball_status = FieldProperty([dict(revision=str, status=str)])
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -235,6 +236,27 @@ class Repository(Artifact, ActivityObject):
                             self.tool,
                             self.project.url()[1:],
                             self.name)
+
+    def tarball_url(self, revision):
+        shortname = c.app.repo.project.shortname
+        mount_point = c.app.repo.app.config.options.mount_point
+        filename = '%s-%s-%s.tar' % (shortname, mount_point, revision)
+        r = os.path.join(self.tool,self.project.url()[1:],self.name,filename)
+        return tg.config.get('scm.repos.tarball.url', '/') + r
+
+    def get_tarball_status(self, revision):
+        tarballs = dict((t.revision, t.status) for t in self.tarball_status)
+        if revision in tarballs.keys():
+            return tarballs[revision]
+
+    def set_tarball_status(self, revision, status):
+        if self.get_tarball_status(revision):
+            for tarball in self.tarball_status:
+                if tarball['revision'] == revision:
+                    tarball['status'] = status
+        else:
+            self.tarball_status.append(dict(revision=revision, status=status))
+
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (
