@@ -1,0 +1,5 @@
+<select id="{{id}}" name="{{name}}" class="project-user-combobox{{className and ' %s' % className or ''}}">
+{% for o in options %}
+  <option{% if o.selected %} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+{% endfor %}
+</select>

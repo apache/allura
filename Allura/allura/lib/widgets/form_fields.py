@@ -93,6 +93,22 @@ class ProjectUserSelect(ew.InputField):
             minLength: 2
           });''' % c.project.url())
 
+
+class ProjectUserCombo(ew.SingleSelectField):
+    template = 'jinja:allura:templates/widgets/project_user_combo.html'
+
+    def options(self):
+        users = []
+        for i in range(10):
+            users.append(ew.Option(py_value=i, label='User %s' % i))
+        return users
+
+    def resources(self):
+        for r in super(ProjectUserCombo, self).resources():
+            yield r
+        yield ew.JSLink('js/project_user_combo.js')
+
+
 class NeighborhoodProjectSelect(ew.InputField):
     template='jinja:allura:templates/widgets/neighborhood_project_select.html'
     defaults=dict(

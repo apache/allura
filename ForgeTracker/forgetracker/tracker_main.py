@@ -1138,6 +1138,7 @@ class TicketController(BaseController):
             c.subscribe_form = W.ticket_subscribe_form
             c.ticket_custom_field = W.ticket_custom_field
             c.vote_form = W.vote_form
+            c.user_combo = ffw.ProjectUserCombo()
             tool_subscribed = M.Mailbox.subscribed()
             if tool_subscribed:
                 subscribed = False
