@@ -84,6 +84,7 @@ class TestLastCommit(unittest.TestCase):
         self.repo.commits = self._commits
         lcids = M.repository.RepositoryImplementation.last_commit_ids.__func__
         self.repo.last_commit_ids = lambda *a, **k: lcids(self.repo, *a, **k)
+        c.lcid_cache = {}
 
     def _build_tree(self, commit, path, tree_paths):
         tree_nodes = []
@@ -137,8 +138,8 @@ class TestLastCommit(unittest.TestCase):
         self.repo._commits[commit._id] = commit
         return commit
 
-    def _commits(self, path, commit_id, limit):
-        return [c._id for c in reversed(self.repo._commits.values()) if path in c.changed_paths][:limit]
+    def _commits(self, path, commit_id, skip=0, limit=-1):
+        return [c._id for c in reversed(self.repo._commits.values()) if path in c.changed_paths][skip:limit]
 
     def test_single_commit(self):
         commit1 = self._add_commit('Commit 1', [
