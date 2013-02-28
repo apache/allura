@@ -587,7 +587,11 @@ class SVNImplementation(M.RepositoryImplementation):
         single common parent path (i.e., you are only asking for
         a subset of the nodes of a single tree, one level deep).
         '''
-        tree_path = '/' + os.path.commonprefix(paths).strip('/')  # always leading slash, never trailing
+        if len(paths) == 1:
+            tree_path = '/' + os.path.dirname(paths[0].strip('/'))
+        else:
+            tree_path = '/' + os.path.commonprefix(paths).strip('/')  # always leading slash, never trailing
+        paths = [path.strip('/') for path in paths]
         rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
@@ -600,6 +604,7 @@ class SVNImplementation(M.RepositoryImplementation):
             return None
         entries = {}
         for path, info in infos[1:]:
+            path = os.path.join(tree_path, path).strip('/')
             if path in paths:
                 entries[path] = self._oid(info.last_changed_rev.number)
         return entries

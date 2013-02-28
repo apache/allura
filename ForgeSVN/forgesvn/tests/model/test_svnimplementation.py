@@ -45,11 +45,14 @@ class TestSVNImplementation(object):
     def _test_last_commit_ids(self, path):
         repo = Mock(fs_path='/tmp/')
         repo.name = 'code'
+        repo._id = '5057636b9c1040636b81e4b1'
         impl = SVNImplementation(repo)
         impl._svn.info2 = Mock()
-        impl._svn.info2.return_value = [('foo', Mock())]
+        impl._svn.info2.return_value = [('trunk', Mock()), ('foo', Mock())]
+        impl._svn.info2.return_value[1][1].last_changed_rev.number = '1'
         commit = Commit()
         commit._id = '5057636b9c1040636b81e4b1:6'
-        tree_id = impl.last_commit_ids(commit, [path])
+        entries = impl.last_commit_ids(commit, [path])
 
-        assert_equal(impl._svn.info2.call_args[0][0], 'file:///tmp/code/trunk/foo')
+        assert_equal(entries, {path.strip('/'): '5057636b9c1040636b81e4b1:1'})
+        assert_equal(impl._svn.info2.call_args[0][0], 'file:///tmp/code/trunk')
