@@ -3,8 +3,8 @@ import json
 from datetime import datetime
 from IPython.testing.decorators import module_not_available, skipif
 
-from forgewiki.command.wiki2markdown.extractors import MySQLExtractor
-from forgewiki.command.wiki2markdown.loaders import MediawikiLoader
+from forgewiki.scripts.wiki2markdown.extractors import MySQLExtractor
+from forgewiki.scripts.wiki2markdown.loaders import MediawikiLoader
 from alluratest.controller import setup_basic_test
 from allura import model as M
 from forgewiki import model as WM
