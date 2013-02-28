@@ -2,3 +2,5 @@
 
 # Include our common requirements
 -r requirements-common.txt
+
+GitPython==0.3.2.RC1

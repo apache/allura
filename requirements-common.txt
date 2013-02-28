@@ -64,7 +64,6 @@ WebHelpers==1.3
 # git deps
 async==0.6.1
 gitdb==0.5.4
--e git://github.com/42cc/GitPython.git@0.3.2-RC1-20130214#egg=git
 smmap==0.8.2
 
 # testing & development
