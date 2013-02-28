@@ -1,9 +1,10 @@
+import logging
 import os
 import shutil
 import json
 import hashlib
 
-from allura.command import base as allura_base
+log = logging.getLogger(__name__)
 
 
 class MediawikiExtractor(object):
@@ -45,11 +46,7 @@ class MySQLExtractor(MediawikiExtractor):
             raise ImportError('GPL library MySQL-python is required for this operation')
 
         if not self._connection:
-            try:
-                self._connection = MySQLdb.connect(**self.db_options)
-            except MySQLdb.DatabaseError, e:
-                allura_base.log.error("Can't connect to database: %s" % str(e))
-                exit(2)
+            self._connection = MySQLdb.connect(**self.db_options)
         return self._connection
 
     def _save(self, content, *paths):
@@ -141,12 +138,12 @@ class MySQLExtractor(MediawikiExtractor):
         self.extract_pages()
 
     def extract_pages(self):
-        allura_base.log.info('Extracting pages...')
+        log.info('Extracting pages...')
         for page in self._pages():
             self.extract_history(page)
             self.extract_talk(page)
             self.extract_attachments(page)
-        allura_base.log.info('Extracting pages done')
+        log.info('Extracting pages done')
 
     def extract_history(self, page):
         page_id = page['page_id']
@@ -154,8 +151,7 @@ class MySQLExtractor(MediawikiExtractor):
             page_data.update(page)
             self._save(json.dumps(page_data), 'pages', str(page_id),
                        'history', str(page_data['timestamp']) + '.json')
-        allura_base.log.info('Extracted history for page %s (%s)'
-                             % (page_id, page['title']))
+        log.info('Extracted history for page %s (%s)', page_id, page['title'])
 
     def extract_talk(self, page):
         page_id = page['page_id']
@@ -163,16 +159,13 @@ class MySQLExtractor(MediawikiExtractor):
         if talk_page_data:
             self._save(json.dumps(talk_page_data), 'pages', str(page_id),
                        'discussion.json')
-            allura_base.log.info('Extracted talk for page %s (%s)'
-                                 % (page_id, page['title']))
-
-        allura_base.log.info('No talk for page %s (%s)'
-                             % (page_id, page['title']))
+            log.info('Extracted talk for page %s (%s)', page_id, page['title'])
+        else:
+            log.info('No talk for page %s (%s)', page_id, page['title'])
 
     def extract_attachments(self, page):
         page_id = page['page_id']
         for filepath in self._attachments(page_id):
             self._save_attachment(filepath, 'pages', str(page_id),
                                   'attachments')
-        allura_base.log.info('Extracted attachments for page %s (%s)'
-                             % (page_id, page['title']))
+        log.info('Extracted attachments for page %s (%s)', page_id, page['title'])
