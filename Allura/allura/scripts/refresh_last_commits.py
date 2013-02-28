@@ -175,9 +175,9 @@ class RefreshLastCommits(ScriptTask):
 
 @contextmanager
 def time(timings):
-    s = datetime.now()
+    s = datetime.utcnow()
     yield
-    timings.append((datetime.now() - s).total_seconds())
+    timings.append((datetime.utcnow() - s).total_seconds())
 
 
 
