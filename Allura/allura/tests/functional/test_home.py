@@ -55,4 +55,4 @@ class TestProjectHome(TestController):
             'value': u'test-admin',
             'label': u'Test Admin (test-admin)'
         }]
-        assert_equal(j['users'], expected)
+        assert_equal(j['options'], expected)

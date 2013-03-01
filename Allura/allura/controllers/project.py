@@ -383,7 +383,7 @@ class ProjectController(object):
     @expose('json:')
     def users(self):
         return {
-            'users': [{
+            'options': [{
                 'value': u.username,
                 'label': '%s (%s)' % (u.display_name, u.username)
             } for u in c.project.users()]
