@@ -129,87 +129,37 @@ class TestBlob(unittest.TestCase):
         blob.path = Mock(return_value='path')
         blob.prev_commit = Mock()
         blob.next_commit = Mock()
+        blob.prev_commit.get_path.return_value = '_prev'
+        blob.next_commit.get_path.return_value = '_next'
         context = blob.context()
+        assert_equal(context, {'prev': '_prev', 'next': '_next'})
         blob.prev_commit.get_path.assert_called_with('path', create=False)
         blob.next_commit.get_path.assert_called_with('path', create=False)
 
-    @patch.object(M.repo.LastCommit, 'get')
-    def test_prev_commit_no_create(self, lc_get):
-        lc_get.return_value = None
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob.prev_commit.get_path.side_effect = KeyError
+        blob.next_commit.get_path.side_effect = KeyError
+        context = blob.context()
+        assert_equal(context, {'prev': None, 'next': None})
+
+    @patch.object(M.repo.LastCommit, '_prev_commit_id')
+    def test_prev_commit_no_create(self, lc_pcid):
+        lc_pcid.return_value = None
+        blob = M.repo.Blob(Mock(), 'foo', 'bid')
+        blob.tree.path.return_value = '/path/'
         pc = blob.prev_commit
-        lc_get.assert_called_once_with(blob.tree, create=False)
+        lc_pcid.assert_called_once_with(blob.commit, 'path/foo')
         assert not blob.repo.commit.called
         assert_equal(pc, None)
 
-        lc_get.reset_mock()
-        _lcd = Mock()
-        _lcd.by_name = {'blob': 'cid'}
-        lc_get.return_value = _lcd
-        _lc = Mock()
-        _pc = _lc.get_parent()
-        _pc.get_path.side_effect = KeyError
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
-        blob.name = 'blob'
-        blob.tree.path.return_value = 'path/'
-        blob.repo.commit.return_value = _lc
+        lc_pcid.reset_mock()
+        lc_pcid.return_value = 'pcid'
+        blob = M.repo.Blob(Mock(), 'foo', 'bid')
+        blob.tree.path.return_value = '/path/'
+        blob.repo.commit.return_value = 'commit'
         pc = blob.prev_commit
-        blob.repo.commit.assert_called_once_with('cid')
-        lc_get.assert_called_once_with(blob.tree, create=False)
-        _pc.get_path.assert_called_once_with('path', create=False)
-        assert_equal(pc, None)
-
-        lc_get.reset_mock()
-        _lcd = Mock()
-        _lcd.by_name = {'blob': 'cid'}
-        lc_get.return_value = _lcd
-        _lc = Mock()
-        _pc = _lc.get_parent()
-        _pc.get_path.return_value = None
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
-        blob.name = 'blob'
-        blob.tree.path.return_value = 'path/'
-        blob.repo.commit.return_value = _lc
-        pc = blob.prev_commit
-        blob.repo.commit.assert_called_once_with('cid')
-        lc_get.assert_called_once_with(blob.tree, create=False)
-        _pc.get_path.assert_called_once_with('path', create=False)
-        assert_equal(pc, None)
-
-        lc_get.reset_mock()
-        _lcd = Mock()
-        _lcd.by_name = {'blob': 'cid'}
-        lc_get.return_value = _lcd
-        _lc = Mock()
-        _pc = _lc.get_parent()
-        _pc.get_path.return_value = Mock(by_name=['foo'])
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
-        blob.name = 'blob'
-        blob.tree.path.return_value = 'path/'
-        blob.repo.commit.return_value = _lc
-        pc = blob.prev_commit
-        blob.repo.commit.assert_called_once_with('cid')
-        lc_get.assert_called_once_with(blob.tree, create=False)
-        _pc.get_path.assert_called_once_with('path', create=False)
-        assert_equal(pc, None)
-
-        lc_get.reset_mock()
-        _lcd = Mock()
-        _lcd.by_name = {'blob': 'cid'}
-        lc_get.return_value = _lcd
-        _lc = Mock()
-        _pc = _lc.get_parent()
-        _tree = Mock(by_name=['blob'])
-        _pc.get_path.return_value = _tree
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
-        blob.name = 'blob'
-        blob.tree.path.return_value = 'path/'
-        blob.repo.commit.return_value = _lc
-        pc = blob.prev_commit
-        assert_equal(lc_get.call_args_list, [call(blob.tree, create=False), call(_tree, create=False)])
-        _pc.get_path.assert_called_once_with('path', create=False)
-        assert_equal(blob.repo.commit.call_args_list, [call('cid'), call('cid')])
-        assert_equal(pc, _lc)
+        lc_pcid.assert_called_once_with(blob.commit, 'path/foo')
+        blob.repo.commit.assert_called_once_with('pcid')
+        assert_equal(pc, 'commit')
 
     def test_next_commit_no_create(self):
         blob = M.repo.Blob(MagicMock(), MagicMock(), MagicMock())
