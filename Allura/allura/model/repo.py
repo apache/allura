@@ -542,7 +542,9 @@ class Tree(RepoObject):
             for name in names:
                 commit_info = commit_infos.get(lcd.by_name.get(name))
                 if not commit_info:
-                    continue
+                    commit_info = defaultdict(str)
+                elif 'id' in commit_info:
+                    commit_info['href'] = self.repo.url_for_commit(commit_info['id'])
                 results.append(dict(
                         kind=type,
                         name=name,
@@ -552,7 +554,7 @@ class Tree(RepoObject):
                                 author_email=commit_info['author_email'],
                                 author_url=commit_info['author_url'],
                                 date=commit_info['date'],
-                                href=self.repo.url_for_commit(commit_info['id']),
+                                href=commit_info.get('href',''),
                                 shortlink=commit_info['shortlink'],
                                 summary=commit_info['summary'],
                             ),
