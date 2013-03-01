@@ -665,21 +665,9 @@ class Blob(object):
 
     @LazyProperty
     def prev_commit(self):
-        lc = LastCommit.get(self.tree, create=False)
-        if lc:
-            last_commit = self.repo.commit(lc.by_name[self.name])
-            prev_commit = last_commit.get_parent()
-            try:
-                tree = prev_commit and prev_commit.get_path(self.tree.path().rstrip('/'), create=False)
-            except KeyError:
-                return None  # parent tree added this commit
-            if not tree or self.name not in tree.by_name:
-                return None  # tree or file added this commit
-            lc = LastCommit.get(tree, create=False)
-            commit_id = lc and lc.by_name.get(self.name)
-            if commit_id:
-                prev_commit = self.repo.commit(commit_id)
-                return prev_commit
+        pcid = LastCommit._prev_commit_id(self.commit, self.path().strip('/'))
+        if pcid:
+            return self.repo.commit(pcid)
         return None
 
     @LazyProperty
@@ -733,8 +721,16 @@ class Blob(object):
         path = self.path()
         prev = self.prev_commit
         next = self.next_commit
-        if prev is not None: prev = prev.get_path(path, create=False)
-        if next is not None: next = next.get_path(path, create=False)
+        if prev is not None:
+            try:
+                prev = prev.get_path(path, create=False)
+            except KeyError as e:
+                prev = None
+        if next is not None:
+            try:
+                next = next.get_path(path, create=False)
+            except KeyError as e:
+                next = None
         return dict(
             prev=prev,
             next=next)
