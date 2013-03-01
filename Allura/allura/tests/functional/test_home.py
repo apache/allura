@@ -5,6 +5,8 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 
+from nose.tools import assert_equal
+
 
 class TestProjectHome(TestController):
 
@@ -45,3 +47,12 @@ class TestProjectHome(TestController):
 
     def test_user_search_shortparam(self):
         r = self.app.get('/p/test/user_search?term=ad', status=400)
+
+    def test_users(self):
+        r = self.app.get('/p/test/users', status=200)
+        j = json.loads(r.body)
+        expected = [{
+            'value': u'test-admin',
+            'label': u'Test Admin (test-admin)'
+        }]
+        assert_equal(j['users'], expected)

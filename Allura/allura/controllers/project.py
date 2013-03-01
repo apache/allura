@@ -380,6 +380,15 @@ class ProjectController(object):
                     id=u.username)
                 for u in users])
 
+    @expose('json:')
+    def users(self):
+        return {
+            'users': [{
+                'value': u.username,
+                'label': '%s (%s)' % (u.display_name, u.username)
+            } for u in c.project.users()]
+        }
+
 class ScreenshotsController(object):
 
     @expose()
