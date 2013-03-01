@@ -1,9 +1,15 @@
 (function($) {
   $.widget('ui.combobox', {
+
+    options: {
+      source_url: ''  // caller must provide this
+    },
+
     _create: function() {
       var input,
           that = this,
           wasOpen = false,
+          loaded = false,  // options list loaded with ajax already?
           select = this.element.hide(),
           selected = select.children(':selected'),
           value = selected.val() ? selected.text() : "",
@@ -75,7 +81,7 @@
 
       $('<a>')
         .attr('tabIndex', -1)
-        .attr('title', 'Show all users')
+        .attr('title', 'Show all options')
         .appendTo(wrapper)
         .button({
           icons: {
@@ -103,7 +109,3 @@
     }
   });
 })(jQuery);
-
-$(function() {
-  $('select.project-user-combobox').combobox();
-});

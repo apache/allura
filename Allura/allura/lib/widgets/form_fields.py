@@ -106,7 +106,11 @@ class ProjectUserCombo(ew.SingleSelectField):
     def resources(self):
         for r in super(ProjectUserCombo, self).resources():
             yield r
-        yield ew.JSLink('js/project_user_combo.js')
+        yield ew.JSLink('js/combobox.js')
+        yield onready('''
+          $('select.project-user-combobox').combobox({
+            source_url: "%susers"
+          });''' % c.project.url())
 
 
 class NeighborhoodProjectSelect(ew.InputField):
