@@ -34,7 +34,6 @@
 {% block edit_box %}
 <div class="editbox">
   <div class="form_holder" style="display: none">
-    {{c.user_combo.display()}}
     {{c.ticket_form.display(action='%supdate_ticket_from_widget' % ticket.url(),
       value=ticket, ticket=ticket, show_comment=True)}}
   </div>

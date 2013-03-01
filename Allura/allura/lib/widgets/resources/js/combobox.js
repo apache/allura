@@ -18,6 +18,8 @@
             .insertAfter(select);
 
       function populateSelect(data) {
+        select.children('option').remove();
+        $('<option></option>').val('').appendTo(select);
         for (var i = 0; i < data.options.length; i++) {
           var label = data.options[i].label,
               value = data.options[i].value;

@@ -54,7 +54,7 @@ class GenericTicketForm(ew.SimpleForm):
                     attrs={'style':'width: 95%'}),
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: c.app.globals.all_status_names.split()),
-            ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
+            ffw.ProjectUserCombo(name='assigned_to', label='Owner'),
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ew.Checkbox(name='private', label='Mark as Private', attrs={'class':'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
