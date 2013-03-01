@@ -37,8 +37,9 @@
             matcher = new RegExp('^' + $.ui.autocomplete.escapeRegex(value) + '$'),
             valid = false;
         select.children('option').each(function() {
-          if ($(this).text().match(matcher)) {
+          if ($(this).val().match(matcher)) {
             this.selected = valid = true;
+            input.val(this.text);
             return false;
           }
         });
