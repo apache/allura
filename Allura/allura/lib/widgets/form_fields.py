@@ -98,10 +98,7 @@ class ProjectUserCombo(ew.SingleSelectField):
     template = 'jinja:allura:templates/widgets/project_user_combo.html'
 
     def options(self):
-        users = []
-        for i in range(10):
-            users.append(ew.Option(py_value=i, label='User %s' % i))
-        return users
+        return []  # will be loaded later via ajax
 
     def resources(self):
         for r in super(ProjectUserCombo, self).resources():

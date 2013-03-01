@@ -2,7 +2,7 @@
   $.widget('ui.combobox', {
 
     options: {
-      source_url: ''  // caller must provide this
+      source_url: null  // caller must provide this
     },
 
     _create: function() {
@@ -16,6 +16,21 @@
           wrapper = this.wrapper = $('<span>')
             .addClass('ui-combobox')
             .insertAfter(select);
+
+      function populateSelect(data) {
+        for (var i = 0; i < data.options.length; i++) {
+          var label = data.options[i].label,
+              value = data.options[i].value;
+          $('<option>' + label + '</option>')
+            .val(value)
+            .appendTo(select);
+        }
+        loaded = true;
+        input.autocomplete('search', input.val());  // trigger search to re-render options
+      }
+
+      // Load options list with ajax and populate underlying select with loaded data
+      $.get(this.options.source_url, populateSelect);
 
       function removeIfInvalid(element) {
         var value = $(element).val(),
@@ -44,6 +59,14 @@
                 delay: 0,
                 minLength: 0,
                 source: function (request, response) {
+                  if (!loaded) {
+                    response([{
+                      label: 'Loading...',
+                      value: '',
+                      option: {item: ''}
+                    }]);
+                    return;
+                  }
                   var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), 'i');
                   response(select.children('option').map(function() {
                     var text = $(this).text();
