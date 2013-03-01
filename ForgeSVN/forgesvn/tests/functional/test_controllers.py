@@ -138,7 +138,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tree/')
         assert 'Download tarball' in r
         r = self.app.get('/src/3/tarball')
-        assert 'Please wait' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/src/3/tarball_status')

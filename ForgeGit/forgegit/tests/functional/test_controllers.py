@@ -271,11 +271,18 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/')
         assert 'Download tarball' in r
         r = self.app.get(ci + 'tarball')
-        assert 'Please wait' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')
         assert '{"status": "ready"}' in r
+
+    def test_tarball_status(self):
+        assert_equal(c.app.repo.get_tarball_status('1e146e67985dcd71c74de79613719bef7bddca4a'), None)
+        c.app.repo.set_tarball_status('1e146e67985dcd71c74de79613719bef7bddca4a', 'ready')
+        c.app.repo.set_tarball_status('df30427c488aeab84b2352bdf88a3b19223f9d7a', 'busy')
+        assert_equal(c.app.repo.get_tarball_status('1e146e67985dcd71c74de79613719bef7bddca4a'), 'ready')
+        assert_equal(c.app.repo.get_tarball_status('df30427c488aeab84b2352bdf88a3b19223f9d7a'), 'busy')
 
 
 class TestRestController(_TestCase):

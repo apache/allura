@@ -12,8 +12,8 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 {% endblock %}
 
 {% block actions %}
-{% if tg.config.get('scm.repos.tarball.enable', 'false')=='true' %}
-<a href="{{commit.url()}}tarball">Download tarball</a>
+{% if tarball_enable %}
+<a href="{{commit.url()}}tarball" rel="nofollow">Download tarball</a>
 {% endif %}
 
 <a href="{{commit.url()}}log/?path={{ path }}">

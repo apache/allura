@@ -33,7 +33,7 @@ from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
 from allura.lib.diff import HtmlSideBySideDiff
-
+from paste.deploy.converters import asbool
 from .base import BaseController
 
 log = logging.getLogger(__name__)
@@ -427,22 +427,17 @@ class CommitBrowser(BaseController):
 
     @expose('jinja:allura:templates/repo/tarball.html')
     def tarball(self, **kw):
-        if tg.config.get('scm.repos.tarball.enable', 'false') != 'true':
+        if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
             return
-        c.app.repo.set_tarball_status(self._revision, None)
-        shortname = c.app.repo.project.shortname
-        mount_point = c.app.repo.app.config.options.mount_point
-        filename = '%s-%s-%s.tar' % (shortname, mount_point, self._revision)
-        if (os.path.isfile(os.path.join(c.app.repo.tarball_path, filename)) and
-                (c.app.repo.get_tarball_status(self._revision) == 'ready')):
+        if (c.app.repo.get_tarball_status(self._revision) == 'ready'):
             redirect(c.app.repo.tarball_url(self._revision))
-        else:
+        elif (c.app.repo.get_tarball_status(self._revision) == None):
             allura.tasks.repo_tasks.tarball.post(revision=self._revision)
-        return dict(commit=self._commit)
+        return dict(commit=self._commit, revision=self._revision)
 
     @expose('json:')
     def tarball_status(self):
-        if tg.config.get('scm.repos.tarball.enable', 'false') != 'true':
+        if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
             return
         return dict(status=c.app.repo.get_tarball_status(self._revision))
 
@@ -493,7 +488,8 @@ class TreeBrowser(BaseController, DispatchIndex):
             tree=self._tree,
             path=self._path,
             parent=self._parent,
-            tool_subscribed=tool_subscribed)
+            tool_subscribed=tool_subscribed,
+            tarball_enable = asbool(tg.config.get('scm.repos.tarball.enable', False)))
 
     @expose()
     def _lookup(self, next, *rest):

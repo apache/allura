@@ -11,6 +11,7 @@ from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
 from itertools import izip
+from urlparse import urljoin
 
 import tg
 from paste.deploy.converters import asbool
@@ -242,21 +243,19 @@ class Repository(Artifact, ActivityObject):
         mount_point = c.app.repo.app.config.options.mount_point
         filename = '%s-%s-%s.tar' % (shortname, mount_point, revision)
         r = os.path.join(self.tool,self.project.url()[1:],self.name,filename)
-        return tg.config.get('scm.repos.tarball.url', '/') + r
+        return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
     def get_tarball_status(self, revision):
         tarballs = dict((t.revision, t.status) for t in self.tarball_status)
-        if revision in tarballs.keys():
-            return tarballs[revision]
+        return tarballs.get(revision)
 
     def set_tarball_status(self, revision, status):
-        if self.get_tarball_status(revision):
             for tarball in self.tarball_status:
                 if tarball['revision'] == revision:
                     tarball['status'] = status
-        else:
+                    return
             self.tarball_status.append(dict(revision=revision, status=status))
-
+            session(self).flush(self)
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (

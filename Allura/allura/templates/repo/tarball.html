@@ -1,7 +1,4 @@
 {% extends 'allura:templates/repo/repo_master.html' %}
-
-{% do g.register_forge_css('css/forge/diff.css') %}
-
 {% block title %}
 {{c.project.name}} / {{c.app.config.options.mount_label}} / Commit {{commit.shorthand_id()}}
 {% endblock %}
@@ -9,12 +6,6 @@
 {% block header -%}
 Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(commit)}}
 {%- endblock %}
-
-{% block actions %}
-<a href="{{commit.url()}}log/">
-    <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
-</a>
-{% endblock %}
 
 {% block extra_js %}
 {{ super() }}
@@ -45,8 +36,8 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                     spinner.opts.speed = 0;
                     spinner.opts.opacity = 1;
                     spinner.spin(tarball_status);
-                    $('#tarball_status h2').html(' <a href="{{commit.url()}}tree">Click here to return to repository</a>');
-                    window.location.href = '{{c.app.repo.tarball_url(commit._id)}}';
+                    $('#tarball_status h2').html(' <a href="{{c.app.repo.tarball_url(revision)}}">Click here to download</a>');
+                    window.location.href = '{{c.app.repo.tarball_url(revision)}}';
                 }
             });
         }
@@ -59,6 +50,14 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 
 {% block content %}
 <div id='tarball_status'>
-    <h2>Please wait..</h2>
+    <h2>Generating snapshot...</h2>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+#tarball_status h2 {
+padding-left: 33px;
+}
+</style>
 {% endblock %}
