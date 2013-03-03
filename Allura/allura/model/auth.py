@@ -341,9 +341,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def stats(self):
-        if g.show_userstats:
+        if 'userstats' in g.entry_points['stats']:
             from forgeuserstats.model.stats import UserStats
-            return UserStats.query.get(_id=self.stats_id)
+            if self.stats_id:
+                return UserStats.query.get(_id=self.stats_id)
+            return UserStats.create(self)
         else: 
             return None
 
