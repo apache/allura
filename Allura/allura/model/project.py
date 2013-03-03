@@ -715,8 +715,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                         ('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search'),
                         ('activity', 'activity', 'Activity')]
-                if g.show_userstats:
-                    apps = apps + [('userstats', 'userstats', 'Statistics')]
             else:
                 apps = [('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search'),
