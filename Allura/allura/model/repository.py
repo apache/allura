@@ -239,7 +239,7 @@ class Repository(Artifact, ActivityObject):
                             self.name)
 
     def tarball_url(self, revision):
-        shortname = c.app.repo.project.shortname
+        shortname = c.app.repo.project.shortname.replace('/', '-')
         mount_point = c.app.repo.app.config.options.mount_point
         filename = '%s-%s-%s.tar' % (shortname, mount_point, revision)
         r = os.path.join(self.tool,self.project.url()[1:],self.name,filename)
@@ -250,12 +250,13 @@ class Repository(Artifact, ActivityObject):
         return tarballs.get(revision)
 
     def set_tarball_status(self, revision, status):
-            for tarball in self.tarball_status:
-                if tarball['revision'] == revision:
-                    tarball['status'] = status
-                    return
-            self.tarball_status.append(dict(revision=revision, status=status))
-            session(self).flush(self)
+        for tarball in self.tarball_status:
+            if tarball['revision'] == revision:
+                tarball['status'] = status
+                session(self).flush(self)
+                return
+        self.tarball_status.append(dict(revision=revision, status=status))
+        session(self).flush(self)
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (

@@ -323,7 +323,7 @@ class GitImplementation(M.RepositoryImplementation):
         return tree._id
 
     def tarball(self, commit):
-        shortname = self._repo.project.shortname.replace('/','-')
+        shortname = self._repo.project.shortname.replace('/', '-')
         mount_point = self._repo.app.config.options.mount_point
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)

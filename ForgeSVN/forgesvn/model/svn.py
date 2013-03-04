@@ -611,7 +611,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return entries
 
     def tarball(self, commit):
-        shortname = self._repo.project.shortname
+        shortname = self._repo.project.shortname.replace('/', '-')
         mount_point = self._repo.app.config.options.mount_point
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
