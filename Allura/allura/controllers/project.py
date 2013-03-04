@@ -202,8 +202,10 @@ class NeighborhoodController(object):
             c.project.short_description = project_description
         offset = c.project.next_mount_point(include_hidden=True)
         if tools and not neighborhood.project_template:
+            anchored_tools = neighborhood.get_anchored_tools()
             for i, tool in enumerate(tools):
-                c.project.install_app(tool, ordinal=i + offset)
+                if (tool not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
+                    c.project.install_app(tool, ordinal=i + offset)
         flash('Welcome to the SourceForge Project System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')

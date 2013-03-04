@@ -487,16 +487,17 @@ class ProjectRegistrationProvider(object):
                         tool_options[k] = \
                                 string.Template(v).safe_substitute(
                                     p.__dict__.get('root_project', {}))
-                app = p.install_app(tool,
-                    mount_label=tool_config['label'],
-                    mount_point=tool_config['mount_point'],
-                    ordinal=i + offset,
+                if p.app_instance(tool) is None:
+                    app = p.install_app(tool,
+                        mount_label=tool_config['label'],
+                        mount_point=tool_config['mount_point'],
+                        ordinal=i + offset,
                     **tool_options)
-                if tool == 'wiki':
-                    from forgewiki import model as WM
-                    text = tool_config.get('home_text',
-                        '[[project_admins]]\n[[download_button]]')
-                    WM.Page.query.get(app_config_id=app.config._id).text = text
+                    if tool == 'wiki':
+                        from forgewiki import model as WM
+                        text = tool_config.get('home_text',
+                            '[[project_admins]]\n[[download_button]]')
+                        WM.Page.query.get(app_config_id=app.config._id).text = text
 
         if 'tool_order' in project_template:
             for i, tool in enumerate(project_template['tool_order']):

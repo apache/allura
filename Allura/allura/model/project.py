@@ -392,7 +392,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         from allura.app import SitemapEntry
         entries = []
 
-        anchored_tools =self.neighborhood.get_anchored_tools()
+        anchored_tools = self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
         new_tools = self.install_anchored_tools()
 
@@ -448,7 +448,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         new_tools = []
         if not self.is_nbhd_project:
             for tool, label in anchored_tools.iteritems():
-                if tool not in installed_tools:
+                if (tool not in installed_tools) and (self.app_instance(tool) is None):
                     try:
                         new_tools.append(self.install_app(tool, tool, label, i))
                     except Exception:

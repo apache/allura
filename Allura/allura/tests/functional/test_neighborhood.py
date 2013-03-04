@@ -677,6 +677,45 @@ class TestNeighborhood(TestController):
             if name in ('', 'TestGroup1'):
                 assert name not in roles
 
+    def test_projects_anchored_tools(self):
+        r = self.app.post('/adobe/_admin/update', params=dict(name='Adobe',
+            css='',
+            homepage='# Adobe!\n[Root]',
+            project_template="""{
+                "private":true,
+                "tools":{
+                    "wiki":{
+                        "label":"Wiki",
+                        "mount_point":"wiki",
+                        "options":{
+                            "show_right_bar":false,
+                            "show_left_bar":false,
+                            "show_discussion":false,
+                            "some_url": "http://foo.com/$shortname/"
+                        },
+                        "home_text":"My home text!"
+                    },
+                    "admin":{"label":"Admin","mount_point":"admin"}
+                },
+                "tool_order":["wiki","admin"],
+
+                }""" ),
+            extra_environ=dict(username='root'))
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.anchored_tools ='wiki:Wiki'
+        r = self.app.post(
+            '/adobe/register',
+            params=dict(
+                project_unixname='testtemp',
+                project_name='Test Template',
+                project_description='',
+                neighborhood='Adobe',
+                private_project='off'),
+            antispam=True,
+            extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/testtemp/admin/tools')
+        assert '<a href="/adobe/testtemp/wiki/" class="ui-icon-tool-wiki">' in r
+        assert '<a href="/adobe/testtemp/admin/" class="ui-icon-tool-admin">' in r
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
