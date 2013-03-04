@@ -97,15 +97,14 @@ class ProjectUserSelect(ew.InputField):
 class ProjectUserCombo(ew.SingleSelectField):
     template = 'jinja:allura:templates/widgets/project_user_combo.html'
 
+    # No options for widget initially.
+    # It'll be populated later via ajax call.
+    options = []
+
     def to_python(self, value, state):
         # Skipping validation, 'cause widget has no values initially.
         # All values loaded later via ajax.
         return value
-
-    def options(self):
-        # No options for widget initially.
-        # It'll be populated later via ajax call.
-        return []
 
     def resources(self):
         for r in super(ProjectUserCombo, self).resources():

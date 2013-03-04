@@ -38,6 +38,14 @@ class GenericTicketForm(ew.SimpleForm):
                 if milestone.complete and (milestone.py_value != milestone_value):
                     del field.options[field.options.index(milestone)]
             ctx = self.context_for(field)
+        elif idx == 'assigned_to':
+            user = ctx.get('value')
+            if user:
+                field.options = [
+                    ew.Option(
+                        py_value=user.username,
+                        label='%s (%s)' % (user.display_name, user.username))
+                ]
 
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:

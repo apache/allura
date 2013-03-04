@@ -23,12 +23,16 @@
         for (var i = 0; i < data.options.length; i++) {
           var label = data.options[i].label,
               value = data.options[i].value;
-          $('<option>' + label + '</option>')
-            .val(value)
-            .appendTo(select);
+          var option = $('<option>' + label + '</option>').val(value);
+          if (selected.val() === value) {
+            option.attr('selected', 'selected');  // select initial value, if any
+          }
+          option.appendTo(select);
         }
         loaded = true;
-        input.autocomplete('search', input.val());  // trigger search to re-render options
+        if (wasOpen) {
+          input.autocomplete('search', input.val());  // trigger search to re-render options
+        }
       }
 
       // Load options list with ajax and populate underlying select with loaded data
