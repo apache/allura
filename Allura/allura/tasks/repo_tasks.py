@@ -108,12 +108,12 @@ def tarball(revision=None):
     log = logging.getLogger(__name__)
     if revision:
         repo = c.app.repo
-        c.app.repo.set_tarball_status(revision, 'busy')
+        repo.set_tarball_status(revision, 'busy')
         try:
             repo.tarball(revision)
-            c.app.repo.set_tarball_status(revision, 'ready')
+            repo.set_tarball_status(revision, 'ready')
         except:
-            c.app.repo.set_tarball_status(revision, None)
+            repo.set_tarball_status(revision, None)
             log.error('Could not create tarball for repository %s:%s revision %s' % (c.project.shortname, c.app.config.options.mount_point, revision), exc_info=True)
     else:
         log.warn('Creation of tarball for %s:%s skipped because revision is not specified' % (c.project.shortname, c.app.config.options.mount_point))
