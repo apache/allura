@@ -61,7 +61,7 @@
               .appendTo(wrapper)
               .val(value)
               .attr('title', '')
-              .addClass('ui-state-default ui-combobox-input')
+              .addClass('ui-combobox-input')
               .autocomplete({
                 delay: 0,
                 minLength: 0,
@@ -100,7 +100,7 @@
                     removeIfInvalid(this);
                   }
                 }
-              }).addClass('ui-widget ui-widget-content ui-corner-left');
+              });
 
       input.data('autocomplete')._renderItem = function(ul, item) {
         return $('<li>')
@@ -109,18 +109,11 @@
           .appendTo(ul);
       };
 
-      $('<a>')
+      $('<span>▼</span>')
         .attr('tabIndex', -1)
         .attr('title', 'Show all options')
         .appendTo(wrapper)
-        .button({
-          icons: {
-            primary: 'ui-icon-triangle-1-s'
-          },
-          text: false
-        })
-        .removeClass('ui-corner-all')
-        .addClass('ui-corner-right ui-combobox-toggle')
+        .addClass('ui-combobox-toggle')
         .mousedown(function() {
           wasOpen = input.autocomplete('widget').is(':visible');
         })

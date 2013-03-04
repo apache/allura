@@ -109,6 +109,8 @@ class ProjectUserCombo(ew.SingleSelectField):
     def resources(self):
         for r in super(ProjectUserCombo, self).resources():
             yield r
+        yield ew.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/combobox.css')
         yield ew.JSLink('js/combobox.js')
         yield onready('''
           $('select.project-user-combobox').combobox({
