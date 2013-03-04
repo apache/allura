@@ -206,9 +206,10 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/bugs/new/')
         form = response.forms[1]
         form['ticket_form.summary'] = 'test new ticket form'
-        form['ticket_form.assigned_to'] = 'test_admin'
+        form['ticket_form.description'] = 'test new ticket form description'
         response = form.submit().follow()
-        assert 'Test Admin' in response
+        assert 'test new ticket form' in response
+        assert 'test new ticket form description' in response
 
     def test_mass_edit(self):
         ticket_view = self.new_ticket(summary='First Ticket').follow()
@@ -532,7 +533,7 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert response.html.find('input', {'name': 'ticket_form.summary'})
-        assert response.html.find('input', {'name': 'ticket_form.assigned_to'})
+        assert response.html.find('select', {'name': 'ticket_form.assigned_to'})
         assert response.html.find('textarea', {'name': 'ticket_form.description'})
         assert response.html.find('select', {'name': 'ticket_form.status'})
         assert response.html.find('select', {'name': 'ticket_form._milestone'})
