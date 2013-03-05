@@ -11,15 +11,20 @@
       Help
     </a>
   </div>
-  <div class="grid-19">
+  <div class="grid-10">
     {% set search_project = request.GET['project'] == '1' %}
     <input type="radio" name="project" value="0" id="search-app" {% if not search_project %}checked{% endif %}>
     <label for="search-app">Search {{c.app.config.options.mount_point or 'app'}}</label>
     <input type="radio" name="project" value="1" id="search-project" {% if search_project %}checked{% endif %}>
     <label for="search-project">Search entire project</label>
   </div>
-  <div class="grid-19">
-    Search history? <input type="checkbox" name="history"{% if history %} checked="checked"{% endif %}/>
+  <div class="grid-9">
+    {% if not search_comments_disable %}
+      <label for="search-comments">Search comments?</label>
+      <input id="search-comments" type="checkbox" name="search_comments"{% if search_comments %} checked{% endif %}>
+    {% endif %}
+    <label for="search-history">Search history?</label>
+    <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
   </div>
 </form>
 <div style="clear:both">&nbsp;</div>
