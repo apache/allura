@@ -71,8 +71,8 @@ class UserStatsListener(EventsListener):
 
 class ForgeUserStatsApp(Application):
     __version__ = version.__version__
-    tool_label='Statistics'
-    default_mount_label='Statistics'
+    tool_label='Stats'
+    default_mount_label='Stats'
     default_mount_point='stats'
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
@@ -81,9 +81,9 @@ class ForgeUserStatsApp(Application):
     config_options = Application.config_options
     default_external_feeds = []
     icons={
-        24:'images/stats_24.png',
-        32:'images/stats_32.png',
-        48:'images/stats_48.png'
+        24:'../../tool/userstats/images/stats_24.png',
+        32:'../../tool/userstats/images/stats_32.png',
+        48:'../../tool/userstats/images/stats_48.png'
     }
     root = ForgeUserStatsController()
 
