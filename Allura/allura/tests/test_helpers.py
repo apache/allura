@@ -94,6 +94,10 @@ def test_ago():
     import time
     assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
     assert_equals(h.ago_ts(time.time() - 60*60*2), '2 hours ago')
+    d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()
+    assert_equals(h.ago_string(d_str), '3 hours ago')
+    assert_equals(h.ago_string('bad format'), 'unknown')
+    assert_equals(h.ago_string(None), 'unknown')
 
 def test_urlquote_unicode():
     # No exceptions please

@@ -269,6 +269,12 @@ def ago(start_time):
 def ago_ts(timestamp):
     return ago(datetime.utcfromtimestamp(timestamp))
 
+def ago_string(s):
+    try:
+        return ago(parse(s, ignoretz=True))
+    except (ValueError, AttributeError):
+        return 'unknown'
+
 class DateTimeConverter(FancyValidator):
 
     def _to_python(self, value, state):
