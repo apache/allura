@@ -46,7 +46,11 @@
     </p>
   </div>
 {% endfor %}
-<div class="grid-19" style="clear:both">
+<div class="grid-19">
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   {{widget.fields['page_size'].display(limit=limit, count=count)}}
+</div>
+<div class="grid-19" style="clear:both">
+  {# TODO: highlight active sorting order #}
+  <p>Sort by <a href="#"><strong>relevance</strong></a> or <a href="#">date</a></p>
 </div>
