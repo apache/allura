@@ -16,7 +16,7 @@ from allura.lib import helpers as h
 
 class Stats(MappedClass):
     class __mongometa__:
-        name='stats'
+        name='userstats'
         session = main_orm_session
         unique_indexes = [ '_id']
 
