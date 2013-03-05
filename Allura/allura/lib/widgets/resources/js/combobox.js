@@ -54,6 +54,10 @@
           $(element).val('');
           select.val('');
           input.data('autocomplete').term = '';
+          wrapper.children('.error').fadeIn('fast');
+          setTimeout(function() {
+            wrapper.children('.error').fadeOut('fast');
+          }, 2500);
         }
       }
 
@@ -126,6 +130,12 @@
         .appendTo(wrapper)
         .addClass('ui-combobox-toggle')
         .click(openDropdown);
+
+      $('<div>')
+        .hide()
+        .addClass('error')
+        .text('Choose a valid option')
+        .appendTo(wrapper);
     },
 
     _destroy: function() {
