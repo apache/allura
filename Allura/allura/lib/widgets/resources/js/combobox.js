@@ -109,21 +109,23 @@
           .appendTo(ul);
       };
 
+      function openDropdown() {
+        wasOpen = input.autocomplete('widget').is(':visible');
+        input.focus();
+        if (wasOpen) {
+          return;
+        }
+        input.autocomplete('search', '');
+      }
+
+      input.click(openDropdown);
+
       $('<span>▼</span>')
         .attr('tabIndex', -1)
         .attr('title', 'Show all options')
         .appendTo(wrapper)
         .addClass('ui-combobox-toggle')
-        .mousedown(function() {
-          wasOpen = input.autocomplete('widget').is(':visible');
-        })
-        .click(function() {
-          input.focus();
-          if (wasOpen) {
-            return;
-          }
-          input.autocomplete('search', '');
-        });
+        .click(openDropdown);
     },
 
     _destroy: function() {
