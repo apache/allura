@@ -171,7 +171,7 @@ http://blah.com/?x=y&a=b - not escaped either
     # note: the \# isn't necessary it could be just # but that's the way
     # html2text escapes all #s currently.  The extra escaping of \# ends up
     # being ok though when rendered
-    
+
     from forgeblog.command import rssfeeds
 
     assert_equal(rssfeeds.plain2markdown(text), expected)
@@ -181,3 +181,6 @@ http://blah.com/?x=y&a=b - not escaped either
 
     assert_equal(rssfeeds.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
                  '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+
+    assert_equal(rssfeeds.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
+                 'tab before \(stuff\)')

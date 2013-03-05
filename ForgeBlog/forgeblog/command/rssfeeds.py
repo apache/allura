@@ -38,7 +38,7 @@ re_amp = re.compile(r'''
       (\#x[0-9A-F]+;)  # hex entity
     )
     ''', re.VERBOSE)
-re_leading_spaces = re.compile(r'^[ ]+', re.MULTILINE)
+re_leading_spaces = re.compile(r'^[\t ]+', re.MULTILINE)
 re_preserve_spaces = re.compile(r'''
     [ ]           # space
     (?=[ ])       # lookahead for a space
