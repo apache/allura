@@ -6,6 +6,7 @@ from formencode import validators as fev
 import ew as ew_core
 import ew.jinja2_ew as ew
 
+from allura import model as M
 from forgetracker import model
 
 class TicketCustomFields(ew.CompoundField):
@@ -40,6 +41,8 @@ class GenericTicketForm(ew.SimpleForm):
             ctx = self.context_for(field)
         elif idx == 'assigned_to':
             user = ctx.get('value')
+            if isinstance(user, basestring):
+                user = M.User.by_username(user)
             if user:
                 field.options = [
                     ew.Option(
