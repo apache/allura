@@ -36,12 +36,15 @@
 </div>
 {% for doc in results %}
   <div class="grid-19">
-    <a href="{{doc['url_paginated'] or doc['url_s']}}">{{doc.title_s}}</a><br>
-    {% if doc.get('snippet') %}
-      <p>{{doc.snippet}}</p>
-    {% endif %}
+    {# TODO: mark matches in title and snippet #}
+    <p>
+    <a href="{{doc['url_paginated'] or doc['url_s']}}">{{ doc.title_s }}</a><br>
+    {{ doc.snippet }}
+    TODO: change me to something useful! Mark <strong>matches</strong>.<br/>
+    an open source implementation of a software "forge", <strong>a web site</strong> that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual proje<br>
+    <span class="date">Last updated: {{ doc['mod_date_dt'] }}</span>
+    </p>
   </div>
-  <hr>
 {% endfor %}
 <div class="grid-19" style="clear:both">
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
