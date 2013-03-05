@@ -217,6 +217,17 @@ class NeighborhoodController(object):
             raise exc.HTTPNotFound
         return icon.serve()
 
+    @expose('json:')
+    def users(self):
+        p = self.neighborhood.neighborhood_project
+        return {
+            'options': [{
+                'value': u.username,
+                'label': '%s (%s)' % (u.display_name, u.username)
+            } for u in p.users()]
+        }
+
+
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
         self.neighborhood = neighborhood
