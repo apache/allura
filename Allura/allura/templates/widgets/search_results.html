@@ -1,7 +1,19 @@
 <form method="GET" action=".">
-  <div class="grid-19">
-    <input type="text" name="q" value="{{q}}" class="defaultText" title="Search App"/>
+  <div class="grid-10">
+    <input type="text" name="q" value="{{q}}" class="search-query" title="Search App"/>
   </div>
+  <div class="grid-3">
+    <input type="submit" value="Search">
+  </div>
+  <div class="grid-6">
+    <a href="#" class="btn search_help_modal">
+      <b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b>
+      Help
+    </a>
+  </div>
+
+
+
   <div class="grid-19">
     <input type="submit" value="Search App">
     <input type="submit" name="project" value="Search Entire Project">
