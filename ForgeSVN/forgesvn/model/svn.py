@@ -522,14 +522,6 @@ class SVNImplementation(M.RepositoryImplementation):
         with open(fn, 'wb') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
-        # create a blank pre-revprop-change file if one doesn't
-        # already exist to allow remote modification of revision
-        # properties (see http://svnbook.red-bean.com/en/1.1/ch05s02.html)
-        fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'pre-revprop-change')
-        if not os.path.exists(fn):
-            with open(fn, 'wb') as fp:
-                fp.write('#!/bin/sh\n')
-            os.chmod(fn, 0755)
 
     def _revno(self, oid):
         return int(oid.split(':')[1])
