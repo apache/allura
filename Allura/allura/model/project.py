@@ -474,8 +474,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 continue
             tool_name = e.tool_name.lower()
             if counts.get(tool_name, 1) <= grouping_threshold:
-                # don't need grouping, so just add it by label
-                grouped_nav[e.label] = e
+                # don't need grouping, so just add it directly
+                grouped_nav[id(e)] = e
             else:
                 # tool of a type we don't have in the navbar yet
                 if tool_name not in grouped_nav:
