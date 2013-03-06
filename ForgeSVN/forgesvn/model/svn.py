@@ -222,6 +222,11 @@ class SVNImplementation(M.RepositoryImplementation):
                 fp.write('#!/bin/sh\n')
             os.chmod(fn, 0755)
 
+        def clear_hook(hook_name):
+            fn = os.path.join(self._repo.fs_path, self._repo.name,
+                              'hooks', hook_name)
+            os.remove(fn)
+
         self._repo.status = 'importing'
         session(self._repo).flush(self._repo)
         log.info('Initialize %r as a clone of %s',
@@ -241,10 +246,12 @@ class SVNImplementation(M.RepositoryImplementation):
             set_hook('pre-revprop-change')
             self.check_call(['svnsync', '--non-interactive', '--allow-non-empty',
               'initialize', self._url, source_url])
+            clear_hook('pre-revprop-change')
         else:
             set_hook('pre-revprop-change')
             self.check_call(['svnsync', 'init', self._url, source_url])
             self.check_call(['svnsync', '--non-interactive', 'sync', self._url])
+            clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
         if not svn_path_exists("file://%s%s/%s" %
