@@ -34,7 +34,7 @@ class GenericTicketForm(ew.SimpleForm):
         ctx = self.context_for(field)
         if idx == '_milestone':
             milestone_value = ctx.value
-            for milestone in field.options:
+            for milestone in reversed(field.options):  # reverse so del hits the correct indexes
                 if milestone.complete and (milestone.py_value != milestone_value):
                     del field.options[field.options.index(milestone)]
             ctx = self.context_for(field)

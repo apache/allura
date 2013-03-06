@@ -85,11 +85,35 @@ class TestMilestones(TrackerTestController):
             'milestones-0.due_date':''
         }
         self.app.post('/bugs/update_milestones', d)
+        d = {
+            'field_name':'_milestone',
+            'milestones-9.old_name':'',
+            'milestones-9.new_name':'3.0',
+            'milestones-9.description':'',
+            'milestones-9.complete':'Closed',
+            'milestones-9.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        d = {
+            'field_name':'_milestone',
+            'milestones-9.old_name':'',
+            'milestones-9.new_name':'4.0',
+            'milestones-9.description':'',
+            'milestones-9.complete':'Closed',
+            'milestones-9.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
         r = self.app.get('/bugs/1/')
         assert '<option selected value="1.0">1.0</option>' in r
+        assert '<option value="2.0">2.0</option>' in r
+        assert '<option value="3.0">3.0</option>' not in r
+        assert '<option value="4.0">4.0</option>' not in r
         r = self.app.get('/bugs/new/')
-        assert  '<option value="2.0">2.0</option>' in r
         assert '<option selected value="1.0">1.0</option>' not in r
+        assert '<option value="1.0">1.0</option>' not in r
+        assert '<option value="2.0">2.0</option>' in r
+        assert '<option value="3.0">3.0</option>' not in r
+        assert '<option value="4.0">4.0</option>' not in r
 
 
 def post_install_create_ticket_permission(app):
