@@ -395,6 +395,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         anchored_tools = self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
         new_tools = self.install_anchored_tools()
+        self.app_config('admin').options.ordinal = 100
 
         # Set menu mode
         delta_ordinal = i

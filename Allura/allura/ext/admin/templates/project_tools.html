@@ -52,7 +52,7 @@
             {% set links = app.admin_menu() %}
             {% set label = mount['ac'].options['mount_label'] if mount['ac'].options['mount_label'] != 'Tool Name' else mount['ac'].options['mount_point'] %}
 
-            <div class="fleft {%if app.tool_label.lower() in app.project.neighborhood.get_anchored_tools().keys()%}isnt_sorted{%endif%}">
+            <div class="fleft {%if app.tool_label.lower()=='admin' or (app.tool_label.lower() in app.project.neighborhood.get_anchored_tools().keys())%}isnt_sorted{%endif%}">
                 <ul class="deck">
                     <li class="tcenter">
                         <span class="tool_title">{{ label }}</span><br />

@@ -78,3 +78,10 @@ def test_anchored_tools():
     assert c.project.sitemap()[0].label == 'Wiki'
     assert c.project.install_app.call_args[0][0] == 'tickets'
     assert c.project.ordered_mounts()[0]['ac'].tool_name == 'Wiki'
+
+
+def test_set_ordinal_to_admin_tool():
+    assert c.project.sitemap()
+    assert c.project.app_config('admin').options.ordinal == 100
+
+
