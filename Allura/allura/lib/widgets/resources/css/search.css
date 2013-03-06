@@ -5,3 +5,8 @@ input.search-query {
 .date {
   color: #aaa;
 }
+
+input[type="radio"],
+input[type="checkbox"] {
+  vertical-align: middle;
+}
