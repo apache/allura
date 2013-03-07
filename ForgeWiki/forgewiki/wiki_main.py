@@ -3,6 +3,7 @@ import logging
 from pprint import pformat
 from urllib import urlencode, unquote
 from datetime import datetime
+from itertools import imap
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, response, flash
@@ -310,7 +311,7 @@ class RootController(BaseController, DispatchIndex):
             # It's 'fuzzier' than standard parser, which matches only on `text`.
             allowed_types = ['WikiPage', 'WikiPage Snapshot']
             if search_comments:
-                allowed_types += ['Post', 'Post Snapshot']
+                allowed_types += ['Post']
             search_params = {
                 'qt': 'dismax',
                 'qf': 'title^2 text',
@@ -330,7 +331,14 @@ class RootController(BaseController, DispatchIndex):
                     rows=limit, start=start, **search_params)
             except SolrError as e:
                 search_error = e
-            if results: count=results.hits
+            if results:
+                count=results.hits
+                def historize_urls(doc):
+                    if doc.get('type_s', '').endswith(' Snapshot'):
+                        if doc.get('url_s'):
+                            doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
+                    return doc
+                results = imap(historize_urls, results)
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],
                     count=count, limit=limit, page=page, search_error=search_error)
