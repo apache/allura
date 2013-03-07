@@ -553,7 +553,7 @@ class Tree(RepoObject):
                                 author=commit_info['author'],
                                 author_email=commit_info['author_email'],
                                 author_url=commit_info['author_url'],
-                                date=commit_info['date'],
+                                date=commit_info.get('date'),
                                 href=commit_info.get('href',''),
                                 shortlink=commit_info['shortlink'],
                                 summary=commit_info['summary'],
