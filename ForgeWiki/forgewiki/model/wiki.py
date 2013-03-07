@@ -46,9 +46,10 @@ class PageHistory(Snapshot):
 
     def index(self):
         result = Snapshot.index(self)
+        title = '%s (version %d)' % (self.original().title, self.version)
         result.update(
-            title_s='Version %d of %s' % (
-                self.version,self.original().title),
+            title_s=title,
+            title=title,
             type_s='WikiPage Snapshot',
             text=self.data.text)
         return result
@@ -130,6 +131,7 @@ class Page(VersionedArtifact, ActivityObject):
         result = VersionedArtifact.index(self)
         result.update(
             title_s=self.title,
+            title=self.title,
             version_i=self.version,
             type_s='WikiPage',
             text=self.text)

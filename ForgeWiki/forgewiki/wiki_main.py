@@ -304,15 +304,25 @@ class RootController(BaseController, DispatchIndex):
         if not q:
             q = ''
         else:
+            # Match on both `title` and `text` by default, using 'dismax' parser.
+            # Score on `title` matches is boosted, so title match is better than body match.
+            # It's 'fuzzier' than standard parser, which matches only on `text`.
+            search_params = {
+                'qt': 'dismax',
+                'qf': 'title^2 text',
+                'pf': 'title^2 text',
+                'fq': [
+                    'project_id_s:%s' % c.project._id,
+                    'mount_point_s:%s'% c.app.config.options.mount_point,
+                    '-deleted_b:true'
+                ]
+            }
+            if not history:
+               search_params['fq'].append('is_history_b:False')
             try:
                 results = search(
                     q, short_timeout=True, ignore_errors=False,
-                    rows=limit, start=start,
-                    fq=[
-                        'is_history_b:%s' % history,
-                        'project_id_s:%s' % c.project._id,
-                        'mount_point_s:%s'% c.app.config.options.mount_point,
-                        '-deleted_b:true'])
+                    rows=limit, start=start, **search_params)
             except SolrError as e:
                 search_error = e
             if results: count=results.hits

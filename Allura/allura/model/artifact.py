@@ -208,12 +208,11 @@ class Artifact(MappedClass):
         """
         Subclasses should override this, providing a dictionary of solr_field => value.
         These fields & values will be stored by solr.  Subclasses should call the
-        super() index() and then extend it with more fields.  All these fields will be
-        included in the 'text' field (done by search.solarize())
+        super() index() and then extend it with more fields.
 
         The _s and _t suffixes, for example, follow solr dynamic field naming
         pattern.
-        You probably want to override at least title_s and text to have
+        You probably want to override at least title, title_s and text to have
         meaningful search results and email senders.
         """
 
@@ -222,6 +221,7 @@ class Artifact(MappedClass):
             id=self.index_id(),
             mod_date_dt=self.mod_date,
             title_s='Artifact %s' % self._id,
+            title='Artifact %s' % self._id,
             project_id_s=str(project._id),
             project_name_t=project.name,
             project_shortname_t=project.shortname,
