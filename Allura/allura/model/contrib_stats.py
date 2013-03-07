@@ -498,12 +498,12 @@ class Stats(MappedClass):
                     newstats = dict(
                         category=t,
                         commits=[],
-                        messages=[dict(
+                        messages=[],
+                        tickets=dict(
                             assigned=0,
                             solved=0,
                             revoked=0,
-                            totsolvingtime=0)],
-                        tickets={})
+                            totsolvingtime=0))
                     stats.general.append(newstats)
                     i = getElementIndex(stats.general, category=t)
                 for lang in ll:
