@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 import os, allura
 from mock import patch
@@ -148,8 +150,10 @@ def test_macros():
     assert 'test content' in r
 
 def test_macro_project_admins():
+    user = M.User.by_username('test-admin')
+    user.display_name = u'Test Ådmin'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, '<div class="markdown_content"><p><a href="/u/test-admin/">Test Admin</a><br /></p>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><p><a href="/u/test-admin/">Test Ådmin</a><br /></p>\n</div>')
 
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
