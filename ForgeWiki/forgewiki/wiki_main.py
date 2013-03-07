@@ -292,8 +292,9 @@ class RootController(BaseController, DispatchIndex):
     @expose('jinja:forgewiki:templates/wiki/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
+                   search_comments=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
+    def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
         'local wiki search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
@@ -307,15 +308,19 @@ class RootController(BaseController, DispatchIndex):
             # Match on both `title` and `text` by default, using 'dismax' parser.
             # Score on `title` matches is boosted, so title match is better than body match.
             # It's 'fuzzier' than standard parser, which matches only on `text`.
+            allowed_types = ['WikiPage', 'WikiPage Snapshot']
+            if search_comments:
+                allowed_types += ['Post', 'Post Snapshot']
             search_params = {
                 'qt': 'dismax',
                 'qf': 'title^2 text',
                 'pf': 'title^2 text',
                 'fq': [
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point,
-                    '-deleted_b:true'
-                ]
+                    'project_id_s:%s'  % c.project._id,
+                    'mount_point_s:%s' % c.app.config.options.mount_point,
+                    '-deleted_b:true',
+                    'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
+                ],
             }
             if not history:
                search_params['fq'].append('is_history_b:False')

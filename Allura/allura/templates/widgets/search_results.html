@@ -20,8 +20,9 @@
   </div>
   <div class="grid-9">
     {% if not search_comments_disable %}
+      {% set comments = request.GET['search_comments'] %}
       <label for="search-comments">Search comments?</label>
-      <input id="search-comments" type="checkbox" name="search_comments"{% if search_comments %} checked{% endif %}>
+      <input id="search-comments" type="checkbox" name="search_comments"{% if comments %} checked{% endif %}>
     {% endif %}
     <label for="search-history">Search history?</label>
     <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
