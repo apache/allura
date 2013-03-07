@@ -332,4 +332,4 @@ def project_admins():
                 url=user_role.user.url(),
                 name=user_role.user.display_name))
             for user_role in admin_role.users_with_role())
-    return '<p>{}</p>'.format(output)
+    return u'<p>{}</p>'.format(output)
