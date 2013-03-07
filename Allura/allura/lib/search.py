@@ -18,13 +18,8 @@ def solarize(obj):
     if obj is None: return None
     doc = obj.index()
     if doc is None: return None
-    text = doc.pop('text', '')
-    try:
-        text = text + pformat(doc.values())
-    except TypeError:
-        # log.exception('Indexing empty text: %s', doc)
-        text = pformat(doc.values())
-    doc['text'] = text
+    # if index() returned doc without text, assume empty text
+    doc['text'] = doc.pop('text', '')
     return doc
 
 class SearchError(SolrError):

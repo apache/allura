@@ -129,7 +129,7 @@ class Page(VersionedArtifact, ActivityObject):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s='WikiPage %s' % self.title,
+            title_s=self.title,
             version_i=self.version,
             type_s='WikiPage',
             text=self.text)
