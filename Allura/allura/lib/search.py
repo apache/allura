@@ -1,15 +1,12 @@
 import re
 import socket
-import cPickle as pickle
 from logging import getLogger
 from pprint import pformat
-from itertools import islice, chain
 
 import markdown
 from pylons import tmpl_context as c, app_globals as g
 from pysolr import SolrError
 
-from . import helpers as h
 from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
@@ -21,6 +18,10 @@ def solarize(obj):
     # if index() returned doc without text, assume empty text
     if not doc.get('text'):
         doc['text'] = ''
+    # Tracker uses search with default solr parser. It would match only on
+    # `text`, so we append all other field values into `text`, to match on it too.
+    if getattr(obj, 'type_s', '').lower() == 'ticket':
+        doc['text'] += pformat(doc.values())
     return doc
 
 class SearchError(SolrError):
