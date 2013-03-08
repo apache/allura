@@ -19,7 +19,8 @@ def solarize(obj):
     doc = obj.index()
     if doc is None: return None
     # if index() returned doc without text, assume empty text
-    doc['text'] = doc.pop('text', '')
+    if not doc.get('text'):
+        doc['text'] = ''
     return doc
 
 class SearchError(SolrError):
