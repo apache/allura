@@ -81,7 +81,7 @@ class TestPostNotifications(unittest.TestCase):
         flash_msgs = list(h.pop_user_notifications(u))
         assert len(flash_msgs) == 1, flash_msgs
         msg = flash_msgs[0]
-        assert msg['text'].startswith('WikiPage Home modified by Test Admin')
+        assert msg['text'].startswith('Home modified by Test Admin')
         assert msg['subject'].startswith('[test:wiki]')
         flash_msgs = list(h.pop_user_notifications(u))
         assert not flash_msgs, flash_msgs
@@ -124,7 +124,7 @@ class TestPostNotifications(unittest.TestCase):
         assert_in(str(user2._id), first_destinations)
         assert_equal(email_tasks[0].kwargs['fromaddr'], '"Test Admin" <test-admin@users.localhost>')
         assert_equal(email_tasks[1].kwargs['fromaddr'], '"Test Admin" <test-admin@users.localhost>')
-        assert email_tasks[0].kwargs['text'].startswith('WikiPage Home modified by Test Admin')
+        assert email_tasks[0].kwargs['text'].startswith('Home modified by Test Admin')
         assert 'you indicated interest in ' in email_tasks[0].kwargs['text']
 
     def test_permissions(self):

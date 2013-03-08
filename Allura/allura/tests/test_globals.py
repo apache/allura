@@ -126,7 +126,7 @@ def test_macros():
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
     h.set_context('--init--', 'wiki', neighborhood='Projects')
     r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
-    assert 'WikiPage Home modified by' in r, r
+    assert 'Home modified by' in r, r
     orig_len = len(r)
     # Make project private & verify we don't see its new feed items
     proj = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -316,7 +316,7 @@ def test_macro_include():
 def test_macro_nbhd_feeds():
     with h.push_context('--init--', 'wiki', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
-        assert 'WikiPage Home modified by ' in r, r
+        assert 'Home modified by ' in r, r
 
 
 def test_sort_alpha():
