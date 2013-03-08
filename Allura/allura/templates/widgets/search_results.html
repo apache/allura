@@ -43,8 +43,6 @@
     {% if doc['type_s'] %}<span class="gray"><sup>{{ '(%s)' % doc['type_s'] }}</sup></span>{% endif %}
     <br>
     {{ doc.snippet }}
-    TODO: change me to something useful! Mark <strong>matches</strong>.<br/>
-    an open source implementation of a software "forge", <strong>a web site</strong> that manages source code repositories, bug reports, discussions, mailing lists, wiki pages, blogs and more for any number of individual proje<br>
     <span class="gray">Last updated: {{ h.ago_string(doc['mod_date_dt']) }}</span>
     </p>
   </div>
@@ -55,5 +53,5 @@
 </div>
 <div class="grid-19" style="clear:both">
   {# TODO: highlight active sorting order #}
-  <p>Sort by <a href="#"><strong>relevance</strong></a> or <a href="#">date</a></p>
+  {# <p>Sort by <a href="#"><strong>relevance</strong></a> or <a href="#">date</a></p> #}
 </div>
