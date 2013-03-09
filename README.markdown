@@ -1,6 +1,6 @@
 # Sandbox Creation
 
-We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Forge development/testing.
+We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Allura development/testing.
 
 * Download and install [VirtualBox](http://www.virtualbox.org/wiki/Downloads) for your platform.
 
@@ -15,9 +15,9 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubun
 * Consult [available documentation](https://help.ubuntu.com/) for help installing Ubuntu.
 
 
-# Forge Installation
+# Installation
 
-Before we begin, you'll need the following additional packages in order to work with the Forge source code.
+Before we begin, you'll need the following additional packages in order to work with the Allura source code.
 
     ~$ sudo aptitude install git-core subversion python-svn
 
@@ -35,35 +35,35 @@ If you are using a different base system, make sure you have Mongo 1.8 or better
 
 ## Setting up a virtual python environment
 
-The first step to installing the Forge platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
+The first step to installing the Allura platform is installing a virtual environment via `virtualenv`.  This helps keep our distribution python installation clean.
 
     ~$ sudo aptitude install python-pip
     ~$ sudo pip install virtualenv
 
-Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Forge environment 'anvil'.
+Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'anvil'.
 
     ~$ virtualenv --system-site-packages anvil
 
-This gives us a nice, clean environment into which we can install all the forge dependencies.  (The site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Forge codebase so you may want to consider adding it to your `~/.bashrc` file.
+This gives us a nice, clean environment into which we can install all the allura dependencies.  (The site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your `~/.bashrc` file.
 
     ~$ . anvil/bin/activate
 
-## Installing the Forge code and dependencies
+## Installing the Allura code and dependencies
 
-Now we can get down to actually getting the Forge code and dependencies downloaded and ready to go.
+Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.
 
     (anvil)~$ mkdir src
     (anvil)~$ cd src
-    (anvil)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git forge
+    (anvil)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
 
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
-    (anvil)~/src$ cd forge
-    (anvil)~/src/forge$ pip install -r requirements.txt
+    (anvil)~/src$ cd allura
+    (anvil)~/src/allura$ pip install -r requirements.txt
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
-And now to setup each of the Forge applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
+And now to setup each of the Allura applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
 
     for APP in Allura* Forge* NoWarnings
     do
@@ -72,7 +72,7 @@ And now to setup each of the Forge applications for development.  Because there 
         popd
     done
 
-Hopefully everything completed without errors.  We'll also need to create a place for Forge to store any SCM repositories that a project might create.
+Hopefully everything completed without errors.  We'll also need to create a place for Allura to store any SCM repositories that a project might create.
 
     for SCM in git svn hg
     do
@@ -84,7 +84,7 @@ Hopefully everything completed without errors.  We'll also need to create a plac
 
 ## Initializing the environment
 
-The forge consists of several components, all of which need to be running to have full functionality.
+The Allura forge consists of several components, all of which need to be running to have full functionality.
 
 ### SOLR search and indexing server
 
@@ -94,27 +94,27 @@ We have a custom config ready for use.
     (anvil)~/src$ wget http://archive.apache.org/dist/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
     (anvil)~/src$ tar xf apache-solr-1.4.1.tgz
     (anvil)~/src$ cd apache-solr-1.4.1/example/
-    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/forge/solr_config/conf
-    (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/forge/solr_config/conf/
-    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/forge/solr_config -jar start.jar > ~/logs/solr.log &
+    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/allura/solr_config/conf
+    (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/allura/solr_config/conf/
+    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/allura/solr_config -jar start.jar > ~/logs/solr.log &
 
 
-### Forge task processing
+### Allura task processing
 
 Responds to asynchronous task requests.
 
-    (anvil)~$ cd ~/src/forge/Allura
-    (anvil)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
+    (anvil)~$ cd ~/src/allura/Allura
+    (anvil)~/src/allura/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
 
 ### TurboGears application server
 
-In order to initialize the Forge database, you'll need to run the following:
+In order to initialize the Allura database, you'll need to run the following:
 
-    (anvil)~/src/forge/Allura$ paster setup-app development.ini
+    (anvil)~/src/allura/Allura$ paster setup-app development.ini
 
 This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server.
 
-    (anvil)~/src/forge/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
+    (anvil)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
 ## Next Steps
 
