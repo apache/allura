@@ -54,7 +54,7 @@ Now we can get down to actually getting the Forge code and dependencies download
 
     (anvil)~$ mkdir src
     (anvil)~$ cd src
-    (anvil)~/src$ git clone git://git.code.sf.net/p/allura/git.git forge
+    (anvil)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git forge
 
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
