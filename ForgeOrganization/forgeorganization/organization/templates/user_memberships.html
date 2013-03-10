@@ -12,7 +12,6 @@
           <tr>
             <th>Name</th>
             <th>Organization type</th>
-            <th>Permission level</th>
             <th>Role</th>
             <th>Status</th>
             <th>Actions</th>
@@ -22,7 +21,7 @@
           {% for membership in memberships %}
             {{forms.new_change_membership_from_user_form().display(
                   membership=membership,
-                  action=membership.organization.url()+'change_membership')}}
+                  action='organization/change_membership')}}
           {% endfor %}
         </tbody>
       </table>

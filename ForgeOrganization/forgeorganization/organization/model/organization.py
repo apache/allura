@@ -49,10 +49,14 @@ class Organization(MappedClass):
     project_involvements=RelationProperty('ProjectInvolvement')
 
     def url(self):
-        return '/organization/' + self.shortname.replace('_', '-') + '/'
+        return ('/o/' + self.shortname.replace('_', '-') + '/').encode('ascii','ignore')
+
+    def project(self):
+        return M.Project.query.get(
+            shortname='o/'+self.shortname.replace('_', '-'))
 
     @classmethod
-    def register(cls, shortname, fullname, orgtype):
+    def register(cls, shortname, fullname, orgtype, user):
         o=cls.query.get(shortname=shortname)
         if o is not None: return None
         try:
@@ -64,7 +68,9 @@ class Organization(MappedClass):
         except pymongo.errors.DuplicateKeyError:
             session(o).expunge(o)
             return None
-
+        if o is not None:
+            n = M.Neighborhood.query.get(name='Organizations')
+            n.register_project('o/'+shortname, user=user, user_project=False)
         return o
 
     @classmethod
@@ -97,12 +103,6 @@ class Organization(MappedClass):
         if wfid in self.workfields:
             del self.workfields[self.workfields.index(wfid)]
 
-    def userPermissions(self, user):
-        for rel in self.memberships: 
-            if rel.member_id == user._id and rel.status=='active': 
-                return rel.membertype
-        return None
-
     def getActiveCooperations(self):
         return [c for c in self.project_involvements if c.status=='active' and
             c.collaborationtype == 'cooperation']
@@ -118,10 +118,6 @@ class Organization(MappedClass):
     def getPastParticipations(self):
         return [c for c in self.project_involvements if c.status=='closed' and 
             c.collaborationtype == 'participation']
-
-    def getAdministrators(self):
-        return [m for m in self.memberships 
-            if m.membertype=='admin' and m.status =='active']
 
     def getEnrolledUsers(self):
         return [m for m in self.memberships if m.status=='active']
@@ -160,7 +156,6 @@ class Membership(MappedClass):
         name='organization_membership'
 
     _id=FieldProperty(S.ObjectId)
-    membertype=FieldProperty(S.OneOf('admin', 'member'))
     status=FieldProperty(S.OneOf('active', 'closed', 'invitation', 'request'))
     role=FieldProperty(str)
     organization_id=ForeignIdProperty('Organization')
@@ -172,7 +167,7 @@ class Membership(MappedClass):
     member = RelationProperty('User')
 
     @classmethod
-    def insert(cls, membertype, role, status, organization_id, member_id):
+    def insert(cls, role, status, organization_id, member_id):
         m = cls.query.find(dict(organization_id=organization_id, member_id=member_id))
         for el in m:
             if el.status!='closed':
@@ -181,7 +176,6 @@ class Membership(MappedClass):
             m = cls(
                 organization_id=organization_id, 
                 member_id=member_id,
-                membertype=membertype, 
                 role=role,
                 startdate=None,
                 status=status)

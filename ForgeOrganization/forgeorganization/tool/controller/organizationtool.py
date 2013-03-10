@@ -33,8 +33,8 @@ class OrganizationToolController(BaseController):
                       if el.collaborationtype=='cooperation']
         participations=[el for el in c.project.organizations
                         if el.collaborationtype=='participation']
-        user_organizations=[o.organization for o in c.user.memberships
-                            if o.membertype == 'admin']
+        user_organizations=[o for o in Organization.query.find()
+                            if c.user.username in o.project().admins()]
         return dict(
             user_organizations=user_organizations,
             cooperations=cooperations, 
@@ -125,7 +125,7 @@ class OrganizationToolController(BaseController):
     def send_request(self, organization, coll_type, **kw):
         organization = Organization.getById(organization)     
 
-        if not organization or organization.userPermissions(c.user)!='admin':
+        if (not organization) or not (c.user.username in organization.project().admins()):
             flash("You are not allowed to perform this action.", "error")
             redirect(".")
             return

@@ -1,6 +1,6 @@
 import logging
 import warnings
-from pylons import g
+from pylons import g, c
 from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -206,9 +206,9 @@ class ChangeMembershipFromUser(ForgeForm):
         m = kw.get('membership')
         org = m.organization
 
-        orgnamefield = '<a href="%s">%s</a>' % (org.url(), org.fullname)
-        if m.membertype == 'admin':
-            orgnamefield+=' (<a href="%sedit_profile">edit</a>)'%org.url()
+        orgnamefield = '<a href="%s">%s</a>' % (org.url()+"organizationprofile", org.fullname)
+        if c.user.username in m.organization.project().admins():
+            orgnamefield+=' (<a href="%sadmin/organizationprofile">edit</a>)'%org.url()
         if m.status == 'active':
             statusoptions = [
                 ew.Option(py_value='active',label='Active',selected=True),
@@ -231,23 +231,6 @@ class ChangeMembershipFromUser(ForgeForm):
                 ew.Option(
                     py_value='remove',label='Remove request',selected=False)]
  
-        if m.membertype=='admin':
-            permission = ew.SingleSelectField(
-                name='permission',
-                show_errors=False,
-                options = [
-                    ew.Option(
-                        py_value='admin',label='Admin',selected=True),
-                    ew.Option(
-                        py_value='member',label='Member',selected=False)])
-            additional_hidden = []
-        else:
-            permission = ew.HTMLField(
-                text=m.membertype.capitalize(), show_errors=False)
-            additional_hidden = [ew.HiddenField(
-                name="permission",
-                show_errors=False,
-                attrs={'value':m.membertype})]
         self.fields = [
             ew.RowField(
                 show_errors=False,
@@ -260,7 +243,7 @@ class ChangeMembershipFromUser(ForgeForm):
                         name="requestfrom",
                         attrs={'value':'user'},
                         show_errors=False)
-                ] + additional_hidden,
+                ],
                 fields=[
                     ew.HTMLField(
                         text=orgnamefield,
@@ -268,7 +251,6 @@ class ChangeMembershipFromUser(ForgeForm):
                     ew.HTMLField(
                         text=org.organization_type,
                         show_errors=False),
-                    permission,
                     ew.TextField(
                         name='role',
                         attrs=dict(value=m.role),
@@ -332,18 +314,6 @@ class ChangeMembershipFromOrganization(ForgeForm):
                         text='<a href="%s">%s</a>' % (
                             user.url(), user.display_name),
                         show_errors=False),
-                    ew.SingleSelectField(
-                        name='permission',
-                        show_errors=False,
-                        options = [
-                            ew.Option(
-                                py_value='admin',
-                                label='Admin',
-                                selected=m.membertype=='admin'),
-                            ew.Option(
-                                py_value='member',
-                                label='Member',
-                                selected=m.membertype=='member')]),
                     ew.TextField(
                         name='role',
                         attrs=dict(value=m.role),
@@ -431,5 +401,3 @@ class ChangeCollaborationStatusForm(ForgeForm):
                         attrs={'value':'Save'},
                         show_errors=False)])]
         return super(ChangeCollaborationStatusForm, self).display(**kw)
-
-

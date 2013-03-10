@@ -27,7 +27,7 @@ setup(name='ForgeOrganization',
       organization=forgeorganization.organization.main:ForgeOrganizationApp
 
       [allura]
+      organizationprofile = forgeorganization.organization_profile.organization_main:OrganizationProfileApp
       organizationstool=forgeorganization.tool.main:ForgeOrganizationToolApp
-
       """,
       )

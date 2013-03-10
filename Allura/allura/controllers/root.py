@@ -70,8 +70,8 @@ class RootController(WsgiDispatchController):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
 
-        ep = g.entry_points["organizations"].get('organization')
-        if ep and g.show_organizations:
+        if g.show_organizations:
+            ep = g.entry_points["organizations"].get('organization')
             self.organization = ep().root
 
         super(RootController, self).__init__()

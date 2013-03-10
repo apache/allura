@@ -40,7 +40,7 @@ class TestOrganization(TestController):
 
         #Add a new user
         self.user2 = User.by_username('test-user-2')
-        r = self.app.post('/organization/%s/invite_user' % self.name,
+        r = self.app.post((self.org.url()+'admin/organizationprofile/invite_user'),
             params=dict(
                 username = self.user2.username,
                 role = 'Software Engineer'),
@@ -48,10 +48,9 @@ class TestOrganization(TestController):
         m = OM.Membership.query.get(
             member_id=self.user2._id, 
             organization_id=self.org._id)
-        r = self.app.post('/organization/%s/change_membership' % self.name,
+        r = self.app.post('/organization/change_membership',
             params=dict(
                 status = 'active',
-                permission = 'member',
                 membershipid = str(m._id),
                 requestfrom = 'user',
                 role = 'Software Engineer'),
@@ -73,7 +72,7 @@ class TestOrganizationGeneral(TestOrganization):
         m = OM.Membership.query.get(
             member_id=c.user._id,
             organization_id=self.org._id)
-        assert self.org.userPermissions(c.user) == 'admin'
+        assert c.user.username in org.project().admins()
         assert m.status == 'active'
         assert m.role == self.role
 
@@ -88,7 +87,7 @@ class TestOrganizationGeneral(TestOrganization):
         website = 'http://www.example.com'
 
         #Update the profile of the organization
-        r = self.app.post('/organization/%s/change_data' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/change_data' % self.org.url(),
             params = dict(
                 fullname = fullname,
                 organization_type = organization_type,
@@ -100,7 +99,7 @@ class TestOrganizationGeneral(TestOrganization):
 
         ThreadLocalORMSession.flush_all()
 
-        r = self.app.get('/organization/%s/' % self.name)
+        r = self.app.get('%sorganizationprofile' % self.org.url())
         assert organization_type in r
         assert description in r
         assert headquarters in r
@@ -117,7 +116,7 @@ class TestOrganizationGeneral(TestOrganization):
         assert self.org.fullname == fullname
 
         #Try to provide invalid parameters
-        r = self.app.post('/organization/%s/change_data' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/change_data' % self.org.url(),
             params = dict(
                 fullname = 'a',
                 organization_type = 'Invalid type',
@@ -129,7 +128,7 @@ class TestOrganizationGeneral(TestOrganization):
 
         ThreadLocalORMSession.flush_all()
 
-        r = self.app.get('/organization/%s/' % self.name,
+        r = self.app.get('%sorganizationprofile' % self.org.url(),
             extra_environ=dict(username='test-user-1'))
 
         self.org = OM.Organization.query.get(_id=self.org._id)
@@ -140,21 +139,20 @@ class TestOrganizationGeneral(TestOrganization):
         assert self.org.website == website
         assert self.org.fullname == fullname
 
+
     @td.with_user_project('test-user-1')
     def test_workfield(self):
 
         wf = OM.WorkFields.query.get(name='Mobile apps')
         c.user = User.by_username('test-user-1')
 
-        r = self.app.get('/organization/%s/edit_profile' % self.name)
-
         #Add a workfield
-        r = self.app.post('/organization/%s/add_work_field' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/add_work_field' % self.org.url(),
             params = dict(
                 workfield = str(wf._id)),
             extra_environ=dict(username='test-user-1'))
 
-        r = self.app.get('/organization/%s/' % self.name)
+        r = self.app.get('%sorganizationprofile' % self.org.url())
         
         self.org = OM.Organization.query.get(_id=self.org._id)
         assert len(self.org.getWorkfields()) == 1
@@ -165,12 +163,12 @@ class TestOrganizationGeneral(TestOrganization):
         #Add a second workfield
         wf2 = OM.WorkFields.query.get(name='Web applications')
 
-        r = self.app.post('/organization/%s/add_work_field' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/add_work_field' % self.org.url(),
             params = dict(
                 workfield = str(wf2._id)),
             extra_environ=dict(username='test-user-1'))
 
-        r = self.app.get('/organization/%s/' % self.name)
+        r = self.app.get('%sorganizationprofile' % self.org.url())
         
         self.org = OM.Organization.query.get(_id=self.org._id)
         assert len(self.org.getWorkfields()) == 2
@@ -178,11 +176,11 @@ class TestOrganizationGeneral(TestOrganization):
         assert wf2.description in r
 
         #Remove a workfield
-        r = self.app.post('/organization/%s/remove_work_field' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/remove_work_field' % self.org.url(),
             params = {'workfieldid' : str(wf._id)},
             extra_environ=dict(username='test-user-1'))
 
-        r = self.app.get('/organization/%s/' % self.name)
+        r = self.app.get('%sorganizationprofile' % self.org.url())
         assert len(self.org.getWorkfields()) == 1
         assert self.org.getWorkfields()[0]._id == wf2._id
         assert wf.name not in r
@@ -191,42 +189,18 @@ class TestOrganizationGeneral(TestOrganization):
 class TestOrganizationMembership(TestOrganization):
 
     @td.with_user_project('test-user-1')
-    def test_invalid_close_membership(self):
-        m = OM.Membership.query.get(
-            member_id=c.user._id, 
-            organization_id=self.org._id)
-        
-        #Try to close the created membership
-        r = self.app.post('/organization/%s/change_membership' % self.name,
-            params=dict(
-                status = 'closed',
-                permission = 'admin',
-                membershipid = str(m._id),
-                requestfrom = 'user',
-                role = self.role),
-            extra_environ=dict(username='test-user-1'))
-
-        #Since there aren't other admins, check that nothing changed
-        m = OM.Membership.query.get(
-            member_id=c.user._id, 
-            organization_id=self.org._id)
-        assert self.org.userPermissions(c.user) == 'admin'
-        assert m.status == 'active'
-        assert m.role == self.role
-
-    @td.with_user_project('test-user-1')
     def test_invite_user(self):
         #Try to invite a new user
         user3 = User.by_username('test-admin')
         testrole = 'Software Engineer'
 
-        r = self.app.post('/organization/%s/invite_user' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/invite_user' % self.org.url(),
             params=dict(
                 username = user3.username,
                 role = testrole),
             extra_environ=dict(username='test-user-1'))
         
-        r = self.app.get('/organization/%s/edit_profile' % self.name,
+        r = self.app.get('%sadmin/organizationprofile' % self.org.url(),
             extra_environ=dict(username='test-user-1'))
         assert user3.display_name in r
 
@@ -237,12 +211,10 @@ class TestOrganizationMembership(TestOrganization):
         assert m.role == testrole
 
         #Accept invitation
-        r = self.app.post('/organization/%s/change_membership' % self.name,
+        r = self.app.post('/organization/change_membership',
             params=dict(
                 status = 'active',
-                permission = 'member',
                 membershipid = str(m._id),
-                requestfrom = 'user',
                 role = testrole),
             extra_environ=dict(username='test-admin'))
 
@@ -251,30 +223,12 @@ class TestOrganizationMembership(TestOrganization):
             organization_id=self.org._id)
         assert m.status == 'active'
         assert m.role == testrole
-        assert m.membertype == 'member'
-
+        
     @td.with_user_project('test-user-1')
     def test_change_permissions(self):
         m = OM.Membership.query.get(
             member_id=self.user2._id, 
             organization_id=self.org._id)
-
-        #Change permissions of the non-admin user
-        r = self.app.post('/organization/%s/change_membership' % self.name,
-            params=dict(
-                status = 'active',
-                permission = 'admin',
-                membershipid = str(m._id),
-                requestfrom = 'organization',
-                role = 'Software Engineer'),
-            extra_environ=dict(username='test-user-1'))
-
-        m = OM.Membership.query.get(
-            member_id=self.user2._id, 
-            organization_id=self.org._id)
-        assert m.status == 'active'
-        assert m.role == 'Software Engineer'
-        assert m.membertype == 'admin'
 
         #Close the involvement of test-user-1
         testuser1 = User.by_username('test-user-1')
@@ -282,10 +236,9 @@ class TestOrganizationMembership(TestOrganization):
             member_id=testuser1._id, 
             organization_id=self.org._id)
 
-        r = self.app.post('/organization/%s/change_membership' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/change_membership' % self.org.url(),
             params=dict(
                 status = 'closed',
-                permission = 'admin',
                 membershipid = str(m._id),
                 requestfrom = 'user',
                 role = self.role),
@@ -294,23 +247,23 @@ class TestOrganizationMembership(TestOrganization):
         m = OM.Membership.query.get(
             member_id=c.user._id, 
             organization_id=self.org._id)
-        assert self.org.userPermissions(c.user) == 'admin'
         assert m.status == 'closed'
         assert m.role == self.role
 
 
     @td.with_user_project('test-admin')
     def test_send_request(self):
-        #Send an admission new user
+        #Send an admission request from a new user
         user3 = User.by_username('test-admin')
         testrole = 'Software Engineer'
 
-        r = self.app.post('/organization/%s/admission_request' % self.name,
+        r = self.app.post('%sorganizationprofile/admission_request' % self.org.url(),
             params=dict(
                 role = testrole),
             extra_environ=dict(username='test-admin'))
-        
-        r = self.app.get('/organization/%s/edit_profile' % self.name,
+
+        c.user = M.User.by_username('test-user-1')
+        r = self.app.get('%sadmin/organizationprofile' % self.org.url(),
             extra_environ=dict(username='test-user-1'))
         assert user3.display_name in r
 
@@ -320,26 +273,10 @@ class TestOrganizationMembership(TestOrganization):
         assert m.status == 'request'
         assert m.role == testrole
 
-        #Check that the user is not allowed to accept his own request
-        r = self.app.post('/organization/%s/change_membership' % self.name,
-            params=dict(
-                status = 'active',
-                permission = 'member',
-                membershipid = str(m._id),
-                requestfrom = 'user',
-                role = testrole),
-            extra_environ=dict(username='test-admin'))
-
-        m = OM.Membership.query.get(
-            member_id=user3._id, 
-            organization_id=self.org._id)
-        assert m.status == 'request'
-
         #Accept request
-        r = self.app.post('/organization/%s/change_membership' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/change_membership' % self.org.url(),
             params=dict(
                 status = 'active',
-                permission = 'member',
                 membershipid = str(m._id),
                 requestfrom = 'user',
                 role = testrole),
@@ -350,10 +287,8 @@ class TestOrganizationMembership(TestOrganization):
             organization_id=self.org._id)
         assert m.status == 'active'
         assert m.role == testrole
-        assert m.membertype == 'member'
 
-#check progetti
-
+#check projects
 class TestOrganizationProjects(TestOrganization):
 
     @td.with_user_project('test-admin')
@@ -425,7 +360,7 @@ class TestOrganizationProjects(TestOrganization):
         assert p.collaborationtype == 'cooperation'
 
         #As the admin of the organization, reject pending invitation
-        r = self.app.post('/organization/%s/update_collaboration_status' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/update_collaboration_status' % self.org.url(),
             params=dict(
                 collaborationid = str(p._id),
                 collaborationtype = 'cooperation',
@@ -438,7 +373,7 @@ class TestOrganizationProjects(TestOrganization):
         p = send_invitation(self)
 
         #As the admin of the organization, accept pending invitation
-        r = self.app.post('/organization/%s/update_collaboration_status' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/update_collaboration_status' % self.org.url(),
             params=dict(
                 collaborationid = str(p._id),
                 collaborationtype = 'cooperation',
@@ -449,7 +384,7 @@ class TestOrganizationProjects(TestOrganization):
         assert p.collaborationtype == 'cooperation'
 
         #As the admin of the organization, close the collaboration
-        r = self.app.post('/organization/%s/update_collaboration_status' % self.name,
+        r = self.app.post('%sadmin/organizationprofile/update_collaboration_status' % self.org.url(),
             params=dict(
                 collaborationid = str(p._id),
                 collaborationtype = 'cooperation',

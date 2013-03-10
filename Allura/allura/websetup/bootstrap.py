@@ -93,6 +93,12 @@ def bootstrap(command, conf, vars):
                                            max_projects = None,
                                            css = 'none',
                                            google_analytics = False))
+    n_organizations = M.Neighborhood(name='Organizations', url_prefix='/o/',
+                             shortname_prefix='o/',
+                             features=dict(private_projects = True,
+                                           max_projects = None,
+                                           css = 'none',
+                                           google_analytics = False))
     n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/', project_list_url='/adobe/',
                              features=dict(private_projects = True,
                                            max_projects = None,
@@ -103,6 +109,7 @@ def bootstrap(command, conf, vars):
     p_projects = project_reg.register_neighborhood_project(n_projects, [root], allow_register=True)
     p_users = project_reg.register_neighborhood_project(n_users, [root])
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
+    p_organizations = project_reg.register_neighborhood_project(n_organizations, [root])
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 

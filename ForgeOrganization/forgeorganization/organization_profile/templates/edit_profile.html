@@ -7,12 +7,10 @@
 
 {% block content %}
 
-{% if permissions == 'admin' %}
-
-  <ul><li><a href="{{organization.url()}}">Click here</a> to check your public profile.</ul>
+  <ul><li><a href="{{organization.url()}}organizationprofile">Click here</a> to check your public profile.</ul>
   <div class="grid-20">
     <h2>Data to be included in {{organization.fullname}}'s profile</h2>
-    {{forms.update_profile.display(organization=organization, action=organization.url()+'change_data') }}
+    {{forms.update_profile.display(organization=organization, action=organization.url()+'admin/organizationprofile/change_data') }}
   </div>
 
   <div class="grid-20" style="clear:both;">
@@ -27,7 +25,7 @@
           </thead>
         </tr>
         {% for wf in organization.getWorkfields() %}
-          {{forms.remove_work_field.display(workfield=wf, action=organization.url()+'remove_work_field')}} 
+          {{forms.remove_work_field.display(workfield=wf, action=organization.url()+'admin/organizationprofile/remove_work_field')}} 
         {%endfor%}
       </table>
     {% else %}
@@ -35,7 +33,7 @@
     {% endif %}
     <h3>Add a new work field</h3>
     <div class="grid-20" style="margin:0;">
-      {{forms.add_work_field.display(organization=organization, action=organization.url()+'add_work_field') }}
+      {{forms.add_work_field.display(organization=organization, action=organization.url()+'admin/organizationprofile/add_work_field') }}
     </div>
   </div>
 
@@ -47,7 +45,6 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Permission level</th>
             <th>Role</th>
             <th>Status</th>
             <th>Actions</th>
@@ -58,7 +55,7 @@
             <tr>
               {{forms.new_change_membership_from_organization().display(
                   membership=membership,
-                  action=membership.organization.url()+'change_membership')}}
+                  action=membership.organization.url()+'admin/organizationprofile/change_membership')}}
             </tr>
           {% endfor %}
         </tbody>
@@ -71,7 +68,7 @@
       You can add a member of your organization to the above list by filling the following form with his or her 
       username and the user's role within the organization.
     </p>
-    {{forms.invite_user_form.display(action=organization.url()+'invite_user')}}
+    {{forms.invite_user_form.display(action=organization.url()+'admin/organizationprofile/invite_user')}}
 
   </div>
 
@@ -94,7 +91,7 @@
             <tr>
               {{forms.new_change_collaboration_status().display(
                     collaboration=org,
-                    action=org.organization.url()+'update_collaboration_status')}}
+                    action=organization.url()+'admin/organizationprofile/update_collaboration_status')}}
             </tr>
           {% endfor %}
         </tbody>
@@ -108,11 +105,7 @@
       If you want to include a new collaboration in your profile, you can look for the project and send an admission request.
       Otherwise, you can add it using the following form.
     </p>
-    {{forms.request_collaboration_form.display(action=organization.url()+'send_collaboration_request')}}
+    {{forms.request_collaboration_form.display(action=organization.url()+'admin/organizationprofile/send_collaboration_request')}}
   </div>
-
-{% else %}
-  <div class="grid-20">You don't have the permissions to edit the profile of this organization.</div>
-{% endif %}
 
 {% endblock %}

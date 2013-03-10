@@ -171,7 +171,7 @@ class Globals(object):
         # Zarkov logger
         self._zarkov = None
 
-        self.show_organizations = config.get('organizations.enable')=='true'
+        self.show_organizations = 'organization' in self.entry_points['organizations']
 
     @LazyProperty
     def spam_checker(self):
