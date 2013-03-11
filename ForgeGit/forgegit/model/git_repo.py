@@ -8,6 +8,7 @@ import itertools
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
+import gzip
 
 import tg
 import git
@@ -327,9 +328,10 @@ class GitImplementation(M.RepositoryImplementation):
         mount_point = self._repo.app.config.options.mount_point
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
-        filename = '%s-%s-%s.tar' % (shortname, mount_point, commit)
-        self._git.archive(open(os.path.join(self._repo.tarball_path, filename), 'w'),
-                          treeish=commit)
+        archive_name = '%s-%s-%s' % (shortname, mount_point, commit)
+        filename = os.path.join(self._repo.tarball_path, archive_name + '.tar.gz')
+        with gzip.open(filename, 'w') as fp:
+            self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name+'/')
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

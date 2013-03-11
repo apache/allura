@@ -621,10 +621,10 @@ class SVNImplementation(M.RepositoryImplementation):
         self._svn.export(self._url,
                          path,
                          revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-        filename = '%s-%s-%s.tar' % (shortname, mount_point, commit)
-        tar = tarfile.open(os.path.join(self._repo.tarball_path, filename), "w")
-        tar.add(path, arcname=commit)
-        tar.close()
+        archive_name = '%s-%s-%s' % (shortname, mount_point, commit)
+        filename = os.path.join(self._repo.tarball_path, archive_name + '.tar.gz')
+        with tarfile.open(filename, "w:gz") as tar:
+            tar.add(path, arcname=archive_name)
         rmtree(path)
 
 

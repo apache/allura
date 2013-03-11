@@ -241,7 +241,7 @@ class Repository(Artifact, ActivityObject):
     def tarball_url(self, revision):
         shortname = c.app.repo.project.shortname.replace('/', '-')
         mount_point = c.app.repo.app.config.options.mount_point
-        filename = '%s-%s-%s.tar' % (shortname, mount_point, revision)
+        filename = '%s-%s-%s.tar.gz' % (shortname, mount_point, revision)
         r = os.path.join(self.tool,self.project.url()[1:],self.name,filename)
         return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
