@@ -9,9 +9,14 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 
 {% block extra_js %}
 {{ super() }}
-<script type="text/javascript">(function() {
-    var tarball_status = document.getElementById('tarball_status');
-    if (tarball_status) {
+<script type="text/javascript">$(function() {
+    {% if status == 'ready' %}
+        {% if 'no-redirect' not in request.params %}
+            $(document).ready(function() {
+                window.location.href = '{{c.app.repo.tarball_url(revision)}}';
+            });
+        {% endif %}
+    {% else %}
         var opts = {
             lines: 9, // The number of lines to draw
             length: 4, // The length of each line
@@ -28,36 +33,40 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             top: 10, // Top position relative to parent in px
             left: 10 // Left position relative to parent in px
         };
-        var spinner = new Spinner(opts).spin(tarball_status);
+        var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
+        // Check tarball status every 5 seconds
         function check_status() {
             $.get('{{commit.url()}}tarball_status', function(data) {
                 if (data.status === 'ready') {
                     window.clearInterval(status_checker);
-                    spinner.opts.speed = 0;
-                    spinner.opts.opacity = 1;
-                    spinner.spin(tarball_status);
-                    $('#tarball_status h2').html(' <a href="{{c.app.repo.tarball_url(revision)}}">Click here to download</a>');
-                    window.location.href = '{{c.app.repo.tarball_url(revision)}}';
+                    spinner.stop();
+                    $('#snapshot_status h2').toggle();
+                    {% if 'no-redirect' not in request.params %}
+                        window.location.href = '{{c.app.repo.tarball_url(revision)}}';
+                    {% endif %}
                 }
             });
         }
-        // Check tarball status every 5 seconds
         var status_checker = window.setInterval(check_status, 5000);
-    }
-}());
+    {% endif %}
+});
 </script>
 {% endblock %}
 
 {% block content %}
-<div id='tarball_status'>
-    <h2>Generating snapshot...</h2>
+<div id='snapshot_status'>
+    <h2 class="busy">Generating snapshot...</h2>
+    <h2 class="ready">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision)}}">direct link</a>.</h2>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style type="text/css">
-#tarball_status h2 {
-padding-left: 33px;
-}
+    #snapshot_status h2 {
+        padding-left: 33px;
+    }
+    #snapshot_status .{{ 'busy' if status == 'ready' else 'ready' }} {
+        display: none;
+    }
 </style>
 {% endblock %}

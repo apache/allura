@@ -136,7 +136,7 @@ class TestRootController(SVNTestController):
 
     def test_tarball(self):
         r = self.app.get('/src/3/tree/')
-        assert 'Download tarball' in r
+        assert 'Download Snapshot' in r
         r = self.app.get('/src/3/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()

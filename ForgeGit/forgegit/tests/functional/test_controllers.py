@@ -269,7 +269,7 @@ class TestRootController(_TestCase):
     def test_tarball(self):
         ci = self._get_ci()
         r = self.app.get(ci + 'tree/')
-        assert 'Download tarball' in r
+        assert 'Download Snapshot' in r
         r = self.app.get(ci + 'tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
