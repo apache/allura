@@ -387,3 +387,32 @@ class TestFork(_TestCase):
         r = self.app.post('/p/test/src-git/merge-requests/%s/save' % mr_num,
                           params=dict(status='rejected')).follow()
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
+
+class TestDiff(TestController):
+
+    def setUp(self):
+        super(TestDiff, self).setUp()
+        self.setup_with_tools()
+
+    @with_git
+    def setup_with_tools(self):
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'testmime.git'
+        ThreadLocalORMSession.flush_all()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+
+    def test_diff(self):
+        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?barediff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        assert 'alt="2ce83a2..."' in r
+        assert 'alt="d961abb..."' in r
+
+        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        assert 'alt="2ce83a2..."' in r
+        assert 'alt="d961abb..."' in r
+
