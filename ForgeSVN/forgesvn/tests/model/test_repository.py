@@ -519,8 +519,12 @@ class TestRepo(_TestWithRepo):
         assert self.repo.guess_type('.gitignore') == ('text/plain', None)
 
     def test_refresh(self):
+        committer_name = 'Test Committer'
+        committer_email = 'test@example.com'
         ci = mock.Mock()
-        ci.authored.name = 'Test Committer'
+        ci.authored.name = committer_name
+        ci.committed.name = committer_name
+        ci.committed.email = committer_email
         ci.author_url = '/u/test-committer/'
         self.repo.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
@@ -530,8 +534,8 @@ class TestRepo(_TestWithRepo):
         def refresh_commit_info(oid, seen, lazy=False):
             M.repo.CommitDoc(dict(
                     authored=dict(
-                        name='Test Committer',
-                        email='test@test.com'),
+                        name=committer_name,
+                        email=committer_email),
                     _id=oid)).m.insert()
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
@@ -545,13 +549,13 @@ class TestRepo(_TestWithRepo):
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "master,branch:  by Test Committer http://localhost/ci/foo99" in n.text
+                assert "master,branch:  by %s http://localhost/ci/foo99" % committer_name in n.text
                 break
         else:
             assert False, 'Did not find notification'
         assert M.Feed.query.find(dict(
             title='New commit',
-            author_name='Test Committer')).count()
+            author_name=committer_name)).count()
 
     def test_refresh_private(self):
         ci = mock.Mock()
