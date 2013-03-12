@@ -303,6 +303,7 @@ class RootController(BaseController, DispatchIndex):
         results = []
         count = 0
         parser = kw.pop('parser', None)
+        matches = {}
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
@@ -323,6 +324,9 @@ class RootController(BaseController, DispatchIndex):
                     '-deleted_b:true',
                     'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
                 ],
+                'hl': 'true',
+                'hl.simple.pre': '<strong>',
+                'hl.simple.post': '</strong>',
             }
             if not history:
                search_params['fq'].append('is_history_b:False')
@@ -337,13 +341,22 @@ class RootController(BaseController, DispatchIndex):
             except SolrError as e:
                 search_error = e
             if results:
-                count=results.hits
+                count = results.hits
+                matches = results.highlighting
                 def historize_urls(doc):
                     if doc.get('type_s', '').endswith(' Snapshot'):
                         if doc.get('url_s'):
                             doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
                     return doc
+                def add_matches(doc):
+                    m = matches.get(doc['id'], {})
+                    doc['title_match'] = m.get('title', [''])[0]
+                    doc['text_match'] = m.get('text', [''])[0]
+                    if not doc['text_match']:
+                        doc['text_match'] = doc.get('text', [''])[0]
+                    return doc
                 results = imap(historize_urls, results)
+                results = imap(add_matches, results)
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],
                     count=count, limit=limit, page=page, search_error=search_error)
