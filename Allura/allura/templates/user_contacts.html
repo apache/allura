@@ -6,13 +6,24 @@
 {% block header %}Contacts of {{c.user.username}} {% endblock %}
 
 {% block content %}
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+   </ul>
+
   <div class="grid-20">
     <h2>Personal Contacts</h2>
     <h3>Skype account</h3>
 
-    {{g.theme.skype_account_form.display(action="/auth/prefs/user_contacts/skype_account",
+    {{g.theme.skype_account_form.display(action="skype_account",
           initial_value=c.user.get_pref('skypeaccount'))}}
-     
+
     {%if c.user.get_pref('socialnetworks') or c.user.get_pref('telnumbers') or c.user.get_pref('webpages') %}
       <h3>Other existing contacts</h3>
         <table>
@@ -24,32 +35,24 @@
             </thead>
           </tr>
           {% for sn in c.user.get_pref('socialnetworks') %}
-             {{g.theme.remove_socialnetwork_form.display(action="/auth/prefs/user_contacts/remove_social_network", account=sn.accounturl, socialnetwork=sn.socialnetwork)}} 
+             {{g.theme.remove_socialnetwork_form.display(action="remove_social_network", account=sn.accounturl, socialnetwork=sn.socialnetwork)}}
           {% endfor %}
 
           {% for tn in c.user.get_pref('telnumbers') %}
-              {{g.theme.remove_textvalue_form.display(action="/auth/prefs/user_contacts/remove_telnumber", value=tn, label="Telephone number")}} 
+              {{g.theme.remove_textvalue_form.display(action="remove_telnumber", value=tn, label="Telephone number")}}
           {%endfor%}
 
           {% for ws in c.user.get_pref('webpages') %}
-              {{g.theme.remove_textvalue_form.display(action="/auth/prefs/user_contacts/remove_webpage", value=ws, label="Website url")}} 
+              {{g.theme.remove_textvalue_form.display(action="remove_webpage", value=ws, label="Website url")}}
           {%endfor%}
         </table>
     {% endif %}
 
     <h3>Add a social network account</h3>
-    {{g.theme.add_socialnetwork_form.display(action="/auth/prefs/user_contacts/add_social_network")}}
+    {{g.theme.add_socialnetwork_form.display(action="add_social_network")}}
     <h3>Add a telephone number</h3>
-    {{g.theme.add_telnumber_form.display(action="/auth/prefs/user_contacts/add_telnumber")}}
+    {{g.theme.add_telnumber_form.display(action="add_telnumber")}}
     <h3>Add a personal website</h3>
-    {{g.theme.add_website_form.display(action="/auth/prefs/user_contacts/add_webpage")}}
-  <h3>Other possible actions</h3>
-    <div class="grid-20" style="margin-bottom:10px;"/>
-      <ul>
-        <li>
-          <a href="/auth/prefs">Go to you profile</a> to set the remaining personal preferences.
-        </li>
-      </ul>
-    </div>
+    {{g.theme.add_website_form.display(action="add_webpage")}}
   </div>
 {% endblock %}

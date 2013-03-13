@@ -6,15 +6,32 @@
 {% block header %}Availability timeslots of {{c.user.username}} {% endblock %}
 
 {% block content %}
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+  </ul>
+
   <div class="grid-20">
     <h2>Availability</h2>
     <div class="grid-18">
-      Please, set your time intervals choosing a weekday and entering the time interval according to the timezone specified in your personal data, using the format HH:MM. If you didn't set any timezone, your timeslots could be meaningless to other users, therefore they will be ignored.
+        Please, set your time intervals choosing a weekday and entering the
+        time interval according to the timezone specified in your personal
+        data, using the format HH:MM. If you didn't set any timezone, your
+        timeslots could be meaningless to other users, therefore they will
+        be ignored.
     </div>
     <div class="grid-18">
-      You can also specify periods of time during which you won't be able to work on the forge, in orther to communicate other users
-      that they can't contact you during those days. Please, do it specifying date intervals in format DD/MM/YYYY.
-    </div> 
+        You can also specify periods of time during which you won't be able
+        to work on the forge, in orther to communicate other users that they
+        can't contact you during those days. Please, do it specifying date
+        intervals in format DD/MM/YYYY.
+    </div>
   </div>
   <div class="grid-20">
     {%if c.user.get_availability_timeslots() %}
@@ -30,15 +47,15 @@
         </tr>
         {% for ts in c.user.get_availability_timeslots() %}
           {{g.theme.remove_timeslot_form.display(
-                action="/auth/prefs/user_availability/remove_timeslot",
+                action="remove_timeslot",
                 weekday=ts.week_day,
                 starttime=ts.start_time,
-                endtime=ts.end_time)}} 
+                endtime=ts.end_time)}}
         {%endfor%}
       </table>
     {% endif %}
     <h3>Add a new availability timeslot</h3>
-    {{g.theme.add_timeslot_form.display(action="/auth/prefs/user_availability/add_timeslot")}}
+    {{g.theme.add_timeslot_form.display(action="add_timeslot")}}
   </div>
 
   <div class="grid-20">
@@ -54,21 +71,13 @@
         </tr>
         {% for ip in c.user.get_inactive_periods() %}
           {{g.theme.remove_inactive_period_form.display(
-                action="/auth/prefs/user_availability/remove_inactive_period",
+                action="remove_inactive_period",
                 startdate=ip.start_date,
-                enddate=ip.end_date)}} 
+                enddate=ip.end_date)}}
         {%endfor%}
       </table>
     {% endif %}
     <h3>Add a new period of inactivity on the forge</h3>
-    {{g.theme.add_inactive_period_form.display(action="/auth/prefs/user_availability/add_inactive_period")}}
-    <h3>Other possible actions</h3>
-    <div class="grid-20" style="margin-bottom:10px;"/>
-      <ul>
-        <li>
-          <a href="/auth/prefs">Go to you profile</a> to set the remaining personal preferences.
-        </li>
-      </ul>
-    </div>
+    {{g.theme.add_inactive_period_form.display(action="add_inactive_period")}}
   </div>
 {% endblock %}

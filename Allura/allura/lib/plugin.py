@@ -137,9 +137,21 @@ class AuthenticationProvider(object):
     def account_navigation(self):
         return [
             {
+                'tabid': 'account_user_prefs',
+                'title': 'Preferences',
+                'target': "/auth/preferences",
+                'alt': 'Manage Personal Preferences',
+            },
+            {
+                'tabid': 'account_user_info',
+                'title': 'Personal Info',
+                'target': "/auth/user_info",
+                'alt': 'Manage Personal Information',
+            },
+            {
                 'tabid': 'account_sfnet_beta_index',
                 'title': 'Subscriptions',
-                'target': "/auth/prefs",
+                'target': "/auth/subscriptions",
                 'alt': 'Manage Subscription Preferences',
             },
         ]
@@ -624,7 +636,7 @@ class ThemeProvider(object):
         :return: None, or an easywidgets Form to render on the user preferences page
         '''
         from allura.lib.widgets.forms import PasswordChangeForm
-        return PasswordChangeForm(action='/auth/prefs/change_password')
+        return PasswordChangeForm(action='/auth/preferences/change_password')
 
     @LazyProperty
     def personal_data_form(self):
@@ -677,7 +689,7 @@ class ThemeProvider(object):
                  allow adding a social network account.
         '''
         from allura.lib.widgets.forms import AddSocialNetworkForm
-        return AddSocialNetworkForm(action='/auth/prefs/add_social_network')
+        return AddSocialNetworkForm(action='/auth/preferences/add_social_network')
 
     @LazyProperty
     def remove_socialnetwork_form(self):
@@ -686,7 +698,7 @@ class ThemeProvider(object):
                  allow removing a social network account.
         '''
         from allura.lib.widgets.forms import RemoveSocialNetworkForm
-        return RemoveSocialNetworkForm(action='/auth/prefs/remove_social_network')
+        return RemoveSocialNetworkForm(action='/auth/preferences/remove_social_network')
 
     @LazyProperty
     def add_timeslot_form(self):
@@ -749,7 +761,7 @@ class ThemeProvider(object):
                  new skill to a user profile
         '''
         from allura.lib.widgets.forms import AddUserSkillForm
-        return AddUserSkillForm(action='/auth/prefs/user_skills/save_skill')
+        return AddUserSkillForm(action='/auth/user_info/skills/save_skill')
 
     @LazyProperty
     def select_subcategory_form(self):
@@ -759,7 +771,7 @@ class ThemeProvider(object):
                  order to see its sub-categories
         '''
         from allura.lib.widgets.forms import SelectSubCategoryForm
-        return SelectSubCategoryForm(action='/auth/prefs/user_skills')
+        return SelectSubCategoryForm(action='/auth/user_info/skills/')
 
     @LazyProperty
     def remove_user_skill(self):
@@ -768,7 +780,7 @@ class ThemeProvider(object):
                  an existing skill from a user profile
         '''
         from allura.lib.widgets.forms import RemoveSkillForm
-        return RemoveSkillForm(action='/auth/prefs/user_skills/remove_skill')
+        return RemoveSkillForm(action='/auth/user_info/skills/remove_skill')
 
     @LazyProperty
     def upload_key_form(self):
@@ -776,7 +788,7 @@ class ThemeProvider(object):
         :return: None, or an easywidgets Form to render on the user preferences page
         '''
         from allura.lib.widgets.forms import UploadKeyForm
-        return UploadKeyForm(action='/auth/prefs/upload_sshkey')
+        return UploadKeyForm(action='/auth/preferences/upload_sshkey')
 
     @property
     def master(self):
