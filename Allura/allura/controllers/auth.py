@@ -62,7 +62,9 @@ class F(object):
 class AuthController(BaseController):
 
     def __init__(self):
-        self.prefs = PreferencesController()
+        self.preferences = PreferencesController()
+        self.user_info = UserInfoController()
+        self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
 
     @expose('jinja:allura:templates/login.html')
@@ -188,7 +190,7 @@ class AuthController(BaseController):
         if c.user:
             c.user.claim_openid(oid_obj._id)
             flash('Claimed %s' % oid_obj._id)
-        redirect('/auth/prefs/')
+        redirect('/auth/preferences/')
 
     @expose()
     def logout(self):
@@ -293,21 +295,169 @@ class AuthController(BaseController):
                     allow_write=has_access(c.app, 'write')(user=user),
                     allow_create=has_access(c.app, 'create')(user=user))
 
+class PreferencesController(BaseController):
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_prefs.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        api_token = M.ApiToken.query.get(user_id=c.user._id)
+        return dict(
+                menu=menu,
+                api_token=api_token,
+                authorized_applications=M.OAuthAccessToken.for_user(c.user),
+            )
+
+    @h.vardec
+    @expose()
+    @require_post()
+    def update(self,
+               addr=None,
+               new_addr=None,
+               primary_addr=None,
+               oid=None,
+               new_oid=None,
+               preferences=None,
+               **kw):
+        if config.get('auth.method', 'local') == 'local':
+            if not preferences.get('display_name'):
+                flash("Display Name cannot be empty.",'error')
+                redirect('.')
+            c.user.set_pref('display_name', preferences['display_name'])
+            for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
+                obj = c.user.address_object(old_a)
+                if data.get('delete') or not obj:
+                    del c.user.email_addresses[i]
+                    if obj: obj.delete()
+            c.user.set_pref('email_address', primary_addr)
+            if new_addr.get('claim'):
+                if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
+                    flash('Email address already claimed', 'error')
+                else:
+                    c.user.email_addresses.append(new_addr['addr'])
+                    em = M.EmailAddress.upsert(new_addr['addr'])
+                    em.claimed_by_user_id=c.user._id
+                    em.send_verification_link()
+            for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
+                obj = c.user.openid_object(old_oid)
+                if data.get('delete') or not obj:
+                    del c.user.open_ids[i]
+                    if obj: obj.delete()
+            for k,v in preferences.iteritems():
+                if k == 'results_per_page':
+                    v = int(v)
+                c.user.set_pref(k, v)
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def gen_api_token(self):
+        tok = M.ApiToken.query.get(user_id=c.user._id)
+        if tok is None:
+            tok = M.ApiToken(user_id=c.user._id)
+        else:
+            tok.secret_key = h.cryptographic_nonce()
+        redirect(request.referer)
+
+    @expose()
+    @require_post()
+    def del_api_token(self):
+        tok = M.ApiToken.query.get(user_id=c.user._id)
+        if tok is None: return
+        tok.delete()
+        redirect(request.referer)
+
+    @expose()
+    @require_post()
+    def revoke_oauth(self, _id=None):
+        tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
+        if tok is None:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        if tok.user_id != c.user._id:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        tok.delete()
+        flash('Application access revoked')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(V.NullValidator(), error_handler=index)
+    def change_password(self, **kw):
+        kw = g.theme.password_change_form.to_python(kw, None)
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.set_password(c.user, kw['oldpw'], kw['pw'])
+        except wexc.HTTPUnauthorized:
+            flash('Incorrect password', 'error')
+            redirect('.')
+        flash('Password changed')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def upload_sshkey(self, key=None):
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.upload_sshkey(c.user.username, key)
+        except AssertionError, ae:
+            flash('Error uploading key: %s' % ae, 'error')
+        flash('Key uploaded')
+        redirect('.')
+
+class UserInfoController(BaseController):
+
+    def __init__(self, *args, **kwargs):
+        self.skills = UserSkillsController()
+        self.contacts = UserContactsController()
+        self.availability = UserAvailabilityController()
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_info.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
+
+    @expose()
+    @require_post()
+    @validate(F.change_personal_data_form, error_handler=index)
+    def change_personal_data(self, **kw):
+        require_authenticated()
+        c.user.set_pref('sex', kw['sex'])
+        c.user.set_pref('birthdate', kw.get('birthdate'))
+        localization={'country':kw.get('country'), 'city':kw.get('city')}
+        c.user.set_pref('localization', localization)
+        c.user.set_pref('timezone', kw['timezone'])
+
+        flash('Your personal data was successfully updated!')
+        redirect('.')
+
 class UserSkillsController(BaseController):
 
     def __init__(self, category=None):
         self.category = category
         super(UserSkillsController, self).__init__()
 
+    def _check_security(self):
+        require_authenticated()
+
     @expose()
     def _lookup(self, catshortname, *remainder):
         cat = M.TroveCategory.query.get(shortname=catshortname)
         return UserSkillsController(category=cat), remainder
 
+    @with_trailing_slash
     @expose('jinja:allura:templates/user_skills.html')
     def index(self, **kw):
-        require_authenticated()
-
         l = []
         parents = []
         if kw.get('selected_category') is not None:
@@ -324,18 +474,19 @@ class UserSkillsController(BaseController):
             while temp_cat:
                 parents = [temp_cat] + parents
                 temp_cat = temp_cat.parent_category
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
         return dict(
             skills_list = l,
             selected_skill = selected_skill,
             parents = parents,
+            menu = menu,
             add_details_fields=(len(l)==0))
 
     @expose()
     @require_post()
     @validate(F.save_skill_form, error_handler=index)
     def save_skill(self, **kw):
-        require_authenticated()
-        
         trove_id = int(kw.get('selected_skill'))
         category = M.TroveCategory.query.get(trove_cat_id=trove_id)
 
@@ -344,34 +495,37 @@ class UserSkillsController(BaseController):
             level=kw.get('level'),
             comment=kw.get('comment'))
 
-        s = [skill for skill in c.user.skills 
+        s = [skill for skill in c.user.skills
              if str(skill.category_id) != str(new_skill['category_id'])]
         s.append(new_skill)
         c.user.set_pref('skills', s)
         flash('Your skills list was successfully updated!')
-        redirect('/auth/prefs/user_skills')
+        redirect('..')
 
     @expose()
     @require_post()
     @validate(F.remove_skill_form, error_handler=index)
     def remove_skill(self, **kw):
-        require_authenticated()
-
         trove_id = int(kw.get('categoryid'))
         category = M.TroveCategory.query.get(trove_cat_id=trove_id)
 
-        s = [skill for skill in c.user.skills 
+        s = [skill for skill in c.user.skills
              if str(skill.category_id) != str(category._id)]
         c.user.set_pref('skills', s)
         flash('Your skills list was successfully updated!')
-        redirect('/auth/prefs/user_skills')
+        redirect('..')
 
 class UserContactsController(BaseController):
 
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
     @expose('jinja:allura:templates/user_contacts.html')
     def index(self, **kw):
-        require_authenticated()
-        return dict()
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
 
     @expose()
     @require_post()
@@ -438,10 +592,15 @@ class UserContactsController(BaseController):
 
 class UserAvailabilityController(BaseController):
 
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
     @expose('jinja:allura:templates/user_availability.html')
     def index(self, **kw):
-        require_authenticated()
-        return dict()
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
 
     @expose()
     @require_post()
@@ -479,16 +638,14 @@ class UserAvailabilityController(BaseController):
         flash('Your availability timeslots were successfully updated!')
         redirect('.')
 
-class PreferencesController(BaseController):
+class SubscriptionsController(BaseController):
 
-    user_skills = UserSkillsController()
-    user_contacts = UserContactsController()
-    user_availability = UserAvailabilityController()
+    def _check_security(self):
+        require_authenticated()
 
     @with_trailing_slash
-    @expose('jinja:allura:templates/user_preferences.html')
+    @expose('jinja:allura:templates/user_subs.html')
     def index(self, **kw):
-        require_authenticated()
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
         subscriptions = []
@@ -541,12 +698,10 @@ class PreferencesController(BaseController):
                     frequency=None,
                     artifact=None))
         subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
-        api_token = M.ApiToken.query.get(user_id=c.user._id)
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
         return dict(
             subscriptions=subscriptions,
-            api_token=api_token,
             authorized_applications=M.OAuthAccessToken.for_user(c.user),
             menu=menu)
 
@@ -554,43 +709,8 @@ class PreferencesController(BaseController):
     @expose()
     @require_post()
     def update(self,
-               display_name=None,
-               addr=None,
-               new_addr=None,
-               primary_addr=None,
-               oid=None,
-               new_oid=None,
                preferences=None,
                **kw):
-        require_authenticated()
-        if config.get('auth.method', 'local') == 'local':
-            if display_name is None:
-                flash("Display Name cannot be empty.",'error')
-                redirect('.')
-            c.user.set_pref('display_name', display_name)
-            for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
-                obj = c.user.address_object(old_a)
-                if data.get('delete') or not obj:
-                    del c.user.email_addresses[i]
-                    if obj: obj.delete()
-            c.user.set_pref('email_address', primary_addr)
-            if new_addr.get('claim'):
-                if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
-                    flash('Email address already claimed', 'error')
-                else:
-                    c.user.email_addresses.append(new_addr['addr'])
-                    em = M.EmailAddress.upsert(new_addr['addr'])
-                    em.claimed_by_user_id=c.user._id
-                    em.send_verification_link()
-            for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
-                obj = c.user.openid_object(old_oid)
-                if data.get('delete') or not obj:
-                    del c.user.open_ids[i]
-                    if obj: obj.delete()
-            for k,v in preferences.iteritems():
-                if k == 'results_per_page':
-                    v = int(v)
-                c.user.set_pref(k, v)
         if 'email_format' in preferences:
             c.user.set_pref('email_format', preferences['email_format'])
         redirect('.')
@@ -610,77 +730,6 @@ class PreferencesController(BaseController):
                 if s['subscription_id'] is not None:
                     s['subscription_id'].delete()
         redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def gen_api_token(self):
-        tok = M.ApiToken.query.get(user_id=c.user._id)
-        if tok is None:
-            tok = M.ApiToken(user_id=c.user._id)
-        else:
-            tok.secret_key = h.cryptographic_nonce()
-        redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def del_api_token(self):
-        tok = M.ApiToken.query.get(user_id=c.user._id)
-        if tok is None: return
-        tok.delete()
-        redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def revoke_oauth(self, _id=None):
-        tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
-        if tok is None:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        if tok.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        tok.delete()
-        flash('Application access revoked')
-        redirect('.')
-
-    @expose()
-    @require_post()
-    @validate(V.NullValidator(), error_handler=index)
-    def change_password(self, **kw):
-        kw = g.theme.password_change_form.to_python(kw, None)
-        ap = plugin.AuthenticationProvider.get(request)
-        try:
-            ap.set_password(c.user, kw['oldpw'], kw['pw'])
-        except wexc.HTTPUnauthorized:
-            flash('Incorrect password', 'error')
-            redirect('.')
-        flash('Password changed')
-        redirect('.')
-
-    @expose()
-    @require_post()
-    @validate(F.change_personal_data_form, error_handler=index)
-    def change_personal_data(self, **kw):
-        require_authenticated()
-        c.user.set_pref('sex', kw['sex'])
-        c.user.set_pref('birthdate', kw.get('birthdate'))
-        localization={'country':kw.get('country'), 'city':kw.get('city')}
-        c.user.set_pref('localization', localization)
-        c.user.set_pref('timezone', kw['timezone'])
-
-        flash('Your personal data was successfully updated!')
-        redirect('.')
-
-    @expose()
-    @require_post()
-    def upload_sshkey(self, key=None):
-        ap = plugin.AuthenticationProvider.get(request)
-        try:
-            ap.upload_sshkey(c.user.username, key)
-        except AssertionError, ae:
-            flash('Error uploading key: %s' % ae, 'error')
-        flash('Key uploaded')
-        redirect('.')
 
 class OAuthController(BaseController):
 

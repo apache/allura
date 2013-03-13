@@ -6,6 +6,17 @@
 {% block header %}Skills manager for {{c.user.username}} {% endblock %}
 
 {% block content %}
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+  </ul>
+
   <div class="grid-20">
     {% if c.user.get_skills()|length > 0 %}
       <h2>Your current skills list:</h2>
@@ -43,9 +54,9 @@
           You selected:
         </div>
         <div class="grid-12" style="margin-bottom:20px">      
-           <a href="user_skills">List of all skills</a>
+           <a href=".">List of all skills</a>
            {% for cat in parents %}
-             &gt; <a href="/auth/prefs/user_skills/{{cat.shortname}}">{{cat.fullname}}</a>
+             &gt; <a href="{{cat.shortname}}">{{cat.fullname}}</a>
            {% endfor %}
            &gt; <b>{{selected_skill.fullname}}</b>
            <input type="hidden" name="upper_category" value="{{selected_skill.trove_parent_id}}"/>
@@ -64,23 +75,7 @@
     {% if selected_skill %}
       <h3>Add "{{selected_skill.fullname}}" to you set of skills</h3>
       {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
-           action="/auth/prefs/user_skills/" + selected_skill.shortname + "/save_skill")}}
+           action=selected_skill.shortname + "/save_skill")}}
     {% endif %}
-    <h3>Other possible actions</h3>
-    <div class="grid-20" style="margin-bottom:10px;"/>
-      <ul>
-        {%if tg.config.get('trovecategories.enableediting', 'false')=='true'%}
-          <li>
-            <a href="/categories/{{selected_skill.shortname}}">
-              Create a new category in this list
-            </a>
-            if you want to add a more specific kind of skill which is not included here.
-          </li>
-        {%endif%}
-        <li>
-          <a href="/auth/prefs">Go to you profile</a> to set the remaining personal preferences.
-        </li>
-      </ul>
-    </div>
   </div>
 {% endblock %}

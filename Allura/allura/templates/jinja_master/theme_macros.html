@@ -3,7 +3,7 @@
     <div class="wrapper">
         <nav>
           {% if c.user._id %}
-            <a href="/auth/prefs/">Account</a>
+            <a href="/auth/preferences/">Account</a>
             <a href="{{c.user.url()}}">{{name}}</a>
             <a href="{{logout_url}}">Log Out</a>
           {% else %}
@@ -34,7 +34,7 @@
     function _add_tracking(prefix, tracking_id) {
         _gaq.push(
             [prefix+'._setAccount', tracking_id],
-            [prefix+'._trackPageview'],
+            [prefix+'._trackPageview']
         );
     }
 
