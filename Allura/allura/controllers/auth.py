@@ -508,7 +508,7 @@ class UserSkillsController(BaseController):
         s.append(new_skill)
         c.user.set_pref('skills', s)
         flash('Your skills list was successfully updated!')
-        redirect('..')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -521,7 +521,7 @@ class UserSkillsController(BaseController):
              if str(skill.category_id) != str(category._id)]
         c.user.set_pref('skills', s)
         flash('Your skills list was successfully updated!')
-        redirect('..')
+        redirect('.')
 
 class UserContactsController(BaseController):
 
