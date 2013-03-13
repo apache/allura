@@ -3,6 +3,7 @@ import socket
 from logging import getLogger
 
 import markdown
+import jinja2
 from pylons import tmpl_context as c, app_globals as g
 from pysolr import SolrError
 
@@ -17,6 +18,11 @@ def solarize(obj):
     # if index() returned doc without text, assume empty text
     if not doc.get('text'):
         doc['text'] = ''
+    # Convert text to plain text (It usually contains markdown markup).
+    # To do so, we convert markdown into html, and then strip all html tags.
+    text = doc['text']
+    text = g.markdown.convert(text)
+    doc['text'] = jinja2.Markup.escape(text).striptags()
     return doc
 
 class SearchError(SolrError):
