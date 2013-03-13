@@ -25,10 +25,6 @@ class UserStats(Stats):
         stats = cls(user_id=user._id,
             registration_date = datetime.utcnow())
         user.stats_id = stats._id
-        if session(stats):
-            session(stats).flush(stats)
-        if session(user):
-            session(user).flush(user)
         return stats
 
     def getLastMonthLogins(self):

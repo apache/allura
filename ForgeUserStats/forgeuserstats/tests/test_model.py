@@ -18,9 +18,8 @@ class TestUserStats(unittest.TestCase):
 
         setup_basic_test()
         setup_global_objects()
-        self.user = User.register(dict(username='test-new-user',
-            display_name='Test Stats'),
-            make_project=False)
+        self.user = User.by_username('test-user-2')
+        c.user = self.user
 
     def test_init_values(self):
         artifacts = self.user.stats.getArtifacts()
@@ -49,9 +48,9 @@ class TestUserStats(unittest.TestCase):
         assert lmcommits['number'] == 0
         assert lmcommits['lines'] == 0
 
-    @td.with_user_project('test-new-user')
+    @td.with_user_project('test-user-2')
     def test_create_artifact_stats(self):
-        p = Project.query.get(shortname='u/test-new-user')
+        p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
 
         init_lm_art = self.user.stats.getLastMonthArtifacts()
@@ -126,9 +125,9 @@ class TestUserStats(unittest.TestCase):
         art_by_cat = self.user.stats.getArtifactsByCategory(detailed=False)
         assert art_by_cat[topic]['created'] == 1 and art_by_cat[topic]['modified'] == 0
 
-    @td.with_user_project('test-new-user')
+    @td.with_user_project('test-user-2')
     def test_modify_artifact_stats(self):
-        p = Project.query.get(shortname='u/test-new-user')
+        p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
 
         init_lm_art = self.user.stats.getLastMonthArtifacts()
@@ -203,9 +202,9 @@ class TestUserStats(unittest.TestCase):
         art_by_cat = self.user.stats.getArtifactsByCategory(detailed=False)
         assert art_by_cat[topic]['created'] == 0 and art_by_cat[topic]['modified'] == 1
 
-    @td.with_user_project('test-new-user')
+    @td.with_user_project('test-user-2')
     def test_ticket_stats(self):
-        p = Project.query.get(shortname='u/test-new-user')
+        p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
         create_time = datetime.utcnow() + timedelta(-5)
 
@@ -299,9 +298,9 @@ class TestUserStats(unittest.TestCase):
         assert lm_by_cat[topic]['averagesolvingtime'] == solving_time
 
     @with_git
-    @td.with_user_project('test-new-user')
+    @td.with_user_project('test-user-2')
     def test_commit_stats(self):
-        p = Project.query.get(shortname='u/test-new-user')
+        p = Project.query.get(shortname='u/test-user-2')
         topic = TroveCategory.query.get(shortname='scientific')
         commit_time = datetime.utcnow() + timedelta(-1)
 
@@ -353,7 +352,7 @@ class TestUserStats(unittest.TestCase):
         assert lm_by_cat[topic]['number'] == 1
         assert lm_by_cat[topic]['lines'] == 1
 
-    @td.with_user_project('test-new-user')
+    @td.with_user_project('test-user-2')
     def test_login_stats(self):
         init_logins = self.user.stats.tot_logins_count
         init_lm_logins = self.user.stats.getLastMonthLogins()
