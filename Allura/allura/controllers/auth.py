@@ -67,6 +67,14 @@ class AuthController(BaseController):
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
 
+    @expose()
+    def prefs(self, *args, **kwargs):
+        '''
+        Redirect old /auth/prefs URL to /auth/subscriptions
+        (to handle old email links, etc).
+        '''
+        redirect('subscriptions')
+
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
     def index(self, *args, **kwargs):
