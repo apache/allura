@@ -366,9 +366,124 @@ class UserSkillsController(BaseController):
         flash('Your skills list was successfully updated!')
         redirect('/auth/prefs/user_skills')
 
+class UserContactsController(BaseController):
+
+    @expose('jinja:allura:templates/user_contacts.html')
+    def index(self, **kw):
+        require_authenticated()
+        return dict()
+
+    @expose()
+    @require_post()
+    @validate(F.add_socialnetwork_form, error_handler=index)
+    def add_social_network(self, **kw):
+        require_authenticated()
+        c.user.add_socialnetwork(kw['socialnetwork'], kw['accounturl'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_socialnetwork_form, error_handler=index)
+    def remove_social_network(self, **kw):
+        require_authenticated()
+        c.user.remove_socialnetwork(kw['socialnetwork'], kw['account'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.add_telnumber_form, error_handler=index)
+    def add_telnumber(self, **kw):
+        require_authenticated()
+        c.user.add_telephonenumber(kw['newnumber'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_textvalue_form, error_handler=index)
+    def remove_telnumber(self, **kw):
+        require_authenticated()
+        c.user.remove_telephonenumber(kw['oldvalue'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.add_website_form, error_handler=index)
+    def add_webpage(self, **kw):
+        require_authenticated()
+        c.user.add_webpage(kw['newwebsite'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_textvalue_form, error_handler=index)
+    def remove_webpage(self, **kw):
+        require_authenticated()
+        c.user.remove_webpage(kw['oldvalue'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.skype_account_form, error_handler=index)
+    def skype_account(self, **kw):
+        require_authenticated()
+        c.user.set_pref('skypeaccount', kw['skypeaccount'])
+        flash('Your personal contacts were successfully updated!')
+        redirect('.')
+
+class UserAvailabilityController(BaseController):
+
+    @expose('jinja:allura:templates/user_availability.html')
+    def index(self, **kw):
+        require_authenticated()
+        return dict()
+
+    @expose()
+    @require_post()
+    @validate(F.add_timeslot_form, error_handler=index)
+    def add_timeslot(self, **kw):
+        require_authenticated()
+        c.user.add_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_timeslot_form, error_handler=index)
+    def remove_timeslot(self, **kw):
+        require_authenticated()
+        c.user.remove_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.add_inactive_period_form, error_handler=index)
+    def add_inactive_period(self, **kw):
+        require_authenticated()
+        c.user.add_inactive_period(kw['startdate'], kw['enddate'])
+        flash('Your inactivity periods were successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_inactive_period_form, error_handler=index)
+    def remove_inactive_period(self, **kw):
+        require_authenticated()
+        c.user.remove_inactive_period(kw['startdate'], kw['enddate'])
+        flash('Your availability timeslots were successfully updated!')
+        redirect('.')
+
 class PreferencesController(BaseController):
 
     user_skills = UserSkillsController()
+    user_contacts = UserContactsController()
+    user_availability = UserAvailabilityController()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/user_preferences.html')
@@ -555,105 +670,6 @@ class PreferencesController(BaseController):
 
         flash('Your personal data was successfully updated!')
         redirect('.')
-
-    @expose()
-    @require_post()
-    @validate(F.add_socialnetwork_form, error_handler=index)
-    def add_social_network(self, **kw):
-        require_authenticated()
-        c.user.add_socialnetwork(kw['socialnetwork'], kw['accounturl'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_socialnetwork_form, error_handler=index)
-    def remove_social_network(self, **kw):
-        require_authenticated()
-        c.user.remove_socialnetwork(kw['socialnetwork'], kw['account'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.add_telnumber_form, error_handler=index)
-    def add_telnumber(self, **kw):
-        require_authenticated()
-        c.user.add_telephonenumber(kw['newnumber'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_textvalue_form, error_handler=index)
-    def remove_telnumber(self, **kw):
-        require_authenticated()
-        c.user.remove_telephonenumber(kw['oldvalue'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.add_website_form, error_handler=index)
-    def add_webpage(self, **kw):
-        require_authenticated()
-        c.user.add_webpage(kw['newwebsite'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_textvalue_form, error_handler=index)
-    def remove_webpage(self, **kw):
-        require_authenticated()
-        c.user.remove_webpage(kw['oldvalue'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.skype_account_form, error_handler=index)
-    def skype_account(self, **kw):
-        require_authenticated()
-        c.user.set_pref('skypeaccount', kw['skypeaccount'])
-        flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
-
-    @expose()
-    @require_post()
-    @validate(F.add_timeslot_form, error_handler=index)
-    def add_timeslot(self, **kw):
-        require_authenticated()
-        c.user.add_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
-        flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_timeslot_form, error_handler=index)
-    def remove_timeslot(self, **kw):
-        require_authenticated()
-        c.user.remove_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
-        flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
-
-    @expose()
-    @require_post()
-    @validate(F.add_inactive_period_form, error_handler=index)
-    def add_inactive_period(self, **kw):
-        require_authenticated()
-        c.user.add_inactive_period(kw['startdate'], kw['enddate'])
-        flash('Your inactivity periods were successfully updated!')
-        redirect('.#Availability')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_inactive_period_form, error_handler=index)
-    def remove_inactive_period(self, **kw):
-        require_authenticated()
-        c.user.remove_inactive_period(kw['startdate'], kw['enddate'])
-        flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
 
     @expose()
     @require_post()
