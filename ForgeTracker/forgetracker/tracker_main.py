@@ -728,7 +728,7 @@ class RootController(BaseController):
         result['cancel_href'] = url(
             c.app.url + 'search/',
             dict(q=q, limit=limit, sort=sort))
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = ffw.ProjectUserCombo()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
         return result
@@ -835,7 +835,7 @@ class RootController(BaseController):
         week_comments=self.ticket_comments_since(week_ago)
         fortnight_comments=self.ticket_comments_since(fortnight_ago)
         month_comments=self.ticket_comments_since(month_ago)
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = ffw.ProjectUserCombo()
         if dates is None:
             today = datetime.utcnow()
             dates = "%s to %s" % ((today - timedelta(days=61)).strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
@@ -1704,7 +1704,7 @@ class MilestoneController(BaseController):
         result.pop('q')
         result['globals'] = c.app.globals
         result['cancel_href'] = '..'
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = ffw.ProjectUserCombo()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
         return result
