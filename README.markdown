@@ -17,19 +17,15 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubun
 
 # Installation
 
-Before we begin, you'll need the following additional packages in order to work with the Allura source code.
+Before we begin, you'll need to install some system packages.  [Use google if you need additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
 
-    ~$ sudo aptitude install git-core subversion python-svn
-
-You'll also need additional development packages in order to compile some of the modules.  [Use google for additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
-
-    ~$ sudo aptitude install default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo aptitude install mongodb-server git-core default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
 
-And finally our document-oriented database, MongoDB
+Optional, for SVN support:
 
-    ~$ sudo aptitude install mongodb-server
+    ~$ sudo aptitude install subversion python-svn
 
 If you are using a different base system, make sure you have Mongo 1.8 or better.  If you need to upgrade, you can download the latest from <http://www.mongodb.org/downloads>
 
@@ -44,9 +40,12 @@ Once you have virtualenv installed, you need to create a virtual environment.  W
 
     ~$ virtualenv --system-site-packages anvil
 
-This gives us a nice, clean environment into which we can install all the allura dependencies.  (The site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it.  You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your `~/.bashrc` file.
+This gives us a nice, clean environment into which we can install all the allura dependencies.
+(The --system-site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it:
 
     ~$ . anvil/bin/activate
+
+You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your `~/.bashrc` file.
 
 ## Installing the Allura code and dependencies
 
@@ -63,24 +62,14 @@ Although the application setup.py files define a number of dependencies, the `re
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
-And now to setup each of the Allura applications for development.  Because there are quite a few (at last count 15), we'll use a simple shell loop to set them up.
+And now to setup the Allura applications for development.  If you want to setup all of them, run `./rebuild-all.bash`
+If you only want to use a few tools, run:
 
-    for APP in Allura* Forge* NoWarnings
-    do
-        pushd $APP
-        python setup.py develop
-        popd
-    done
-
-Hopefully everything completed without errors.  We'll also need to create a place for Allura to store any SCM repositories that a project might create.
-
-    for SCM in git svn hg
-    do
-        mkdir -p ~/var/scm/$SCM
-        chmod 777 ~/var/scm/$SCM
-        sudo ln -s ~/var/scm/$SCM /tmp
-    done
-
+    cd Allura
+    python setup.py develop
+    cd ../ForgeWiki   # required tool
+    python setup.py develop
+    # repeat for any other tools you want to use
 
 ## Initializing the environment
 
@@ -101,18 +90,18 @@ We have a custom config ready for use.
 
 ### Allura task processing
 
-Responds to asynchronous task requests.
+Allura uses a background task service called "taskd" to do async tasks like sending emails, and indexing data into solr, etc.  Let's get it running
 
     (anvil)~$ cd ~/src/allura/Allura
     (anvil)~/src/allura/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
 
-### TurboGears application server
+### The application server
 
 In order to initialize the Allura database, you'll need to run the following:
 
     (anvil)~/src/allura/Allura$ paster setup-app development.ini
 
-This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server.
+This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server:
 
     (anvil)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
