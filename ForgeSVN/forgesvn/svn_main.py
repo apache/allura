@@ -18,13 +18,13 @@ from allura.lib.repository import RepositoryApp, RepoAdminController
 from allura.app import SitemapEntry, ConfigOption
 from allura.lib import helpers as h
 from allura import model as M
-from allura.lib.utils import svn_path_exists
 
 # Local imports
 from . import model as SM
 from . import version
 from . import widgets
 from .controllers import BranchBrowser
+from .model.svn import svn_path_exists
 
 log = logging.getLogger(__name__)
 
