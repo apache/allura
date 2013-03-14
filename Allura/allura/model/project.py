@@ -5,6 +5,7 @@ from datetime import datetime
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
+from paste.deploy.converters import asbool
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -709,16 +710,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         self.notifications_disabled = True
         if users is None: users = [ c.user ]
         if apps is None:
+            apps = []
             if is_user_project:
-                apps = [('Wiki', 'wiki', 'Wiki'),
+                apps += [('Wiki', 'wiki', 'Wiki'),
                         ('profile', 'profile', 'Profile'),
-                        ('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search'),
-                        ('activity', 'activity', 'Activity')]
-            else:
-                apps = [('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search'),
-                        ('activity', 'activity', 'Activity')]
+                       ]
+            apps += [
+                ('admin', 'admin', 'Admin'),
+                ('search', 'search', 'Search'),
+            ]
+            if asbool(config.get('activitystream.enabled', False)):
+                apps.append(('activity', 'activity', 'Activity'))
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id
