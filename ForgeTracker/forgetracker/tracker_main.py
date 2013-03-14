@@ -782,7 +782,7 @@ class RootController(BaseController):
                 message += get_change_text(
                     get_label(k),
                     v,
-                    ticket.custom_fields[k])
+                    ticket.custom_fields.get(k) or '')
                 ticket.custom_fields[k] = v
             if message != '':
                 ticket.discussion_thread.post(message)
