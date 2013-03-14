@@ -47,8 +47,9 @@ class GenericTicketForm(ew.SimpleForm):
             self._add_current_value_to_user_field(field, ctx.get('value'))
         elif idx == 'custom_fields':
             for cf in c.app.globals.custom_fields:
-                if cf.type == 'user':
-                    user = ctx.get('value', {}).get(cf.name)
+                if cf and cf.type == 'user':
+                    val = ctx.get('value')
+                    user = val.get(cf.name) if val else None
                     for f in field.fields:
                         if f.name == cf.name:
                             self._add_current_value_to_user_field(f, user)
