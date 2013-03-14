@@ -39,7 +39,7 @@ fi
 
 # Setup Allura python packages
 cd /home/vagrant/src/forge
-sudo -u vagrant bash -c '. /home/vagrant/anvil/bin/activate; ./rebuild.bash'
+sudo -u vagrant bash -c '. /home/vagrant/anvil/bin/activate; ./rebuild-all.bash'
 
 echo "Purging unneeded packages..."
 aptitude clean

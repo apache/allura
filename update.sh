@@ -17,6 +17,6 @@ if [ "$?" -gt 0 ]; then
 	exit;
 fi
 
-./rebuild.bash
+./rebuild-all.bash
 
 echo 'If you have taskd or the web server running, you should restart them now.'
