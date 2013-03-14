@@ -8,6 +8,7 @@ import allura
 
 from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
+from nose.tools import assert_raises
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController
@@ -35,6 +36,17 @@ class TrackerTestController(TestController):
         response = self.app.get(mount_point + 'new/',
                                 extra_environ=extra_environ)
         form = response.forms[1]
+        # If this is ProjectUserCombo's select populate it
+        # with all the users in the project. This is a workaround for tests,
+        # in real enviroment this is populated via ajax.
+        p = M.Project.query.get(shortname='test')
+        for f in form.fields:
+            field = form[f] if f else None
+            is_usercombo = (field and field.tag == 'select' and
+                            field.attrs.get('class') == 'project-user-combobox')
+            if is_usercombo:
+                field.options = [('', False)] + [(u.username, False) for u in p.users()]
+
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
         resp = form.submit()
@@ -1620,21 +1632,20 @@ class TestCustomUserField(TrackerTestController):
         assert ticket_view.html.findAll('label', 'simple',
             text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
         # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+        select = ticket_view.html.find('select',
+            dict(name='ticket_form.custom_fields._code_review'))
+        selected = None
+        for option in select.findChildren():
+            if option.get('selected'):
+                selected = option
+        assert selected is None
 
     def test_non_project_member(self):
         """ Test that you can't put a non-project-member user in a custom
         user field.
         """
         kw = {'custom_fields._code_review': 'test-user-0'}
-        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
-        # summary header shows 'nobody'
-        assert ticket_view.html.findAll('label', 'simple',
-            text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
-        # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+        assert_raises(ValueError, self.new_ticket, summary='test custom fields', **kw)
 
     def test_project_member(self):
         kw = {'custom_fields._code_review': 'test-admin'}
@@ -1643,13 +1654,22 @@ class TestCustomUserField(TrackerTestController):
         assert ticket_view.html.findAll('label', 'simple',
             text='Code Review:')[1].parent.parent.text == 'Code Review:Test Admin'
         # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == 'test-admin'
+        select = ticket_view.html.find('select',
+            dict(name='ticket_form.custom_fields._code_review'))
+        selected = None
+        for option in select.findChildren():
+            if option.get('selected'):
+                selected = option
+        assert_equal(selected['value'], 'test-admin')
 
     def test_change_user_field(self):
         kw = {'custom_fields._code_review': ''}
         r = self.new_ticket(summary='test custom fields', **kw).follow()
         f = r.forms[1]
+        # Populate ProjectUserCombo's select with option we want.
+        # This is a workaround for tests,
+        # in real enviroment this is populated via ajax.
+        f['ticket_form.custom_fields._code_review'].options = [('test-admin', False)]
         f['ticket_form.custom_fields._code_review'] = 'test-admin'
         r = f.submit().follow()
         assert '<li><strong>code_review</strong>: Test Admin' in r
