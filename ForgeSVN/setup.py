@@ -19,7 +19,8 @@ setup(name='ForgeSVN',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'Allura'
+          'Allura',
+          'pysvn',
       ],
       entry_points="""
       # -*- Entry points: -*-
