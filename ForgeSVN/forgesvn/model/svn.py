@@ -26,7 +26,6 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.model.auth import User
-from allura.lib.utils import svn_path_exists
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +95,15 @@ class SVNCalledProcessError(Exception):
     def __str__(self):
         return "Command: '%s' returned non-zero exit status %s\nSTDOUT: %s\nSTDERR: %s" % \
             (self.cmd, self.returncode, self.stdout, self.stderr)
+
+
+def svn_path_exists(path):
+    svn = SVNLibWrapper(pysvn.Client())
+    try:
+        svn.info2(path)
+        return True
+    except pysvn.ClientError:
+        return False
 
 
 class SVNLibWrapper(object):

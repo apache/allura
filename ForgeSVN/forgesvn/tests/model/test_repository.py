@@ -17,11 +17,11 @@ from ming.orm import session, ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.utils import svn_path_exists
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 
 from forgesvn import model as SM
+from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 
 class TestNewRepo(unittest.TestCase):
