@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import pymongo
 from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
+from pprint import pformat
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -209,6 +210,9 @@ class TicketHistory(Snapshot):
                 self.version, orig.summary),
             type_s='Ticket Snapshot',
             text=self.data.summary)
+        # Tracker uses search with default solr parser. It would match only on
+        # `text`, so we're appending all other field values into `text`, to match on it too.
+        result['text'] += pformat(result.values())
         return result
 
 class Bin(Artifact, ActivityObject):
@@ -319,6 +323,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             result['reported_by_s'] = self.reported_by.username
         if self.assigned_to:
             result['assigned_to_s'] = self.assigned_to.username
+        # Tracker uses search with default solr parser. It would match only on
+        # `text`, so we're appending all other field values into `text`, to match on it too.
+        result['text'] += pformat(result.values())
         return result
 
     @classmethod
