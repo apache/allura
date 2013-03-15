@@ -652,3 +652,15 @@ def get_tool_package(tool_name):
     "Return package for given tool (e.g. 'forgetracker' for 'tickets')"
     app = g.entry_points['tool'].get(tool_name.lower())
     return app.__module__.split('.')[0] if app else ''
+
+
+def get_first(d, key):
+    """Return value for d[key][0] if d[key] is a list with elements, else return d[key].
+
+    Useful to retrieve values from solr index (e.g. `title` and `text` fields),
+    which are stored as lists.
+    """
+    v = d.get(key)
+    if isinstance(v, list):
+        return v[0] if len(v) > 0 else None
+    return v

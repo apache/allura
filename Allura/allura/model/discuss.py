@@ -90,7 +90,7 @@ class Discussion(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            title_s='Discussion: %s' % self.name,
+            title='Discussion: %s' % self.name,
             name_s=self.name,
             text=self.description)
         return result
@@ -339,7 +339,7 @@ class Thread(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-           title_s='Thread: %s' % (self.subject or '(no subject)'),
+           title='Thread: %s' % (self.subject or '(no subject)'),
            name_s=self.subject,
            views_i=self.num_views,
            text=self.subject)
@@ -459,7 +459,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def index(self):
         result = super(Post, self).index()
         result.update(
-            title_s='Post by %s on %s' % (
+            title='Post by %s on %s' % (
                 self.author().username, self.subject),
             name_s=self.subject,
             type_s='Post',

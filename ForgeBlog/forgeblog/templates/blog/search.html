@@ -22,7 +22,7 @@
   {% endif %}
   {% for doc in results %}
   <div>
-    <div class="grid-19"><a href="{{doc['url_s']}}">{{doc.title_s}}</a></div>
+    <div class="grid-19"><a href="{{doc['url_s']}}">{{ h.get_first(doc, 'title') }}</a></div>
     <p>{{doc.get('snippet_s', '...')}}</p>
     <hr/>
   </div>

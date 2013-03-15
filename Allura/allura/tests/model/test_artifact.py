@@ -72,7 +72,7 @@ def test_artifact():
     c.memoize_cache = {}
     assert not security.has_access(pg, 'delete')(user=u)
     idx = pg.index()
-    assert 'title_s' in idx
+    assert 'title' in idx
     assert 'url_s' in idx
     assert 'project_id_s' in idx
     assert 'mount_point_s' in idx

@@ -24,7 +24,7 @@
 
   {% for doc in results %}
   <div class="grid-19">
-    <a href="{{doc['url_s']}}">{{doc.title_s}}</a><br/>
+    <a href="{{doc['url_s']}}">{{ h.get_first(doc, 'title') }}</a><br/>
     <pre>{{doc|pprint}}</pre>
     <hr/>
   </div>

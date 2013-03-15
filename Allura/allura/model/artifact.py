@@ -212,7 +212,7 @@ class Artifact(MappedClass):
 
         The _s and _t suffixes, for example, follow solr dynamic field naming
         pattern.
-        You probably want to override at least title, title_s and text to have
+        You probably want to override at least title and text to have
         meaningful search results and email senders.
         """
 
@@ -220,7 +220,6 @@ class Artifact(MappedClass):
         return dict(
             id=self.index_id(),
             mod_date_dt=self.mod_date,
-            title_s='Artifact %s' % self._id,
             title='Artifact %s' % self._id,
             project_id_s=str(project._id),
             project_name_t=project.name,
@@ -268,7 +267,7 @@ class Artifact(MappedClass):
             t = Thread.new(
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
-                subject='%s discussion' % idx['title_s'])
+                subject='%s discussion' % h.get_first(idx, 'title'))
         parent_id = None
         if data:
             in_reply_to = data.get('in_reply_to', [])
@@ -316,8 +315,8 @@ class Snapshot(Artifact):
         if original:
             original_index = original.index()
             result.update(original_index)
-            result['title_s'] = 'Version %d of %s' % (
-                    self.version, original_index['title_s'])
+            result['title'] = 'Version %d of %s' % (
+                    self.version, h.get_first(original_index, 'title'))
         result.update(
             id=self.index_id(),
             version_i=self.version,
@@ -640,7 +639,7 @@ class Feed(MappedClass):
         if author_name is None:
             author_name = author.get_pref('display_name')
         if title is None:
-            title='%s modified by %s' % (idx['title_s'], author_name)
+            title='%s modified by %s' % (h.get_first(idx, 'title'), author_name)
         if description is None: description = title
         if pubdate is None:
             pubdate = datetime.utcnow()

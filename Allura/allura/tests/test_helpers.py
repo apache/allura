@@ -167,3 +167,12 @@ def test_get_tool_package():
     assert h.get_tool_package('tickets') == 'forgetracker'
     assert h.get_tool_package('Wiki') == 'forgewiki'
     assert h.get_tool_package('wrong_tool') == ''
+
+
+def test_get_first():
+    assert_equals(h.get_first({}, 'title'), None)
+    assert_equals(h.get_first({'title': None}, 'title'), None)
+    assert_equals(h.get_first({'title': 'Value'}, 'title'), 'Value')
+    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
+    assert_equals(h.get_first({'title': []}, 'title'), None)
+    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')

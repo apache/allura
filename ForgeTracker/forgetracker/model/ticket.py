@@ -206,7 +206,7 @@ class TicketHistory(Snapshot):
             return None
         result = Snapshot.index(self)
         result.update(
-            title_s='Version %d of %s' % (
+            title='Version %d of %s' % (
                 self.version, orig.summary),
             type_s='Ticket Snapshot',
             text=self.data.summary)
@@ -303,7 +303,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s='Ticket %s' % self.ticket_num,
+            title='Ticket %s' % self.ticket_num,
             version_i=self.version,
             type_s=self.type_s,
             ticket_num_i=self.ticket_num,

@@ -426,7 +426,7 @@ class Repository(Artifact, ActivityObject):
         result.update(
             name_s=self.name,
             type_s=self.type_s,
-            title_s='Repository %s %s' % (self.project.name, self.name))
+            title='Repository %s %s' % (self.project.name, self.name))
         return result
 
     @property
@@ -614,7 +614,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         result.update(
             name_s='Merge Request #%d' % self.request_number,
             type_s=self.type_s,
-            title_s='Merge Request #%d of %s:%s' % (
+            title='Merge Request #%d of %s:%s' % (
                 self.request_number, self.project.name, self.app.repo.name))
         return result
 

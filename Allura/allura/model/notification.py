@@ -153,9 +153,9 @@ class Notification(MappedClass):
             return n
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
-                    idx['title_s'],c.user.get_pref('display_name')))
+                    h.get_first(idx, 'title'),c.user.get_pref('display_name')))
             reply_to = '"%s" <%s>' % (
-                idx['title_s'],
+                h.get_first(idx, 'title'),
                 getattr(artifact, 'email_address', u'noreply@in.sf.net'))
             d = dict(
                 from_address=reply_to,
@@ -355,7 +355,7 @@ class Mailbox(MappedClass):
             artifact_index_id = None
         else:
             i = artifact.index()
-            artifact_title = i['title_s']
+            artifact_title = h.get_first(i, 'title')
             artifact_url = artifact.url()
             artifact_index_id = i['id']
             artifact_already_subscribed = cls.query.get(user_id=user_id,
