@@ -301,7 +301,8 @@ class RootController(BaseController, DispatchIndex):
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         search_error = None
         results = []
-        count=0
+        count = 0
+        parser = kw.pop('parser', None)
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
@@ -325,6 +326,10 @@ class RootController(BaseController, DispatchIndex):
             }
             if not history:
                search_params['fq'].append('is_history_b:False')
+            if parser == 'standard':
+                search_params.pop('qt', None)
+                search_params.pop('qf', None)
+                search_params.pop('pf', None)
             try:
                 results = search(
                     q, short_timeout=True, ignore_errors=False,
