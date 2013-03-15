@@ -266,10 +266,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(self.repo.count_revisions(ci), 100)
 
     def test_tarball(self):
-        assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/p/test/testsvn')
-        assert_equal(self.repo.tarball_url('1'), 'file:///svn/p/test/testsvn/test-src-1.tar.gz')
+        assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/t/te/test/testsvn')
+        assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.tar.gz')
         self.repo.tarball('1')
-        assert os.path.isfile("/tmp/tarball/svn/p/test/testsvn/test-src-1.tar.gz")
+        assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.tar.gz")
 
 class TestSVNRev(unittest.TestCase):
 
