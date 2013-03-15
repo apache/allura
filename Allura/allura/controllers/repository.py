@@ -446,8 +446,10 @@ class CommitBrowser(BaseController):
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
     def log(self, limit=25, path=None, **kw):
+        is_file = False
         if path:
             path = path.lstrip('/')
+            is_file = self.tree._tree.get_blob_by_path(path) is not None
         params = dict(path=path, rev=self._commit._id)
         commits = list(c.app.repo.commits(limit=limit+1, **params))
         next_commit = None
@@ -461,6 +463,8 @@ class CommitBrowser(BaseController):
             log=revisions,
             next_commit=next_commit,
             limit=limit,
+            path=path,
+            is_file=is_file,
             **kw)
 
 

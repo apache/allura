@@ -1,5 +1,8 @@
 {% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
 <div>
+  {%if is_file%}
+  <div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>
+  {%endif%}
   <table style="clear:both">
     <thead>
       <tr>
@@ -10,8 +13,11 @@
     </thead>
     <tbody>
       {% for commit in value %}
-        <tr>
+        <tr class="rev">
           <td>
+            {%if is_file%}
+                <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
+            {%endif%}
             {{commit.summary}}
             <br/>
             {% if commit.committed.email != commit.authored.email %}

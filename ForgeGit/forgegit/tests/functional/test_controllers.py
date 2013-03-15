@@ -106,6 +106,19 @@ class TestRootController(_TestCase):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/not/exist')
         assert 'No (more) commits' in resp
 
+    def test_diff_ui(self):
+        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' in r
+        assert '<input type="checkbox" class="revision"' in r
+        assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' in r
+        assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' in r
+
+        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' not in r
+        assert '<input type="checkbox" class="revision"' not in r
+        assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' not in r
+        assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' not in r
+
     def test_tags(self):
         resp = self.app.get('/src-git/ref/master~/tags/')
 

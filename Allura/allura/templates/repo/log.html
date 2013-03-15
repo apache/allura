@@ -13,8 +13,60 @@
 {% block content %}
   <br style="clear:both"/>
   {% if log %}
-    {{c.log_widget.display(value=log, limit=limit, count=count, next_commit=next_commit)}}
+    {{c.log_widget.display(value=log, limit=limit, count=count, next_commit=next_commit, is_file=is_file)}}
   {% else %}
     <p><b>No (more) commits</b></p>
   {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+    .selected {
+        background-color: #FFFFBE;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function check_revisions(){
+        $("tr.rev").toggleClass("selected", false);
+        $("input:checked").toggleClass("selected", true);
+        $("input:checked").closest("tr").toggleClass("selected", true);
+        if ($("input:checked").length == 2){
+            var first_tr = $("input.revision").index($("input:checked:first"));
+            var last_tr = $("input.revision").index($("input:checked:last"));
+            $("tr.rev").slice(first_tr,last_tr).toggleClass("selected", true);
+        };
+    };
+    $(function() {
+        $(document).ready(function(){
+            check_revisions();
+        });
+        $(".revision").click(function(){
+            if ( $("input:checked").length > 2){
+                $("tr.selected").toggleClass("selected", false);
+                $("input.selected").removeAttr("checked");
+                $("input.selected").toggleClass("selected", false);
+            }
+            $(this).closest("tr").toggleClass("selected");
+            $(this).toggleClass("selected");
+            check_revisions();
+        });
+
+        $(".compare_revision").click(function(){
+            var n = $("input:checked").length;
+            if (n==2){
+                var first_revision = $("input.selected:first").attr("url_commit");
+                var second_revision = $("input.selected:last").attr("revision");
+                var path = "{{path}}";
+                var diff_url = first_revision+"tree/"+path+"?diff="+second_revision;
+                window.location.href = diff_url;
+            }
+            else {
+                alert("Please select two versions to compare");
+            };
+        });
+    });
+</script>
 {% endblock %}
