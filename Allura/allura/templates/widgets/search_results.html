@@ -6,10 +6,12 @@
     <input type="submit" value="Search">
   </div>
   <div class="grid-6">
+    {# TODO: when help text provided, show button
     <a href="#" class="btn search_help_modal">
       <b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b>
       Help
     </a>
+    #}
   </div>
   <div class="grid-10">
     {% set search_project = request.GET['project'] == '1' %}
