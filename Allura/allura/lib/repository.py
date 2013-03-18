@@ -96,6 +96,10 @@ class RepositoryApp(Application):
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
                     small=merge_request_count) ]
+        if self.repo.forks:
+            links += [
+                SitemapEntry('Forks', c.app.url + 'forks/', small=len(self.repo.forks))
+            ]
         if self.repo.upstream_repo.name:
             repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
             links += [
@@ -135,14 +139,6 @@ class RepositoryApp(Application):
                             default_branch_url+'tags/',
                             ))
                     break
-        if self.repo.forks:
-            links.append(SitemapEntry('Forks'))
-            for f in self.repo.forks:
-                repo_path_parts = f.url().strip('/').split('/')
-                links.append(SitemapEntry(
-                    '%s / %s' %
-                    (repo_path_parts[1], repo_path_parts[-1]),
-                    f.url()))
         return links
 
     def install(self, project):

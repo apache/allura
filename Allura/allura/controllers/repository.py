@@ -34,6 +34,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
 from allura.lib.diff import HtmlSideBySideDiff
 from paste.deploy.converters import asbool
+from allura.app import SitemapEntry
 from .base import BaseController
 
 log = logging.getLogger(__name__)
@@ -57,6 +58,20 @@ class RepoRootController(BaseController):
             branch=c.app.default_branch_name
         redirect(url(quote('%s%s/' % (
                         branch, c.app.END_OF_REF_ESCAPE))))
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/repo/forks.html')
+    def forks(self):
+
+        links = []
+        if c.app.repo.forks:
+            for f in c.app.repo.forks:
+                repo_path_parts = f.url().strip('/').split('/')
+                links.append(dict(
+                    repo_url=f.url(),
+                    repo = '%s / %s' % (repo_path_parts[1], repo_path_parts[-1]),
+                ))
+        return dict(links=links)
 
     @expose()
     def refresh(self):
