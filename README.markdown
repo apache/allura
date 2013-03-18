@@ -38,7 +38,7 @@ The first step to installing the Allura platform is installing a virtual environ
 
 Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'anvil'.
 
-    ~$ virtualenv --system-site-packages anvil
+    ~$ virtualenv anvil
 
 This gives us a nice, clean environment into which we can install all the allura dependencies.
 (The --system-site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it:
@@ -61,6 +61,10 @@ Although the application setup.py files define a number of dependencies, the `re
     (anvil)~/src/allura$ pip install -r requirements.txt
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
+
+Optional, for SVN support: symlink the system pysvn package into our virtual environment
+
+    (anvil)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/anvil/lib/python2.7/site-packages/
 
 And now to setup the Allura applications for development.  If you want to setup all of them, run `./rebuild-all.bash`
 If you only want to use a few tools, run:
@@ -85,6 +89,7 @@ We have a custom config ready for use.
     (anvil)~/src$ cd apache-solr-1.4.1/example/
     (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/allura/solr_config/conf
     (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/allura/solr_config/conf/
+    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir ~/logs/
     (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/allura/solr_config -jar start.jar > ~/logs/solr.log &
 
 
@@ -101,7 +106,7 @@ In order to initialize the Allura database, you'll need to run the following:
 
     (anvil)~/src/allura/Allura$ paster setup-app development.ini
 
-This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  It should complete in 5-6 minutes.  Once this is done, you can start the application server:
+This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  Once this is done, you can start the application server:
 
     (anvil)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
