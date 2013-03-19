@@ -5,6 +5,7 @@ from cStringIO import StringIO
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
 from pylons import request, app_globals as g, tmpl_context as c
+from paste.deploy.converters import asbool
 from bson import ObjectId
 
 from ming.orm import session, state
@@ -21,9 +22,9 @@ log = logging.getLogger(__name__)
 
 class ConfigOption(object):
 
-    def __init__(self, name, ming_type, default):
-        self.name, self.ming_type, self._default = (
-            name, ming_type, default)
+    def __init__(self, name, ming_type, default, label=None):
+        self.name, self.ming_type, self._default, self.label = (
+            name, ming_type, default, label or name)
 
     @property
     def default(self):
@@ -383,8 +384,15 @@ class DefaultAdminController(BaseController):
                     redirect('.')
                 c.project.uninstall_app(self.app.config.options.mount_point)
                 redirect('..')
-            for k,v in kw.iteritems():
-                self.app.config.options[k] = v
+            for opt in self.app.config_options:
+                if opt in Application.config_options:
+                    continue  # skip base options (mount_point, mount_label, ordinal)
+                val = kw.get(opt.name, '')
+                if opt.ming_type == bool:
+                    val = asbool(val or False)
+                elif opt.ming_type == int:
+                    val = asint(val or 0)
+                self.app.config.options[opt.name] = val
             if is_admin:
                 # possibly moving admin mount point
                 redirect('/'
