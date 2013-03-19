@@ -112,7 +112,9 @@ This shouldn't take too long, but it will start the taskd server doing tons of s
 
 ## Next Steps
 
-Go to the server running on your [local machine](http://localhost:8080/) port 8080.
+Go to the Allura webapp running on your [local machine](http://localhost:8080/) port 8080.
+(If you're running this inside a VM, you'll probably have to configure the port forwarding settings)
+
 You can log in with username admin1, test-user or root.  They all have password "foo".  (For more details
 on the default data, see bootstrap.py)
 
