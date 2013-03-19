@@ -19,10 +19,10 @@ then
 else
     echo "Starting Solr..."
     cd /home/vagrant/src/apache-solr-1.4.1/example
-    nohup java -Dsolr.solr.home=/home/vagrant/src/forge/solr_config -jar start.jar >/var/log/allura/solr.log 2>&1 &
+    nohup java -Dsolr.solr.home=/home/vagrant/src/allura/solr_config -jar start.jar >/var/log/allura/solr.log 2>&1 &
 fi
 
-cd /home/vagrant/src/forge/Allura
+cd /home/vagrant/src/allura/Allura
 
 # Start taskd
 if pgrep -f "paster taskd" >/dev/null
@@ -37,7 +37,7 @@ fi
 if [ ! -f /var/lib/mongodb/allura.0 ]
 then
     echo "Initializing database..."
-    paster setup-app development.ini >/var/log/allura/setup-app.log 2>&1
+    paster setup-app development.ini >/var/log/allura/setup-app.log 2>&1 || echo "Error, see /var/log/allura/setup-app.log"
 fi
 
 # Start the web server
