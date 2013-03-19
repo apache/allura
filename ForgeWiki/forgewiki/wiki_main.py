@@ -367,10 +367,10 @@ class RootController(BaseController, DispatchIndex):
                     return doc
                 def add_matches(doc):
                     m = matches.get(doc['id'], {})
-                    doc['title_match'] = m.get('title', [''])[0]
-                    doc['text_match'] = m.get('text', [''])[0]
+                    doc['title_match'] = h.get_first(m, 'title')
+                    doc['text_match'] = h.get_first(m, 'text')
                     if not doc['text_match']:
-                        doc['text_match'] = doc.get('text', [''])[0]
+                        doc['text_match'] = h.get_first(doc, 'text')
                     return doc
                 results = imap(historize_urls, results)
                 results = imap(add_matches, results)
