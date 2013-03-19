@@ -59,7 +59,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.symbolic_ids == (['master', 'zz'], [])
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
-            '1e146e67985dcd71c74de79613719bef7bddca4a/')
+            'master/')
         all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 4
         assert_equal(self.repo.log(self.rev._id, 1,1000), all_cis[1:])
@@ -74,7 +74,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
             '/p/test/src-git/ci/'
-            '1e146e67985dcd71c74de79613719bef7bddca4a/'
+            'master/'
             'tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
@@ -91,7 +91,7 @@ class TestNewGit(unittest.TestCase):
             assert ci.shorthand_id() == '[1e146e]', ci.shorthand_id()
             assert ci.url() == (
                 '/p/test/src-git/ci/'
-                '1e146e67985dcd71c74de79613719bef7bddca4a/')
+                'master/')
 
 class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
@@ -315,7 +315,7 @@ class TestGitCommit(unittest.TestCase):
         ThreadLocalORMSession.close_all()
 
     def test_url(self):
-        assert self.rev.url().endswith('ca4a/')
+        assert self.rev.url().endswith('master/'), self.rev.url()
 
     def test_committer_url(self):
         assert self.rev.committer_url is None

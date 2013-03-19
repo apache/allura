@@ -63,7 +63,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.shorthand_id() == '[r5]'
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == (
-            '/p/test/src/5/')
+            '/p/test/src/HEAD/')
         all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 5
         assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
@@ -76,7 +76,7 @@ class TestNewRepo(unittest.TestCase):
             'README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/5/tree/')
+            '/p/test/src/HEAD/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
         assert self.rev.tree['a']['b']['c'].ls() == []
@@ -420,6 +420,7 @@ class _TestWithRepo(_Test):
         self.repo._impl.log = lambda *a,**kw:(['foo'], [])
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a,**kw: []
+        self.repo._impl.commit().symbolic_ids = None
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
 

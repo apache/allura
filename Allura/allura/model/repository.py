@@ -163,6 +163,25 @@ class RepositoryImplementation(object):
             object_id = commit
         else:
             object_id = commit._id
+
+        if self._repo.commit(object_id).symbolic_ids:
+            rev = None
+            branches, tags = self._repo.commit(object_id).symbolic_ids
+            for branch in branches:
+                last_commit = self._repo.latest(branch)
+                if last_commit and (object_id == last_commit._id):
+                    rev = branch
+                    break
+
+            for tag in tags:
+                last_commit = self._repo.latest(tag)
+                if last_commit and (object_id == last_commit._id):
+                    rev = tag
+                    break
+
+            if rev:
+                object_id = rev
+
         return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):

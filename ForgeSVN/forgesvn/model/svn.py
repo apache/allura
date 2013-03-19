@@ -167,6 +167,8 @@ class SVNImplementation(M.RepositoryImplementation):
             object_id = commit
         else:
             object_id = commit._id
+        if self._repo.latest()._id == object_id:
+            return '%sHEAD/' % self._repo.url()
         return '%s%d/' % (
             self._repo.url(), self._revno(object_id))
 
