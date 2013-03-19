@@ -79,6 +79,9 @@
   {{widget.fields['page_size'].display(limit=limit, count=count)}}
 </div>
 <div class="grid-19" style="clear:both">
-  {# TODO: highlight active sorting order #}
-  {# <p>Sort by <a href="#"><strong>relevance</strong></a> or <a href="#">date</a></p> #}
+  <p>
+    Sort by
+    <a href="{{ sort_score_url }}" class="{{ 'strong' if sort_field == 'score' else '' }}">relevance</a> or
+    <a href="{{ sort_date_url }}" class="{{ 'strong' if sort_field == 'mod_date_dt' else '' }}">date</a>
+  </p>
 </div>
