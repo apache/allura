@@ -18,3 +18,7 @@ input[type="checkbox"] {
   width: 100%;
   white-space: nowrap;
 }
+
+.strong {
+  font-weight: bold;
+}

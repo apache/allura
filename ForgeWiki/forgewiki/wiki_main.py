@@ -6,7 +6,7 @@ from datetime import datetime
 from itertools import imap
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response, flash, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
@@ -303,6 +303,7 @@ class RootController(BaseController, DispatchIndex):
         results = []
         count = 0
         parser = kw.pop('parser', None)
+        sort = kw.pop('sort', 'score desc')
         matches = {}
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
@@ -327,6 +328,7 @@ class RootController(BaseController, DispatchIndex):
                 'hl': 'true',
                 'hl.simple.pre': '<strong>',
                 'hl.simple.post': '</strong>',
+                'sort': sort,
             }
             if not history:
                search_params['fq'].append('is_history_b:False')
@@ -358,8 +360,26 @@ class RootController(BaseController, DispatchIndex):
                 results = imap(historize_urls, results)
                 results = imap(add_matches, results)
         c.search_results = W.search_results
+        score_url = 'score desc'
+        date_url = 'mod_date_dt desc'
+        try:
+            field, order = sort.split(' ')
+        except ValueError:
+            field, order = 'score', 'desc'
+        sort = ' '.join([field, 'asc' if order == 'desc' else 'desc'])
+        if field == 'score':
+            score_url = sort
+        elif field == 'mod_date_dt':
+            date_url = sort
+        params = request.GET.copy()
+        params.update({'sort': score_url})
+        score_url = url(request.path, params=params)
+        params.update({'sort': date_url})
+        date_url = url(request.path, params=params)
         return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page, search_error=search_error)
+                    count=count, limit=limit, page=page, search_error=search_error,
+                    sort_score_url=score_url, sort_date_url=date_url,
+                    sort_field=field)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')
