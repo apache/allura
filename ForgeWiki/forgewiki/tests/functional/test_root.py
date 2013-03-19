@@ -21,7 +21,7 @@ import os
 import Image, StringIO
 import allura
 
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_in
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
@@ -79,6 +79,51 @@ class TestRootController(TestController):
         self.app.get('/wiki/tést/')
         response = self.app.get('/wiki/search?q=tést')
         assert 'Search wiki: tést' in response
+
+    @patch('forgewiki.wiki_main.search')
+    def test_search(self, search):
+        r = self.app.get('/wiki/search?q=test')
+        assert_in('<a href="/wiki/search?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
+        assert_in('<a href="/wiki/search?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
+
+        p = M.Project.query.get(shortname='test')
+        r = self.app.get('/wiki/search?q=test&sort=score+asc')
+        solr_query = {
+            'short_timeout': True,
+            'ignore_errors': False,
+            'rows': 25,
+            'start': 0,
+            'qt': 'dismax',
+            'qf': 'title^2 text',
+            'pf': 'title^2 text',
+            'fq': [
+                'project_id_s:%s'  % p._id,
+                'mount_point_s:wiki',
+                '-deleted_b:true',
+                'type_s:("WikiPage" OR "WikiPage Snapshot")',
+                'is_history_b:False',
+            ],
+            'hl': 'true',
+            'hl.simple.pre': '<strong>',
+            'hl.simple.post': '</strong>',
+            'sort': 'score asc',
+        }
+        search.assert_called_with('test', **solr_query)
+
+        r = self.app.get('/wiki/search?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
+        solr_query['fq'][3] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
+        solr_query['fq'].remove('is_history_b:False')
+        solr_query['sort'] = 'mod_date_dt desc'
+        search.assert_called_with('test', **solr_query)
+
+        r = self.app.get('/wiki/search?q=test&parser=standard')
+        solr_query['sort'] = 'score desc'
+        solr_query['fq'][3] = 'type_s:("WikiPage" OR "WikiPage Snapshot")'
+        solr_query['fq'].append('is_history_b:False')
+        solr_query.pop('qt')
+        solr_query.pop('qf')
+        solr_query.pop('pf')
+        search.assert_called_with('test', **solr_query)
 
     def test_page_index(self):
         response = self.app.get('/wiki/tést/')
