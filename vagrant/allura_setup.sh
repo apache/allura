@@ -5,12 +5,12 @@ cd /home/vagrant/src
 if [ ! -d apache-solr-1.4.1 ]
 then
     echo "Installing Solr..."
-    wget -q http://apache.mirrors.tds.net/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
+    wget -nv http://archive.apache.org/dist/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
     tar xf apache-solr-1.4.1.tgz && rm -f apache-solr-1.4.1.tgz
     cd apache-solr-1.4.1/example/
-    mkdir -p /home/vagrant/src/forge/solr_config/conf
-    cp solr/conf/solrconfig.xml /home/vagrant/src/forge/solr_config/conf/
-    chown -R vagrant:vagrant /home/vagrant/src/apache-solr* /home/vagrant/src/forge/solr_config/conf/
+    mkdir -p /home/vagrant/src/allura/solr_config/conf
+    cp solr/conf/solrconfig.xml /home/vagrant/src/allura/solr_config/conf/
+    chown -R vagrant:vagrant /home/vagrant/src/apache-solr* /home/vagrant/src/allura/solr_config/conf/
 fi
 
 # Create log dir
@@ -33,20 +33,20 @@ if [ ! -f /home/vagrant/.bash_profile ]
 then
     echo "Creating ~/.bash_profile ..."
     cp /home/vagrant/.profile /home/vagrant/.bash_profile
-    echo -e "\n# Activate Allura virtualenv\n. /home/vagrant/anvil/bin/activate && cd /home/vagrant/src/forge" >> /home/vagrant/.bash_profile
+    echo -e "\n# Activate Allura virtualenv\n. /home/vagrant/anvil/bin/activate && cd /home/vagrant/src/allura" >> /home/vagrant/.bash_profile
     chown vagrant:vagrant /home/vagrant/.bash_profile
 fi
 
 # Setup Allura python packages
-cd /home/vagrant/src/forge
+cd /home/vagrant/src/allura
 sudo -u vagrant bash -c '. /home/vagrant/anvil/bin/activate; ./rebuild-all.bash'
 
 echo "Purging unneeded packages..."
 aptitude clean
 aptitude -y -q purge ri
-aptitude -y -q purge installation-report landscape-common wireless-tools wpasupplicant
+aptitude -y -q purge installation-report landscape-client landscape-common wireless-tools wpasupplicant
 aptitude -y -q purge python-dbus libnl1 python-smartpm linux-headers-server python-twisted-core libiw30 language-selector-common
-aptitude -y -q purge python-twisted-bin libdbus-glib-1-2 python-pexpect python-pycurl python-serial python-gobject python-pam accountsservice libaccountsservice0
+aptitude -y -q purge cloud-init juju python-twisted python-twisted-bin libdbus-glib-1-2 python-pexpect python-serial python-gobject python-pam accountsservice libaccountsservice0
 
 echo "Zeroing free space to aid VM compression..."
 cat /dev/zero > zero.fill;
