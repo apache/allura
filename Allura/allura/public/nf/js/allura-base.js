@@ -96,7 +96,14 @@ $(function(){
             }
         }).
         blur();
-    $('.selectText').click(function(){this.select()});
+    $('.selectText').focus(function(){
+        var field = $(this);
+        // running select() directly doesn't work for Chrome
+        // http://stackoverflow.com/questions/3150275/jquery-input-select-all-on-focus/3150369#3150369
+        window.setTimeout(function() {
+            field.select();
+        }, 0);
+    });
 });
 
 function auto_close( o, timeout ){
