@@ -12,6 +12,7 @@ from datetime import datetime
 from collections import defaultdict
 from itertools import izip
 from urlparse import urljoin
+from urllib import quote
 
 import tg
 from paste.deploy.converters import asbool
@@ -180,7 +181,7 @@ class RepositoryImplementation(object):
                     break
 
             if rev:
-                object_id = rev
+                object_id = quote(rev, safe='')
 
         return '%sci/%s/' % (self._repo.url(), object_id)
 
