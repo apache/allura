@@ -175,7 +175,7 @@ $(function(){
     // coming "in between" fields.
     var i = 0;
     $('input,textarea,select,button').each(function(){
-        $(this).attr('tabindex', i++);
+        $(this).attr('tabindex', ++i);
     });
 
     // Provide prompt text for otherwise empty viewers
