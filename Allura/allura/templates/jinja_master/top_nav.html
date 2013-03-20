@@ -17,24 +17,28 @@
        under the License.
 -#}
 {% if c.project %}
+  <div><ul>
   {% for s in c.project.grouped_navbar_entries() %}
-    <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
-      {{s.label}}
-      {% if s.label == 'Home' %}
-        {% set url_length = s.url|length %}
-        {% if request.url.rfind(s.url, -url_length) != -1 %}
-          <span class="diamond"></span>
-        {% endif %}
-      {% else %}
-        {% if s.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info %}
-          <span class="diamond"></span>
-        {% endif %}
+    {% set selected = False %}
+    {% if s.label == 'Home' %}
+      {% set url_length = s.url|length %}
+      {% if request.url.rfind(s.url, -url_length) != -1 %}
+        {% set selected = True %}
       {% endif %}
-      {% set grouped_tool_count = s.matching_urls|length %}
-      {% if grouped_tool_count %}
-        <span class="tool-count">{{grouped_tool_count}}</span>
+    {% else %}
+      {% if s.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info %}
+        {% set selected = True %}
       {% endif %}
-    </a>
+    {% endif %}
+    <li{% if selected %} class="selected"{% endif %}>
+      <a href="{{s.url}}">
+        {{s.label}}
+        {% set grouped_tool_count = s.matching_urls|length %}
+        {% if grouped_tool_count %}
+          <span class="tool-count">{{grouped_tool_count}}</span>
+        {% endif %}
+      </a>
+    </li>
 	{% endfor %}
-	<div style="clear:both"></div>
+	</div></ul>
 {% endif %}
