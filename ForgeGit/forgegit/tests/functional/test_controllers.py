@@ -351,6 +351,10 @@ class TestFork(_TestCase):
         assert mr_num.isdigit(), mr_num
         return r, mr_num
 
+    def test_forks_list(self):
+        r = self.app.get('%sforks/' % c.app.repo.url())
+        assert 'test2 / code' in r
+
     def test_fork_form(self):
         r = self.app.get('%sfork/' % c.app.repo.url())
         assert '<input type="text" name="mount_point" value="test"/>' in r
