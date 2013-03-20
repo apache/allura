@@ -33,13 +33,14 @@ class ConfigOption(object):
 
 class SitemapEntry(object):
 
-    def __init__(self, label, url=None, children=None, className=None,
+    def __init__(self, label, url=None, html=None, children=None, className=None,
             ui_icon=None, small=None, tool_name=None):
         self.label = label
         self.className = className
         if url is not None:
             url = url.encode('utf-8')
         self.url = url
+        self.html = html
         self.small = small
         self.ui_icon = ui_icon
         if children is None:

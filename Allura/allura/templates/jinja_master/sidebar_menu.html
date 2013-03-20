@@ -8,6 +8,8 @@
     <li{% if request.url.find(s.url,-s.url.__len__()) != -1 %} class="active"{% endif %}>
       <a href="{{s.url}}"{% if s.className %} class="{{s.className or ''}}"{% endif %}>{% if s.ui_icon %}<b data-icon="{{s.ui_icon.char}}" class="ico {{s.ui_icon.css}}"></b> {% endif %}<span{% if s.small != None %} class="has_small"{% endif %}>{{h.really_unicode(s.label)}}</span>{% if s.small != None %}<small>{{s.small}}</small>{% endif %}</a>
     </li>
+  {% elif s.html %}
+    {{ s.html | safe }}
   {% else %}
     {% if ul_active[-1] %}
       </ul>

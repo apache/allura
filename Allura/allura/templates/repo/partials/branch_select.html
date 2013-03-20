@@ -1,0 +1,19 @@
+<select class="chzn-select" data-placeholder="Pick a branch..." style="width: 140px;" id="branch-browse" tabindex="-1">
+    <option value=""></option>
+{% for branch in branches %}
+<option value="{{url(app_url, dict(branch='/ref' + branch.name))}}">{{branch.name}}</option>
+{% endfor %}
+</select>
+
+<script type="javascript">
+   $(function(){
+      // bind change event to select
+      $('#branch-browse').bind('change', function () {
+          var url = $(this).val(); // get selected value
+          if (url) { // require a URL
+              window.location = url; // redirect
+          }
+          return false;
+      });
+    });
+</script>

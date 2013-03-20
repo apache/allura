@@ -97,6 +97,8 @@ $(function(){
         }).
         blur();
     $('.selectText').click(function(){this.select()});
+
+    $('.chzn-select').chosen();
 });
 
 function auto_close( o, timeout ){

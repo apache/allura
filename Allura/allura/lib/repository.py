@@ -1,5 +1,4 @@
 import logging
-import shutil
 from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
@@ -7,6 +6,8 @@ from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 
+import jinja2
+from paste.deploy.converters import asbool
 from ming.utils import LazyProperty
 
 import allura.tasks
@@ -49,6 +50,12 @@ class RepositoryApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.admin = RepoAdminController(self)
+
+        from tg import config as tg_config
+        self.view = jinja2.Environment(
+                loader=jinja2.PackageLoader('allura', 'templates'),
+                auto_reload=asbool(tg_config.get('auto_reload_templates', True)),
+        )
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -116,10 +123,18 @@ class RepositoryApp(Application):
                         small=pending_upstream_merges))
         if self.repo.branches:
             links.append(SitemapEntry('Branches'))
-            for b in self.repo.branches:
-                links.append(SitemapEntry(
-                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
-                        small=b.count))
+
+            template = self.view.get_template('repo/partials/branch_select.html')
+            app_url = c.app.url
+            links.append(SitemapEntry(
+                'branches',
+                html=template.render(dict(url=url, app_url=app_url, branches=self.repo.branches)))
+            )
+
+            #for b in self.repo.branches:
+            #    links.append(SitemapEntry(
+            #            b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+            #            small=b.count))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
             max_tags = 10
