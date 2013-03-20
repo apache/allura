@@ -3,6 +3,7 @@ import random
 import shlex
 import string
 import logging
+import traceback
 
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
@@ -44,8 +45,10 @@ class parse(object):
                 response = macro(**h.encode_keys(args))
                 return response
             except (ValueError, TypeError) as ex:
+                log.warn('macro error.  Upwards stack is %s',
+                         ''.join(traceback.format_stack()),
+                         exc_info=True)
                 msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
-                log.warn('macro error', exc_info=True)
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception, ex:
             raise
