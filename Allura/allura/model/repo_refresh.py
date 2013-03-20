@@ -1,8 +1,7 @@
 import logging
 from itertools import chain
 from cPickle import dumps
-import re
-import os
+from collections import OrderedDict
 
 import bson
 
@@ -423,8 +422,8 @@ def _diff_trees(lhs, rhs, index, *path):
     def _fq(name):
         return '/'.join(reversed(
                 (name,) + path))
-    # Diff the trees
-    rhs_tree_ids = dict(
+    # Diff the trees (and keep deterministic order)
+    rhs_tree_ids = OrderedDict(
         (o.name, o.id)
         for o in rhs.tree_ids)
     for o in lhs.tree_ids:
@@ -443,8 +442,8 @@ def _diff_trees(lhs, rhs, index, *path):
         lhs_tree = Object(_id=None, tree_ids=[], blob_ids=[], other_ids=[])
         for difference in _diff_trees(lhs_tree, index[id], index, name, *path):
             yield difference
-    # DIff the blobs
-    rhs_blob_ids = dict(
+    # Diff the blobs (and keep deterministic order)
+    rhs_blob_ids = OrderedDict(
         (o.name, o.id)
         for o in rhs.blob_ids)
     for o in lhs.blob_ids:
