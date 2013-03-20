@@ -32,11 +32,13 @@
     {% endif %}
     <li{% if selected %} class="selected"{% endif %}>
       <a href="{{s.url}}">
+        <span>
         {{s.label}}
         {% set grouped_tool_count = s.matching_urls|length %}
         {% if grouped_tool_count %}
           <span class="tool-count">{{grouped_tool_count}}</span>
         {% endif %}
+        </span>
       </a>
     </li>
 	{% endfor %}
