@@ -102,6 +102,11 @@ file { '/home/vagrant/anvil/lib/python2.7/site-packages/pysvn':
   target => '/usr/lib/python2.7/dist-packages/pysvn',
   require => [ Package[ "python-svn" ], Exec[ "pip install" ]],
 }
+# and trick pip/setuptools etc to know its there
+file { '/home/vagrant/anvil/lib/python2.7/site-packages/pysvn-1.7.5-py2.7.egg-info':
+  ensure => 'directory',
+  require => File['/home/vagrant/anvil/lib/python2.7/site-packages/pysvn'],
+}
 
 # create SCM repo dirs
 file { [ "/home/vagrant/scm", "/home/vagrant/scm/git", "/home/vagrant/scm/hg", "/home/vagrant/scm/svn" ]:
