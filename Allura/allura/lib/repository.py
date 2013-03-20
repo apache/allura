@@ -122,7 +122,7 @@ class RepositoryApp(Application):
             links.append(SitemapEntry('Branches'))
             for b in self.repo.branches:
                 links.append(SitemapEntry(
-                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                        b.name, url('%sci/%s/tree/' % (c.app.url, b.name)),
                         small=b.count))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
@@ -130,7 +130,7 @@ class RepositoryApp(Application):
             for i, b in enumerate(self.repo.repo_tags):
                 if i < max_tags:
                     links.append(SitemapEntry(
-                            b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                            b.name, url('%sci/%s/tree/' % (c.app.url, b.name)),
                             small=b.count))
                 elif i == max_tags:
                     links.append(
