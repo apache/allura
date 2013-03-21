@@ -22,3 +22,16 @@ class SearchResults(ew_core.Widget):
             for r in f.resources():
                 yield r
         yield ew.CSSLink('css/search.css')
+
+
+class SearchHelp(ffw.Lightbox):
+    defaults=dict(
+        ffw.Lightbox.defaults,
+        name='search_help_modal',
+        trigger='a.search_help_modal')
+
+    content_template = '<div style="height:400px; overflow:auto;">%s</div>'
+
+    def __init__(self, content=''):
+        super(SearchHelp, self).__init__()
+        self.content = self.content_template % content
