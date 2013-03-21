@@ -23,14 +23,14 @@
   <div class="grid-3">
     <input type="submit" value="Search">
   </div>
+  {% if c.help_modal %}
   <div class="grid-6">
-    {# TODO: when help text provided, show button
     <a href="#" class="btn search_help_modal">
       <b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b>
       Help
     </a>
-    #}
   </div>
+  {% endif %}
   <div class="grid-10">
     {% set search_project = request.GET['project'] == '1' %}
     <input type="radio" name="project" value="0" id="search-app" {% if not search_project %}checked{% endif %}>
@@ -85,3 +85,4 @@
     <a href="{{ sort_date_url }}" class="{{ 'strong' if sort_field == 'mod_date_dt' else '' }}">date</a>
   </p>
 </div>
+{% if c.help_modal %}{{ c.help_modal.display() }}{% endif %}

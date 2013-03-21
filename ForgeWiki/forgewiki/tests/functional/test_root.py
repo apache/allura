@@ -125,6 +125,14 @@ class TestRootController(TestController):
         solr_query.pop('pf')
         search.assert_called_with('test', **solr_query)
 
+    def test_search_help(self):
+        r = self.app.get('/wiki/search?q=test')
+        btn = r.html.find('a', attrs={'class': 'btn search_help_modal'})
+        assert btn is not None, "Can't find a help button"
+        div = r.html.find('div', attrs={'id': 'lightbox_search_help_modal'})
+        assert div is not None, "Can't find help text"
+        assert_in('Searching wiki', div.text)
+
     def test_page_index(self):
         response = self.app.get('/wiki/tést/')
         assert 'tést' in response.follow()

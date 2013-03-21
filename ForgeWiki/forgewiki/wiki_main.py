@@ -31,6 +31,7 @@ from pylons import request
 from formencode import validators
 from webob import exc
 from ming.orm import session
+import jinja2
 
 # Pyforge-specific imports
 from allura import model as M
@@ -45,7 +46,7 @@ from allura.controllers import attachments as ac
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 
 # Local imports
 from forgewiki import model as WM
@@ -53,6 +54,10 @@ from forgewiki import version
 from forgewiki.widgets.wiki import CreatePageWidget
 
 log = logging.getLogger(__name__)
+
+jinja_env = jinja2.Environment(loader=jinja2.PackageLoader('forgewiki', 'templates'))
+search_help_text = jinja_env.get_template('wiki/search_help.txt').render()
+
 
 class W:
     thread=w.Thread(
@@ -68,6 +73,7 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     search_results = SearchResults()
+    help_modal = SearchHelp(search_help_text)
     icons={
         24:'images/wiki_24.png',
         32:'images/wiki_32.png',
@@ -377,6 +383,7 @@ class RootController(BaseController, DispatchIndex):
                 results = imap(historize_urls, results)
                 results = imap(add_matches, results)
         c.search_results = W.search_results
+        c.help_modal = W.help_modal
         score_url = 'score desc'
         date_url = 'mod_date_dt desc'
         try:
