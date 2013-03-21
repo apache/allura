@@ -73,7 +73,7 @@ class AuthController(BaseController):
         Redirect old /auth/prefs URL to /auth/subscriptions
         (to handle old email links, etc).
         '''
-        redirect('subscriptions')
+        redirect('/auth/subscriptions/')
 
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
