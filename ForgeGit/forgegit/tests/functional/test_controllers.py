@@ -127,7 +127,10 @@ class TestRootController(_TestCase):
         resp = r.follow()
         for tag in resp.html.findAll('a'):
             if tag['href'].startswith('/p/test/src-git/ci/'):
-                return tag['href']
+                href = tag['href']
+                if href.endswith('tree/'):
+                    href = href[:-5]
+                return href
         return None
 
     def test_commit(self):
