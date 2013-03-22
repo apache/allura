@@ -73,9 +73,11 @@ class Neighborhood(MappedClass):
     @LazyProperty
     def neighborhood_project(self):
         from .project import Project
-        return Project.query.get(
+        p = Project.query.get(
             neighborhood_id=self._id,
             is_nbhd_project=True)
+        assert p
+        return p
 
     @property
     def acl(self):
