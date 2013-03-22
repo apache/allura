@@ -34,20 +34,25 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             left: 10 // Left position relative to parent in px
         };
         var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
+        var delay = 5000
         // Check tarball status every 5 seconds
         function check_status() {
             $.get('{{commit.url()}}tarball_status', function(data) {
                 if (data.status === 'ready') {
-                    window.clearInterval(status_checker);
                     spinner.stop();
                     $('#snapshot_status h2').toggle();
                     {% if 'no-redirect' not in request.params %}
                         window.location.href = '{{c.app.repo.tarball_url(revision)}}';
                     {% endif %}
+                } else {
+                    if (delay < 600000){
+                        delay = delay * 2
+                    }
+                    window.setTimeout(check_status, delay);
                 }
             });
         }
-        var status_checker = window.setInterval(check_status, 5000);
+        window.setTimeout(check_status, delay);
     {% endif %}
 });
 </script>

@@ -208,7 +208,6 @@ class Repository(Artifact, ActivityObject):
     branches = FieldProperty([dict(name=str,object_id=str, count=int)])
     repo_tags = FieldProperty([dict(name=str,object_id=str, count=int)])
     upstream_repo = FieldProperty(dict(name=str,url=str))
-    tarball_status = FieldProperty([dict(revision=str, status=str)])
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
@@ -240,10 +239,14 @@ class Repository(Artifact, ActivityObject):
                             self.project.shortname,
                             self.name)
 
-    def tarball_url(self, revision):
+    def tarball_filename(self, revision):
         shortname = c.app.repo.project.shortname.replace('/', '-')
         mount_point = c.app.repo.app.config.options.mount_point
-        filename = '%s-%s-%s.tar.gz' % (shortname, mount_point, revision)
+        filename = '%s-%s-%s' % (shortname, mount_point, revision)
+        return filename
+
+    def tarball_url(self, revision):
+        filename = '%s%s' % (self.tarball_filename(revision), '.tar.gz')
         r = os.path.join(self.tool,
                          self.project.shortname[:1],
                          self.project.shortname[:2],
@@ -253,17 +256,14 @@ class Repository(Artifact, ActivityObject):
         return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
     def get_tarball_status(self, revision):
-        tarballs = dict((t.revision, t.status) for t in self.tarball_status)
-        return tarballs.get(revision)
+        pathname = os.path.join(self.tarball_path, self.tarball_filename(revision))
+        filename = '%s%s' % (pathname, '.tar.gz')
+        tmpfilename = '%s%s' % (pathname, '.tmp')
 
-    def set_tarball_status(self, revision, status):
-        for tarball in self.tarball_status:
-            if tarball['revision'] == revision:
-                tarball['status'] = status
-                session(self).flush(self)
-                return
-        self.tarball_status.append(dict(revision=revision, status=status))
-        session(self).flush(self)
+        if os.path.isfile(filename):
+            return 'ready'
+        elif os.path.isfile(tmpfilename) or os.path.isdir(pathname):
+            return 'busy'
 
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (

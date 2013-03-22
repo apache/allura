@@ -240,6 +240,8 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
     def test_tarball(self):
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
         assert_equal(self.repo.tarball_path, '/tmp/tarball/git/t/te/test/testgit.git')
         assert_equal(self.repo.tarball_url('HEAD'), 'file:///git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz')
         self.repo.tarball('HEAD')
@@ -259,6 +261,23 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                     'shortlink': u'[1e146e]',
                     'summary': u'Change README'},
                 'name': u'README'}])
+
+    def test_tarball_status(self):
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        if os.path.isdir("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/"):
+            os.removedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/")
+        self.repo.tarball('HEAD')
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
+        os.rename("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz",
+                  "/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
+        os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+        os.makedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD")
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
 
 
 class TestGitCommit(unittest.TestCase):

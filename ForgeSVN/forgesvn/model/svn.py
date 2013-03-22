@@ -611,8 +611,6 @@ class SVNImplementation(M.RepositoryImplementation):
         return entries
 
     def tarball(self, commit):
-        shortname = self._repo.project.shortname.replace('/', '-')
-        mount_point = self._repo.app.config.options.mount_point
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         path = os.path.join(self._repo.tarball_path, commit)
@@ -621,11 +619,13 @@ class SVNImplementation(M.RepositoryImplementation):
         self._svn.export(self._url,
                          path,
                          revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-        archive_name = '%s-%s-%s' % (shortname, mount_point, commit)
-        filename = os.path.join(self._repo.tarball_path, archive_name + '.tar.gz')
-        with tarfile.open(filename, "w:gz") as tar:
+        archive_name = self._repo.tarball_filename(commit)
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        with tarfile.open(tmpfilename, "w:gz") as tar:
             tar.add(path, arcname=archive_name)
         rmtree(path)
+        os.rename(tmpfilename, filename)
 
 
 Mapper.compile_all()

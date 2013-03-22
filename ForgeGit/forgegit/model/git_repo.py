@@ -324,14 +324,15 @@ class GitImplementation(M.RepositoryImplementation):
         return tree._id
 
     def tarball(self, commit):
-        shortname = self._repo.project.shortname.replace('/', '-')
-        mount_point = self._repo.app.config.options.mount_point
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
-        archive_name = '%s-%s-%s' % (shortname, mount_point, commit)
-        filename = os.path.join(self._repo.tarball_path, archive_name + '.tar.gz')
-        with gzip.open(filename, 'w') as fp:
-            self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name+'/')
+        archive_name = self._repo.tarball_filename(commit)
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        with gzip.open(tmpfilename, 'w') as fp:
+            self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name + '/')
+        os.rename(tmpfilename, filename)
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

@@ -38,12 +38,6 @@ class TestRepoTasks(unittest.TestCase):
         assert_equal(post_event.call_args[0][2], None)
         # ignore args[3] which is a traceback string
 
-    @mock.patch('allura.tasks.repo_tasks.c.app.repo.set_tarball_status')
-    def test_repo_tarball(self,st):
-        repo_tasks.tarball('HEAD')
-        calls = [mock.call('HEAD', 'busy'), mock.call('HEAD', 'ready')]
-        st.assert_has_calls(calls, any_order=True)
-
 
 class TestEventTasks(unittest.TestCase):
 
