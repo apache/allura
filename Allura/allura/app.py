@@ -5,7 +5,7 @@ from cStringIO import StringIO
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
 from pylons import request, app_globals as g, tmpl_context as c
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 
 from ming.orm import session, state
