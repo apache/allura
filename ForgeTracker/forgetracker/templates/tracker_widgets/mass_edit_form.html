@@ -57,6 +57,8 @@
                 {% endif %}
               {% endfor %}
             </select>
+          {% elif field.type == 'user' %}
+            {{c.user_select.display(name=field.name, id=field.name, value='', className='wide')}}
           {% else %}
             <input name="{{field.name}}" type="text" value="" class="wide"/>
           {% endif %}
@@ -69,4 +71,5 @@
       <a href="{{cancel_href}}" class="btn link">Cancel</a>
       <!-- tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>-->
     </div>
+    <div class="grid-12" id="result"></div>
 </form>
