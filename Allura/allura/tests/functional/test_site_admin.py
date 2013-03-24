@@ -23,21 +23,6 @@ class TestSiteAdmin(TestController):
         cells = stats_table.findAll('td')
         assert cells[0].contents[0] == 'Adobe', cells[0].contents[0]
 
-    def test_performance(self):
-        r = self.app.get('/nf/admin/stats', extra_environ=dict(
-                username='test-user'), status=403)
-        r = self.app.get('/nf/admin/stats', extra_environ=dict(
-                username='root'))
-        assert 'Forge Site Admin' in r.html.find('h2',{'class':'dark title'}).contents[0]
-        stats_table = r.html.find('table')
-        headers = stats_table.findAll('th')
-        assert headers[0].contents[0] == 'Url'
-        assert headers[1].contents[0] == 'Ming'
-        assert headers[2].contents[0] == 'Mongo'
-        assert headers[3].contents[0] == 'Render'
-        assert headers[4].contents[0] == 'Template'
-        assert headers[5].contents[0] == 'Total Time'
-
     def test_tickets_access(self):
         r = self.app.get('/nf/admin/api_tickets', extra_environ=dict(
                 username='test-user'), status=403)

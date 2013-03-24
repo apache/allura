@@ -726,18 +726,6 @@ class SubscriptionsController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def upload_sshkey(self, key=None):
-        ap = plugin.AuthenticationProvider.get(request)
-        try:
-            ap.upload_sshkey(c.user.username, key)
-        except AssertionError, ae:
-            flash('Error uploading key: %s' % ae, 'error')
-        flash('Key uploaded')
-        redirect('.')
-
-    @h.vardec
-    @expose()
-    @require_post()
     @validate(F.subscription_form, error_handler=index)
     def update_subscriptions(self, subscriptions=None, **kw):
         for s in subscriptions:
