@@ -174,6 +174,15 @@ class AuthenticationProvider(object):
     def update_notifications(self, user):
         raise NotImplemented, 'update_notifications'
 
+    def user_registration_date(self, user):
+        '''
+        Returns the date in which a user registered himself/herself on the forge.
+
+        :param user: a :class:`User <allura.model.auth.User>`
+        :rtype: :class:`datetime <datetime.datetime>`
+        '''
+        raise NotImplementedError, 'user_registration_date'
+
 class LocalAuthenticationProvider(AuthenticationProvider):
     '''
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
@@ -229,6 +238,11 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def update_notifications(self, user):
         return ''
+
+    def user_registration_date(self, user):
+        if user._id:
+            return user._id.generation_time
+        return datetime.utcnow()
 
 class LdapAuthenticationProvider(AuthenticationProvider):
     def register_user(self, user_doc):

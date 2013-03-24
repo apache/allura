@@ -2,9 +2,11 @@ from ming.orm import FieldProperty
 from ming import schema as S
 from datetime import datetime, timedelta
 from ming.orm import session, Mapper
+from pylons import request
 
+from allura.lib import plugin
 from allura.model.session import main_orm_session
-from allura.model.contrib_stats import Stats
+from allura.model import Stats
 
 class UserStats(Stats):
     class __mongometa__:
@@ -19,11 +21,12 @@ class UserStats(Stats):
 
     @classmethod
     def create(cls, user):
+        auth_provider = plugin.AuthenticationProvider.get(request)
+        reg_date = auth_provider.user_registration_date(user)
         stats = cls.query.get(user_id = user._id)
         if stats:
             return stats
-        stats = cls(user_id=user._id,
-            registration_date = datetime.utcnow())
+        stats = cls(user_id=user._id, registration_date = reg_date)
         user.stats_id = stats._id
         return stats
 

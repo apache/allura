@@ -53,30 +53,6 @@ class SiteAdminController(object):
         neighborhoods.sort(key=lambda n:n[0])
         return dict(neighborhoods=neighborhoods)
 
-    @expose('jinja:allura:templates/site_admin_stats.html')
-    @without_trailing_slash
-    def stats(self, limit=25):
-        stats = defaultdict(lambda:defaultdict(list))
-        agg_timings = defaultdict(list)
-        for doc in M.Stats.m.find():
-            if doc.url.startswith('/_debug'): continue
-            doc_stats = stats[doc.url]
-            for t,val in doc.timers.iteritems():
-                doc_stats[t].append(val)
-                agg_timings[t].append(val)
-        for url, timings in stats.iteritems():
-            new_timings = dict(
-                (timer, round(sum(readings)/len(readings),3))
-                for timer, readings in timings.iteritems())
-            timings.update(new_timings)
-        agg_timings = dict(
-            (timer, round(sum(readings)/len(readings),3))
-            for timer, readings in agg_timings.iteritems())
-        stats = sorted(stats.iteritems(), key=lambda x:-x[1]['total'])
-        return dict(
-            agg_timings=agg_timings,
-            stats=stats[:int(limit)])
-
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
     @without_trailing_slash
     def api_tickets(self, **data):
