@@ -236,15 +236,6 @@
     </div>
   </div>
 
-  {% if user.stats.visible %}
-    <div class="grid-24">
-      <div class="grid-24" style="margin:0;"><b>User statistics</b></div>
-      <div class="grid-24" style="margin-top:5px;margin-bottom:5px;">
-        <div><a href="{{c.project.url()}}userstats"/>Go to the personal statistics of this user</a></div>
-      </div>
-    </div>
-  {% endif %}
-
   {% if c.user.username == user.username %}
       <div class="address-list grid-18">
         <b>Email Addresses</b>
