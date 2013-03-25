@@ -100,7 +100,7 @@ class NeighborhoodController(object):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         if not self.neighborhood.has_home_tool:
-            mount = c.project.first_mount()
+            mount = c.project.ordered_mounts()[0]
             if mount is not None:
                 if 'ac' in mount:
                     redirect(mount['ac'].options.mount_point + '/')
@@ -318,7 +318,7 @@ class ProjectController(object):
     @expose()
     @with_trailing_slash
     def index(self, **kw):
-        mount = c.project.first_mount('read')
+        mount = c.project.first_mount_visible(c.user)
         activity_enabled = config.get('activitystream.enabled', False)
         activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
@@ -329,8 +329,6 @@ class ProjectController(object):
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:
                 redirect(mount['sub'].url())
-        elif c.project.app_instance('profile'):
-            redirect('profile/')
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 

@@ -806,7 +806,7 @@ class TestNeighborhood(TestController):
     @td.with_user_project('test-user')
     def test_profile_topnav_menu(self):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
-        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
+        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-profile">' in r, r
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)
