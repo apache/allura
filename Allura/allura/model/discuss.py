@@ -107,7 +107,7 @@ class Discussion(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            title='Discussion: %s' % self.name,
+            title=self.name,
             name_s=self.name,
             text=self.description)
         return result
@@ -356,7 +356,7 @@ class Thread(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-           title='Thread: %s' % (self.subject or '(no subject)'),
+           title=self.subject or '(no subject)',
            name_s=self.subject,
            views_i=self.num_views,
            text=self.subject)

@@ -332,8 +332,8 @@ class Snapshot(Artifact):
         if original:
             original_index = original.index()
             result.update(original_index)
-            result['title'] = 'Version %d of %s' % (
-                    self.version, h.get_first(original_index, 'title'))
+            result['title'] = '%s (version %d)' % (
+                    h.get_first(original_index, 'title'), self.version)
         result.update(
             id=self.index_id(),
             version_i=self.version,

@@ -24,5 +24,7 @@
 
 {% block content %}
   {{c.search_results.display(results=results,q=q,history=history,
-                             count=count,limit=limit,page=page,search_error=search_error)}}
+     count=count,limit=limit,page=page,search_error=search_error,
+     sort_score_url=sort_score_url, sort_date_url=sort_date_url, sort_field=sort_field,
+     search_comments_disable=search_comments_disable)}}
 {% endblock %}

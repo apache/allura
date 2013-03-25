@@ -15,11 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 import json
 import logging
-import pymongo
-from urllib import urlencode, unquote
+from urllib import unquote
+from itertools import imap
 
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
@@ -31,7 +30,7 @@ from webob import exc
 
 from allura.lib.security import require_access, has_access, require_authenticated
 from allura.model import Feed
-from allura.lib.search import search, SearchError
+from allura.lib.search import search_app
 from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
@@ -130,40 +129,31 @@ class RootController(BaseController, DispatchIndex):
                    project=validators.StringBool(if_empty=False),
                    limit=validators.Int(if_empty=None),
                    page=validators.Int(if_empty=0)))
-    def search(self, q=None, history=False, project=False, limit=None, page=0, **kw):
-        'local tool search'
-        if project:
-            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
-        results = []
-        search_error = None
-        count=0
-        limit, page, start = g.handle_paging(limit, page, default=25)
-        if not q:
-            q = ''
-        else:
-            try:
-                results = search(
-                    q, rows=limit, start=start,
-                    fq=[
-                        'is_history_b:%s' % history,
-                        'project_id_s:%s' % c.project._id,
-                        'mount_point_s:%s'% c.app.config.options.mount_point,
-                        '-deleted_b:true'],
-                    short_timeout=True,
-                    ignore_errors=False)
-            except SearchError as e:
-                search_error = e
-            if results: count=results.hits
+    def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
         c.search_results = self.W.search_results
+        search_params = kw
+        search_params.update({
+            'q': q or '',
+            'history': history,
+            'project': project,
+            'limit': limit,
+            'page': page,
+            'allowed_types': ['Post', 'Post Snapshot', 'Discussion', 'Thread'],
+        })
+        d = search_app(**search_params)
+        results = d.get('results')
+        def prettify_urls(doc):
+            if doc.get('type_s', '') == 'Post':
+                _id = doc.get('id').split('#')
+                _id = _id[-1].replace('/', '.') if _id else ''
+                p = model.ForumPost.query.get(_id=_id)
+                doc['url_paginated'] = p.url_paginated()
+            return doc
         if results is not None:
-            for doc in results:
-                if doc.get('type_s', '') == 'Post':
-                    _id = doc.get('id').split('#')
-                    _id = _id[-1].replace('/', '.') if _id else ''
-                    p = model.ForumPost.query.get(_id=_id)
-                    doc['url_paginated'] = p.url_paginated()
-        return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page, search_error=search_error)
+            results = imap(prettify_urls, results)
+        d['results'] = results
+        d['search_comments_disable'] = True
+        return d
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):
