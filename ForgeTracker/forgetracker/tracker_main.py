@@ -737,7 +737,7 @@ class RootController(BaseController):
     @require_post()
     def update_tickets(self, **post_data):
         tickets = TM.Ticket.query.find(dict(
-                _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
+                _id={'$in':[ObjectId(id) for id in post_data['__selected'].split(',')]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
             require_access(ticket, 'update')
@@ -789,7 +789,7 @@ class RootController(BaseController):
                 ticket.commit()
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-        redirect('edit/' + post_data['search'])
+        redirect('edit/' + post_data['__search'])
 
 # tickets
 # open tickets
