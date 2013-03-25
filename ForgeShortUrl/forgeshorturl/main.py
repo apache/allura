@@ -17,19 +17,17 @@
 
 from tg import expose, validate, redirect, flash, request
 from tg.decorators import without_trailing_slash
-from urllib import urlencode
 
 from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
 from allura.lib import helpers as h
-from allura.lib.search import search, SearchError
+from allura.lib.search import search_app
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults
 
 from webob import exc
-import pylons
 from pylons import tmpl_context as c, app_globals as g
 from datetime import datetime
 from formencode import validators
@@ -163,38 +161,23 @@ class RootController(BaseController):
 
     @expose('jinja:forgeshorturl:templates/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None,
-               history=None, project=None,
-               limit=None, page=0, **kw):
-        if project:
-            redirect(c.project.url() +
-                     'search?' +
-                     urlencode(dict(q=q, history=history)))
-        results = []
-        search_error = None
-        count = 0
-        limit, page, start = g.handle_paging(limit, page, default=25)
-        if not q:
-            q = ''
-        else:
-            query = ['is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s' % c.app.config.options.mount_point,
-                    'type_s:%s' % ShortUrl.type_s]
-            if not has_access(c.app, 'view_private'):
-                query.append('private_b:False')
-            try:
-                results = search(q, fq=query, short_timeout=True, ignore_errors=False)
-            except SearchError as e:
-                search_error = e
-
-            if results:
-                count = results.hits
+    def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = W.search_results
-        return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page, search_error=search_error)
+        search_params = kw
+        search_params.update({
+            'q': q or '',
+            'project': project,
+            'limit': limit,
+            'page': page,
+            'allowed_types': ['ShortUrl'],
+        })
+        if not has_access(c.app, 'view_private'):
+            search_params['fq'] = ['private_b:False']
+        d = search_app(**search_params)
+        d['search_comments_disable'] = True
+        d['search_history_disable'] = True
+        return d
 
     @expose()
     def _lookup(self, pname, *remainder):

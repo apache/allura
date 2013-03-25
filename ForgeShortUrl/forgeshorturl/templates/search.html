@@ -23,7 +23,10 @@
 {% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}
 {% block short_url_content %}{% endblock %}
 {% block content %}
-{{c.search_results.display(results=results,q=q,history=history,
-count=count,limit=limit,page=page,search_error=search_error)}}
+  {{c.search_results.display(results=results,q=q,history=history,
+     count=count,limit=limit,page=page,search_error=search_error,
+     sort_score_url=sort_score_url, sort_date_url=sort_date_url, sort_field=sort_field,
+     search_comments_disable=search_comments_disable,
+     search_history_disable=search_history_disable)}}
 {% endblock %}
 
