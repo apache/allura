@@ -44,8 +44,10 @@
       <label for="search-comments">Search comments?</label>
       <input id="search-comments" type="checkbox" name="search_comments"{% if comments %} checked{% endif %}>
     {% endif %}
-    <label for="search-history">Search history?</label>
-    <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
+    {% if not search_history_disable %}
+      <label for="search-history">Search history?</label>
+      <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
+    {% endif %}
   </div>
 </form>
 <div style="clear:both">&nbsp;</div>

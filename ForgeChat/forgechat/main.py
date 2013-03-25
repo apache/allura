@@ -22,19 +22,18 @@ import logging
 from datetime import date, time, datetime, timedelta
 
 # Non-stdlib imports
-import pkg_resources
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
-from pylons import request
 from formencode import validators
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search, SearchError
+from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access
+from allura.lib.widgets.search import SearchResults
 from allura import model as M
 from allura.controllers import BaseController
 
@@ -135,30 +134,24 @@ class RootController(BaseController):
         now = datetime.utcnow()
         redirect(c.app.url + now.strftime('%Y/%m/%d/'))
 
+    @with_trailing_slash
     @expose('jinja:forgechat:templates/chat/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, **kw):
-        'local tool search'
-        results = []
-        search_error = None
-        count=0
-        if not q:
-            q = ''
-        else:
-            try:
-                results = search(
-                    q,
-                    fq=[
-                        'is_history_b:%s' % history,
-                        'project_id_s:%s' % c.project._id,
-                        'mount_point_s:%s'% c.app.config.options.mount_point ],
-                    short_timeout=True,
-                    ignore_errors=False)
-            except SearchError as e:
-                search_error = e
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
+                   project=validators.StringBool(if_empty=False)))
+    def search(self, q=None, project=None, limit=None, page=0, **kw):
+        c.search_results = SearchResults()
+        search_params = kw
+        search_params.update({
+            'q': q or '',
+            'project': project,
+            'limit': limit,
+            'page': page,
+            'allowed_types': ['Chat Message'],
+        })
+        d = search_app(**search_params)
+        d['search_comments_disable'] = True
+        d['search_history_disable'] = True
+        return d
 
     @expose()
     def _lookup(self, y, m, d, *rest):

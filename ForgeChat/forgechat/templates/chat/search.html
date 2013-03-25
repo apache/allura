@@ -21,30 +21,13 @@
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
 
-{% block header %}ForgeChat Search{% endblock %}
+{% block header %}Search {{c.app.config.options.mount_point}}: {{q}}{% endblock %}
 
 {% block content %}
   {{ clib.checkout_info(c.app) }}
-  <form method="GET" action="search" class="grid-19">
-    <input type="text" name="q" value="{{q}}"/><br/>
-    Search history? <input type="checkbox" name="history" {% if history %}checked="checked"{% endif %}/><br/>
-    <input type="submit" value="Search"/>
-  </form>
-  {% if search_error %}
-    <p>{{ search_error }}</p>
-  {% elif count==0 and q %}
-    <p>No results.</p>
-  {% elif count==1 and q %}
-    <p>{{count}} result.</p>
-  {% elif count > 1 and q %}
-    <p>{{count}} results.</p>
-  {% endif %}
-
-  {% for doc in results %}
-  <div class="grid-19">
-    <a href="{{doc['url_s']}}">{{ h.get_first(doc, 'title') }}</a><br/>
-    <pre>{{doc|pprint}}</pre>
-    <hr/>
-  </div>
-  {% endfor %}
+  {{c.search_results.display(results=results,q=q,history=history,
+     count=count,limit=limit,page=page,search_error=search_error,
+     sort_score_url=sort_score_url, sort_date_url=sort_date_url, sort_field=sort_field,
+     search_comments_disable=search_comments_disable,
+     search_history_disable=search_history_disable)}}
 {% endblock %}
