@@ -18,12 +18,11 @@
 #-*- python -*-
 import logging
 from pprint import pformat
-from urllib import urlencode, unquote
+from urllib import unquote
 from datetime import datetime
-from itertools import imap
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash, url
+from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
@@ -37,7 +36,7 @@ import jinja2
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
-from allura.lib.search import search, SolrError
+from allura.lib.search import search_app
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
@@ -320,90 +319,19 @@ class RootController(BaseController, DispatchIndex):
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
         'local wiki search'
-        if project:
-            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
-        search_error = None
-        results = []
-        count = 0
-        parser = kw.pop('parser', None)
-        sort = kw.pop('sort', 'score desc')
-        matches = {}
-        limit, page, start = g.handle_paging(limit, page, default=25)
-        if not q:
-            q = ''
-        else:
-            # Match on both `title` and `text` by default, using 'dismax' parser.
-            # Score on `title` matches is boosted, so title match is better than body match.
-            # It's 'fuzzier' than standard parser, which matches only on `text`.
-            allowed_types = ['WikiPage', 'WikiPage Snapshot']
-            if search_comments:
-                allowed_types += ['Post']
-            search_params = {
-                'qt': 'dismax',
-                'qf': 'title^2 text',
-                'pf': 'title^2 text',
-                'fq': [
-                    'project_id_s:%s'  % c.project._id,
-                    'mount_point_s:%s' % c.app.config.options.mount_point,
-                    '-deleted_b:true',
-                    'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
-                ],
-                'hl': 'true',
-                'hl.simple.pre': '<strong>',
-                'hl.simple.post': '</strong>',
-                'sort': sort,
-            }
-            if not history:
-               search_params['fq'].append('is_history_b:False')
-            if parser == 'standard':
-                search_params.pop('qt', None)
-                search_params.pop('qf', None)
-                search_params.pop('pf', None)
-            try:
-                results = search(
-                    q, short_timeout=True, ignore_errors=False,
-                    rows=limit, start=start, **search_params)
-            except SolrError as e:
-                search_error = e
-            if results:
-                count = results.hits
-                matches = results.highlighting
-                def historize_urls(doc):
-                    if doc.get('type_s', '').endswith(' Snapshot'):
-                        if doc.get('url_s'):
-                            doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
-                    return doc
-                def add_matches(doc):
-                    m = matches.get(doc['id'], {})
-                    doc['title_match'] = h.get_first(m, 'title')
-                    doc['text_match'] = h.get_first(m, 'text')
-                    if not doc['text_match']:
-                        doc['text_match'] = h.get_first(doc, 'text')
-                    return doc
-                results = imap(historize_urls, results)
-                results = imap(add_matches, results)
         c.search_results = W.search_results
         c.help_modal = W.help_modal
-        score_url = 'score desc'
-        date_url = 'mod_date_dt desc'
-        try:
-            field, order = sort.split(' ')
-        except ValueError:
-            field, order = 'score', 'desc'
-        sort = ' '.join([field, 'asc' if order == 'desc' else 'desc'])
-        if field == 'score':
-            score_url = sort
-        elif field == 'mod_date_dt':
-            date_url = sort
-        params = request.GET.copy()
-        params.update({'sort': score_url})
-        score_url = url(request.path, params=params)
-        params.update({'sort': date_url})
-        date_url = url(request.path, params=params)
-        return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page, search_error=search_error,
-                    sort_score_url=score_url, sort_date_url=date_url,
-                    sort_field=field)
+        search_params = kw
+        search_params.update({
+            'q': q or '',
+            'history': history,
+            'search_comments': search_comments,
+            'project': project,
+            'limit': limit,
+            'page': page,
+            'allowed_types': ['WikiPage', 'WikiPage Snapshot'],
+        })
+        return search_app(**search_params)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')

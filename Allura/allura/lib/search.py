@@ -18,12 +18,17 @@
 import re
 import socket
 from logging import getLogger
+from urllib import urlencode
+from itertools import imap
 
 import markdown
 import jinja2
+from tg import redirect, url
 from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from pysolr import SolrError
 
+from allura.lib import helpers as h
 from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
@@ -82,6 +87,104 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw)
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
+
+
+def search_app(q='', fq=None, **kw):
+    """Helper for app search.
+
+    Uses dismax query parser. Matches on `title` and `text`. Handles paging, sorting, etc
+    """
+    history = kw.pop('history', None)
+    if kw.pop('project', False):
+        redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
+    search_comments = kw.pop('search_comments', None)
+    limit = kw.pop('limit', None)
+    page = kw.pop('page', 0)
+    default = kw.pop('default', 25)
+    allowed_types = kw.pop('allowed_types', [])
+    parser = kw.pop('parser', None)
+    sort = kw.pop('sort', 'score desc')
+    fq = fq if fq else []
+    search_error = None
+    results = []
+    count = 0
+    matches = {}
+    limit, page, start = g.handle_paging(limit, page, default=default)
+    if not q:
+        q = ''
+    else:
+        # Match on both `title` and `text` by default, using 'dismax' parser.
+        # Score on `title` matches is boosted, so title match is better than body match.
+        # It's 'fuzzier' than standard parser, which matches only on `text`.
+        if search_comments:
+            allowed_types += ['Post']
+        search_params = {
+            'qt': 'dismax',
+            'qf': 'title^2 text',
+            'pf': 'title^2 text',
+            'fq': [
+                'project_id_s:%s'  % c.project._id,
+                'mount_point_s:%s' % c.app.config.options.mount_point,
+                '-deleted_b:true',
+                'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
+            ] + fq,
+            'hl': 'true',
+            'hl.simple.pre': '<strong>',
+            'hl.simple.post': '</strong>',
+            'sort': sort,
+        }
+        if not history:
+           search_params['fq'].append('is_history_b:False')
+        if parser == 'standard':
+            search_params.pop('qt', None)
+            search_params.pop('qf', None)
+            search_params.pop('pf', None)
+        try:
+            results = search(
+                q, short_timeout=True, ignore_errors=False,
+                rows=limit, start=start, **search_params)
+        except SearchError as e:
+            search_error = e
+        if results:
+            count = results.hits
+            matches = results.highlighting
+            def historize_urls(doc):
+                if doc.get('type_s', '').endswith(' Snapshot'):
+                    if doc.get('url_s'):
+                        doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
+                return doc
+            def add_matches(doc):
+                m = matches.get(doc['id'], {})
+                doc['title_match'] = h.get_first(m, 'title')
+                doc['text_match'] = h.get_first(m, 'text')
+                if not doc['text_match']:
+                    doc['text_match'] = h.get_first(doc, 'text')
+                return doc
+            results = imap(historize_urls, results)
+            results = imap(add_matches, results)
+
+    # Provide sort urls to the view
+    score_url = 'score desc'
+    date_url = 'mod_date_dt desc'
+    try:
+        field, order = sort.split(' ')
+    except ValueError:
+        field, order = 'score', 'desc'
+    sort = ' '.join([field, 'asc' if order == 'desc' else 'desc'])
+    if field == 'score':
+        score_url = sort
+    elif field == 'mod_date_dt':
+        date_url = sort
+    params = request.GET.copy()
+    params.update({'sort': score_url})
+    score_url = url(request.path, params=params)
+    params.update({'sort': date_url})
+    date_url = url(request.path, params=params)
+    return dict(q=q, history=history, results=results or [],
+                count=count, limit=limit, page=page, search_error=search_error,
+                sort_score_url=score_url, sort_date_url=date_url,
+                sort_field=field)
+
 
 def find_shortlinks(text):
     md = markdown.Markdown(
