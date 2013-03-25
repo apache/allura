@@ -51,7 +51,7 @@ class TestNeighborhood(TestController):
         r = self.app.get('/adobe/wiki/')
         assert r.location.endswith('/adobe/wiki/Home/')
         r = r.follow()
-        assert 'Welcome' in str(r), str(r)
+        assert 'This is the "Adobe" neighborhood' in str(r), str(r)
         r = self.app.get('/adobe/admin/', extra_environ=dict(username='test-user'),
                          status=403)
 

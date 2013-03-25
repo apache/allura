@@ -199,7 +199,7 @@ class Shortlink(object):
         p_shortname = None
         p_id = None
         p_nbhd = None
-        if hasattr(c, 'project'):
+        if getattr(c, 'project', None):
             p_shortname = getattr(c.project, 'shortname', None)
             p_id = getattr(c.project, '_id', None)
             p_nbhd = c.project.neighborhood_id
