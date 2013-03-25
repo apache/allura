@@ -636,11 +636,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             if ac.tool_name == tool_type:
                 return ac
 
-    def new_subproject(self, name, install_apps=True, user=None):
+    def new_subproject(self, name, install_apps=True, user=None, project_name=None):
         if not h.re_project_name.match(name):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         provider = plugin.ProjectRegistrationProvider.get()
-        return provider.register_subproject(self, name, user or c.user, install_apps)
+        return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 
     def ordered_mounts(self, include_hidden=False):
         '''Returns an array of a projects mounts (tools and sub-projects) in
