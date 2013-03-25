@@ -64,7 +64,7 @@ class TestReactor(unittest.TestCase):
     def test_parse_address_good(self):
         topic, project, app = parse_address('foo@wiki.test.p' + config.common_suffix)
         assert_equal(topic, 'foo')
-        assert_equal(project.name, 'test')
+        assert_equal(project.shortname, 'test')
         assert_equal(app.__class__.__name__, 'ForgeWikiApp')
 
     def test_unicode_simple_message(self):

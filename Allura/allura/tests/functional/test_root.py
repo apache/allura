@@ -29,6 +29,7 @@ Please read http://pythonpaste.org/webtest/ for more information.
 
 """
 from tg import config
+from pylons import tmpl_context as c
 from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 import mock
@@ -82,7 +83,7 @@ class TestRootController(TestController):
     def test_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
-        M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
+        M.Project.query.find(dict(shortname='adobe-1')).first().category_id = com_cat._id
         response = self.app.get('/browse')
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
@@ -114,7 +115,8 @@ class TestRootController(TestController):
         # Install home app
         nb = M.Neighborhood.query.get(name='Adobe')
         p = nb.neighborhood_project
-        p.install_app('home', 'home', 'Home', ordinal=0)
+        with push_config(c, user=M.User.query.get(username='test-admin')):
+            p.install_app('home', 'home', 'Home', ordinal=0)
 
         response = self.app.get('/adobe/')
         projects = response.html.findAll('div',{'class':'border card'})
@@ -127,8 +129,8 @@ class TestRootController(TestController):
     def test_neighborhood_project_browse(self):
         com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
-        M.Project.query.find(dict(name='adobe-1')).first().category_id = com_cat._id
-        M.Project.query.find(dict(name='adobe-2')).first().category_id = fax_cat._id
+        M.Project.query.find(dict(shortname='adobe-1')).first().category_id = com_cat._id
+        M.Project.query.find(dict(shortname='adobe-2')).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1

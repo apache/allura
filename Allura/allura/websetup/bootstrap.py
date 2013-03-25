@@ -35,6 +35,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 
 import allura
 from allura.lib import plugin
+from allura.lib import helpers as h
 from allura import model as M
 from allura.websetup import schema
 from allura.command import EnsureIndexCommand
@@ -87,7 +88,6 @@ def bootstrap(command, conf, vars):
         log.error('Error clearing solr index')
     if asbool(conf.get('cache_test_data')):
         if restore_test_data():
-            from allura.lib import helpers as h
             h.set_context('test', neighborhood='Projects')
             return
     log.info('Initializing search')
@@ -209,10 +209,8 @@ def bootstrap(command, conf, vars):
         # TODO: Hope that Ming can be improved to at least avoid stuff below
         sess.flush(x)
 
-    c.project = p0
-    c.user = u_admin
-    p1 = p0.new_subproject('sub1')
     ThreadLocalORMSession.flush_all()
+
     if asbool(conf.get('load_test_data')):
         if asbool(conf.get('cache_test_data')):
             cache_test_data()
@@ -220,10 +218,21 @@ def bootstrap(command, conf, vars):
         # regular first-time setup
         p0.add_user(u_admin, ['Admin'])
         log.info('Registering initial apps')
-        for ep_name, app in g.entry_points['tool'].iteritems():
-            if not app.installable:
-                continue
-            p0.install_app(ep_name)
+        with h.push_config(c, user=u_admin):
+            for ep_name, app in g.entry_points['tool'].iteritems():
+                if not app.installable:
+                    continue
+                p0.install_app(ep_name)
+
+    # reload our p0 project so that p0.app_configs is accurate with all the newly installed apps
+    ThreadLocalORMSession.flush_all()
+    ThreadLocalORMSession.close_all()
+    p0 = M.Project.query.get(_id=p0._id)
+    sub = p0.new_subproject('sub1', project_name='A Subproject')
+    with h.push_config(c, user=u_admin):
+        sub.install_app('wiki')
+
+
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 

@@ -616,7 +616,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.status = 'ok'
         author = self.author()
         security.simple_grant(
-            self.acl, author.project_role()._id, 'moderate')
+            self.acl, author.project_role(self.project)._id, 'moderate')
         self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
             and author._id != None):

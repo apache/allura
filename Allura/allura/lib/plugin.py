@@ -584,18 +584,21 @@ class ProjectRegistrationProvider(object):
             g.post_event('project_created')
         return p
 
-    def register_subproject(self, project, name, user, install_apps):
+    def register_subproject(self, project, name, user, install_apps, project_name=None):
         from allura import model as M
         assert h.re_project_name.match(name), 'Invalid subproject shortname'
         shortname = project.shortname + '/' + name
+        ordinal = int(project.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
         sp = M.Project(
             parent_id=project._id,
             neighborhood_id=project.neighborhood_id,
             shortname=shortname,
-            name=name,
+            name=project_name or name,
             database_uri=project.database_uri,
             last_updated = datetime.utcnow(),
-            is_root=False)
+            is_root=False,
+            ordinal=ordinal,
+        )
         with h.push_config(c, project=sp):
             M.AppConfig.query.remove(dict(project_id=c.project._id))
             if install_apps:

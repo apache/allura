@@ -20,7 +20,7 @@
 """
 Model tests for project
 """
-from nose.tools import with_setup, assert_equal
+from nose.tools import with_setup, assert_equals, assert_in
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -40,29 +40,28 @@ def setUp():
 def setup_with_tools():
     setup_global_objects()
 
-@with_setup(setUp)
 def test_project():
-    assert type(c.project.sidebar_menu()) == list
-    assert c.project.script_name in c.project.url()
+    assert_equals(type(c.project.sidebar_menu()), list)
+    assert_in(c.project.script_name, c.project.url())
     old_proj = c.project
     h.set_context('test/sub1', neighborhood='Projects')
-    assert type(c.project.sidebar_menu()) == list
-    assert type(c.project.sitemap()) == list
-    assert c.project.sitemap()[0].label == 'Admin'
-    assert old_proj in list(c.project.parent_iter())
+    assert_equals(type(c.project.sidebar_menu()), list)
+    assert_equals(type(c.project.sitemap()), list)
+    assert_equals(c.project.sitemap()[1].label, 'Admin')
+    assert_in(old_proj, list(c.project.parent_iter()))
     h.set_context('test', 'wiki', neighborhood='Projects')
     adobe_nbhd = M.Neighborhood.query.get(name='Adobe')
     p = M.Project.query.get(shortname='adobe-1', neighborhood_id=adobe_nbhd._id)
     # assert 'http' in p.url() # We moved adobe into /adobe/, not http://adobe....
-    assert p.script_name in p.url()
-    assert c.project.shortname == 'test'
-    assert '<p>' in c.project.description_html
+    assert_in(p.script_name, p.url())
+    assert_equals(c.project.shortname, 'test')
+    assert_in('<p>', c.project.description_html)
     c.project.uninstall_app('hello-test-mount-point')
     ThreadLocalORMSession.flush_all()
 
     c.project.install_app('Wiki', 'hello-test-mount-point')
     c.project.support_page = 'hello-test-mount-point'
-    assert_equal(c.project.app_config('wiki').tool_name, 'wiki')
+    assert_equals(c.project.app_config('wiki').tool_name, 'wiki')
     ThreadLocalORMSession.flush_all()
     with td.raises(ToolError):
         # already installed
@@ -92,10 +91,11 @@ def test_project():
     c.app.config.breadcrumbs()
 
 def test_subproject():
+    project = M.Project.query.get(shortname='test')
     with td.raises(ToolError):
         # name exceeds 15 chars
-        sp = c.project.new_subproject('test-project-nose')
-    sp = c.project.new_subproject('test-proj-nose')
+        sp = project.new_subproject('test-project-nose')
+    sp = project.new_subproject('test-proj-nose')
     spp = sp.new_subproject('spp')
     ThreadLocalORMSession.flush_all()
     sp.delete()
@@ -105,18 +105,21 @@ def test_subproject():
 def test_anchored_tools():
     c.project.neighborhood.anchored_tools = 'wiki:Wiki, tickets:Ticket'
     c.project.install_app = MagicMock()
-    assert c.project.sitemap()[0].label == 'Wiki'
-    assert c.project.install_app.call_args[0][0] == 'tickets'
-    assert c.project.ordered_mounts()[0]['ac'].tool_name == 'wiki'
+    assert_equals(c.project.sitemap()[0].label, 'Wiki')
+    assert_equals(c.project.install_app.call_args[0][0], 'tickets')
+    assert_equals(c.project.ordered_mounts()[0]['ac'].tool_name, 'wiki')
 
 
 def test_set_ordinal_to_admin_tool():
-    assert c.project.sitemap()
-    assert c.project.app_config('admin').options.ordinal == 100
+    with h.push_config(c,
+                       user=M.User.anonymous(),
+                       project=M.Project.query.get(shortname='test')):
+        assert c.project.sitemap()
+        assert c.project.app_config('admin').options.ordinal == 100
 
 def test_users_and_roles():
-    p = c.project
-    sub = c.project.direct_subprojects.next()
+    p = M.Project.query.get(shortname='test')
+    sub = p.direct_subprojects.next()
     u = M.User.by_username('test-admin')
     assert p.users_with_role('Admin') == [u]
     assert p.users_with_role('Admin') == sub.users_with_role('Admin')
