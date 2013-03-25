@@ -1,4 +1,4 @@
-<form id="update-values" method="post">
+<form id="update-values" method="post" action="../update_tickets">
     {% for field in globals.custom_fields %}
       {% if field.name == '_milestone' %}
       <div class="grid-6">{{milestones}}
@@ -67,9 +67,10 @@
       {% endif %}
     {% endfor %}
     <div class="grid-18">
-      <input type="button" class="update_tickets" value="Save"/>
+      <input type="submit" class="update_tickets" value="Save"/>
       <a href="{{cancel_href}}" class="btn link">Cancel</a>
       <!-- tg.url(c.app.url+'search/', dict(q=query, limit=limit, sort=sort))}}" class="btn link">Cancel</a>-->
     </div>
     <div class="grid-12" id="result"></div>
+    <input name="selected" type="hidden" value="" id="id_selected" />
 </form>
