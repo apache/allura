@@ -23,7 +23,7 @@ import sys
 import logging
 import shutil
 from collections import defaultdict
-from datetime import datetime
+from textwrap import dedent
 
 import tg
 from pylons import tmpl_context as c, app_globals as g
@@ -39,6 +39,8 @@ from allura import model as M
 from allura.websetup import schema
 from allura.command import EnsureIndexCommand
 from allura.command import CreateTroveCategoriesCommand
+
+from forgewiki import model as WM
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +123,37 @@ def bootstrap(command, conf, vars):
     p_projects = project_reg.register_neighborhood_project(n_projects, [root], allow_register=True)
     p_users = project_reg.register_neighborhood_project(n_users, [root])
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
+
+    def set_nbhd_wiki_content(nbhd_proj, content):
+        wiki = nbhd_proj.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id, title=wiki.root_page_name)
+        page.text = content
+
+    set_nbhd_wiki_content(p_projects, dedent('''
+        Welcome to the "Projects" neighborhood.  It is the default neighborhood in Allura.
+        You can edit this wiki page as you see fit.  Here's a few ways to get started:
+
+        [Register a new project](/p/add_project)
+
+        [Neighborhood administration](/p/admin)
+
+        [[projects show_total=yes]]
+        '''))
+    set_nbhd_wiki_content(p_users, dedent('''
+        This is the "Users" neighborhood.  All users automatically get a user-project created for them, using their username.
+
+        [Neighborhood administration](/u/admin)
+
+        [[projects show_total=yes]]
+        '''))
+    set_nbhd_wiki_content(p_adobe, dedent('''
+        This is the "Adobe" neighborhood.  It is just an example of having projects in a different neighborhood.
+
+        [Neighborhood administration](/adobe/admin)
+
+        [[projects show_total=yes]]
+        '''))
+
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 
