@@ -402,11 +402,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         delta_ordinal = i
         max_ordinal = i
 
-        if self.is_user_project:
-            entries.append({'ordinal': delta_ordinal, 'entry':SitemapEntry('Profile', "%sprofile/" % self.url(), ui_icon="tool-home")})
-            max_ordinal = delta_ordinal
-            delta_ordinal = delta_ordinal + 1
-
         for sub in self.direct_subprojects:
             ordinal = sub.ordinal + delta_ordinal
             if ordinal > max_ordinal:
@@ -620,26 +615,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 result.append({'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
         return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
-    def first_mount(self, required_access=None):
-        '''Returns the first (toolbar order) mount, or the first mount to
-        which the user has the required access.'''
-        from forgewiki.wiki_main import ForgeWikiApp
+    def first_mount_visible(self, user):
         mounts = self.ordered_mounts()
-        if self.is_user_project:
-            for mount in mounts:
-                if 'ac' in mount and mount['ac'].tool_name == 'profile':
-                    return mount
-        if mounts and required_access is None:
-            return mounts[0]
         for mount in mounts:
             if 'sub' in mount:
-                obj = mount['sub']
+                sub = mount['sub']
+                if has_access(sub, 'read', user):
+                    return mount
             elif 'ac' in mount:
-                obj = self.app_instance(mount['ac'])
-            else:
-                continue
-            if has_access(obj, required_access) or isinstance(obj, ForgeWikiApp):
-                return mount
+                app = self.app_instance(mount['ac'])
+                if app.is_visible_to(user):
+                    return mount
         return None
 
     def next_mount_point(self, include_hidden=False):

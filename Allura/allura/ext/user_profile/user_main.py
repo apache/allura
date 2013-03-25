@@ -9,7 +9,7 @@ from tg import expose, redirect, validate, response
 from webob import exc
 
 from allura import version
-from allura.app import Application
+from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
@@ -23,10 +23,11 @@ log = logging.getLogger(__name__)
 class UserProfileApp(Application):
     __version__ = version.__version__
     installable = False
+    tool_label = 'Profile'
     icons={
-        24:'images/sftheme/24x24/home_24.png',
-        32:'images/sftheme/32x32/home_32.png',
-        48:'images/sftheme/48x48/home_48.png'
+        24:'images/home_24.png',
+        32:'images/home_32.png',
+        48:'images/home_48.png'
     }
 
     def __init__(self, user, config):
@@ -38,10 +39,16 @@ class UserProfileApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        return []
+        return [SitemapEntry('Profile', '.')]
 
     def admin_menu(self):
         return []
+
+    def main_menu(self):
+        return [SitemapEntry('Profile', '.')]
+
+    def is_visible_to(self, user):
+        return True
 
     def install(self, project):
         pr = c.user.project_role()
