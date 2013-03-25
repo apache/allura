@@ -21,7 +21,6 @@ from datetime import datetime
 import urllib2
 
 # Non-stdlib imports
-import pkg_resources
 import pymongo
 from tg import config, expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -35,15 +34,16 @@ from webob import exc
 from ming.orm import session
 
 # Pyforge-specific imports
-from allura.app import Application, ConfigOption, SitemapEntry
+from allura.app import Application, SitemapEntry
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search, SearchError
+from allura.lib.search import search_app
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.search import SearchResults
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController
 
@@ -67,6 +67,7 @@ class W:
     attachment_list = ffw.AttachmentList()
     preview_post_form = widgets.PreviewPostForm()
     subscribe_form = SubscribeForm()
+    search_results = SearchResults()
 
 class ForgeBlogApp(Application):
     __version__ = version.__version__
@@ -203,31 +204,26 @@ class RootController(BaseController):
         c.pager = W.pager
         return dict(posts=posts, page=page, limit=limit, count=post_count)
 
+    @with_trailing_slash
     @expose('jinja:forgeblog:templates/blog/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   history=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, **kw):
-        'local tool search'
-        results = []
-        search_error = None
-        count=0
-        if not q:
-            q = ''
-        else:
-            try:
-                results = search(
-                    q,
-                    fq=[
-                        'state_s:published',
-                        'is_history_b:%s' % history,
-                        'project_id_s:%s' % c.project._id,
-                        'mount_point_s:%s'% c.app.config.options.mount_point ],
-                    short_timeout=True,
-                    ignore_errors=False)
-            except SearchError as e:
-                search_error = e
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
+                   history=validators.StringBool(if_empty=False),
+                   search_comments=validators.StringBool(if_empty=False),
+                   project=validators.StringBool(if_empty=False)))
+    def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
+        c.search_results = W.search_results
+        search_params = kw
+        search_params.update({
+            'q': q or '',
+            'history': history,
+            'search_comments': search_comments,
+            'project': project,
+            'limit': limit,
+            'page': page,
+            'allowed_types': ['Blog Post', 'Blog Post Snapshot'],
+            'fq': ['state_s:published']
+        })
+        return search_app(**search_params)
 
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash

@@ -74,8 +74,7 @@ class BlogPostSnapshot(M.Snapshot):
             return None
         result = super(BlogPostSnapshot, self).index()
         result.update(
-            title='Version %d of %s' % (
-                self.version, orig.shorthand_id()),
+            title='%s (version %d)' % (orig.title, self.version),
             type_s=self.type_s,
             text=self.data.text)
         return result
@@ -201,7 +200,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     def index(self):
         result = super(BlogPost, self).index()
         result.update(
-            title=self.slug,
+            title=self.title,
             type_s=self.type_s,
             state_s=self.state,
             snippet_s='%s: %s' % (self.title, h.text.truncate(self.text, 200)),
