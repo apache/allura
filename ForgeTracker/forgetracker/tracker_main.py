@@ -789,6 +789,8 @@ class RootController(BaseController):
                 ticket.commit()
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
+        count = len(tickets)
+        flash('Updated {} ticket{}'.format(count, 's' if count != 1 else ''), 'ok')
         redirect('edit/' + post_data['__search'])
 
 # tickets
