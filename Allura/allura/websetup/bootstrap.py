@@ -88,7 +88,7 @@ def bootstrap(command, conf, vars):
                                               google_analytics = False))
     n_users = M.Neighborhood(name='Users', url_prefix='/u/',
                              shortname_prefix='u/',
-                             anchored_tools='userstats:Statistics',
+                             anchored_tools='profile:Profile,userstats:Statistics',
                              features=dict(private_projects = True,
                                            max_projects = None,
                                            css = 'none',
