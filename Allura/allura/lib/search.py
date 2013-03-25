@@ -89,14 +89,15 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw)
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 
-def search_app(q='', fq=None, **kw):
-    """Helper for app search.
+def search_app(q='', fq=None, app=True, **kw):
+    """Helper for app/project search.
 
     Uses dismax query parser. Matches on `title` and `text`. Handles paging, sorting, etc
     """
     history = kw.pop('history', None)
-    if kw.pop('project', False):
-        redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
+    if app and kw.pop('project', False):
+        # Used from app's search controller. If `project` is True, redirect to 'entire project search' page
+        redirect(c.project.url() + 'search/?' + urlencode(dict(q=q, history=history)))
     search_comments = kw.pop('search_comments', None)
     limit = kw.pop('limit', None)
     page = kw.pop('page', 0)
@@ -133,6 +134,9 @@ def search_app(q='', fq=None, **kw):
             'hl.simple.post': '</strong>',
             'sort': sort,
         }
+        if not app:
+            # Not app-restricted search. Use only provided filter query (fq)
+            search_params['fq'] = fq
         if not history:
            search_params['fq'].append('is_history_b:False')
         if parser == 'standard':

@@ -25,7 +25,8 @@ from formencode import validators as V
 
 from allura.app import Application
 from allura import version
-from allura.lib import search
+from allura.lib.search import search_app
+from allura.lib.widgets.search import SearchResults
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
@@ -66,19 +67,23 @@ class SearchController(BaseController):
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
     def index(self, q=None, history=None, **kw):
-        results = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            pids = [c.project._id] + [
-                p._id for p in c.project.subprojects ]
-            project_match = ' OR '.join(
-                'project_id_s:%s' % pid
-                for pid in pids )
-            search_query = '%s AND is_history_b:%s AND (%s) AND -deleted_b:true' % (
-                q, history, project_match)
-            results = search.search(search_query, is_history_b=history, short_timeout=True)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
-
+        c.search_results = SearchResults()
+        pids = [c.project._id] + [
+            p._id for p in c.project.subprojects ]
+        project_match = ' OR '.join(
+            'project_id_s:%s' % pid
+            for pid in pids )
+        search_params = kw
+        search_params.update({
+            'q': q,
+            'history': history,
+            'app': False,
+            'fq': [
+                'project_id_s:(%s)' % project_match,
+                '-deleted_b:true',
+            ],
+        })
+        d = search_app(**search_params)
+        d['search_comments_disable'] = True
+        d['hide_app_project_switcher'] = True
+        return d

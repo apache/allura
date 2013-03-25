@@ -31,6 +31,8 @@
     </a>
   </div>
   {% endif %}
+  <div style="clear:both"></div>
+  {% if not hide_app_project_switcher %}
   <div class="grid-10">
     {% set search_project = request.GET['project'] == '1' %}
     <input type="radio" name="project" value="0" id="search-app" {% if not search_project %}checked{% endif %}>
@@ -38,6 +40,7 @@
     <input type="radio" name="project" value="1" id="search-project" {% if search_project %}checked{% endif %}>
     <label for="search-project">Search entire project</label>
   </div>
+  {% endif %}
   <div class="grid-9">
     {% if not search_comments_disable %}
       {% set comments = request.GET['search_comments'] %}

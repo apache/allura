@@ -22,7 +22,8 @@ from pylons import tmpl_context as c
 from webob import exc
 import pymongo
 
-from allura.lib import search
+from allura.lib.search import search_app
+from allura.lib.widgets.search import SearchResults
 from allura.app import SitemapEntry
 from allura import model as M
 from allura.lib.widgets import project_list as plw
@@ -30,6 +31,7 @@ from allura.controllers import BaseController
 
 class W:
     project_summary = plw.ProjectSummary()
+    search_results = SearchResults()
 
 class SearchController(BaseController):
 
@@ -38,18 +40,17 @@ class SearchController(BaseController):
                    history=V.StringBool(if_empty=False)))
     @with_trailing_slash
     def index(self, q=None, history=False, **kw):
-        results = []
-        count=0
-        if not q:
-            q = ''
-        else:
-            results = search.search(
-                q,
-                fq='is_history_b:%s' % history,
-                short_timeout=True)
-            if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
-
+        c.search_results = W.search_results
+        search_params = kw
+        search_params.update({
+            'q': q,
+            'history': history,
+            'app': False,
+        })
+        d = search_app(**search_params)
+        d['search_comments_disable'] = True
+        d['hide_app_project_switcher'] = True
+        return d
 
 class ProjectBrowseController(BaseController):
     def __init__(self, category_name=None, parent_category=None):
