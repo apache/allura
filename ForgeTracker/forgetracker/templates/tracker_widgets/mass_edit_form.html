@@ -41,7 +41,11 @@
             <select name="{{field.name}}" class="wide">
               <option value="" selected="selected">no change</option>
               {% for option in field.options.split() %}
-                <option value="{{option}}">{{option}}</option>
+                {% if option.startswith('*') %}
+                  <option value="{{option[1:]}}">{{option[1:]}}</option>
+                {% else %}
+                  <option value="{{option}}">{{option}}</option>
+                {% endif %}
               {% endfor %}
             </select>
           {% elif field.type == 'milestone' %}
