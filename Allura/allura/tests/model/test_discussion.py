@@ -155,7 +155,7 @@ def test_post_methods():
     assert p.link_text() == p.subject
 
     ss = p.history().first()
-    assert 'Version' in h.get_first(ss.index(), 'title')
+    assert 'version' in h.get_first(ss.index(), 'title')
     assert '#' in ss.shorthand_id()
 
     jsn = p.__json__()
