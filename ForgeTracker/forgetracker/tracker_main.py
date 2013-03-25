@@ -789,7 +789,7 @@ class RootController(BaseController):
                 ticket.commit()
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-        redirect('edit')
+        redirect('edit/' + post_data['search'])
 
 # tickets
 # open tickets

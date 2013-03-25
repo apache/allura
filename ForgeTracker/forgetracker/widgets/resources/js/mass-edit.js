@@ -1,4 +1,5 @@
 $(function(){
+    $('#id_search').val(window.location.search);
     $('#assigned_to').val('');
     $('#select_all').click(function(){
         if(this.checked){
