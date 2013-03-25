@@ -45,7 +45,7 @@ def audits(*messages):
         import pdb; pdb.set_trace()
     for message in messages:
         assert M.AuditLog.query.find(dict(
-            message=re.compile(message))).count()
+            message=re.compile(message))).count(), 'Could not find "%s"' % message
 
 class TestProjectAdmin(TestController):
 
@@ -53,10 +53,10 @@ class TestProjectAdmin(TestController):
         self.app.get('/admin/')
         with audits(
             'change summary to Milkshakes are for crazy monkeys',
-            'change project name to Test Project',
+            'change project name to My Test Project',
             u'change short description to (\u00bf A Test Project \?){45}'):
             self.app.post('/admin/update', params=dict(
-                    name='Test Project',
+                    name='My Test Project',
                     shortname='test',
                     summary='Milkshakes are for crazy monkeys',
                     short_description=u'\u00bf A Test Project ?'.encode('utf-8') * 45,
