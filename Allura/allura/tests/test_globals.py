@@ -59,10 +59,9 @@ def test_app_globals():
 
 
 @with_setup(teardown=setUp) # reset everything we changed
-def test_macros():
+def test_macro_projects():
     file_name = 'neo-icon-set-454545-256x350.png'
     file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
-    curr_project = c.project
 
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -98,74 +97,87 @@ def test_macros():
 
     ThreadLocalORMSession.flush_all()
 
-    with h.push_context(p_nbhd.neighborhood_project._id):
+    with h.push_config(c,
+                       project=p_nbhd.neighborhood_project,
+                       user=M.User.by_username('test-admin')):
         r = g.markdown_wiki.convert('[[projects]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=root]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' not in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=sub1]]')
-        assert '<img alt="test Logo"' not in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' not in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' not in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,sub1]]')
-        assert '<img alt="test Logo"' not in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' not in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=root|sub1]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root|root,sub1]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' not in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' not in r, r
         r = g.markdown_wiki.convert('[[projects labels=test,root|test,sub1]]')
-        assert '<img alt="test Logo"' in r, r
-        assert '<img alt="sub1 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' in r, r
+        assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
         assert '<p class="macro_projects_total">3 Projects</p>' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True private=True sort=random]]')
         assert '<p class="macro_projects_total">1 Projects</p>' in r, r
-        assert '<img alt="test2 Logo"' in r, r
-        assert '<img alt="test Logo"' not in r, r
-        assert '<img alt="sub1 Logo"' not in r, r
+        assert '<img alt="Test 2 Logo"' in r, r
+        assert '<img alt="Test Project Logo"' not in r, r
+        assert '<img alt="A Subproject Logo"' not in r, r
 
         r = g.markdown_wiki.convert('[[projects show_proj_icon=True]]')
-        assert '<img alt="test Logo"' in r
+        assert '<img alt="Test Project Logo"' in r
         r = g.markdown_wiki.convert('[[projects show_proj_icon=False]]')
-        assert '<img alt="test Logo"' not in r
+        assert '<img alt="Test Project Logo"' not in r
 
-    c.project = curr_project
-    r = g.markdown_wiki.convert('[[download_button]]')
+
+def test_macro_download_button():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    with h.push_config(c, project=p_test):
+        r = g.markdown_wiki.convert('[[download_button]]')
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
-    h.set_context('--init--', 'wiki', neighborhood='Projects')
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
-    assert 'Home modified by' in r, r
-    orig_len = len(r)
-    # Make project private & verify we don't see its new feed items
-    proj = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
-    c.user = M.User.anonymous()
-    proj.acl.insert(0, M.ACE.deny(
-            c.user.project_role(proj)._id, 'read'))
-    ThreadLocalORMSession.flush_all()
-    pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
-    pg.text = 'Change'
-    pg.commit()
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
-    new_len = len(r)
-    assert new_len == orig_len
-    p = BM.BlogPost(title='test me', neighborhood_id=p_test.neighborhood_id)
-    p.text = 'test content'
-    p.state = 'published'
-    p.make_slug()
-    p.commit()
-    ThreadLocalORMSession.flush_all()
-    r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
-    assert 'test content' in r
+
+
+def test_macro_neighborhood_feeds():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    with h.push_context('--init--', 'wiki', neighborhood='Projects'):
+        r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
+        assert 'Home modified by' in r, r
+        orig_len = len(r)
+        # Make project private & verify we don't see its new feed items
+        anon = M.User.anonymous()
+        p_test.acl.insert(0, M.ACE.deny(
+                anon.project_role(p_test)._id, 'read'))
+        ThreadLocalORMSession.flush_all()
+        pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
+        pg.text = 'Change'
+        with h.push_config(c, user=M.User.by_username('test-admin')):
+            pg.commit()
+        r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
+        new_len = len(r)
+        assert new_len == orig_len
+        p = BM.BlogPost(title='test me', neighborhood_id=p_test.neighborhood_id)
+        p.text = 'test content'
+        p.state = 'published'
+        p.make_slug()
+        with h.push_config(c, user=M.User.by_username('test-admin')):
+            p.commit()
+        ThreadLocalORMSession.flush_all()
+        with h.push_config(c, user=anon):
+            r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
+        assert 'test content' in r
 
 @with_setup(teardown=setUp) # reset everything we changed
 def test_macro_members():
@@ -196,7 +208,8 @@ def test_macro_members_escaping():
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin <script>'
-    r = g.markdown_wiki.convert('[[project_admins]]')
+    with h.push_context('test', neighborhood='Projects'):
+        r = g.markdown_wiki.convert('[[project_admins]]')
     assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
@@ -205,7 +218,8 @@ def test_macro_project_admins_one_br():
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     p_test.add_user(M.User.by_username('test-user'), ['Admin'])
     ThreadLocalORMSession.flush_all()
-    r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
+    with h.push_config(c, project=p_test):
+        r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
 
     assert not '</a><br /><br /><a href=' in r, r
     assert '</a></li><li><a href=' in r, r
@@ -243,7 +257,8 @@ def test_macro_include_extra_br():
 
 
 def test_markdown_toc():
-    r = g.markdown_wiki.convert("""[TOC]
+    with h.push_context('test', neighborhood='Projects'):
+        r = g.markdown_wiki.convert("""[TOC]
 
 # Header 1
 
@@ -279,12 +294,14 @@ def test_markdown_links():
     assert_in('href="http://foobar.sf.net/">http://foobar.sf.net/</a> about', text)
 
 def test_markdown_and_html():
-    r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
+    with h.push_context('test', neighborhood='Projects'):
+        r = g.markdown_wiki.convert('<div style="float:left">blah</div>')
     assert '<div style="float: left;">blah</div>' in r, r
 
 
 def test_markdown_within_html():
-    r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
+    with h.push_context('test', neighborhood='Projects'):
+        r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
     assert '''<div style="float: left;">
 <p><strong>blah</strong></p>
 </div>''' in r, r
@@ -355,13 +372,6 @@ def test_markdown_autolink_with_escape():
     assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
-def test_macro_projects():
-    r = g.markdown.convert('[[projects]]')
-    assert '[[projects]]' in r, r
-    with h.push_context(M.Neighborhood.query.get(name='Projects').neighborhood_project._id):
-        r = g.markdown_wiki.convert('[[projects]]')
-        assert '<div class="border card">' in r, r
-
 @td.with_wiki
 def test_macro_include():
     r = g.markdown.convert('[[include ref=Home id=foo]]')
@@ -410,23 +420,27 @@ def test_filtering():
     # set up for test
     from random import choice
     random_trove = choice(M.TroveCategory.query.find().all())
-    test_project = M.Project.query.get(name='test')
+    test_project = M.Project.query.get(shortname='test')
     test_project_troves = getattr(test_project, 'trove_' + random_trove.type)
     test_project_troves.append(random_trove._id)
     ThreadLocalORMSession.flush_all()
 
     p_nbhd = M.Neighborhood.query.get(name='Projects')
-    with h.push_context(p_nbhd.neighborhood_project._id):
+    with h.push_config(c,
+                       project=p_nbhd.neighborhood_project,
+                       user=M.User.by_username('test-admin')):
         r = g.markdown_wiki.convert('[[projects category="%s"]]' % random_trove.fullpath)
         project_names = get_project_names(r)
-        assert [test_project.name, ] == project_names
+        assert_equal([test_project.name], project_names)
 
 
 def test_projects_macro():
     two_column_style = 'width: 330px;'
 
     p_nbhd = M.Neighborhood.query.get(name='Projects')
-    with h.push_context(p_nbhd.neighborhood_project._id):
+    with h.push_config(c,
+                       project=p_nbhd.neighborhood_project,
+                       user=M.User.anonymous()):
         # test columns
         r = g.markdown_wiki.convert('[[projects display_mode=list columns=2]]')
         assert two_column_style in r
@@ -483,7 +497,7 @@ def test_hideawards_macro():
     award.full = u'Award full'
     award.created_by_neighborhood_id = p_nbhd._id
 
-    project = M.Project.query.get(neighborhood_id=p_nbhd._id, name=u'test')
+    project = M.Project.query.get(neighborhood_id=p_nbhd._id, shortname=u'test')
 
     award_grant = M.AwardGrant(award=award,
                                granted_by_neighborhood=p_nbhd,

@@ -127,7 +127,8 @@ class TestDiscuss(TestController):
         # set wiki page private
         from forgewiki.model import Page
         page = Page.query.get(_id=thread.ref.artifact._id)  # need to look up the page directly, so ming is aware of our change
-        role_admin = M.ProjectRole.by_name('Admin')._id
+        project = M.Project.query.get(shortname='test')
+        role_admin = M.ProjectRole.by_name('Admin', project)._id
         page.acl = [
             M.ACE.allow(role_admin, M.ALL_PERMISSIONS),
             M.DENY_ALL,

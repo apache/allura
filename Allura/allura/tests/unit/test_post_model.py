@@ -15,6 +15,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from pylons import tmpl_context as c
+
+from allura.lib import helpers as h
+from allura import model as M
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import create_post
@@ -32,6 +36,6 @@ class TestPostModel(WithDatabase):
         assert self.post.status == 'pending'
 
     def test_that_it_can_be_approved(self):
-        self.post.approve()
+        with h.push_config(c, user=M.User()):
+            self.post.approve()
         assert self.post.status == 'ok'
-

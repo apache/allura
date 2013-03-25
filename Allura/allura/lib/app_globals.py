@@ -28,6 +28,7 @@ import datetime
 from urllib import urlencode
 from subprocess import Popen, PIPE
 import os
+import traceback
 
 import activitystream
 import pkg_resources
@@ -72,7 +73,8 @@ class ForgeMarkdown(markdown.Markdown):
         try:
             return markdown.Markdown.convert(self, source)
         except Exception:
-            log.info('Invalid markdown: %s', source, exc_info=True)
+            log.info('Invalid markdown: %s  Upwards trace is %s', source,
+                     ''.join(traceback.format_stack()), exc_info=True)
             escaped = h.really_unicode(source)
             escaped = cgi.escape(escaped)
             return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.

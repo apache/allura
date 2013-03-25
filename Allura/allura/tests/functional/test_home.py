@@ -64,8 +64,8 @@ class TestProjectHome(TestController):
                 c.app = p.install_app('wiki', tool_name, tool_name, i)
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
-        assert_equal(len(menu[1]['children']), 11)
-        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[1]['children']
+        assert_equal(len(menu[0]['children']), 11)
+        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[0]['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):
@@ -115,4 +115,3 @@ class TestProjectHome(TestController):
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
-

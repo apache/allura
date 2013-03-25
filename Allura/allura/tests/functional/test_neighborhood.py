@@ -800,10 +800,12 @@ class TestNeighborhood(TestController):
                           extra_environ=dict(username='root'))
 
     def test_add_a_project_link(self):
+        from pylons import tmpl_context as c
         # Install Home tool for all neighborhoods
         for nb in M.Neighborhood.query.find().all():
             p = nb.neighborhood_project
-            p.install_app('home', 'home', 'Home', ordinal=0)
+            with h.push_config(c, user=M.User.query.get()):
+                p.install_app('home', 'home', 'Home', ordinal=0)
         r = self.app.get('/p/')
         assert 'Add a Project' in r
         r = self.app.get('/u/', extra_environ=dict(username='test-user'))
