@@ -81,8 +81,11 @@ def import_tracker(cli, project, tool, import_options, options, doc_txt, validat
                 if options.verbose:
                     print 'Ticket id %d already exists, skipping' % ticket_in['id']
                 continue
-            doc['trackers']['default']['artifacts'] = [ticket_in]
-            res = cli.call(url, doc=json.dumps(doc), options=json.dumps(import_options))
+            doc_import={}
+            doc_import['trackers'] = {}
+            doc_import['trackers']['default'] = {}
+            doc_import['trackers']['default']['artifacts'] = [ticket_in]
+            res = cli.call(url, doc=json.dumps(doc_import), options=json.dumps(import_options))
             assert res['status'] and not res['errors']
             if options.validate:
                 if res['warnings']:
