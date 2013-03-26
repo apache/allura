@@ -66,8 +66,13 @@ def import_tracker(cli, project, tool, import_options, options, doc_txt, validat
             existing_map[t['ticket_num']] = t['summary']
 
     doc = json.loads(doc_txt)
-    tickets_in = doc['trackers']['default']['artifacts']
-    doc['trackers']['default']['artifacts'] = []
+
+    if 'trackers' in doc and 'default' in doc['trackers'] and 'artifacts' in doc['trackers']['default']:
+        tickets_in = doc['trackers']['default']['artifacts']
+        doc['trackers']['default']['artifacts'] = []
+    else:
+        tickets_in = doc
+        
     if options.verbose:
         print "Processing %d tickets" % len(tickets_in)
 
