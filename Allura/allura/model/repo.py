@@ -532,6 +532,8 @@ class Tree(RepoObject):
             return []
         commit_ids = [e.commit_id for e in lcd.entries]
         commits = Commit.query.find(dict(_id={'$in': commit_ids}))
+        for commit in commits:
+            commit.set_context(self.repo)
         commit_infos = {c._id: c.info for c in commits}
         by_name = lambda n: n.name
         tree_names = sorted([n.name for n in self.tree_ids])
