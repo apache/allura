@@ -41,7 +41,9 @@
   <div class="grid-19">
     {# TODO: mark matches in title and snippet #}
     <p>
-    <a href="{{doc['url_paginated'] or doc['url_s']}}">{{ h.get_first(doc, 'title') }}</a>
+    <a href="{{doc['url_paginated'] or doc['url_s']}}">
+       {{- h.get_first(doc, 'title') or h.get_first(doc, 'title_s') -}}  {#-  title_s is legacy -#}
+    </a>
     {% if doc['type_s'] %}<span class="gray"><sup>{{ '(%s)' % doc['type_s'] }}</sup></span>{% endif %}
     <br>
     {{ doc.snippet }}
