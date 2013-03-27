@@ -88,6 +88,8 @@
                 {% else %}
                   nobody
                 {% endif %}
+              {% elif field.type == 'milestone' %}
+                <a href="{{c.app.url}}{{field.name[1:]}}/{{ticket.custom_fields[field.name]}}">{{ticket.custom_fields[field.name]}}</a>
               {% else %}
                 {{ticket.custom_fields[field.name]}}
               {% endif %}

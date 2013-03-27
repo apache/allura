@@ -37,13 +37,7 @@ class GenericTicketForm(ew.SimpleForm):
     def display_field_by_name(self, idx, ignore_errors=False):
         field = self.fields[idx]
         ctx = self.context_for(field)
-        if idx == '_milestone':
-            milestone_value = ctx.value
-            for milestone in reversed(field.options):  # reverse so del hits the correct indexes
-                if milestone.complete and (milestone.py_value != milestone_value):
-                    del field.options[field.options.index(milestone)]
-            ctx = self.context_for(field)
-        elif idx == 'assigned_to':
+        if idx == 'assigned_to':
             self._add_current_value_to_user_field(field, ctx.get('value'))
         elif idx == 'custom_fields':
             for cf in c.app.globals.custom_fields:
@@ -154,7 +148,7 @@ class TicketCustomField(object):
                 py_value=m.name,
                 complete=bool(m.complete)))
 
-        ssf = ew.SingleSelectField(
+        ssf = MilestoneField(
             label=field.label, name=str(field.name),
             options=options)
         return ssf
@@ -183,3 +177,11 @@ class TicketCustomField(object):
     def make(cls, field):
         factory = cls.SELECTOR.get(field.get('type'), cls._default)
         return factory(field)
+
+class MilestoneField(ew.SingleSelectField):
+    def display(self, *args, **kwargs):
+        milestone_value = kwargs['value']
+        for milestone in reversed(self.options):  # reverse so del hits the correct indexes
+            if milestone.complete and (milestone.py_value != milestone_value):
+                del self.options[self.options.index(milestone)]
+        return super(MilestoneField, self).display(*args, **kwargs)
