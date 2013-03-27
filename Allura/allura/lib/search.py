@@ -119,24 +119,23 @@ def search_app(q='', fq=None, app=True, **kw):
         # It's 'fuzzier' than standard parser, which matches only on `text`.
         if search_comments:
             allowed_types += ['Post']
-        search_params = {
-            'qt': 'dismax',
-            'qf': 'title^2 text',
-            'pf': 'title^2 text',
-            'fq': [
+        if app:
+            fq = [
                 'project_id_s:%s'  % c.project._id,
                 'mount_point_s:%s' % c.app.config.options.mount_point,
                 '-deleted_b:true',
                 'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
-            ] + fq,
+            ] + fq
+        search_params = {
+            'qt': 'dismax',
+            'qf': 'title^2 text',
+            'pf': 'title^2 text',
+            'fq': fq,
             'hl': 'true',
             'hl.simple.pre': '<strong>',
             'hl.simple.post': '</strong>',
             'sort': sort,
         }
-        if not app:
-            # Not app-restricted search. Use only provided filter query (fq)
-            search_params['fq'] = fq
         if not history:
            search_params['fq'].append('is_history_b:False')
         if parser == 'standard':

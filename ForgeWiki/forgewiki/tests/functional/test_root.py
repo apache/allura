@@ -80,7 +80,7 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/search?q=tést')
         assert 'Search wiki: tést' in response
 
-    @patch('forgewiki.wiki_main.search')
+    @patch('allura.lib.search.search')
     def test_search(self, search):
         r = self.app.get('/wiki/search?q=test')
         assert_in('<a href="/wiki/search?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
