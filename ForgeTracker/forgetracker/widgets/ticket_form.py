@@ -179,9 +179,33 @@ class TicketCustomField(object):
         return factory(field)
 
 class MilestoneField(ew.SingleSelectField):
-    def display(self, *args, **kwargs):
-        milestone_value = kwargs['value']
-        for milestone in reversed(self.options):  # reverse so del hits the correct indexes
-            if milestone.complete and (milestone.py_value != milestone_value):
-                del self.options[self.options.index(milestone)]
-        return super(MilestoneField, self).display(*args, **kwargs)
+    template=ew.Snippet('''<select {{widget.j2_attrs({
+               'id':id,
+               'name':rendered_name,
+               'multiple':multiple,
+               'class':css_class},
+               attrs)}}>
+            {% for o in open_milestones %}
+            <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+            {% endfor %}
+            {% if closed_milestones %}
+            <optgroup label="Closed">
+                {% for o in closed_milestones %}
+                <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+                {% endfor %}
+            </optgroup>
+            {% endif %}
+        </select>''', 'jinja2')
+
+    def prepare_context(self, context):
+        context = super(MilestoneField, self).prepare_context(context)
+
+        # group open / closed milestones
+        context['open_milestones'] = [opt for opt in self.options if not opt.complete]
+        context['closed_milestones'] = [opt for opt in self.options if opt.complete]
+
+        # filter closed milestones entirely
+        #value = context['value']
+        #context['options'] = [opt for opt in self.options if not opt.complete or value == opt.py_value]
+
+        return context

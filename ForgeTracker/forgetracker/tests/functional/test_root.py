@@ -116,16 +116,25 @@ class TestMilestones(TrackerTestController):
         }
         self.app.post('/bugs/update_milestones', d)
         r = self.app.get('/bugs/1/')
+        closed = r.html.find('optgroup', label='Closed')
+        assert closed
+        closed = str(closed)
         assert '<option selected value="1.0">1.0</option>' in r
+        assert '<option selected value="1.0">1.0</option>' not in closed
         assert '<option value="2.0">2.0</option>' in r
-        assert '<option value="3.0">3.0</option>' not in r
-        assert '<option value="4.0">4.0</option>' not in r
+        assert '<option value="2.0">2.0</option>' not in closed
+        assert '<option value="3.0">3.0</option>' in closed
+        assert '<option value="4.0">4.0</option>' in closed
         r = self.app.get('/bugs/new/')
+        closed = r.html.find('optgroup', label='Closed')
+        assert closed
+        closed = str(closed)
         assert '<option selected value="1.0">1.0</option>' not in r
-        assert '<option value="1.0">1.0</option>' not in r
+        assert '<option value="1.0">1.0</option>' in closed
         assert '<option value="2.0">2.0</option>' in r
-        assert '<option value="3.0">3.0</option>' not in r
-        assert '<option value="4.0">4.0</option>' not in r
+        assert '<option value="2.0">2.0</option>' not in closed
+        assert '<option value="3.0">3.0</option>' in closed
+        assert '<option value="4.0">4.0</option>' in closed
 
 
 def post_install_create_ticket_permission(app):
