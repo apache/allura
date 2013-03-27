@@ -53,6 +53,8 @@ class Globals(MappedClass):
     _bin_counts_data = FieldProperty([dict(summary=str, hits=int)])
     _bin_counts_expire = FieldProperty(datetime)
     _bin_counts_invalidated = FieldProperty(datetime)
+    _milestone_counts = FieldProperty(schema.Deprecated) #[dict(name=str,hits=int,closed=int)])
+    _milestone_counts_expire = FieldProperty(schema.Deprecated) #datetime)
     show_in_search = FieldProperty({str: bool}, if_missing={'ticket_num': True,
                                                             'summary': True,
                                                             '_milestone': True,
