@@ -42,6 +42,10 @@ class ReindexCommand(base.Command):
                       help='Solr needs artifact references to already exist.')
     parser.add_option('--refs', action='store_true', dest='refs',
                       help='Update artifact references and shortlinks')
+    parser.add_option('--tasks', action='store_true', dest='tasks',
+                      help='Run each individual index operation as a background task.  '
+                           'Note: this is often better, since tasks have "request" objects '
+                           'which are needed for some markdown macros to run properly')
 
     def command(self):
         from allura import model as M
@@ -91,15 +95,18 @@ class ReindexCommand(base.Command):
                     M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
-                        allura.tasks.index_tasks.add_artifacts(ref_ids,
-                                                               update_solr=self.options.solr,
-                                                               update_refs=self.options.refs)
+                        add_artifacts = allura.tasks.index_tasks.add_artifacts
+                        if self.options.tasks:
+                            add_artifacts = add_artifacts.post
+                        add_artifacts(ref_ids,
+                                       update_solr=self.options.solr,
+                                       update_refs=self.options.refs)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
                     M.main_orm_session.flush()
                     M.main_orm_session.clear()
-        base.log.info('Reindex done')
+        base.log.info('Reindex %s', 'queued' if self.options.tasks else 'done')
 
 class EnsureIndexCommand(base.Command):
     min_args=1
