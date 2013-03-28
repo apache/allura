@@ -755,11 +755,13 @@ class RootController(BaseController):
             if user:
                 values['assigned_to_id'] = user._id
 
-        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
         custom_values = {}
-        for k in custom_fields:
-            v = post_data.get(k)
-            if v: custom_values[k] = v
+        custom_fields = {}
+        for cf in c.app.globals.custom_fields or []:
+            v = post_data.get(cf.name)
+            if v:
+                custom_values[cf.name] = v
+                custom_fields[cf.name] = cf
 
         for ticket in tickets:
             message = ''
@@ -779,11 +781,18 @@ class RootController(BaseController):
                         getattr(ticket, k))
                 setattr(ticket, k, v)
             for k, v in custom_values.iteritems():
+                def cf_val(cf):
+                    return ticket.get_custom_user(cf.name) \
+                           if cf.type == 'user' \
+                           else ticket.custom_fields.get(cf.name)
+                cf = custom_fields[k]
+                old_value = cf_val(cf)
+                ticket.custom_fields[k] = v
+                new_value = cf_val(cf)
                 message += get_change_text(
                     get_label(k),
-                    v,
-                    ticket.custom_fields.get(k) or '')
-                ticket.custom_fields[k] = v
+                    new_value,
+                    old_value)
             if message != '':
                 ticket.discussion_thread.post(message)
                 ticket.commit()
@@ -1285,9 +1294,9 @@ class TicketController(BaseController):
                     return self.ticket.get_custom_user(cf.name) \
                            if cf.type == 'user' \
                            else self.ticket.custom_fields.get(cf.name)
-                changes[cf.name[1:]] = cf_val(cf)
+                changes[get_label(cf.name)] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
-                changes[cf.name[1:]] = cf_val(cf)
+                changes[get_label(cf.name)] = cf_val(cf)
         thread = self.ticket.discussion_thread
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
