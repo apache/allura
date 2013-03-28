@@ -23,6 +23,7 @@ from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.utils import LazyProperty
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
@@ -583,6 +584,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
                                user=user, user_project=True)
         return user
 
+    @LazyProperty
+    def neighborhood(self):
+        from allura import model as M
+        return M.Neighborhood.query.get(name='Users')
+
     def private_project(self):
         '''
         Returns the personal user-project for the user
@@ -591,7 +597,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             return None
 
         from allura import model as M
-        n = M.Neighborhood.query.get(name='Users')
+        n = self.neighborhood
         auth_provider = plugin.AuthenticationProvider.get(request)
         project_shortname = auth_provider.user_project_shortname(self)
         p = M.Project.query.get(shortname=project_shortname, neighborhood_id=n._id)
