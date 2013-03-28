@@ -162,11 +162,10 @@ class GitImplementation(M.RepositoryImplementation):
         ending with the root (first commit).
         """
         seen = set()
-        for head in self._git.heads:
-            for ci in self._git.iter_commits(head, topo_order=True):
-                if ci.binsha in seen: continue
-                seen.add(ci.binsha)
-                yield ci.hexsha
+        for ci in self._git.iter_commits(all=True, topo_order=True):
+            if ci.binsha in seen: continue
+            seen.add(ci.binsha)
+            yield ci.hexsha
 
     def new_commits(self, all_commits=False):
         graph = {}

@@ -247,6 +247,17 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.repo.tarball('HEAD')
         assert os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
 
+    def test_all_commit_ids(self):
+        cids = list(self.repo.all_commit_ids())
+        heads = [
+                '1e146e67985dcd71c74de79613719bef7bddca4a',  # master
+                '5c47243c8e424136fd5cdd18cd94d34c66d1955c',  # zz
+            ]
+        self.assertIn(cids[0], heads)  # repo head comes first
+        for head in heads:
+            self.assertIn(head, cids)  # all branches included
+        self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')  # repo root comes last
+
     def test_ls(self):
         lcd_map = self.repo.commit('HEAD').tree.ls()
         self.assertEqual(lcd_map, [{
