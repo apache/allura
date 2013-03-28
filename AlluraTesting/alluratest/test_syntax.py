@@ -65,10 +65,9 @@ def test_no_prints():
         'Allura/ldap-setup.py',
         'Allura/ldap-userconfig.py',
         'Allura/ez_setup/',
-        'Allura/push_re.py',
         'Allura/allura/lib/AsciiDammit.py',
         '/scripts/',
-        'ForgeMail/forgemail/sstress.py',
+        'Allura/allura/lib/import_api.py',
     ]
     if run(find_py + " | grep -v '" + "' | grep -v '".join(skips) + "' | xargs grep -v '^ *#' | grep 'print ' | grep -E -v '(pprint|#pragma: ?printok)' ") != 1:
         raise Exception("These should use logging instead of print")
