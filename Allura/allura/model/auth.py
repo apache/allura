@@ -587,6 +587,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
         '''
         Returns the personal user-project for the user
         '''
+        if self.disabled:
+            return None
+
         from allura import model as M
         n = M.Neighborhood.query.get(name='Users')
         auth_provider = plugin.AuthenticationProvider.get(request)

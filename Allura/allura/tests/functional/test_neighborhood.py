@@ -813,6 +813,13 @@ class TestNeighborhood(TestController):
         ThreadLocalORMSession.flush_all()
         self.app.get('/u/donald-duck/')
 
+    def test_disabled_user_has_no_user_project(self):
+        user = M.User.register(dict(username='donald-duck'))
+        self.app.get('/u/donald-duck/')  # assert it's there
+        M.User.query.update(dict(username='donald-duck'), {'$set': {'disabled': True}})
+        self.app.get('/u/donald-duck/', status=404)
+
+
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')
         link = r.html.find('div', {'class':'neighborhood_title_link'}).find('a')
