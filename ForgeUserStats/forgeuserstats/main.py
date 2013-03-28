@@ -45,7 +45,7 @@ class UserStatsListener(EventsListener):
         if not stats:
             stats = UserStats.create(user)
 
-        if event_type == "assigned": 
+        if event_type == "assigned":
             stats.addAssignedTicket(ticket.mod_date, project)
         elif event_type == "revoked":
             stats.addRevokedTicket(ticket.mod_date, project)
@@ -71,7 +71,7 @@ class UserStatsListener(EventsListener):
 
 class ForgeUserStatsApp(Application):
     __version__ = version.__version__
-    tool_label='Stats'
+    tool_label='UserStats'
     default_mount_label='Stats'
     default_mount_point='stats'
     permissions = ['configure', 'read', 'write',
@@ -128,7 +128,7 @@ class ForgeUserStatsApp(Application):
         return links
 
     def install(self, project):
-        #It doesn't make any sense to install the tool twice on the same 
+        #It doesn't make any sense to install the tool twice on the same
         #project therefore, if it already exists, it doesn't install it
         #a second time.
         for tool in project.app_configs:
