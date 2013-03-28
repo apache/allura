@@ -231,6 +231,8 @@ class Commit(RepoObject):
         return self.repo.url_for_commit(self)
 
     def guess_repo(self):
+        import traceback
+        log.error('guess_repo: should not be called: %s' % ''.join(traceback.format_stack()))
         for ac in c.project.app_configs:
             try:
                 app = c.project.app_instance(ac)
