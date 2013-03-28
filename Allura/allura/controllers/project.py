@@ -67,7 +67,7 @@ class NeighborhoodController(object):
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
             # create user-project if it is missing
-            user = M.User.query.get(username=pname)
+            user = M.User.query.get(username=pname, disabled=False)
             if user:
                 project = self.neighborhood.register_project(
                     plugin.AuthenticationProvider.get(request).user_project_shortname(user),
@@ -77,6 +77,11 @@ class NeighborhoodController(object):
             project = self.neighborhood.neighborhood_project
             c.project = project
             return ProjectController()._lookup(pname, *remainder)
+        if project and self.prefix == 'u/':
+            # make sure user-projects are associated with an enabled user
+            user = project.user_project_of
+            if not user or user.disabled:
+                raise exc.HTTPNotFound
         if project.database_configured == False:
             if remainder == ('user_icon',):
                 redirect(g.forge_static('images/user.png'))

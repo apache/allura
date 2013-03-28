@@ -104,6 +104,13 @@ def test_user_project_already_deleted_creates_on_demand():
     assert M.Project.query.get(shortname='u/foobar123', deleted=False)
 
 @with_setup(setUp)
+def test_user_project_does_not_create_on_demand_for_disabled_user():
+    u = M.User.register(dict(username='foobar123', disabled=True), make_project=False)
+    ThreadLocalORMSession.flush_all()
+    assert not u.private_project()
+    assert not M.Project.query.get(shortname='u/foobar123')
+
+@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
