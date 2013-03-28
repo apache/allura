@@ -161,6 +161,8 @@ class GitImplementation(M.RepositoryImplementation):
         """Yield commit ids, starting with the head(s) of the commit tree and
         ending with the root (first commit).
         """
+        if not self._git.head.is_valid():
+            return  # empty repo
         seen = set()
         for ci in self._git.iter_commits(all=True, topo_order=True):
             if ci.binsha in seen: continue
