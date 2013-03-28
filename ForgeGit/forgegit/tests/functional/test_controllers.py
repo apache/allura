@@ -81,14 +81,14 @@ class TestRootController(_TestCase):
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
         data = json.loads(resp.body);
-        assert data['max_row'] == 3
+        assert data['max_row'] == 4
         assert data['next_column'] == 1
         assert_equal(data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
                 {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
                  u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
                  u'column': 0,
                  u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
-                 u'message': u'Add README', u'row': 1})
+                 u'message': u'Add README', u'row': 2})
 
     def test_log(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
@@ -184,7 +184,7 @@ class TestRootController(_TestCase):
 
     def test_refresh(self):
         notification = M.Notification.query.find(
-            dict(subject='[test:src-git] 4 new commits to test Git')).first()
+            dict(subject='[test:src-git] 5 new commits to test Git')).first()
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
         email = 'noreply@%s%s' % (domain, common_suffix)
