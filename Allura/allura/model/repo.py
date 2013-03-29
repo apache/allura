@@ -533,7 +533,7 @@ class Tree(RepoObject):
         if lcd is None:
             return []
         commit_ids = [e.commit_id for e in lcd.entries]
-        commits = Commit.query.find(dict(_id={'$in': commit_ids}))
+        commits = list(Commit.query.find(dict(_id={'$in': commit_ids})))
         for commit in commits:
             commit.set_context(self.repo)
         commit_infos = {c._id: c.info for c in commits}

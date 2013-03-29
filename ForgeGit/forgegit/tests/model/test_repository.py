@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 import pkg_resources
+import datetime
 
 import mock
 from pylons import tmpl_context as c, app_globals as g
@@ -243,6 +244,21 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(self.repo.tarball_url('HEAD'), 'file:///git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz')
         self.repo.tarball('HEAD')
         assert os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
+
+    def test_ls(self):
+        lcd_map = self.repo.commit('HEAD').tree.ls()
+        self.assertEqual(lcd_map, [{
+                'href': u'README',
+                'kind': 'BLOB',
+                'last_commit': {
+                    'author': u'Rick Copeland',
+                    'author_email': u'rcopeland@geek.net',
+                    'author_url': None,
+                    'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                    'href': u'/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                    'shortlink': u'[1e146e]',
+                    'summary': u'Change README'},
+                'name': u'README'}])
 
 
 class TestGitCommit(unittest.TestCase):
