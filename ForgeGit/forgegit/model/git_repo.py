@@ -329,9 +329,13 @@ class GitImplementation(M.RepositoryImplementation):
         archive_name = self._repo.tarball_filename(commit)
         filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
-        with gzip.open(tmpfilename, 'w') as fp:
-            self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name + '/')
-        os.rename(tmpfilename, filename)
+        try:
+            with gzip.open(tmpfilename, 'w') as fp:
+                self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name + '/')
+            os.rename(tmpfilename, filename)
+        finally:
+            if os.path.exists(tmpfilename):
+                os.remove(tmpfilename)
 
 
 class _OpenedGitBlob(object):

@@ -277,7 +277,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
         os.makedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD")
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
+        assert_equal(self.repo.get_tarball_status('HEAD'), None)
 
 
 class TestGitCommit(unittest.TestCase):

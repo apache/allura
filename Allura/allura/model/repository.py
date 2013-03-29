@@ -240,8 +240,8 @@ class Repository(Artifact, ActivityObject):
                             self.name)
 
     def tarball_filename(self, revision):
-        shortname = c.app.repo.project.shortname.replace('/', '-')
-        mount_point = c.app.repo.app.config.options.mount_point
+        shortname = c.project.shortname.replace('/', '-')
+        mount_point = c.app.config.options.mount_point
         filename = '%s-%s-%s' % (shortname, mount_point, revision)
         return filename
 
@@ -262,7 +262,7 @@ class Repository(Artifact, ActivityObject):
 
         if os.path.isfile(filename):
             return 'ready'
-        elif os.path.isfile(tmpfilename) or os.path.isdir(pathname):
+        elif os.path.isfile(tmpfilename):
             return 'busy'
 
     def __repr__(self): # pragma no cover

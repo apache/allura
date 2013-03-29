@@ -614,18 +614,22 @@ class SVNImplementation(M.RepositoryImplementation):
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         path = os.path.join(self._repo.tarball_path, commit)
-        if os.path.exists(path):
-            rmtree(path)
-        self._svn.export(self._url,
-                         path,
-                         revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
         archive_name = self._repo.tarball_filename(commit)
         filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
-        with tarfile.open(tmpfilename, "w:gz") as tar:
-            tar.add(path, arcname=archive_name)
-        rmtree(path)
-        os.rename(tmpfilename, filename)
+        if os.path.exists(path):
+            rmtree(path)
+        try:
+            self._svn.export(self._url,
+                             path,
+                             revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
+            with tarfile.open(tmpfilename, "w:gz") as tar:
+                tar.add(path, arcname=archive_name)
+            os.rename(tmpfilename, filename)
+        finally:
+            rmtree(path)
+            if os.path.exists(tmpfilename):
+                os.remove(tmpfilename)
 
 
 Mapper.compile_all()
