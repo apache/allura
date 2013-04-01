@@ -242,7 +242,8 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'Second Ticket'}).first()
         r = self.app.get('/p/test/bugs/edit/?q=ticket')
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': first_ticket._id,
+                      '__search': '',
+                      '__selected': first_ticket._id,
                       '_milestone': '2.0',
                       })
         r = self.app.get('/p/test/bugs/1/')
@@ -250,7 +251,8 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' not in r
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': '%s,%s' % (
+                      '__search': '',
+                      '__selected': '%s,%s' % (
                           first_ticket._id,
                           second_ticket._id),
                       '_milestone': '1.0',
@@ -261,7 +263,8 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' not in r
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': '%s,%s' % (
+                      '__search': '',
+                      '__selected': '%s,%s' % (
                           first_ticket._id,
                           second_ticket._id),
                       'status': 'accepted',
