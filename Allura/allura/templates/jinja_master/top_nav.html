@@ -30,7 +30,7 @@
         {% set selected = True %}
       {% endif %}
     {% endif %}
-    <li{% if selected %} class="selected"{% endif %}>
+    <li class="ui-icon-{{s.ui_icon or 'admin'}}{% if selected %} selected{% endif %}">
       <a href="{{s.url}}">
         <span>
         {{s.label}}
