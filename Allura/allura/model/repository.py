@@ -158,8 +158,7 @@ class RepositoryImplementation(object):
         tags = [t.name for t in self._repo.repo_tags if t.object_id == commit._id]
         return branches, tags
 
-    def url_for_commit(self, commit):
-        'return an URL, given either a commit or object id'
+    def url_for_symbolic(self, commit):
         if isinstance(commit, basestring):
             object_id = commit
         else:
@@ -182,6 +181,15 @@ class RepositoryImplementation(object):
 
             if rev:
                 object_id = quote(rev, safe='')
+
+        return '%sci/%s/' % (self._repo.url(), object_id)
+
+    def url_for_commit(self, commit):
+        'return an URL, given either a commit or object id'
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit._id
 
         return '%sci/%s/' % (self._repo.url(), object_id)
 

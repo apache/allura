@@ -63,7 +63,7 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.shorthand_id() == '[r5]'
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == (
-            '/p/test/src/HEAD/')
+            '/p/test/src/5/')
         all_cis = self.repo.log(self.rev._id, 0, 1000)
         assert len(all_cis) == 5
         assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
@@ -76,7 +76,7 @@ class TestNewRepo(unittest.TestCase):
             'README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/HEAD/tree/')
+            '/p/test/src/5/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
         assert self.rev.tree['a']['b']['c'].ls() == []

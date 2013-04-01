@@ -12,5 +12,5 @@ class BranchBrowser(repository.BranchBrowser):
         latest = c.app.repo.latest(branch=self._branch)
         if not latest:
             return dict(allow_fork=False, log=[])
-        redirect(latest.url() + 'tree/')
+        redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
 
