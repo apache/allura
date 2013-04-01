@@ -17,8 +17,10 @@
 
 import unittest
 import mock
+from nose.tools import assert_equal
 
 from allura.lib.solr import Solr
+from allura.lib.search import solarize
 
 class TestSolr(unittest.TestCase):
     @mock.patch('allura.lib.solr.pysolr')
@@ -45,3 +47,29 @@ class TestSolr(unittest.TestCase):
         s.delete('bar', somekw='value')
         pysolr.Solr.delete.assert_called_once_with(s, 'bar', commit=False,
                 somekw='value')
+
+class TestSolarize(unittest.TestCase):
+
+    def setUp(self):
+        self.obj = mock.MagicMock()
+        self.obj.index.return_value = {}
+
+    def test_no_object(self):
+        assert_equal(solarize(None), None)
+
+    def test_empty_index(self):
+        self.obj.index.return_value = None
+        assert_equal(solarize(self.obj), None)
+
+    def test_doc_without_text(self):
+        assert_equal(solarize(self.obj), {'text': ''})
+
+    def test_strip_markdown(self):
+        self.obj.index.return_value = {'text': '# Header'}
+        assert_equal(solarize(self.obj), {'text': 'Header'})
+
+    def test_html_in_text(self):
+        self.obj.index.return_value = {'text': '<script>alert(1)</script>'}
+        assert_equal(solarize(self.obj), {'text': ''})
+        self.obj.index.return_value = {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'}
+        assert_equal(solarize(self.obj), {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'})
