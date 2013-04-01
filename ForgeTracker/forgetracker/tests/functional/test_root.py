@@ -1684,7 +1684,7 @@ class TestCustomUserField(TrackerTestController):
         f['ticket_form.custom_fields._code_review'].options = [('test-admin', False)]
         f['ticket_form.custom_fields._code_review'] = 'test-admin'
         r = f.submit().follow()
-        assert '<li><strong>code_review</strong>: Test Admin' in r
+        assert '<li><strong>Code Review</strong>: Test Admin' in r
 
     def test_search_results(self):
         kw = {'custom_fields._code_review': 'test-admin'}
