@@ -65,7 +65,7 @@
     <p>
     <a href="{{doc['url_paginated'] or doc['url_s']}}">
       {% if doc.title_match %}
-        {{ doc.title_match|safe }}
+        {{ doc.title_match }}
       {% else %}
         {{ h.get_first(doc, 'title') or h.get_first(doc, 'title_s') -}}  {#-  title_s is legacy -#}
       {% endif %}
@@ -73,7 +73,7 @@
     {% if doc['type_s'] %}<span class="gray"><sup>{{ '(%s)' % doc['type_s'] }}</sup></span>{% endif %}
     <br>
     {% if doc.text_match %}
-      <span class="text-match">{{ doc.text_match|safe }}</span><br>
+      <span class="text-match">{{ doc.text_match }}</span><br>
     {% endif %}
     <span class="gray">Last updated: {{ h.ago_string(doc['mod_date_dt']) }}</span>
     </p>

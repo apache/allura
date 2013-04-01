@@ -45,6 +45,8 @@ def solarize(obj):
     text = doc['text']
     text = g.markdown.convert(text)
     doc['text'] = jinja2.Markup.escape(text).striptags()
+    # striptags decodes html entities, so we should escape them again
+    doc['text'] = jinja2.Markup.escape(doc['text'])
     return doc
 
 class SearchError(SolrError):
@@ -132,8 +134,8 @@ def search_app(q='', fq=None, app=True, **kw):
             'pf': 'title^2 text',
             'fq': fq,
             'hl': 'true',
-            'hl.simple.pre': '<strong>',
-            'hl.simple.post': '</strong>',
+            'hl.simple.pre': '#ALLURA-HIGHLIGHT-START#',
+            'hl.simple.post': '#ALLURA-HIGHLIGHT-END#',
             'sort': sort,
         }
         if not history:
@@ -158,10 +160,18 @@ def search_app(q='', fq=None, app=True, **kw):
                 return doc
             def add_matches(doc):
                 m = matches.get(doc['id'], {})
-                doc['title_match'] = h.get_first(m, 'title')
-                doc['text_match'] = h.get_first(m, 'text')
-                if not doc['text_match']:
-                    doc['text_match'] = h.get_first(doc, 'text')
+                title = h.get_first(m, 'title')
+                text = h.get_first(m, 'text')
+                if title:
+                    title = (jinja2.escape(title)
+                                   .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
+                                   .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
+                if text:
+                    text = (jinja2.escape(text)
+                                  .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
+                                  .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
+                doc['title_match'] = title
+                doc['text_match'] = text or h.get_first(doc, 'text')
                 return doc
             results = imap(historize_urls, results)
             results = imap(add_matches, results)
