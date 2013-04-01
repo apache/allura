@@ -59,6 +59,7 @@ class TestAkismet(unittest.TestCase):
     def test_check(self, request, c):
         request.headers = self.fake_headers
         c.user = None
+        self.akismet.service.comment_check.side_effect({'side_effect':''})
         self.akismet.check(self.content)
         self.akismet.service.comment_check.assert_called_once_with(self.content,
                 data=self.expected_data, build_data=False)
@@ -119,3 +120,12 @@ class TestAkismet(unittest.TestCase):
         self.akismet.check(self.content)
         self.akismet.service.comment_check.assert_called_once_with(self.content,
                 data=self.expected_data, build_data=False)
+
+    @mock.patch('allura.lib.spam.akismetfilter.c')
+    @mock.patch('allura.lib.spam.akismetfilter.request')
+    def test_submit_spam(self, request, c):
+        request.headers = self.fake_headers
+        c.user = None
+        self.akismet.submit_spam(self.content)
+        self.akismet.service.submit_spam.assert_called_once_with(self.content, data=self.expected_data, build_data=False)
+

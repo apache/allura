@@ -118,7 +118,6 @@ class RootController(BaseController, DispatchIndex, FeedController):
         thd = discussion.get_discussion_thread(dict(
                 headers=dict(Subject=subject)))[0]
         post = thd.post(subject, text)
-        is_spam = g.spam_checker.check('%s\n%s' % (subject, text), artifact=post, user=c.user)
         flash('Message posted')
         redirect(thd.url())
 

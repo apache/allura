@@ -32,6 +32,9 @@ class SpamFilter(object):
         log.info("No spam checking enabled")
         return False
 
+    def submit_spam(self, text, artifact=None, user=None, content_type='comment', **kw):
+        log.info("No spam checking enabled")
+
     @classmethod
     def get(cls, config, entry_points):
         """Return an instance of the SpamFilter impl specified in ``config``.

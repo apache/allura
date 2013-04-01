@@ -356,3 +356,25 @@ def test_post_notify():
             pass  # method not called as expected
         else:
             assert False, 'send_simple must not be called'
+
+@with_setup(setUp, tearDown)
+def test_check_spam_for_admin():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    t.post('This is a post')
+    post = M.Post.query.get(text='This is a post')
+    assert t.check_spam(post), t.check_spam(post)
+
+@with_setup(setUp, tearDown)
+@patch('allura.model.discuss.c.user.project_role')
+def test_check_spam(role):
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    role.roles.return_value = []
+    with mock.patch('allura.controllers.discuss.g.spam_checker') as spam_checker:
+        spam_checker.check.return_value = True
+        post = mock.Mock()
+        assert not t.check_spam(post)
+        assert spam_checker.check.call_count == 1, spam_checker.call_count
+
+

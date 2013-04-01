@@ -33,6 +33,7 @@ from allura.lib import security
 from allura.lib.security import require_access, has_access
 from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
+from allura.model.auth import ProjectRole
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
@@ -232,6 +233,18 @@ class Thread(Artifact, ActivityObject):
             Feed.post(self.primary(), title=p.subject, description=p.text, link=link)
         return p
 
+    def check_spam(self, post):
+        result = True
+        for role in c.user.project_role(c.project).roles:
+            if ((ProjectRole.query.get(_id=role).name == 'Admin') or
+                    (ProjectRole.query.get(_id=role).name == 'Developer')):
+                return True
+
+        if g.spam_checker.check('%s\n%s' % (post.subject, post.text), artifact=post, user=c.user):
+            result = False
+        return result
+
+
     def post(self, text, message_id=None, parent_id=None,
              timestamp=None, ignore_security=False, **kw):
         if not ignore_security:
@@ -255,7 +268,8 @@ class Thread(Artifact, ActivityObject):
         if message_id is not None:
             kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if ignore_security or has_access(self, 'unmoderated_post')():
+
+        if ignore_security or self.check_spam(post):
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
             post.approve(file_info, notify=kw.get('notify', True))
@@ -436,6 +450,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     last_edit_date = FieldProperty(datetime, if_missing=None)
     last_edit_by_id = ForeignIdProperty(User)
     edit_count = FieldProperty(int, if_missing=0)
+    spam_check_id = FieldProperty(str, if_missing='')
 
     thread = RelationProperty(Thread)
     discussion = RelationProperty(Discussion)
@@ -645,6 +660,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def spam(self):
         self.status = 'spam'
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
+        g.spam_checker.submit_spam(self.text, artifact=self, user=c.user)
 
 
 class DiscussionAttachment(BaseAttachment):

@@ -385,8 +385,7 @@ class TestForum(TestController):
                 'delete': 'Delete Marked'})
         _check()
 
-    @mock.patch('forgediscussion.controllers.root.g.spam_checker')
-    def test_posting(self, spam_checker):
+    def test_posting(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()
@@ -398,8 +397,6 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
         r = self.app.post('/discussion/save_new_topic', params=params)
-        assert spam_checker.check.call_args[0] == ('Test Thread\nThis is a *test thread*',), \
-            spam_checker.check.call_args[0]
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
         r = self.app.get('/discussion/testforum/moderate/')
@@ -410,7 +407,9 @@ class TestForum(TestController):
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
 
-    def test_anonymous_post(self):
+    @mock.patch('allura.model.discuss.g.spam_checker')
+    def test_anonymous_post(self, spam_checker):
+        spam_checker.check.return_value = True
         r = self.app.get('/admin/discussion/permissions')
         select = r.html.find('select', {'name': 'card-3.new'})
         opt_anon = select.find(text='*anonymous').parent
@@ -456,8 +455,7 @@ class TestForum(TestController):
         link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
         assert link in r, link
 
-    @mock.patch('forgediscussion.controllers.root.g.spam_checker')
-    def test_thread(self, spam_checker):
+    def test_thread(self):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()
@@ -481,7 +479,6 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
-        assert spam_checker.check.call_args[0] == ('bbb',), spam_checker.check.call_args[0]
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'
