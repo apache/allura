@@ -113,10 +113,8 @@ def refresh_repo(repo, all_commits=False, notify=True):
 
 
     log.info('Refresh complete for %s', repo.full_fs_path)
-    g.post_event(
-            'repo_refreshed',
-            commit_number=len(commit_ids),
-            new=bool(new_commit_ids))
+    g.post_event('repo_refreshed', len(commit_ids), all_commits)
+
     # Send notifications
     if notify:
         send_notifications(repo, commit_ids)
