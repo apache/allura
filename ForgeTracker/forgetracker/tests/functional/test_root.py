@@ -621,7 +621,7 @@ class TestFunctionalController(TrackerTestController):
                           params=variable_encode(params))
         kw = {'custom_fields._number':''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
-        assert '<strong>number</strong>:  --&gt;' not in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' not in ticket_view
         ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
@@ -632,7 +632,7 @@ class TestFunctionalController(TrackerTestController):
             'custom_fields._number':'',
             'comment': ''
         }).follow()
-        assert '<strong>number</strong>:  --&gt;' not in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' not in ticket_view
         ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
@@ -643,7 +643,7 @@ class TestFunctionalController(TrackerTestController):
             'custom_fields._number':'4',
             'comment': ''
         }).follow()
-        assert '<strong>number</strong>:  --&gt;' in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' in ticket_view
 
     def test_milestone_names(self):
         params = {

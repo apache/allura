@@ -790,7 +790,7 @@ class RootController(BaseController):
                 ticket.custom_fields[k] = v
                 new_value = cf_val(cf)
                 message += get_change_text(
-                    get_label(k),
+                    cf.label,
                     new_value,
                     old_value)
             if message != '':
@@ -1294,9 +1294,9 @@ class TicketController(BaseController):
                     return self.ticket.get_custom_user(cf.name) \
                            if cf.type == 'user' \
                            else self.ticket.custom_fields.get(cf.name)
-                changes[get_label(cf.name)] = cf_val(cf)
+                changes[cf.label] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
-                changes[get_label(cf.name)] = cf_val(cf)
+                changes[cf.label] = cf_val(cf)
         thread = self.ticket.discussion_thread
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
