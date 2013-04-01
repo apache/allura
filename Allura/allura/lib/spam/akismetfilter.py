@@ -47,8 +47,7 @@ class AkismetSpamFilter(SpamFilter):
         self.service = akismet.Akismet(config.get('spam.key'), config.get('base_url'))
         self.service.verify_key()
 
-    def check(self, text, artifact=None, user=None, content_type='comment', **kw):
-        log_msg = text
+    def get_data(self, text, artifact=None, user=None, content_type='comment', **kw):
         kw['comment_content'] = text
         kw['comment_type'] = content_type
         if artifact:
@@ -65,6 +64,28 @@ class AkismetSpamFilter(SpamFilter):
         # kw will be urlencoded, need to utf8-encode
         for k, v in kw.items():
             kw[k] = h.really_unicode(v).encode('utf8')
-        res = self.service.comment_check(text, data=kw, build_data=False)
+        return kw
+
+    def check(self, text, artifact=None, user=None, content_type='comment', **kw):
+        log_msg = text
+        res = self.service.comment_check(text,
+                                         data=self.get_data(text=text,
+                                                            artifact=artifact,
+                                                            user=user,
+                                                            content_type=content_type),
+                                         build_data=False)
         log.info("spam=%s (akismet): %s" % (str(res), log_msg))
         return res
+
+    def submit_spam(self, text, artifact=None, user=None, content_type='comment'):
+        self.service.submit_spam(text,
+                                 data=self.get_data(text=text,
+                                                    artifact=artifact,
+                                                    user=user,
+                                                    content_type=content_type),
+                                 build_data=False)
+
+
+
+
+

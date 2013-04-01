@@ -73,6 +73,9 @@ class MollomSpamFilter(SpamFilter):
             kw[k] = h.really_unicode(v).encode('utf8')
         cc = self.service.checkContent(**kw)
         res = cc['spam'] == 2
+        artifact.spam_check_id = cc.get('session_id','')
         log.info("spam=%s (mollom): %s" % (str(res), log_msg))
         return res
 
+    def submit_spam(self, text, artifact=None, user=None, content_type='comment', **kw):
+        self.service.sendFeedback(artifact.spam_check_id, 'spam')

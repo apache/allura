@@ -70,7 +70,8 @@ class TestDiscuss(TestController):
         r = r.follow()
         return r
 
-    def test_post(self):
+    @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
+    def test_post(self, submit_spam):
         home = self.app.get('/wiki/_discuss/')
         thread_link = [ a for a in home.html.findAll('a')
                  if 'thread' in a['href'] ][0]['href']
@@ -109,6 +110,7 @@ class TestDiscuss(TestController):
         self.app.post(permalinks[1]+'flag')
         self.app.post(permalinks[1]+'moderate', params=dict(delete='delete'))
         self.app.post(permalinks[0]+'moderate', params=dict(spam='spam'))
+        assert submit_spam.call_args[0] ==('This is a new post',), submit_spam.call_args[0]
 
     def test_permissions(self):
         home = self.app.get('/wiki/_discuss/')
@@ -136,12 +138,14 @@ class TestDiscuss(TestController):
         self.app.get(thread_url, status=403, # forbidden
                      extra_environ=dict(username=non_admin))
 
-    def test_moderate(self):
+    @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
+    def test_moderate(self, submit_spam):
         r = self._make_post('Test post')
         post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
         post = M.Post.query.find().first()
         post.status = 'pending'
         self.app.post(post_link + 'moderate', params=dict(spam='spam'))
+        assert submit_spam.call_args[0] ==('Test post',), submit_spam.call_args[0]
         post = M.Post.query.find().first()
         assert post.status == 'spam'
         self.app.post(post_link + 'moderate', params=dict(approve='approve'))

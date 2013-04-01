@@ -200,7 +200,6 @@ class ThreadController(BaseController, FeedController):
 
         file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
-        is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
         p.add_attachment(file_info)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.utcnow()
@@ -317,7 +316,6 @@ class PostController(BaseController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
-        is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
         p.add_attachment(file_info)
         redirect(request.referer)
 
@@ -331,6 +329,7 @@ class PostController(BaseController):
             self.post.delete()
         elif kw.pop('spam', None):
             self.post.status = 'spam'
+            g.spam_checker.submit_spam(self.post.text, artifact=self.post, user=c.user)
         elif kw.pop('approve', None):
             self.post.status = 'ok'
         self.thread.update_stats()
@@ -458,7 +457,6 @@ class PostRestController(PostController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         post = self.thread.post(parent_id=self.post._id, **kw)
-        is_spam = g.spam_checker.check(kw['text'], artifact=post, user=c.user)
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
 
