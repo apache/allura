@@ -94,7 +94,9 @@ def refresh_repo(repo, all_commits=False, notify=True):
     # with caching.
     if repo._refresh_precompute:
         for i, oid in enumerate(commit_ids):
-            ci = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            cid = CommitDoc.m.find(dict(_id=oid), validate=False).next()
+            ci = mapper(Commit).create(cid, dict(instrument=False))
+            ci.set_context(repo)
             compute_diffs(repo._id, cache, ci)
             if (i+1) % 100 == 0:
                 log.info('Compute diffs %d: %s', (i+1), ci._id)
