@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 QSIZE=100
 
-def refresh_repo(repo, all_commits=False, notify=True):
+def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
     all_commit_ids = commit_ids = list(repo.all_commit_ids())
     if not commit_ids:
         # the repo is empty, no need to continue
@@ -113,7 +113,7 @@ def refresh_repo(repo, all_commits=False, notify=True):
 
 
     log.info('Refresh complete for %s', repo.full_fs_path)
-    g.post_event('repo_refreshed', len(commit_ids), all_commits)
+    g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)
 
     # Send notifications
     if notify:

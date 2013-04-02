@@ -314,7 +314,7 @@ class Repository(Artifact, ActivityObject):
         self._impl.clone_from(source)
         log.info('... %r cloned', self)
         g.post_event('repo_cloned', source_url, source_path)
-        self.refresh(notify=False)
+        self.refresh(notify=False, new_clone=True)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(branch, offset, limit))
@@ -483,7 +483,7 @@ class Repository(Artifact, ActivityObject):
     def unknown_commit_ids(self):
         return unknown_commit_ids_repo(self.all_commit_ids())
 
-    def refresh(self, all_commits=False, notify=True):
+    def refresh(self, all_commits=False, notify=True, new_clone=False):
         '''Find any new commits in the repository and update'''
         try:
             log.info('... %r analyzing', self)
@@ -491,7 +491,7 @@ class Repository(Artifact, ActivityObject):
             session(self).flush(self)
             self._impl.refresh_heads()
             if asbool(tg.config.get('scm.new_refresh')):
-                refresh_repo(self, all_commits, notify)
+                refresh_repo(self, all_commits, notify, new_clone)
             for head in self.heads + self.branches + self.repo_tags:
                 ci = self.commit(head.object_id)
                 if ci is not None:
