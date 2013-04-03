@@ -41,7 +41,7 @@ Once you have virtualenv installed, you need to create a virtual environment.  W
     ~$ virtualenv anvil
 
 This gives us a nice, clean environment into which we can install all the allura dependencies.
-(The --system-site-packages flag is to include the python-svn package).  In order to use the virtual environment, you'll need to activate it:
+In order to use the virtual environment, you'll need to activate it:
 
     ~$ . anvil/bin/activate
 
