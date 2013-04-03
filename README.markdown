@@ -62,10 +62,9 @@ Although the application setup.py files define a number of dependencies, the `re
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
-Optional, for SVN support: symlink the system pysvn package into our virtual environment and make packaging utilities know its there.
+Optional, for SVN support: symlink the system pysvn package into our virtual environment
 
     (anvil)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/anvil/lib/python2.7/site-packages/
-    (anvil)~/src/allura$ mkdir ~/anvil/lib/python2.7/site-packages/pysvn-1.7.5-py2.7.egg-info
 
 And now to setup the Allura applications for development.  If you want to setup all of them, run `./rebuild-all.bash`
 If you only want to use a few tools, run:
