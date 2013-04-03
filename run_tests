@@ -23,6 +23,7 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeActivity \
     ForgeShortUrl \
     ForgeUserStats \
+    ForgeOrganizationStats \
     "
 fi
 
