@@ -24,7 +24,7 @@ class MonQTask(MappedClass):
     Properties
 
         - _id - bson.ObjectId() for this task
-        - state - 'ready', 'busy', 'error', or 'complete' task status
+        - state - 'ready', 'busy', 'error', 'complete', or 'skipped' task status
         - priority - integer priority, higher is more priority
         - result_type - either 'keep' or 'forget', what to do with the task when
           it's done
@@ -38,7 +38,7 @@ class MonQTask(MappedClass):
         - kwargs - **kwargs to be sent to the task function
         - result - if the task is complete, the return value. If in error, the traceback.
     '''
-    states = ('ready', 'busy', 'error', 'complete')
+    states = ('ready', 'busy', 'error', 'complete', 'skipped')
     result_types = ('keep', 'forget')
     class __mongometa__:
         session = task_orm_session
