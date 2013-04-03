@@ -17,10 +17,11 @@ if [ "$TEST_MODULES"  == "" ]; then
     ForgeChat \
     ForgeDiscussion \
     ForgeGit \
-    ForgeHg \
     ForgeSVN \
     ForgeTracker \
     ForgeWiki \
+    ForgeActivity \
+    ForgeShortUrl \
     "
 fi
 
