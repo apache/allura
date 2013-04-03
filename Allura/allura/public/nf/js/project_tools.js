@@ -51,13 +51,12 @@
         form_to_delete = null;
     });
     $('a.mount_delete').click(function () {
-        if (this.getAttribute('mount_point')){
-            $('div.warning_msg').text('Warning: This will destroy all data in the "' +
-                this.getAttribute('mount_point') +
-                '" tool and is non reversable!');}
-        else {
-            $('div.warning_msg').text('Warning: This will destroy all data in this tool and is non reversable!');
+        var tool_label = 'this';
+        var mount_point = $(this).data('mount-point');
+        if (mount_point) {
+            tool_label = 'the "' + mount_point + '"';
         }
+        $('div.warning_msg').text('Warning: This will destroy all data in ' + tool_label + ' tool and is non-reversable!');
 
         form_to_delete = this.parentNode;
         return false;

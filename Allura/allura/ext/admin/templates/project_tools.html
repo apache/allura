@@ -71,7 +71,7 @@
                                value="{{mount['ac'].options.mount_point}}"/>
                         <input name="tool-{{loop.index0}}.delete" type="hidden" value="Delete"/>
                         {% if mount['ac'].load().uninstallable %}
-                          <a href="#" class="mount_delete" mount_point="{{ mount['ac'].options.mount_point }}">Delete</a>
+                          <a href="#" class="mount_delete" data-mount-point="{{ mount['ac'].options.mount_point }}">Delete</a>
                         {% endif %}
                       </form>
                     </li>
@@ -95,7 +95,7 @@
                                  name="subproject-{{loop.index0}}.shortname"
                                  value="{{mount['sub'].shortname}}"/>
                           <input name="subproject-{{loop.index0}}.delete" type="hidden" value="Delete"/>
-                          <a href="#" class="mount_delete" mount_point="{{ mount['sub'].shortname }}">Delete</a>
+                          <a href="#" class="mount_delete" data-mount-point="{{ mount['sub'].shortname }}">Delete</a>
                       </form>
                     </li>
                 </ul>
