@@ -1,0 +1,509 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}Organization stats{% endblock %}
+
+{% block header %}
+    Statistics about {{organization.fullname}}'s contribution
+    {% if category %}
+        in projects of category {{category.fullname}}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if organization and (organization.stats.visible or (c.user.username in c.project.admins())) %}
+
+    {% if category %}
+      <ul>
+        <li><a href="{{c.project.url()}}organizationstats">Go back to general statistics</a></li>
+      </ul>
+    {% endif %}
+
+    <h2>General statistics</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Date</th>
+          <th>Time interval</th>
+        </tr>
+      </thead>
+      <tbody> 
+        <tr>
+          <td>Registration date</td>
+          <td>{{registration_date.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td> 
+           <td>{{days}} day{% if days != 1 %}s{% endif %} ago</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Contribution statistics</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Total value</th>
+          <th>Average per-month value</th>
+          <th>Last 30 days</th>
+          {% if days >= 30 %}
+            <th>Trend</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            {%if totcommits.number > 0 %}
+              <a href="{{c.project.url()}}organizationstats/commits/">Commits number</a>
+            {% else %}
+              Commits number
+            {% endif %}
+          </td>
+          <td>{{totcommits.number}}</td>
+          <td>{{permonthcommits.number}}</td>
+          <td>{{lastmonthcommits.number}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthcommits.number > permonthcommits.number %}
+                  <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthcommits.number == permonthcommits.number %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if totcommits.lines > 0 %}
+              <a href="{{c.project.url()}}organizationstats/commits/">Added/modified LOCs</a>
+            {% else %}
+              Added/modified LOCs
+            {% endif %}
+          </td>
+          <td>{{totcommits.lines}}</td>
+          <td>{{permonthcommits.lines}}</td>
+          <td>{{lastmonthcommits.lines}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthcommits.lines > permonthcommits.lines %}
+                  <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthcommits.lines == permonthcommits.lines %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if totartifacts.created > 0 %}
+              <a href="{{c.project.url()}}organizationstats/artifacts/">Total number of created artifacts</a>
+            {% else %}
+              Total number of created artifacts
+            {% endif %}
+          </td>
+          <td>{{totartifacts.created}}</td>
+          <td>{{permonthartifacts.created}}</td>
+          <td>{{lastmonthartifacts.created}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthartifacts.created > permonthartifacts.created %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthartifacts.created == permonthartifacts.created %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if totartifacts.modified > 0 %}
+              <a href="{{c.project.url()}}organizationstats/artifacts/">Total number of edited artifacts</a>
+            {% else %}
+              Total number of edited artifacts
+            {% endif %}
+          </td>
+          <td>{{totartifacts.modified}}</td>
+          <td>{{permonthartifacts.modified}}</td>
+          <td>{{lastmonthartifacts.modified}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthartifacts.modified > permonthartifacts.modified %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthartifacts.modified == permonthartifacts.modified %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        
+        {% for key, value in artifacts_by_type.items() %}
+          <tr>
+            <td>
+              {%if value.created > 0 %}
+                <a href="{{c.project.url()}}organizationstats/artifacts/">Created {{key}} artifacts</a>
+              {% else %}
+                Created {{key}} artifacts
+              {% endif %}
+            </td>
+            <td>{{value.created}}</td>
+            <td>{{value.pmcreated}}</td>
+            <td>
+              {% if lastmonth_artifacts_by_type.get(key) %}
+                 {{lastmonth_artifacts_by_type[key].created}}
+              {% else %}
+                 0
+              {% endif %}
+            </td>
+            {% if days >= 30 %}
+              <td style="text-align:center;">
+                {% if lastmonth_artifacts_by_type.get(key) %}
+                  {% if lastmonth_artifacts_by_type[key].created > value.pmcreated %}
+                    <img src="{{g.forge_static('images/up.png')}}"/>
+                  {% elif lastmonth_artifacts_by_type[key].created == value.pmcreated %}
+                    <img src="{{g.forge_static('images/equal.png')}}"/>
+                  {% else %}
+                    <img src="{{g.forge_static('images/down.png')}}"/>
+                  {%endif%}
+                {%else%} <img src="{{g.forge_static('images/down.png')}}"/> {%endif%}
+              </td>
+            {% endif %}
+          </tr>
+          <tr>
+            <td>
+              {%if value.modified > 0 %}
+                <a href="{{c.project.url()}}organizationstats/artifacts/">Edited {{key}} artifacts</a>
+              {% else %}
+                Edited {{key}} artifacts
+              {% endif %}
+            </td>
+            <td>{{value.modified}}</td>
+            <td>{{value.pmmodified}}</td>
+            <td>
+              {% if lastmonth_artifacts_by_type.get(key) %}
+                 {{lastmonth_artifacts_by_type[key].modified}}
+              {% else %}
+                 0
+              {% endif %}
+            </td>
+            {% if days >= 30 %}
+              <td style="text-align:center;">
+                {% if lastmonth_artifacts_by_type.get(key) %}
+                  {% if lastmonth_artifacts_by_type[key].modified > value.pmmodified %}
+                    <img src="{{g.forge_static('images/up.png')}}"/>
+                  {% elif lastmonth_artifacts_by_type[key].modified == value.pmmodified %}
+                    <img src="{{g.forge_static('images/equal.png')}}"/>
+                  {% else %}
+                    <img src="{{g.forge_static('images/down.png')}}"/>
+                  {%endif%}
+                {%else%} <img src="{{g.forge_static('images/down.png')}}"/> {%endif%}
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+
+        <tr>
+          <td>
+            {%if tottickets.assigned > 0 %}
+              <a href="{{c.project.url()}}organizationstats/tickets/">Assigned tickets</a>
+            {% else %}
+              Assigned tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.assigned}}</td>
+          <td>{{permonthtickets.assigned}}</td>
+          <td>{{lastmonthtickets.assigned}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.assigned > permonthtickets.assigned %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.assigned == permonthtickets.assigned %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if tottickets.revoked > 0 %}
+              <a href="{{c.project.url()}}organizationstats/tickets/">Revoked tickets</a>
+            {% else %}
+              Revoked tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.revoked}}</td>
+          <td>{{permonthtickets.revoked}}</td>
+          <td>{{lastmonthtickets.revoked}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.revoked > permonthtickets.revoked %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.revoked == permonthtickets.revoked %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if tottickets.solved > 0 %}
+              <a href="{{c.project.url()}}organizationstats/tickets/">Solved tickets</a>
+            {% else %}
+              Solved tickets
+            {% endif %}
+          </td>
+          <td>{{tottickets.solved}}</td>
+          <td>{{permonthtickets.solved}}</td>
+          <td>{{lastmonthtickets.solved}}</td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.solved > permonthtickets.solved %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.solved == permonthtickets.solved %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>
+            {%if tottickets.averagesolvingtime > 0 %}
+              <a href="{{c.project.url()}}organizationstats/tickets/">Average tickets solving time</a>
+            {% else %}
+              Average tickets solving time
+            {% endif %}
+          </td>
+          <td>
+            {% if tottickets.averagesolvingtime %}
+              {{tottickets.averagesolvingtime.days}} days, 
+              {{tottickets.averagesolvingtime.hours}} hours,
+              {{tottickets.averagesolvingtime.minutes}} min
+            {% else %}n/a{% endif %}
+          </td>
+          <td>n/a</td>
+          <td>
+            {% if lastmonthtickets.averagesolvingtime %}
+              {{lastmonthtickets.averagesolvingtime.days}} days, 
+              {{lastmonthtickets.averagesolvingtime.hours}} hours,
+              {{lastmonthtickets.averagesolvingtime.minutes}} min
+            {% else %}n/a{% endif %}
+          </td>
+          {% if days >= 30 %}
+            <td style="text-align:center;">
+              {% if lastmonthtickets.averagesolvingtime > tottickets.averagesolvingtime %}
+                <img src="{{g.forge_static('images/up.png')}}"/>
+              {% elif lastmonthtickets.averagesolvingtime == tottickets.averagesolvingtime %}
+                <img src="{{g.forge_static('images/equal.png')}}"/>
+              {% else %}
+                <img src="{{g.forge_static('images/down.png')}}"/>
+              {%endif%}
+            </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+
+    {% if not category %}
+      <h2>Members</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr>
+            <td>Current number of registered members</td>
+            <td>{{membersnumber}}</td> 
+          </tr>
+          <tr>
+            <td>Members joining the organization during the last 30 days</td>
+            <td>{{newmembers}}</td> 
+          </tr>
+          <tr>
+            <td>Members leaving the organization during the last 30 days</td>
+            <td>{{leftmembers}}</td> 
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Per-member contributions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Last 30 days</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr>
+            <td>Created artifacts</td>
+            <td>{{permemberartifacts.created}}</td> 
+          </tr>
+          <tr>
+            <td>Modified artifacts</td>
+            <td>{{permemberartifacts.modified}}</td> 
+          </tr>
+          <tr>
+            <td>Number of commits</td>
+            <td>{{permembercommits.number}}</td> 
+          </tr>
+          <tr>
+            <td>Number of committed lines of code</td>
+            <td>{{permembercommits.lines}}</td> 
+          </tr>
+          <tr>
+            <td>Number of assigned tickets</td>
+            <td>{{permembertickets.assigned}}</td> 
+          </tr>
+          <tr>
+            <td>Number of solved tickets</td>
+            <td>{{permembertickets.solved}}</td> 
+          </tr>
+          <tr>
+            <td>Number of revoked tickets</td>
+            <td>{{permembertickets.revoked}}</td> 
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Projects</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Current number</th>
+            <th>Joined in the last month</th>
+            <th>Left in the last month</th>
+          </tr>
+        </thead>
+        <tbody> 
+          <tr>
+            <td>Cooperations</td>
+            <td>{{coopnumber}}</td> 
+            <td>{{newcooperations}}</td> 
+            <td>{{oldcooperations}}</td> 
+          </tr>
+          <tr>
+            <td>Participations</td>
+            <td>{{participnumber}}</td> 
+            <td>{{newparticipations}}</td> 
+            <td>{{oldparticipations}}</td> 
+          </tr>
+        </tbody>
+      </table>
+
+      {% if categories %}
+          <h2>Preferred categories</h2>
+          <p>
+            The following table shows the number projects tagged as belonging to each single category in which this organization is 
+            currently involved.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Category name</th>
+                <th>Number of projects</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cat, count in categories %}
+                <tr>
+                  <td><a href="{{c.project.url()}}organizationstats/category/{{cat.shortname}}">{{cat.fullname}}</a></td>
+                  <td>{{count}}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          
+          {% if categories|length > 1 %}
+            <p>
+              The same data listed in the previous table is graphically presented by the following histogram.
+            </p>
+            <p>
+              <img src="{{c.project.url()}}organizationstats/categories_graph"/>
+            </p>
+          {% endif %}
+      {% endif %}
+      {% if not category %}
+        <h2>Overall evaluation</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+              <th>Average</th>
+              <th>Maximum</th>
+              <th>Progressbar</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Code</td>
+              <td>{{codecontribution}} LOC{% if codecontribution != 1 %}s{% endif %}/month</td>
+              <td>{{averagecodecontrib}} LOC{% if averagecodecontrib != 1 %}s{% endif %}/month</td>
+              <td>{{maxcodecontrib}} LOC{% if maxcodecontrib != 1 %}s{% endif %}/month</td>
+              <td><img src="{{c.project.url()}}organizationstats/code_ranking_bar"/></td>
+              <td>{{codepercentage}} %</td>
+            </tr>
+            <tr>
+              <td>Discussion</td>
+              <td>{{discussioncontribution}} contribution{% if discussioncontribution != 1 %}s{% endif %}/month</td>
+              <td>{{averagedisccontrib}} contribution{% if averagedisccontrib != 1 %}s{% endif %}/month</td>
+              <td>{{maxdisccontrib}} contribution{% if maxdisccontrib != 1 %}s{% endif %}/month</td>
+              <td><img src="{{c.project.url()}}organizationstats/discussion_ranking_bar"/></td>
+              <td>{{discussionpercentage}} %</td>
+            </tr>
+            <tr>
+               <td>Solved issues</td>
+               <td>{{ticketcontribution}} %</td>
+               <td>{{averageticketcontrib}} %</td>
+              <td>{{maxticketcontrib}} %</td>
+              <td><img src="{{c.project.url()}}organizationstats/tickets_ranking_bar"/></td>
+              <td>{{ticketspercentage}} %</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Note</h3>
+        <p>
+           The above table compares the average monthly contribution of this organization with the average monthly contributions of 
+           the other organization of the forge. The progressbar and the percentage refer to the organization's position in an overall
+           ranking of the organization of this forge. For example, a value of 100% in the field "Code" is associated to the 
+           organization whose users have generate the highest total average number of committed LOCs per month. 
+           Of course, this doesn't consider the quality of the contributions.
+        </p>
+      {% endif %}
+    {% endif %}
+  {% else %}
+    {% if not organization %}
+      <h2>Invalid organization</h2>
+      <div class="grid-20"> 
+        You are looking for the statistics of an organization which doesn't exist on this forge. Check your url.
+      </div>
+    {% else %}
+      <h2>Statistics not available</h2>
+      <div class="grid-20"> 
+        The administrator of this organization has set the preferences so that statistics are not visible
+        to other users of the forge.
+      </div>
+    {% endif %}
+  {% endif %}
+
+{% endblock %}

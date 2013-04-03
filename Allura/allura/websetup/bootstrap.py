@@ -6,6 +6,7 @@ import logging
 import shutil
 from collections import defaultdict
 from datetime import datetime
+import pkg_resources
 
 import tg
 from pylons import tmpl_context as c, app_globals as g
@@ -82,6 +83,7 @@ def bootstrap(command, conf, vars):
     root = create_user('Root', make_project=False)
 
     n_projects = M.Neighborhood(name='Projects', url_prefix='/p/',
+                             anchored_tools='admin:Admin,organizationstool:Organizations',
                                 features=dict(private_projects = True,
                                               max_projects = None,
                                               css = 'none',
@@ -93,7 +95,15 @@ def bootstrap(command, conf, vars):
                                            max_projects = None,
                                            css = 'none',
                                            google_analytics = False))
+    n_organizations = M.Neighborhood(name='Organizations', url_prefix='/o/',
+                             shortname_prefix='o/',
+                             anchored_tools='organizationprofile:Profile,organizationstats:Statistics',
+                             features=dict(private_projects = True,
+                                           max_projects = None,
+                                           css = 'none',
+                                           google_analytics = False))
     n_adobe = M.Neighborhood(name='Adobe', url_prefix='/adobe/', project_list_url='/adobe/',
+                             anchored_tools='admin:Admin,organizationstool:Organizations',
                              features=dict(private_projects = True,
                                            max_projects = None,
                                            css = 'custom',
@@ -103,6 +113,7 @@ def bootstrap(command, conf, vars):
     p_projects = project_reg.register_neighborhood_project(n_projects, [root], allow_register=True)
     p_users = project_reg.register_neighborhood_project(n_users, [root])
     p_adobe = project_reg.register_neighborhood_project(n_adobe, [root])
+    p_organizations = project_reg.register_neighborhood_project(n_organizations, [root])
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
 
@@ -175,6 +186,11 @@ def bootstrap(command, conf, vars):
             p0.install_app(ep_name)
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
+
+    ep = pkg_resources.get_entry_info(
+        'forgeorganization', 'allura.organization', 'organization')
+    if ep is not None: 
+        ep.load().bootstrap()
 
 def wipe_database():
     conn = M.main_doc_session.bind.conn

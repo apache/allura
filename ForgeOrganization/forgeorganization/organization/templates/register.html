@@ -1,0 +1,25 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}Create organization{% endblock %}
+
+{% block header %}Create organization{% endblock %}
+
+{% block content %}
+
+<div class="grid-20">
+  <h2>Create a new organization profile</h2>
+  <p>
+    If you want to create a new organization, fill the form below, then press "Save".
+    Please, note that "Your Role" should be filled with the role you have in the real life within the organization 
+    (for example, C.E.O., developer, ...).
+    In the field "Desired Short Name", put a valid unique name which will be used to distinguish your organization from
+    the other ones.
+  </p>
+
+  {{ forms.registration_form.display() }}
+</div>
+
+{% endblock %}
+
+

@@ -236,6 +236,28 @@
     </div>
   </div>
 
+  {% if user.get_current_organizations() or user.get_past_organizations() %}
+    <div class="grid-24">
+      <div class="grid-24" style="margin:0;"><b>Organizations</b></div>
+      <div class="grid-24" style="margin-top:5px;margin-bottom:5px;">
+        <ul>
+          {% for org in user.get_current_organizations() %}
+            <li>
+              {{org.role.capitalize()}} at <a href="{{org.organization.url()}}">{{org.organization.fullname}}</a> 
+              from {{org.startdate.strftime('%d %B %Y')}}
+            </li>
+          {% endfor %}
+          {% for org in user.get_past_organizations() %}
+            <li>
+              {{org.role.capitalize()}} at <a href="{{org.organization.url()}}">{{org.organization.fullname}}</a> 
+              from {{org.startdate.strftime('%d %B %Y')}} to {{org.closeddate.strftime('%d %B %Y')}}
+            </li>
+          {% endfor %}
+        <ul>
+      </div>
+    </div>
+  {%endif%}
+
   {% if c.user.username == user.username %}
       <div class="address-list grid-18">
         <b>Email Addresses</b>

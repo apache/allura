@@ -1,0 +1,206 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{organization.fullname}} / Profile{% endblock %}
+
+{% block header %}{{ organization.fullname }}'s profile{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css"
+        href="{{g.app_static('css/user_profile.css')}}"/>
+{% endblock %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
+{% endblock %}
+
+{% block actions %}
+  <a href="{{c.app.url}}feed.rss" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% endblock %}
+
+{% block content %}
+
+  {% if not organization %}
+
+    <div class="grid-20">
+      This organization doesn't exists.
+    </div>
+
+  {% else %}
+
+    <h2>{{organization.fullname}} – General data</h2>
+    <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+      <label class="grid-4">Organization Type:</label>
+      <label class="grid-14">{{organization.organization_type}}</label>
+    </div>
+
+    {% if organization.description %}
+      <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+        <label class="grid-4">Description:</label>
+        <label class="grid-14">{{organization.description}}</label>
+      </div>
+    {% endif %}
+
+    {% if organization.dimension and organization.dimension != 'Unknown' %}
+      <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+        <label class="grid-4">Dimension:</label>
+        <label class="grid-14">
+          {% if organization.dimension == 'Small' %}Small – No more than 50 members{% endif %}
+          {% if organization.dimension == 'Medium' %}Medium – Between 51 and 250 members{% endif %}
+          {% if organization.dimension == 'Large' %}Big – More than 250 members{% endif %}
+        </label>
+      </div>
+    {% endif %}
+
+    {% if organization.headquarters %}
+      <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+        <label class="grid-4">Headquarters:</label>
+        <label class="grid-14">{{organization.headquarters}}</label>
+      </div>
+    {% endif %}
+
+    {% if organization.website %}
+      <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+        <label class="grid-4">Website:</label>
+        <label class="grid-14"><a href="{{organization.website}}">{{organization.website}}</a></label>
+      </div>
+    {% endif %}
+
+    {% if organization.getWorkfields() %}
+      <div class="grid-20" style="margin-top:5px;margin-left:5px;">
+        <label class="grid-4">Workfields:</label>
+        <div class="grid-14">
+          <ul>
+            {% for wf in organization.getWorkfields() %}
+              <li>{{wf.name}} – {{wf.description}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <h2 style="clear:both;">Members</h2>
+    <div class="grid-20">
+      {% if members %}
+        <h3>Currently enrolled members</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Admission date on the forge</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in members -%}
+              <tr>
+                <td><a href="{{member.member.url()}}">{{member.member.display_name}}</a></td>
+                <td>{{member.role}}</td>
+                <td>{{member.startdate.strftime("%d %B %Y")}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>Currently, this organization doesn't have any member.</p>
+      {% endif %}
+    </div>
+
+    <div class="grid-20">
+      {% if past_members %}
+        <h3>Past members of the organization</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Admission date on the forge</th>
+              <th>Closing membership date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in past_members -%}
+              <tr>
+                <td><a href="{{member.member.url()}}">{{member.member.display_name}}</a></td>
+                <td>{{member.role}}</td>
+                <td>{{member.startdate.strftime("%d %B %Y")}}</td>
+                <td>{{member.closeddate.strftime("%d %B %Y")}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  
+    {% if ask_admission %}
+      <div class="grid-20" style="clear:both;">
+        <h3>Are you a member of this organization?</h3>
+        <p>
+          If you are a member of this organization, you can send a request to appear in the list above. Before being admitted
+          to the organization, an administrator of the organization profile has to confirm your enrollment.
+        </p>
+        <div class="grid-20" style="margin:0;clear:both;">
+          {{forms.admission_request_form.display(action=organization.url()+'organizationprofile/admission_request')}}
+        </div>
+      </div>
+    {% endif %}
+
+    <h2 style="clear:both;">Projects and collaborations</h2>
+    {%if active_collaborations %}
+      <div class="grid-20">
+        <h3>Active collaborations</h3>
+      </div>
+      <div class="grid-20">
+        <table>
+          <thead>
+            <th>Project</th>
+            <th>Collaboration type</th>
+            <th>Start date</th>
+          </thead>
+          <tbody>
+            {% for collaboration in active_collaborations %}
+              <tr>
+                <td><a href="{{collaboration.project.url()}}">{{collaboration.project.name}}</a></td>
+                <td>{{collaboration.collaborationtype.capitalize()}}</td>
+                <td>{{collaboration.startdate.strftime("%d %B %Y")}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {%if closed_collaborations %}
+      <div class="grid-20">
+        <h3>Past projects collaborations</h3>
+      </div>
+      <div class="grid-20">
+        <table>
+          <thead>
+            <th>Project</th>
+            <th>Collaboration type</th>
+            <th>Start date</th>
+            <th>End date</th>
+          </thead>
+          <tbody>
+            {% for collaboration in closed_collaborations %}
+              <tr>
+                <td><a href="{{collaboration.project.url()}}">{{collaboration.project.name}}</a></td>
+                <td>{{collaboration.collaborationtype.capitalize()}}</td>
+                <td>{{collaboration.startdate.strftime("%d %B %Y")}}</td>
+                <td>{{collaboration.closeddate.strftime("%d %B %Y")}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {% if not (closed_collaborations or active_collaborations) %}
+      <div class="grid-18"><p>This organization has never collaborated to any project.</p></div>
+    {% endif %}
+
+  {% endif %}
+  
+{% endblock %}

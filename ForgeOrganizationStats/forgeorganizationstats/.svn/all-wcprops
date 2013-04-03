@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/allura/!svn/ver/3/ForgeUserStats/forgeuserstats
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/allura/!svn/ver/1/ForgeUserStats/forgeuserstats/__init__.py
+END
+main.py
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/allura/!svn/ver/3/ForgeUserStats/forgeuserstats/main.py
+END
+version.py
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/allura/!svn/ver/1/ForgeUserStats/forgeuserstats/version.py
+END

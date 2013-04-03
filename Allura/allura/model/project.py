@@ -166,6 +166,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     tracking_id = FieldProperty(str, if_missing='')
     is_nbhd_project=FieldProperty(bool, if_missing=False)
 
+    organizations=RelationProperty('ProjectInvolvement')
+
     # transient properties
     notifications_disabled = False
 
@@ -288,6 +290,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def is_user_project(self):
         return self.shortname.startswith('u/')
 
+    @property
+    def is_organization_project(self):
+        return self.shortname.startswith('o/')
+
     @LazyProperty
     def user_project_of(self):
         '''
@@ -297,6 +303,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if self.is_user_project:
             user = plugin.AuthenticationProvider.get(request).user_by_project_shortname(self.shortname[2:])
         return user
+
+    @LazyProperty
+    def organization_project_of(self):
+        '''
+        If this is a organization-project, return the Organization, else None
+        '''
+        user = None
+        if self.is_organization_project:
+            from forgeorganization.organization.model import Organization
+            organization = Organization.query.get(shortname=self.shortname[2:])
+        return organization
 
     @LazyProperty
     def root_project(self):
@@ -705,6 +722,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 apps = [('admin', 'admin', 'Admin'),
                         ('search', 'search', 'Search'),
                         ('activity', 'activity', 'Activity')]
+        if self.is_organization_project:
+            apps=[('organizationprofile', 'organizationprofile', 'Profile')]+apps
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id

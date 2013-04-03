@@ -1,0 +1,67 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}Organization stats{% endblock %}
+
+{% block header %}
+    Statistics about {{organization.fullname}}'s contribution – Artifacts
+{% endblock %}
+
+{% block content %}
+
+  {% if organization and (organization.stats.visible or (c.user.username in c.project.admins())) %}
+    <div class="grid-20">
+      <ul>
+        <li><a href="{{c.project.url()}}organizationstats">Go back to general statistics</a></li>
+      </ul>
+    </div>
+
+    {% if data %}
+    <div class="grid-20">
+      <h2>Statistics by category</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Created artifacts</th>
+            <th>Modified artifacts</th>
+          </tr>
+        </thead>
+        <tbody> 
+          {% for cat, row in data.items() %}
+            <tr>
+              <td>{% if cat %}{{cat.fullname}}{% else %}All categories{% endif %}</td>
+              <td>
+                {% for details in row %}
+                  {% if details.messagetype %} {{details.messagetype}}:
+                  {% else %}Total:{% endif %} {{details.created}}<br/>
+                {% endfor %}
+              </td>
+              <td>
+                {% for details in row %}
+                  {% if details.messagetype %} {{details.messagetype}}:
+                  {% else %}Total:{% endif %} {{details.modified}}<br/>
+                {% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  {% else %}
+    {% if not organization %}
+      <h2>Invalid organization</h2>
+      <div class="grid-20"> 
+        You are looking for the statistics of an organization which doesn't exist on this forge. Check your url.
+      </div>
+    {% else %}
+      <h2>Statistics not available</h2>
+      <div class="grid-20"> 
+        The administrator of this organization has set the preferences so that statistics are not visible
+        to other users of the forge.
+      </div>
+    {% endif %}
+  {% endif %}
+
+{% endblock %}

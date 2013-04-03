@@ -1,0 +1,227 @@
+import logging
+
+import pylons
+pylons.c = pylons.tmpl_context
+pylons.g = pylons.app_globals
+from pylons import c, g, request
+from tg import expose, validate, config
+from tg.decorators import with_trailing_slash
+from paste.deploy.converters import asbool
+from webob import exc
+from datetime import datetime, date, timedelta
+
+from allura.app import Application, SitemapEntry
+from allura.eventslistener import EventsListener
+from allura import version
+from allura.controllers import BaseController
+from allura.lib.security import require_authenticated
+from model.stats import UserStats
+import allura.model as M
+
+from ming.orm.ormsession import ThreadLocalORMSession
+
+log = logging.getLogger(__name__)
+
+class ForgeUserStatsController(BaseController):
+
+    @expose()
+    def _lookup(self, part, *remainder):
+        user = M.User.query.get(username=part)
+
+        if not hasattr(c, 'userstats') :
+            c.userstats = user
+            c.category = None
+            return ForgeUserStatsController(), remainder
+        if part == "category" :
+            return ForgeUserStatsCatController(), remainder
+        if part == "metric" :
+            return ForgeUserStatsMetricController(), remainder
+
+    @expose('jinja:forgeuserstats:templates/index.html')
+    @with_trailing_slash
+    def index(self, **kw):
+        if not c.userstats : return dict(user=None)
+        stats = c.userstats.stats[0]
+
+        ret_dict = _getDataForCategory(None)
+        ret_dict['user'] = c.userstats
+        ret_dict['registration_date'] = stats.registration_date
+
+        ret_dict['totlogins'] = stats.tot_logins_count
+        ret_dict['last_login'] = stats.last_login
+        if stats.last_login :
+          ret_dict['last_login_days'] = (datetime.utcnow()-stats.last_login).days
+
+        categories = {}
+        for p in c.userstats.my_projects() :
+            for cat in p.trove_topic :
+                cat = M.TroveCategory.query.get(_id = cat)
+                if categories.get(cat) : categories[cat] += 1
+                else : categories[cat] = 1
+        categories = sorted(categories.items(), key=lambda (x,y) : y,reverse=True)
+
+        ret_dict['lastmonth_logins'] = stats.getLastMonthLogins()
+        ret_dict['categories'] = categories
+        days = ret_dict['days']
+        if days >= 30 : 
+            ret_dict['permonthlogins'] = \
+              round(stats.tot_logins_count*30.0/days,2)
+        else : ret_dict['permonthlogins'] = 'n/a'
+
+
+        ret_dict['codestars'] = stats.codeRanking()
+        ret_dict['discussionstars'] = stats.discussionRanking()
+        ret_dict['ticketsstars'] = stats.ticketsRanking()
+        return ret_dict
+
+class ForgeUserStatsCatController(BaseController):
+    @expose()
+    def _lookup(self, category, *remainder):
+        c.category = M.TroveCategory.query.get(fullname=category)
+        return ForgeUserStatsCatController(), remainder
+
+    @expose('jinja:forgeuserstats:templates/index.html')
+    @with_trailing_slash
+    def index(self, **kw):
+        if not c.userstats : return dict(user=None)
+        stats = c.userstats.stats[0]
+        
+        cat_id = None
+        if c.category : cat_id = c.category._id
+        ret_dict = _getDataForCategory(cat_id)
+        ret_dict['user'] = c.userstats
+        ret_dict['registration_date'] = stats.registration_date
+        ret_dict['category'] = c.category
+        
+        return ret_dict
+
+class ForgeUserStatsMetricController(BaseController):
+
+    @expose('jinja:forgeuserstats:templates/commits.html')
+    @with_trailing_slash
+    def commits(self, **kw):
+        if not c.userstats : return dict(user=None)
+        stats = c.userstats.stats[0]
+        
+        commits = stats.getCommitsByCategory()
+        return dict(user = c.userstats,
+                    data = commits) 
+
+    @expose('jinja:forgeuserstats:templates/artifacts.html')
+    @with_trailing_slash
+    def artifacts(self, **kw):
+        if not c.userstats : return dict(user=None)
+
+        stats = c.userstats.stats[0]        
+        artifacts = stats.getArtifactsByCategory(detailed=True)
+        return dict(user = c.userstats,
+                    data = artifacts) 
+
+    @expose('jinja:forgeuserstats:templates/tickets.html')
+    @with_trailing_slash
+    def tickets(self, **kw):
+        if not c.userstats : return dict(user=None)
+
+        stats = c.userstats.stats[0]        
+        artifacts = stats.getTicketsByCategory()
+        return dict(user = c.userstats,
+                    data = artifacts) 
+
+def _getDataForCategory(category) :
+    stats = c.userstats.stats[0]
+    totcommits = stats.getCommits(category)
+    tottickets = stats.getTickets(category)
+    averagetime = tottickets.get('averagesolvingtime')
+    artifacts_by_type = stats.getArtifactsByType(category)
+    totartifacts = artifacts_by_type.get(None) 
+    if totartifacts : del artifacts_by_type[None]
+    else : totartifacts = {'created' : 0, 'modified' : 0}
+    lmcommits = stats.getLastMonthCommits(category)
+    lm_artifacts_by_type = stats.getLastMonthArtifactsByType(category)
+    lm_totartifacts = stats.getLastMonthArtifacts(category)
+    lm_tickets = stats.getLastMonthTickets(category)
+
+    averagetime = lm_tickets.get('averagesolvingtime')
+
+    days = (datetime.utcnow() - stats.registration_date).days
+    if days >= 30 : 
+        pmartifacts = {'created' : round(totartifacts['created']*30.0/days,2),
+                       'modified': round(totartifacts['modified']*30.0/days,2)}
+        pmcommits = {'number': round(totcommits['number']*30.0/days,2),
+                     'lines' : round(totcommits['lines']*30.0/days,2)}
+        pmtickets = {'assigned' : round(tottickets['assigned']*30.0/days,2),
+                     'revoked' : round(tottickets['revoked']*30.0/days,2),
+                     'solved' : round(tottickets['solved']*30.0/days,2),
+                     'averagesolvingtime' : 'n/a'}
+        for key in artifacts_by_type :
+            value = artifacts_by_type[key]
+            artifacts_by_type[key]['pmcreated'] = \
+                round(value['created']*30.0/days,2)
+            artifacts_by_type[key]['pmmodified']= \
+                round(value['modified']*30.0/days,2)
+    else : 
+        pmartifacts = {'created'  : 'n/a',
+                       'modified' : 'n/a'}
+        pmcommits = {'number': 'n/a',
+                         'lines' : 'n/a'}
+        pmtickets = {'assigned'           : 'n/a',
+                     'revoked'            : 'n/a',
+                     'solved'             : 'n/a',
+                     'averagesolvingtime' : 'n/a'}
+        for key in artifacts_by_type :
+            value = artifacts_by_type[key]
+            artifacts_by_type[key]['pmcreated'] = 'n/a'
+            artifacts_by_type[key]['pmmodified']= 'n/a'
+
+    return dict(days = days,
+                totcommits = totcommits,
+                lastmonthcommits = lmcommits,
+                lastmonthtickets = lm_tickets,
+                tottickets = tottickets,
+                permonthcommits = pmcommits,
+                totartifacts = totartifacts,
+                lastmonthartifacts = lm_totartifacts,
+                permonthartifacts = pmartifacts,
+                artifacts_by_type = artifacts_by_type,
+                lastmonth_artifacts_by_type = lm_artifacts_by_type,
+                permonthtickets = pmtickets)
+
+class UserStatsListener(EventsListener) :
+    def newArtifact(self, art_type, art_datetime, project, user):
+        stats = UserStats.query.get(userid=user._id)
+        stats.addNewArtifact(art_type, art_datetime, project)
+
+    def modifiedArtifact(self, art_type, art_datetime, project, user):
+        stats = UserStats.query.get(userid=user._id)
+        stats.addModifiedArtifact(art_type, art_datetime, project)
+
+    def newUser(self, user):
+        UserStats(userid=user._id,
+                  registration_date = datetime.utcnow())
+
+    def ticketEvent(self, event_type, ticket, project, user):
+        if user is None : return
+        stats = UserStats.query.get(userid=user._id)
+        if event_type == "assigned" : 
+            stats.addAssignedTicket(ticket, project)
+        elif event_type == "revoked" :
+            stats.addRevokedTicket(ticket, project)
+        elif event_type == "closed" :
+            stats.addClosedTicket(ticket, project)
+
+    def newCommit(self, newcommit, project, user):
+        stats = user.stats[0]
+        stats.addCommit(newcommit, project)
+
+    def addUserLogin(self, user):
+        stats = user.stats[0]
+        stats.addLogin()
+
+class ForgeUserStatsApp :
+    root = ForgeUserStatsController()
+    listener = UserStatsListener()
+
+    @classmethod
+    def createlink(cls, user) :
+        return ("/userstats/%s/" % user.username, 
+                "%s personal statistcs" % user.display_name)

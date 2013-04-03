@@ -1,0 +1,51 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+{% block title %}{{c.user.display_name}}'s organizations{% endblock %}
+{% block header %}{{c.user.display_name}}'s organizations{% endblock %}
+{% block content %}
+ 
+  <div class="grid-20">
+    <h2>Your organizations</h2>
+    {% if memberships %}
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Organization type</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for membership in memberships %}
+            {{forms.new_change_membership_from_user_form().display(
+                  membership=membership,
+                  action='organization/change_membership')}}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>
+        At the moment, it looks like you are not involved in any organization. 
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="grid-20">
+    <h2>Add your enrollment with an organization</h2>
+    <p>If you are a member of an organization which is not included in your list, you can simply add it.</p>
+    <h3>Already existing organizations</h3>
+    <p>
+      If your organization already has a profile on the forge, you can search for it typing the organization's name 
+      in the form below. Then, you simply have to ask to be added to the member of the organization. 
+      {{forms.search_form.display()}}
+    </p>
+    <h3>New organizations</h3>
+    <p>
+      If your organization doesn't exist on the forge, you can create its profile. <a href="/organization/register">Click here</a> 
+      to do it.
+    </p>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends g.theme.master %}
+
+{% block title %}Invite an organization to collaborate to {{c.project.name}}{% endblock %}
+
+{% block header %}Invite an organization to collaborate to {{c.project.name}}{% endblock %}
+
+{% block content %}
+
+  <div class="grid-20">
+    <h2>Search results for {{search_string}}</h2>
+  </div>
+
+  <div class="grid-20">
+    {%if orglist%}
+      <table>
+        <thead>
+          <th>Organization</th>
+          <th>Collaboration type</th>
+          <th>Action</th>
+        </thead>
+        <tbody>
+          {%for org in orglist%}
+            {{forms.invite_form.display(organization=org)}}
+          {%endfor%}
+        </tbody>
+      </table>
+    {%else%}
+      <p>No result was found matching the string "{{search_string}}".</p>
+    {%endif%}
+  </div>
+
+  <div class="grid-20">
+    <h2>Search again</h2>
+    {{forms.search_form.display()}}
+  </div>
+  
+{% endblock %}
