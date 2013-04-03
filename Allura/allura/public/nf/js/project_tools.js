@@ -52,11 +52,11 @@
     });
     $('a.mount_delete').click(function () {
         if (this.getAttribute('mount_point')){
-            $('div.wraning_msg').text('Warning: This will destroy all data in the "' +
+            $('div.warning_msg').text('Warning: This will destroy all data in the "' +
                 this.getAttribute('mount_point') +
                 '" tool and is non reversable!');}
         else {
-            $('div.wraning_msg').text('Warning: This will destroy all data in this tool and is non reversable!');
+            $('div.warning_msg').text('Warning: This will destroy all data in this tool and is non reversable!');
         }
 
         form_to_delete = this.parentNode;
