@@ -1,8 +1,9 @@
+import StringIO
+
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
-from matplotlib.text import Annotation
-from PIL import Image
-import StringIO
+import Image
+
 
 def create_histogram(data, tick_labels, y_label, title):
     fig = Figure(figsize=(10,5), dpi=80, facecolor='white')
@@ -23,7 +24,7 @@ def create_histogram(data, tick_labels, y_label, title):
     fig.subplots_adjust(bottom=0.3)
 
     canvas.draw()
-        
+
     s = canvas.tostring_rgb()
     l,b,w,h = fig.bbox.bounds
     w, h = int(w), int(h)
@@ -66,4 +67,3 @@ def create_progress_bar(value):
     im.save(output, 'PNG')
 
     return output.getvalue()
-
