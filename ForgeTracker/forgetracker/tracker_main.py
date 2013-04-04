@@ -12,6 +12,7 @@ from itertools import ifilter
 import pkg_resources
 from tg import expose, validate, redirect, flash, url, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from paste.deploy.converters import aslist
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from formencode import validators
@@ -737,7 +738,7 @@ class RootController(BaseController):
     @require_post()
     def update_tickets(self, **post_data):
         tickets = TM.Ticket.query.find(dict(
-                _id={'$in':[ObjectId(id) for id in post_data['__selected'].split(',')]},
+                _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
             require_access(ticket, 'update')
@@ -801,14 +802,6 @@ class RootController(BaseController):
         count = len(tickets)
         flash('Updated {} ticket{}'.format(count, 's' if count != 1 else ''), 'ok')
         redirect('edit/' + post_data['__search'])
-
-# tickets
-# open tickets
-# closed tickets
-# new tickets in the last 7/14/30 days
-# of comments on tickets
-# of new comments on tickets in 7/14/30
-# of ticket changes in the last 7/14/30
 
     def tickets_since(self, when=None):
         count = 0

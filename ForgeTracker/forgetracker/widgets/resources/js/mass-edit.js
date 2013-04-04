@@ -17,6 +17,8 @@ $(function(){
             return false;
         }
 
-        $('#id_selected').val($checked.map(function(){ return this.name; }).get().join(','));
+        $checked.each(function() {
+            $('#update-values').append('<input type="hidden" name="__ticket_ids" value="'+$(this).val()+'"/>');
+        });
     });
 });

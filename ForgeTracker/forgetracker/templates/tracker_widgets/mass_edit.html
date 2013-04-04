@@ -17,7 +17,7 @@
       <tbody class="ticket-list">
         {% for t in tickets %}
         <tr>
-          <td><input type="checkbox" name="{{t._id}}" value=""/></td>
+          <td><input type="checkbox" name="ticket_ids" value="{{t._id}}"/></td>
           <td><a href="{{t.url()}}">{{t.ticket_num}}</a></td>
           <td><a href="{{t.url()}}">{{t.summary}}</a></td>
           <td>{{t._milestone}}</td>
