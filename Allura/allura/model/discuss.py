@@ -225,8 +225,8 @@ class Thread(Artifact, ActivityObject):
         if not self.first_post:
             self.first_post_id = p._id
         link = None
-        if self.app.tool_label == 'Tickets':
-            link = self.artifact.url() + p.url_paginated()[len(self.url()):]
+        if self.app.tool_label.lower() == 'tickets':
+            link = p.url_paginated()
         if self.ref:
             Feed.post(self.primary(), title=p.subject, description=p.text, link=link)
         return p
