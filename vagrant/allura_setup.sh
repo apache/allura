@@ -30,13 +30,6 @@ then
     chown -R vagrant:vagrant /home/vagrant/src/apache-solr* /home/vagrant/src/allura/solr_config/conf/
 fi
 
-# Create log dir
-if [ ! -d /var/log/allura ]
-then
-    sudo mkdir -p /var/log/allura
-    sudo chown vagrant:vagrant /var/log/allura
-fi
-
 # Create startup script
 if [ ! -f /home/vagrant/start_allura ]
 then
@@ -50,13 +43,13 @@ if [ ! -f /home/vagrant/.bash_profile ]
 then
     echo "Creating ~/.bash_profile ..."
     cp /home/vagrant/.profile /home/vagrant/.bash_profile
-    echo -e "\n# Activate Allura virtualenv\n. /home/vagrant/anvil/bin/activate && cd /home/vagrant/src/allura" >> /home/vagrant/.bash_profile
+    echo -e "\n# Activate Allura virtualenv\n. /home/vagrant/env-allura/bin/activate && cd /home/vagrant/src/allura" >> /home/vagrant/.bash_profile
     chown vagrant:vagrant /home/vagrant/.bash_profile
 fi
 
 # Setup Allura python packages
 cd /home/vagrant/src/allura
-sudo -u vagrant bash -c '. /home/vagrant/anvil/bin/activate; ./rebuild-all.bash'
+sudo -u vagrant bash -c '. /home/vagrant/env-allura/bin/activate; ./rebuild-all.bash'
 
 echo "Purging unneeded packages..."
 aptitude clean

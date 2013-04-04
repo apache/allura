@@ -66,9 +66,9 @@ exec { "install venv":
 
 # create Allura virtualenv
 exec { "create allura venv":
-  command => "/usr/local/bin/virtualenv anvil",
+  command => "/usr/local/bin/virtualenv env-allura",
   cwd     => "/home/vagrant",
-  creates => "/home/vagrant/anvil",
+  creates => "/home/vagrant/env-allura",
   user => "vagrant",
   group => "vagrant",
   require => Exec[ "install venv" ],
@@ -91,17 +91,24 @@ file { "/var/log/allura":
 # clone Allura source from git
 exec { "clone repo":
   command => "/usr/bin/git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura",
-  cwd     => "/home/vagrant/src",
-  creates => "/home/vagrant/src/allura",
+  cwd     => "/vagrant",
+  creates => "/vagrant/allura",
   user => "vagrant",
   group => "vagrant",
-  require => [ File[ "/home/vagrant/src" ], Package[ "git-core" ] ],
+  require => [ Package[ "git-core" ] ],
+}
+
+# symlink allura src into the vagrant home dir just to be nice
+file { '/home/vagrant/src/allura':
+  ensure => 'link',
+  target => '/vagrant/allura',
+  require => [ File['/home/vagrant/src'], Exec['clone repo'] ],
 }
 
 # install Allura dependencies
 exec { "pip install":
-  command => "/home/vagrant/anvil/bin/pip install -r requirements.txt",
-  cwd     => "/home/vagrant/src/allura",
+  command => "/home/vagrant/env-allura/bin/pip install -r requirements.txt",
+  cwd     => "/vagrant/allura",
   user => "vagrant",
   group => "vagrant",
   timeout => 0,
@@ -114,7 +121,7 @@ exec { "pip install":
 }
 
 # symlink pysvn in from the system installation
-file { '/home/vagrant/anvil/lib/python2.7/site-packages/pysvn':
+file { '/home/vagrant/env-allura/lib/python2.7/site-packages/pysvn':
   ensure => 'link',
   target => '/usr/lib/python2.7/dist-packages/pysvn',
   require => [ Package[ "python-svn" ], Exec[ "pip install" ]],
