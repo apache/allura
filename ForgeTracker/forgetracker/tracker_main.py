@@ -750,7 +750,7 @@ class RootController(BaseController):
         assigned_to = post_data.get('assigned_to')
         if assigned_to == '-':
             values['assigned_to_id'] = None
-        elif assigned_to is not None:
+        elif assigned_to:
             user = c.project.user_in_project(assigned_to)
             if user:
                 values['assigned_to_id'] = user._id
