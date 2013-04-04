@@ -112,7 +112,7 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
             if (i+1) % 100 == 0:
                 log.info('Compute last commit info %d: %s', (i+1), ci._id)
 
-    if not all_commits:
+    if not all_commits and not new_clone:
         for commit in commit_ids:
             new = repo.commit(commit)
             user = User.by_email_address(new.committed.email)
