@@ -84,4 +84,10 @@ def test_set_ordinal_to_admin_tool():
     assert c.project.sitemap()
     assert c.project.app_config('admin').options.ordinal == 100
 
-
+def test_users_and_roles():
+    p = c.project
+    sub = c.project.direct_subprojects.next()
+    u = M.User.by_username('test-admin')
+    assert p.users_with_role('Admin') == [u]
+    assert p.users_with_role('Admin') == sub.users_with_role('Admin')
+    assert p.users_with_role('Admin') == p.admins()
