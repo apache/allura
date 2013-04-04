@@ -32,7 +32,7 @@ from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib.security import require_access, has_access
 from allura.model.notification import Notification, Mailbox
-from .artifact import Artifact, VersionedArtifact, Snapshot, Message, Feed
+from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
 from .timeline import ActivityObject
@@ -556,7 +556,11 @@ class Post(Message, VersionedArtifact, ActivityObject):
             page = find_i(posts) / limit
 
         slug = h.urlquote(self.slug)
-        url = self.thread.url()
+        aref = ArtifactReference.query.get(_id=self.thread.ref_id)
+        if aref and aref.artifact:
+            url = aref.artifact.url()
+        else:
+            url = self.thread.url()
         if page == 0:
             return '%s?limit=%s#%s' % (url, limit, slug)
         return '%s?limit=%s&page=%s#%s' % (url, limit, page, slug)
