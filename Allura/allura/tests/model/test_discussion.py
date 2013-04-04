@@ -311,6 +311,17 @@ def test_post_url_paginated():
 
 
 @with_setup(setUp, tearDown)
+def test_post_url_paginated_with_artifact():
+    """Post.url_paginated should return link to attached artifact, if any"""
+    from forgewiki.model import Page
+    page = Page.upsert(title='Test Page')
+    thread = page.discussion_thread
+    comment = thread.post('Comment')
+    url = page.url() + '?limit=50#' + comment.slug
+    assert_equals(comment.url_paginated(), url)
+
+
+@with_setup(setUp, tearDown)
 def test_post_notify():
     d = M.Discussion(shortname='test', name='test')
     d.monitoring_email = 'darthvader@deathstar.org'
