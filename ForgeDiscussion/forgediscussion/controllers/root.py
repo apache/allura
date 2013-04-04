@@ -141,17 +141,6 @@ class RootController(BaseController, DispatchIndex):
             'allowed_types': ['Post', 'Post Snapshot', 'Discussion', 'Thread'],
         })
         d = search_app(**search_params)
-        results = d.get('results')
-        def prettify_urls(doc):
-            if doc.get('type_s', '') == 'Post':
-                _id = doc.get('id').split('#')
-                _id = _id[-1].replace('/', '.') if _id else ''
-                p = model.ForumPost.query.get(_id=_id)
-                doc['url_paginated'] = p.url_paginated()
-            return doc
-        if results is not None:
-            results = imap(prettify_urls, results)
-        d['results'] = results
         d['search_comments_disable'] = True
         return d
 

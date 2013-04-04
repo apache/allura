@@ -29,6 +29,7 @@ from pylons import request
 from pysolr import SolrError
 
 from allura.lib import helpers as h
+from allura.model import ArtifactReference
 from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
@@ -173,8 +174,15 @@ def search_app(q='', fq=None, app=True, **kw):
                 doc['title_match'] = title
                 doc['text_match'] = text or h.get_first(doc, 'text')
                 return doc
+            def paginate_comment_urls(doc):
+                if doc.get('type_s', '') == 'Post':
+                    aref = ArtifactReference.query.get(_id=doc.get('id'))
+                    if aref and aref.artifact:
+                        doc['url_paginated'] = aref.artifact.url_paginated()
+                return doc
             results = imap(historize_urls, results)
             results = imap(add_matches, results)
+            results = imap(paginate_comment_urls, results)
 
     # Provide sort urls to the view
     score_url = 'score desc'
