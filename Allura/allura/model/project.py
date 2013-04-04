@@ -680,15 +680,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         e.g., project.users_with_role('Admin', 'Developer') -> returns all
           users in `project` having the Admin role or the Developer role, or both
         """
-        roles = ProjectRole.query.find(dict(name={'$in': role_names}, project_id=self._id))
-        return [project_role.user for r in roles for project_role in r.users_with_role(self)]
+        users = set()
+        for role_name in role_names:
+            for user in g.credentials.users_with_named_role(self.root_project._id, role_name):
+                users.add(user)
+        return list(users)
 
     def admins(self):
         """Find all the users who have 'Admin' role for this project"""
-        admin_role = ProjectRole.query.get(name='Admin', project_id=self._id)
-        if not admin_role:
-            return []
-        return [r.user.username for r in admin_role.users_with_role(self)]
+        return self.users_with_role('Admin')
 
     def user_in_project(self, username):
         from .auth import User
