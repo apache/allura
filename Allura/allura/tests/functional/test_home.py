@@ -56,3 +56,17 @@ class TestProjectHome(TestController):
             'label': u'Test Admin (test-admin)'
         }]
         assert_equal(j['options'], expected)
+
+    def test_members(self):
+        r = self.app.get('/p/test/_members/')
+        assert '<td >Test Admin</td>' in r
+        assert '<td ><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td > Admin</br> </td>' in r
+        assert '<td >test-admin@users.localhost</td>' in r
+
+    def test_members_anonymous(self):
+        r = self.app.get('/p/test/_members/', extra_environ=dict(username='*anonymous'))
+        assert '<td >Test Admin</td>' in r
+        assert '<td ><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td > Admin</br> </td>' in r
+
