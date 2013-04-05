@@ -317,6 +317,25 @@ class ProjectController(object):
 
         return app.root, remainder
 
+    @expose('jinja:allura:templates/members.html')
+    @with_trailing_slash
+    def _members(self, **kw):
+        users = []
+        for user in c.project.users():
+            roles = []
+            for role in user.project_role().roles:
+                r = M.ProjectRole.query.get(_id=role)
+                if r.name not in roles:
+                    roles.append(r.name)
+            users.append(dict(
+                display_name = user.display_name,
+                username = user.username,
+                url = user.url(),
+                roles = roles,
+                email_addresses = user.email_addresses,
+                skills = user.get_skills()))
+        return dict(users=users)
+
     def _check_security(self):
         require_access(c.project, 'read')
 
