@@ -345,12 +345,12 @@ def project_admins():
                 url=user_role.user.url(),
                 name=user_role.user.display_name))
             for user_role in admin_role.users_with_role())
-    return u'<p>Project Admins:<br/>{}</p>'.format(output)
+    return u'<h6>Project Admins:</h6><p>{}</p>'.format(output)
 
 template_members = string.Template('<a href="$url">Members</a><br/>')
 @macro()
 def members():
     output = ''.join(
             template_members.substitute(dict(
-                url=urljoin(c.project.url(),'_members'),)))
+                url=urljoin(c.project.url(), '_members'),)))
     return u'<p>{}</p>'.format(output)
