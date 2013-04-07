@@ -322,18 +322,14 @@ class ProjectController(object):
     def _members(self, **kw):
         users = []
         for user in c.project.users():
-            roles = []
-            for role in user.project_role().roles:
-                r = M.ProjectRole.query.get(_id=role)
-                if r.name not in roles:
-                    roles.append(r.name)
+            roles = M.ProjectRole.query.find({'_id': {'$in': user.project_role().roles}})
+            roles = set([r.name for r in roles])
             users.append(dict(
-                display_name = user.display_name,
-                username = user.username,
-                url = user.url(),
-                roles = roles,
-                email_addresses = user.email_addresses,
-                skills = user.get_skills()))
+                display_name=user.display_name,
+                username=user.username,
+                url=user.url(),
+                roles=roles,
+                email_addresses=user.email_addresses))
         return dict(users=users)
 
     def _check_security(self):

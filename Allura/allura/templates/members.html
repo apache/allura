@@ -8,7 +8,7 @@
 <table>
     <thead>
     <tr>
-        <th >Developer</th>
+        <th>Developer</th>
         <th>Username</th>
         <th>Role/Position</th>
         <th>Email</th>
@@ -16,10 +16,10 @@
     </thead>
     {%for user in users%}
     <tr>
-        <td >{{ user.display_name }}</td>
-        <td ><a href="{{ user.url }}">{{ user.username }}</a></td>
-        <td >{% for role in user.roles%} {{ role }}</br> {%endfor%}</td>
-        <td >{% for email in user.email_addresses %}{{email}}{%endfor%}</td>
+        <td>{{ user.display_name }}</td>
+        <td><a href="{{ user.url }}">{{ user.username }}</a></td>
+        <td>{% for role in user.roles%} {{ role }}</br> {%endfor%}</td>
+        <td>{% for email in user.email_addresses %}{{email.replace('@', ' at ')}}{%endfor%}</td>
     </tr>
     {%endfor%}
 </table>
