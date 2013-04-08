@@ -39,7 +39,9 @@ $packages = [
  "libjpeg8-dev",
  "zlib1g-dev",
  "mongodb-server",
- "python-pip"
+ "python-pip",
+ "libfreetype6-dev",
+ "libpng-dev"
 ]
 
 package { $packages:
@@ -107,7 +109,7 @@ file { '/home/vagrant/src/allura':
 
 # install Allura dependencies
 exec { "pip install":
-  command => "/home/vagrant/env-allura/bin/pip install -r requirements.txt",
+  command => "/usr/bin/sudo /home/vagrant/env-allura/bin/pip install -r requirements.txt",
   cwd     => "/vagrant/allura",
   user => "vagrant",
   group => "vagrant",
