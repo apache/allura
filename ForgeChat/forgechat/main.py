@@ -52,12 +52,12 @@ class ForgeChatApp(Application):
         self.admin = AdminController(self)
 
     def main_menu(self):
-        return [SitemapEntry(self.config.options.mount_label.title(), '.')]
+        return [SitemapEntry(self.config.options.mount_label, '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]

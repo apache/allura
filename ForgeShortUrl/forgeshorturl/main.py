@@ -64,7 +64,7 @@ class ForgeShortUrlApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         return [SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     def sidebar_menu(self):
