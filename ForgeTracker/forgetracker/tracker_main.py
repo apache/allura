@@ -198,13 +198,13 @@ class ForgeTrackerApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.config.options.mount_label,
                 '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
