@@ -270,7 +270,7 @@ class Commit(RepoObject):
     def paged_diffs(self, start=0, end=None):
         di = DiffInfoDoc.m.get(_id=self._id)
         if di is None:
-            return Object(added=[], removed=[], changed=[], copied=[])
+            return Object(added=[], removed=[], changed=[], copied=[], total=0)
         added = []
         removed = []
         changed = []

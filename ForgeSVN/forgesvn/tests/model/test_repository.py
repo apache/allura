@@ -209,7 +209,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         expected =  dict(
                 copied=[], changed=[], removed=[],
                 added=['/a/b', '/a/b/c'], total=4)
-        self.assertEqual(expected, entry.paged_diffs(start=1, end=3))
+        actual = entry.paged_diffs(start=1, end=3)
+        self.assertEqual(expected, actual)
+
+        empty = M.repo.Commit().paged_diffs()
+        self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
         entry = self.repo.log(1, limit=1)[0]
