@@ -816,6 +816,27 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search_feed.atom?q=test')
         assert '<title>test first ticket</title>' in response
 
+    def test_search_current_user(self):
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        t = tm.Ticket.query.get(summary='test first ticket')
+        t.reported_by_id = M.User.by_username('test-user-0')._id
+        t = tm.Ticket.query.get(summary='test second ticket')
+        t.reported_by_id = M.User.by_username('test-user-1')._id
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
+                                extra_environ={'username': 'test-user-0'})
+        assert '1 result' in response, response.showbrowser()
+        assert 'test first ticket' in response, response.showbrowser()
+        response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
+                                extra_environ={'username': 'test-user-1'})
+        assert '1 result' in response, response.showbrowser()
+        assert 'test second ticket' in response, response.showbrowser()
+
     def test_feed(self):
         self.new_ticket(
             summary='test first ticket',
