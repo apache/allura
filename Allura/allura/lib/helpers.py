@@ -48,8 +48,13 @@ re_clean_vardec_key = re.compile(r'''\A
 \Z''', re.VERBOSE)
 
 def make_safe_path_portion(ustr):
+    """Return an ascii representation of `ustr`
+
+    Will return an empty string if no char in `ustr`
+    is latin1-encodable.
+    """
     ustr = really_unicode(ustr)
-    s = ustr.encode('utf8', 'ignore')
+    s = ustr.encode('latin1', 'ignore')
     s = AsciiDammit.asciiDammit(s)
     s = s.lower()
     s = '-'.join(re_path_portion_fragment.findall(s))
