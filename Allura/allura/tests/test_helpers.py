@@ -7,6 +7,7 @@ from nose.tools import eq_, assert_equals
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib.search import inject_user
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 
@@ -185,3 +186,15 @@ def test_get_first():
     assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
     assert_equals(h.get_first({'title': []}, 'title'), None)
     assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
+
+@patch('allura.lib.search.c')
+def test_inject_user(context):
+    user = Mock(username='user01')
+    assert_equals(inject_user(None, user), None)
+    assert_equals(inject_user('', user), '')
+    assert_equals(inject_user('query', user), 'query')
+    result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER', user)
+    assert_equals(result, 'reported_by_s:user01 OR assigned_to_s:user01')
+    context.user = Mock(username='admin1')
+    result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
+    assert_equals(result, 'reported_by_s:admin1 OR assigned_to_s:admin1')
