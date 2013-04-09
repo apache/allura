@@ -49,7 +49,7 @@ re_clean_vardec_key = re.compile(r'''\A
 
 def make_safe_path_portion(ustr):
     ustr = really_unicode(ustr)
-    s = ustr.encode('latin-1', 'ignore')
+    s = ustr.encode('utf8', 'ignore')
     s = AsciiDammit.asciiDammit(s)
     s = s.lower()
     s = '-'.join(re_path_portion_fragment.findall(s))

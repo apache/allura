@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from os import path
 from mock import Mock, patch
 
@@ -13,6 +14,12 @@ from alluratest.controller import setup_basic_test
 def setUp(self):
     """Method called by nose before running each test"""
     setup_basic_test()
+
+def test_make_safe_path_portion():
+    s = u'Задачи'
+    new_s = h.make_safe_path_portion(s)
+    assert len(new_s), len(new_s)
+    assert new_s == new_s.encode('ascii')
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
