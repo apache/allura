@@ -77,7 +77,7 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(
             ValueError,
             utils.AntiSpam.validate_request,
-            r, now=time.time()+60*60+1)
+            r, now=time.time()+24*60*60+1)
 
     def test_invalid_future(self):
         form = dict(a='1', b='2')
