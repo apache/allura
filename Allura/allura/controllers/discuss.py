@@ -328,10 +328,10 @@ class PostController(BaseController):
         if kw.pop('delete', None):
             self.post.delete()
         elif kw.pop('spam', None):
-            self.post.status = 'spam'
-            g.spam_checker.submit_spam(self.post.text, artifact=self.post, user=c.user)
+            self.post.spam()
         elif kw.pop('approve', None):
             self.post.status = 'ok'
+            g.spam_checker.submit_ham(self.post.text, artifact=self.post, user=c.user)
         self.thread.update_stats()
         return dict(result ='success')
 
@@ -437,6 +437,7 @@ class ModerationController(BaseController):
                         posted.spam()
                     elif approve and posted.status != 'ok':
                         posted.status = 'ok'
+                        g.spam_checker.submit_ham(posted.text, artifact=posted, user=c.user)
                         posted.thread.last_post_date = max(
                             posted.thread.last_post_date,
                             posted.mod_date)

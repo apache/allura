@@ -79,3 +79,6 @@ class MollomSpamFilter(SpamFilter):
 
     def submit_spam(self, text, artifact=None, user=None, content_type='comment', **kw):
         self.service.sendFeedback(artifact.spam_check_id, 'spam')
+
+    def submit_ham(self, *args, **kw):
+        log.info("Mollom doesn't support reporting a ham")

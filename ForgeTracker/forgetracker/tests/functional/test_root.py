@@ -1972,9 +1972,9 @@ class TestEmailMonitoring(TrackerTestController):
 
     @td.with_tool('test', 'Tickets', 'doc-bugs', post_install_hook=post_install_hook)
     @patch('forgetracker.model.ticket.Notification.send_direct')
-    @patch('allura.model.discuss.Thread.check_spam')
-    def test_notifications_moderators(self, check_spam, send_direct):
-        check_spam.return_value = False
+    @patch('allura.model.discuss.Thread.is_spam')
+    def test_notifications_moderators(self, is_spam, send_direct):
+        is_spam.return_value = True
         self.new_ticket(summary='test moderation', mount_point='/doc-bugs/')
         self.app.post('/doc-bugs/1/update_ticket',{
             'summary':'test moderation',

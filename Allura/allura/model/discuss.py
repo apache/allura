@@ -236,17 +236,11 @@ class Thread(Artifact, ActivityObject):
             Feed.post(self.primary(), title=p.subject, description=p.text, link=link)
         return p
 
-    def check_spam(self, post):
-        result = True
-        for role in c.user.project_role(c.project).roles:
-            if ((ProjectRole.query.get(_id=role).name == 'Admin') or
-                    (ProjectRole.query.get(_id=role).name == 'Developer')):
-                return True
-
-        if g.spam_checker.check('%s\n%s' % (post.subject, post.text), artifact=post, user=c.user):
-            result = False
-        return result
-
+    def is_spam(self, post):
+        if c.user in c.project.users_with_role('Admin', 'Developer'):
+            return False
+        else:
+            return g.spam_checker.check('%s\n%s' % (post.subject, post.text), artifact=post, user=c.user)
 
     def post(self, text, message_id=None, parent_id=None,
              timestamp=None, ignore_security=False, **kw):
@@ -271,8 +265,7 @@ class Thread(Artifact, ActivityObject):
         if message_id is not None:
             kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-
-        if ignore_security or self.check_spam(post):
+        if ignore_security or not self.is_spam(post):
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
             post.approve(file_info, notify=kw.get('notify', True))
