@@ -18,8 +18,10 @@ def setUp(self):
 def test_make_safe_path_portion():
     s = u'Задачи'
     new_s = h.make_safe_path_portion(s)
-    assert len(new_s), len(new_s)
-    assert new_s == new_s.encode('ascii')
+    assert len(new_s) == 0
+    s = 'åß∂ƒ'
+    new_s = h.make_safe_path_portion(s)
+    assert new_s == 'ab'
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
