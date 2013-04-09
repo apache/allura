@@ -85,7 +85,10 @@ class AkismetSpamFilter(SpamFilter):
                                                     content_type=content_type),
                                  build_data=False)
 
-
-
-
-
+    def submit_ham(self, text, artifact=None, user=None, content_type='comment'):
+        self.service.submit_ham(text,
+                                 data=self.get_data(text=text,
+                                                    artifact=artifact,
+                                                    user=user,
+                                                    content_type=content_type),
+                                 build_data=False)

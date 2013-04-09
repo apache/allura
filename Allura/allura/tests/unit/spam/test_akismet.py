@@ -129,3 +129,10 @@ class TestAkismet(unittest.TestCase):
         self.akismet.submit_spam(self.content)
         self.akismet.service.submit_spam.assert_called_once_with(self.content, data=self.expected_data, build_data=False)
 
+    @mock.patch('allura.lib.spam.akismetfilter.c')
+    @mock.patch('allura.lib.spam.akismetfilter.request')
+    def test_submit_ham(self, request, c):
+        request.headers = self.fake_headers
+        c.user = None
+        self.akismet.submit_ham(self.content)
+        self.akismet.service.submit_ham.assert_called_once_with(self.content, data=self.expected_data, build_data=False)

@@ -34,9 +34,6 @@ class TestSpamFilter(unittest.TestCase):
         # default no-op impl always returns False
         self.assertFalse(SpamFilter({}).check('foo'))
 
-    def test_submit_spam(self):
-        SpamFilter({}).submit_spam('foo')
-
     def test_get_default(self):
         config = {}
         entry_points = None
@@ -57,5 +54,3 @@ class TestSpamFilter(unittest.TestCase):
         result = checker.check()
         self.assertFalse(result)
         self.assertTrue(log.exception.called)
-
-
