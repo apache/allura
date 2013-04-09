@@ -294,8 +294,8 @@ class AntiSpam(object):
             if now is None: now = time.time()
             if obj.timestamp > now + 5:
                 raise ValueError, 'Post from the future'
-            if now - obj.timestamp > 60*60:
-                raise ValueError, 'Post from the 1hr+ past'
+            if now - obj.timestamp > 24*60*60:
+                raise ValueError, 'Post from the distant past'
             if obj.spinner != obj.make_spinner(obj.timestamp):
                 raise ValueError, 'Bad spinner value'
             for k in new_params.keys():
