@@ -157,7 +157,7 @@ def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><p><a href="/u/test-admin/">Test Ådmin</a><br /></p>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><div class="grid-10"><a href="/u/test-admin/">Test Ådmin</a><br /></div><div style="clear: both;"></div>\n</div>')
 
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
