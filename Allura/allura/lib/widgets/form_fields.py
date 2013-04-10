@@ -51,10 +51,11 @@ class LabelEdit(ew.InputField):
         yield ew.CSSLink('css/jquery.tagsinput.css')
         yield onready('''
           $('input.label_edit').tagsInput({
-              'height':'100%',
-              'width':'100%'
+              'height':'100%%',
+              'width':'100%%',
+              'autocomplete_url':'%(url)stags'
           });
-        ''')
+        ''' % dict(url=c.app.url))
 
 class ProjectUserSelect(ew.InputField):
     template='jinja:allura:templates/widgets/project_user_select.html'

@@ -481,6 +481,11 @@ class RootController(BaseController):
                 milestone_counts.append({'name': name, 'count': count})
         return {'milestone_counts': milestone_counts}
 
+    @expose('json:')
+    def tags(self, term, **kw):
+        tags = ['sad', 'happy']
+        return json.dumps(tags)
+
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
