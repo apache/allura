@@ -226,8 +226,9 @@ class ForgeTrackerApp(Application):
         milestones = []
         for bin in self.bins:
             label = bin.shorthand_id()
+            cls = '' if bin.terms and '$USER' in bin.terms else 'search_bin'
             search_bins.append(SitemapEntry(
-                    h.text.truncate(label, 72), bin.url(), className='search_bin'))
+                    h.text.truncate(label, 72), bin.url(), className=cls))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
