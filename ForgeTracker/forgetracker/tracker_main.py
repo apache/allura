@@ -6,7 +6,7 @@ from urllib import urlencode, unquote
 from urllib2 import urlopen
 from webob import exc
 import json
-from itertools import ifilter
+from itertools import ifilter, imap
 
 # Non-stdlib imports
 import pkg_resources
@@ -17,6 +17,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from formencode import validators
 from bson import ObjectId
+from bson.son import SON
 from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
 
@@ -482,9 +483,28 @@ class RootController(BaseController):
         return {'milestone_counts': milestone_counts}
 
     @expose('json:')
-    def tags(self, term, **kw):
-        tags = ['sad', 'happy']
-        return json.dumps(tags)
+    def tags(self, term=None, **kw):
+        if not term:
+            return json.dumps([])
+        db = M.session.project_doc_session.db
+        tickets = db[TM.Ticket.__mongometa__.name]
+        tags = tickets.aggregate([
+            {
+                '$match': {
+                    'app_config_id': c.app.config._id,
+                    'labels': {
+                        '$exists': True,
+                        '$ne': [],
+                    }
+                }
+            },
+            {'$project': {'labels': 1}},
+            {'$unwind': '$labels'},
+            {'$match': {'labels': {'$regex': '^%s' % term, '$options': 'i'}}},
+            {'$group': { '_id': '$labels', 'count': {'$sum': 1}}},
+            {'$sort': SON([('count', -1), ('_id', 1)])}
+        ])
+        return json.dumps([tag['_id'] for tag in tags.get('result', [])])
 
     @with_trailing_slash
     @h.vardec
