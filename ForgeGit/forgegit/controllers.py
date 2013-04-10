@@ -21,6 +21,7 @@ from pylons import tmpl_context as c
 
 from allura.controllers import repository
 
+
 class BranchBrowser(repository.BranchBrowser):
 
     @expose('jinja:forgegit:templates/git/index.html')
@@ -30,5 +31,4 @@ class BranchBrowser(repository.BranchBrowser):
         latest = c.app.repo.latest(branch=self._branch)
         if is_empty or not latest:
             return dict(allow_fork=False, log=[], is_empty=is_empty)
-        redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
-
+        redirect(c.app.repo.url_for_commit(self._branch) + 'tree/')

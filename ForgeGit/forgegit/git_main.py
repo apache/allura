@@ -50,7 +50,7 @@ class ForgeGitApp(RepositoryApp):
     """
     ordinal=2
     forkable=True
-    default_branch_name='ref/master'
+    default_branch_name='master'
 
     def __init__(self, project, config):
         super(ForgeGitApp, self).__init__(project, config)
