@@ -179,40 +179,17 @@ class RepositoryImplementation(object):
         tags = [t.name for t in self._repo.repo_tags if t.object_id == commit._id]
         return branches, tags
 
-    def url_for_symbolic(self, commit):
-        if isinstance(commit, basestring):
-            object_id = commit
-        else:
-            object_id = commit._id
-
-        if self._repo.commit(object_id).symbolic_ids:
-            rev = None
-            branches, tags = self._repo.commit(object_id).symbolic_ids
-            for branch in branches:
-                last_commit = self._repo.latest(branch)
-                if last_commit and (object_id == last_commit._id):
-                    rev = branch
-                    break
-
-            for tag in tags:
-                last_commit = self._repo.latest(tag)
-                if last_commit and (object_id == last_commit._id):
-                    rev = tag
-                    break
-
-            if rev:
-                object_id = quote(rev, safe='')
-
-        return '%sci/%s/' % (self._repo.url(), object_id)
-
-    def url_for_commit(self, commit):
+    def url_for_commit(self, commit, url_type='ci'):
         'return an URL, given either a commit or object id'
         if isinstance(commit, basestring):
             object_id = commit
         else:
             object_id = commit._id
 
-        return '%sci/%s/' % (self._repo.url(), object_id)
+        if '/' in object_id:
+            object_id = os.path.join(object_id, self._repo.app.END_OF_REF_ESCAPE)
+
+        return os.path.join(self._repo.url(), url_type, object_id) + '/'
 
     def _setup_paths(self, create_repo_dir=True):
         '''
@@ -336,8 +313,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.shorthand_for_commit(oid)
     def symbolics_for_commit(self, commit):
         return self._impl.symbolics_for_commit(commit)
-    def url_for_commit(self, commit):
-        return self._impl.url_for_commit(commit)
+    def url_for_commit(self, commit, url_type='ci'):
+        return self._impl.url_for_commit(commit, url_type)
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
     def commits(self, path=None, rev=None, skip=None, limit=None):
@@ -453,8 +430,11 @@ class Repository(Artifact, ActivityObject):
         for oid in self.commitlog([ci._id]): result += 1
         return result
 
-    def latest(self, branch='master'):
-        if self._impl is None: return None
+    def latest(self, branch=None):
+        if self._impl is None:
+            return None
+        if branch is None:
+            branch = self.app.default_branch_name
         try:
             return self.commit(branch)
         except: # pragma no cover

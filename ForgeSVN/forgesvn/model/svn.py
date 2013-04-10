@@ -179,23 +179,14 @@ class SVNImplementation(M.RepositoryImplementation):
     def shorthand_for_commit(self, oid):
         return '[r%d]' % self._revno(oid)
 
-    def url_for_symbolic(self, commit):
+    def url_for_commit(self, commit, url_type=None):
         if isinstance(commit, basestring):
             object_id = commit
         else:
             object_id = commit._id
-        if self._repo.latest()._id == object_id:
-            return '%sHEAD/' % self._repo.url()
-        return '%s%d/' % (
-            self._repo.url(), self._revno(object_id))
-
-    def url_for_commit(self, commit):
-        if isinstance(commit, basestring):
-            object_id = commit
-        else:
-            object_id = commit._id
-        return '%s%d/' % (
-            self._repo.url(), self._revno(object_id))
+        if ':' in object_id:
+            object_id = str(self._revno(object_id))
+        return os.path.join(self._repo.url(), object_id) + '/'
 
     def init(self, default_dirs=False, skip_special_files=False):
         fullname = self._setup_paths()

@@ -20,7 +20,7 @@ from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
 
 from allura.controllers import repository
-from allura.lib import helpers as h
+
 
 class BranchBrowser(repository.BranchBrowser):
 
@@ -34,7 +34,7 @@ class BranchBrowser(repository.BranchBrowser):
         latest = c.app.repo.latest(branch=self._branch)
         if is_empty or not latest:
             return dict(allow_fork=False, log=[], is_empty=is_empty)
-        redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
+        redirect(c.app.repo.url_for_commit(c.app.default_branch_name) + 'tree/')
 
     @expose()
     def _lookup(self, rev, *remainder):

@@ -57,7 +57,7 @@ class ForgeSVNApp(RepositoryApp):
     """
     ordinal=4
     forkable=False
-    default_branch_name=''
+    default_branch_name='HEAD'
 
     def __init__(self, project, config):
         super(ForgeSVNApp, self).__init__(project, config)

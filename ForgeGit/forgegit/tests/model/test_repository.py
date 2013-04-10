@@ -349,7 +349,7 @@ class TestGitCommit(unittest.TestCase):
 
     def test_url(self):
         assert self.rev.url().endswith('ca4a/')
-        assert self.repo._impl.url_for_symbolic(self.rev._id).endswith('master/'), self.repo._impl.url_for_symbolic(self.rev._id)
+        assert self.repo._impl.url_for_commit('master').endswith('master/'), self.repo._impl.url_for_commit('master')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None

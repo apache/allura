@@ -73,8 +73,7 @@ class RepoRootController(BaseController):
     def index(self, offset=0, branch=None, **kw):
         if branch is None:
             branch=c.app.default_branch_name
-        redirect(url(quote('%s%s/' % (
-                        branch, c.app.END_OF_REF_ESCAPE))))
+        redirect(c.app.repo.url_for_commit(branch, url_type='ref'))
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/forks.html')
@@ -377,21 +376,23 @@ class RefsController(object):
         self.BranchBrowserClass = BranchBrowserClass
 
     @expose()
-    def _lookup(self, *parts):
-        parts = map(unquote, parts)
-        ref = []
-        while parts:
-            part = parts.pop(0)
-            ref.append(part)
-            if part.endswith(c.app.END_OF_REF_ESCAPE):
-                break
-        ref = '/'.join(ref)[:-1]
-        return self.BranchBrowserClass(ref), parts
+    def _lookup(self, ref, *remainder):
+        EOR = quote(c.app.END_OF_REF_ESCAPE)
+        if EOR in remainder:
+            i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
+            ref = '/'.join((ci,) + remainder[:i])
+            remainder = remainder[i+1:]
+        return self.BranchBrowserClass(ref), remainder
 
 class CommitsController(object):
 
     @expose()
     def _lookup(self, ci, *remainder):
+        EOR = quote(c.app.END_OF_REF_ESCAPE)
+        if EOR in remainder:
+            i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
+            ci = '/'.join((ci,) + remainder[:i])
+            remainder = remainder[i+1:]
         return CommitBrowser(ci), remainder
 
 class BranchBrowser(BaseController):
