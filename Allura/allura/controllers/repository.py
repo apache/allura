@@ -409,6 +409,11 @@ class BranchBrowser(BaseController):
     def tags(self, **kw):
         return dict(tags=c.app.repo.repo_tags)
 
+    @expose('jinja:allura:templates/repo/tags.html')
+    @with_trailing_slash
+    def branches(self, **kw):
+        return dict(title='Branches', tags=c.app.repo.branches)
+
     @expose()
     @with_trailing_slash
     def log(self, **kw):

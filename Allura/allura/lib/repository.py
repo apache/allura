@@ -97,13 +97,6 @@ class RepositoryApp(Application):
     def sidebar_menu(self):
         if not self.repo or self.repo.status != 'ready':
             return []
-        if self.default_branch_name:
-            default_branch_url = (
-                c.app.url
-                + url(quote(self.default_branch_name + self.END_OF_REF_ESCAPE))
-                + '/')
-        else:
-            default_branch_url = c.app.url
         links = [SitemapEntry('Browse Commits', c.app.url + 'commit_browser', ui_icon=g.icons['folder'])]
         if self.forkable and self.repo.status == 'ready':
             links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
@@ -135,27 +128,33 @@ class RepositoryApp(Application):
                         'Pending Merges',
                         self.repo.upstream_repo.name + 'merge-requests/',
                         small=pending_upstream_merges))
+        ref_url = self.repo.url_for_commit(self.default_branch_name, url_type='ref')
         if self.repo.branches:
             links.append(SitemapEntry('Branches'))
-            for b in self.repo.branches:
+            max_branches = 10
+            for b in self.repo.branches[:max_branches]:
                 links.append(SitemapEntry(
-                        b.name, url('%sci/%s/tree/' % (c.app.url, quote(b.name, safe=''))),
+                        b.name, self.repo.url_for_commit(b.name)+'tree/',
                         small=b.count))
+            if len(self.repo.branches) > max_branches:
+                links.append(
+                    SitemapEntry(
+                        'More Branches',
+                        ref_url + 'branches/',
+                        ))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
             max_tags = 10
-            for i, b in enumerate(self.repo.repo_tags):
-                if i < max_tags:
-                    links.append(SitemapEntry(
-                            b.name, url('%sci/%s/tree/' % (c.app.url, quote(b.name, safe=''))),
-                            small=b.count))
-                elif i == max_tags:
-                    links.append(
-                        SitemapEntry(
-                            'More Tags',
-                            default_branch_url+'tags/',
-                            ))
-                    break
+            for b in self.repo.repo_tags[:max_tags]:
+                links.append(SitemapEntry(
+                        b.name, self.repo.url_for_commit(b.name)+'tree/',
+                        small=b.count))
+            if len(self.repo.repo_tags) > max_tags:
+                links.append(
+                    SitemapEntry(
+                        'More Tags',
+                        ref_url + 'tags/',
+                        ))
         return links
 
     def install(self, project):
