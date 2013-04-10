@@ -1435,6 +1435,23 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(r.request.path, '/p/test/dummy/1/')
         assert_in('I am comment', r)
 
+    def test_tags(self):
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        self.new_ticket(summary='a', labels='tag1,tag2')
+        self.new_ticket(summary='b', labels='tag2')
+        self.new_ticket(summary='c', labels='42cc,test')
+        r = self.app.get('/p/test/bugs/tags?term=t')
+        assert_equal(json.loads(r.body), ['tag2', 'tag1', 'test'])
+        r = self.app.get('/p/test/bugs/tags?term=ta')
+        assert_equal(json.loads(r.body), ['tag2', 'tag1'])
+        r = self.app.get('/p/test/bugs/tags?term=te')
+        assert_equal(json.loads(r.body), ['test'])
+        r = self.app.get('/p/test/bugs/tags?term=nope')
+        assert_equal(json.loads(r.body), [])
+        r = self.app.get('/p/test/bugs/tags?term=')
+        assert_equal(json.loads(r.body), [])
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):
