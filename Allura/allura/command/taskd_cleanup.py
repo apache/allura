@@ -13,7 +13,8 @@ class TaskdCleanupCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-k', '--kill-stuck-taskd',
             dest='kill', action='store_true',
-            help='automatically kill stuck taskd processes')
+            help='automatically kill stuck taskd processes.  Be careful with this, a taskd process '
+                 'may just be very busy on certain operations and not able to respond to our status request')
     parser.add_option('-n', '--num-retry-status-check',
             dest='num_retry', type='int', default=5,
             help='number of retries to read taskd status log after sending USR1 signal (5 by default)')
@@ -88,7 +89,7 @@ class TaskdCleanupCommand(base.Command):
             if self.options.kill:
                 base.log.info('...stuck taskd processes were killed')
             else:
-                base.log.info('...to kill these processes run command with -k flag')
+                base.log.info('...to kill these processes run command with -k flag if you are sure they are really stuck')
         if self.error_tasks:
             base.log.info('Tasks marked as \'error\': %s' % self.error_tasks)
 
