@@ -20,18 +20,18 @@
 
 {% block title %}
   {% if c.app.repo %}
-    Tags: {{c.app.repo.name}}
+    {{title or 'Tags'}}: {{c.app.repo.name}}
   {% else %}
-    Tags
+    {{title or 'Tags'}}
   {% endif %}
 {% endblock %}
 
-{% block header %}{{c.app.config.options.mount_label}} Tags{% endblock %}
+{% block header %}{{c.app.config.options.mount_label}} {{title or 'Tags'}}{% endblock %}
 
 {% block content %}
   <div class="grid-19">
-  {% for b in c.app.repo.repo_tags %}
-    <a href="{{c.app.url}}?branch=ref/{{b.name}}">{{b.name}}</a><br>
+  {% for b in tags %}
+    <a href="{{c.app.repo.url_for_commit(b.name)}}tree/">{{b.name}}</a><br>
   {% endfor %}
   </div>
 {% endblock %}
