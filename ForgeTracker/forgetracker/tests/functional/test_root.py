@@ -1089,6 +1089,58 @@ class TestFunctionalController(TrackerTestController):
         assert_in('test second ticket', str(ticket_rows))
         assert_false('test third ticket' in str(ticket_rows))
 
+    def test_bulk_edit_notifications(self):
+        self.new_ticket(summary='test first ticket', status='open')
+        self.new_ticket(summary='test second ticket', status='open')
+        self.new_ticket(summary='test third ticket', status='open')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        first_ticket = tm.Ticket.query.get(summary='test first ticket')
+        second_ticket = tm.Ticket.query.get(summary='test second ticket')
+        third_ticket = tm.Ticket.query.get(summary='test third ticket')
+        first_user = M.User.by_username('test-user-0')
+        second_user = M.User.by_username('test-user-1')
+        admin = M.User.by_username('test-admin')
+        first_ticket.subscribe(user=first_user)
+        second_ticket.subscribe(user=second_user)
+        M.MonQTask.query.remove()
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          first_ticket._id,
+                          second_ticket._id,
+                          third_ticket._id),
+                      'status': 'accepted'})
+        M.MonQTask.run_ready()
+
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 3)
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Bulk edit report')
+            assert_in('- **Status**: open --> accepted\n', email.kwargs.text)
+        first_user_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': first_user._id
+        }).all()
+        assert_equal(len(first_user_email), 1)
+        first_user_email = first_user_email[0]
+        second_user_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': second_user._id
+        }).all()
+        assert_equal(len(second_user_email), 1)
+        second_user_email = second_user_email[0]
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': admin._id
+        }).all()
+        assert_equal(len(admin_email), 1)
+        admin_email = admin_email[0]
+
+        # TODO: check email text for first, second and admin users
+        #assert_in('### Affected tickets\n\n- [bugs:#1] test first ticket', first_user_email.kwargs.text)
+
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
         assert_false(r.html.find('div', {'id': 'vote'}))
