@@ -678,7 +678,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         """
         limit, page, start = g.handle_paging(limit, page, default=25)
         q = cls.query.find(dict(query, app_config_id=app_config._id, deleted=deleted))
-        q = q.sort('ticket_num')
+        q = q.sort('ticket_num', pymongo.DESCENDING)
         if sort:
             field, direction = sort.split()
             if field.startswith('_'):
@@ -727,7 +727,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         limit, page, start = g.handle_paging(limit, page, default=25)
         count = 0
         tickets = []
-        refined_sort = sort if sort else 'ticket_num_i asc'
+        refined_sort = sort if sort else 'ticket_num_i desc'
         if  'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
         try:
