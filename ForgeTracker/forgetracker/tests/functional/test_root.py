@@ -1194,8 +1194,8 @@ class TestFunctionalController(TrackerTestController):
         # test-user-1 - only for second.
         # admin - for both (since he has tool subscription).
         changes = {
-            tickets[0]._id: {'ticket': tickets[0], 'changes': 'Ticket 1 changes'},
-            tickets[1]._id: {'ticket': tickets[1], 'changes': 'Ticket 2 changes'},
+            tickets[0]._id: tickets[0],
+            tickets[1]._id: tickets[1],
         }
         filtered_changes = filtered_by_subscription(changes)
         filtered_users = [uid for uid, data in filtered_changes.iteritems()]
