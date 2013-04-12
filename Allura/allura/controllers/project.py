@@ -329,7 +329,7 @@ class ProjectController(object):
                 username=user.username,
                 url=user.url(),
                 roles=roles,
-                email_addresses=user.email_addresses))
+                ))
         return dict(users=users)
 
     def _check_security(self):
