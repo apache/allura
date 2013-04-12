@@ -94,14 +94,14 @@ def reclone_repo(*args, **kwargs):
         c.app = c.project.app_instance(kwargs['mount_point'])
         source_url = c.app.config.options.get('init_from_url')
         source_path = c.app.config.options.get('init_from_path')
+        0/0
         c.app.repo.init_as_clone(source_path, None, source_url)
         M.Notification.post_user(
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
     except Exception, e:
-        source_url = source_path or source_url
-        g.post_event('repo_clone_task_failed', source_url, traceback.format_exc())
+        g.post_event('repo_clone_task_failed', source_url, source_path, traceback.format_exc())
 
 @task
 def tarball(revision=None):
