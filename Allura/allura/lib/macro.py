@@ -7,6 +7,7 @@ import traceback
 from operator import attrgetter
 
 import pymongo
+import jinja2
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asint
@@ -335,30 +336,30 @@ def img(src=None, **kw):
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
 
 
-template_project_admins = string.Template('<a href="$url">$name</a><br/>')
+template_project_admins = string.Template('<li><a href="$url">$name</a></li>')
 @macro()
 def project_admins():
     admins = c.project.users_with_role('Admin')
     output = ''.join(
         template_project_admins.substitute(dict(
             url=user.url(),
-            name=user.display_name))
+            name=jinja2.escape(user.display_name)))
         for user in admins)
-    return u'<h6>Project Admins:</h6><div class="grid-10" style="margin-left: 2em">{}</div><div style="clear: both;"></div>'.format(output)
+    return u'<h6>Project Admins:</h6><ul class="md-users-list">{0}</ul>'.format(output)
 
-template_members = string.Template('<a href="$url">$name</a>$admin<br/>')
+template_members = string.Template('<li><a href="$url">$name</a>$admin</li>')
 @macro()
 def members(limit=20):
     limit = asint(limit)
     admins = set(c.project.users_with_role('Admin'))
     members = sorted(c.project.users(), key=attrgetter('display_name'))
-    output = '<div style="margin-left: 0.5em; margin-bottom: 0.5em;">%s</div>' % ''.join(
+    output = ''.join(
         template_members.substitute(dict(
             url=user.url(),
-            name=user.display_name,
+            name=jinja2.escape(user.display_name),
             admin=' (admin)' if user in admins else '',
             ))
         for user in members[:limit])
     if len(members) > limit:
-        output = output + '<a href="%s_members">All Members</a>' % c.project.url()
-    return u'<h6>Project Members:</h6><div style="margin-left: 1.5em;">{}</div><div style="clear: both;"></div>'.format(output)
+        output = output + '<li class="md-users-list-more"><a href="%s_members">All Members</a></li>' % c.project.url()
+    return u'<h6>Project Members:</h6><ul class="md-users-list">{0}</ul>'.format(output)
