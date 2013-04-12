@@ -11,15 +11,13 @@
         <th>Developer</th>
         <th>Username</th>
         <th>Role/Position</th>
-        <th>Email</th>
     </tr>
     </thead>
     {%for user in users%}
     <tr>
         <td>{{ user.display_name }}</td>
         <td><a href="{{ user.url }}">{{ user.username }}</a></td>
-        <td>{% for role in user.roles%} {{ role }}</br> {%endfor%}</td>
-        <td>{% for email in user.email_addresses %}{{email.replace('@', ' at ')}}{%endfor%}</td>
+        <td>{{user.roles|join(', ')}}</td>
     </tr>
     {%endfor%}
 </table>
