@@ -5,7 +5,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_not_in
 
 
 class TestProjectHome(TestController):
@@ -35,7 +35,7 @@ class TestProjectHome(TestController):
 
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
-        r.follow()
+        assert_not_in('Profile', r.follow().body)
 
     def test_user_search(self):
         r = self.app.get('/p/test/user_search?term=test', status=200)

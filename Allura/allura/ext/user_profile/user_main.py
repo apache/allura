@@ -48,7 +48,8 @@ class UserProfileApp(Application):
         return [SitemapEntry('Profile', '.')]
 
     def is_visible_to(self, user):
-        return True
+        # we don't work with user subprojects
+        return c.project.is_root
 
     def install(self, project):
         pr = c.user.project_role()

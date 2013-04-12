@@ -98,6 +98,10 @@ class ForgeUserStatsApp(Application):
     def main_menu(self):
         return [SitemapEntry(self.config.options.mount_label, '.')]
 
+    def is_visible_to(self, user):
+        # we don't work with user subprojects
+        return c.project.is_root
+
     @property
     @h.exceptionless([], log)
     def sitemap(self):
