@@ -58,6 +58,15 @@ Inside the Platform Components
    guides/email
    guides/permissions
 
+API Documentation
+==================
+
+.. toctree::
+   :maxdepth: 1
+      :glob:
+
+      api/*
+
 Frequently Asked Questions
 =====================================================================
 .. toctree::

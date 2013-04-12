@@ -208,7 +208,13 @@ class Application(object):
         return False
 
     def is_visible_to(self, user):
-        '''Whether the user can view the app.'''
+        """Return whether ``user`` can view this app.
+
+        :param user: user to check
+        :type user: :class:`allura.model.User` instance
+        :rtype: bool
+
+        """
         return has_access(self, 'read')(user=user)
 
     def subscribe_admins(self):
