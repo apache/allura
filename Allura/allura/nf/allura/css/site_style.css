@@ -2066,6 +2066,14 @@ nav .ico {
   padding: 0;
 }
 
+.markdown_content ul.md-users-list {
+    list-style: none;
+}
+.markdown_content ul.md-users-list li.md-users-list-more {
+    margin-left: -0.5em;
+    margin-top: 0.5em;
+}
+
 .media a {
   float: left;
   margin-right: 20px;

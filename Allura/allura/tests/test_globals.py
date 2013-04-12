@@ -160,13 +160,11 @@ def test_macro_members():
     assert_equal(r,
         '<div class="markdown_content">'
             '<h6>Project Members:</h6>'
-            '<div style="margin-left: 1.5em;">'
-                '<div style="margin-left: 0.5em; margin-bottom: 0.5em;">'
-                    '<a href="/u/test-admin/">Test Admin</a> (admin)<br />'
-                    '<a href="/u/test-user/">Test User</a><br />'
-                '</div>'
-                '<a href="/p/test/_members">All Members</a>'
-            '</div><div style="clear: both;"></div>\n'
+            '<ul class="md-users-list">'
+                '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
+                '<li><a href="/u/test-user/">Test User</a></li>'
+                '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>'
+            '</ul>\n'
         '</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
@@ -174,7 +172,7 @@ def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><div class="grid-10" style="margin-left: 2em;"><a href="/u/test-admin/">Test Ådmin</a><br /></div><div style="clear: both;"></div>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><ul class="md-users-list"><li><a href="/u/test-admin/">Test Ådmin</a></li></ul>\n</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins_one_br():
@@ -185,7 +183,7 @@ def test_macro_project_admins_one_br():
     r = g.markdown_wiki.convert('[[project_admins]]\n[[download_button]]')
 
     assert not '</a><br /><br /><a href=' in r, r
-    assert '</a><br /><a href=' in r, r
+    assert '</a></li><li><a href=' in r, r
 
 
 @td.with_wiki
