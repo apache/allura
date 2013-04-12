@@ -149,16 +149,34 @@ def test_macros():
     r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
     assert 'test content' in r
 
+@with_setup(teardown=setUp) # reset everything we changed
 def test_macro_members():
-    r = g.markdown_wiki.convert('[[members]]')
-    assert_equal(r, u'<div class="markdown_content"><p><a href="/p/test/_members">Members</a><br /></p>\n</div>')
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    p_test.add_user(M.User.by_username('test-user'), ['Developer'])
+    p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
+    ThreadLocalORMSession.flush_all()
+    r = g.markdown_wiki.convert('[[members limit=2]]')
+    assert_equal(r,
+        '<div class="markdown_content">'
+            '<h6>Project Members:</h6>'
+            '<div style="margin-left: 1.5em;">'
+                '<div style="margin-left: 0.5em; margin-bottom: 0.5em;">'
+                    '<a href="/u/test-admin/">Test Admin</a> (admin)<br />'
+                    '<a href="/u/test-user/">Test User</a><br />'
+                '</div>'
+                '<a href="/p/test/_members">All Members</a>'
+            '</div><div style="clear: both;"></div>\n'
+        '</div>')
 
+@with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><div class="grid-10"><a href="/u/test-admin/">Test Ådmin</a><br /></div><div style="clear: both;"></div>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><div class="grid-10" style="margin-left: 2em;"><a href="/u/test-admin/">Test Ådmin</a><br /></div><div style="clear: both;"></div>\n</div>')
 
+@with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)

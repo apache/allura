@@ -246,8 +246,7 @@ This is the default page, edit it as you see fit. To add a new page simply refer
 
 The wiki uses [Markdown](%s) syntax.
 
-[[project_admins]]
-[[members]]
+[[members limit=20]]
 [[download_button]]
 """ % url
                 p.commit()

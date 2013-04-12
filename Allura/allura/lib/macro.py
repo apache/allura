@@ -4,10 +4,12 @@ import shlex
 import string
 import logging
 import traceback
+from operator import attrgetter
 
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
+from paste.deploy.converters import asint
 from urlparse import urljoin
 
 from . import helpers as h
@@ -336,21 +338,27 @@ def img(src=None, **kw):
 template_project_admins = string.Template('<a href="$url">$name</a><br/>')
 @macro()
 def project_admins():
-    from allura import model as M
-    output = ''
-    admin_role = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')
-    if admin_role:
-        output = ''.join(
-            template_project_admins.substitute(dict(
-                url=user_role.user.url(),
-                name=user_role.user.display_name))
-            for user_role in admin_role.users_with_role())
-    return u'<h6>Project Admins:</h6><div class="grid-10">{}</div><div style="clear: both;"></div>'.format(output)
-
-template_members = string.Template('<a href="$url">Members</a><br/>')
-@macro()
-def members():
+    admins = c.project.users_with_role('Admin')
     output = ''.join(
-            template_members.substitute(dict(
-                url=urljoin(c.project.url(), '_members'),)))
-    return u'<p>{}</p>'.format(output)
+        template_project_admins.substitute(dict(
+            url=user.url(),
+            name=user.display_name))
+        for user in admins)
+    return u'<h6>Project Admins:</h6><div class="grid-10" style="margin-left: 2em">{}</div><div style="clear: both;"></div>'.format(output)
+
+template_members = string.Template('<a href="$url">$name</a>$admin<br/>')
+@macro()
+def members(limit=20):
+    limit = asint(limit)
+    admins = set(c.project.users_with_role('Admin'))
+    members = sorted(c.project.users(), key=attrgetter('display_name'))
+    output = '<div style="margin-left: 0.5em; margin-bottom: 0.5em;">%s</div>' % ''.join(
+        template_members.substitute(dict(
+            url=user.url(),
+            name=user.display_name,
+            admin=' (admin)' if user in admins else '',
+            ))
+        for user in members[:limit])
+    if len(members) > limit:
+        output = output + '<a href="%s_members">All Members</a>' % c.project.url()
+    return u'<h6>Project Members:</h6><div style="margin-left: 1.5em;">{}</div><div style="clear: both;"></div>'.format(output)
