@@ -100,8 +100,7 @@ def reclone_repo(*args, **kwargs):
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
     except Exception, e:
-        source_url = source_path or source_url
-        g.post_event('repo_clone_task_failed', source_url, traceback.format_exc())
+        g.post_event('repo_clone_task_failed', source_url, source_path, traceback.format_exc())
 
 @task
 def tarball(revision=None):
