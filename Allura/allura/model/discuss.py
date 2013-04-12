@@ -257,7 +257,7 @@ class Thread(Artifact, ActivityObject):
         if ignore_security or has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
-            post.approve(file_info)
+            post.approve(file_info, notify=kw.get('notify', True))
         else:
             self.notify_moderators(post)
         return post
@@ -582,7 +582,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         super(Post, self).delete()
         self.thread.num_replies = max(0, self.thread.num_replies - 1)
 
-    def approve(self, file_info=None):
+    def approve(self, file_info=None, notify=True):
         if self.status == 'ok':
             return
         self.status = 'ok'
@@ -594,7 +594,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             and author._id != None):
             security.simple_grant(
                 self.acl, author.project_role()._id, 'unmoderated_post')
-        self.notify(file_info=file_info)
+        if notify:
+            self.notify(file_info=file_info)
         artifact = self.thread.artifact or self.thread
         session(self).flush()
         self.thread.last_post_date = max(

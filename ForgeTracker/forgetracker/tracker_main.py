@@ -838,7 +838,7 @@ class RootController(BaseController):
                     new_value,
                     old_value)
             if message != '':
-                ticket.discussion_thread.post(message)
+                ticket.discussion_thread.post(message, notify=False)
                 ticket.commit()
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
