@@ -1090,9 +1090,9 @@ class TestFunctionalController(TrackerTestController):
         assert_false('test third ticket' in str(ticket_rows))
 
     def test_bulk_edit_notifications(self):
-        self.new_ticket(summary='test first ticket', status='open')
-        self.new_ticket(summary='test second ticket', status='open')
-        self.new_ticket(summary='test third ticket', status='open')
+        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
+        self.new_ticket(summary='test second ticket', status='accepted', _milestone='1.0')
+        self.new_ticket(summary='test third ticket', status='unread')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -1111,14 +1111,14 @@ class TestFunctionalController(TrackerTestController):
                           first_ticket._id,
                           second_ticket._id,
                           third_ticket._id),
-                      'status': 'accepted'})
+                      'status': 'accepted',
+                      '_milestone': '2.0'})
         M.MonQTask.run_ready()
 
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 3)
         for email in emails:
-            assert_equal(email.kwargs.subject, '[test:bugs] Bulk edit report')
-            assert_in('- **Status**: open --> accepted\n', email.kwargs.text)
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes')
         first_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': first_user._id
@@ -1138,8 +1138,32 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(len(admin_email), 1)
         admin_email = admin_email[0]
 
-        # TODO: check email text for first, second and admin users
-        #assert_in('### Affected tickets\n\n- [bugs:#1] test first ticket', first_user_email.kwargs.text)
+        # Expected data
+        email_header = '''Mass edit changing:
+- **status**: accepted
+- **Milestone: 2.0
+'''
+        first_ticket_changes = '''ticket: [bugs:#1]
+- **status**: open --> accepted
+- **Milestone: 2.0 --> 2.0
+'''
+        second_ticket_changes = '''ticket: [bugs:#2]
+- **status**: accepted --> accepted
+- **Milestone: 1.0 --> 2.0
+'''
+        third_ticket_changes = '''ticket: [bugs:#3]
+- **status**: unread --> accepted
+- **Milestone: --> 2.0
+'''
+        email = '\n'.join([email_header, first_ticket_changes])
+        assert_equal(email, first_user_email.kwargs.text)
+        email = '\n'.join([email_header, second_ticket_changes])
+        assert_equal(email, second_user_email.kwargs.text)
+        email = '\n'.join([email_header,
+                           first_ticket_changes,
+                           second_ticket_changes,
+                           third_ticket_changes])
+        assert_equal(email, admin_email.kwargs.text)
 
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
