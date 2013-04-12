@@ -1119,22 +1119,22 @@ class TestFunctionalController(TrackerTestController):
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 3)
         for email in emails:
-            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes')
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
         first_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': first_user._id
+            'kwargs.destinations': str(first_user._id)
         }).all()
         assert_equal(len(first_user_email), 1)
         first_user_email = first_user_email[0]
         second_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': second_user._id
+            'kwargs.destinations': str(second_user._id)
         }).all()
         assert_equal(len(second_user_email), 1)
         second_user_email = second_user_email[0]
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
-            'kwargs.destinations': admin._id
+            'kwargs.destinations': str(admin._id)
         }).all()
         assert_equal(len(admin_email), 1)
         admin_email = admin_email[0]

@@ -59,6 +59,7 @@ from allura.lib.zarkov_helpers import zero_fill_zarkov_result
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
+from allura.tasks import mail_tasks
 
 # Local imports
 from forgetracker import model as TM
@@ -807,6 +808,8 @@ class RootController(BaseController):
                 custom_values[cf.name] = v
                 custom_fields[cf.name] = cf
 
+        changes = {}
+        changed_tickets = {}
         for ticket in tickets:
             message = ''
             for k, v in values.iteritems():
@@ -838,8 +841,35 @@ class RootController(BaseController):
                     new_value,
                     old_value)
             if message != '':
+                changes[ticket._id] = message
+                changed_tickets[ticket._id] = ticket
                 ticket.discussion_thread.post(message, notify=False)
                 ticket.commit()
+        filtered_changes = filtered_by_subscription(changed_tickets)
+        users = M.User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
+        mail = dict(
+            fromaddr = str(c.user._id),
+            reply_to = str(c.user._id),
+            message_id = h.gen_message_id(),
+            subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
+                                                           c.app.config.options.mount_point,
+                                                           c.user.display_name),
+        )
+        head = ['Mass edit changing:']
+        # TODO: add list with new values here
+        head = '\n'.join(head)
+        for user in users:
+            text = []
+            for t_id in filtered_changes.get(user._id, []):
+                text.append('ticket: [%s:#%d]' % (c.app.config.options.mount_point,
+                                                  changed_tickets[t_id].ticket_num))
+                text.append(changes[t_id])
+                text.append('')
+            mail.update(dict(
+                text = head + '\n\n' +  '\n'.join(text),
+                destinations = [str(user._id)]))
+            mail_tasks.sendmail.post(**mail)
+            # TODO: send summary on ticket's monitoring email
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         count = len(tickets)
