@@ -33,6 +33,7 @@ from alluratest.controller import TestController
 from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
+from forgetracker.tracker_main import filtered_by_subscription
 
 from allura.lib.security import has_access
 from allura.lib import helpers as h
@@ -1164,6 +1165,45 @@ class TestFunctionalController(TrackerTestController):
                            second_ticket_changes,
                            third_ticket_changes])
         assert_equal(email, admin_email.kwargs.text)
+
+    def test_filtered_by_subscription(self):
+        self.new_ticket(summary='test first ticket', status='open')
+        self.new_ticket(summary='test second ticket', status='open')
+        self.new_ticket(summary='test third ticket', status='open')
+        tickets = []
+        users = []
+        tickets.append(tm.Ticket.query.get(summary='test first ticket'))
+        tickets.append(tm.Ticket.query.get(summary='test second ticket'))
+        tickets.append(tm.Ticket.query.get(summary='test third ticket'))
+        users.append(M.User.by_username('test-user-0'))
+        users.append(M.User.by_username('test-user-1'))
+        users.append(M.User.by_username('test-user-2'))
+        admin = M.User.by_username('test-admin')
+        tickets[0].subscribe(user=users[0])
+        tickets[1].subscribe(user=users[1])
+        tickets[2].subscribe(user=users[2])
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+
+        # Pretend we're changing first and second ticket.
+        # Then we should notify test-user-0, test-user-1 and admin.
+        # test-user-2 shoudn't be notified
+        # (he has subscription to third ticket, but it didn't change).
+        # test-user-0 should see changes only for first ticket.
+        # test-user-1 - only for second.
+        # admin - for both (since he has tool subscription).
+        changes = {
+            tickets[0]._id: {'ticket': tickets[0], 'changes': 'Ticket 1 changes'},
+            tickets[1]._id: {'ticket': tickets[1], 'changes': 'Ticket 2 changes'},
+        }
+        filtered_changes = filtered_by_subscription(changes)
+        filtered_users = [uid for uid, data in filtered_changes.iteritems()]
+        assert_equal(sorted(filtered_users), sorted([u._id for u in users[:-1] + [admin]]))
+        ticket_ids = [t._id for t in tickets]
+        assert_equal(filtered_changes[users[0]._id], ticket_ids[0:1])
+        assert_equal(filtered_changes[users[1]._id], ticket_ids[1:2])
+        assert_equal(sorted(filtered_changes[admin._id]), sorted(ticket_ids[:-1]))
 
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()

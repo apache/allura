@@ -1150,6 +1150,30 @@ class changelog(object):
         return t
 
 
+def filtered_by_subscription(tickets, project_id=None, app_config_id=None):
+    p_id = project_id if project_id else c.project._id
+    ac_id = app_config_id if app_config_id else c.app.config._id
+    ticket_ids = tickets.keys()
+    users = M.Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
+    users = [u.user_id for u in users]
+    filtered = {}
+    for uid in users:
+        params = dict(
+            user_id=uid,
+            project_id=p_id,
+            app_config_id=ac_id)
+        if M.Mailbox.subscribed(**params):
+            filtered[uid] = ticket_ids  # subscribed to entire tool, will see all changes
+            continue
+        for t_id, data in tickets.iteritems():
+            params.update({'artifact': data['ticket']})
+            if M.Mailbox.subscribed(**params):
+                if filtered.get('uid') is None:
+                    filtered[uid] = []
+                filtered[uid].append(t_id)
+    return filtered
+
+
 class TicketController(BaseController):
 
     def __init__(self, ticket_num=None):
