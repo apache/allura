@@ -26,7 +26,7 @@ def inject_user(q, user=None):
     '''Replace $USER with current user's name.'''
     if user is None:
         user = c.user
-    return q.replace('$USER', user.username) if q else q
+    return q.replace('$USER', '"%s"' % user.username) if q else q
 
 def search(q,short_timeout=False,ignore_errors=True,**kw):
     q = inject_user(q)
