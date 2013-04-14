@@ -97,7 +97,7 @@ class Stats(MappedClass):
                 tickets = val['tickets']
                 if tickets.assigned == 0:
                     return 0
-                return float(tickets.solved) / tickets.assigned
+                return round(float(tickets.solved) / tickets.assigned, 2)
         return 0
 
     @classmethod
@@ -106,8 +106,9 @@ class Stats(MappedClass):
         n = res.count()
         if n == 0:
             return 0, 0
-        maxcontribution=max([x.getCodeContribution() for x in res])
-        averagecontribution=sum([x.getCodeContribution() for x in res]) / n
+        values = [x.getCodeContribution() for x in res]
+        maxcontribution=max(values)
+        averagecontribution=sum(values) / n
         return maxcontribution, round(averagecontribution, 2)
 
     @classmethod
@@ -116,8 +117,9 @@ class Stats(MappedClass):
         n = res.count()
         if n == 0:
             return 0, 0
-        maxcontribution=max([x.getDiscussionContribution() for x in res])
-        averagecontribution=sum([x.getDiscussionContribution() for x in res])/n
+        values = [x.getDiscussionContribution() for x in res]
+        maxcontribution=max(values)
+        averagecontribution=sum(values)/n
         return maxcontribution, round(averagecontribution, 2)
 
     @classmethod
@@ -126,8 +128,9 @@ class Stats(MappedClass):
         n = res.count()
         if n == 0:
             return 0, 0
-        maxcontribution=max([x.getTicketsContribution() for x in res])
-        averagecontribution=sum([x.getTicketsContribution() for x in res])/n
+        values = [x.getTicketsContribution() for x in res]
+        maxcontribution=max(values)
+        averagecontribution=sum(values)/n
         return maxcontribution, round(averagecontribution, 2)
 
     def codeRanking(self):
