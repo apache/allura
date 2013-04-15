@@ -29,6 +29,7 @@ from datetime import datetime
 import tempfile
 import tarfile
 from shutil import rmtree
+from zipfile import ZipFile
 
 import tg
 import pysvn
@@ -641,7 +642,7 @@ class SVNImplementation(M.RepositoryImplementation):
             os.makedirs(self._repo.tarball_path)
         path = os.path.join(self._repo.tarball_path, commit)
         archive_name = self._repo.tarball_filename(commit)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
         if os.path.exists(path):
             rmtree(path)
@@ -649,8 +650,11 @@ class SVNImplementation(M.RepositoryImplementation):
             self._svn.export(self._url,
                              path,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-            with tarfile.open(tmpfilename, "w:gz") as tar:
-                tar.add(path, arcname=archive_name)
+            with ZipFile(tmpfilename, 'w') as tarball_zip:
+                for dirname, subdirs, files in os.walk(path):
+                    for f in files:
+                        tarball_zip.write(os.path.join(dirname, f), os.path.relpath(os.path.join(dirname, f), path))
+
             os.rename(tmpfilename, filename)
         finally:
             rmtree(path)

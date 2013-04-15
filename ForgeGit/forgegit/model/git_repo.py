@@ -345,11 +345,11 @@ class GitImplementation(M.RepositoryImplementation):
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
         try:
-            with gzip.open(tmpfilename, 'w') as fp:
-                self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name + '/')
+            with open(tmpfilename, 'wb') as archive_file:
+                self._git.archive(archive_file, format='zip', treeish=commit, prefix=archive_name + '/')
             os.rename(tmpfilename, filename)
         finally:
             if os.path.exists(tmpfilename):

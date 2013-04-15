@@ -289,9 +289,9 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_tarball(self):
         assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/t/te/test/testsvn')
-        assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.tar.gz')
+        assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.zip')
         self.repo.tarball('1')
-        assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.tar.gz")
+        assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip")
 
     def test_is_empty(self):
         assert not self.repo.is_empty()

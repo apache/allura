@@ -272,7 +272,7 @@ class Repository(Artifact, ActivityObject):
         return filename
 
     def tarball_url(self, revision):
-        filename = '%s%s' % (self.tarball_filename(revision), '.tar.gz')
+        filename = '%s%s' % (self.tarball_filename(revision), '.zip')
         r = os.path.join(self.tool,
                          self.project.shortname[:1],
                          self.project.shortname[:2],
@@ -283,7 +283,7 @@ class Repository(Artifact, ActivityObject):
 
     def get_tarball_status(self, revision):
         pathname = os.path.join(self.tarball_path, self.tarball_filename(revision))
-        filename = '%s%s' % (pathname, '.tar.gz')
+        filename = '%s%s' % (pathname, '.zip')
         tmpfilename = '%s%s' % (pathname, '.tmp')
 
         if os.path.isfile(filename):
