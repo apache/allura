@@ -638,14 +638,14 @@ class TestNeighborhood(TestController):
         p = M.Project.query.get(shortname='testtemp')
         # make sure the correct tools got installed in the right order
         top_nav = r.html.find('div', {'id':'top_nav'})
-        assert top_nav.contents[1]['href'] == '/adobe/testtemp/wiki/'
-        assert 'Wiki' in top_nav.contents[1].contents[0]
-        assert top_nav.contents[3]['href'] == '/adobe/testtemp/discussion/'
-        assert 'Discussion' in top_nav.contents[3].contents[0]
-        assert top_nav.contents[5]['href'] == '/adobe/testtemp/news/'
-        assert 'News' in top_nav.contents[5].contents[0]
-        assert top_nav.contents[7]['href'] == '/adobe/testtemp/admin/'
-        assert 'Admin' in top_nav.contents[7].contents[0]
+        assert top_nav.contents[1].contents[1].contents[1]['href'] == '/adobe/testtemp/wiki/'
+        assert 'Wiki' in top_nav.contents[1].contents[1].contents[1].contents[0]
+        assert top_nav.contents[1].contents[3].contents[1]['href'] == '/adobe/testtemp/discussion/'
+        assert 'Discussion' in top_nav.contents[1].contents[3].contents[1].contents[0]
+        assert top_nav.contents[1].contents[5].contents[1]['href'] == '/adobe/testtemp/news/'
+        assert 'News' in top_nav.contents[1].contents[5].contents[1].contents[0]
+        assert top_nav.contents[1].contents[7].contents[1]['href'] == '/adobe/testtemp/admin/'
+        assert 'Admin' in top_nav.contents[1].contents[7].contents[1].contents[0]
         # make sure project is private
         r = self.app.get(
             '/adobe/testtemp/wiki/',

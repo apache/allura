@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% if c.project %}
-  <div><ul>
+<ul class="dropdown">
   {% for s in c.project.grouped_navbar_entries() %}
     {% set selected = False %}
     {% if s.label == 'Home' %}
@@ -30,17 +30,19 @@
         {% set selected = True %}
       {% endif %}
     {% endif %}
-    <li class="ui-icon-{{s.ui_icon or 'admin'}}{% if selected %} selected{% endif %}">
-      <a href="{{s.url}}">
-        <span>
-        {{s.label}}
+    <li class="{% if selected %}selected{% endif %}">
+        <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
+            {{s.label}}
+        </a>
         {% set grouped_tool_count = s.matching_urls|length %}
         {% if grouped_tool_count %}
-          <span class="tool-count">{{grouped_tool_count}}</span>
+          <ul>
+              {%for tool in s.children%}
+                <li><span><a href="{{tool.url}}">{{tool.label}}</a></span></li>
+              {%endfor%}
+          </ul>
         {% endif %}
-        </span>
-      </a>
     </li>
 	{% endfor %}
-	</div></ul>
+</ul>
 {% endif %}

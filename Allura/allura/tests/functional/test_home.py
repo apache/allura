@@ -18,6 +18,8 @@
 import json
 import re
 
+from pylons import tmpl_context as c
+
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
@@ -36,6 +38,34 @@ class TestProjectHome(TestController):
         assert len(nav_links) ==  len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
+
+    @td.with_wiki
+    def test_project_group_nav(self):
+        c.user = M.User.by_username('test-admin')
+        p = M.Project.query.get(shortname='test')
+        c.project = p
+        if 'wiki2' and not p.app_instance('wiki2'):
+            c.app = p.install_app('wiki', 'wiki2', 'wiki2', 9)
+
+        response = self.app.get('/p/test/_nav.json')
+        menu = response.json['menu']
+        assert_equal(len(menu[1]['children']), 2)
+        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon': u'tool-wiki'} in menu[1]['children'], menu[1]['children']
+        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon': u'tool-wiki'} in menu[1]['children'], menu[1]['children']
+
+    @td.with_wiki
+    def test_project_group_nav_more_than_ten(self):
+        for i in range(1,15):
+            tool_name = "wiki%s" % str(i)
+            c.user = M.User.by_username('test-admin')
+            p = M.Project.query.get(shortname='test')
+            c.project = p
+            if tool_name and not p.app_instance(tool_name):
+                c.app = p.install_app('wiki', tool_name, tool_name, i)
+        response = self.app.get('/p/test/_nav.json')
+        menu = response.json['menu']
+        assert_equal(len(menu[1]['children']), 11)
+        assert {u'url': u'/p/test/_list/wiki', u'name': u'...more...', u'icon': u'tool-wiki'} in menu[1]['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):

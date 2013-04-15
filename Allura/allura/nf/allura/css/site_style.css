@@ -370,25 +370,6 @@ td, td img {
   vertical-align: middle;
 }
 
-.diamond {
-  z-index: 1;
-  height: 20px;
-  width: 20px;
-  display: block;
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  margin-left: -10px;
-  overflow: hidden;
-  background: #e5e5e5;
-  border-left: 1px solid #aaaaaa;
-  border-top: 1px solid #aaaaaa;
-  -moz-transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
-  -o-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
-
 .tool-count {
   display: block;
   position: absolute;
@@ -1013,6 +994,7 @@ a.btn:active {
   text-align: center;
   position: relative;
   margin: 0 0 20px;
+  height: 50px;
 }
 .btn-bar.pop, .pop#top_nav {
   height: 150px;
@@ -2904,4 +2886,62 @@ table thead tr th.narrow, table tr td.narrow {
   position: relative;
   bottom: -5px;
   left: 45%;
+}
+ul.dropdown,
+ul.dropdown li,
+ul.dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.dropdown {
+    position: relative;
+    z-index: 597;
+    float: left;
+}
+
+ul.dropdown li {
+    float: left;
+    vertical-align: middle;
+    zoom: 1;
+}
+
+ul.dropdown li.hover,
+ul.dropdown li:hover {
+    position: relative;
+    z-index: 599;
+    cursor: default;
+}
+
+ul.dropdown ul {
+    visibility: hidden;
+    position: absolute;
+    top:50px;
+    left: 0;
+    z-index: 598;
+    background-color: #ffffff;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #E6EFC2;
+}
+
+ul.dropdown ul li {
+    float: left;
+    margin: 5px;
+    min-width: 100px;
+}
+
+ul.dropdown li:hover > ul {
+    visibility: visible;
+}
+ul.dropdown ul li a {
+    height: 20px !important;
+    font-weight:normal;
+}
+li.selected {
+    font-weight:bold;
 }

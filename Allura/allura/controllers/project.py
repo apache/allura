@@ -309,9 +309,11 @@ class ProjectController(FeedController):
 
     @expose('json:')
     def _nav(self):
-        return dict(menu=[
-                dict(name=s.label, url=s.url, icon=s.ui_icon)
-                for s in c.project.grouped_navbar_entries()])
+        menu = []
+        for s in c.project.grouped_navbar_entries():
+            children = [dict(name=child.label, url=child.url, icon=child.ui_icon) for child in s.children]
+            menu.append(dict(name=s.label, url=s.url, icon=s.ui_icon, children=children))
+        return dict(menu=menu)
 
     @expose()
     def _lookup(self, name, *remainder):
