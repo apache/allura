@@ -1,6 +1,7 @@
 rat-excludes.txt
 **/setup.cfg
 **/*.json
+**/*.git/
 requirements*
 **/MANIFEST.in
 Allura/allura/controllers/controller.template
@@ -26,8 +27,7 @@ Allura/allura/tests/data/test_mime/text_file.txt
 Allura/run/dummy.txt
 AlluraTesting/jslint/
 ForgeGit/forgegit/data/post-receive_tmpl
-ForgeGit/forgegit/tests/data/
-ForgeSVN/forgesvn/tests/data/
+ForgeSVN/forgesvn/tests/data/testsvn/
 solr_config/core0/conf/spellings.txt
 solr_config/core1/conf/spellings.txt
 solr_config/solr.xml
