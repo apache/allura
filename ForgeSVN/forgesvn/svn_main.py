@@ -32,7 +32,7 @@ class ForgeSVNApp(RepositoryApp):
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
     config_options = RepositoryApp.config_options + [
-        ConfigOption('checkout_url', str, 'trunk')
+        ConfigOption('checkout_url', str, '')
         ]
     tool_label='SVN'
     tool_description="""

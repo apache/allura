@@ -14,7 +14,7 @@ class BranchBrowser(repository.BranchBrowser):
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
         latest = c.app.repo.latest(branch=self._branch)
-        if not latest or (latest._id.split(':')[1] == '1' and h.has_access(c.app, 'write')()):
+        if not latest:
             return dict(allow_fork=False, log=[])
         redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
 

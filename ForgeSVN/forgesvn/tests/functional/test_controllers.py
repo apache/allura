@@ -106,7 +106,7 @@ class TestRootController(SVNTestController):
         self.app.post('/p/test/admin/src/set_checkout_url',
                       {"checkout_url": "badurl"})
         r = self.app.get('/p/test/admin/src/checkout_url')
-        assert 'value="trunk"' in r
+        assert 'value="badurl"' not in r
         self.app.post('/p/test/admin/src/set_checkout_url',
                       {"checkout_url": ""})
         r = self.app.get('/p/test/admin/src/checkout_url')
