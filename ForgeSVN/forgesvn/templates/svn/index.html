@@ -28,7 +28,7 @@
         <a href="http://svnbook.red-bean.com/">Learn the basics</a>.
       </div>
     </div>
-    
+
     <div class="message error scm-empty-repo">
       <h6>Empty Repository</h6>
       <div class="content">
@@ -36,8 +36,28 @@
       </div>
     </div>
 
-    <h2>Import project on disk to Subversion</h2>
+    <h2>Create default directories</h2>
+    <p>It's common practice among Subversion users to create a <code>/trunk</code>,
+      <code>/branches</code>, and <code>/tags</code> directory at the root of each
+      repository. If you'd like to do that, follow these instructions:
+    <p>
+    <div class="codehilite">
+      <pre>
+{{c.app.repo.clone_command('rw')}}
+cd {{c.app.repo.suggested_clone_dest_path()}}
+mkdir trunk branches tags
+svn add trunk branches tags
+svn ci -m "Add initial directories"
+      </pre>
+    </div>
+    <p>To make the default checkout url for your repo point to your new
+      <code>/trunk</code> directory instead of the root, go to the
+      <a href="{{c.project.url() + 'admin/tools'}}">Admin / Tools</a>
+      screen, click on 'Checkout URL' under your repo, add 'trunk' to the
+      end of the url, and click 'Save.'
+    </p>
 
+    <h2>Import project on disk to Subversion</h2>
     <div class="codehilite">
       <pre>cd existing-{{c.app.repo.suggested_clone_dest_path()}}
 svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</pre>

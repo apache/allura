@@ -180,7 +180,7 @@ class SVNImplementation(M.RepositoryImplementation):
         return '%s%d/' % (
             self._repo.url(), self._revno(object_id))
 
-    def init(self, default_dirs=True, skip_special_files=False):
+    def init(self, default_dirs=False, skip_special_files=False):
         fullname = self._setup_paths()
         log.info('svn init %s', fullname)
         if os.path.exists(fullname):
@@ -233,7 +233,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another using svnsync'''
-        self.init(default_dirs=False, skip_special_files=True)
+        self.init(skip_special_files=True)
 
         def set_hook(hook_name):
             fn = os.path.join(self._repo.fs_path, self._repo.name,
