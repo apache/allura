@@ -17,7 +17,7 @@ wsgipreload==1.2
 pyzmq==2.1.7
 html2text==3.200.3dev-20121112
 
-# use version built from https://github.com/johnsca/GitPython/commits/0.3.2-RC1-20130424
+# use version built from https://github.com/johnsca/GitPython/commits/tv/6000
 # for unmerged fixes for [#5411], [#6000], and [#6078]
 GitPython==0.3.2.RC1-20130424
 
