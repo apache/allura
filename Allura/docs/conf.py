@@ -29,6 +29,14 @@
 # serve to show the default.
 
 import sys, os
+import mock
+
+MOCK_MODULES = ['matplotlib', 'matplotlib.axes',
+        'matplotlib.backends', 'matplotlib.backends.backend_agg',
+        'matplotlib.figure', 'matplotlib.patches']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -54,7 +62,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Apache Allura'
+project = 'Apache Allura (incubating)'
 copyright = '2012-2013 The Apache Software Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
