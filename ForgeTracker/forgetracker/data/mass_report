@@ -1,0 +1,6 @@
+{{ data.header }}
+
+{% for t_num, change_text in data.changes %}
+ticket: [{{ context.app.config.options.mount_point }}:#{{ t_num }}]
+{{ change_text }}
+{% endfor %}

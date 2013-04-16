@@ -1141,30 +1141,28 @@ class TestFunctionalController(TrackerTestController):
 
         # Expected data
         email_header = '''Mass edit changing:
-- **status**: accepted
-- **Milestone: 2.0
+- **Status**: accepted
+- **Milestone**: 2.0
+
 '''
         first_ticket_changes = '''ticket: [bugs:#1]
-- **status**: open --> accepted
-- **Milestone: 2.0 --> 2.0
+- **Status**: open --> accepted
 '''
         second_ticket_changes = '''ticket: [bugs:#2]
-- **status**: accepted --> accepted
-- **Milestone: 1.0 --> 2.0
+- **Milestone**: 1.0 --> 2.0
 '''
         third_ticket_changes = '''ticket: [bugs:#3]
-- **status**: unread --> accepted
-- **Milestone: --> 2.0
+- **Status**: unread --> accepted
+- **Milestone**: 1.0 --> 2.0
 '''
-        email = '\n'.join([email_header, first_ticket_changes])
+        email = u'\n'.join([email_header, first_ticket_changes, ''])
         assert_equal(email, first_user_email.kwargs.text)
-        email = '\n'.join([email_header, second_ticket_changes])
+        email = u'\n'.join([email_header, second_ticket_changes, ''])
         assert_equal(email, second_user_email.kwargs.text)
-        email = '\n'.join([email_header,
-                           first_ticket_changes,
-                           second_ticket_changes,
-                           third_ticket_changes])
-        assert_equal(email, admin_email.kwargs.text)
+        assert_in(email_header, admin_email.kwargs.text)
+        assert_in(first_ticket_changes, admin_email.kwargs.text)
+        assert_in(second_ticket_changes, admin_email.kwargs.text)
+        assert_in(third_ticket_changes, admin_email.kwargs.text)
 
     def test_filtered_by_subscription(self):
         self.new_ticket(summary='test first ticket', status='open')

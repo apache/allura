@@ -24,6 +24,7 @@ from urllib2 import urlopen
 from webob import exc
 import json
 from itertools import ifilter, imap
+import jinja2
 
 # Non-stdlib imports
 import pkg_resources
@@ -37,6 +38,7 @@ from bson import ObjectId
 from bson.son import SON
 from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
+from paste.deploy.converters import asbool
 
 from ming import schema
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -847,26 +849,28 @@ class RootController(BaseController):
                 ticket.commit()
         filtered_changes = filtered_by_subscription(changed_tickets)
         users = M.User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
+        def changes_iter(user):
+            for t_id in filtered_changes.get(user._id, []):
+                yield (changed_tickets[t_id].ticket_num, changes[t_id])
         mail = dict(
             fromaddr = str(c.user._id),
             reply_to = str(c.user._id),
-            message_id = h.gen_message_id(),
             subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
                                                            c.app.config.options.mount_point,
                                                            c.user.display_name),
         )
-        head = ['Mass edit changing:']
-        # TODO: add list with new values here
-        head = '\n'.join(head)
+        tmpl = jinja2.Environment(
+                loader=jinja2.PackageLoader('forgetracker', 'data'),
+                auto_reload=asbool(config.get('auto_reload_templates', True)),
+        ).get_template('mass_report')
+        head = ['- **%s**: %s' % (get_label(f), v) for f, v in values.iteritems()]
+        head += ['- **%s**: %s' % (get_label(f), v) for f, v in custom_values.iteritems()]
+        tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:'] + head)}}
         for user in users:
-            text = []
-            for t_id in filtered_changes.get(user._id, []):
-                text.append('ticket: [%s:#%d]' % (c.app.config.options.mount_point,
-                                                  changed_tickets[t_id].ticket_num))
-                text.append(changes[t_id])
-                text.append('')
+            tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
-                text = head + '\n\n' +  '\n'.join(text),
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
             # TODO: send summary on ticket's monitoring email
