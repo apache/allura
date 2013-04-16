@@ -814,22 +814,22 @@ class RootController(BaseController):
         changed_tickets = {}
         for ticket in tickets:
             message = ''
-            for k, v in values.iteritems():
+            for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
                     new_user = M.User.query.get(_id=v)
                     old_user = M.User.query.get(_id=getattr(ticket, k))
                     if new_user:
                         message += get_change_text(
                             get_label(k),
-                            new_user.username,
-                            old_user.username)
+                            new_user.display_name,
+                            old_user.display_name)
                 else:
                     message += get_change_text(
                         get_label(k),
                         v,
                         getattr(ticket, k))
                 setattr(ticket, k, v)
-            for k, v in custom_values.iteritems():
+            for k, v in sorted(custom_values.iteritems()):
                 def cf_val(cf):
                     return ticket.get_custom_user(cf.name) \
                            if cf.type == 'user' \
@@ -847,6 +847,7 @@ class RootController(BaseController):
                 changed_tickets[ticket._id] = ticket
                 ticket.discussion_thread.post(message, notify=False)
                 ticket.commit()
+
         filtered_changes = filtered_by_subscription(changed_tickets)
         users = M.User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
         def changes_iter(user):
@@ -863,8 +864,18 @@ class RootController(BaseController):
                 loader=jinja2.PackageLoader('forgetracker', 'data'),
                 auto_reload=asbool(config.get('auto_reload_templates', True)),
         ).get_template('mass_report')
-        head = ['- **%s**: %s' % (get_label(f), v) for f, v in values.iteritems()]
-        head += ['- **%s**: %s' % (get_label(f), v) for f, v in custom_values.iteritems()]
+        head = []
+        for f, v in sorted(values.iteritems()):
+            if f == 'assigned_to_id':
+                user = M.User.query.get(_id=v)
+                v = user.display_name if user else v
+            head.append('- **%s**: %s' % (get_label(f), v))
+        for f, v in sorted(custom_values.iteritems()):
+            cf = custom_fields[k]
+            if cf.type == 'user':
+                user = M.User.by_username(v)
+                v = user.display_name if user else v
+            head.append('- **%s**: %s' % (cf.label, v))
         tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:', ''] + head)}}
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})

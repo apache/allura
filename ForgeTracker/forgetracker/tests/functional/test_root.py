@@ -1113,7 +1113,8 @@ class TestFunctionalController(TrackerTestController):
                           second_ticket._id,
                           third_ticket._id),
                       'status': 'accepted',
-                      '_milestone': '2.0'})
+                      '_milestone': '2.0',
+                      'assigned_to': 'test-admin'})
         M.MonQTask.run_ready()
 
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
@@ -1142,20 +1143,24 @@ class TestFunctionalController(TrackerTestController):
         # Expected data
         email_header = '''Mass edit changing:
 
+- **Owner**: Test Admin
 - **Status**: accepted
 - **Milestone**: 2.0
 
 '''
         first_ticket_changes = '''ticket: [bugs:#1]
 
+- **Owner**: Anonymous --> Test Admin
 - **Status**: open --> accepted
 '''
         second_ticket_changes = '''ticket: [bugs:#2]
 
+- **Owner**: Anonymous --> Test Admin
 - **Milestone**: 1.0 --> 2.0
 '''
         third_ticket_changes = '''ticket: [bugs:#3]
 
+- **Owner**: Anonymous --> Test Admin
 - **Status**: unread --> accepted
 - **Milestone**: 1.0 --> 2.0
 '''
