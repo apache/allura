@@ -1173,6 +1173,41 @@ class TestFunctionalController(TrackerTestController):
         assert_in(second_ticket_changes, admin_email.kwargs.text)
         assert_in(third_ticket_changes, admin_email.kwargs.text)
 
+    def test_bulk_edit_notifications_monitoring_email(self):
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllTicketChanges',
+        })
+        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        ticket = tm.Ticket.query.get(summary='test first ticket')
+        M.MonQTask.query.remove()
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': [ticket._id],
+                      'status': 'accepted'})
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 2)  # one for admin and one for monitoring email
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
+        admin = M.User.by_username('test-admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 1)
+        admin_email_text = admin_email[0].kwargs.text
+        monitoring_email_text = monitoring_email[0].kwargs.text
+        assert_equal(admin_email_text, monitoring_email_text)
+
     def test_filtered_by_subscription(self):
         self.new_ticket(summary='test first ticket', status='open')
         self.new_ticket(summary='test second ticket', status='open')

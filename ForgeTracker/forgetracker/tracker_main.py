@@ -871,7 +871,7 @@ class RootController(BaseController):
                 v = user.display_name if user else v
             head.append('- **%s**: %s' % (get_label(f), v))
         for f, v in sorted(custom_values.iteritems()):
-            cf = custom_fields[k]
+            cf = custom_fields[f]
             if cf.type == 'user':
                 user = M.User.by_username(v)
                 v = user.display_name if user else v
@@ -884,7 +884,19 @@ class RootController(BaseController):
                 text = tmpl.render(tmpl_context),
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
-            # TODO: send summary on ticket's monitoring email
+
+        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
+            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            def all_changes():
+                for t_id in changed_tickets.keys():
+                    yield (changed_tickets[t_id].ticket_num, changes[t_id])
+            tmpl_context['data'].update({'changes': all_changes()})
+            mail.update(dict(
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [monitoring_email]))
+            mail_tasks.sendmail.post(**mail)
+
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         count = len(tickets)
