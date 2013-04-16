@@ -6,9 +6,11 @@ import urllib2
 # Non-stdlib imports
 import pkg_resources
 import pymongo
-from tg import expose, validate, redirect, flash
+from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from tg.controllers import RestController
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from formencode import validators
 from webob import exc
 import MySQLdb
