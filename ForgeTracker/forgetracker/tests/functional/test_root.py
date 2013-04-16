@@ -1141,17 +1141,21 @@ class TestFunctionalController(TrackerTestController):
 
         # Expected data
         email_header = '''Mass edit changing:
+
 - **Status**: accepted
 - **Milestone**: 2.0
 
 '''
         first_ticket_changes = '''ticket: [bugs:#1]
+
 - **Status**: open --> accepted
 '''
         second_ticket_changes = '''ticket: [bugs:#2]
+
 - **Milestone**: 1.0 --> 2.0
 '''
         third_ticket_changes = '''ticket: [bugs:#3]
+
 - **Status**: unread --> accepted
 - **Milestone**: 1.0 --> 2.0
 '''

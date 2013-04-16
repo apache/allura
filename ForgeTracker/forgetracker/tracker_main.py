@@ -865,7 +865,7 @@ class RootController(BaseController):
         ).get_template('mass_report')
         head = ['- **%s**: %s' % (get_label(f), v) for f, v in values.iteritems()]
         head += ['- **%s**: %s' % (get_label(f), v) for f, v in custom_values.iteritems()]
-        tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:'] + head)}}
+        tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:', ''] + head)}}
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
