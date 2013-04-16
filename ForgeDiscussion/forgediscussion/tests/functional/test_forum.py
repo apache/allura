@@ -7,10 +7,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from nose.tools import assert_equal
 
 from allura import model as M
@@ -363,7 +360,8 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/moderate')
         slug = r.html.find('input', {'name': 'post-0.full_slug'})
         if slug is None: slug = '' #FIXME this makes the test keep passing, but clearly something isn't found
-        r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
+        r = self.app.post('/discussion/testforum/moderate/save_'
+                          'moderation', params={
                 'post-0.full_slug': slug,
                 'post-0.checked': 'on',
                 'delete': 'Delete Marked'})
@@ -382,7 +380,7 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
         r = self.app.post('/discussion/save_new_topic', params=params)
-        spam_checker.check.call_args[0] == 'Test Thread\nThis is a *test thread*', \
+        assert spam_checker.check.call_args[0] == ('Test Thread\nThis is a *test thread*',), \
             spam_checker.check.call_args[0]
         r = self.app.get('/admin/discussion/forums')
         assert 'Message posted' in r
@@ -418,11 +416,30 @@ class TestForum(TestController):
         params[f.find('textarea')['name']] = 'Post content'
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Thread'
-        r = self.app.post('/discussion/save_new_topic', params=params,
-                extra_environ=dict(username='*anonymous')).follow()
-        assert 'Post awaiting moderation' in r
+        thread = self.app.post('/discussion/save_new_topic', params=params,
+                               extra_environ=dict(username='*anonymous')).follow()
 
-    def test_thread(self):
+        r = self.app.get(thread.request.url, extra_environ=dict(username='*anonymous'))
+        assert 'Post awaiting moderation' in r
+        assert 'name="delete"' not in r
+        assert 'name="approve"' not in r
+        assert 'name="spam"' not in r
+
+        r = self.app.get(thread.request.url)
+        assert '<div class="display_post moderate">' in r
+        assert '<a href="" class="reply_post btn" style="display:none">' in r
+        assert r.html.find('a',{'class': 'little_link shortlink', 'style': 'display:none'}) is not None
+        assert 'name="delete"' in r
+        assert 'name="approve"' in r
+        assert 'name="spam"' in r
+        assert 'Post content' in r
+        r = self.app.get('/discussion/testforum/moderate/')
+        post = FM.ForumPost.query.get(text='Post content')
+        link = '<a href="%s">[%s]</a>' % (post.thread.url() + '?limit=25#' + post.slug, post.shorthand_id())
+        assert link in r, link
+
+    @mock.patch('forgediscussion.controllers.root.g.spam_checker')
+    def test_thread(self, spam_checker):
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()
@@ -446,6 +463,7 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key('value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'bbb'
         thread = self.app.post(str(rep_url), params=params)
+        assert spam_checker.check.call_args[0] == ('bbb',), spam_checker.check.call_args[0]
         thread = self.app.get(url)
         # beautiful soup is getting some unicode error here - test without it
         assert thread.html.findAll('div',{'class':'display_post'})[0].find('p').string == 'aaa'

@@ -1,9 +1,6 @@
-import pylons
 import difflib
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import g #g is a namespace for globally accessable app helpers
-from pylons import c as context
+from pylons import app_globals as g #g is a namespace for globally accessable app helpers
+from pylons import tmpl_context as context
 
 from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session
@@ -49,9 +46,9 @@ class PageHistory(Snapshot):
 
     def index(self):
         result = Snapshot.index(self)
+        title = '%s (version %d)' % (self.original().title, self.version)
         result.update(
-            title_s='Version %d of %s' % (
-                self.version,self.original().title),
+            title=title,
             type_s='WikiPage Snapshot',
             text=self.data.text)
         return result
@@ -132,7 +129,7 @@ class Page(VersionedArtifact, ActivityObject):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s='WikiPage %s' % self.title,
+            title=self.title,
             version_i=self.version,
             type_s='WikiPage',
             text=self.text)

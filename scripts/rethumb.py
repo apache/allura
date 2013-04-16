@@ -4,7 +4,7 @@ import time
 import pkg_resources
 import Image
 import tg
-from pylons import c
+from pylons import tmpl_context as c
 from paste.deploy.converters import asint
 
 from ming.orm import mapper, ThreadLocalORMSession, session, state, Mapper

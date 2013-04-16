@@ -5,7 +5,8 @@ from datetime import datetime
 
 import bson
 import pymongo
-from pylons import c, request, g
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from ming import schema as S
 from ming.orm import state, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
@@ -129,7 +130,7 @@ class Artifact(MappedClass):
                 app = ac.project.app_instance(ac) if ac else None
                 if app:
                     artifact.set_context(app.repo)
-            if artifact not in related_artifacts:
+            if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) == False):
                 related_artifacts.append(artifact)
         return related_artifacts
 
@@ -207,12 +208,11 @@ class Artifact(MappedClass):
         """
         Subclasses should override this, providing a dictionary of solr_field => value.
         These fields & values will be stored by solr.  Subclasses should call the
-        super() index() and then extend it with more fields.  All these fields will be
-        included in the 'text' field (done by search.solarize())
+        super() index() and then extend it with more fields.
 
         The _s and _t suffixes, for example, follow solr dynamic field naming
         pattern.
-        You probably want to override at least title_s and text to have
+        You probably want to override at least title and text to have
         meaningful search results and email senders.
         """
 
@@ -220,7 +220,7 @@ class Artifact(MappedClass):
         return dict(
             id=self.index_id(),
             mod_date_dt=self.mod_date,
-            title_s='Artifact %s' % self._id,
+            title='Artifact %s' % self._id,
             project_id_s=str(project._id),
             project_name_t=project.name,
             project_shortname_t=project.shortname,
@@ -267,7 +267,7 @@ class Artifact(MappedClass):
             t = Thread.new(
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
-                subject='%s discussion' % idx['title_s'])
+                subject='%s discussion' % h.get_first(idx, 'title'))
         parent_id = None
         if data:
             in_reply_to = data.get('in_reply_to', [])
@@ -315,8 +315,8 @@ class Snapshot(Artifact):
         if original:
             original_index = original.index()
             result.update(original_index)
-            result['title_s'] = 'Version %d of %s' % (
-                    self.version, original_index['title_s'])
+            result['title'] = 'Version %d of %s' % (
+                    self.version, h.get_first(original_index, 'title'))
         result.update(
             id=self.index_id(),
             version_i=self.version,
@@ -347,7 +347,7 @@ class VersionedArtifact(Artifact):
 
     version = FieldProperty(S.Int, if_missing=0)
 
-    def commit(self):
+    def commit(self, update_stats=True):
         '''Save off a snapshot of the artifact and increment the version #'''
         self.version += 1
         try:
@@ -372,6 +372,13 @@ class VersionedArtifact(Artifact):
         session(ss).insert_now(ss, state(ss))
         log.info('Snapshot version %s of %s',
                  self.version, self.__class__)
+        if update_stats: 
+            if self.version > 1:
+                g.statsUpdater.modifiedArtifact(
+                    self.type_s, self.mod_date, self.project, c.user)
+            else :
+                g.statsUpdater.newArtifact(
+                    self.type_s, self.mod_date, self.project, c.user)
         return ss
 
     def get_version(self, n):
@@ -639,7 +646,7 @@ class Feed(MappedClass):
         if author_name is None:
             author_name = author.get_pref('display_name')
         if title is None:
-            title='%s modified by %s' % (idx['title_s'], author_name)
+            title='%s modified by %s' % (h.get_first(idx, 'title'), author_name)
         if description is None: description = title
         if pubdate is None:
             pubdate = datetime.utcnow()

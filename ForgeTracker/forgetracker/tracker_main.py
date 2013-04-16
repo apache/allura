@@ -6,14 +6,19 @@ from urllib import urlencode, unquote
 from urllib2 import urlopen
 from webob import exc
 import json
+from itertools import ifilter, imap
 
 # Non-stdlib imports
 import pkg_resources
 from tg import expose, validate, redirect, flash, url, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from paste.deploy.converters import aslist
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from formencode import validators
 from bson import ObjectId
+from bson.son import SON
+from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
 
 from ming import schema
@@ -25,7 +30,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.app import Application, SitemapEntry, DefaultAdminController, ConfigOption
-from allura.lib.search import search_artifact
+from allura.lib.search import search_artifact, SearchError
 from allura.lib.decorators import require_post
 from allura.lib.security import (require_access, has_access, require,
                                  require_authenticated)
@@ -58,7 +63,8 @@ search_validators = dict(
     project=validators.StringBool(if_empty=False),
     limit=validators.Int(if_invalid=None),
     page=validators.Int(if_empty=0),
-    sort=validators.UnicodeString(if_empty=None))
+    sort=validators.UnicodeString(if_empty=None),
+    deleted=validators.StringBool(if_empty=False))
 
 def _mongo_col_to_solr_col(name):
     if name == 'ticket_num':
@@ -135,11 +141,12 @@ class W:
     options_admin = OptionsAdmin()
     search_help_modal = SearchHelp()
     vote_form = w.VoteForm()
+    move_ticket_form = w.forms.MoveTicketForm
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'update', 'create', 'save_searches',
-                    'unmoderated_post', 'post', 'moderate', 'admin']
+                    'unmoderated_post', 'post', 'moderate', 'admin', 'delete']
     config_options = Application.config_options + [
         ConfigOption('EnableVoting', bool, False),
         ConfigOption('TicketMonitoringEmail', str, ''),
@@ -191,13 +198,13 @@ class ForgeTrackerApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.config.options.mount_label,
                 '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
@@ -219,8 +226,9 @@ class ForgeTrackerApp(Application):
         milestones = []
         for bin in self.bins:
             label = bin.shorthand_id()
+            cls = '' if bin.terms and '$USER' in bin.terms else 'search_bin'
             search_bins.append(SitemapEntry(
-                    h.text.truncate(label, 72), bin.url(), className='search_bin'))
+                    h.text.truncate(label, 72), bin.url(), className=cls))
         for fld in c.app.globals.milestone_fields:
             milestones.append(SitemapEntry(h.text.truncate(fld.label, 72)))
             for m in getattr(fld, "milestones", []):
@@ -229,7 +237,7 @@ class ForgeTrackerApp(Application):
                     SitemapEntry(
                         h.text.truncate(m.name, 72),
                         self.url + fld.name[1:] + '/' + h.urlquote(m.name) + '/',
-                        small=c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']))
+                        className='milestones'))
 
         links = []
         if has_access(self, 'create')():
@@ -258,7 +266,7 @@ class ForgeTrackerApp(Application):
         return """\
         $(function() {
             $.ajax({
-                url:'%sbin_counts',
+                url:'%(app_url)sbin_counts',
                 success: function(data) {
                     $.each(data.bin_counts, function(i, item) {
                         var $span = $('.search_bin span:contains("' + item.label + '")');
@@ -268,7 +276,20 @@ class ForgeTrackerApp(Application):
                     });
                 }
             });
-        });""" % c.app.url
+            if ($('.milestones').length > 0) {
+                $.ajax({
+                    url: '%(app_url)smilestone_counts',
+                    success: function(data) {
+                        $.each(data.milestone_counts, function(i, item) {
+                            var $span = $('.milestones span:contains("' + item.name + '")');
+                            if ($span) {
+                                $span.after('<small>' + item.count + '</small>').fadeIn('fast');
+                            }
+                        });
+                    }
+                });
+            }
+        });""" % {'app_url': c.app.url}
 
     def has_custom_field(self, field):
         '''Checks if given custom field is defined. (Custom field names
@@ -295,6 +316,7 @@ class ForgeTrackerApp(Application):
             M.ACE.allow(role_developer, 'create'),
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_developer, 'save_searches'),
+            M.ACE.allow(role_developer, 'delete'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
             ]
@@ -309,7 +331,7 @@ class ForgeTrackerApp(Application):
                     milestones=[
                         dict(name='1.0', complete=False, due_date=None),
                         dict(name='2.0', complete=False, due_date=None)]) ])
-        c.app.globals.invalidate_bin_counts()
+        self.globals.update_bin_counts()
         # create default search bins
         TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query,
                 app_config_id = self.config._id, custom_fields = dict())
@@ -450,15 +472,55 @@ class RootController(BaseController):
             bin_counts.append(dict(label=label, count=count))
         return dict(bin_counts=bin_counts)
 
+    @expose('json:')
+    def milestone_counts(self, *args, **kw):
+        milestone_counts = []
+        for fld in c.app.globals.milestone_fields:
+            for m in getattr(fld, "milestones", []):
+                if m.complete: continue
+                count = c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))['hits']
+                name = h.text.truncate(m.name, 72)
+                milestone_counts.append({'name': name, 'count': count})
+        return {'milestone_counts': milestone_counts}
+
+    @expose('json:')
+    def tags(self, term=None, **kw):
+        if not term:
+            return json.dumps([])
+        db = M.session.project_doc_session.db
+        tickets = db[TM.Ticket.__mongometa__.name]
+        tags = tickets.aggregate([
+            {
+                '$match': {
+                    'app_config_id': c.app.config._id,
+                    'labels': {
+                        '$exists': True,
+                        '$ne': [],
+                    }
+                }
+            },
+            {'$project': {'labels': 1}},
+            {'$unwind': '$labels'},
+            {'$match': {'labels': {'$regex': '^%s' % term, '$options': 'i'}}},
+            {'$group': { '_id': '$labels', 'count': {'$sum': 1}}},
+            {'$sort': SON([('count', -1), ('_id', 1)])}
+        ])
+        return json.dumps([tag['_id'] for tag in tags.get('result', [])])
+
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', **kw):
+    @validate(dict(deleted=validators.StringBool(if_empty=False)))
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', deleted=False, **kw):
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
+
         kw.pop('q', None) # it's just our original query mangled and sent back to us
         result = TM.Ticket.paged_query(c.app.config, c.user,
                                         c.app.globals.not_closed_mongo_query,
                                         sort=sort, limit=int(limit),
-                                        page=page, **kw)
+                                        page=page, deleted={'$in':show_deleted}, **kw)
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
@@ -466,6 +528,7 @@ class RootController(BaseController):
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         result['url_q'] = c.app.globals.not_closed_query
         result['url_sort'] = ''
+        result['deleted'] = deleted
         if sort:
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
@@ -526,7 +589,7 @@ class RootController(BaseController):
                                     # rows by default, so give it a high upper
                                     # bound to make sure we get all tickets
                                     # for this milestone
-                                    r = search_artifact(TM.Ticket, q, rows=10000)
+                                    r = search_artifact(TM.Ticket, q, rows=10000, short_timeout=False)
                                     ticket_numbers = [match['ticket_num_i'] for match in r.docs]
                                     tickets = TM.Ticket.query.find(dict(
                                         app_config_id=c.app.config._id,
@@ -549,7 +612,9 @@ class RootController(BaseController):
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/search.html')
     @validate(validators=search_validators)
-    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, **kw):
+    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, deleted=False, **kw):
+        require(has_access(c.app, 'read'))
+
         if query and not q:
             q = query
         c.bin_form = W.bin_form
@@ -559,12 +624,13 @@ class RootController(BaseController):
             bin = TM.Bin.query.find(dict(app_config_id=c.app.config._id,terms=q)).first()
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
         result['columns'] = columns or solr_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
         result['bin'] = bin
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch', '').strip()
+        result['deleted'] = deleted
         c.ticket_search_results = W.ticket_search_results
         return result
 
@@ -572,10 +638,10 @@ class RootController(BaseController):
     @h.vardec
     @expose()
     @validate(validators=search_validators)
-    def search_feed(self, q=None, query=None, project=None, page=0, sort=None, **kw):
+    def search_feed(self, q=None, query=None, project=None, page=0, sort=None, deleted=False, **kw):
         if query and not q:
             q = query
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = dict(title='Ticket search results', link=h.absurl(c.app.url), description='You searched for %s' % q, language=u'en')
@@ -667,6 +733,7 @@ class RootController(BaseController):
             require_access(c.app, 'create')
             ticket = TM.Ticket.new()
         ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,
                 related_nodes=[c.project])
         redirect(str(ticket.ticket_num)+'/')
@@ -679,7 +746,7 @@ class RootController(BaseController):
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'update')
-        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, **kw)
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, show_deleted=False, **kw)
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         result['columns'] = solr_columns()
@@ -688,7 +755,7 @@ class RootController(BaseController):
         result['cancel_href'] = url(
             c.app.url + 'search/',
             dict(q=q, limit=limit, sort=sort))
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = ffw.ProjectUserCombo()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
         return result
@@ -696,9 +763,8 @@ class RootController(BaseController):
     @expose()
     @require_post()
     def update_tickets(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
         tickets = TM.Ticket.query.find(dict(
-                _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
+                _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
                 app_config_id=c.app.config._id)).all()
         for ticket in tickets:
             require_access(ticket, 'update')
@@ -711,16 +777,18 @@ class RootController(BaseController):
         assigned_to = post_data.get('assigned_to')
         if assigned_to == '-':
             values['assigned_to_id'] = None
-        elif assigned_to is not None:
+        elif assigned_to:
             user = c.project.user_in_project(assigned_to)
             if user:
                 values['assigned_to_id'] = user._id
 
-        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
         custom_values = {}
-        for k in custom_fields:
-            v = post_data.get(k)
-            if v: custom_values[k] = v
+        custom_fields = {}
+        for cf in c.app.globals.custom_fields or []:
+            v = post_data.get(cf.name)
+            if v:
+                custom_values[cf.name] = v
+                custom_fields[cf.name] = cf
 
         for ticket in tickets:
             message = ''
@@ -740,23 +808,26 @@ class RootController(BaseController):
                         getattr(ticket, k))
                 setattr(ticket, k, v)
             for k, v in custom_values.iteritems():
-                message += get_change_text(
-                    get_label(k),
-                    v,
-                    ticket.custom_fields[k])
+                def cf_val(cf):
+                    return ticket.get_custom_user(cf.name) \
+                           if cf.type == 'user' \
+                           else ticket.custom_fields.get(cf.name)
+                cf = custom_fields[k]
+                old_value = cf_val(cf)
                 ticket.custom_fields[k] = v
+                new_value = cf_val(cf)
+                message += get_change_text(
+                    cf.label,
+                    new_value,
+                    old_value)
             if message != '':
                 ticket.discussion_thread.post(message)
                 ticket.commit()
+        c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-
-# tickets
-# open tickets
-# closed tickets
-# new tickets in the last 7/14/30 days
-# of comments on tickets
-# of new comments on tickets in 7/14/30
-# of ticket changes in the last 7/14/30
+        count = len(tickets)
+        flash('Updated {} ticket{}'.format(count, 's' if count != 1 else ''), 'ok')
+        redirect('edit/' + post_data['__search'])
 
     def tickets_since(self, when=None):
         count = 0
@@ -778,9 +849,9 @@ class RootController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/stats.html')
     def stats(self, dates=None, **kw):
         globals = c.app.globals
-        total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id)).count()
-        open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_open_status_names)})).count()
-        closed = TM.Ticket.query.find(dict(app_config_id=c.app.config._id,status={'$in': list(globals.set_of_closed_status_names)})).count()
+        total = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False)).count()
+        open = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False, status={'$in': list(globals.set_of_open_status_names)})).count()
+        closed = TM.Ticket.query.find(dict(app_config_id=c.app.config._id, deleted = False, status={'$in': list(globals.set_of_closed_status_names)})).count()
         now = datetime.utcnow()
         week = timedelta(weeks=1)
         fortnight = timedelta(weeks=2)
@@ -795,7 +866,7 @@ class RootController(BaseController):
         week_comments=self.ticket_comments_since(week_ago)
         fortnight_comments=self.ticket_comments_since(fortnight_ago)
         month_comments=self.ticket_comments_since(month_ago)
-        c.user_select = ffw.ProjectUserSelect()
+        c.user_select = ffw.ProjectUserCombo()
         if dates is None:
             today = datetime.utcnow()
             dates = "%s to %s" % ((today - timedelta(days=61)).strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
@@ -911,8 +982,8 @@ class BinController(BaseController):
         try:
             # Test the search by running it
             with h.push_config(c, app=self.app):
-                search_artifact(TM.Ticket, bin.terms, rows=0)
-        except ValueError, e:
+                search_artifact(TM.Ticket, bin.terms, rows=0, short_timeout=True)
+        except SearchError as e:
             # Search threw an error.
             # Save the error on the bin object for displaying
             # in the template.
@@ -932,7 +1003,6 @@ class BinController(BaseController):
     @validate(validators=dict(bin=V.Ming(TM.Bin)))
     def delbin(self, bin=None):
         require(lambda:bin.app_config_id==self.app.config._id)
-        self.app.globals.invalidate_bin_counts()
         bin.delete()
         redirect(request.referer)
 
@@ -985,8 +1055,8 @@ class BinController(BaseController):
                         bin.terms = bin_form['terms']
                         try:
                             with h.push_config(c, app=self.app):
-                                search_artifact(TM.Ticket, bin.terms, rows=0)
-                        except ValueError, e:
+                                search_artifact(TM.Ticket, bin.terms, rows=0, short_timeout=True)
+                        except SearchError as e:
                             # Search threw an error.
                             # Save the error on the bin object for displaying
                             # in the template.
@@ -1008,8 +1078,8 @@ class BinController(BaseController):
             # page so the user can fix the errors.
             return dict(bins=saved_bins, count=len(bins), app=self.app,
                     new_bin=new_bin, errors=errors)
-        # No errors, redirect to search bin list page.
         self.app.globals.invalidate_bin_counts()
+        # No errors, redirect to search bin list page.
         redirect('.')
 
 class changelog(object):
@@ -1090,8 +1160,9 @@ class TicketController(BaseController):
     @validate(dict(
             page=validators.Int(if_empty=0),
             limit=validators.Int(if_empty=10)))
-    def index(self, page=0, limit=10, **kw):
-        if self.ticket is not None:
+    def index(self, page=0, limit=10, deleted=False, **kw):
+        ticket_visible = self.ticket and not self.ticket.deleted
+        if ticket_visible or has_access(self.ticket, 'delete'):
             c.ticket_form = W.ticket_form
             c.thread = W.thread
             c.attachment_list = W.attachment_list
@@ -1146,7 +1217,6 @@ class TicketController(BaseController):
         if not post_data.get('summary'):
             flash('You must provide a Name','error')
             redirect('.')
-        c.app.globals.invalidate_bin_counts()
         if 'labels' in post_data:
             post_data['labels'] = post_data['labels'].split(',')
         else:
@@ -1158,13 +1228,35 @@ class TicketController(BaseController):
     @h.vardec
     @validate(W.ticket_form, error_handler=index)
     def update_ticket_from_widget(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
         data = post_data['ticket_form']
         # icky: handle custom fields like the non-widget form does
         if 'custom_fields' in data:
             for k in data['custom_fields']:
                 data['custom_fields.'+k] = data['custom_fields'][k]
         self._update_ticket(data)
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def delete(self):
+        require_access(self.ticket, 'delete')
+        M.Shortlink.query.remove(dict(ref_id=self.ticket.index_id()))
+        self.ticket.deleted = True
+        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+        self.ticket.summary += suffix
+        flash('Ticket successfully deleted')
+        return dict(location='../'+str(self.ticket.ticket_num))
+
+    @without_trailing_slash
+    @expose('json:')
+    @require_post()
+    def undelete(self):
+        require_access(self.ticket, 'delete')
+        self.ticket.deleted = False
+        self.ticket.summary = re.sub(' \d+:\d+:\d+ \d+-\d+-\d+$','',self.ticket.summary)
+        M.Shortlink.from_artifact(self.ticket)
+        flash('Ticket successfully restored')
+        return dict(location='../'+str(self.ticket.ticket_num))
 
     @require_post()
     def _update_ticket(self, post_data):
@@ -1221,9 +1313,9 @@ class TicketController(BaseController):
                     return self.ticket.get_custom_user(cf.name) \
                            if cf.type == 'user' \
                            else self.ticket.custom_fields.get(cf.name)
-                changes[cf.name[1:]] = cf_val(cf)
+                changes[cf.label] = cf_val(cf)
                 self.ticket.custom_fields[cf.name] = value
-                changes[cf.name[1:]] = cf_val(cf)
+                changes[cf.label] = cf_val(cf)
         thread = self.ticket.discussion_thread
         tpl_fn = pkg_resources.resource_filename(
             'forgetracker', 'data/ticket_changed_tmpl')
@@ -1236,6 +1328,7 @@ class TicketController(BaseController):
             self.ticket.discussion_thread.post(text=comment)
         g.director.create_activity(c.user, 'modified', self.ticket,
                 related_nodes=[c.project])
+        c.app.globals.invalidate_bin_counts()
         redirect('.')
 
     @expose()
@@ -1264,6 +1357,50 @@ class TicketController(BaseController):
             votes_up=self.ticket.votes_up,
             votes_down=self.ticket.votes_down,
             votes_percent=self.ticket.votes_up_percent)
+
+    @expose('jinja:forgetracker:templates/tracker/move_ticket.html')
+    def move(self, **post_data):
+        require_access(self.ticket.app, 'admin')
+        if request.method == 'POST':
+            t_id = str(post_data.pop('tracker', ''))
+            try:
+                t_id = ObjectId(t_id)
+            except InvalidId:
+                t_id = None
+
+            tracker = M.AppConfig.query.get(_id=t_id)
+            if tracker is None:
+                flash('Select valid tracker', 'error')
+                redirect(request.referer)
+
+            if tracker == self.ticket.app.config:
+                flash('Ticket already in a selected tracker', 'info')
+                redirect(request.referer)
+
+            if not has_access(tracker, 'admin')():
+                flash('You should have admin access to destination tracker', 'error')
+                redirect(request.referer)
+
+            new_ticket = self.ticket.move(tracker)
+            c.app.globals.invalidate_bin_counts()
+            flash('Ticket successfully moved')
+            redirect(new_ticket.url())
+
+        # collect all 'Tickets' instances in all user project for which his has admin perms
+        trackers = []
+        projects = c.user.my_projects()
+        projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
+        for p in projects:
+            for ac in p.app_configs:
+                if ac.tool_name.lower() == 'tickets':
+                    trac = (str(ac._id),
+                            '%s/%s' % (p.shortname, ac.options['mount_point']),
+                            bool(self.ticket.app.config == ac))
+                    trackers.append(trac)
+        return {
+            'ticket': self.ticket,
+            'form': W.move_ticket_form(trackers=trackers),
+        }
 
 
 class AttachmentController(ac.AttachmentController):
@@ -1446,7 +1583,6 @@ class RootRestController(BaseController):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def new(self, ticket_form=None, **post_data):
         require_access(c.app, 'create')
-        c.app.globals.invalidate_bin_counts()
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
         ticket = TM.Ticket(
@@ -1454,6 +1590,7 @@ class RootRestController(BaseController):
             custom_fields=dict(),
             ticket_num=c.app.globals.next_ticket_num())
         ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         redirect(str(ticket.ticket_num)+'/')
 
     @expose('json:')
@@ -1484,7 +1621,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):
-        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort)
+        results = TM.Ticket.paged_search(c.app.config, c.user, q, limit, page, sort, show_deleted=False)
         results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
                               for t in results['tickets']]
         return results
@@ -1516,10 +1653,10 @@ class TicketRestController(BaseController):
     @validate(W.ticket_form, error_handler=h.json_validation_error)
     def save(self, ticket_form=None, **post_data):
         require_access(self.ticket, 'update')
-        c.app.globals.invalidate_bin_counts()
         # if c.app.globals.milestone_names is None:
         #     c.app.globals.milestone_names = ''
         self.ticket.update(ticket_form)
+        c.app.globals.invalidate_bin_counts()
         redirect('.')
 
 class MilestoneController(BaseController):
@@ -1549,15 +1686,21 @@ class MilestoneController(BaseController):
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
             page=validators.Int(if_empty=0),
-            sort=validators.UnicodeString(if_empty=None)))
-    def index(self, q=None, columns=None, page=0, query=None, sort=None, **kw):
+            sort=validators.UnicodeString(if_empty=None),
+            deleted=validators.StringBool(if_empty=False)))
+    def index(self, q=None, columns=None, page=0, query=None, sort=None, deleted=False, **kw):
         require(has_access(c.app, 'read'))
+        show_deleted = [False]
+        if deleted and has_access(c.app, 'delete'):
+            show_deleted = [False,True]
+
         result = TM.Ticket.paged_query(c.app.config, c.user,
-            self.mongo_query, page=page, sort=sort, **kw)
+            self.mongo_query, page=page, sort=sort, deleted={'$in':show_deleted}, **kw)
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
+        result['deleted'] = deleted
         progress = c.app.globals.milestone_count(self.progress_key)
         result.pop('q')
         result.update(
@@ -1574,62 +1717,3 @@ class MilestoneController(BaseController):
         c.ticket_search_results = W.ticket_search_results
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
-
-    @with_trailing_slash
-    @expose('jinja:forgetracker:templates/tracker/mass_edit.html')
-    @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   limit=validators.Int(if_empty=10),
-                   page=validators.Int(if_empty=0),
-                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
-    def edit(self, q=None, limit=None, page=None, sort=None, columns=None, **kw):
-        require_access(c.app, 'update')
-        result = TM.Ticket.paged_query(c.app.config, c.user,
-            self.mongo_query, page=page, sort=sort, **kw)
-        result['columns'] = columns or mongo_columns()
-        result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
-        # if c.app.globals.milestone_names is None:
-        #     c.app.globals.milestone_names = ''
-        result.pop('q')
-        result['globals'] = c.app.globals
-        result['cancel_href'] = '..'
-        c.user_select = ffw.ProjectUserSelect()
-        c.mass_edit = W.mass_edit
-        c.mass_edit_form = W.mass_edit_form
-        return result
-
-    @expose()
-    @require_post()
-    def update_tickets(self, **post_data):
-        c.app.globals.invalidate_bin_counts()
-        tickets = TM.Ticket.query.find(dict(
-                _id={'$in':[ObjectId(id) for id in post_data['selected'].split(',')]},
-                app_config_id=c.app.config._id)).all()
-        for ticket in tickets:
-            require_access(ticket, 'update')
-
-        fields = set(['status'])
-        values = {}
-        for k in fields:
-            v = post_data.get(k)
-            if v: values[k] = v
-        assigned_to = post_data.get('assigned_to')
-        if assigned_to == '-':
-            values['assigned_to_id'] = None
-        elif assigned_to is not None:
-            user = c.project.user_in_project(assigned_to)
-            if user:
-                values['assigned_to_id'] = user._id
-
-        custom_fields = set([cf.name for cf in c.app.globals.custom_fields or[]])
-        custom_values = {}
-        for k in custom_fields:
-            v = post_data.get(k)
-            if v: custom_values[k] = v
-
-        for ticket in tickets:
-            for k, v in values.iteritems():
-                setattr(ticket, k, v)
-            for k, v in custom_values.iteritems():
-                ticket.custom_fields[k] = v
-
-        ThreadLocalORMSession.flush_all()

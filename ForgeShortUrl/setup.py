@@ -19,6 +19,4 @@ setup(name='ForgeShortUrl',
       [allura]
       ShortURL=forgeshorturl.main:ForgeShortUrlApp
 
-      [paste.paster_command]
-      migrate-urls=forgeshorturl.command.migrate_urls:MigrateUrls
       """,)

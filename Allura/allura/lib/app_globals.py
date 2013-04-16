@@ -30,6 +30,7 @@ from ming.utils import LazyProperty
 import allura.tasks.event_tasks
 from allura import model as M
 from allura.lib.markdown_extensions import ForgeExtension
+from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
 from allura.lib import helpers as h
@@ -71,12 +72,15 @@ class Globals(object):
         # Setup SOLR
         self.solr_server = config.get('solr.server')
         if asbool(config.get('solr.mock')):
-            self.solr = MockSOLR()
+            self.solr = self.solr_short_timeout = MockSOLR()
         elif self.solr_server:
             self.solr = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
-                    commitWithin=config.get('solr.commitWithin'))
+                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.long_timeout', 60)))
+            self.solr_short_timeout = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
+                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.short_timeout', 10)))
         else: # pragma no cover
             self.solr = None
+            self.solr_short_timeout = None
         self.use_queue = asbool(config.get('use_queue', False))
 
         # Load login/logout urls; only used for SFX logins
@@ -161,28 +165,25 @@ class Globals(object):
             registration=_cache_eps('allura.project_registration'),
             theme=_cache_eps('allura.theme'),
             user_prefs=_cache_eps('allura.user_prefs'),
+            spam=_cache_eps('allura.spam'),
+            stats=_cache_eps('allura.stats'),
             )
 
         # Zarkov logger
         self._zarkov = None
 
+        # Set listeners to update stats
+        statslisteners = []
+        for name, ep in self.entry_points['stats'].iteritems():
+            statslisteners.append(ep())
+        self.statsUpdater = PostEvent(statslisteners)
+
     @LazyProperty
     def spam_checker(self):
-        """Return an Akismet spam checker if config defines an Akismet API key.
-        Otherwise, return a no-op spam checker.
-
-        Eventually we may support checkers for other services like Mollom and
-        Defensio.
+        """Return a SpamFilter implementation.
         """
-        akismet_key = config.get('spam.akismet_key')
-        if akismet_key:
-            from allura.lib.spam import akismetservice
-            checker = akismetservice.Akismet(akismet_key, config.get('base_url'))
-            checker.verify_key()
-        else:
-            from allura.lib import spam
-            checker = spam.FakeSpamChecker()
-        return checker
+        from allura.lib import spam
+        return spam.SpamFilter.get(config, self.entry_points['spam'])
 
     @LazyProperty
     def director(self):
@@ -279,6 +280,12 @@ class Globals(object):
         return Credentials.get()
 
     def handle_paging(self, limit, page, default=50):
+        limit = self.manage_paging_preference(limit, default)
+        page = max(int(page), 0)
+        start = page * int(limit)
+        return (limit, page, start)
+
+    def manage_paging_preference(self, limit, default=50):
         if limit:
             if c.user in (None, M.User.anonymous()):
                 session['results_per_page'] = int(limit)
@@ -290,9 +297,7 @@ class Globals(object):
                 limit = 'results_per_page' in session and session['results_per_page'] or default
             else:
                 limit = c.user.get_pref('results_per_page') or default
-        page = max(int(page), 0)
-        start = page * int(limit)
-        return (limit, page, start)
+        return limit
 
     def document_class(self, neighborhood):
         classes = ''

@@ -8,7 +8,7 @@ from collections import defaultdict
 from datetime import datetime
 
 import tg
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 
 from ming import Session, mim
@@ -88,6 +88,7 @@ def bootstrap(command, conf, vars):
                                               google_analytics = False))
     n_users = M.Neighborhood(name='Users', url_prefix='/u/',
                              shortname_prefix='u/',
+                             anchored_tools='profile:Profile,userstats:Statistics',
                              features=dict(private_projects = True,
                                            max_projects = None,
                                            css = 'none',

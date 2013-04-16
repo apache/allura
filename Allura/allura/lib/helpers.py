@@ -13,15 +13,13 @@ from datetime import datetime, timedelta
 import tg
 import genshi.template
 import chardet
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
-from pylons import c, response, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import response, request
 from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
@@ -50,8 +48,13 @@ re_clean_vardec_key = re.compile(r'''\A
 \Z''', re.VERBOSE)
 
 def make_safe_path_portion(ustr):
+    """Return an ascii representation of `ustr`
+
+    Will return an empty string if no char in `ustr`
+    is latin1-encodable.
+    """
     ustr = really_unicode(ustr)
-    s = ustr.encode('latin-1', 'ignore')
+    s = ustr.encode('latin1', 'ignore')
     s = AsciiDammit.asciiDammit(s)
     s = s.lower()
     s = '-'.join(re_path_portion_fragment.findall(s))
@@ -270,6 +273,12 @@ def ago(start_time):
 
 def ago_ts(timestamp):
     return ago(datetime.utcfromtimestamp(timestamp))
+
+def ago_string(s):
+    try:
+        return ago(parse(s, ignoretz=True))
+    except (ValueError, AttributeError):
+        return 'unknown'
 
 class DateTimeConverter(FancyValidator):
 
@@ -587,11 +596,11 @@ def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
     if text == '':
         text = '<p><em>Empty File</em></p>'
     else:
-        fmt = pylons.g.pypeline_markup.can_render(name)
+        fmt = g.pypeline_markup.can_render(name)
         if fmt == 'markdown':
-            text = pylons.g.markdown.convert(text)
+            text = g.markdown.convert(text)
         else:
-            text = pylons.g.pypeline_markup.render(name, text)
+            text = g.pypeline_markup.render(name, text)
         if not fmt:
             if code_mode and linenumbers_style == INLINE:
                 text = _add_inline_line_numbers_to_text(text)
@@ -646,5 +655,17 @@ def log_if_changed(artifact, attr, new_val, message):
 
 def get_tool_package(tool_name):
     "Return package for given tool (e.g. 'forgetracker' for 'tickets')"
-    app = pylons.g.entry_points['tool'].get(tool_name.lower())
+    app = g.entry_points['tool'].get(tool_name.lower())
     return app.__module__.split('.')[0] if app else ''
+
+
+def get_first(d, key):
+    """Return value for d[key][0] if d[key] is a list with elements, else return d[key].
+
+    Useful to retrieve values from solr index (e.g. `title` and `text` fields),
+    which are stored as lists.
+    """
+    v = d.get(key)
+    if isinstance(v, list):
+        return v[0] if len(v) > 0 else None
+    return v

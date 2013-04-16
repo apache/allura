@@ -16,7 +16,8 @@
             });
     });
     if(window.location.hash) {
-        $(window.location.hash + '.title-pane').removeClass('closed');
+        // Nested comment (reply) hash link contains a /, which must be escaped
+        $(window.location.hash.replace('/', '\\/') + '.title-pane').removeClass('closed');
     }
 
     // Setup editable widgets
@@ -95,7 +96,14 @@ $(function(){
             }
         }).
         blur();
-    $('.selectText').click(function(){this.select()});
+    $('.selectText').focus(function(){
+        var field = $(this);
+        // running select() directly doesn't work for Chrome
+        // http://stackoverflow.com/questions/3150275/jquery-input-select-all-on-focus/3150369#3150369
+        window.setTimeout(function() {
+            field.select();
+        }, 0);
+    });
 });
 
 function auto_close( o, timeout ){
@@ -174,7 +182,7 @@ $(function(){
     // coming "in between" fields.
     var i = 0;
     $('input,textarea,select,button').each(function(){
-        $(this).attr('tabindex', i++);
+        $(this).attr('tabindex', ++i);
     });
 
     // Provide prompt text for otherwise empty viewers

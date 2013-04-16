@@ -8,13 +8,14 @@ from datetime import date, time, datetime, timedelta
 import pkg_resources
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 from allura import model as M
@@ -51,12 +52,12 @@ class ForgeChatApp(Application):
         self.admin = AdminController(self)
 
     def main_menu(self):
-        return [SitemapEntry(self.config.options.mount_label.title(), '.')]
+        return [SitemapEntry(self.config.options.mount_label, '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
@@ -123,18 +124,24 @@ class RootController(BaseController):
     def search(self, q=None, history=None, **kw):
         'local tool search'
         results = []
+        search_error = None
         count=0
         if not q:
             q = ''
         else:
-            results = search(
-                q,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ])
+            try:
+                results = search(
+                    q,
+                    fq=[
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point ],
+                    short_timeout=True,
+                    ignore_errors=False)
+            except SearchError as e:
+                search_error = e
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
 
     @expose()
     def _lookup(self, y, m, d, *rest):

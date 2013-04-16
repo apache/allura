@@ -2,10 +2,10 @@ import sys
 import time
 import traceback
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pymongo
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 import ming
 from ming.utils import LazyProperty
@@ -24,7 +24,7 @@ class MonQTask(MappedClass):
     Properties
 
         - _id - bson.ObjectId() for this task
-        - state - 'ready', 'busy', 'error', or 'complete' task status
+        - state - 'ready', 'busy', 'error', 'complete', or 'skipped' task status
         - priority - integer priority, higher is more priority
         - result_type - either 'keep' or 'forget', what to do with the task when
           it's done
@@ -38,7 +38,7 @@ class MonQTask(MappedClass):
         - kwargs - **kwargs to be sent to the task function
         - result - if the task is complete, the return value. If in error, the traceback.
     '''
-    states = ('ready', 'busy', 'error', 'complete')
+    states = ('ready', 'busy', 'error', 'complete', 'skipped')
     result_types = ('keep', 'forget')
     class __mongometa__:
         session = task_orm_session
@@ -113,7 +113,8 @@ class MonQTask(MappedClass):
              args=None,
              kwargs=None,
              result_type='forget',
-             priority=10):
+             priority=10,
+             delay=0):
         '''Create a new task object based on the current context.'''
         if args is None: args = ()
         if kwargs is None: kwargs = {}
@@ -141,7 +142,8 @@ class MonQTask(MappedClass):
             kwargs=kwargs,
             process=None,
             result=None,
-            context=context)
+            context=context,
+            time_queue=datetime.utcnow() + timedelta(seconds=delay))
         session(obj).flush(obj)
         try:
             if g.amq_conn:
@@ -155,7 +157,8 @@ class MonQTask(MappedClass):
         '''Get the highest-priority, oldest, ready task and lock it to the
         current process.  If no task is available and waitfunc is supplied, call
         the waitfunc before trying to get the task again.  If waitfunc is None
-        and no tasks are available, return None.
+        and no tasks are available, return None.  If waitfunc raises a
+        StopIteration, stop waiting for a task
         '''
         sort = [
                 ('priority', ming.DESCENDING),
@@ -163,6 +166,7 @@ class MonQTask(MappedClass):
         while True:
             try:
                 query = dict(state=state)
+                query['time_queue'] = {'$lte': datetime.utcnow()}
                 if only:
                     query['task_name'] = {'$in': only}
                 obj = cls.query.find_and_modify(
@@ -180,7 +184,10 @@ class MonQTask(MappedClass):
                     raise
             if waitfunc is None:
                 return None
-            waitfunc()
+            try:
+                waitfunc()
+            except StopIteration:
+                return None
 
     @classmethod
     def timeout_tasks(cls, older_than):

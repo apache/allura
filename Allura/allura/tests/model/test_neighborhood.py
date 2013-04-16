@@ -3,7 +3,7 @@
 Model tests for neighborhood
 """
 from nose.tools import with_setup
-from pylons import c 
+from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
@@ -66,3 +66,7 @@ def test_neighborhood():
     assert neighborhood.allow_custom_css
     neighborhood.features['css'] = 'custom'
     assert neighborhood.allow_custom_css
+
+    neighborhood.anchored_tools = 'wiki:Wiki, tickets:Tickets'
+    assert neighborhood.get_anchored_tools()['wiki'] == 'Wiki'
+    assert neighborhood.get_anchored_tools()['tickets'] == 'Tickets'

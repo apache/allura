@@ -3,14 +3,13 @@ from datetime import datetime
 import re
 
 import feedparser
-import html2text
 from bson import ObjectId
 
 import base
 from allura.command import base as allura_base
 
 from ming.orm import session
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura import model as M
 from forgeblog import model as BM
@@ -18,6 +17,14 @@ from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 from allura.lib.decorators import exceptionless
+
+## Everything in this file depends on html2text,
+## so import attempt is placed in global scope.
+try:
+    import html2text
+except ImportError:
+    raise ImportError("""Importing RSS feeds requires GPL library "html2text":
+    https://github.com/brondsem/html2text""")
 
 html2text.BODY_WIDTH = 0
 
@@ -31,7 +38,7 @@ re_amp = re.compile(r'''
       (\#x[0-9A-F]+;)  # hex entity
     )
     ''', re.VERBOSE)
-re_leading_spaces = re.compile(r'^[ ]+', re.MULTILINE)
+re_leading_spaces = re.compile(r'^[\t ]+', re.MULTILINE)
 re_preserve_spaces = re.compile(r'''
     [ ]           # space
     (?=[ ])       # lookahead for a space

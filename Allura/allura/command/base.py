@@ -53,12 +53,12 @@ class Command(command.Command):
             M=model
             ming.configure(**conf)
             activitystream.configure(**conf)
-            pylons.c.user = M.User.anonymous()
+            pylons.tmpl_context.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)
             log = logging.getLogger('allura.command')
             conf = pylons.config
-        self.tools = pylons.g.entry_points['tool'].values()
+        self.tools = pylons.app_globals.entry_points['tool'].values()
         for ep in iter_entry_points('allura.command_init'):
             log.info('Running command_init for %s', ep.name)
             ep.load()(conf)
@@ -67,10 +67,10 @@ class Command(command.Command):
     def setup_globals(self):
         import allura.lib.app_globals
         self.registry.prepare()
-        self.registry.register(pylons.c, EmptyClass())
-        self.registry.register(pylons.g, self.globals)
+        self.registry.register(pylons.tmpl_context, EmptyClass())
+        self.registry.register(pylons.app_globals, self.globals)
         self.registry.register(allura.credentials, allura.lib.security.Credentials())
-        pylons.c.queued_messages = None
+        pylons.tmpl_context.queued_messages = None
 
     def teardown_globals(self):
         self.registry.cleanup()

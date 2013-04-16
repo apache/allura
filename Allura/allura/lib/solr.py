@@ -1,5 +1,6 @@
 import shlex
 import pysolr
+from pysolr import SolrError
 
 
 class Solr(pysolr.Solr):
@@ -8,8 +9,8 @@ class Solr(pysolr.Solr):
     `delete` call, unless explicitly overridden.
     """
 
-    def __init__(self, server, commit=True, commitWithin=None):
-        pysolr.Solr.__init__(self, server)
+    def __init__(self, server, commit=True, commitWithin=None, **kw):
+        pysolr.Solr.__init__(self, server, **kw)
         self.commit = commit
         self.commitWithin = commitWithin
 

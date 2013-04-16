@@ -6,14 +6,14 @@ from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura import model as M
 from allura.lib.security import require_access, has_access
 from allura.lib import helpers as h
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults
 
 from webob import exc
 import pylons
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from datetime import datetime
 from formencode import validators
 from formencode.compound import All
@@ -64,7 +64,7 @@ class ForgeShortUrlApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         return [SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     def sidebar_menu(self):
@@ -156,6 +156,7 @@ class RootController(BaseController):
                      'search?' +
                      urlencode(dict(q=q, history=history)))
         results = []
+        search_error = None
         count = 0
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
@@ -167,13 +168,16 @@ class RootController(BaseController):
                     'type_s:%s' % ShortUrl.type_s]
             if not has_access(c.app, 'view_private'):
                 query.append('private_b:False')
-            results = search(q, fq=query)
+            try:
+                results = search(q, fq=query, short_timeout=True, ignore_errors=False)
+            except SearchError as e:
+                search_error = e
 
             if results:
                 count = results.hits
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page)
+                    count=count, limit=limit, page=page, search_error=search_error)
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -219,9 +223,9 @@ class ShortURLAdminController(DefaultAdminController):
         else:
             require_access(self.app, 'create')
         if request.method == 'POST':
-            if pylons.c.form_errors:
+            if c.form_errors:
                 error_msg = 'Error: '
-                for msg in list(pylons.c.form_errors):
+                for msg in list(c.form_errors):
                     names = {'short_url': 'Short url', 'full_url': 'Full URL'}
                     error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')

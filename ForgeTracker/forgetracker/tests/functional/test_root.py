@@ -8,6 +8,7 @@ import allura
 
 from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
+from nose.tools import assert_raises
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController
@@ -17,6 +18,7 @@ from forgetracker import model as tm
 
 from allura.lib.security import has_access
 from allura.lib import helpers as h
+from allura.lib.search import SearchError
 from allura.tests import decorators as td
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -34,6 +36,17 @@ class TrackerTestController(TestController):
         response = self.app.get(mount_point + 'new/',
                                 extra_environ=extra_environ)
         form = response.forms[1]
+        # If this is ProjectUserCombo's select populate it
+        # with all the users in the project. This is a workaround for tests,
+        # in real enviroment this is populated via ajax.
+        p = M.Project.query.get(shortname='test')
+        for f in form.fields:
+            field = form[f] if f else None
+            is_usercombo = (field and field.tag == 'select' and
+                            field.attrs.get('class') == 'project-user-combobox')
+            if is_usercombo:
+                field.options = [('', False)] + [(u.username, False) for u in p.users()]
+
         for k, v in kw.iteritems():
             form['ticket_form.%s' % k] = v
         resp = form.submit()
@@ -72,6 +85,57 @@ class TestMilestones(TrackerTestController):
         p = M.Project.query.get(shortname='test')
         app = p.app_instance('bugs')
         assert len(app.globals.custom_fields) == 1, len(app.globals.custom_fields)
+
+    def test_closed_milestone(self):
+        self.new_ticket(summary='bar', _milestone='1.0', status='closed')
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'1.0',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Closed',
+            'milestones-0.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        d = {
+            'field_name':'_milestone',
+            'milestones-9.old_name':'',
+            'milestones-9.new_name':'3.0',
+            'milestones-9.description':'',
+            'milestones-9.complete':'Closed',
+            'milestones-9.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        d = {
+            'field_name':'_milestone',
+            'milestones-9.old_name':'',
+            'milestones-9.new_name':'4.0',
+            'milestones-9.description':'',
+            'milestones-9.complete':'Closed',
+            'milestones-9.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        r = self.app.get('/bugs/1/')
+        closed = r.html.find('optgroup', label='Closed')
+        assert closed
+        closed = str(closed)
+        assert '<option selected value="1.0">1.0</option>' in r
+        assert '<option selected value="1.0">1.0</option>' not in closed
+        assert '<option value="2.0">2.0</option>' in r
+        assert '<option value="2.0">2.0</option>' not in closed
+        assert '<option value="3.0">3.0</option>' in closed
+        assert '<option value="4.0">4.0</option>' in closed
+        r = self.app.get('/bugs/new/')
+        closed = r.html.find('optgroup', label='Closed')
+        assert closed
+        closed = str(closed)
+        assert '<option selected value="1.0">1.0</option>' not in r
+        assert '<option value="1.0">1.0</option>' in closed
+        assert '<option value="2.0">2.0</option>' in r
+        assert '<option value="2.0">2.0</option>' not in closed
+        assert '<option value="3.0">3.0</option>' in closed
+        assert '<option value="4.0">4.0</option>' in closed
+
 
 def post_install_create_ticket_permission(app):
     """Set to authenticated permission to create tickets but not update"""
@@ -128,12 +192,23 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0'})
         self.new_ticket(summary='test new with milestone', **{'_milestone':'1.0',
                                                               'private': '1'})
-        r = self.app.get('/bugs/')
-        assert '<small>2</small>' in r
+        r = self.app.get('/bugs/milestone_counts')
+        counts = {
+            'milestone_counts': [
+                {'name': '1.0', 'count': 2},
+                {'name': '2.0', 'count': 0}
+        ]}
+        assert_equal(r.body, json.dumps(counts))
         # Private tickets shouldn't be included in counts if user doesn't
         # have read access to private tickets.
-        r = self.app.get('/bugs/', extra_environ=dict(username='*anonymous'))
-        assert '<small>1</small>' in r
+        r = self.app.get('/bugs/milestone_counts',
+                extra_environ=dict(username='*anonymous'))
+        counts['milestone_counts'][0]['count'] = 1
+        assert_equal(r.body, json.dumps(counts))
+
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/bugs/milestone_counts')
+        assert_equal(r.body, json.dumps(counts))
 
     def test_milestone_progress(self):
         self.new_ticket(summary='Ticket 1', **{'_milestone':'1.0'})
@@ -152,9 +227,10 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/bugs/new/')
         form = response.forms[1]
         form['ticket_form.summary'] = 'test new ticket form'
-        form['ticket_form.assigned_to'] = 'test_admin'
+        form['ticket_form.description'] = 'test new ticket form description'
         response = form.submit().follow()
-        assert 'Test Admin' in response
+        assert 'test new ticket form' in response
+        assert 'test new ticket form description' in response
 
     def test_mass_edit(self):
         ticket_view = self.new_ticket(summary='First Ticket').follow()
@@ -166,7 +242,8 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'Second Ticket'}).first()
         r = self.app.get('/p/test/bugs/edit/?q=ticket')
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': first_ticket._id,
+                      '__search': '',
+                      '__ticket_ids': [first_ticket._id],
                       '_milestone': '2.0',
                       })
         r = self.app.get('/p/test/bugs/1/')
@@ -174,7 +251,8 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' not in r
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': '%s,%s' % (
+                      '__search': '',
+                      '__ticket_ids': (
                           first_ticket._id,
                           second_ticket._id),
                       '_milestone': '1.0',
@@ -185,7 +263,8 @@ class TestFunctionalController(TrackerTestController):
         assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' not in r
 
         self.app.post('/p/test/bugs/update_tickets', {
-                      'selected': '%s,%s' % (
+                      '__search': '',
+                      '__ticket_ids': (
                           first_ticket._id,
                           second_ticket._id),
                       'status': 'accepted',
@@ -260,9 +339,9 @@ class TestFunctionalController(TrackerTestController):
         assert_true(summary in ticket_view)
         index_view = self.app.get('/doc-bugs/')
         assert_true(summary in index_view)
-        assert_true(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
+        assert_true(sidebar_contains(index_view, '<span>1.0</span>'))
         index_view = self.app.get('/bugs/')
-        assert_false(sidebar_contains(index_view, '<span class="has_small">1.0</span><small>1</small>'))
+        assert_true(sidebar_contains(index_view, '<span>1.0</span>'))
         assert_false(summary in index_view)
 
     def test_render_ticket(self):
@@ -366,6 +445,29 @@ class TestFunctionalController(TrackerTestController):
         deleted_form = self.app.get('/bugs/1/')
         assert file_name not in deleted_form
 
+    def test_delete_attachment_from_comments(self):
+        ticket_view = self.new_ticket(summary='test ticket').follow()
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'test comment'
+        self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1))
+        post_link = str(r.html.find('div',{'class':'edit_post_form reply'}).find('form')['action'])
+        self.app.post(post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert '<input class="submit delete_attachment file" type="submit" value="X"/>' in r
+        form = r.forms[5].submit()
+        r = self.app.get('/bugs/1/', dict(page=1))
+        assert '<input class="submit delete_attachment" type="submit" value="X"/>' not in r
+
     def test_new_text_attachment_content(self):
         file_name = 'test_root.py'
         file_data = file(__file__).read()
@@ -425,7 +527,7 @@ class TestFunctionalController(TrackerTestController):
 
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = wm.Page.query.find(dict(title='aaa')).first()
-        a.text = '\n[bugs:#1]\n'
+        a.text = '\n[bugs:#1]\n[bugs:#2]\n'
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -440,12 +542,22 @@ class TestFunctionalController(TrackerTestController):
         assert 'Wiki: aaa' in response
         assert 'Ticket: #2' in response
 
+        b = tm.Ticket.query.find(dict(ticket_num=2)).first()
+        b.deleted = True
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/1/')
+        assert 'Ticket: #2' not in response
+        response = self.app.get('/wiki/aaa/')
+        assert 'alink notfound' in response
+
     def test_ticket_view_editable(self):
         summary = 'test ticket view page can be edited'
         self.new_ticket(summary=summary)
         response = self.app.get('/p/test/bugs/1/')
         assert response.html.find('input', {'name': 'ticket_form.summary'})
-        assert response.html.find('input', {'name': 'ticket_form.assigned_to'})
+        assert response.html.find('select', {'name': 'ticket_form.assigned_to'})
         assert response.html.find('textarea', {'name': 'ticket_form.description'})
         assert response.html.find('select', {'name': 'ticket_form.status'})
         assert response.html.find('select', {'name': 'ticket_form._milestone'})
@@ -509,7 +621,7 @@ class TestFunctionalController(TrackerTestController):
                           params=variable_encode(params))
         kw = {'custom_fields._number':''}
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
-        assert '<strong>number</strong>:  --&gt;' not in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' not in ticket_view
         ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
@@ -520,7 +632,7 @@ class TestFunctionalController(TrackerTestController):
             'custom_fields._number':'',
             'comment': ''
         }).follow()
-        assert '<strong>number</strong>:  --&gt;' not in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' not in ticket_view
         ticket_view = self.app.post('/bugs/1/update_ticket',params={
             'summary':'zzz',
             'description':'bbb',
@@ -531,7 +643,7 @@ class TestFunctionalController(TrackerTestController):
             'custom_fields._number':'4',
             'comment': ''
         }).follow()
-        assert '<strong>number</strong>:  --&gt;' in ticket_view
+        assert '<strong>Number</strong>:  --&gt;' in ticket_view
 
     def test_milestone_names(self):
         params = {
@@ -704,6 +816,27 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search_feed.atom?q=test')
         assert '<title>test first ticket</title>' in response
 
+    def test_search_current_user(self):
+        self.new_ticket(summary='test first ticket')
+        self.new_ticket(summary='test second ticket')
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        t = tm.Ticket.query.get(summary='test first ticket')
+        t.reported_by_id = M.User.by_username('test-user-0')._id
+        t = tm.Ticket.query.get(summary='test second ticket')
+        t.reported_by_id = M.User.by_username('test-user-1')._id
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
+                                extra_environ={'username': 'test-user-0'})
+        assert '1 result' in response, response.showbrowser()
+        assert 'test first ticket' in response, response.showbrowser()
+        response = self.app.get('/p/test/bugs/search/?q=reported_by_s:$USER',
+                                extra_environ={'username': 'test-user-1'})
+        assert '1 result' in response, response.showbrowser()
+        assert 'test second ticket' in response, response.showbrowser()
+
     def test_feed(self):
         self.new_ticket(
             summary='test first ticket',
@@ -730,7 +863,7 @@ class TestFunctionalController(TrackerTestController):
     @patch('forgetracker.tracker_main.search_artifact')
     def test_save_invalid_search(self, search_artifact):
         err = 'Error running search query: [Reason: undefined field label]'
-        search_artifact.side_effect = ValueError(err)
+        search_artifact.side_effect = SearchError(err)
         r = self.app.post('/admin/bugs/bins/save_bin',{
             'summary': 'This is not too long.',
             'terms': 'label:foo',
@@ -1021,6 +1154,34 @@ class TestFunctionalController(TrackerTestController):
         a = r.html.find('a', {'class': 'edit_ticket'})
         assert a.text == 'Edit'
 
+    def test_ticket_creator_cant_edit_private_ticket_without_update_perm(self):
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        # authenticated user has 'create' permission, but not 'update'
+        role = M.ProjectRole.by_name('*authenticated')._id
+        create_permission = M.ACE.allow(role, 'create')
+        update_permission = M.ACE.allow(role, 'update')
+        acl = tracker.config.acl
+        acl.append(create_permission)
+        if update_permission in acl:
+            acl.remove(update_permission)
+        # test-user creates private ticket
+        env = {'username': 'test-user'}
+        post_data = {
+            'ticket_form.summary': 'Private ticket title',
+            'ticket_form.private': True
+        }
+        self.app.post('/bugs/save_ticket', post_data, extra_environ=env)
+        # ... and can see it
+        r = self.app.get('/bugs/1/', extra_environ=env)
+        assert 'Private ticket title' in r
+        assert '<label class="simple">Private:</label> Yes' in r, 'Ticket is not private'
+        # ... and can't see 'Edit' link
+        assert r.html.find('a', {'class': 'edit_ticket'}) is None, "Found 'Edit' link"
+        # ... and can't actually edit it
+        self.app.post('/bugs/1/update_ticket', {'summary': 'should fail'},
+                      extra_environ=env, status=403)
+
     def test_imported_tickets_redirect(self):
         self.new_ticket(summary='Imported ticket')
         ticket = tm.Ticket.query.get(ticket_num=1)
@@ -1033,6 +1194,279 @@ class TestFunctionalController(TrackerTestController):
 
         # not found and has not import_id
         self.app.get('/p/test/bugs/42042/', status=404)
+
+    def test_ticket_delete(self):
+        self.new_ticket(summary='Test ticket')
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+        assert tm.Ticket.query.get(ticket_num=1).summary != 'Test ticket'
+        self.app.post('/bugs/1/undelete')
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' not in r
+        assert tm.Ticket.query.get(ticket_num=1).summary == 'Test ticket'
+
+    def test_ticket_delete_without_permission(self):
+        self.new_ticket(summary='Test ticket')
+        self.app.post('/bugs/1/delete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert '<a href="/p/test/bugs/1/">Test ticket</a>' in r
+        self.app.post('/bugs/1/delete')
+        self.app.post('/bugs/1/undelete', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/bugs/')
+        assert 'No open tickets found.' in r
+
+    def test_deleted_ticket_visible(self):
+        self.new_ticket(summary='test')
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/p/test/bugs/1/')
+        assert '#1 test' in r
+        self.app.get('/p/test/bugs/1/', extra_environ=dict(username='*anonymous'), status=404)
+        r = self.app.get('/p/test/bugs/',params=dict(q='test',deleted='True'))
+        assert '<td><a href="/p/test/bugs/1/">test' in r
+        assert '<tr class=" deleted">' in r
+        r = self.app.get('/p/test/bugs/',params=dict(q='test',deleted='True'),
+                         extra_environ=dict(username='*anonymous'))
+        assert 'No open tickets found.' in r
+
+    def test_show_hide_deleted_tickets(self):
+        self.new_ticket(summary='Test ticket')
+        r = self.app.get('/p/test/bugs/')
+        assert 'Show deleted tickets' not in r
+        self.app.post('/bugs/1/delete')
+        r = self.app.get('/p/test/bugs/')
+        assert 'Show deleted tickets' in r
+        assert 'No open tickets found' in r
+        r = self.app.get('/bugs/?deleted=True')
+        assert '<a href="/p/test/bugs/1/">Test ticket' in r
+        assert 'Hide deleted tickets' in r
+
+    @td.with_tool('test', 'Tickets', 'bugs2')
+    @td.with_tool('test2', 'Tickets', 'bugs')
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_ticket(self):
+        self.new_ticket(summary='test')
+        r = self.app.get('/p/test/bugs/1/move')
+        trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
+        trackers = set([t.text for t in trackers])
+        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        assert trackers == expected, trackers
+
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        r = self.app.post('/p/test/bugs/1/move/',
+                params={'tracker': str(tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test2/bugs2/1/')
+        summary = r.html.findAll('h2', {'class': 'dark title'})[0].contents[0].strip()
+        assert_equal(summary, '#1 test')
+        ac_id = tracker.config._id
+        ticket = tm.Ticket.query.find({
+            'app_config_id': ac_id,
+            'ticket_num': 1}).first()
+        assert ticket is not None, "Can't find moved ticket"
+        assert_equal(ticket.discussion_thread.app_config_id, ac_id)
+        assert_equal(ticket.discussion_thread.discussion.app_config_id, ac_id)
+        post = ticket.discussion_thread.last_post
+        assert_equal(post.text, 'Ticket moved from /p/test/bugs/1/')
+
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_ticket_feed(self):
+        self.new_ticket(summary='test')
+        p = M.Project.query.get(shortname='test2')
+        ac_id = p.app_instance('bugs2').config._id
+        r = self.app.post('/p/test/bugs/1/move/',
+                params={'tracker': str(ac_id)}).follow()
+
+        ticket = tm.Ticket.query.find({
+            'app_config_id': ac_id,
+            'ticket_num': 1}).first()
+        post = ticket.discussion_thread.last_post
+        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        msg = 'Ticket moved from /p/test/bugs/1/'
+        assert_equal(post.text, msg)
+        # auto comment content and link to it should be in a ticket's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert msg in r, r
+        assert ticket_link in r, r
+        # auto comment content and link to it should be in a tracker's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert msg in r, r
+        assert ticket_link in r, r
+
+        # post comment and make sure that it appears on the feeds
+        r = self.app.get('/p/test2/bugs2/1/')
+        for f in r.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'ticket discussion post content'
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/p/test2/bugs2/1/'.encode("utf-8")})
+        r = self.app.get('/p/test2/bugs2/1/', dict(page=1))
+        assert_true(post_content in r)
+        comments_cnt = len(r.html.findAll(attrs={'class': 'discussion-post'}))
+        assert_equal(comments_cnt, 2)  # moved auto comment + new comment
+        post = ticket.discussion_thread.last_post
+        # content and link to the ticket should be in a tracker's feed
+        ticket_link = '/p/test2/bugs2/1/?limit=50#' + post.slug
+        r = self.app.get('/p/test2/bugs2/feed')
+        assert post_content in r, r
+        assert ticket_link in r, r
+        # content and link to the ticket should be in a ticket's feed
+        r = self.app.get('/p/test2/bugs2/1/feed')
+        assert post_content in r, r
+        assert ticket_link in r, r
+
+    def test_move_ticket_bad_data(self):
+        self.new_ticket(summary='test')
+        r = self.app.post('/p/test/bugs/1/move').follow()  # empty POST
+        assert 'Select valid tracker' in r, r
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': 'invalid tracker id'}).follow()
+        assert 'Select valid tracker' in r,r
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(tracker.config._id)}).follow()
+        assert 'Ticket already in a selected tracker' in r, r
+
+    def test_move_ticket_access(self):
+        self.new_ticket(summary='test')
+        self.app.get('/p/test/bugs/1/move',
+                extra_environ={'username': 'test-user'},
+                status=403)
+        self.app.post('/p/test/bugs/1/move',
+                extra_environ={'username': 'test-user'},
+                status=403)
+
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_and_delete_tool(self):
+        """See [#5708] for details."""
+        # create two tickets and ensure they are viewable
+        self.new_ticket(summary='test 1')
+        self.new_ticket(summary='test 2')
+        self.app.get('/p/test/bugs/1/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+
+        # move ticket 1 to 'dummy' tracker
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+        # delete 'dummy' tracker
+        p.uninstall_app('dummy')
+
+        # remaining tickets in 'bugs' tracker should still be viewable
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/1/', status=404)  # shouldn't fail
+
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_email_notifications(self):
+        """See [#5691] for details"""
+        # create two tickets and ensure they are viewable
+        self.new_ticket(summary='test 1')
+        self.new_ticket(summary='test 2')
+        self.app.get('/p/test/bugs/1/', status=200)  # shouldn't fail
+        self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
+
+        # move ticket 1 to 'dummy' tracker
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+        # comment ticket 2
+        M.Notification.query.remove()
+        r = self.app.get('/p/test/bugs/2/')
+        field_name = None  # comment text textarea name
+        for name, field in r.forms[2].fields.iteritems():
+            if field[0].tag == 'textarea':
+                field_name = name
+        assert field_name, "Can't find comment field"
+        r.forms[2].fields[field_name][0].value = 'Hi there'
+        r.forms[2].submit()
+
+        # notification for ticket 2 should reference [test:bugs], not [test:dummy]
+        n = M.Notification.query.find().all()[0]
+        assert_in('[test:bugs]', n.subject)
+        assert_in('[test:bugs]', n.reply_to_address)
+
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_move_attachment(self):
+        file_name = 'neo-icon-set-454545-256x350.png'
+        file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+        file_data = file(file_path).read()
+        upload = ('attachment', file_name, file_data)
+        self.new_ticket(summary='test move attachment')
+
+        # attach an image to the ticket
+        self.app.post('/bugs/1/update_ticket',
+                      {'summary':'test'},
+                      upload_files=[upload])
+        # attach a txt file to the comment
+        r = self.app.get('/p/test/bugs/1/')
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        r = self.app.post(post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'test')])
+        # move ticket
+        p = M.Project.query.get(shortname='test2')
+        bugs2 = p.app_instance('bugs2')
+        r = self.app.post('/p/test/bugs/1/move/',
+                          params={'tracker': str(bugs2.config._id)}).follow()
+
+        attachs = r.html.findAll('div', attrs={'class': 'attachment_thumb'})
+        ta = str(attachs[1])  # ticket's attachments
+        ca = str(attachs[2])  # comment's attachments
+        assert_in('<a href="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png"', ta)
+        assert_in('<img src="/p/test2/bugs2/1/attachment/neo-icon-set-454545-256x350.png/thumb"', ta)
+        p = M.Post.query.find().sort('timestamp', 1).first()
+        assert_in('<a href="/p/test2/bugs2/_discuss/thread/%s/%s/attachment/test.txt"' % (p.thread_id, p.slug), ca)
+        for attach in M.BaseAttachment.query.find():
+            assert_equal(attach.app_config_id, bugs2.config._id)
+            if attach.attachment_type == 'DiscussionAttachment':
+                assert_equal(attach.discussion_id, bugs2.config.discussion_id)
+
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_comments(self):
+        """Comments should move along with the ticket"""
+        self.new_ticket(summary='test ticket')
+        r = self.app.get('/p/test/bugs/1/')
+        field_name = None  # comment text textarea name
+        for name, field in r.forms[2].fields.iteritems():
+            if field[0].tag == 'textarea':
+                field_name = name
+        assert field_name, "Can't find comment field"
+        r.forms[2].fields[field_name][0].value = 'I am comment'
+        r.forms[2].submit()
+        r = self.app.get('/p/test/bugs/1/')
+        assert_in('I am comment', r)
+
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+        assert_in('I am comment', r)
+
+    def test_tags(self):
+        p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        self.new_ticket(summary='a', labels='tag1,tag2')
+        self.new_ticket(summary='b', labels='tag2')
+        self.new_ticket(summary='c', labels='42cc,test')
+        # Testing only empty 'term', because mim doesn't support aggregation calls
+        r = self.app.get('/p/test/bugs/tags')
+        assert_equal(json.loads(r.body), [])
+        r = self.app.get('/p/test/bugs/tags?term=')
+        assert_equal(json.loads(r.body), [])
 
 
 class TestMilestoneAdmin(TrackerTestController):
@@ -1243,21 +1677,20 @@ class TestCustomUserField(TrackerTestController):
         assert ticket_view.html.findAll('label', 'simple',
             text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
         # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+        select = ticket_view.html.find('select',
+            dict(name='ticket_form.custom_fields._code_review'))
+        selected = None
+        for option in select.findChildren():
+            if option.get('selected'):
+                selected = option
+        assert selected is None
 
     def test_non_project_member(self):
         """ Test that you can't put a non-project-member user in a custom
         user field.
         """
         kw = {'custom_fields._code_review': 'test-user-0'}
-        ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
-        # summary header shows 'nobody'
-        assert ticket_view.html.findAll('label', 'simple',
-            text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
-        # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == ''
+        assert_raises(ValueError, self.new_ticket, summary='test custom fields', **kw)
 
     def test_project_member(self):
         kw = {'custom_fields._code_review': 'test-admin'}
@@ -1266,16 +1699,25 @@ class TestCustomUserField(TrackerTestController):
         assert ticket_view.html.findAll('label', 'simple',
             text='Code Review:')[1].parent.parent.text == 'Code Review:Test Admin'
         # form input is blank
-        assert ticket_view.html.find('input',
-            dict(name='ticket_form.custom_fields._code_review'))['value'] == 'test-admin'
+        select = ticket_view.html.find('select',
+            dict(name='ticket_form.custom_fields._code_review'))
+        selected = None
+        for option in select.findChildren():
+            if option.get('selected'):
+                selected = option
+        assert_equal(selected['value'], 'test-admin')
 
     def test_change_user_field(self):
         kw = {'custom_fields._code_review': ''}
         r = self.new_ticket(summary='test custom fields', **kw).follow()
         f = r.forms[1]
+        # Populate ProjectUserCombo's select with option we want.
+        # This is a workaround for tests,
+        # in real enviroment this is populated via ajax.
+        f['ticket_form.custom_fields._code_review'].options = [('test-admin', False)]
         f['ticket_form.custom_fields._code_review'] = 'test-admin'
         r = f.submit().follow()
-        assert '<li><strong>code_review</strong>: Test Admin' in r
+        assert '<li><strong>Code Review</strong>: Test Admin' in r
 
     def test_search_results(self):
         kw = {'custom_fields._code_review': 'test-admin'}

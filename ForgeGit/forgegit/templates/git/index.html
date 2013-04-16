@@ -32,26 +32,30 @@
     <div class="message error scm-empty-repo">
       <h6>Empty Repository</h6>
       <div class="content">
-        It looks like this Git repository doesn't have any files in it. Let's commit your project code now.
+        It looks like this Git repository doesn't have any files in it. Let's commit your project code now.  Just run the commands below.
       </div>
     </div>
 
     <h2>First time using Git</h2>
 
     <div class="codehilite">
-      <pre>cd {{c.app.repo.suggested_clone_dest_path()}}
+      <pre>cd myproject
 git init
+# add all your files.  Use can use specific filenames or directories instead of '.'
+git add .
 git commit -a -m 'Initial commit'
 git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
-git push origin master</pre>
+git push origin master
+git branch --set-upstream master origin/master  # so 'git pull' will work later</pre>
     </div>
 
-    <h2>Existing Repository</h2>
+    <h2>Existing repository using Git</h2>
 
     <div class="codehilite">
-      <pre>cd {{c.app.repo.suggested_clone_dest_path()}}
+      <pre>cd myproject
 git remote add origin {{c.app.repo.clone_url('rw', c.user.username)}}
-git push origin master</pre>
+git push origin master
+git branch --set-upstream master origin/master  # so 'git pull' will work later</pre>
     </div>
     &nbsp;
     <div class="message info scm-ssh-key">

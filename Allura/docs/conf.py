@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Allura'
-copyright = '2011, The Allura Team'
+project = 'Apache Allura'
+copyright = '2012-2013 The Apache Software Foundation'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

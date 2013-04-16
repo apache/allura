@@ -1,47 +1,50 @@
 import re
-import cPickle as pickle
+import socket
 from logging import getLogger
-from pprint import pformat
-from itertools import islice, chain
 
 import markdown
-from pylons import c,g
-import pysolr
+from pylons import tmpl_context as c, app_globals as g
+from pysolr import SolrError
 
-from . import helpers as h
 from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
-
-def try_solr(func):
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except: # pragma no cover
-            log.exception('Error in solr indexing')
-    return inner
 
 def solarize(obj):
     if obj is None: return None
     doc = obj.index()
     if doc is None: return None
-    text = doc.pop('text', '')
-    try:
-        text = text + pformat(doc.values())
-    except TypeError:
-        # log.exception('Indexing empty text: %s', doc)
-        text = pformat(doc.values())
-    doc['text'] = text
+    # if index() returned doc without text, assume empty text
+    if not doc.get('text'):
+        doc['text'] = ''
     return doc
 
-@try_solr
-def search(q,**kw):
-    return g.solr.search(q, **kw)
+class SearchError(SolrError):
+    pass
 
-def search_artifact(atype, q, history=False, rows=10, **kw):
+def inject_user(q, user=None):
+    '''Replace $USER with current user's name.'''
+    if user is None:
+        user = c.user
+    return q.replace('$USER', '"%s"' % user.username) if q else q
+
+def search(q,short_timeout=False,ignore_errors=True,**kw):
+    q = inject_user(q)
+    try:
+        if short_timeout:
+            return g.solr_short_timeout.search(q, **kw)
+        else:
+            return g.solr.search(q, **kw)
+    except (SolrError, socket.error) as e:
+        log.exception('Error in solr search')
+        if not ignore_errors:
+            match = re.search(r'<pre>(.*)</pre>', str(e))
+            raise SearchError('Error running search query: %s' % (match.group(1) if match else e))
+
+def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
 
-    Raises ValueError if SOLR returns an error.
+    Raises SearchError if SOLR returns an error.
     """
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
@@ -55,10 +58,7 @@ def search_artifact(atype, q, history=False, rows=10, **kw):
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     if not history:
         fq.append('is_history_b:False')
-    try:
-        return g.solr.search(q, fq=fq, rows=rows, **kw)
-    except pysolr.SolrError, e:
-        raise ValueError('Error running search query: %s' % e.message)
+    return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
 
 def find_shortlinks(text):
     md = markdown.Markdown(

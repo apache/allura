@@ -22,7 +22,7 @@
       </thead>
       <tbody>
         {% for t in tickets %}
-          <tr class="{{loop.index0%2 and 'even' or ''}}">
+          <tr class="{{loop.index0%2 and 'even' or ''}} {% if t.deleted %}deleted{%endif%}">
             {% for col in columns if col['active'] %}
               {% if col['name'] == 'ticket_num' %}
                 <td><a href="{{t.url()}}">{{t[col['name']]}}</a></td>
@@ -93,3 +93,9 @@
     var q="{{query and h.urlquoteplus(query) or ''}}", count={{count}}, limit={{limit}}, page={{page}}, sort="{{sort}}";
   </script>
 </div>
+{% block wiki_extra_css %}
+<style type="text/css">
+    tr.deleted a { color:red; }
+    tr.deleted { color:red; }
+</style>
+{% endblock %}

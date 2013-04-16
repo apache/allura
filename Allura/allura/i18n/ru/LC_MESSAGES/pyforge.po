@@ -1,7 +1,4 @@
-# Russian translations for ${package}.
-# Copyright (C) 2008 ORGANIZATION
-# This file is distributed under the same license as the ${package} project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2008.
+# Russian translations for Allura.
 #
 msgid ""
 msgstr ""

@@ -22,8 +22,8 @@
        </p>
       </div>
       <div class="grid-14" style="width: {{indent == 0 and 525 or (indent <= 40 and 515-indent*10 or 65)}}px">
-        <div class="display_post">
-          {% if value.status == 'pending' %}
+        <div class="display_post{%if (value.status == 'pending') and h.has_access(value, 'moderate')()%} moderate{%endif%}">
+          {% if (value.status == 'pending') and not h.has_access(value, 'moderate')() %}
             <b>Post awaiting moderation.</b>
           {% else %}
             {% if show_subject %}
@@ -52,40 +52,46 @@
           <div class="clear"></div>
           {% for att in value.attachments %}
             <div class="attachment_thumb" style="min-height: 130px;">
-              {% if att.is_image() %}
-                <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>
-                <br/>
-                <a href="{{att.url()}}">{{att.filename}}</a>
-              {% else %}
-                <a href="{{att.url()}}">{{att.filename}}</a>
-              {% endif %}
-              {% if c.user._id and value.author_id==c.user._id %}
-              <br>
-              <form method="POST" action="{{att.url()}}">
-                <input class="submit delete_attachment" type="submit" name="delete" value="X"/>
-              </form>
-              {% endif %}
+                <form method="POST" action="{{att.url()}}">
+                {% if att.is_image() %}
+                    <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>
+                    <br/>
+                    <a href="{{att.url()}}">{{att.filename}}</a>
+                    {% if c.user._id and value.author_id==c.user._id %}
+                        <br>
+                        <input class="submit delete_attachment pic" type="submit" value="X"/>
+                    {% endif %}
+                {% else %}
+                    <a href="{{att.url()}}">{{att.filename}}</a>
+                    {% if c.user._id and value.author_id==c.user._id %}
+                    <input class="submit delete_attachment file" type="submit" value="X"/>
+                    {% endif %}
+                {% endif %}
+                <input type="hidden" name="delete" value="True">
+                </form>
             </div>
           {% endfor %}
         </div>
         {% endif %}
         </div>
         <div class="options grid-3">
-        {% if value.status == 'ok' %}
         {% if h.has_access(value.thread, 'post')() %}
-          <a href="" class="reply_post btn"><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
+          <a href="" class="reply_post btn"{%if value.status == 'pending'%} style="display:none"{%endif%}><b data-icon="{{g.icons['reply'].char}}" class="ico {{g.icons['reply'].css}}"></b>Reply</a>
         {% endif %}
         <div style="clear:both">
-          <a href="{{shortlink_url}}" class="little_link shortlink"><span>Link</span></a><br/>
-          {% if h.has_access(value, 'moderate')() %}
-            <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
-            {{widgets.moderate_post.display(value=value, action=value.url()+'moderate')}}
-          {% endif %}
+            <div class="little_link">
+                <a href="{{shortlink_url}}" class="little_link shortlink"{%if value.status == 'pending'%} style="display:none"{%endif%}><span>Link</span></a><br/>
+                {% if h.has_access(value, 'moderate')()%}
+                    <a href="" class="edit_post little_link"><span>Edit</span></a><br/>
+                {% endif %}
+            </div>
+            {% if h.has_access(value.thread, 'moderate')() %}
+            {{widgets.moderate_post.display(value=value, action=value.url()+'moderate', status = value.status)}}
+            {%endif%}
           {% if h.has_access(value.thread, 'post')() %}
             <a href="#" class="add_attachment little_link"><span>Attach</span></a>
           {% endif %}
         </div>
-        {% endif %}
       </div>
       <div class="shortlink_popup modal" style="display: none">
         <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
@@ -126,3 +132,11 @@
   </div>
   {% endif %}
 </div>
+
+{% block extra_css %}
+<style type="text/css">
+    div.moderate {
+        color:grey;
+    }
+</style>
+{% endblock %}

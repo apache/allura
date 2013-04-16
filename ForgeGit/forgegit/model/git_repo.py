@@ -1,17 +1,22 @@
 import os
+import sys
 import shutil
 import string
 import logging
 import random
+import itertools
 from collections import namedtuple
 from datetime import datetime
 from glob import glob
+import gzip
 
 import tg
 import git
 import gitdb
 from pylons import app_globals as g
+from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
+from paste.deploy.converters import asbool
 
 from ming.base import Object
 from ming.orm import Mapper, session, mapper
@@ -90,6 +95,12 @@ class GitImplementation(M.RepositoryImplementation):
         self._setup_special_files()
         self._repo.status = 'ready'
 
+    def can_hotcopy(self, source_url):
+        enabled = asbool(tg.config.get('scm.git.hotcopy', True))
+        is_local = os.path.exists(source_url)
+        requested = self._repo.app.config.options.get('hotcopy', False)
+        return enabled and is_local and requested
+
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
         self._repo.status = 'cloning'
@@ -100,10 +111,17 @@ class GitImplementation(M.RepositoryImplementation):
             fullname = self._setup_paths(create_repo_dir=False)
             if os.path.exists(fullname):
                 shutil.rmtree(fullname)
-            repo = git.Repo.clone_from(
-                source_url,
-                to_path=fullname,
-                bare=True)
+            if self.can_hotcopy(source_url):
+                shutil.copytree(source_url, fullname)
+                post_receive = os.path.join(self._repo.full_fs_path, 'hooks', 'post-receive')
+                if os.path.exists(post_receive):
+                    os.rename(post_receive, post_receive + '-user')
+                repo = git.Repo(fullname)
+            else:
+                repo = git.Repo.clone_from(
+                    source_url,
+                    to_path=fullname,
+                    bare=True)
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
         except:
@@ -120,12 +138,13 @@ class GitImplementation(M.RepositoryImplementation):
             if ref.name == rev:
                 rev = ref.object_id
                 break
-        result = M.repo.Commit.query.get(_id=rev)
+        cache = getattr(c, 'model_cache', '') or M.repo.ModelCache()
+        result = cache.get(M.repo.Commit, dict(_id=rev))
         if result is None:
             # find the id by branch/tag name
             try:
                 impl = self._git.rev_parse(str(rev) + '^0')
-                result = M.repo.Commit.query.get(_id=impl.hexsha)
+                result = cache.get(M.repo.Commit, dict(_id=impl.hexsha))
             except Exception:
                 url = ''
                 try:
@@ -142,12 +161,13 @@ class GitImplementation(M.RepositoryImplementation):
         """Yield commit ids, starting with the head(s) of the commit tree and
         ending with the root (first commit).
         """
+        if not self._git.head.is_valid():
+            return  # empty repo
         seen = set()
-        for head in self._git.heads:
-            for ci in self._git.iter_commits(head, topo_order=True):
-                if ci.binsha in seen: continue
-                seen.add(ci.binsha)
-                yield ci.hexsha
+        for ci in self._git.iter_commits(all=True, topo_order=True):
+            if ci.binsha in seen: continue
+            seen.add(ci.binsha)
+            yield ci.hexsha
 
     def new_commits(self, all_commits=False):
         graph = {}
@@ -220,6 +240,8 @@ class GitImplementation(M.RepositoryImplementation):
                 blob_ids=[],
                 other_ids=[]))
         for o in tree:
+            if o.type == 'submodule':
+                continue
             obj = Object(
                 name=h.really_unicode(o.name),
                 id=o.hexsha)
@@ -242,7 +264,7 @@ class GitImplementation(M.RepositoryImplementation):
             params['skip'] = skip
         if limit is not None:
             params['max_count'] = limit
-        return [c.hexsha for c in self._git.iter_commits(**params)]
+        return (c.hexsha for c in self._git.iter_commits(**params))
 
     def commits_count(self, path=None, rev=None):
         commit = self._git.commit(rev)
@@ -301,6 +323,21 @@ class GitImplementation(M.RepositoryImplementation):
         ci = self._git.rev_parse(commit._id)
         tree = self.refresh_tree_info(ci.tree, set())
         return tree._id
+
+    def tarball(self, commit):
+        if not os.path.exists(self._repo.tarball_path):
+            os.makedirs(self._repo.tarball_path)
+        archive_name = self._repo.tarball_filename(commit)
+        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tar.gz'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        try:
+            with gzip.open(tmpfilename, 'w') as fp:
+                self._git.archive(fp, format='tar', treeish=commit, prefix=archive_name + '/')
+            os.rename(tmpfilename, filename)
+        finally:
+            if os.path.exists(tmpfilename):
+                os.remove(tmpfilename)
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

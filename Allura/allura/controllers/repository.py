@@ -6,7 +6,8 @@ import difflib
 from urllib import quote, unquote
 from collections import defaultdict
 
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from webob import exc
 import tg
 from tg import redirect, expose, flash, url, validate
@@ -32,7 +33,8 @@ from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
 from allura.lib.diff import HtmlSideBySideDiff
-
+from paste.deploy.converters import asbool
+from allura.app import SitemapEntry
 from .base import BaseController
 
 log = logging.getLogger(__name__)
@@ -56,6 +58,20 @@ class RepoRootController(BaseController):
             branch=c.app.default_branch_name
         redirect(url(quote('%s%s/' % (
                         branch, c.app.END_OF_REF_ESCAPE))))
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/repo/forks.html')
+    def forks(self):
+
+        links = []
+        if c.app.repo.forks:
+            for f in c.app.repo.forks:
+                repo_path_parts = f.url().strip('/').split('/')
+                links.append(dict(
+                    repo_url=f.url(),
+                    repo = '%s / %s' % (repo_path_parts[1], repo_path_parts[-1]),
+                ))
+        return dict(links=links)
 
     @expose()
     def refresh(self):
@@ -305,7 +321,7 @@ class MergeRequestsController(object):
         return MergeRequestController(num), remainder
 
 class MergeRequestController(object):
-    log_widget=SCMLogWidget()
+    log_widget=SCMLogWidget(show_paging=False)
     thread_widget=w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
@@ -407,12 +423,12 @@ class CommitBrowser(BaseController):
         tree = self._commit.tree
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
+        diffs = self._commit.paged_diffs(start=start, end=start+limit)
         result['artifacts'] = [
                 (t,f) for t in ('added', 'removed', 'changed', 'copied')
-                    for f in self._commit.diffs[t]
+                    for f in diffs[t]
                         if t == 'removed' or tree.get_blob_by_path(f)]
-        count = len(result['artifacts'])
-        result['artifacts'] = result['artifacts'][start:start+limit]
+        count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))
         return result
 
@@ -424,26 +440,50 @@ class CommitBrowser(BaseController):
             result.update(self._commit.context())
         return result
 
+    @expose('jinja:allura:templates/repo/tarball.html')
+    def tarball(self, **kw):
+        if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
+            raise exc.HTTPNotFound()
+        status = c.app.repo.get_tarball_status(self._revision)
+        if status is None:
+            allura.tasks.repo_tasks.tarball.post(revision=self._revision)
+        return dict(commit=self._commit, revision=self._revision, status=status)
+
+    @expose('json:')
+    def tarball_status(self):
+        if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
+            raise exc.HTTPNotFound()
+        return dict(status=c.app.repo.get_tarball_status(self._revision))
+
+
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
-    def log(self, limit=25, page=0, path=None, **kw):
-        limit, page, start = g.handle_paging(limit, page, default=25)
+    def log(self, limit=25, path=None, **kw):
+        is_file = False
         if path:
             path = path.lstrip('/')
+            is_file = self.tree._tree.get_blob_by_path(path) is not None
         params = dict(path=path, rev=self._commit._id)
-        commits = c.app.repo.commits(skip=start, limit=limit, **params)
-        count = c.app.repo.commits_count(**params)
-        revisions = M.repo.Commit.query.find({'_id': {'$in': commits}}).sort('committed.date', -1)
+        commits = list(c.app.repo.commits(limit=limit+1, **params))
+        next_commit = None
+        if len(commits) > limit:
+            next_commit = M.repo.Commit.query.get(_id=commits.pop())
+            next_commit.set_context(c.app.repo)
+        revisions = list(M.repo.Commit.query.find({'_id': {'$in': commits}}))
+        for commit in revisions:
+            commit.set_context(c.app.repo)
+        revisions = sorted(revisions, key=lambda c:commits.index(c._id))
         c.log_widget = self.log_widget
         return dict(
             username=c.user._id and c.user.username,
             branch=None,
             log=revisions,
-            page=page,
+            next_commit=next_commit,
             limit=limit,
-            count=count,
+            path=path,
+            is_file=is_file,
             **kw)
 
 
@@ -470,7 +510,8 @@ class TreeBrowser(BaseController, DispatchIndex):
             tree=self._tree,
             path=self._path,
             parent=self._parent,
-            tool_subscribed=tool_subscribed)
+            tool_subscribed=tool_subscribed,
+            tarball_enable = asbool(tg.config.get('scm.repos.tarball.enable', False)))
 
     @expose()
     def _lookup(self, next, *rest):

@@ -1,5 +1,5 @@
 from mock import Mock, patch
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura.tests.unit.factories import create_project, create_app_config
 

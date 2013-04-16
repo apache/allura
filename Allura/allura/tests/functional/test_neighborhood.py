@@ -80,7 +80,8 @@ class TestNeighborhood(TestController):
             'tracking_id': 'U-123456',
             'homepage': '[Homepage]',
             'project_list_url': 'http://fake.org/project_list',
-            'project_template': '{"name": "template"}'
+            'project_template': '{"name": "template"}',
+            'anchored_tools': 'wiki:Wiki'
 
         }
         self.app.post('/p/_admin/update', params=params,
@@ -100,6 +101,46 @@ class TestNeighborhood(TestController):
         assert check_log('change neighborhood project template to '
                          '{"name": "template"}')
         assert check_log('update neighborhood tracking_id')
+
+    @td.with_wiki
+    def test_anchored_tools(self):
+        neighborhood = M.Neighborhood.query.get(name='Projects')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      anchored_tools='wiki:Wiki, tickets:Ticket'),
+                          extra_environ=dict(username='root'))
+        assert 'error' not in self.webflash(r)
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      anchored_tools='w!iki:Wiki, tickets:Ticket'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      anchored_tools='wiki:Wiki,'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.post('/p/_admin/update',
+                          params=dict(name='Projects',
+                                      anchored_tools='badname,'),
+                          extra_environ=dict(username='root'))
+        assert 'error' in self.webflash(r)
+        assert_equal(neighborhood.anchored_tools, 'wiki:Wiki, tickets:Ticket')
+
+        r = self.app.get('/p/test/admin/overview')
+        top_nav = r.html.find(id='top_nav')
+        assert top_nav.find(href='/p/test/wiki/'), top_nav
+        assert top_nav.find(href='/p/test/tickets/'), top_nav
+
+        r = self.app.get('/p/test/admin/tools')
+        assert '<div class="fleft isnt_sorted">' in r
+        delete_tool = r.html.find('a', {'class':'mount_delete'})
+        assert_equal(len(delete_tool), 1)
 
     def test_show_title(self):
         r = self.app.get('/adobe/_admin/overview', extra_environ=dict(username='root'))
@@ -636,6 +677,45 @@ class TestNeighborhood(TestController):
             if name in ('', 'TestGroup1'):
                 assert name not in roles
 
+    def test_projects_anchored_tools(self):
+        r = self.app.post('/adobe/_admin/update', params=dict(name='Adobe',
+            css='',
+            homepage='# Adobe!\n[Root]',
+            project_template="""{
+                "private":true,
+                "tools":{
+                    "wiki":{
+                        "label":"Wiki",
+                        "mount_point":"wiki",
+                        "options":{
+                            "show_right_bar":false,
+                            "show_left_bar":false,
+                            "show_discussion":false,
+                            "some_url": "http://foo.com/$shortname/"
+                        },
+                        "home_text":"My home text!"
+                    },
+                    "admin":{"label":"Admin","mount_point":"admin"}
+                },
+                "tool_order":["wiki","admin"],
+
+                }""" ),
+            extra_environ=dict(username='root'))
+        neighborhood = M.Neighborhood.query.get(name='Adobe')
+        neighborhood.anchored_tools ='wiki:Wiki'
+        r = self.app.post(
+            '/adobe/register',
+            params=dict(
+                project_unixname='testtemp',
+                project_name='Test Template',
+                project_description='',
+                neighborhood='Adobe',
+                private_project='off'),
+            antispam=True,
+            extra_environ=dict(username='root'))
+        r = self.app.get('/adobe/testtemp/admin/tools')
+        assert '<a href="/adobe/testtemp/wiki/" class="ui-icon-tool-wiki">' in r
+        assert '<a href="/adobe/testtemp/admin/" class="ui-icon-tool-admin">' in r
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
@@ -726,12 +806,19 @@ class TestNeighborhood(TestController):
     @td.with_user_project('test-user')
     def test_profile_topnav_menu(self):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
-        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-home">' in r
+        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-profile">' in r, r
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)
         ThreadLocalORMSession.flush_all()
         self.app.get('/u/donald-duck/')
+
+    def test_disabled_user_has_no_user_project(self):
+        user = M.User.register(dict(username='donald-duck'))
+        self.app.get('/u/donald-duck/')  # assert it's there
+        M.User.query.update(dict(username='donald-duck'), {'$set': {'disabled': True}})
+        self.app.get('/u/donald-duck/', status=404)
+
 
     def test_more_projects_link(self):
         r = self.app.get('/adobe/adobe-1/admin/')

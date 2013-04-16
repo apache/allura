@@ -8,8 +8,8 @@
 {% block content %}
 <p>You have authorized {{ rtok.consumer_token.name }} access to your account.  If you wish
   to revoke this access at any time, please visit 
-  <a href="{{g.url('/auth/prefs/') }}">user preferences</a>
+  <a href="{{g.url('/auth/preferences/') }}">user preferences</a>
   and click 'revoke access'.</p>
 <h2>PIN: {{ rtok.validation_pin }}</h2>
-<a href="{{g.url('/auth/prefs/')}}">Return to preferences</a>
+<a href="{{g.url('/auth/preferences/')}}">Return to preferences</a>
 {% endblock %}

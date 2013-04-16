@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
 
-from html2text import html2text
+from IPython.testing.decorators import module_not_available, skipif
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -14,10 +11,10 @@ from allura import model as M
 from allura.lib import security
 from allura.lib import helpers as h
 from forgeblog import model as BM
-from forgeblog.command import rssfeeds
 
 import mock
 
+import feedparser
 
 test_config = 'test.ini#main'
 
@@ -51,7 +48,8 @@ def _mock_feed(*entries):
     return feed
 _mock_feed.i = 0
 
-@mock.patch.object(rssfeeds.feedparser, 'parse')
+@skipif(module_not_available('html2text'))
+@mock.patch.object(feedparser, 'parse')
 def test_pull_rss_feeds(parsefeed):
     parsefeed.return_value = _mock_feed(
         dict(title='Test', subtitle='test', summary='This is a test'),
@@ -81,6 +79,7 @@ def test_pull_rss_feeds(parsefeed):
     BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
     ThreadLocalORMSession.flush_all()
 
+    from forgeblog.command import rssfeeds
     cmd = rssfeeds.RssFeedsCommand('pull-rss-feeds')
     cmd.run([test_config, '-a', tmp_app._id])
     cmd.command()
@@ -102,7 +101,9 @@ def test_pull_rss_feeds(parsefeed):
         " [link](http://example.com/)",
     ]))
 
+@skipif(module_not_available('html2text'))
 def test_plaintext_preprocessor():
+    from html2text import html2text
     text = html2text(
         "[plain]1. foo[/plain]\n"
         "\n"
@@ -120,7 +121,9 @@ def test_plaintext_preprocessor():
         '#foo bar <a class="" href="../baz"> baz </a></p></div>'
     )
 
+@skipif(module_not_available('html2text'))
 def test_plaintext_preprocessor_wrapped():
+    from html2text import html2text
     text = html2text(
         "<p>[plain]1. foo[/plain]</p>\n"
         "\n"
@@ -140,7 +143,7 @@ def test_plaintext_preprocessor_wrapped():
         '<p>#foo bar <a class="" href="../baz"> baz </a></p></div>'
     )
 
-
+@skipif(module_not_available('html2text'))
 def test_plain2markdown():
     text = '''paragraph
 
@@ -169,6 +172,8 @@ http://blah.com/?x=y&a=b - not escaped either
     # html2text escapes all #s currently.  The extra escaping of \# ends up
     # being ok though when rendered
 
+    from forgeblog.command import rssfeeds
+
     assert_equal(rssfeeds.plain2markdown(text), expected)
 
     assert_equal(rssfeeds.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
@@ -176,3 +181,6 @@ http://blah.com/?x=y&a=b - not escaped either
 
     assert_equal(rssfeeds.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
                  '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+
+    assert_equal(rssfeeds.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
+                 'tab before \(stuff\)')

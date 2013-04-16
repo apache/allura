@@ -3,6 +3,15 @@ import sys, os
 
 from forgesvn.version import __version__
 
+# "install_requires" can't be safely used with pysvn since pysvn is packaged
+# strangely and is not always known to packaging tools (setup.py, pip) even
+# when it is installed and can be imported and used
+try:
+    import pysvn
+except ImportError:
+    print '\npysvn must be installed for ForgeSVN to work\n'
+    raise
+
 setup(name='ForgeSVN',
       version=__version__,
       description="",

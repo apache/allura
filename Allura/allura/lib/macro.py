@@ -3,9 +3,15 @@ import random
 import shlex
 import string
 import logging
+import traceback
+from operator import attrgetter
 
 import pymongo
-from pylons import c, g, request
+import jinja2
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
+from paste.deploy.converters import asint
+from urlparse import urljoin
 
 from . import helpers as h
 from . import security
@@ -43,8 +49,10 @@ class parse(object):
                 response = macro(**h.encode_keys(args))
                 return response
             except (ValueError, TypeError) as ex:
+                log.warn('macro error.  Upwards stack is %s',
+                         ''.join(traceback.format_stack()),
+                         exc_info=True)
                 msg = cgi.escape(u'[[%s]] (%s)' % (s, repr(ex)))
-                log.warn('macro error', exc_info=True)
                 return '\n<div class="error"><pre><code>%s</code></pre></div>' % msg
         except Exception, ex:
             raise
@@ -277,14 +285,23 @@ def project_screenshots():
     response = ps.display(project=c.project)
     return response
 
+
+# FIXME: this is SourceForge specific - need to provide a way for macros to come from other packages
 @macro()
 def download_button():
-    from allura import model as M
     from allura.lib.widgets.macros import DownloadButton
     button = DownloadButton(project=c.project)
-    g.resource_manager.register(button)
-    response = button.display(project=c.project)
-    return response
+    try:
+        res_mgr = g.resource_manager
+    except TypeError:
+        # e.g. "TypeError: No object (name: widget_context) has been registered for this thread"
+        # this is an ugly way to check to see if we're outside of a web request and avoid errors
+        return '[[download_button]]'
+    else:
+        res_mgr.register(button)
+        response = button.display(project=c.project)
+        return response
+
 
 @macro()
 def include(ref=None, **kw):
@@ -319,16 +336,30 @@ def img(src=None, **kw):
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
 
 
-template_project_admins = string.Template('<a href="$url">$name</a><br/>')
+template_project_admins = string.Template('<li><a href="$url">$name</a></li>')
 @macro()
 def project_admins():
-    from allura import model as M
-    output = ''
-    admin_role = M.ProjectRole.query.get(project_id=c.project._id,name='Admin')
-    if admin_role:
-        output = ''.join(
-            template_project_admins.substitute(dict(
-                url=user_role.user.url(),
-                name=user_role.user.display_name))
-            for user_role in admin_role.users_with_role())
-    return output
+    admins = c.project.users_with_role('Admin')
+    output = ''.join(
+        template_project_admins.substitute(dict(
+            url=user.url(),
+            name=jinja2.escape(user.display_name)))
+        for user in admins)
+    return u'<h6>Project Admins:</h6><ul class="md-users-list">{0}</ul>'.format(output)
+
+template_members = string.Template('<li><a href="$url">$name</a>$admin</li>')
+@macro()
+def members(limit=20):
+    limit = asint(limit)
+    admins = set(c.project.users_with_role('Admin'))
+    members = sorted(c.project.users(), key=attrgetter('display_name'))
+    output = ''.join(
+        template_members.substitute(dict(
+            url=user.url(),
+            name=jinja2.escape(user.display_name),
+            admin=' (admin)' if user in admins else '',
+            ))
+        for user in members[:limit])
+    if len(members) > limit:
+        output = output + '<li class="md-users-list-more"><a href="%s_members">All Members</a></li>' % c.project.url()
+    return u'<h6>Project Members:</h6><ul class="md-users-list">{0}</ul>'.format(output)

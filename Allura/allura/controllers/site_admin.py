@@ -1,15 +1,22 @@
+import re
+import json
 import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from tg import expose, validate, flash, config, request
+from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from ming.orm import session
 import pymongo
-from pylons import c, g
-from formencode import validators
+import bson
+import tg
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
+from formencode import validators, Invalid
 
 from allura.lib import helpers as h
+from allura.lib import validators as v
+from allura.lib.decorators import require_post
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura import model as M
@@ -27,6 +34,9 @@ class W:
 
 class SiteAdminController(object):
 
+    def __init__(self):
+        self.task_manager = TaskManagerController()
+
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
                             neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
@@ -43,31 +53,8 @@ class SiteAdminController(object):
         neighborhoods.sort(key=lambda n:n[0])
         return dict(neighborhoods=neighborhoods)
 
-    @expose('jinja:allura:templates/site_admin_stats.html')
-    @without_trailing_slash
-    def stats(self, limit=25):
-        stats = defaultdict(lambda:defaultdict(list))
-        agg_timings = defaultdict(list)
-        for doc in M.Stats.m.find():
-            if doc.url.startswith('/_debug'): continue
-            doc_stats = stats[doc.url]
-            for t,val in doc.timers.iteritems():
-                doc_stats[t].append(val)
-                agg_timings[t].append(val)
-        for url, timings in stats.iteritems():
-            new_timings = dict(
-                (timer, round(sum(readings)/len(readings),3))
-                for timer, readings in timings.iteritems())
-            timings.update(new_timings)
-        agg_timings = dict(
-            (timer, round(sum(readings)/len(readings),3))
-            for timer, readings in agg_timings.iteritems())
-        stats = sorted(stats.iteritems(), key=lambda x:-x[1]['total'])
-        return dict(
-            agg_timings=agg_timings,
-            stats=stats[:int(limit)])
-
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
+    @without_trailing_slash
     def api_tickets(self, **data):
         import json
         import dateutil.parser
@@ -151,6 +138,7 @@ class SiteAdminController(object):
         return False
 
     @expose('jinja:allura:templates/site_admin_add_subscribers.html')
+    @without_trailing_slash
     def add_subscribers(self, **data):
         if request.method == 'POST':
             url = data['artifact_url']
@@ -174,6 +162,7 @@ class SiteAdminController(object):
         return data
 
     @expose('jinja:allura:templates/site_admin_new_projects.html')
+    @without_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=100)))
     def new_projects(self, page=0, limit=100, **kwargs):
@@ -194,6 +183,7 @@ class SiteAdminController(object):
         }
 
     @expose('jinja:allura:templates/site_admin_reclone_repo.html')
+    @without_trailing_slash
     @validate(dict(prefix=validators.NotEmpty(),
                    shortname=validators.NotEmpty(),
                    mount_point=validators.NotEmpty()))
@@ -230,3 +220,99 @@ class SiteAdminController(object):
             shortname = ''
             mount_point = ''
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+
+class TaskManagerController(object):
+
+    def _check_security(self):
+        with h.push_context(config.get('site_admin_project', 'allura'),
+                            neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
+            require_access(c.project, 'admin')
+
+    @expose('jinja:allura:templates/site_admin_task_list.html')
+    @without_trailing_slash
+    def index(self, page_num=1, minutes=10, state=None, task_name=None, host=None):
+        now = datetime.utcnow()
+        try:
+            page_num = int(page_num)
+        except ValueError as e:
+            page_num = 1
+        try:
+            minutes = int(minutes)
+        except ValueError as e:
+            minutes = 1
+        start_dt = now - timedelta(minutes=(page_num-1)*minutes)
+        end_dt = now - timedelta(minutes=page_num*minutes)
+        start = bson.ObjectId.from_datetime(start_dt)
+        end = bson.ObjectId.from_datetime(end_dt)
+        query = {'_id': {'$gt': end}}
+        if page_num > 1:
+            query['_id']['$lt'] = start
+        if state:
+            query['state'] = state
+        if task_name:
+            query['task_name'] = re.compile(re.escape(task_name))
+        if host:
+            query['process'] = re.compile(re.escape(host))
+
+        tasks = list(M.monq_model.MonQTask.query.find(query).sort('_id', -1))
+        for task in tasks:
+            task.project = M.Project.query.get(_id=task.context.project_id)
+            task.user = M.User.query.get(_id=task.context.user_id)
+        newer_url = tg.url(params=dict(request.params, page_num=page_num - 1)).lstrip('/')
+        older_url = tg.url(params=dict(request.params, page_num=page_num + 1)).lstrip('/')
+        return dict(
+                tasks=tasks,
+                page_num=page_num,
+                minutes=minutes,
+                newer_url=newer_url,
+                older_url=older_url,
+                window_start=start_dt,
+                window_end=end_dt,
+            )
+
+    @expose('jinja:allura:templates/site_admin_task_view.html')
+    @without_trailing_slash
+    def view(self, task_id):
+        try:
+            task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
+        except bson.errors.InvalidId as e:
+            task = None
+        if task:
+            task.project = M.Project.query.get(_id=task.context.project_id)
+            task.app_config = M.AppConfig.query.get(_id=task.context.app_config_id)
+            task.user = M.User.query.get(_id=task.context.user_id)
+        return dict(task=task)
+
+    @expose('jinja:allura:templates/site_admin_task_new.html')
+    @without_trailing_slash
+    def new(self, **kw):
+        """Render the New Task form"""
+        return dict(
+            form_errors=c.form_errors or {},
+            form_values=c.form_values or {},
+        )
+
+    @expose()
+    @require_post()
+    @validate(v.CreateTaskSchema(), error_handler=new)
+    def create(self, task, task_args=None, user=None, path=None):
+        """Post a new task"""
+        args = task_args.get("args", ())
+        kw = task_args.get("kwargs", {})
+        config_dict = path
+        if user:
+            config_dict['user'] = user
+        with h.push_config(c, **config_dict):
+            task = task.post(*args, **kw)
+        redirect('view/%s' % task._id)
+
+    @expose('json:')
+    def task_doc(self, task_name):
+        """Return a task's docstring"""
+        error, doc = None, None
+        try:
+            task = v.TaskValidator.to_python(task_name)
+            doc = task.__doc__ or 'No doc string available'
+        except Invalid as e:
+            error = str(e)
+        return dict(doc=doc, error=error)

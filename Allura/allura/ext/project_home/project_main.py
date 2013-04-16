@@ -1,7 +1,7 @@
 import logging
 
 import pkg_resources
-from pylons import c
+from pylons import tmpl_context as c
 from tg import expose, redirect
 from tg.decorators import with_trailing_slash
 
@@ -41,7 +41,7 @@ class ProjectHomeApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.config.options.mount_label,
                 '..')]
 
     @property

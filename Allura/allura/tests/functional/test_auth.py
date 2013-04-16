@@ -5,7 +5,7 @@ import mock
 from nose.tools import assert_equal
 
 from datadiff.tools import assert_equal
-from pylons import c
+from pylons import tmpl_context as c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
@@ -41,19 +41,19 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
-        r = self.app.get('/auth/prefs/', extra_environ=dict(username='test-admin'))
+        r = self.app.get('/auth/preferences/', extra_environ=dict(username='test-admin'))
         assert 'test@example.com' not in r
-        r = self.app.post('/auth/prefs/update', params={
-                 'display_name':'Test Admin',
+        r = self.app.post('/auth/preferences/update', params={
+                 'preferences.display_name':'Test Admin',
                  'new_addr.addr':'test@example.com',
                  'new_addr.claim':'Claim Address',
                  'primary_addr':'test-admin@users.localhost',
                  'preferences.email_format':'plain'},
                 extra_environ=dict(username='test-admin'))
-        r = self.app.get('/auth/prefs/')
+        r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
-        r = self.app.post('/auth/prefs/update', params={
-                 'display_name':'Test Admin',
+        r = self.app.post('/auth/preferences/update', params={
+                 'preferences.display_name':'Test Admin',
                  'addr-1.ord':'1',
                  'addr-2.ord':'1',
                  'addr-2.delete':'on',
@@ -61,13 +61,13 @@ class TestAuth(TestController):
                  'primary_addr':'test-admin@users.localhost',
                  'preferences.email_format':'plain'},
                 extra_environ=dict(username='test-admin'))
-        r = self.app.get('/auth/prefs/')
+        r = self.app.get('/auth/preferences/')
         assert 'test@example.com' not in r
         ea = M.EmailAddress.query.get(_id='test-admin@users.localhost')
         ea.confirmed = True
         ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/prefs/update', params={
-                 'display_name':'Test Admin',
+        r = self.app.post('/auth/preferences/update', params={
+                 'preferences.display_name':'Test Admin',
                  'new_addr.addr':'test-admin@users.localhost',
                  'new_addr.claim':'Claim Address',
                  'primary_addr':'test-admin@users.localhost',
@@ -76,7 +76,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
-        r = self.app.get('/auth/prefs/',
+        r = self.app.get('/auth/subscriptions/',
                 extra_environ=dict(username='test-admin'))
         subscriptions = M.Mailbox.query.find(dict(
             user_id=c.user._id, is_flash=False)).all()
@@ -118,7 +118,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions_subscribe(self):
-        resp = self.app.get('/auth/prefs/',
+        resp = self.app.get('/auth/subscriptions/',
                 extra_environ=dict(username='test-admin'))
         form = self._find_subscriptions_form(resp)
         # find not subscribed tool, subscribe and verify
@@ -134,7 +134,7 @@ class TestAuth(TestController):
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions_unsubscribe(self):
-        resp = self.app.get('/auth/prefs/',
+        resp = self.app.get('/auth/subscriptions/',
                 extra_environ=dict(username='test-admin'))
         form = self._find_subscriptions_form(resp)
         field_name = self._find_subscriptions_field(form, subscribed=True)
@@ -147,15 +147,15 @@ class TestAuth(TestController):
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
     def test_api_key(self):
-         r = self.app.get('/auth/prefs/')
+         r = self.app.get('/auth/preferences/')
          assert 'No API token generated' in r
-         r = self.app.post('/auth/prefs/gen_api_token', status=302)
-         r = self.app.get('/auth/prefs/')
+         r = self.app.post('/auth/preferences/gen_api_token', status=302)
+         r = self.app.get('/auth/preferences/')
          assert 'No API token generated' not in r
          assert 'API Key:' in r
          assert 'Secret Key:' in r
-         r = self.app.post('/auth/prefs/del_api_token', status=302)
-         r = self.app.get('/auth/prefs/')
+         r = self.app.post('/auth/preferences/del_api_token', status=302)
+         r = self.app.get('/auth/preferences/')
          assert 'No API token generated' in r
 
     def test_oauth(self):
@@ -382,10 +382,10 @@ class TestPreferences(TestController):
         from pytz import country_names
         setsex, setbirthdate, setcountry, setcity, settimezone = \
             ('Male', '19/08/1988', 'IT', 'Milan', 'Europe/Rome')
-        result = self.app.get('/auth/prefs')
+        result = self.app.get('/auth/user_info/')
 
         #Check if personal data is properly set
-        r = self.app.post('/auth/prefs/change_personal_data',
+        r = self.app.post('/auth/user_info/change_personal_data',
              params=dict(
                  sex=setsex,
                  birthdate=setbirthdate,
@@ -405,7 +405,7 @@ class TestPreferences(TestController):
         assert timezone == settimezone
 
         #Check if setting a wrong date everything works correctly
-        r = self.app.post('/auth/prefs/change_personal_data',
+        r = self.app.post('/auth/user_info/change_personal_data',
              params=dict(birthdate='30/02/1998'))
         assert 'Please enter a valid date' in str(r)
         user = M.User.query.get(username='test-admin')
@@ -421,7 +421,7 @@ class TestPreferences(TestController):
         assert timezone == settimezone
 
         #Check deleting birthdate
-        r = self.app.post('/auth/prefs/change_personal_data',
+        r = self.app.post('/auth/user_info/change_personal_data',
              params=dict(
                  sex=setsex,
                  birthdate='',
@@ -435,8 +435,8 @@ class TestPreferences(TestController):
     def test_contacts(self):
         #Add skype account
         testvalue = 'testaccount'
-        result = self.app.get('/auth/prefs')
-        r = self.app.post('/auth/prefs/skype_account',
+        result = self.app.get('/auth/user_info/contacts/')
+        r = self.app.post('/auth/user_info/contacts/skype_account',
              params=dict(skypeaccount=testvalue))
         user = M.User.query.get(username='test-admin')
         assert user.skypeaccount == testvalue
@@ -444,7 +444,7 @@ class TestPreferences(TestController):
         #Add social network account
         socialnetwork = 'Facebook'
         accounturl = 'http://www.facebook.com/test'
-        r = self.app.post('/auth/prefs/add_social_network',
+        r = self.app.post('/auth/user_info/contacts/add_social_network',
              params=dict(socialnetwork=socialnetwork,
                          accounturl = accounturl))
         user = M.User.query.get(username='test-admin')
@@ -455,7 +455,7 @@ class TestPreferences(TestController):
         #Add second social network account
         socialnetwork2 = 'Twitter'
         accounturl2 = 'http://twitter.com/test'
-        r = self.app.post('/auth/prefs/add_social_network',
+        r = self.app.post('/auth/user_info/contacts/add_social_network',
              params=dict(socialnetwork=socialnetwork2,
                          accounturl = '@test'))
         user = M.User.query.get(username='test-admin')
@@ -464,7 +464,7 @@ class TestPreferences(TestController):
                 {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks)
 
         #Remove first social network account
-        r = self.app.post('/auth/prefs/remove_social_network',
+        r = self.app.post('/auth/user_info/contacts/remove_social_network',
              params=dict(socialnetwork=socialnetwork,
                          account = accounturl))
         user = M.User.query.get(username='test-admin')
@@ -472,7 +472,7 @@ class TestPreferences(TestController):
                {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks
 
         #Add invalid social network account
-        r = self.app.post('/auth/prefs/add_social_network',
+        r = self.app.post('/auth/user_info/contacts/add_social_network',
              params=dict(accounturl = accounturl, socialnetwork=''))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
@@ -480,40 +480,40 @@ class TestPreferences(TestController):
 
         #Add telephone number
         telnumber = '+3902123456'
-        r = self.app.post('/auth/prefs/add_telnumber',
+        r = self.app.post('/auth/user_info/contacts/add_telnumber',
              params=dict(newnumber=telnumber))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 1 and (user.telnumbers[0] == telnumber))
 
         #Add second telephone number
         telnumber2 = '+3902654321'
-        r = self.app.post('/auth/prefs/add_telnumber',
+        r = self.app.post('/auth/user_info/contacts/add_telnumber',
              params=dict(newnumber=telnumber2))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
 
         #Remove first telephone number
-        r = self.app.post('/auth/prefs/remove_telnumber',
+        r = self.app.post('/auth/user_info/contacts/remove_telnumber',
              params=dict(oldvalue=telnumber))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 1 and telnumber2 in user.telnumbers)
 
         #Add website
         website = 'http://www.testurl.com'
-        r = self.app.post('/auth/prefs/add_webpage',
+        r = self.app.post('/auth/user_info/contacts/add_webpage',
              params=dict(newwebsite=website))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and (website in user.webpages))
 
         #Add second website
         website2 = 'http://www.testurl2.com'
-        r = self.app.post('/auth/prefs/add_webpage',
+        r = self.app.post('/auth/user_info/contacts/add_webpage',
              params=dict(newwebsite=website2))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 2 and website in user.webpages and website2 in user.webpages)
 
         #Remove first website
-        r = self.app.post('/auth/prefs/remove_webpage',
+        r = self.app.post('/auth/user_info/contacts/remove_webpage',
              params=dict(oldvalue=website))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and website2 in user.webpages)
@@ -527,8 +527,8 @@ class TestPreferences(TestController):
         starttime = time(9,0,0)
         endtime = time(12, 0, 0)
 
-        result = self.app.get('/auth/prefs')
-        r = self.app.post('/auth/prefs/add_timeslot',
+        result = self.app.get('/auth/user_info/availability/')
+        r = self.app.post('/auth/user_info/availability/add_timeslot',
              params=dict(
                  weekday=weekday,
                  starttime=starttime.strftime('%H:%M'),
@@ -542,7 +542,7 @@ class TestPreferences(TestController):
         endtime2 = time(16, 0, 0)
 
         #Add second availability timeslot
-        r = self.app.post('/auth/prefs/add_timeslot',
+        r = self.app.post('/auth/user_info/availability/add_timeslot',
              params=dict(
                  weekday=weekday2,
                  starttime=starttime2.strftime('%H:%M'),
@@ -553,7 +553,7 @@ class TestPreferences(TestController):
                and timeslot2dict in user.get_availability_timeslots()
 
         #Remove availability timeslot
-        r = self.app.post('/auth/prefs/remove_timeslot',
+        r = self.app.post('/auth/user_info/availability/remove_timeslot',
              params=dict(
                  weekday=weekday,
                  starttime=starttime.strftime('%H:%M'),
@@ -562,7 +562,7 @@ class TestPreferences(TestController):
         assert len(user.availability) == 1 and timeslot2dict in user.get_availability_timeslots()
 
         #Add invalid availability timeslot
-        r = self.app.post('/auth/prefs/add_timeslot',
+        r = self.app.post('/auth/user_info/availability/add_timeslot',
              params=dict(
                  weekday=weekday2,
                  starttime=endtime2.strftime('%H:%M'),
@@ -574,13 +574,15 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_inactivity(self):
-        from datetime import datetime
+        from datetime import datetime, timedelta
 
         #Add inactivity period
-        startdate = datetime(2012, 12, 14)
-        enddate = datetime(2012, 12, 20)
-        result = self.app.get('/auth/prefs')
-        r = self.app.post('/auth/prefs/add_inactive_period',
+        now = datetime.utcnow().date()
+        now = datetime(now.year, now.month, now.day)
+        startdate = now + timedelta(days=1)
+        enddate = now + timedelta(days=7)
+        result = self.app.get('/auth/user_info/availability/')
+        r = self.app.post('/auth/user_info/availability/add_inactive_period',
              params=dict(
                  startdate=startdate.strftime('%d/%m/%Y'),
                  enddate=enddate.strftime('%d/%m/%Y')))
@@ -589,9 +591,9 @@ class TestPreferences(TestController):
         assert len(user.inactiveperiod) == 1 and period1dict in user.get_inactive_periods()
 
         #Add second inactivity period
-        startdate2 = datetime(2012, 12, 24)
-        enddate2 = datetime(2012, 12, 28)
-        r = self.app.post('/auth/prefs/add_inactive_period',
+        startdate2 =  now + timedelta(days=24)
+        enddate2 = now + timedelta(days=28)
+        r = self.app.post('/auth/user_info/availability/add_inactive_period',
              params=dict(
                  startdate=startdate2.strftime('%d/%m/%Y'),
                  enddate=enddate2.strftime('%d/%m/%Y')))
@@ -601,7 +603,7 @@ class TestPreferences(TestController):
                and period2dict in user.get_inactive_periods()
 
         #Remove first inactivity period
-        r = self.app.post('/auth/prefs/remove_inactive_period',
+        r = self.app.post('/auth/user_info/availability/remove_inactive_period',
              params=dict(
                  startdate=startdate.strftime('%d/%m/%Y'),
                  enddate=enddate.strftime('%d/%m/%Y')))
@@ -609,7 +611,7 @@ class TestPreferences(TestController):
         assert len(user.inactiveperiod) == 1 and period2dict in user.get_inactive_periods()
 
         #Add invalid inactivity period
-        r = self.app.post('/auth/prefs/add_inactive_period',
+        r = self.app.post('/auth/user_info/availability/add_inactive_period',
              params=dict(
                  startdate='NOT/A/DATE',
                  enddate=enddate2.strftime('%d/%m/%Y')))
@@ -625,8 +627,8 @@ class TestPreferences(TestController):
         skill_cat = M.TroveCategory.query.get(show_as_skill=True)
         level = 'low'
         comment = 'test comment'
-        result = self.app.get('/auth/prefs/user_skills')
-        r = self.app.post('/auth/prefs/user_skills/save_skill',
+        result = self.app.get('/auth/user_info/skills/')
+        r = self.app.post('/auth/user_info/skills/save_skill',
              params=dict(
                  level=level,
                  comment=comment,
@@ -638,8 +640,8 @@ class TestPreferences(TestController):
         #Add again the same skill
         level = 'medium'
         comment = 'test comment 2'
-        result = self.app.get('/auth/prefs/user_skills')
-        r = self.app.post('/auth/prefs/user_skills/save_skill',
+        result = self.app.get('/auth/user_info/skills/')
+        r = self.app.post('/auth/user_info/skills/save_skill',
              params=dict(
                  level=level,
                  comment=comment,
@@ -651,7 +653,7 @@ class TestPreferences(TestController):
         #Add an invalid skill
         level2 = 'not a level'
         comment2 = 'test comment 2'
-        r = self.app.post('/auth/prefs/user_skills/save_skill',
+        r = self.app.post('/auth/user_info/skills/save_skill',
              params=dict(
                  level=level2,
                  comment=comment2,
@@ -661,8 +663,8 @@ class TestPreferences(TestController):
         assert len(user.skills) == 1 and skilldict in user.skills
 
         #Remove a skill
-        result = self.app.get('/auth/prefs/user_skills')
-        r = self.app.post('/auth/prefs/user_skills/remove_skill',
+        result = self.app.get('/auth/user_info/skills/')
+        r = self.app.post('/auth/user_info/skills/remove_skill',
              params=dict(
                  categoryid=str(skill_cat.trove_cat_id)))
         user = M.User.query.get(username='test-admin')

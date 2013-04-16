@@ -1,7 +1,7 @@
 from tg import expose, redirect, flash, config, validate, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators as V
-from pylons import c
+from pylons import tmpl_context as c
 from webob import exc
 import pymongo
 
@@ -28,7 +28,8 @@ class SearchController(BaseController):
         else:
             results = search.search(
                 q,
-                fq='is_history_b:%s' % history)
+                fq='is_history_b:%s' % history,
+                short_timeout=True)
             if results: count=results.hits
         return dict(q=q, history=history, results=results or [], count=count)
 

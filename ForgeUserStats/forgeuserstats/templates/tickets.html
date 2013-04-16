@@ -1,0 +1,64 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}User stats{% endblock %}
+
+{% block header %}
+    Statistics about {{user.display_name}}'s contribution – Tickets
+{% endblock %}
+
+{% block content %}
+
+  {% if user and (user.stats.visible or (c.user == user)) %}
+    <div class="grid-20">
+      <ul><li><a href="{{c.project.url()}}userstats">Go back to general statistics</a></li></ul>
+    </div>
+
+    {% if data %}
+    <div class="grid-20">
+      <h2>Statistics by category</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Assigned tickets</th>
+            <th>Solved tickets</th>
+            <th>Revoked tickets</th>
+            <th>Average solving time</th>
+          </tr>
+        </thead>
+        <tbody> 
+          {% for cat, el in data.items() %}
+            <tr>
+              <td>{% if cat %}{{cat.fullname}}{% else %}All categories{% endif %}</td>
+              <td>{{el.assigned}}</td>
+              <td>{{el.solved}}</td>
+              <td>{{el.revoked}}</td>
+              <td>
+                {% if el.averagesolvingtime %}
+                  {{el.averagesolvingtime.days}} days, 
+                  {{el.averagesolvingtime.hours}} hours,
+                  {{el.averagesolvingtime.minutes}} min
+                {% else %}n/a{% endif %}
+              </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  {% else %}
+    {% if user %}
+      <h2>Statistics not available</h2>
+      <div class="grid-20"> 
+        This user has set his or her preferences so that personal statistics are not visible
+        to other users of the forge.
+      </div>
+    {% else %}
+      <h2>Invalid user</h2>
+      <div class="grid-20"> 
+        You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

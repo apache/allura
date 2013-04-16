@@ -2,12 +2,11 @@ import os
 import shutil
 import unittest
 import pkg_resources
+import datetime
 
 import mock
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
+import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal
@@ -57,7 +56,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[1e146e]'
-        assert self.rev.symbolic_ids == (['master'], [])
+        assert self.rev.symbolic_ids == (['master', 'zz'], [])
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
@@ -173,6 +172,35 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
+    @mock.patch('forgegit.model.git_repo.git.Repo.clone_from')
+    @mock.patch('forgegit.model.git_repo.g.post_event')
+    def test_hotcopy(self, post_event, clone_from):
+        with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
+            repo = GM.Repository(
+                name='testgit.git',
+                fs_path='/tmp/',
+                url_path = '/test/',
+                tool = 'git',
+                status = 'creating')
+            repo.app.config.options['hotcopy'] = True
+            repo_path = pkg_resources.resource_filename(
+                'forgegit', 'tests/data/testgit.git')
+            dirname = os.path.join(repo.fs_path, repo.name)
+            if os.path.exists(dirname):
+                shutil.rmtree(dirname)
+            repo.init()
+            repo._impl.clone_from(repo_path)
+            assert not clone_from.called
+            assert len(repo.log())
+            assert os.path.exists('/tmp/testgit.git/hooks/update')
+            assert os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
+            assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
+            assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+            with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+            self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+            self.assertIn('exec $DIR/post-receive-user\n', c)
+            shutil.rmtree(dirname)
+
     def test_index(self):
         i = self.repo.index()
         assert i['type_s'] == 'Git Repository', i
@@ -211,6 +239,58 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
+    def test_tarball(self):
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
+        assert_equal(self.repo.tarball_path, '/tmp/tarball/git/t/te/test/testgit.git')
+        assert_equal(self.repo.tarball_url('HEAD'), 'file:///git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz')
+        self.repo.tarball('HEAD')
+        assert os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
+
+    def test_all_commit_ids(self):
+        cids = list(self.repo.all_commit_ids())
+        heads = [
+                '1e146e67985dcd71c74de79613719bef7bddca4a',  # master
+                '5c47243c8e424136fd5cdd18cd94d34c66d1955c',  # zz
+            ]
+        self.assertIn(cids[0], heads)  # repo head comes first
+        for head in heads:
+            self.assertIn(head, cids)  # all branches included
+        self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')  # repo root comes last
+
+    def test_ls(self):
+        lcd_map = self.repo.commit('HEAD').tree.ls()
+        self.assertEqual(lcd_map, [{
+                'href': u'README',
+                'kind': 'BLOB',
+                'last_commit': {
+                    'author': u'Rick Copeland',
+                    'author_email': u'rcopeland@geek.net',
+                    'author_url': None,
+                    'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                    'href': u'/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                    'shortlink': u'[1e146e]',
+                    'summary': u'Change README'},
+                'name': u'README'}])
+
+    def test_tarball_status(self):
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz")
+        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp"):
+            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        if os.path.isdir("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/"):
+            os.removedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/")
+        self.repo.tarball('HEAD')
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
+        os.rename("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tar.gz",
+                  "/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
+        os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+        os.makedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD")
+        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+
+
 class TestGitCommit(unittest.TestCase):
 
     def setUp(self):
@@ -236,6 +316,7 @@ class TestGitCommit(unittest.TestCase):
 
     def test_url(self):
         assert self.rev.url().endswith('ca4a/')
+        assert self.repo._impl.url_for_symbolic(self.rev._id).endswith('master/'), self.repo._impl.url_for_symbolic(self.rev._id)
 
     def test_committer_url(self):
         assert self.rev.committer_url is None
@@ -256,33 +337,43 @@ class TestGitCommit(unittest.TestCase):
 
     def test_commits(self):
         # path only
-        commits = self.repo.commits()
+        commits = list(self.repo.commits())
         assert len(commits) == 4, 'Returned %s commits' % len(commits)
         assert "9a7df788cf800241e3bb5a849c8870f2f8259d98" in commits, commits
-        commits = self.repo.commits('README')
+        commits = list(self.repo.commits('README'))
         assert len(commits) == 2, 'Returned %s README commits' % len(commits)
         assert "1e146e67985dcd71c74de79613719bef7bddca4a" in commits, commits
         assert "df30427c488aeab84b2352bdf88a3b19223f9d7a" in commits, commits
-        assert self.repo.commits('does/not/exist') == []
+        assert list(self.repo.commits('does/not/exist')) == []
         # with path and start rev
-        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a')
-        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a'], commits
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         # skip and limit
-        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
-        assert commits == ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8']
-        commits = self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1)
-        assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1)
+        commits = list(self.repo.commits(None, rev=None, skip=1, limit=2))
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'])
+        commits = list(self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1))
+        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1))
         assert commits == []
         # path to dir
-        commits = self.repo.commits('a/b/c/')
+        commits = list(self.repo.commits('a/b/c/'))
         assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8', '9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('a/b/c/', skip=1)
+        commits = list(self.repo.commits('a/b/c/', skip=1))
         assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = self.repo.commits('a/b/c/', limit=1)
+        commits = list(self.repo.commits('a/b/c/', limit=1))
         assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8']
-        commits = self.repo.commits('not/exist/')
+        commits = list(self.repo.commits('not/exist/'))
         assert commits == []
+        # with missing add record
+        commit = M.repo.Commit.query.get(_id='df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        commit.changed_paths = []
+        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
+        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
+        # with missing add record & no parent
+        commit = M.repo.Commit.query.get(_id='9a7df788cf800241e3bb5a849c8870f2f8259d98')
+        commit.changed_paths = ['a']
+        commits = list(self.repo.commits('a/b/c/hello.txt', '9a7df788cf800241e3bb5a849c8870f2f8259d98'))
+        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
 
     def test_commits_count(self):
         commits = self.repo.commits_count()

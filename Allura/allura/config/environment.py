@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """WSGI environment setup for allura."""
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 import pylons.middleware
 import tg
 import tg.error

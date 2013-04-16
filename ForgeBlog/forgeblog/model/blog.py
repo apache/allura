@@ -3,10 +3,7 @@ import functools
 from datetime import datetime
 from random import randint
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError
 
 from ming import schema
@@ -60,7 +57,7 @@ class BlogPostSnapshot(M.Snapshot):
             return None
         result = super(BlogPostSnapshot, self).index()
         result.update(
-            title_s='Version %d of %s' % (
+            title='Version %d of %s' % (
                 self.version, orig.shorthand_id()),
             type_s=self.type_s,
             text=self.data.text)
@@ -187,7 +184,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     def index(self):
         result = super(BlogPost, self).index()
         result.update(
-            title_s=self.slug,
+            title=self.slug,
             type_s=self.type_s,
             state_s=self.state,
             snippet_s='%s: %s' % (self.title, h.text.truncate(self.text, 200)),

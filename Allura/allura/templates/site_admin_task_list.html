@@ -1,0 +1,93 @@
+{% set page="task_manager" %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block extra_css %}
+<style type="text/css">
+    .paging {
+        float: right;
+        margin: 1em;
+    }
+    .paging-window {
+        margin: 1em;
+    }
+    .empty {
+        text-align: center;
+        font-style: italic;
+    }
+    #task_search_form {
+        margin-left: 1em;
+    }
+    #task_search_form label {
+        display: inline-block;
+        width: 6em;
+    }
+    #task_search_form input[type="submit"] {
+        float: none;
+    }
+    #task_list {
+        overflow: auto;
+        clear: both;
+    }
+</style>
+{% endblock %}
+
+{% macro _paging() %}
+<div class="paging">
+    {% if page_num > 3 -%}
+    <a class="newest" title="Newest" href="{{ newest_url }}">&lt;&lt;</a>&nbsp;
+    {%- endif -%}
+    {%- if page_num > 1 -%}
+    <a class="newer" title="Newer" href="{{ newer_url }}">&lt;</a>&nbsp;&hellip;&nbsp;
+    {%- endif -%}
+    <a class="newer" title="Older" href="{{ older_url }}">&gt;</a>
+</div>
+{% endmacro %}
+
+{% block content %}
+<h2>Task Manager</h2>
+<form method="GET" id="task_search_form">
+    <label>State:</label> <input name="state" value="{{ request.params.state }}" /><br/>
+    <label>Task Name:</label> <input name="task_name" value="{{ request.params.task_name }}" /><br/>
+    <label>Host:</label> <input name="host" value="{{ request.params.host }}" />
+    <input type="submit" />
+    <input type="hidden" name="page_num" value="{{ page_num }}" />
+    <input type="hidden" name="minutes" value="{{ minutes }}" />
+
+    <a href="task_manager/new">Create a new task</a>
+</form>
+{{ _paging() }}
+<div class="paging-window">
+    Showing tasks from {{ window_start.strftime('%Y/%m/%d %H:%M:%S') }} to {{ window_end.strftime('%Y/%m/%d %H:%M:%S') }}...
+</div>
+<div id="task_list">
+    <table>
+      <thead>
+          <tr>
+              <th>Task Name</th>
+              <th>State</th>
+              <th>Project</th>
+              <th>User</th>
+              <th>Time Queued</th>
+              <th>Time Started</th>
+              <th>Process</th>
+          </tr>
+      </thead>
+      {% for task in tasks %}
+          <tr>
+              <td><a href="task_manager/view/{{task._id}}">{{task.task_name}}</a></td>
+              <td>{{task.state}}</td>
+              <td>{{task.project.shortname if task.project}}</td>
+              <td>{{task.user.username if task.user}}</td>
+              <td>{{task.time_queue.strftime('%Y/%m/%d %H:%M:%S') if task.time_queue}}</td>
+              <td>{{task.time_start.strftime('%Y/%m/%d %H:%M:%S') if task.time_start}}</td>
+              <td>{{task.process if task.process}}</td>
+          </tr>
+      {% else %}
+         <tr>
+             <td class="empty" colspan="7" >No tasks found</td>
+        </tr>
+      {% endfor %}
+    </table>
+</div>
+{{ _paging() }}
+{% endblock %}

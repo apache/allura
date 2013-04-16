@@ -7,7 +7,8 @@ import time
 from datetime import datetime, timedelta
 from cgi import FieldStorage
 
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 from mock import patch
@@ -131,13 +132,12 @@ def test_post_methods():
     assert p.parent is None
     assert p.subject == 'Test Thread'
     assert p.attachments.count() == 0
-    assert 'Test Admin' in p.summary()
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
     assert p.link_text() == p.subject
 
     ss = p.history().first()
-    assert 'Version' in ss.index()['title_s']
+    assert 'Version' in h.get_first(ss.index(), 'title')
     assert '#' in ss.shorthand_id()
 
     jsn = p.__json__()

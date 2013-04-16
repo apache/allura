@@ -1,3 +1,4 @@
+import inspect
 import sys
 import json
 import logging
@@ -14,8 +15,11 @@ def task(func):
     '''Decorator to add some methods to task functions'''
     def post(*args, **kwargs):
         from allura import model as M
-        return M.MonQTask.post(func, args, kwargs)
-    func.post = post
+        delay = kwargs.pop('delay', 0)
+        return M.MonQTask.post(func, args, kwargs, delay=delay)
+    # if decorating a class, have to make it a staticmethod
+    # or it gets a spurious cls argument
+    func.post = staticmethod(post) if inspect.isclass(func) else post
     return func
 
 class event_handler(object):

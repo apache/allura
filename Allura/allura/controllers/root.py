@@ -8,7 +8,8 @@ import pkg_resources
 from tg import expose, flash, redirect, session, config, response, request, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.flash import TGFlash
-from pylons import c, g, cache
+from pylons import tmpl_context as c, app_globals as g
+from pylons import cache
 
 import ew
 import ming
@@ -68,32 +69,26 @@ class RootController(WsgiDispatchController):
         if n and not n.url_prefix.startswith('//'):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
+
         super(RootController, self).__init__()
 
     def _setup_request(self):
         c.project = c.app = None
         c.memoize_cache = {}
         c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
-        assert c.user is not None, 'c.user should always be at least User.anonymous()'
+        assert c.user is not None, ('c.user should always be at least User.anonymous(). '
+            'Did you run `paster setup-app` to create the database?')
 
     def _cleanup_request(self):
         pass
 
-    @expose('jinja:allura:templates/project_list.html')
+    @expose('jinja:allura:templates/neighborhood_list.html')
     @with_trailing_slash
     def index(self, **kw):
         """Handle the front-page."""
-        c.project_summary = W.project_summary
-        projects = M.Project.query.find(
-            dict(is_root=True,
-                 is_nbhd_project=False,
-                 deleted=False)).sort('shortname').all()
         neighborhoods = M.Neighborhood.query.find().sort('name')
-        psort = [ (n, [ p for p in projects if p.neighborhood_id==n._id ])
-                  for n in neighborhoods ]
         categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
         c.custom_sidebar_menu = [
             SitemapEntry(cat.label, '/browse/'+cat.name) for cat in categories
         ]
-        return dict(projects=psort,title="All Projects",text=None)
-
+        return dict(neighborhoods=neighborhoods,title="All Neighborhoods")

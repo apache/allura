@@ -1,29 +1,61 @@
 <form method="GET" action=".">
-  <div class="grid-19">
-    <input type="text" name="q" value="{{q}}" class="defaultText" title="Search App"/>
+  <div class="grid-10">
+    <input type="text" name="q" value="{{q}}" class="search-query" title="Search App"/>
   </div>
-  <div class="grid-19">
-    <input type="submit" value="Search App">
-    <input type="submit" name="project" value="Search Entire Project">
+  <div class="grid-3">
+    <input type="submit" value="Search">
   </div>
-  <div class="grid-19">
-    Search history? <input type="checkbox" name="history"{% if history %} checked="checked"{% endif %}/>
+  <div class="grid-6">
+    {# TODO: when help text provided, show button
+    <a href="#" class="btn search_help_modal">
+      <b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b>
+      Help
+    </a>
+    #}
+  </div>
+  <div class="grid-10">
+    {% set search_project = request.GET['project'] == '1' %}
+    <input type="radio" name="project" value="0" id="search-app" {% if not search_project %}checked{% endif %}>
+    <label for="search-app">Search {{c.app.config.options.mount_point or 'app'}}</label>
+    <input type="radio" name="project" value="1" id="search-project" {% if search_project %}checked{% endif %}>
+    <label for="search-project">Search entire project</label>
+  </div>
+  <div class="grid-9">
+    {% if not search_comments_disable %}
+      {% set comments = request.GET['search_comments'] %}
+      <label for="search-comments">Search comments?</label>
+      <input id="search-comments" type="checkbox" name="search_comments"{% if comments %} checked{% endif %}>
+    {% endif %}
+    <label for="search-history">Search history?</label>
+    <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
   </div>
 </form>
 <div style="clear:both">&nbsp;</div>
+{% if search_error %}
+<div class="grid-19">{{ search_error }}</div>
+{% endif %}
 <div class="grid-19">
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
 </div>
 {% for doc in results %}
   <div class="grid-19">
-    <a href="{{doc['url_paginated'] or doc['url_s']}}">{{doc.title_s}}</a><br>
-    {% if doc.get('snippet') %}
-      <p>{{doc.snippet}}</p>
-    {% endif %}
+    {# TODO: mark matches in title and snippet #}
+    <p>
+    <a href="{{doc['url_paginated'] or doc['url_s']}}">
+       {{- h.get_first(doc, 'title') or h.get_first(doc, 'title_s') -}}  {#-  title_s is legacy -#}
+    </a>
+    {% if doc['type_s'] %}<span class="gray"><sup>{{ '(%s)' % doc['type_s'] }}</sup></span>{% endif %}
+    <br>
+    {{ doc.snippet }}
+    <span class="gray">Last updated: {{ h.ago_string(doc['mod_date_dt']) }}</span>
+    </p>
   </div>
-  <hr>
 {% endfor %}
-<div class="grid-19" style="clear:both">
+<div class="grid-19">
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   {{widget.fields['page_size'].display(limit=limit, count=count)}}
+</div>
+<div class="grid-19" style="clear:both">
+  {# TODO: highlight active sorting order #}
+  {# <p>Sort by <a href="#"><strong>relevance</strong></a> or <a href="#">date</a></p> #}
 </div>

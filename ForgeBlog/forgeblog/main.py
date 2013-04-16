@@ -6,9 +6,11 @@ import urllib2
 # Non-stdlib imports
 import pkg_resources
 import pymongo
-from tg import expose, validate, redirect, flash
+from tg import config, expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import g, c, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
+from paste.deploy.converters import asbool
 import formencode
 from formencode import validators
 from webob import exc
@@ -19,7 +21,7 @@ from ming.orm import session
 from allura.app import Application, ConfigOption, SitemapEntry
 from allura.app import DefaultAdminController
 from allura.lib import helpers as h
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
@@ -94,12 +96,12 @@ class ForgeBlogApp(Application):
                 session(globals).flush()
 
     def main_menu(self):
-        return [SitemapEntry(self.config.options.mount_label.title(), '.')]
+        return [SitemapEntry(self.config.options.mount_label, '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
@@ -123,10 +125,13 @@ class ForgeBlogApp(Application):
         return links
 
     def admin_menu(self):
+        import sys
         admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
         # temporarily disabled until some bugs are fixed
-        links = [SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal')]
-        links += super(ForgeBlogApp, self).admin_menu(force_options=True)
+        links = super(ForgeBlogApp, self).admin_menu(force_options=True)
+        # We don't want external feeds in menu unless they're enabled
+        if asbool(config.get('forgeblog.exfeed', 'false')):
+            links.insert(0, SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal'))
         return links
         #return super(ForgeBlogApp, self).admin_menu(force_options=True)
 
@@ -187,19 +192,25 @@ class RootController(BaseController):
     def search(self, q=None, history=None, **kw):
         'local tool search'
         results = []
+        search_error = None
         count=0
         if not q:
             q = ''
         else:
-            results = search(
-                q,
-                fq=[
-                    'state_s:published',
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point ])
+            try:
+                results = search(
+                    q,
+                    fq=[
+                        'state_s:published',
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point ],
+                    short_timeout=True,
+                    ignore_errors=False)
+            except SearchError as e:
+                search_error = e
             if results: count=results.hits
-        return dict(q=q, history=history, results=results or [], count=count)
+        return dict(q=q, history=history, results=results or [], count=count, search_error=search_error)
 
     @expose('jinja:forgeblog:templates/blog/edit_post.html')
     @without_trailing_slash

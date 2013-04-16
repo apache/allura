@@ -1,19 +1,24 @@
 import os
 import re
 import logging
+from contextlib import contextmanager
 
 import tg
 import pkg_resources
 from paste import fileapp
-from pylons import c
+from pylons import tmpl_context as c
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
 from webob import exc, Request
 import pysolr
 
 from allura.lib import helpers as h
+import allura.model.repo
 
 log = logging.getLogger(__name__)
+
+
+tool_entry_points = list(pkg_resources.iter_entry_points('allura'))
 
 class StaticFilesMiddleware(object):
     '''Custom static file middleware
@@ -28,7 +33,7 @@ class StaticFilesMiddleware(object):
         self.script_name = script_name
         self.directories = [
             (self.script_name + ep.name.lower() + '/', ep)
-            for ep in pkg_resources.iter_entry_points('allura') ]
+            for ep in tool_entry_points]
 
     def __call__(self, environ, start_response):
         environ['static.script_name'] = self.script_name
@@ -157,7 +162,8 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import socket
         import urllib2
 
-        return [
+        return self.scm_lib_timers() + self.repo_impl_timers() + [
+            Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
@@ -172,20 +178,62 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
                 'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
                 'sort', 'where'),
-            Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             # urlopen and socket io may or may not overlap partially
-            Timer('urlopen', urllib2, 'urlopen'),
             Timer('render', genshi.Stream, 'render'),
+            Timer('repo.Blob.{method_name}', allura.model.repo.Blob, '*'),
+            Timer('repo.Commit.{method_name}', allura.model.repo.Commit, '*'),
+            Timer('repo.LastCommit.{method_name}', allura.model.repo.LastCommit, '*'),
+            Timer('repo.Tree.{method_name}', allura.model.repo.Tree, '*'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
                 'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
                 'flush', debug_each_call=False),
+            Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
-            Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
-        ]
+            Timer('urlopen', urllib2, 'urlopen'),
+            Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
+            Timer('sequencematcher.{method_name}', allura.model.repo.SequenceMatcher, 'ratio', 'quick_ratio', 'real_quick_ratio'),
+            Timer('unified_diff', allura.model.repo, 'unified_diff'),
+        ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 
     def before_logging(self, stat_record):
         if hasattr(c, "app") and hasattr(c.app, "config"):
             stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
+
+    def scm_lib_timers(self):
+        timers = []
+        with pass_on_exc(ImportError):
+            import forgesvn
+            timers.append(Timer('svn_lib.{method_name}', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
+                        'checkin', 'info2', 'log', 'cat', 'list'))
+        with pass_on_exc(ImportError):
+            import git
+            timers.append(Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
+        with pass_on_exc(ImportError):
+            import mercurial.hg
+            timers.append(Timer('hg_lib.{method_name}', mercurial.hg.localrepo.localrepository, 'heads',
+                'branchtags', 'tags'))
+        return timers
+
+    def repo_impl_timers(self):
+        timers= []
+        with pass_on_exc(ImportError):
+            from forgegit.model.git_repo import GitImplementation
+            timers.append(Timer('git_tool.{method_name}', GitImplementation, '*'))
+        with pass_on_exc(ImportError):
+            from forgesvn.model.svn import SVNImplementation
+            timers.append(Timer('svn_tool.{method_name}', SVNImplementation, '*'))
+        with pass_on_exc(ImportError):
+            from forgehg.model.hg import HgImplementation
+            timers.append(Timer('hg_tool.{method_name}', HgImplementation, '*'))
+        return timers
+
+
+@contextmanager
+def pass_on_exc(exc):
+    try:
+        yield
+    except exc:
+        pass

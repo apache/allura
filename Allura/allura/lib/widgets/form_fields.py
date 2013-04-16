@@ -1,4 +1,4 @@
-from pylons import c,g
+from pylons import tmpl_context as c, app_globals as g
 from tg import request, url
 import json
 import logging
@@ -47,39 +47,15 @@ class LabelEdit(ew.InputField):
             return ','.join(value)
 
     def resources(self):
-        yield ew.JSLink('js/jquery.tag.editor.js')
-        yield ew.CSSScript('''
-            input.label_edit{ float: left; }
-            .tagEditor{
-                margin: 4px 0;
-                padding: 0;
-                float: left;
-            }
-
-            .tagEditor li, .removable{
-                display: inline;
-                background-image: url('%s');
-                background-color: #eef;
-                background-position: right center;
-                background-repeat: no-repeat;
-                list-style-type: none;
-                padding: 0 18px 0 6px;
-                margin: 0 4px;
-                cursor: pointer;
-                -moz-border-radius: 5px;
-                -webkit-border-radius: 5px;
-            }
-
-            .tagEditor li:hover{
-                background-color: #ebebeb;
-            }''' % g.forge_static('images/minus_small.png'))
+        yield ew.JSLink('js/jquery.tagsinput.js')
+        yield ew.CSSLink('css/jquery.tagsinput.css')
         yield onready('''
-          $('input.label_edit').tagEditor({
-            confirmRemoval: false,
-            completeOnSeparator: true,
-            completeOnBlur: true
+          $('input.label_edit').tagsInput({
+              'height':'100%%',
+              'width':'100%%',
+              'autocomplete_url':'%(url)stags'
           });
-        ''')
+        ''' % dict(url=c.app.url))
 
 class ProjectUserSelect(ew.InputField):
     template='jinja:allura:templates/widgets/project_user_select.html'
@@ -117,6 +93,31 @@ class ProjectUserSelect(ew.InputField):
             },
             minLength: 2
           });''' % c.project.url())
+
+
+class ProjectUserCombo(ew.SingleSelectField):
+    template = 'jinja:allura:templates/widgets/project_user_combo.html'
+
+    # No options for widget initially.
+    # It'll be populated later via ajax call.
+    options = []
+
+    def to_python(self, value, state):
+        # Skipping validation, 'cause widget has no values initially.
+        # All values loaded later via ajax.
+        return value
+
+    def resources(self):
+        for r in super(ProjectUserCombo, self).resources():
+            yield r
+        yield ew.CSSLink('css/autocomplete.css')
+        yield ew.CSSLink('css/combobox.css')
+        yield ew.JSLink('js/combobox.js')
+        yield onready('''
+          $('select.project-user-combobox').combobox({
+            source_url: "%susers"
+          });''' % c.project.url())
+
 
 class NeighborhoodProjectSelect(ew.InputField):
     template='jinja:allura:templates/widgets/neighborhood_project_select.html'
@@ -433,3 +434,25 @@ class Lightbox(ew_core.Widget):
                 return false;
             });
         ''' % (self.name, self.trigger))
+
+
+class DisplayOnlyField(ew.HiddenField):
+    '''
+    Render a field as plain text, optionally with a hidden field to preserve the value.
+    '''
+    template=ew.Snippet('''{{ (text or value or attrs.value)|e }}
+        {%- if with_hidden_input is none and name or with_hidden_input -%}
+        <input {{
+            widget.j2_attrs({
+                'type':'hidden',
+                'name':name,
+                'value':value,
+                'class':css_class}, attrs)
+        }}>
+        {%- endif %}''', 'jinja2')
+    defaults=dict(
+        ew.HiddenField.defaults,
+        text=None,
+        value=None,
+        with_hidden_input=None)
+

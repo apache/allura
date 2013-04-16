@@ -7,7 +7,7 @@ from itertools import chain, islice
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
 import pymongo
@@ -67,7 +67,7 @@ class NeighborhoodController(object):
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
             # create user-project if it is missing
-            user = M.User.query.get(username=pname)
+            user = M.User.query.get(username=pname, disabled=False)
             if user:
                 project = self.neighborhood.register_project(
                     plugin.AuthenticationProvider.get(request).user_project_shortname(user),
@@ -77,6 +77,11 @@ class NeighborhoodController(object):
             project = self.neighborhood.neighborhood_project
             c.project = project
             return ProjectController()._lookup(pname, *remainder)
+        if project and self.prefix == 'u/':
+            # make sure user-projects are associated with an enabled user
+            user = project.user_project_of
+            if not user or user.disabled:
+                raise exc.HTTPNotFound
         if project.database_configured == False:
             if remainder == ('user_icon',):
                 redirect(g.forge_static('images/user.png'))
@@ -100,7 +105,7 @@ class NeighborhoodController(object):
         if self.neighborhood.redirect:
             redirect(self.neighborhood.redirect)
         if not self.neighborhood.has_home_tool:
-            mount = c.project.first_mount()
+            mount = c.project.ordered_mounts()[0]
             if mount is not None:
                 if 'ac' in mount:
                     redirect(mount['ac'].options.mount_point + '/')
@@ -202,8 +207,10 @@ class NeighborhoodController(object):
             c.project.short_description = project_description
         offset = c.project.next_mount_point(include_hidden=True)
         if tools and not neighborhood.project_template:
+            anchored_tools = neighborhood.get_anchored_tools()
             for i, tool in enumerate(tools):
-                c.project.install_app(tool, ordinal=i + offset)
+                if (tool.lower() not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
+                    c.project.install_app(tool, ordinal=i + offset)
         flash('Welcome to the SourceForge Project System! '
               'To get started, fill out some information about your project.')
         redirect(c.project.script_name + 'admin/overview')
@@ -214,6 +221,17 @@ class NeighborhoodController(object):
         if not icon:
             raise exc.HTTPNotFound
         return icon.serve()
+
+    @expose('json:')
+    def users(self):
+        p = self.neighborhood.neighborhood_project
+        return {
+            'options': [{
+                'value': u.username,
+                'label': '%s (%s)' % (u.display_name, u.username)
+            } for u in p.users()]
+        }
+
 
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
@@ -254,6 +272,16 @@ class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController)
     nf = NewForgeController()
     search = SearchController()
 
+class ToolListController(object):
+    """Renders a list of all tools of a given type in the current project."""
+
+    @expose('jinja:allura:templates/tool_list.html')
+    def _default(self, tool_name, *args, **kw):
+        tool_name = tool_name.lower()
+        entries = [e for e in c.project.sitemap()
+                if e.tool_name and e.tool_name.lower() == tool_name]
+        return dict(entries=entries, type=entries[0].tool_name.capitalize() if entries else None)
+
 class ProjectController(object):
 
     def __init__(self):
@@ -261,12 +289,13 @@ class ProjectController(object):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, '_nav.json', self._nav)
         self.screenshot = ScreenshotsController()
+        self._list = ToolListController()
 
     @expose('json:')
     def _nav(self):
         return dict(menu=[
                 dict(name=s.label, url=s.url, icon=s.ui_icon)
-                for s in c.project.sitemap()])
+                for s in c.project.grouped_navbar_entries()])
 
     @expose()
     def _lookup(self, name, *remainder):
@@ -288,13 +317,28 @@ class ProjectController(object):
 
         return app.root, remainder
 
+    @expose('jinja:allura:templates/members.html')
+    @with_trailing_slash
+    def _members(self, **kw):
+        users = []
+        for user in c.project.users():
+            roles = M.ProjectRole.query.find({'_id': {'$in': user.project_role().roles}})
+            roles = set([r.name for r in roles])
+            users.append(dict(
+                display_name=user.display_name,
+                username=user.username,
+                url=user.url(),
+                roles=roles,
+                ))
+        return dict(users=users)
+
     def _check_security(self):
         require_access(c.project, 'read')
 
     @expose()
     @with_trailing_slash
     def index(self, **kw):
-        mount = c.project.first_mount('read')
+        mount = c.project.first_mount_visible(c.user)
         activity_enabled = config.get('activitystream.enabled', False)
         activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
@@ -305,8 +349,6 @@ class ProjectController(object):
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:
                 redirect(mount['sub'].url())
-        elif c.project.app_instance('profile'):
-            redirect('profile/')
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
@@ -366,6 +408,15 @@ class ProjectController(object):
                     value=u.username,
                     id=u.username)
                 for u in users])
+
+    @expose('json:')
+    def users(self):
+        return {
+            'options': [{
+                'value': u.username,
+                'label': '%s (%s)' % (u.display_name, u.username)
+            } for u in c.project.users()]
+        }
 
 class ScreenshotsController(object):
 
@@ -510,6 +561,25 @@ class NeighborhoodAdminController(object):
         tracking_id = kw.get('tracking_id', '')
         h.log_if_changed(nbhd, 'tracking_id', tracking_id,
                         'update neighborhood tracking_id')
+        anchored_tools = kw.get('anchored_tools', '')
+        validate_tools = dict()
+        result = True
+        if anchored_tools.strip() != '':
+            try:
+                validate_tools = dict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools.replace(' ', '').split(','))
+            except Exception:
+                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
+                result = False
+
+
+        for tool in validate_tools.keys():
+            if not h.re_path_portion.match(tool):
+                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
+                result = False
+        if result:
+            h.log_if_changed(nbhd, 'anchored_tools', anchored_tools,
+                             'update neighborhood anchored tools')
+
         if icon is not None and icon != '':
             if self.neighborhood.icon:
                 self.neighborhood.icon.delete()

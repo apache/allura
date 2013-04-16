@@ -1,0 +1,26 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+{% block title %}Members{% endblock %}
+{% block header %}Members{% endblock %}
+{% block content %}
+<div class="grid-23">
+<div style="overflow:auto">
+<table>
+    <thead>
+    <tr>
+        <th>Developer</th>
+        <th>Username</th>
+        <th>Role/Position</th>
+    </tr>
+    </thead>
+    {%for user in users%}
+    <tr>
+        <td>{{ user.display_name }}</td>
+        <td><a href="{{ user.url }}">{{ user.username }}</a></td>
+        <td>{{user.roles|join(', ')}}</td>
+    </tr>
+    {%endfor%}
+</table>
+</div>
+</div>
+{% endblock %}

@@ -1,9 +1,11 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
+from urlparse import urlparse
 
 import pkg_resources
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from paste.deploy.converters import asbool
 from tg import expose, redirect, flash, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -203,6 +205,18 @@ class ProjectAdminController(BaseController):
 
     @expose()
     @require_post()
+    def configure_tool_grouping(self, grouping_threshold='1', **kw):
+        try:
+            grouping_threshold = int(grouping_threshold)
+            if grouping_threshold < 1:
+                raise ValueError('Invalid threshold')
+            c.project.set_tool_data('allura', grouping_threshold=grouping_threshold)
+        except ValueError as e:
+            flash('Invalid threshold', 'error')
+        redirect('tools')
+
+    @expose()
+    @require_post()
     def update_labels(self, labels=None, **kw):
         require_access(c.project, 'admin')
         c.project.labels = labels.split(',')
@@ -262,6 +276,7 @@ class ProjectAdminController(BaseController):
                support_page='',
                support_page_url='',
                twitter_handle='',
+               facebook_page='',
                removal='',
                moved_to_url='',
                export_controlled=False,
@@ -322,6 +337,12 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project twitter handle').info('')
             M.AuditLog.log('change project twitter handle to %s', twitter_handle)
             c.project.set_social_account('Twitter', twitter_handle)
+        if facebook_page != c.project.social_account('Facebook'):
+            parsed = urlparse(facebook_page)
+            if 'facebook.com' in parsed.netloc:
+                h.log_action(log, 'change project facebook page').info('')
+                M.AuditLog.log('change project facebook page to %s', facebook_page)
+                c.project.set_social_account('Facebook', facebook_page)
         if support_page_url != c.project.support_page_url:
             h.log_action(log, 'change project support page url').info('')
             M.AuditLog.log('change project support page url to %s', support_page_url)

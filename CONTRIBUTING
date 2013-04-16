@@ -64,7 +64,7 @@ possible or applicable:
 
 The code is self-hosted in a public git repository.  Get it by cloning:
 
-  git clone git://git.code.sf.net/p/allura/git.git allura
+  git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
 
 You can also 'fork' our repo at <https://sourceforge.net/p/allura/git/>.
 

@@ -2,7 +2,7 @@ import logging
 import shutil
 from urllib import quote
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
@@ -55,13 +55,13 @@ class RepositoryApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.config.options.mount_label,
                 '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
                 SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
@@ -96,6 +96,10 @@ class RepositoryApp(Application):
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
                     small=merge_request_count) ]
+        if self.repo.forks:
+            links += [
+                SitemapEntry('Forks', c.app.url + 'forks/', small=len(self.repo.forks))
+            ]
         if self.repo.upstream_repo.name:
             repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
             links += [
@@ -118,7 +122,7 @@ class RepositoryApp(Application):
             links.append(SitemapEntry('Branches'))
             for b in self.repo.branches:
                 links.append(SitemapEntry(
-                        b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                        b.name, url('%sci/%s/tree/' % (c.app.url, quote(b.name, safe=''))),
                         small=b.count))
         if self.repo.repo_tags:
             links.append(SitemapEntry('Tags'))
@@ -126,7 +130,7 @@ class RepositoryApp(Application):
             for i, b in enumerate(self.repo.repo_tags):
                 if i < max_tags:
                     links.append(SitemapEntry(
-                            b.name, url(c.app.url, dict(branch='ref/' + b.name)),
+                            b.name, url('%sci/%s/tree/' % (c.app.url, quote(b.name, safe=''))),
                             small=b.count))
                 elif i == max_tags:
                     links.append(
@@ -135,14 +139,6 @@ class RepositoryApp(Application):
                             default_branch_url+'tags/',
                             ))
                     break
-        if self.repo.forks:
-            links.append(SitemapEntry('Forks'))
-            for f in self.repo.forks:
-                repo_path_parts = f.url().strip('/').split('/')
-                links.append(SitemapEntry(
-                    '%s / %s' %
-                    (repo_path_parts[1], repo_path_parts[-1]),
-                    f.url()))
         return links
 
     def install(self, project):

@@ -38,7 +38,8 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
-        md.inlinePatterns['autolink_1'] = AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-_0%?&=+#;~:]+)')
+        # this has to be before the 'escape' processor, otherwise weird placeholders are inserted for escaped chars within urls, and then the autolink can't match the whole url
+        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:]+)', md), '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
         md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
@@ -95,6 +96,10 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             title = markdown.inlinepatterns.dequote(self.unescape(title))
             el.set('title', title)
 
+        if 'notfound' in classes and not self.ext._use_wiki:
+            text = el.text
+            el = markdown.util.etree.Element('span')
+            el.text = '[%s]' % text
         return el
 
     def _expand_alink(self, link, is_link_with_brackets):
@@ -104,10 +109,10 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
             classes = 'alink'
         href = link
         shortlink = M.Shortlink.lookup(link)
-        if shortlink:
+        if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
             href = shortlink.url
             self.ext.forge_link_tree_processor.alinks.append(shortlink)
-        elif self.ext._use_wiki and is_link_with_brackets:
+        elif is_link_with_brackets:
             href = h.urlquote(link)
             classes += ' notfound'
         attach_link = link.split('/attachment/')
@@ -270,12 +275,22 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
         return unicode(p.output(), 'utf-8')
 
 
-class AutolinkPattern(markdown.inlinepatterns.LinkPattern):
+class AutolinkPattern(markdown.inlinepatterns.Pattern):
+
+    def __init__(self, pattern, markdown_instance=None):
+        markdown.inlinepatterns.Pattern.__init__(self, pattern, markdown_instance)
+        # override the complete regex, requiring the preceding text (.*?) to end
+        # with whitespace or beginning of line "\s|^"
+        self.compiled_re = re.compile("^(.*?\s|^)%s(.*?)$" % pattern,
+                                      re.DOTALL | re.UNICODE)
 
     def handleMatch(self, mo):
         old_link = mo.group(2)
         result = markdown.util.etree.Element('a')
         result.text = old_link
+        # since this is run before the builtin 'escape' processor, we have to do our own unescaping
+        for char in markdown.Markdown.ESCAPED_CHARS:
+            old_link = old_link.replace('\\' + char, char)
         result.set('href', old_link)
         return result
 

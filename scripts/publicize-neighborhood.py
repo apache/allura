@@ -2,7 +2,7 @@ import logging
 import sys
 
 from ming.orm import ThreadLocalORMSession
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from allura import model as M
 from allura.lib import helpers as h

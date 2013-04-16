@@ -146,7 +146,7 @@ class IRCBot(asynchat.async_chat):
         art = lnk.ref.artifact
         if security.has_access(art, 'read', user=M.User.anonymous())():
             index = art.index()
-            text = index['snippet_s'] or index['title_s']
+            text = index['snippet_s'] or h.get_first(index, 'title')
             url = urljoin(tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
             self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text,url))
 

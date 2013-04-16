@@ -2,20 +2,22 @@ To build an Allura vagrant box:
 
 $ mkdir ~/vagrant_allura && cd ~/vagrant_allura
 
-# Get the base box
-$ vagrant box add ubuntu-1110-server-amd64 http://timhuegdon.com/vagrant-boxes/ubuntu-11.10.box
-$ vagrant init ubuntu-1110-server-amd64
+# Get the base box, see http://www.vagrantbox.es/
+# 12.04 is LTS, so will be good to stick with for some time
+$ vagrant box add ubuntu-1204-server-amd64 http://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-vagrant-amd64-disk1.box
+$ vagrant init ubuntu-1204-server-amd64
 
-# Get a copy of the provisioning scripts
+# Get a copy of the provisioning scripts (note, Vagrantfile may change from release to release and may need manual updating)
 $ cp -R /var/local/allura/vagrant/* .
 
 # At this point you can make whatever changes you want to the provisioning
-# scripts
+# scripts.  Currently, the .pp puppet file runs first and sets some stuff up
+# and then allura_setup.sh runs and does more.
 
 # Provision the box (this will take a while)
 $ vagrant up
 
-# If you get an error, you can run `vagrant destroy` to start over
+# If you get an error, you can run `vagrant ssh` to get in and debug, and then `vagrant destroy` to start over
 
 # Package the Allura box
 $ vagrant package --vagrantfile Vagrantfile.pkg

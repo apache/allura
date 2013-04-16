@@ -4,7 +4,8 @@ This module provides the security predicates used in decorating various models.
 import logging
 from collections import defaultdict
 
-from pylons import c, request
+from pylons import tmpl_context as c
+from pylons import request
 from webob import exc
 from itertools import chain
 from ming.utils import LazyProperty
@@ -295,6 +296,71 @@ def has_access(obj, permission, user=None, project=None):
         # log.info('%s: %s', txt, result)
         return result
     return TruthyCallable(predicate)
+
+def all_allowed(obj, user_or_role=None, project=None):
+    '''
+    List all the permission names that a given user or named role
+    is allowed for a given object.  This list reflects the permissions
+    for which has_access() would return True for the user (or a user
+    in the given named role, e.g. Developer).
+
+    Example:
+
+        Given a tracker with the following ACL (pseudo-code):
+            [
+                ACE.allow(ProjectRole.by_name('Developer'), 'create'),
+                ACE.allow(ProjectRole.by_name('Member'), 'post'),
+                ACE.allow(ProjectRole.by_name('*anonymous'), 'read'),
+            ]
+
+        And user1 is in the Member group, then all_allowed(tracker, user1)
+        will return:
+
+            set(['post', 'read'])
+
+        And all_allowed(tracker, ProjectRole.by_name('Developer')) will return:
+
+            set(['create', 'post', 'read'])
+    '''
+    from allura import model as M
+    anon = M.ProjectRole.anonymous(project)
+    auth = M.ProjectRole.authenticated(project)
+    if user_or_role is None:
+        user_or_role = c.user
+    if user_or_role is None:
+        user_or_role = anon
+    if isinstance(user_or_role, M.User):
+        user_or_role = M.ProjectRole.by_user(user_or_role, project)
+        if user_or_role is None:
+            user_or_role = auth  # user is not member of project, treat as auth
+    roles = [user_or_role]
+    if user_or_role == anon:
+        pass  # anon inherits nothing
+    elif user_or_role == auth:
+        roles += [anon]  # auth inherits from anon
+    else:
+        roles += [auth, anon]  # named group or user inherits from auth + anon
+    role_ids = RoleCache(Credentials.get(), roles).reaching_ids  # match rules applicable to us
+    perms = set()
+    denied = defaultdict(set)
+    while obj:  # traverse parent contexts
+        for role_id in role_ids:
+            for ace in obj.acl:
+                if ace.permission in denied[role_id]:
+                    # don't consider permissions that were denied for this role
+                    continue
+                if M.ACE.match(ace, role_id, ace.permission):
+                    if ace.access == M.ACE.ALLOW:
+                        perms.add(ace.permission)
+                    else:
+                        # explicit DENY overrides any ALLOW for this permission
+                        # for this role_id in this ACL or parent(s) (but an ALLOW
+                        # for a different role could still grant this permission)
+                        denied[role_id].add(ace.permission)
+        obj = obj.parent_security_context()
+    if M.ALL_PERMISSIONS in perms:
+        return set([M.ALL_PERMISSIONS])
+    return perms
 
 def require(predicate, message=None):
     '''

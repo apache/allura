@@ -207,22 +207,42 @@ showing "[1]: http://url" won't show anything.</p>
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_artlinks{{id}}">
 <h2 id="md_ex_artlinks{{id}}">Artifact Links</h2>
-<p>Any existing forge resource can be linked with surrounding square brackets ie [MyPage] or [#123].</p>
+<p>Any forge resource (artifact) can be linked with surrounding square brackets, e.g. [MyPage] or [#123].
+These artifact links can take several forms.</p>
 
-<p>Links to resources in other tools can be explicitly referenced by adding a tool identifier prefix to the link.
-So for instance `[developerwiki:MyPage]` can refer to a wiki page in a `developerwiki` instance.
-You can also link to tickets with `[tickets:#123]` assuming there's a 123 ticket in a Tracker instance mounted at `tickets`.
-The same is true for forums, or any of the other tools you have installed.
-You can even link to tickets in a subproject with `[subproject.tickets:#123]`.</p>
-
+<h3>Simple Links</h3>
+<p>Most commonly, the artifact identifier can simply be surrounded with square brackets. Here are some examples:</p>
 <div class="codehilite"><pre>
-[MyPage]
-[developerwiki:MyPage]
-[#123]
-[tickets:#123]
-</pre></div>
+[MyWikiPage]       # Wiki - name of wiki page
+[#123]             # Tracker - ticket number
+[r10721]           # SVN - revision number
+[3b9d48]           # Git &amp; Mercurial - first 6 characters of revision hash
+[2012/02/my-post]  # Blog - post slug, including YYYY/MM/ prefix
+[a6d38f98]         # Discussion Thread - thread id
+[a6d38f98#42f8]    # Discussion Post - thread_id#post_id
+</pre></div><br>
 
-<p>No example output is available for this one because it only works on real artifacts. Try it in your project!</p>
+<h3>Two-part Links</h3>
+<p>To link to an artifact in a specific tool, use the form: `[tool:artifact]`, where `tool` is the name of the tool
+as it appears in the URL. Two-part links are useful when you have two tools of the same type installed. For example,
+let's say you have a 'bugs' tracker and a 'features' tracker installed, and you want to link to the first ticket in each:</p>
+<div class="codehilite"><pre>
+[bugs:#1]
+[features:#1]
+</pre></div><br>
+
+<h3>Three-part Links</h3>
+<p>To link to an artifact in another project, use the form: `[project:tool:artifact]`, where `project` is the name of the project
+as it appears in the URL. For example:
+<div class="codehilite"><pre>
+[allura:wiki:Home]
+</pre></div><br>
+
+<p>To link to an artifact in a subproject, use the form: `[project/subproject:tool:artifact]`, where `subproject` is the name of the subproject
+as it appears in the URL. For example:</p>
+<div class="codehilite"><pre>
+[allura/sub:code:3b9d48]
+</pre></div><br>
 </div>
 
 <div class="markdown_syntax_section hidden_in_modal md_ex_text{{id}}">

@@ -12,7 +12,6 @@ setup(
     author='Wolf',
     author_email='wolf@geek.net',
     description='A nose plugin to squelch warnings',
-    license='GPL',
     py_modules=['nowarnings'],
     entry_points={
         'nose.plugins.0.10': [

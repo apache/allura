@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pymongo
 from pymongo.errors import DuplicateKeyError
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from ming import schema
 from ming.orm.base import session
@@ -90,7 +90,7 @@ class Discussion(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-            title_s='Discussion: %s' % self.name,
+            title='Discussion: %s' % self.name,
             name_s=self.name,
             text=self.description)
         return result
@@ -203,7 +203,7 @@ class Thread(Artifact, ActivityObject):
     def add_post(self, **kw):
         """Helper function to avoid code duplication."""
         p = self.post(**kw)
-        p.commit()
+        p.commit(update_stats=False)
         self.num_replies += 1
         if not self.first_post:
             self.first_post_id = p._id
@@ -339,7 +339,7 @@ class Thread(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-           title_s='Thread: %s' % (self.subject or '(no subject)'),
+           title='Thread: %s' % (self.subject or '(no subject)'),
            name_s=self.subject,
            views_i=self.num_views,
            text=self.subject)
@@ -459,7 +459,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def index(self):
         result = super(Post, self).index()
         result.update(
-            title_s='Post by %s on %s' % (
+            title='Post by %s on %s' % (
                 self.author().username, self.subject),
             name_s=self.subject,
             type_s='Post',
@@ -501,11 +501,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     def primary(self):
         return self.thread.primary()
-
-    def summary(self):
-        return '<a href="%s">%s</a> %s' % (
-            self.author().url(), self.author().get_pref('display_name'),
-            h.ago(self.timestamp))
 
     def url(self):
         if self.thread:

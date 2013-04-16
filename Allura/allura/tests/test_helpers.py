@@ -1,11 +1,13 @@
+# -*- coding: utf-8 -*-
 from os import path
 from mock import Mock, patch
 
-from pylons import c
+from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib.search import inject_user
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 
@@ -13,6 +15,14 @@ from alluratest.controller import setup_basic_test
 def setUp(self):
     """Method called by nose before running each test"""
     setup_basic_test()
+
+def test_make_safe_path_portion():
+    s = u'Задачи'
+    new_s = h.make_safe_path_portion(s)
+    assert len(new_s) == 0
+    s = 'åß∂ƒ'
+    new_s = h.make_safe_path_portion(s)
+    assert new_s == 'ab'
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)
@@ -94,6 +104,10 @@ def test_ago():
     import time
     assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
     assert_equals(h.ago_ts(time.time() - 60*60*2), '2 hours ago')
+    d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()
+    assert_equals(h.ago_string(d_str), '3 hours ago')
+    assert_equals(h.ago_string('bad format'), 'unknown')
+    assert_equals(h.ago_string(None), 'unknown')
 
 def test_urlquote_unicode():
     # No exceptions please
@@ -163,3 +177,27 @@ def test_get_tool_package():
     assert h.get_tool_package('tickets') == 'forgetracker'
     assert h.get_tool_package('Wiki') == 'forgewiki'
     assert h.get_tool_package('wrong_tool') == ''
+
+
+def test_get_first():
+    assert_equals(h.get_first({}, 'title'), None)
+    assert_equals(h.get_first({'title': None}, 'title'), None)
+    assert_equals(h.get_first({'title': 'Value'}, 'title'), 'Value')
+    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
+    assert_equals(h.get_first({'title': []}, 'title'), None)
+    assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
+
+@patch('allura.lib.search.c')
+def test_inject_user(context):
+    user = Mock(username='user01')
+    assert_equals(inject_user(None, user), None)
+    assert_equals(inject_user('', user), '')
+    assert_equals(inject_user('query', user), 'query')
+    result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER', user)
+    assert_equals(result, 'reported_by_s:"user01" OR assigned_to_s:"user01"')
+    context.user = Mock(username='admin1')
+    result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
+    assert_equals(result, 'reported_by_s:"admin1" OR assigned_to_s:"admin1"')
+    context.user = Mock(username='*anonymous')
+    result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
+    assert_equals(result, 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')

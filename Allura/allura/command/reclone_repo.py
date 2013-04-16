@@ -1,6 +1,6 @@
 import warnings
 
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.tasks import repo_tasks

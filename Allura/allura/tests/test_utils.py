@@ -5,15 +5,16 @@ from os import path
 
 import pylons
 from webob import Request
-
+from mock import Mock
+from nose.tools import assert_equal
 from pygments import highlight
-from pygments.lexers import PythonLexer, get_lexer_for_filename
-from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_for_filename
 
-from ming.orm import state
 from alluratest.controller import setup_unit_test
 
+from allura import model as M
 from allura.lib import utils
+
 
 class TestChunkedIterator(unittest.TestCase):
 
@@ -24,11 +25,32 @@ class TestChunkedIterator(unittest.TestCase):
             p = M.User.upsert('sample-user-%d' % i)
 
     def test_can_iterate(self):
-        from allura import model as M
-        chunks = [
-            chunk for chunk in utils.chunked_find(M.User, {}, 2) ]
+        chunks = list(utils.chunked_find(M.User, {}, 2))
         assert len(chunks) > 1, chunks
         assert len(chunks[0]) == 2, chunks[0]
+
+    def test_filter_on_sort_key(self):
+        query = {'username': {'$in': ['sample-user-1', 'sample-user-2', 'sample-user-3']}}
+        chunks = list(utils.chunked_find(M.User,
+                                         query,
+                                         2,
+                                         sort_key='username'))
+        assert len(chunks) == 2, chunks
+        assert len(chunks[0]) == 2, chunks[0]
+        assert len(chunks[1]) == 1, chunks[1]
+        assert_equal(chunks[0][0].username, 'sample-user-1')
+        assert_equal(chunks[0][1].username, 'sample-user-2')
+        assert_equal(chunks[1][0].username, 'sample-user-3')
+
+
+class TestChunkedList(unittest.TestCase):
+    def test_chunked_list(self):
+        l = range(10)
+        chunks = list(utils.chunked_list(l, 3))
+        self.assertEqual(len(chunks), 4)
+        self.assertEqual(len(chunks[0]), 3)
+        self.assertEqual([el for sublist in chunks for el in sublist], l)
+
 
 class TestAntispam(unittest.TestCase):
 
@@ -55,7 +77,7 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(
             ValueError,
             utils.AntiSpam.validate_request,
-            r, now=time.time()+60*60+1)
+            r, now=time.time()+24*60*60+1)
 
     def test_invalid_future(self):
         form = dict(a='1', b='2')
@@ -102,6 +124,7 @@ class TestTruthyCallable(unittest.TestCase):
         assert bool(true_predicate) == True
         assert bool(false_predicate) == False
 
+
 class TestCaseInsensitiveDict(unittest.TestCase):
 
     def test_everything(self):
@@ -119,6 +142,7 @@ class TestCaseInsensitiveDict(unittest.TestCase):
         assert d == dict(foo=1, bar=2)
         assert d != dict(Foo=1, bar=2)
         assert d == utils.CaseInsensitiveDict(Foo=1, bar=2)
+
 
 class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
     def test_render(self):
@@ -143,3 +167,27 @@ class TestIsTextFile(unittest.TestCase):
         assert not utils.is_text_file(open(path.join(
             here_dir,
             'data/test_mime/bin_file')).read())
+
+
+class TestCodeStats(unittest.TestCase):
+
+    def setUp(self):
+        setup_unit_test()
+
+    def test_generate_code_stats(self):
+        blob = Mock()
+        blob.text = \
+"""class Person(object):
+
+    def __init__(self, name='Alice'):
+        self.name = name
+
+    def greetings(self):
+        print "Hello, %s" % self.name
+\t\t"""
+        blob.size = len(blob.text)
+
+        stats = utils.generate_code_stats(blob)
+        assert stats['line_count'] == 8
+        assert stats['data_line_count'] == 5
+        assert stats['code_size'] == len(blob.text)

@@ -38,4 +38,4 @@ class TestUserProfile(TestController):
     def test_feed(self):
         response = self.app.get('/u/test-admin/profile/feed')
         assert 'Recent posts by Test Admin' in response
-        assert 'WikiPage Home modified by Test Admin' in response
+        assert 'Home modified by Test Admin' in response

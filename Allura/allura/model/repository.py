@@ -11,10 +11,12 @@ from hashlib import sha1
 from datetime import datetime
 from collections import defaultdict
 from itertools import izip
+from urlparse import urljoin
+from urllib import quote
 
 import tg
 from paste.deploy.converters import asbool
-from pylons import c
+from pylons import tmpl_context as c
 from pylons import app_globals as g
 import pymongo.errors
 
@@ -112,6 +114,38 @@ class RepositoryImplementation(object):
         '''Return count of the commits related to path'''
         raise NotImplementedError, 'commits_count'
 
+    def tarball(self, revision):
+        '''Create a tarball for the revision'''
+        raise NotImplementedError, 'tarball'
+
+    def last_commit_ids(self, commit, paths):
+        '''
+        Return a mapping {path: commit_id} of the _id of the last
+        commit to touch each path, starting from the given commit.
+        '''
+        paths = set(paths)
+        result = {}
+        while paths and commit:
+            changed = paths & set(commit.changed_paths)
+            result.update({path: commit._id for path in changed})
+            paths = paths - changed
+
+            # Hacky work-around for DiffInfoDocs previously having been
+            # computed wrong (not including children of added trees).
+            # Can be removed once all projects have had diffs / LCDs refreshed.
+            parent = commit.get_parent()
+            if parent:
+                changed = set([path for path in paths if not parent.has_path(path)])
+                result.update({path: commit._id for path in changed})
+                paths = paths - changed
+            else:
+                result.update({path: commit._id for path in paths})
+                paths = set()
+            # end hacky work-around
+
+            commit = parent
+        return result
+
     @classmethod
     def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
@@ -124,12 +158,39 @@ class RepositoryImplementation(object):
         tags = [t.name for t in self._repo.repo_tags if t.object_id == commit._id]
         return branches, tags
 
+    def url_for_symbolic(self, commit):
+        if isinstance(commit, basestring):
+            object_id = commit
+        else:
+            object_id = commit._id
+
+        if self._repo.commit(object_id).symbolic_ids:
+            rev = None
+            branches, tags = self._repo.commit(object_id).symbolic_ids
+            for branch in branches:
+                last_commit = self._repo.latest(branch)
+                if last_commit and (object_id == last_commit._id):
+                    rev = branch
+                    break
+
+            for tag in tags:
+                last_commit = self._repo.latest(tag)
+                if last_commit and (object_id == last_commit._id):
+                    rev = tag
+                    break
+
+            if rev:
+                object_id = quote(rev, safe='')
+
+        return '%sci/%s/' % (self._repo.url(), object_id)
+
     def url_for_commit(self, commit):
         'return an URL, given either a commit or object id'
         if isinstance(commit, basestring):
             object_id = commit
         else:
             object_id = commit._id
+
         return '%sci/%s/' % (self._repo.url(), object_id)
 
     def _setup_paths(self, create_repo_dir=True):
@@ -197,6 +258,41 @@ class Repository(Artifact, ActivityObject):
     def default_url_path(cls, project, tool):
         return project.url()
 
+    @property
+    def tarball_path(self):
+        return os.path.join(tg.config.get('scm.repos.tarball.root', '/'),
+                            self.tool,
+                            self.project.shortname[:1],
+                            self.project.shortname[:2],
+                            self.project.shortname,
+                            self.name)
+
+    def tarball_filename(self, revision):
+        shortname = c.project.shortname.replace('/', '-')
+        mount_point = c.app.config.options.mount_point
+        filename = '%s-%s-%s' % (shortname, mount_point, revision)
+        return filename
+
+    def tarball_url(self, revision):
+        filename = '%s%s' % (self.tarball_filename(revision), '.tar.gz')
+        r = os.path.join(self.tool,
+                         self.project.shortname[:1],
+                         self.project.shortname[:2],
+                         self.project.shortname,
+                         self.name,
+                         filename)
+        return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
+
+    def get_tarball_status(self, revision):
+        pathname = os.path.join(self.tarball_path, self.tarball_filename(revision))
+        filename = '%s%s' % (pathname, '.tar.gz')
+        tmpfilename = '%s%s' % (pathname, '.tmp')
+
+        if os.path.isfile(filename):
+            return 'ready'
+        elif os.path.isfile(tmpfilename):
+            return 'busy'
+
     def __repr__(self): # pragma no cover
         return '<%s %s>' % (
             self.__class__.__name__,
@@ -227,6 +323,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.commits(path, rev, skip, limit)
     def commits_count(self, path=None, rev=None):
         return self._impl.commits_count(path, rev)
+    def last_commit_ids(self, commit, paths):
+        return self._impl.last_commit_ids(commit, paths)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -244,7 +342,7 @@ class Repository(Artifact, ActivityObject):
         self._impl.clone_from(source)
         log.info('... %r cloned', self)
         g.post_event('repo_cloned', source_url, source_path)
-        self.refresh(notify=False)
+        self.refresh(notify=False, new_clone=True)
 
     def log(self, branch='master', offset=0, limit=10):
         return list(self._log(branch, offset, limit))
@@ -356,7 +454,7 @@ class Repository(Artifact, ActivityObject):
         result.update(
             name_s=self.name,
             type_s=self.type_s,
-            title_s='Repository %s %s' % (self.project.name, self.name))
+            title='Repository %s %s' % (self.project.name, self.name))
         return result
 
     @property
@@ -413,7 +511,7 @@ class Repository(Artifact, ActivityObject):
     def unknown_commit_ids(self):
         return unknown_commit_ids_repo(self.all_commit_ids())
 
-    def refresh(self, all_commits=False, notify=True):
+    def refresh(self, all_commits=False, notify=True, new_clone=False):
         '''Find any new commits in the repository and update'''
         try:
             log.info('... %r analyzing', self)
@@ -421,7 +519,7 @@ class Repository(Artifact, ActivityObject):
             session(self).flush(self)
             self._impl.refresh_heads()
             if asbool(tg.config.get('scm.new_refresh')):
-                refresh_repo(self, all_commits, notify)
+                refresh_repo(self, all_commits, notify, new_clone)
             for head in self.heads + self.branches + self.repo_tags:
                 ci = self.commit(head.object_id)
                 if ci is not None:
@@ -445,24 +543,12 @@ class Repository(Artifact, ActivityObject):
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
 
-    def get_last_commit(self, obj):
-        from .repo import LastCommitDoc
-        lc = LastCommitDoc.m.get(
-            repo_id=self._id, object_id=obj._id)
-        if lc is None:
-            return dict(
-                author=None,
-                author_email=None,
-                author_url=None,
-                date=None,
-                id=None,
-                shortlink=None,
-                summary=None)
-        return lc.commit_info
-
     @property
     def forks(self):
         return self.query.find({'upstream_repo.name': self.url()}).all()
+
+    def tarball(self, revision):
+        self._impl.tarball(revision)
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses=['open', 'merged', 'rejected']
@@ -556,7 +642,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         result.update(
             name_s='Merge Request #%d' % self.request_number,
             type_s=self.type_s,
-            title_s='Merge Request #%d of %s:%s' % (
+            title='Merge Request #%d of %s:%s' % (
                 self.request_number, self.project.name, self.app.repo.name))
         return result
 

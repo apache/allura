@@ -5,7 +5,7 @@ Model tests for artifact
 import re
 from datetime import datetime
 
-from pylons import c
+from pylons import tmpl_context as c
 from nose.tools import assert_raises
 from nose import with_setup
 
@@ -72,7 +72,7 @@ def test_artifact():
     c.memoize_cache = {}
     assert not security.has_access(pg, 'delete')(user=u)
     idx = pg.index()
-    assert 'title_s' in idx
+    assert 'title' in idx
     assert 'url_s' in idx
     assert 'project_id_s' in idx
     assert 'mount_point_s' in idx

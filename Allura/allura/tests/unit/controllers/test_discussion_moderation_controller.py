@@ -21,8 +21,11 @@ class TestWhenModerating(WithDatabase):
         self.controller = ModerationController(discussion_controller)
 
     def test_that_it_can_approve(self):
+        mod_date = self.get_post().mod_date
         self.moderate_post(approve=True)
-        assert self.get_post().status == 'ok'
+        post = self.get_post()
+        assert post.status == 'ok'
+        assert post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S") == mod_date.strftime("%Y-%m-%d %H:%M:%S")
 
     def test_that_it_can_mark_as_spam(self):
         self.moderate_post(spam=True)

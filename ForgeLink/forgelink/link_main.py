@@ -4,7 +4,8 @@ import logging
 # Non-stdlib imports
 import pkg_resources
 from tg import expose, validate, redirect, response, flash
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 
 # Pyforge-specific imports
 from allura.app import Application, ConfigOption, SitemapEntry, DefaultAdminController
@@ -46,7 +47,7 @@ class ForgeLinkApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         return [SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
 
     def sidebar_menu(self):

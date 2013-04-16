@@ -1,25 +1,30 @@
 from allura.lib.widgets import form_fields as ffw
 
-from pylons import c
+from pylons import tmpl_context as c
 from formencode import validators as fev
 
 import ew as ew_core
 import ew.jinja2_ew as ew
 
-from forgetracker import model
+from allura import model as M
 
 class TicketCustomFields(ew.CompoundField):
     template='jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
+
+    def __init__(self, *args, **kwargs):
+        super(TicketCustomFields, self).__init__(*args, **kwargs)
+        self._fields = None
 
     @property
     def fields(self):
         # milestone is kind of special because of the layout
         # add it to the main form rather than handle with the other customs
-        fields = []
-        for cf in c.app.globals.custom_fields:
-            if cf.name != '_milestone':
-                fields.append(TicketCustomField.make(cf))
-        return fields
+        if self._fields is None:
+            self._fields = []
+            for cf in c.app.globals.custom_fields:
+                if cf.name != '_milestone':
+                    self._fields.append(TicketCustomField.make(cf))
+        return self._fields
 
 class GenericTicketForm(ew.SimpleForm):
     defaults=dict(
@@ -32,10 +37,37 @@ class GenericTicketForm(ew.SimpleForm):
     def display_field_by_name(self, idx, ignore_errors=False):
         field = self.fields[idx]
         ctx = self.context_for(field)
+        if idx == 'assigned_to':
+            self._add_current_value_to_user_field(field, ctx.get('value'))
+        elif idx == 'custom_fields':
+            for cf in c.app.globals.custom_fields:
+                if cf and cf.type == 'user':
+                    val = ctx.get('value')
+                    user = val.get(cf.name) if val else None
+                    for f in field.fields:
+                        if f.name == cf.name:
+                            self._add_current_value_to_user_field(f, user)
+
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
             display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
         return display
+
+    def _add_current_value_to_user_field(self, field, user):
+        """Adds current field's value to `ProjectUserCombo` options.
+
+        This is done to be able to select default value when widget loads,
+        since normally `ProjectUserCombo` shows without any options, and loads
+        them asynchronously (via ajax).
+        """
+        if isinstance(user, basestring):
+            user = M.User.by_username(user)
+        if user and user != M.User.anonymous():
+            field.options = [
+                ew.Option(
+                    py_value=user.username,
+                    label='%s (%s)' % (user.display_name, user.username))
+            ]
 
     @property
     def fields(self):
@@ -47,7 +79,7 @@ class GenericTicketForm(ew.SimpleForm):
                     attrs={'style':'width: 95%'}),
             ew.SingleSelectField(name='status', label='Status',
                 options=lambda: c.app.globals.all_status_names.split()),
-            ffw.ProjectUserSelect(name='assigned_to', label='Assigned To'),
+            ffw.ProjectUserCombo(name='assigned_to', label='Owner'),
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ew.Checkbox(name='private', label='Mark as Private', attrs={'class':'unlabeled'}),
             ew.InputField(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
@@ -111,11 +143,12 @@ class TicketCustomField(object):
     def _milestone(field):
         options = []
         for m in field.milestones:
-            if not m.complete:
-                options.append(ew.Option(
-                        label=m.name,
-                        py_value=m.name))
-        ssf = ew.SingleSelectField(
+            options.append(ew.Option(
+                label=m.name,
+                py_value=m.name,
+                complete=bool(m.complete)))
+
+        ssf = MilestoneField(
             label=field.label, name=str(field.name),
             options=options)
         return ssf
@@ -127,7 +160,7 @@ class TicketCustomField(object):
         return ew.NumberField(label=field.label, name=str(field.name))
 
     def _user(field):
-        return ffw.ProjectUserSelect(label=field.label, name=str(field.name))
+        return ffw.ProjectUserCombo(label=field.label, name=str(field.name))
 
     @staticmethod
     def _default(field):
@@ -144,3 +177,35 @@ class TicketCustomField(object):
     def make(cls, field):
         factory = cls.SELECTOR.get(field.get('type'), cls._default)
         return factory(field)
+
+class MilestoneField(ew.SingleSelectField):
+    template=ew.Snippet('''<select {{widget.j2_attrs({
+               'id':id,
+               'name':rendered_name,
+               'multiple':multiple,
+               'class':css_class},
+               attrs)}}>
+            {% for o in open_milestones %}
+            <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+            {% endfor %}
+            {% if closed_milestones %}
+            <optgroup label="Closed">
+                {% for o in closed_milestones %}
+                <option{% if o.selected%} selected{% endif %} value="{{o.html_value}}">{{o.label|e}}</option>
+                {% endfor %}
+            </optgroup>
+            {% endif %}
+        </select>''', 'jinja2')
+
+    def prepare_context(self, context):
+        context = super(MilestoneField, self).prepare_context(context)
+
+        # group open / closed milestones
+        context['open_milestones'] = [opt for opt in self.options if not opt.complete]
+        context['closed_milestones'] = [opt for opt in self.options if opt.complete]
+
+        # filter closed milestones entirely
+        #value = context['value']
+        #context['options'] = [opt for opt in self.options if not opt.complete or value == opt.py_value]
+
+        return context

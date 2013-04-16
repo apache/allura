@@ -1,0 +1,153 @@
+{% set page = 'task_manager' %}
+{% set sidebar_rel = '../../' %}
+{% extends 'allura:templates/site_admin.html' %}
+
+{% block extra_css %}
+<style type="text/css">
+    #task_details {
+        table-layout: fixed;
+        word-wrap: break-word;
+        border-collapse: separate;
+        border-spacing: 4px;
+    }
+    #task_details th,
+    #task_details td {
+        border: 0;
+    }
+    #task_details .first-column-headers {
+        width: 50px;
+    }
+    #task_details .first-column {
+        width: 225px;
+    }
+    #task_details .spacer {
+        width: 1px;
+    }
+    #task_details .second-column-headers {
+        width: 100px;
+    }
+    #task_details th {
+        background: #e5e5e5;
+        background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #e5e5e5));
+        background-image: -webkit-linear-gradient(#ffffff, #e5e5e5);
+        background-image: -moz-linear-gradient(#ffffff, #e5e5e5);
+        background-image: -o-linear-gradient(#ffffff, #e5e5e5);
+        background-image: -ms-linear-gradient(#ffffff, #e5e5e5);
+        background-image: linear-gradient(#ffffff, #e5e5e5);
+        text-shadow: #fff 0 1px 0;
+        border: 1px solid #aaa;
+        border-radius: 3px;
+    }
+    #task_details th.side-header {
+        text-align: right;
+        vertical-align: top;
+        padding: 4px 10px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    #task_details td.second-column {
+        border: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if not task %}
+    Task not found
+{% else %}
+    <h2>Task Details</h2>
+    <table id="task_details">
+        <tr>
+            <td class="first-column-headers"></td>
+            <th class="first-column">Name</th>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <th class="second-column">State</th>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <td>{{ task.task_name }}</td>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <td>{{ task.state }}</td>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <th class="first-column">ID</th>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <th class="second-column">Process</th>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <td>{{ task._id }}</td>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <td>{{ task.process if task.process }}</td>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <th>Context</th>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <th>Time</th>
+        </tr>
+        <tr>
+            <th class="side-header">Project</th>
+            <td>{{ task.project.shortname if task.project }}</td>
+            <td class="spacer"></td>
+            <th class="second-column-headers side-header">Queued</th>
+            <td>{{ task.time_queue.strftime('%Y/%m/%d %H:%M:%S') if task.time_queue }}</td>
+        </tr>
+        <tr>
+            <th class="side-header">Mount</th>
+            <td>{{ task.app_config.options.mount_point if task.app_config }}</td>
+            <td class="spacer"></td>
+            <th class="second-column-headers side-header">Started</th>
+            <td>{{ task.time_start.strftime('%Y/%m/%d %H:%M:%S') if task.time_start }}</td>
+        </tr>
+        <tr>
+            <th class="side-header">User</th>
+            <td>{{ task.user.username if task.user }}</td>
+            <td class="spacer"></td>
+            <th class="second-column-headers side-header">Stopped</th>
+            <td>{{ task.time_stop.strftime('%Y/%m/%d %H:%M:%S') if task.time_stop }}</td>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <th>Args</th>
+            <td class="spacer"></td>
+            <td class="second-column-headers"></td>
+            <th>Keyword Args</th>
+        </tr>
+        {% if task.args|length > task.kwargs|length %}
+            {% set indexes = range(task.args|length) %}
+        {% else %}
+            {% set indexes = range(task.kwargs|length) %}
+        {% endif %}
+        {% set kwargs = task.kwargs.items() %}
+        {% for i in indexes %}
+        <tr>
+            <td class="first-column-headers"></td>
+            <td>{{ task.args[i] }}</td>
+            <td class="spacer"></td>
+            {% if kwargs[i] %}
+            <th class="second-column-headers side-header">{{ kwargs[i][0] }}</th>
+            <td>{{ kwargs[i][1] }}</td>
+            {% else %}
+            <td class="second-column-headers"></td>
+            <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        <tr>
+            <td class="first-column-headers"></td>
+            <th colspan="4">Result</th>
+        </tr>
+        <tr>
+            <td class="first-column-headers"></td>
+            <td colspan="4"><pre>{{ task.result }}</pre></td>
+        </tr>
+    </table>
+{% endif %}
+{% endblock %}

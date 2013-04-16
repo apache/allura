@@ -2,7 +2,7 @@ import shutil
 import logging
 import traceback
 
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from allura.lib.decorators import task
 from allura.lib.repository import RepositoryApp
@@ -100,5 +100,16 @@ def reclone_repo(*args, **kwargs):
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
     except Exception, e:
-        source_url = source_path or source_url
-        g.post_event('repo_clone_task_failed', source_url, traceback.format_exc())
+        g.post_event('repo_clone_task_failed', source_url, source_path, traceback.format_exc())
+
+@task
+def tarball(revision=None):
+    log = logging.getLogger(__name__)
+    if revision:
+        repo = c.app.repo
+        try:
+            repo.tarball(revision)
+        except:
+            log.error('Could not create tarball for repository %s:%s revision %s' % (c.project.shortname, c.app.config.options.mount_point, revision), exc_info=True)
+    else:
+        log.warn('Creation of tarball for %s:%s skipped because revision is not specified' % (c.project.shortname, c.app.config.options.mount_point))

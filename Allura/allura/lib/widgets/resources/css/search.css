@@ -1,0 +1,12 @@
+input.search-query {
+  width: 95%;
+}
+
+.gray {
+  color: #aaa;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  vertical-align: middle;
+}

@@ -5,6 +5,7 @@ from cStringIO import StringIO
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
 from pylons import request, app_globals as g, tmpl_context as c
+from paste.deploy.converters import asbool, asint
 from bson import ObjectId
 
 from ming.orm import session, state
@@ -21,9 +22,9 @@ log = logging.getLogger(__name__)
 
 class ConfigOption(object):
 
-    def __init__(self, name, ming_type, default):
-        self.name, self.ming_type, self._default = (
-            name, ming_type, default)
+    def __init__(self, name, ming_type, default, label=None):
+        self.name, self.ming_type, self._default, self.label = (
+            name, ming_type, default, label or name)
 
     @property
     def default(self):
@@ -33,7 +34,8 @@ class ConfigOption(object):
 
 class SitemapEntry(object):
 
-    def __init__(self, label, url=None, children=None, className=None, ui_icon=None, small=None):
+    def __init__(self, label, url=None, children=None, className=None,
+            ui_icon=None, small=None, tool_name=None):
         self.label = label
         self.className = className
         if url is not None:
@@ -44,6 +46,8 @@ class SitemapEntry(object):
         if children is None:
             children = []
         self.children = children
+        self.tool_name = tool_name
+        self.matching_urls = []
 
     def __getitem__(self, x):
         """
@@ -92,6 +96,10 @@ class SitemapEntry(object):
                 self.children.append(e)
                 child_index[lbl] = e
 
+    def matches_url(self, request):
+        """Return true if this SitemapEntry 'matches' the url of `request`."""
+        return self.url in request.upath_info or any([
+            url in request.upath_info for url in self.matching_urls])
 
 class Application(object):
     """
@@ -376,8 +384,15 @@ class DefaultAdminController(BaseController):
                     redirect('.')
                 c.project.uninstall_app(self.app.config.options.mount_point)
                 redirect('..')
-            for k,v in kw.iteritems():
-                self.app.config.options[k] = v
+            for opt in self.app.config_options:
+                if opt in Application.config_options:
+                    continue  # skip base options (mount_point, mount_label, ordinal)
+                val = kw.get(opt.name, '')
+                if opt.ming_type == bool:
+                    val = asbool(val or False)
+                elif opt.ming_type == int:
+                    val = asint(val or 0)
+                self.app.config.options[opt.name] = val
             if is_admin:
                 # possibly moving admin mount point
                 redirect('/'

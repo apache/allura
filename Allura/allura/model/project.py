@@ -1,8 +1,11 @@
 import logging
+from collections import Counter, OrderedDict
 from datetime import datetime
 
 from tg import config
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
+from paste.deploy.converters import asbool
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -390,21 +393,21 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         from allura.app import SitemapEntry
         entries = []
 
-        # Set menu mode
-        delta_ordinal = 0
-        max_ordinal = 0
+        anchored_tools = self.neighborhood.get_anchored_tools()
+        i = len(anchored_tools)
+        new_tools = self.install_anchored_tools()
+        self.app_config('admin').options.ordinal = 100
 
-        if self.is_user_project:
-            entries.append({'ordinal': delta_ordinal, 'entry':SitemapEntry('Profile', "%sprofile/" % self.url(), ui_icon="tool-home")})
-            max_ordinal = delta_ordinal
-            delta_ordinal = delta_ordinal + 1
+        # Set menu mode
+        delta_ordinal = i
+        max_ordinal = i
 
         for sub in self.direct_subprojects:
             ordinal = sub.ordinal + delta_ordinal
             if ordinal > max_ordinal:
                 max_ordinal = ordinal
             entries.append({'ordinal':sub.ordinal + delta_ordinal,'entry':SitemapEntry(sub.name, sub.url())})
-        for ac in self.app_configs:
+        for ac in self.app_configs + [a.config for a in new_tools]:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
             # Tool could've been uninstalled in the meantime
@@ -418,8 +421,12 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             if app.is_visible_to(c.user):
                 for sm in app.main_menu():
                     entry = sm.bind_app(app)
-                    entry.ui_icon='tool-%s' % ac.tool_name.lower()
-                    ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
+                    entry.tool_name = ac.tool_name
+                    entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
+                    if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
+                        ordinal = anchored_tools.keys().index(entry.tool_name.lower())
+                    else:
+                        ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
@@ -430,6 +437,57 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
         return [e['entry'] for e in entries]
+
+    def install_anchored_tools(self):
+        anchored_tools = self.neighborhood.get_anchored_tools()
+        installed_tools = [tool.tool_name.lower() for tool in self.app_configs]
+        i = 0
+        new_tools = []
+        if not self.is_nbhd_project:
+            for tool, label in anchored_tools.iteritems():
+                if (tool not in installed_tools) and (self.app_instance(tool) is None):
+                    try:
+                        new_tools.append(self.install_app(tool, tool, label, i))
+                    except Exception:
+                        log.error('%s is not available' % tool, exc_info=True)
+                i += 1
+        return new_tools
+
+    def grouped_navbar_entries(self):
+        """Return a ``allura.app.SitemapEntry`` list suitable for rendering
+        the project navbar with tools grouped together by tool type.
+        """
+        # get orginal (non-grouped) navbar entries
+        sitemap = self.sitemap()
+        # ordered dict to preserve the orginal ordering of tools
+        grouped_nav = OrderedDict()
+        # count how many tools of each type we have
+        counts = Counter([e.tool_name.lower() for e in sitemap if e.tool_name])
+        grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
+        for e in sitemap:
+            # if it's not a tool, add to navbar and continue
+            if not e.tool_name:
+                grouped_nav[id(e)] = e
+                continue
+            tool_name = e.tool_name.lower()
+            if counts.get(tool_name, 1) <= grouping_threshold:
+                # don't need grouping, so just add it directly
+                grouped_nav[id(e)] = e
+            else:
+                # tool of a type we don't have in the navbar yet
+                if tool_name not in grouped_nav:
+                    # change label to be the tool name (type)
+                    e.label = tool_name.capitalize()
+                    # add tool url to list of urls that will match this nav entry
+                    # have to do this before changing the url to the list page
+                    e.matching_urls.append(e.url)
+                    # change url to point to tool list page
+                    e.url = self.url() + '_list/' + tool_name
+                    grouped_nav[tool_name] = e
+                else:
+                    # add tool url to list of urls that will match this nav entry
+                    grouped_nav[tool_name].matching_urls.append(e.url)
+        return grouped_nav.values()
 
     def parent_iter(self):
         yield self
@@ -540,36 +598,34 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''Returns an array of a projects mounts (tools and sub-projects) in
         toolbar order.'''
         result = []
+        anchored_tools = self.neighborhood.get_anchored_tools()
+        i = len(anchored_tools)
+        self.install_anchored_tools()
+
         for sub in self.direct_subprojects:
-            result.append({'ordinal':int(sub.ordinal), 'sub':sub, 'rank':1})
+            result.append({'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
-                ordinal = ac.options.get('ordinal', 0)
+                if not self.is_nbhd_project and (ac.tool_name.lower() in anchored_tools.keys()):
+                    ordinal = anchored_tools.keys().index(ac.tool_name.lower())
+                else:
+                    ordinal = int(ac.options.get('ordinal', 0)) + i
                 rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
-                result.append({'ordinal':int(ordinal), 'ac':ac, 'rank':rank})
+                result.append({'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
         return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
-    def first_mount(self, required_access=None):
-        '''Returns the first (toolbar order) mount, or the first mount to
-        which the user has the required access.'''
-        from forgewiki.wiki_main import ForgeWikiApp
+    def first_mount_visible(self, user):
         mounts = self.ordered_mounts()
-        if self.is_user_project:
-            for mount in mounts:
-                if 'ac' in mount and mount['ac'].tool_name == 'profile':
-                    return mount
-        if mounts and required_access is None:
-            return mounts[0]
         for mount in mounts:
             if 'sub' in mount:
-                obj = mount['sub']
+                sub = mount['sub']
+                if has_access(sub, 'read', user):
+                    return mount
             elif 'ac' in mount:
-                obj = self.app_instance(mount['ac'])
-            else:
-                continue
-            if has_access(obj, required_access) or isinstance(obj, ForgeWikiApp):
-                return mount
+                app = self.app_instance(mount['ac'])
+                if app.is_visible_to(user):
+                    return mount
         return None
 
     def next_mount_point(self, include_hidden=False):
@@ -610,15 +666,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         e.g., project.users_with_role('Admin', 'Developer') -> returns all
           users in `project` having the Admin role or the Developer role, or both
         """
-        roles = ProjectRole.query.find(dict(name={'$in': role_names}, project_id=self._id))
-        return [project_role.user for r in roles for project_role in r.users_with_role(self)]
+        users = set()
+        for role_name in role_names:
+            for user in g.credentials.users_with_named_role(self.root_project._id, role_name):
+                users.add(user)
+        return list(users)
 
     def admins(self):
         """Find all the users who have 'Admin' role for this project"""
-        admin_role = ProjectRole.query.get(name='Admin', project_id=self._id)
-        if not admin_role:
-            return []
-        return [r.user.username for r in admin_role.users_with_role(self)]
+        return self.users_with_role('Admin')
 
     def user_in_project(self, username):
         from .auth import User
@@ -640,16 +696,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         self.notifications_disabled = True
         if users is None: users = [ c.user ]
         if apps is None:
+            apps = []
             if is_user_project:
-                apps = [('Wiki', 'wiki', 'Wiki'),
+                apps += [('Wiki', 'wiki', 'Wiki'),
                         ('profile', 'profile', 'Profile'),
-                        ('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search'),
-                        ('activity', 'activity', 'Activity')]
-            else:
-                apps = [('admin', 'admin', 'Admin'),
-                        ('search', 'search', 'Search'),
-                        ('activity', 'activity', 'Activity')]
+                       ]
+            apps += [
+                ('admin', 'admin', 'Admin'),
+                ('search', 'search', 'Search'),
+            ]
+            if asbool(config.get('activitystream.enabled', False)):
+                apps.append(('activity', 'activity', 'Activity'))
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
             root_project_id=self.root_project._id
@@ -689,6 +746,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     @property
     def twitter_handle(self):
         return self.social_account('Twitter').accounturl
+
+    @property
+    def facebook_page(self):
+        return self.social_account('Facebook').accounturl
 
     def social_account(self, socialnetwork):
         try:

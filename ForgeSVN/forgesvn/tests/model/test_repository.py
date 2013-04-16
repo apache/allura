@@ -2,10 +2,11 @@ import os
 import shutil
 import unittest
 import pkg_resources
-from itertools import count
+from itertools import count, product
 from datetime import datetime
 
-from pylons import c
+from collections import defaultdict
+from pylons import tmpl_context as c
 import mock
 from nose.tools import assert_equal
 import tg
@@ -16,11 +17,11 @@ from ming.orm import session, ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
-from allura.lib.utils import svn_path_exists
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 
 from forgesvn import model as SM
+from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
 
 class TestNewRepo(unittest.TestCase):
@@ -130,12 +131,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
-        assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
-        with open('/tmp/testsvn/hooks/pre-revprop-change') as f: c = f.read()
-        self.assertEqual(c, '#!/bin/sh\n')
-        assert not os.path.exists('/tmp/testsvn/hooks/post-revprop-change')
-        assert not os.path.exists('/tmp/testsvn/hooks/post-commit-user')
+        assert not os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.path.exists('/tmp/testsvn/hooks/post-commit')
         assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
@@ -146,6 +142,25 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert len(repo.log())
 
         shutil.rmtree(dirname)
+
+    @mock.patch('forgesvn.model.svn.tg')
+    def test_can_hotcopy(self, tg):
+        from forgesvn.model.svn import SVNImplementation
+        func = SVNImplementation.can_hotcopy
+        obj = mock.Mock(spec=SVNImplementation)
+        for combo in product(
+                ['file:///myfile', 'http://myfile'],
+                [True, False],
+                ['version 1.7', 'version 1.6', 'version 2.0.3']):
+            source_url = combo[0]
+            tg.config = {'scm.svn.hotcopy': combo[1]}
+            stdout = combo[2]
+            obj.check_call.return_value = stdout, ''
+            expected = (source_url.startswith('file://') and
+                    tg.config['scm.svn.hotcopy'] and
+                    stdout != 'version 1.6')
+            result = func(obj, source_url)
+            assert result == expected
 
     @mock.patch('forgesvn.model.svn.g.post_event')
     def test_clone(self, post_event):
@@ -162,12 +177,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        assert os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
-        assert os.access('/tmp/testsvn/hooks/pre-revprop-change', os.X_OK)
-        with open('/tmp/testsvn/hooks/pre-revprop-change') as f: c = f.read()
-        self.assertEqual(c, '#!/bin/sh\n')
-        assert not os.path.exists('/tmp/testsvn/hooks/post-revprop-change')
-        assert not os.path.exists('/tmp/testsvn/hooks/post-commit-user')
+        assert not os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
         assert os.path.exists('/tmp/testsvn/hooks/post-commit')
         assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
         with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
@@ -192,12 +202,25 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             print entry.message
             print entry.diffs
 
+    def test_paged_diffs(self):
+        entry = self.repo.log(2, limit=1)[0]
+        self.assertEqual(entry.diffs, entry.paged_diffs())
+        self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
+        expected =  dict(
+                copied=[], changed=[], removed=[],
+                added=['/a/b', '/a/b/c'], total=4)
+        actual = entry.paged_diffs(start=1, end=3)
+        self.assertEqual(expected, actual)
+
+        empty = M.repo.Commit().paged_diffs()
+        self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
+
     def test_diff_create_file(self):
         entry = self.repo.log(1, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=[], added=['/README']))
+                removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
         entry = self.repo.log(2, limit=1)[0]
@@ -206,21 +229,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                 copied=[], changed=[], removed=[],
                 added=[
                     '/a', '/a/b', '/a/b/c',
-                    '/a/b/c/hello.txt']))
+                    '/a/b/c/hello.txt'], total=4))
 
     def test_diff_modify_file(self):
         entry = self.repo.log(3, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=['/README'],
-                removed=[], added=[]))
+                removed=[], added=[], total=1))
 
     def test_diff_delete(self):
         entry = self.repo.log(4, limit=1)[0]
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=['/a/b/c/hello.txt'], added=[]))
+                removed=['/a/b/c/hello.txt'], added=[], total=1))
 
     def test_diff_copy(self):
         # Copies are currently only detected as 'add'
@@ -228,7 +251,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
-                removed=[], added=['/b']))
+                removed=[], added=['/b'], total=1))
 
     def test_commit(self):
         entry = self.repo.commit(1)
@@ -246,6 +269,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         ci = mock.Mock(_id='deadbeef:100')
         self.assertEqual(self.repo.count_revisions(ci), 100)
 
+    def test_tarball(self):
+        assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/t/te/test/testsvn')
+        assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.tar.gz')
+        self.repo.tarball('1')
+        assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.tar.gz")
 
 class TestSVNRev(unittest.TestCase):
 
@@ -396,6 +424,7 @@ class _TestWithRepo(_Test):
         self.repo._impl.log = lambda *a,**kw:(['foo'], [])
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a,**kw: []
+        self.repo._impl.commit().symbolic_ids = None
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
 
@@ -494,8 +523,12 @@ class TestRepo(_TestWithRepo):
         assert self.repo.guess_type('.gitignore') == ('text/plain', None)
 
     def test_refresh(self):
+        committer_name = 'Test Committer'
+        committer_email = 'test@example.com'
         ci = mock.Mock()
-        ci.authored.name = 'Test Committer'
+        ci.authored.name = committer_name
+        ci.committed.name = committer_name
+        ci.committed.email = committer_email
         ci.author_url = '/u/test-committer/'
         self.repo.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
@@ -505,27 +538,28 @@ class TestRepo(_TestWithRepo):
         def refresh_commit_info(oid, seen, lazy=False):
             M.repo.CommitDoc(dict(
                     authored=dict(
-                        name='Test Committer',
-                        email='test@test.com'),
+                        name=committer_name,
+                        email=committer_email),
                     _id=oid)).m.insert()
         def set_heads():
             self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
         self.repo._impl.refresh_commit_info = refresh_commit_info
         self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
-        self.repo.shorthand_for_commit = lambda oid: '[' + str(oid) + ']'
-        self.repo.url_for_commit = lambda oid: '/ci/' + str(oid) + '/'
+        _id = lambda oid: getattr(oid, '_id', str(oid))
+        self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
+        self.repo.url_for_commit = lambda oid: 'ci/' + _id(oid) + '/'
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
         for n in notifications:
             if '100 new commits' in n.subject:
-                assert "master,branch:  by Test Committer http://localhost/#" in n.text
+                assert "master,branch:  by %s http://localhost/ci/foo99" % committer_name in n.text
                 break
         else:
             assert False, 'Did not find notification'
         assert M.Feed.query.find(dict(
             title='New commit',
-            author_name='Test Committer')).count()
+            author_name=committer_name)).count()
 
     def test_refresh_private(self):
         ci = mock.Mock()
@@ -604,26 +638,6 @@ class TestRepoObject(_TestWithRepoAndCommit):
         assert obj0 is obj1
         assert isnew0 and not isnew1
 
-    def test_set_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-    def test_get_last_commit(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc0 = M.repo_refresh.set_last_commit(
-            self.repo._id, '/', 'fakefile', obj._id,
-            M.repo_refresh.get_commit_info(self.ci))
-
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc0 == lc1
-
-    def test_get_last_commit_missing(self):
-        obj, isnew = M.repo.Tree.upsert('foo1')
-        lc1 = M.repo.LastCommitDoc.m.get(object_id=obj._id)
-        assert lc1 is None
-
     def test_artifact_methods(self):
         assert self.ci.index_id() == 'allura/model/repo/Commit#foo', self.ci.index_id()
         assert self.ci.primary() is self.ci, self.ci.primary()
@@ -671,12 +685,22 @@ class TestCommit(_TestWithRepo):
         rb.cleanup()
         assert self.repo.count_revisions(self.ci) == 1
 
+    def _unique_blobs(self):
+        def counter():
+            counter.i += 1
+            return counter.i
+        counter.i = 0
+        blobs = defaultdict(counter)
+        from cStringIO import StringIO
+        return lambda blob: StringIO(str(blobs[blob.path()]))
+
     def test_compute_diffs(self):
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
+        self.repo._impl.open_blob = self._unique_blobs()
         M.repo_refresh.refresh_commit_trees(self.ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
         # self.ci.compute_diffs()
-        assert self.ci.diffs.added == [ 'a' ]
+        assert_equal(self.ci.diffs.added, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
@@ -686,7 +710,7 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.removed == [ 'a' ]
+        assert_equal(ci.diffs.removed, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == ci.diffs.added
@@ -702,8 +726,8 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == [ 'b' ]
-        assert ci.diffs.removed == [ 'a' ]
+        assert_equal(ci.diffs.added, [ 'b', 'b/a', 'b/a/a', 'b/a/b', 'b/b' ])
+        assert_equal(ci.diffs.removed, [ 'a', 'a/a', 'a/a/a', 'a/a/b', 'a/b' ])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
@@ -719,13 +743,13 @@ class TestCommit(_TestWithRepo):
                 u'/b/a/z': u'Death Star will destroy you\nALL',  # moved from /b/b and modified
             }
             from cStringIO import StringIO
-            return StringIO(blobs[blob.path()])
+            return StringIO(blobs.get(blob.path(), ''))
         self.repo._impl.open_blob = open_blob
 
         self.repo._impl.commit = mock.Mock(return_value=self.ci)
         M.repo_refresh.refresh_commit_trees(self.ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, self.ci)
-        assert self.ci.diffs.added == ['a']
+        assert_equal(self.ci.diffs.added, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (self.ci.diffs.copied
                 == self.ci.diffs.changed
                 == self.ci.diffs.removed
@@ -742,8 +766,8 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == ['b']
-        assert ci.diffs.removed == ['a']
+        assert_equal(ci.diffs.added, ['b', 'b/a', 'b/a/a', 'b/a/b', 'b/b'])
+        assert_equal(ci.diffs.removed, ['a', 'a/a', 'a/a/a', 'a/a/b', 'a/b'])
         assert (ci.diffs.copied
                 == ci.diffs.changed
                 == [])
@@ -758,18 +782,19 @@ class TestCommit(_TestWithRepo):
         self._make_log(ci)
         M.repo_refresh.refresh_commit_trees(ci, {})
         M.repo_refresh.compute_diffs(self.repo._id, {}, ci)
-        assert ci.diffs.added == ci.diffs.changed == []
-        assert ci.diffs.removed == ['b/a/a']
+        assert_equal(ci.diffs.added, [])
+        assert_equal(ci.diffs.changed, [])
+        assert_equal(ci.diffs.removed, ['b/a/a'])
         # see mock for open_blob
-        assert len(ci.diffs.copied) == 2
-        assert ci.diffs.copied[0]['old'] == 'b/a/b'
-        assert ci.diffs.copied[0]['new'] == 'b/c'
-        assert ci.diffs.copied[0]['ratio'] == 1
-        assert ci.diffs.copied[0]['diff'] == ''
-        assert ci.diffs.copied[1]['old'] == 'b/b'
-        assert ci.diffs.copied[1]['new'] == 'b/a/z'
-        assert ci.diffs.copied[1]['ratio'] < 1
-        assert '+++' in ci.diffs.copied[1]['diff']
+        assert_equal(len(ci.diffs.copied), 2)
+        assert_equal(ci.diffs.copied[0]['old'], 'b/a/b')
+        assert_equal(ci.diffs.copied[0]['new'], 'b/c')
+        assert_equal(ci.diffs.copied[0]['ratio'], 1)
+        assert_equal(ci.diffs.copied[0]['diff'], '')
+        assert_equal(ci.diffs.copied[1]['old'], 'b/b')
+        assert_equal(ci.diffs.copied[1]['new'], 'b/a/z')
+        assert ci.diffs.copied[1]['ratio'] < 1, ci.diffs.copied[1]['ratio']
+        assert '+++' in ci.diffs.copied[1]['diff'], ci.diffs.copied[1]['diff']
 
     def test_context(self):
         self.ci.context()

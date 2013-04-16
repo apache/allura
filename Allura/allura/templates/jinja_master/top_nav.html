@@ -1,5 +1,5 @@
 {% if c.project %}
-  {% for s in c.project.sitemap() %}
+  {% for s in c.project.grouped_navbar_entries() %}
     <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
       {{s.label}}
       {% if s.label == 'Home' %}
@@ -8,9 +8,13 @@
           <span class="diamond"></span>
         {% endif %}
       {% else %}
-        {% if s.url in request.upath_info or c.project.neighborhood.url()+'_admin' in request.upath_info %}
+        {% if s.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info %}
           <span class="diamond"></span>
         {% endif %}
+      {% endif %}
+      {% set grouped_tool_count = s.matching_urls|length %}
+      {% if grouped_tool_count %}
+        <span class="tool-count">{{grouped_tool_count}}</span>
       {% endif %}
     </a>
 	{% endfor %}

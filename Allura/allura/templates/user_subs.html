@@ -1,0 +1,54 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{c.user.username}} / Preferences{% endblock %}
+
+{% block header %}User Preferences for {{c.user.username}}{% endblock %}
+
+{% block content %}
+  <ul id="account-nav-menu" class="b-hornav droppy">
+      {% for item in menu -%}
+      <li id="{{ item.tabid }}">
+      <a href="{{ item.target }}">
+          {{ item.title }}
+          <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+      </a>
+      </li>
+      {%- endfor %}
+   </ul>
+
+   <h2>Authorized Third-party Applications</h2>
+   {% for access_tok in authorized_applications %}
+     <div>
+       <h3>{{access_tok.consumer_token.name}}</h3>
+       {{access_tok.consumer_token.description_html}}
+       {{ c.revoke_access.display(value=access_tok) }}
+       <br style="clear:both"/>
+   </div>
+  {% endfor %}
+     {% if not authorized_applications %}<p>No authorized third-party applications</p>{% endif %}
+
+  <h2>Subscriptions</h2>
+  {% if subscriptions %}
+    <p><em>Mark tools that you want to subscribe to. Unmark tools that you want to unsubscribe from. Press 'Save' button.</em></p>
+    {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
+  {% else%}
+    <p>No subscriptions.</p>
+  {% endif %}
+  <hr/>
+  <div style="clear:both">&nbsp;</div>
+  <form action="update" method="post">
+        <label class="grid-4">Email Format</label>
+        <div class="grid-18">
+          <select name="preferences.email_format">
+            <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
+            <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
+            <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
+          </select>
+        </div>
+
+    <div class="grid-18">
+    {{lib.submit_button('Save Changes')}}
+    </div>
+  </form>
+{% endblock %}

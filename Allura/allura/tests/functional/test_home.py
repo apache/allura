@@ -5,6 +5,8 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 
+from nose.tools import assert_equal, assert_not_in
+
 
 class TestProjectHome(TestController):
 
@@ -33,7 +35,7 @@ class TestProjectHome(TestController):
 
         r = self.app.get('/u/test-admin/sub1/')
         assert r.location.endswith('admin/'), r.location
-        r.follow()
+        assert_not_in('Profile', r.follow().body)
 
     def test_user_search(self):
         r = self.app.get('/p/test/user_search?term=test', status=200)
@@ -45,3 +47,25 @@ class TestProjectHome(TestController):
 
     def test_user_search_shortparam(self):
         r = self.app.get('/p/test/user_search?term=ad', status=400)
+
+    def test_users(self):
+        r = self.app.get('/p/test/users', status=200)
+        j = json.loads(r.body)
+        expected = [{
+            'value': u'test-admin',
+            'label': u'Test Admin (test-admin)'
+        }]
+        assert_equal(j['options'], expected)
+
+    def test_members(self):
+        r = self.app.get('/p/test/_members/')
+        assert '<td>Test Admin</td>' in r
+        assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td>Admin</td>' in r
+
+    def test_members_anonymous(self):
+        r = self.app.get('/p/test/_members/', extra_environ=dict(username='*anonymous'))
+        assert '<td>Test Admin</td>' in r
+        assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
+        assert '<td>Admin</td>' in r
+

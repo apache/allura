@@ -1,4 +1,4 @@
-from pylons import c,g
+from pylons import tmpl_context as c, app_globals as g
 from formencode import validators as fev
 
 import ew as ew_core
@@ -163,16 +163,14 @@ class NewTopicPost(EditPost):
 
 class _ThreadsTable(ew.TableField):
     template='jinja:allura:templates/widgets/threads_table.html'
-    class hidden_fields(ew_core.NameList):
-        _id=ew.HiddenField(validator=V.Ming(M.Thread))
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Posts')
-        num_views=ew.HTMLField(show_label=True)
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
-        subscription=ew.Checkbox(suppress_label=True, show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
+        _id=ew.HiddenField(validator=V.Ming(M.Thread))
+        subscription=ew.Checkbox(suppress_label=True)
+        subject=ffw.DisplayOnlyField(label='Topic')
+        url=ffw.DisplayOnlyField()
+        num_replies=ffw.DisplayOnlyField(label='Posts')
+        num_views=ffw.DisplayOnlyField(label='Views')
+        last_post=ffw.DisplayOnlyField(label='Last Post')
 
 class SubscriptionForm(ew.SimpleForm):
     template='jinja:allura:templates/widgets/subscription_form.html'
@@ -267,10 +265,33 @@ class Post(HierWidget):
             $('div.discussion-post').each(function () {
                 var post = this;
                 $('.submit', post).button();
-                $('.flag_post, .delete_post', post).click(function (ele) {
+                $('.flag_post', post).click(function (ele) {
                     this.parentNode.submit();
                     return false;
                 });
+                $('.moderate_post', post).click(function(e){
+                    e.preventDefault();
+                    var mod = $(this).text();
+                    var id_post = $(post).attr('id');
+                    $.ajax({
+                        type: 'POST',
+                        url: this.parentNode.action,
+                        data: jQuery(this.parentNode).serialize(),
+                        success: function() {
+                            if (mod == 'Delete'){
+                                $(post).remove();
+                            }
+                            else if (mod == 'Approve'){
+                                $('a.reply_post, a.shortlink, form.moderate_spam, form.moderate_approve', post).toggle();
+                                $('div.moderate', post).removeClass('moderate');
+                            }
+                            else if (mod == 'Spam'){
+                                $(post).remove();
+                            }
+                        }
+                    });
+                });
+
                 if($('a.edit_post', post)){
                     $('a.edit_post', post).click(function (ele) {
                         $('.display_post', post).hide();

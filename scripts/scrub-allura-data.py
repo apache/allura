@@ -3,7 +3,7 @@ import sys
 
 from ming.orm import ThreadLocalORMSession
 import mock
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 
 from allura import model as M
 from forgediscussion import model as DM

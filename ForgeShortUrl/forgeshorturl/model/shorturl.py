@@ -1,7 +1,5 @@
 import pymongo
-import pylons
-pylons.c = pylons.tmpl_context
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime
 from allura.model.auth import User
@@ -47,7 +45,7 @@ class ShortUrl(M.Artifact):
             full_url_s=self.full_url,
             short_name_s=self.short_name,
             description_s=self.description,
-            title_s='%s => %s' % (self.url(), self.full_url),
+            title='%s => %s' % (self.url(), self.full_url),
             private_b=self.private,
             type_s=self.type_s)
         return result

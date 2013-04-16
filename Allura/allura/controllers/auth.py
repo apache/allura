@@ -4,7 +4,8 @@ from urllib import urlencode
 import bson
 from tg import expose, session, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash
-from pylons import c, g, request, response
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request, response
 from webob import exc as wexc
 
 import allura.tasks.repo_tasks
@@ -61,8 +62,18 @@ class F(object):
 class AuthController(BaseController):
 
     def __init__(self):
-        self.prefs = PreferencesController()
+        self.preferences = PreferencesController()
+        self.user_info = UserInfoController()
+        self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+
+    @expose()
+    def prefs(self, *args, **kwargs):
+        '''
+        Redirect old /auth/prefs URL to /auth/subscriptions
+        (to handle old email links, etc).
+        '''
+        redirect('/auth/subscriptions/')
 
     @expose('jinja:allura:templates/login.html')
     @with_trailing_slash
@@ -187,7 +198,7 @@ class AuthController(BaseController):
         if c.user:
             c.user.claim_openid(oid_obj._id)
             flash('Claimed %s' % oid_obj._id)
-        redirect('/auth/prefs/')
+        redirect('/auth/preferences/')
 
     @expose()
     def logout(self):
@@ -292,156 +303,27 @@ class AuthController(BaseController):
                     allow_write=has_access(c.app, 'write')(user=user),
                     allow_create=has_access(c.app, 'create')(user=user))
 
-class UserSkillsController(BaseController):
-
-    def __init__(self, category=None):
-        self.category = category
-        super(UserSkillsController, self).__init__()
-
-    @expose()
-    def _lookup(self, catshortname, *remainder):
-        cat = M.TroveCategory.query.get(shortname=catshortname)
-        return UserSkillsController(category=cat), remainder
-
-    @expose('jinja:allura:templates/user_skills.html')
-    def index(self, **kw):
-        require_authenticated()
-
-        l = []
-        parents = []
-        if kw.get('selected_category') is not None:
-            selected_skill = M.TroveCategory.query.get(trove_cat_id=int(kw.get('selected_category')))
-        elif self.category:
-            selected_skill = self.category
-        else:
-            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True))
-            selected_skill = None
-        if selected_skill:
-            l = [scat for scat in selected_skill.subcategories
-                 if scat.show_as_skill]
-            temp_cat = selected_skill.parent_category
-            while temp_cat:
-                parents = [temp_cat] + parents
-                temp_cat = temp_cat.parent_category
-        return dict(
-            skills_list = l,
-            selected_skill = selected_skill,
-            parents = parents, 
-            add_details_fields=(len(l)==0))
-
-    @expose()
-    @require_post()
-    @validate(F.save_skill_form, error_handler=index)
-    def save_skill(self, **kw):
-        require_authenticated()
-        
-        trove_id = int(kw.get('selected_skill'))
-        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
-
-        new_skill = dict(
-            category_id=category._id,
-            level=kw.get('level'),
-            comment=kw.get('comment'))
-
-        s = [skill for skill in c.user.skills 
-             if str(skill.category_id) != str(new_skill['category_id'])]
-        s.append(new_skill)
-        c.user.set_pref('skills', s)
-        flash('Your skills list was successfully updated!')
-        redirect('/auth/prefs/user_skills')
-
-    @expose()
-    @require_post()
-    @validate(F.remove_skill_form, error_handler=index)
-    def remove_skill(self, **kw):
-        require_authenticated()
-
-        trove_id = int(kw.get('categoryid'))
-        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
-
-        s = [skill for skill in c.user.skills 
-             if str(skill.category_id) != str(category._id)]
-        c.user.set_pref('skills', s)
-        flash('Your skills list was successfully updated!')
-        redirect('/auth/prefs/user_skills')
-
 class PreferencesController(BaseController):
 
-    user_skills = UserSkillsController()
+    def _check_security(self):
+        require_authenticated()
 
     @with_trailing_slash
-    @expose('jinja:allura:templates/user_preferences.html')
+    @expose('jinja:allura:templates/user_prefs.html')
     def index(self, **kw):
-        require_authenticated()
-        c.form = F.subscription_form
-        c.revoke_access = F.oauth_revocation_form
-        subscriptions = []
-        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
-        mailboxes = list(mailboxes.ming_cursor)
-        project_collection = M.Project.query.mapper.collection
-        app_collection = M.AppConfig.query.mapper.collection
-        projects = dict(
-            (p._id, p) for p in project_collection.m.find(dict(
-                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
-        app_index = dict(
-            (ac._id, ac) for ac in app_collection.m.find(dict(
-                    _id={'$in': [mb.app_config_id for mb in mailboxes]})))
-
-        for mb in mailboxes:
-            project = projects.get(mb.project_id, None)
-            app_config = app_index.get(mb.app_config_id, None)
-            if project is None:
-                mb.m.delete()
-                continue
-            if app_config is None:
-                continue
-            title = mb.artifact_title
-            if mb.artifact_url:
-                title = '<a href="%s">%s</a>' % (mb.artifact_url,title)
-            subscriptions.append(dict(
-                    subscription_id=mb._id,
-                    project_name=project.name,
-                    mount_point=app_config.options['mount_point'],
-                    artifact_title=title,
-                    topic=mb.topic,
-                    type=mb.type,
-                    frequency=mb.frequency.unit,
-                    artifact=mb.artifact_index_id,
-                    subscribed=True))
-
-        my_projects = dict((p._id, p) for p in c.user.my_projects())
-        my_tools = app_collection.m.find(dict(
-            project_id={'$in': my_projects.keys()}))
-        for tool in my_tools:
-            p_id = tool.project_id
-            subscribed = M.Mailbox.subscribed(
-                    project_id=p_id, app_config_id=tool._id)
-            if not subscribed:
-                subscriptions.append(dict(
-                    tool_id=tool._id,
-                    project_id=p_id,
-                    project_name=my_projects[p_id].name,
-                    mount_point=tool.options['mount_point'],
-                    artifact_title='No subscription',
-                    topic=None,
-                    type=None,
-                    frequency=None,
-                    artifact=None))
-        subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
-        api_token = M.ApiToken.query.get(user_id=c.user._id)
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
+        api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(
-            subscriptions=subscriptions,
-            api_token=api_token,
-            authorized_applications=M.OAuthAccessToken.for_user(c.user),
-            menu=menu)
+                menu=menu,
+                api_token=api_token,
+                authorized_applications=M.OAuthAccessToken.for_user(c.user),
+            )
 
     @h.vardec
     @expose()
     @require_post()
     def update(self,
-               display_name=None,
                addr=None,
                new_addr=None,
                primary_addr=None,
@@ -449,12 +331,11 @@ class PreferencesController(BaseController):
                new_oid=None,
                preferences=None,
                **kw):
-        require_authenticated()
         if config.get('auth.method', 'local') == 'local':
-            if display_name is None:
+            if not preferences.get('display_name'):
                 flash("Display Name cannot be empty.",'error')
                 redirect('.')
-            c.user.set_pref('display_name', display_name)
+            c.user.set_pref('display_name', preferences['display_name'])
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
@@ -478,25 +359,7 @@ class PreferencesController(BaseController):
                 if k == 'results_per_page':
                     v = int(v)
                 c.user.set_pref(k, v)
-        if 'email_format' in preferences:
-            c.user.set_pref('email_format', preferences['email_format'])
         redirect('.')
-
-    @h.vardec
-    @expose()
-    @require_post()
-    @validate(F.subscription_form, error_handler=index)
-    def update_subscriptions(self, subscriptions=None, **kw):
-        for s in subscriptions:
-            if s['subscribed']:
-                if s['tool_id'] and s['project_id']:
-                    M.Mailbox.subscribe(
-                        project_id=bson.ObjectId(s['project_id']),
-                        app_config_id=bson.ObjectId(s['tool_id']))
-            else:
-                if s['subscription_id'] is not None:
-                    s['subscription_id'].delete()
-        redirect(request.referer)
 
     @expose()
     @require_post()
@@ -546,6 +409,34 @@ class PreferencesController(BaseController):
 
     @expose()
     @require_post()
+    def upload_sshkey(self, key=None):
+        ap = plugin.AuthenticationProvider.get(request)
+        try:
+            ap.upload_sshkey(c.user.username, key)
+        except AssertionError, ae:
+            flash('Error uploading key: %s' % ae, 'error')
+        flash('Key uploaded')
+        redirect('.')
+
+class UserInfoController(BaseController):
+
+    def __init__(self, *args, **kwargs):
+        self.skills = UserSkillsController()
+        self.contacts = UserContactsController()
+        self.availability = UserAvailabilityController()
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_info.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
+
+    @expose()
+    @require_post()
     @validate(F.change_personal_data_form, error_handler=index)
     def change_personal_data(self, **kw):
         require_authenticated()
@@ -558,6 +449,92 @@ class PreferencesController(BaseController):
         flash('Your personal data was successfully updated!')
         redirect('.')
 
+class UserSkillsController(BaseController):
+
+    def __init__(self, category=None):
+        self.category = category
+        super(UserSkillsController, self).__init__()
+
+    def _check_security(self):
+        require_authenticated()
+
+    @expose()
+    def _lookup(self, catshortname, *remainder):
+        cat = M.TroveCategory.query.get(shortname=catshortname)
+        return UserSkillsController(category=cat), remainder
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_skills.html')
+    def index(self, **kw):
+        l = []
+        parents = []
+        if kw.get('selected_category') is not None:
+            selected_skill = M.TroveCategory.query.get(trove_cat_id=int(kw.get('selected_category')))
+        elif self.category:
+            selected_skill = self.category
+        else:
+            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True))
+            selected_skill = None
+        if selected_skill:
+            l = [scat for scat in selected_skill.subcategories
+                 if scat.show_as_skill]
+            temp_cat = selected_skill.parent_category
+            while temp_cat:
+                parents = [temp_cat] + parents
+                temp_cat = temp_cat.parent_category
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(
+            skills_list = l,
+            selected_skill = selected_skill,
+            parents = parents,
+            menu = menu,
+            add_details_fields=(len(l)==0))
+
+    @expose()
+    @require_post()
+    @validate(F.save_skill_form, error_handler=index)
+    def save_skill(self, **kw):
+        trove_id = int(kw.get('selected_skill'))
+        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
+
+        new_skill = dict(
+            category_id=category._id,
+            level=kw.get('level'),
+            comment=kw.get('comment'))
+
+        s = [skill for skill in c.user.skills
+             if str(skill.category_id) != str(new_skill['category_id'])]
+        s.append(new_skill)
+        c.user.set_pref('skills', s)
+        flash('Your skills list was successfully updated!')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    @validate(F.remove_skill_form, error_handler=index)
+    def remove_skill(self, **kw):
+        trove_id = int(kw.get('categoryid'))
+        category = M.TroveCategory.query.get(trove_cat_id=trove_id)
+
+        s = [skill for skill in c.user.skills
+             if str(skill.category_id) != str(category._id)]
+        c.user.set_pref('skills', s)
+        flash('Your skills list was successfully updated!')
+        redirect('.')
+
+class UserContactsController(BaseController):
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_contacts.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
+
     @expose()
     @require_post()
     @validate(F.add_socialnetwork_form, error_handler=index)
@@ -565,7 +542,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.add_socialnetwork(kw['socialnetwork'], kw['accounturl'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -574,7 +551,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.remove_socialnetwork(kw['socialnetwork'], kw['account'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -583,7 +560,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.add_telephonenumber(kw['newnumber'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -592,7 +569,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.remove_telephonenumber(kw['oldvalue'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -601,7 +578,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.add_webpage(kw['newwebsite'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -610,7 +587,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.remove_webpage(kw['oldvalue'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -619,7 +596,19 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.set_pref('skypeaccount', kw['skypeaccount'])
         flash('Your personal contacts were successfully updated!')
-        redirect('.#Contacts')
+        redirect('.')
+
+class UserAvailabilityController(BaseController):
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_availability.html')
+    def index(self, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(menu=menu)
 
     @expose()
     @require_post()
@@ -628,7 +617,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.add_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
         flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -637,7 +626,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.remove_timeslot(kw['weekday'], kw['starttime'], kw['endtime'])
         flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -646,7 +635,7 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.add_inactive_period(kw['startdate'], kw['enddate'])
         flash('Your inactivity periods were successfully updated!')
-        redirect('.#Availability')
+        redirect('.')
 
     @expose()
     @require_post()
@@ -655,18 +644,100 @@ class PreferencesController(BaseController):
         require_authenticated()
         c.user.remove_inactive_period(kw['startdate'], kw['enddate'])
         flash('Your availability timeslots were successfully updated!')
-        redirect('.#Availability')
+        redirect('.')
 
+class SubscriptionsController(BaseController):
+
+    def _check_security(self):
+        require_authenticated()
+
+    @with_trailing_slash
+    @expose('jinja:allura:templates/user_subs.html')
+    def index(self, **kw):
+        c.form = F.subscription_form
+        c.revoke_access = F.oauth_revocation_form
+        subscriptions = []
+        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
+        mailboxes = list(mailboxes.ming_cursor)
+        project_collection = M.Project.query.mapper.collection
+        app_collection = M.AppConfig.query.mapper.collection
+        projects = dict(
+            (p._id, p) for p in project_collection.m.find(dict(
+                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
+        app_index = dict(
+            (ac._id, ac) for ac in app_collection.m.find(dict(
+                    _id={'$in': [mb.app_config_id for mb in mailboxes]})))
+
+        for mb in mailboxes:
+            project = projects.get(mb.project_id, None)
+            app_config = app_index.get(mb.app_config_id, None)
+            if project is None:
+                mb.m.delete()
+                continue
+            if app_config is None:
+                continue
+            subscriptions.append(dict(
+                    subscription_id=mb._id,
+                    project_name=project.name,
+                    mount_point=app_config.options['mount_point'],
+                    artifact_title=dict(text=mb.artifact_title, href=mb.artifact_url),
+                    topic=mb.topic,
+                    type=mb.type,
+                    frequency=mb.frequency.unit,
+                    artifact=mb.artifact_index_id,
+                    subscribed=True))
+
+        my_projects = dict((p._id, p) for p in c.user.my_projects())
+        my_tools = app_collection.m.find(dict(
+            project_id={'$in': my_projects.keys()}))
+        for tool in my_tools:
+            p_id = tool.project_id
+            subscribed = M.Mailbox.subscribed(
+                    project_id=p_id, app_config_id=tool._id)
+            if not subscribed:
+                subscriptions.append(dict(
+                    tool_id=tool._id,
+                    project_id=p_id,
+                    project_name=my_projects[p_id].name,
+                    mount_point=tool.options['mount_point'],
+                    artifact_title='No subscription',
+                    topic=None,
+                    type=None,
+                    frequency=None,
+                    artifact=None))
+        subscriptions.sort(key=lambda d: (d['project_name'], d['mount_point']))
+        provider = plugin.AuthenticationProvider.get(request)
+        menu = provider.account_navigation()
+        return dict(
+            subscriptions=subscriptions,
+            authorized_applications=M.OAuthAccessToken.for_user(c.user),
+            menu=menu)
+
+    @h.vardec
     @expose()
     @require_post()
-    def upload_sshkey(self, key=None):
-        ap = plugin.AuthenticationProvider.get(request)
-        try:
-            ap.upload_sshkey(c.user.username, key)
-        except AssertionError, ae:
-            flash('Error uploading key: %s' % ae, 'error')
-        flash('Key uploaded')
+    def update(self,
+               preferences=None,
+               **kw):
+        if 'email_format' in preferences:
+            c.user.set_pref('email_format', preferences['email_format'])
         redirect('.')
+
+    @h.vardec
+    @expose()
+    @require_post()
+    @validate(F.subscription_form, error_handler=index)
+    def update_subscriptions(self, subscriptions=None, **kw):
+        for s in subscriptions:
+            if s['subscribed']:
+                if s['tool_id'] and s['project_id']:
+                    M.Mailbox.subscribe(
+                        project_id=bson.ObjectId(s['project_id']),
+                        app_config_id=bson.ObjectId(s['tool_id']))
+            else:
+                if s['subscription_id'] is not None:
+                    s['subscription_id'].delete()
+        redirect(request.referer)
 
 class OAuthController(BaseController):
 

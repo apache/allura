@@ -1,0 +1,21 @@
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / {{type}} tools{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block inner_grid %}{% endblock %}
+{% block header_classes %} colored title{% endblock %}
+{% block header %}{{type}} tools{% endblock %}
+
+{% block content %}
+<div>
+  <ul>
+  {% for e in entries %}
+    <li><a href="{{e.url}}">{{e.label}}</a></li>
+  {% endfor %}
+  </ul>
+</div>
+{% endblock %}

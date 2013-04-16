@@ -15,8 +15,8 @@ def setup_schema(command, conf, vars):
     import allura
 
     REGISTRY.prepare()
-    REGISTRY.register(pylons.c, EmptyClass())
-    REGISTRY.register(pylons.g, config['pylons.app_globals'])
+    REGISTRY.register(pylons.tmpl_context, EmptyClass())
+    REGISTRY.register(pylons.app_globals, config['pylons.app_globals'])
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     ming.configure(**conf)
     # Nothing to do

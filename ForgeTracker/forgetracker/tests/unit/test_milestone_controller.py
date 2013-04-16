@@ -6,7 +6,7 @@ from nose.tools import assert_equal
 
 from allura.lib import helpers as h
 from allura.model import User
-from pylons import c
+from pylons import tmpl_context as c
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.model import Ticket, Globals
 from forgetracker.tracker_main import MilestoneController

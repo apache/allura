@@ -1,0 +1,13 @@
+{% extends 'allura:templates/repo/repo_master.html' %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Forks{% endblock %}
+
+{% block header %}Forks{% endblock %}
+
+{% block content %}
+<ul>
+{% for link in links %}
+<li><a href="{{link.repo_url}}">{{link.repo}}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

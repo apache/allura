@@ -1,4 +1,4 @@
-from pylons import c
+from pylons import tmpl_context as c
 from formencode import validators as fev
 
 import ew as ew_core
@@ -21,13 +21,11 @@ class _ForumSummary(ew_core.Widget):
         label=None)
 
 class _ForumsTable(ew.TableField):
-    class hidden_fields(ew_core.NameList):
-        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
     class fields(ew_core.NameList):
-        num_topics=ew.HTMLField(show_label=True, label='Topics')
-        num_posts=ew.HTMLField(show_label=True, label='Posts')
-        last_post=ew.HTMLField(text="${value and value.summary()}",
-                               show_label=True)
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
+        num_topics=ffw.DisplayOnlyField(show_label=True, label='Topics')
+        num_posts=ffw.DisplayOnlyField(show_label=True, label='Posts')
+        last_post=ffw.DisplayOnlyField(show_label=True)
         subscribed=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, _ForumSummary())
 
@@ -39,14 +37,14 @@ class ForumSubscriptionForm(ew.SimpleForm):
 
 class _ThreadsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Replies')
-        num_views=ew.HTMLField(show_label=True)
-        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
+        subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
+        url=ffw.DisplayOnlyField()
+        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
+        num_views=ffw.DisplayOnlyField(show_label=True)
+        flags=ffw.DisplayOnlyField(show_label=True)
+        last_post=ffw.DisplayOnlyField(show_label=True)
         subscription=ew.Checkbox(suppress_label=True, show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
     defaults=dict(DW._ThreadsTable.defaults, div_id='forum_threads')
 
 class ThreadSubscriptionForm(DW.SubscriptionForm):
@@ -57,13 +55,13 @@ class ThreadSubscriptionForm(DW.SubscriptionForm):
 
 class AnnouncementsTable(DW._ThreadsTable):
     class fields(ew_core.NameList):
-        num_replies=ew.HTMLField(show_label=True, label='Num Replies')
-        num_views=ew.HTMLField(show_label=True)
-        flags=ew.HTMLField(show_label=True, text="${unicode(', '.join(value))}")
-        last_post=ew.HTMLField(text="${value and value.summary()}", show_label=True)
-    fields.insert(0, ew.LinkField(
-            label='Subject', text="${value['subject']}",
-            href="${value['url']()}", show_label=True))
+        _id=ew.HiddenField(validator=V.Ming(M.ForumThread))
+        subject=ffw.DisplayOnlyField(show_label=True, label='Subject')
+        url=ffw.DisplayOnlyField()
+        num_replies=ffw.DisplayOnlyField(show_label=True, label='Num Replies')
+        num_views=ffw.DisplayOnlyField(show_label=True)
+        flags=ffw.DisplayOnlyField(show_label=True)
+        last_post=ffw.DisplayOnlyField(show_label=True)
     defaults=dict(DW._ThreadsTable.defaults, div_id='announcements')
     name='announcements'
 

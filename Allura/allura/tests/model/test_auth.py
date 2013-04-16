@@ -3,7 +3,7 @@
 Model tests for auth
 """
 from nose.tools import with_setup, assert_equal
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 
 from pymongo.errors import DuplicateKeyError
@@ -102,6 +102,13 @@ def test_user_project_already_deleted_creates_on_demand():
     assert u.private_project()
     ThreadLocalORMSession.flush_all()
     assert M.Project.query.get(shortname='u/foobar123', deleted=False)
+
+@with_setup(setUp)
+def test_user_project_does_not_create_on_demand_for_disabled_user():
+    u = M.User.register(dict(username='foobar123', disabled=True), make_project=False)
+    ThreadLocalORMSession.flush_all()
+    assert not u.private_project()
+    assert not M.Project.query.get(shortname='u/foobar123')
 
 @with_setup(setUp)
 def test_project_role():

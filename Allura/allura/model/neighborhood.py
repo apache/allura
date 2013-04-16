@@ -1,16 +1,15 @@
 import re
 import json
 import logging
+from collections import OrderedDict
 
 from ming import schema as S
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import request, c
+from pylons import request
+from pylons import tmpl_context as c, app_globals as g
 
 from allura.lib import plugin
 
@@ -66,6 +65,7 @@ class Neighborhood(MappedClass):
         max_projects=S.Int,
         css=str,
         google_analytics=bool))
+    anchored_tools = FieldProperty(str, if_missing='')
 
     def parent_security_context(self):
         return None
@@ -73,9 +73,11 @@ class Neighborhood(MappedClass):
     @LazyProperty
     def neighborhood_project(self):
         from .project import Project
-        return Project.query.get(
+        p = Project.query.get(
             neighborhood_id=self._id,
             is_nbhd_project=True)
+        assert p
+        return p
 
     @property
     def acl(self):
@@ -223,11 +225,11 @@ class Neighborhood(MappedClass):
            if 'addopt-icon-theme' in css_form_dict:
                if css_form_dict['addopt-icon-theme'] == "dark":
                   icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               pylons.g.theme_href(''),
+                               g.theme_href(''),
                                'images/neo-icon-set-ffffff-256x350.png')
                elif css_form_dict['addopt-icon-theme'] == "white":
                   icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               pylons.g.theme_href(''),
+                               g.theme_href(''),
                                'images/neo-icon-set-454545-256x350.png')
 
            css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;} %s\n" % (css_form_dict['titlebarcolor'], icon_theme)
@@ -236,3 +238,13 @@ class Neighborhood(MappedClass):
 
     def migrate_css_for_picker(self):
         self.css = ""
+
+    def get_anchored_tools(self):
+        if not self.anchored_tools:
+            return dict()
+        try:
+            anchored_tools = [at.strip() for at in self.anchored_tools.split(',')]
+            return OrderedDict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools)
+        except Exception:
+            log.warning("anchored_tools isn't valid", exc_info=True)
+            return dict()

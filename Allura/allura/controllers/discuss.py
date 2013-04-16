@@ -1,9 +1,10 @@
 from urllib import unquote
 from datetime import datetime
+import logging
 
 from tg import expose, redirect, validate, request, response, flash
 from tg.decorators import before_validate, with_trailing_slash, without_trailing_slash
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 from formencode import validators
 from webob import exc
 
@@ -20,6 +21,8 @@ from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
 from .attachments import AttachmentsController, AttachmentController
+
+log = logging.getLogger(__name__)
 
 class pass_validator(object):
     def validate(self, v, s):
@@ -144,6 +147,8 @@ class ThreadController(BaseController):
 
     def _check_security(self):
         require_access(self.thread, 'read')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'read')
 
     def __init__(self, discussion_controller, thread_id):
         self._discussion_controller = discussion_controller
@@ -179,6 +184,8 @@ class ThreadController(BaseController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
         require_access(self.thread, 'post')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
             flash('Your post was not saved. You must provide content.', 'error')
@@ -202,6 +209,8 @@ class ThreadController(BaseController):
     @require_post()
     def tag(self, labels, **kw):
         require_access(self.thread, 'post')
+        if self.thread.ref:
+            require_access(self.thread.ref.artifact, 'post')
         self.thread.labels = labels.split(',')
         redirect(request.referer)
 
@@ -287,6 +296,7 @@ class PostController(BaseController):
             self.post.edit_count = self.post.edit_count + 1
             self.post.last_edit_date = datetime.utcnow()
             self.post.last_edit_by_id = c.user._id
+            self.post.commit()
             g.director.create_activity(c.user, 'modified', self.post,
                     target=self.post.thread.artifact or self.post.thread,
                     related_nodes=[self.post.app_config.project])
@@ -320,7 +330,8 @@ class PostController(BaseController):
     def reply(self, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
-        self.thread.add_post(parent_id=self.post._id, **kw)
+        p = self.thread.add_post(parent_id=self.post._id, **kw)
+        is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
         redirect(request.referer)
 
     @h.vardec
@@ -331,11 +342,12 @@ class PostController(BaseController):
         require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
             self.post.delete()
-            self.thread.update_stats()
         elif kw.pop('spam', None):
             self.post.status = 'spam'
-            self.thread.update_stats()
-        redirect(request.referer)
+        elif kw.pop('approve', None):
+            self.post.status = 'ok'
+        self.thread.update_stats()
+        return dict(result ='success')
 
     @h.vardec
     @expose()
@@ -448,6 +460,9 @@ class ModerationController(BaseController):
                         posted.spam()
                     elif approve and posted.status != 'ok':
                         posted.status = 'ok'
+                        posted.thread.last_post_date = max(
+                            posted.thread.last_post_date,
+                            posted.mod_date)
                         posted.thread.num_replies += 1
         redirect(request.referer)
 
@@ -465,6 +480,7 @@ class PostRestController(PostController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         post = self.thread.post(parent_id=self.post._id, **kw)
+        is_spam = g.spam_checker.check(kw['text'], artifact=post, user=c.user)
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
 

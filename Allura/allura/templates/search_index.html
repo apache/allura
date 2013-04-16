@@ -27,7 +27,9 @@
   <ol>
   {% for doc in results %}
   <li>
-    <a href="{{doc['url_s']}}">{{doc.title_s}}</a>
+    <a href="{{doc['url_s']}}">
+       {{- h.get_first(doc, 'title') or h.get_first(doc, 'title_s') -}}  {#-  title_s is legacy -#}
+    </a>
     {% if doc.get('snippet') %}
       <p>{{doc['snippet']|safe}}</p>
     {% endif %}

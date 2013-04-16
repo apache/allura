@@ -3,12 +3,14 @@ import logging
 from pprint import pformat
 from urllib import urlencode, unquote
 from datetime import datetime
+from itertools import imap
 
 # Non-stdlib imports
 from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 from webob import exc
 from ming.orm import session
@@ -17,7 +19,7 @@ from ming.orm import session
 from allura import model as M
 from allura.lib import helpers as h
 from allura.app import Application, SitemapEntry, DefaultAdminController
-from allura.lib.search import search
+from allura.lib.search import search, SolrError
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
@@ -139,13 +141,13 @@ class ForgeWikiApp(Application):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
         return [ SitemapEntry(
-                self.config.options.mount_label.title(),
+                self.config.options.mount_label,
                 '.')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = self.config.options.mount_label.title()
+        menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             pages = [
                 SitemapEntry(p.title, p.url())
@@ -244,7 +246,7 @@ This is the default page, edit it as you see fit. To add a new page simply refer
 
 The wiki uses [Markdown](%s) syntax.
 
-[[project_admins]]
+[[members limit=20]]
 [[download_button]]
 """ % url
                 p.commit()
@@ -291,28 +293,60 @@ class RootController(BaseController, DispatchIndex):
     @expose('jinja:forgewiki:templates/wiki/search.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
+                   search_comments=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False)))
-    def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
+    def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
         'local wiki search'
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
+        search_error = None
         results = []
-        count=0
+        count = 0
+        parser = kw.pop('parser', None)
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
         else:
-            results = search(
-                q, rows=limit, start=start,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point,
-                    '-deleted_b:true'])
-            if results: count=results.hits
+            # Match on both `title` and `text` by default, using 'dismax' parser.
+            # Score on `title` matches is boosted, so title match is better than body match.
+            # It's 'fuzzier' than standard parser, which matches only on `text`.
+            allowed_types = ['WikiPage', 'WikiPage Snapshot']
+            if search_comments:
+                allowed_types += ['Post']
+            search_params = {
+                'qt': 'dismax',
+                'qf': 'title^2 text',
+                'pf': 'title^2 text',
+                'fq': [
+                    'project_id_s:%s'  % c.project._id,
+                    'mount_point_s:%s' % c.app.config.options.mount_point,
+                    '-deleted_b:true',
+                    'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
+                ],
+            }
+            if not history:
+               search_params['fq'].append('is_history_b:False')
+            if parser == 'standard':
+                search_params.pop('qt', None)
+                search_params.pop('qf', None)
+                search_params.pop('pf', None)
+            try:
+                results = search(
+                    q, short_timeout=True, ignore_errors=False,
+                    rows=limit, start=start, **search_params)
+            except SolrError as e:
+                search_error = e
+            if results:
+                count=results.hits
+                def historize_urls(doc):
+                    if doc.get('type_s', '').endswith(' Snapshot'):
+                        if doc.get('url_s'):
+                            doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
+                    return doc
+                results = imap(historize_urls, results)
         c.search_results = W.search_results
         return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page)
+                    count=count, limit=limit, page=page, search_error=search_error)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse.html')
@@ -648,6 +682,7 @@ class PageController(BaseController):
         else:
             self.page.labels = []
         self.page.commit()
+        g.spam_checker.check(text, artifact=self.page, user=c.user, content_type='wiki')
         g.director.create_activity(c.user, activity_verb, self.page,
                 target=c.project)
         if new_viewable_by:

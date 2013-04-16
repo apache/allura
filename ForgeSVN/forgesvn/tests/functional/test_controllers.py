@@ -1,12 +1,10 @@
 import json
 
 import pkg_resources
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 
+from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestController
 from forgesvn.tests import with_svn
@@ -91,7 +89,7 @@ class TestRootController(SVNTestController):
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
         assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div', {'class':'clip grid-19'}))
+        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
@@ -135,6 +133,16 @@ class TestRootController(SVNTestController):
         assert 'Remove hello.txt' in r
         r = self.app.get('/src/2/log/?path=does/not/exist/')
         assert 'No (more) commits' in r
+
+    def test_tarball(self):
+        r = self.app.get('/src/3/tree/')
+        assert 'Download Snapshot' in r
+        r = self.app.get('/src/3/tarball')
+        assert 'Generating snapshot...' in r
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/src/3/tarball_status')
+        assert '{"status": "ready"}' in r
 
 
 class TestImportController(SVNTestController):

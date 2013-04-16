@@ -27,7 +27,6 @@ from pygments.formatters import HtmlFormatter
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
-import pysvn
 
 def permanent_redirect(url):
     try:
@@ -35,41 +34,6 @@ def permanent_redirect(url):
     except exc.HTTPFound, err:
         raise exc.HTTPMovedPermanently(location=err.location)
 
-def cache_forever():
-    headers = [
-        (k,v) for k,v in response.headers.items()
-        if k.lower() not in ('pragma', 'cache-control') ]
-    delta = CACHE_CONTROL.apply(
-        headers,
-        public=True,
-        max_age=60*60*24*365)
-    EXPIRES.update(headers, delta=delta)
-    response.headers.pop('cache-control', None)
-    response.headers.pop('pragma', None)
-    response.headers.update(headers)
-
-class memoize_on_request(object):
-
-    def __init__(self, *key, **kwargs):
-        self.key = key
-        self.include_func_in_key = kwargs.pop(
-            'include_func_in_key', False)
-        assert not kwargs, 'Extra args'
-
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            cache = c.memoize_cache
-            if self.include_func_in_key:
-                key = (func, self.key, args, tuple(kwargs.iteritems()))
-            else:
-                key = (self.key, args, tuple(kwargs.iteritems()))
-            if key in cache:
-                result = cache[key]
-            else:
-                result = cache[key] = func(*args, **kwargs)
-            return result
-        wrapper.__name__ = 'wrap(%s)' % func.__name__
-        return wrapper
 
 def guess_mime_type(filename):
     '''Guess MIME type based on filename.
@@ -159,15 +123,33 @@ class StatsHandler(TimedRotatingHandler):
         record.exc_info = None # Never put tracebacks in the rtstats log
         TimedRotatingHandler.emit(self, record)
 
-def chunked_find(cls, query=None, pagesize=1024, sort_key=None, sort_dir=1):
+
+def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
+    '''
+    Execute a mongo query against the specified class, yield some results at
+    a time (avoids mongo cursor timeouts if the total result set is very large).
+
+    Pass an indexed sort_key for efficient queries.  Default _id should work
+    in most cases.
+    '''
     if query is None: query = {}
     page = 0
+    max_id = None
     while True:
-        q = cls.query.find(query).skip(pagesize * page).limit(pagesize)
         if sort_key:
-            q.sort(sort_key, sort_dir)
+            if max_id:
+                if sort_key not in query:
+                    query[sort_key] = {}
+                query[sort_key]['$gt'] = max_id
+            q = cls.query.find(query).limit(pagesize).sort(sort_key, sort_dir)
+        else:
+            # skipping requires scanning, even for an indexed query
+            q = cls.query.find(query).limit(pagesize).skip(pagesize * page)
         results = (q.all())
-        if not results: break
+        if not results:
+            break
+        if sort_key:
+            max_id = results[-1][sort_key]
         yield results
         page += 1
 
@@ -312,8 +294,8 @@ class AntiSpam(object):
             if now is None: now = time.time()
             if obj.timestamp > now + 5:
                 raise ValueError, 'Post from the future'
-            if now - obj.timestamp > 60*60:
-                raise ValueError, 'Post from the 1hr+ past'
+            if now - obj.timestamp > 24*60*60:
+                raise ValueError, 'Post from the distant past'
             if obj.spinner != obj.make_spinner(obj.timestamp):
                 raise ValueError, 'Bad spinner value'
             for k in new_params.keys():
@@ -435,15 +417,6 @@ def generate_code_stats(blob):
     return stats
 
 
-def svn_path_exists(path):
-    svn = pysvn.Client()
-    try:
-        svn.info2(path)
-        return True
-    except pysvn.ClientError, e:
-        return False
-
-
 def is_text_file(file):
     msg = magic.from_buffer(file[:1024])
     if ("text" in msg) or ("empty" in msg):
@@ -457,11 +430,3 @@ def take_while_true(source):
         yield x
         x = source()
 
-def index_matching(pred, seq):
-    '''Return the index of the first item from seq matching the predicate.
-
-    If no items match the predicate, None is returned instead.'''
-    for i,x in enumerate(seq):
-        if pred(x):
-            return i
-    return None

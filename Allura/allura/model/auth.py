@@ -11,10 +11,12 @@ from hashlib import sha256
 import uuid
 from pytz import timezone
 from datetime import timedelta, date, datetime, time
+from pkg_resources import iter_entry_points
 
 import iso8601
 import pymongo
-from pylons import c, g, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 
 from ming import schema as S
 from ming import Field, collection
@@ -22,6 +24,7 @@ from ming.orm import session, state
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.utils import LazyProperty
 
 import allura.tasks.mail_tasks
 from allura.lib import helpers as h
@@ -330,9 +333,22 @@ class User(MappedClass, ActivityNode, ActivityObject):
         level = S.OneOf('low', 'high', 'medium'),
         comment=str)])
 
+    #Statistics
+    stats_id = FieldProperty(S.ObjectId, if_missing=None)
+
     @property
     def activity_name(self):
         return self.display_name or self.username
+
+    @property
+    def stats(self):
+        if 'userstats' in g.entry_points['stats']:
+            from forgeuserstats.model.stats import UserStats
+            if self.stats_id:
+                return UserStats.query.get(_id=self.stats_id)
+            return UserStats.create(self)
+        else: 
+            return None
 
     def get_pref(self, pref_name):
         return plugin.UserPreferencesProvider.get().get_pref(self, pref_name)
@@ -576,18 +592,28 @@ class User(MappedClass, ActivityNode, ActivityObject):
         user = auth_provider.register_user(doc)
         if user and 'display_name' in doc:
             user.set_pref('display_name', doc['display_name'])
+        if user:
+            g.statsUpdater.newUser(user)
         if user and make_project:
             n = M.Neighborhood.query.get(name='Users')
             n.register_project(auth_provider.user_project_shortname(user),
                                user=user, user_project=True)
         return user
 
+    @LazyProperty
+    def neighborhood(self):
+        from allura import model as M
+        return M.Neighborhood.query.get(name='Users')
+
     def private_project(self):
         '''
         Returns the personal user-project for the user
         '''
+        if self.disabled:
+            return None
+
         from allura import model as M
-        n = M.Neighborhood.query.get(name='Users')
+        n = self.neighborhood
         auth_provider = plugin.AuthenticationProvider.get(request)
         project_shortname = auth_provider.user_project_shortname(self)
         p = M.Project.query.get(shortname=project_shortname, neighborhood_id=n._id)

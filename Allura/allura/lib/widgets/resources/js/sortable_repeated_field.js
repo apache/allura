@@ -79,7 +79,7 @@
                 .removeClass(self.opts.stub_cls)
                 .addClass(self.opts.field_cls)
                 .show()
-                .find(':input[name^='+tpl_name+']').each(function() {
+                .find(':input[name^="'+tpl_name+'"]').each(function() {
                     var $this = $(this);
                     var name = $this.attr('name');
                     if(name){
@@ -120,7 +120,7 @@
             var prefix = self.fld_name() + '-';
             var regex = new RegExp(prefix + /\d+/.source)
             self.data.$flist.children().each(function(index) {
-                $(this).find(':input[name^='+prefix+']').each(function() {
+                $(this).find(':input[name^="'+prefix+'"]').each(function() {
                     var $this=$(this);
                     var name=$this.attr('name');
                     var newname = name.replace(regex, prefix + index);

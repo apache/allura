@@ -5,13 +5,14 @@ import logging
 from hashlib import sha1
 from itertools import chain
 from datetime import datetime
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from difflib import SequenceMatcher, unified_diff
+import bson
 
-from pylons import c
+from pylons import tmpl_context as c
 import pymongo.errors
 
-from ming import Field, collection
+from ming import Field, collection, Index
 from ming import schema as S
 from ming.base import Object
 from ming.utils import LazyProperty
@@ -61,9 +62,7 @@ TreeDoc = collection(
     Field('blob_ids', [dict(name=str, id=str)]),
     Field('other_ids', [dict(name=str, id=str, type=SObjType)]))
 
-# Information about the last commit to touch a tree/blob
-# LastCommitDoc.object_id = TreeDoc._id
-LastCommitDoc = collection(
+LastCommitDoc_old = collection(
     'repo_last_commit', project_doc_session,
     Field('_id', str),
     Field('object_id', str, index=True),
@@ -76,6 +75,17 @@ LastCommitDoc = collection(
         author_url=str,
         shortlink=str,
         summary=str)))
+
+# Information about the last commit to touch a tree
+LastCommitDoc = collection(
+    'repo_last_commit', main_doc_session,
+    Field('_id', S.ObjectId()),
+    Field('commit_id', str),
+    Field('path', str),
+    Index('commit_id', 'path'),
+    Field('entries', [dict(
+        name=str,
+        commit_id=str)]))
 
 # List of all trees contained within a commit
 # TreesDoc._id = CommitDoc._id
@@ -156,15 +166,21 @@ class Commit(RepoObject):
 
     @LazyProperty
     def tree(self):
-        if self.tree_id is None:
+        return self.get_tree(create=True)
+
+    def get_tree(self, create=True):
+        if self.tree_id is None and create:
             self.tree_id = self.repo.compute_tree_new(self)
         if self.tree_id is None:
             return None
-        t = Tree.query.get(_id=self.tree_id)
-        if t is None:
+        cache = getattr(c, 'model_cache', '') or ModelCache()
+        t = cache.get(Tree, dict(_id=self.tree_id))
+        if t is None and create:
             self.tree_id = self.repo.compute_tree_new(self)
             t = Tree.query.get(_id=self.tree_id)
-        if t is not None: t.set_context(self)
+            cache.set(Tree, dict(_id=self.tree_id), t)
+        if t is not None:
+            t.set_context(self)
         return t
 
     @LazyProperty
@@ -182,13 +198,32 @@ class Commit(RepoObject):
     def symbolic_ids(self):
         return self.repo.symbolics_for_commit(self)
 
-    def parent(self, index=0):
-        ci = None
-        if self.parent_ids:
-            ci = self.query.get(_id=self.parent_ids[index])
-        if ci:
+    def get_parent(self, index=0):
+        '''Get the parent of this commit.
+
+        If there is no parent commit, or if an invalid index is given,
+        returns None.
+        '''
+        try:
+            cache = getattr(c, 'model_cache', '') or ModelCache()
+            ci = cache.get(Commit, dict(_id=self.parent_ids[index]))
+            if not ci:
+                return None
             ci.set_context(self.repo)
-        return ci
+            return ci
+        except IndexError as e:
+            return None
+
+    def climb_commit_tree(self, predicate=None):
+        '''
+        Returns a generator that walks up the commit tree along
+        the first-parent ancestory, starting with this commit,
+        optionally filtering by a predicate.'''
+        ancestor = self
+        while ancestor:
+            if predicate is None or predicate(ancestor):
+                yield ancestor
+            ancestor = ancestor.get_parent()
 
     def url(self):
         if self.repo is None: self.repo = self.guess_repo()
@@ -196,6 +231,8 @@ class Commit(RepoObject):
         return self.repo.url_for_commit(self)
 
     def guess_repo(self):
+        import traceback
+        log.error('guess_repo: should not be called: %s' % ''.join(traceback.format_stack()))
         for ac in c.project.app_configs:
             try:
                 app = c.project.app_instance(ac)
@@ -228,14 +265,17 @@ class Commit(RepoObject):
 
     @LazyProperty
     def diffs(self):
+        return self.paged_diffs()
+
+    def paged_diffs(self, start=0, end=None):
         di = DiffInfoDoc.m.get(_id=self._id)
         if di is None:
-            return Object(added=[], removed=[], changed=[], copied=[])
+            return Object(added=[], removed=[], changed=[], copied=[], total=0)
         added = []
         removed = []
         changed = []
         copied = []
-        for change in di.differences:
+        for change in di.differences[start:end]:
             if change.rhs_id is None:
                 removed.append(change.name)
             elif change.lhs_id is None:
@@ -245,7 +285,8 @@ class Commit(RepoObject):
         copied = self._diffs_copied(added, removed)
         return Object(
             added=added, removed=removed,
-            changed=changed, copied=copied)
+            changed=changed, copied=copied,
+            total=len(di.differences))
 
     def _diffs_copied(self, added, removed):
         '''Return list with file renames diffs.
@@ -260,7 +301,7 @@ class Commit(RepoObject):
                     continue
                 diff = SequenceMatcher(None, removed_blob.text,
                                        added_blob.text)
-                ratio = diff.ratio()
+                ratio = diff.quick_ratio()
                 if ratio > best['ratio']:
                     best['ratio'] = ratio
                     best['name'] = added_name
@@ -293,7 +334,7 @@ class Commit(RepoObject):
         if not removed:
             return []
         copied = []
-        prev_commit = self.parent()
+        prev_commit = self.get_parent()
         for removed_name in removed[:]:
             removed_blob = prev_commit.tree.get_obj_by_path(removed_name)
             rename_info = None
@@ -308,13 +349,86 @@ class Commit(RepoObject):
                 added.remove(rename_info['new'])
         return copied
 
-    def get_path(self, path):
-        if path[0] == '/': path = path[1:]
+    def get_path(self, path, create=True):
+        path = path.lstrip('/')
         parts = path.split('/')
-        cur = self.tree
-        for part in parts:
-            cur = cur[part]
+        cur = self.get_tree(create)
+        if cur is not None:
+            for part in parts:
+                if part != '':
+                    cur = cur[part]
         return cur
+
+    def has_path(self, path):
+        try:
+            self.get_path(path)
+            return True
+        except KeyError:
+            return False
+
+    @LazyProperty
+    def changed_paths(self):
+        '''
+        Returns a list of paths changed in this commit.
+        Leading and trailing slashes are removed, and
+        the list is complete, meaning that if a sub-path
+        is changed, all of the parent paths are included
+        (including '' to represent the root path).
+
+        Example:
+
+            If the file /foo/bar is changed in the commit,
+            this would return ['', 'foo', 'foo/bar']
+        '''
+        diff_info = DiffInfoDoc.m.get(_id=self._id)
+        diffs = set()
+        if diff_info:
+            for d in diff_info.differences:
+                node = d.name.strip('/')
+                diffs.add(node)
+                node_path = os.path.dirname(node)
+                while node_path:
+                    diffs.add(node_path)
+                    node_path = os.path.dirname(node_path)
+                diffs.add('')  # include '/' if there are any changes
+        return diffs
+
+    @LazyProperty
+    def added_paths(self):
+        '''
+        Returns a list of paths added in this commit.
+        Leading and trailing slashes are removed, and
+        the list is complete, meaning that if a directory
+        with subdirectories is added, all of the child
+        paths are included (this relies on the DiffInfoDoc
+        being complete).
+
+        Example:
+
+            If the directory /foo/bar/ is added in the commit
+            which contains a subdirectory /foo/bar/baz/ with
+            the file /foo/bar/baz/qux.txt, this would return:
+            ['foo/bar', 'foo/bar/baz', 'foo/bar/baz/qux.txt']
+        '''
+        diff_info = DiffInfoDoc.m.get(_id=self._id)
+        diffs = set()
+        if diff_info:
+            for d in diff_info.differences:
+                if d.lhs_id is None:
+                    diffs.add(d.name.strip('/'))
+        return diffs
+
+    @LazyProperty
+    def info(self):
+        return dict(
+            id=self._id,
+            author=self.authored.name,
+            author_email=self.authored.email,
+            date=self.authored.date,
+            author_url=self.author_url,
+            shortlink=self.shorthand_id(),
+            summary=self.summary
+            )
 
 class Tree(RepoObject):
     # Ephemeral attrs
@@ -337,13 +451,17 @@ class Tree(RepoObject):
         return sha_obj.hexdigest()
 
     def __getitem__(self, name):
+        cache = getattr(c, 'model_cache', '') or ModelCache()
         obj = self.by_name[name]
         if obj['type'] == 'blob':
             return Blob(self, name, obj['id'])
-        obj = self.query.get(_id=obj['id'])
+        if obj['type'] == 'submodule':
+            log.info('Skipping submodule "%s"' % name)
+            raise KeyError, name
+        obj = cache.get(Tree, dict(_id=obj['id']))
         if obj is None:
             oid = self.repo.compute_tree_new(self.commit, self.path() + name + '/')
-            obj = self.query.get(_id=oid)
+            obj = cache.get(Tree, dict(_id=oid))
         if obj is None: raise KeyError, name
         obj.set_context(self, name)
         return obj
@@ -386,21 +504,88 @@ class Tree(RepoObject):
         return None, None
 
     def ls(self):
+        '''
+        List the entries in this tree, with historical commit info for
+        each node.  Eventually, ls_old can be removed and this can be
+        replaced with the following:
+
+            return self._lcd_map(LastCommit.get(self))
+        '''
+        # look for existing new format first
+        last_commit = LastCommit.get(self, create=False)
+        if last_commit:
+            return self._lcd_map(last_commit)
+        # otherwise, try old format
+        old_style_results = self.ls_old()
+        if old_style_results:
+            return old_style_results
+        # finally, use the new implentation that auto-vivifies
+        last_commit = LastCommit.get(self, create=True)
+        # ensure that the LCD is saved, even if
+        # there is an error later in the request
+        if last_commit:
+            session(last_commit).flush(last_commit)
+            return self._lcd_map(last_commit)
+        else:
+            return []
+
+    def _lcd_map(self, lcd):
+        if lcd is None:
+            return []
+        commit_ids = [e.commit_id for e in lcd.entries]
+        commits = list(Commit.query.find(dict(_id={'$in': commit_ids})))
+        for commit in commits:
+            commit.set_context(self.repo)
+        commit_infos = {c._id: c.info for c in commits}
+        by_name = lambda n: n.name
+        tree_names = sorted([n.name for n in self.tree_ids])
+        blob_names = sorted([n.name for n in chain(self.blob_ids, self.other_ids)])
+
+        results = []
+        for type, names in (('DIR', tree_names), ('BLOB', blob_names)):
+            for name in names:
+                commit_info = commit_infos.get(lcd.by_name.get(name))
+                if not commit_info:
+                    commit_info = defaultdict(str)
+                elif 'id' in commit_info:
+                    commit_info['href'] = self.repo.url_for_commit(commit_info['id'])
+                results.append(dict(
+                        kind=type,
+                        name=name,
+                        href=name,
+                        last_commit=dict(
+                                author=commit_info['author'],
+                                author_email=commit_info['author_email'],
+                                author_url=commit_info['author_url'],
+                                date=commit_info.get('date'),
+                                href=commit_info.get('href',''),
+                                shortlink=commit_info['shortlink'],
+                                summary=commit_info['summary'],
+                            ),
+                    ))
+        return results
+
+    def ls_old(self):
         # Load last commit info
         id_re = re.compile("^{0}:{1}:".format(
             self.repo._id,
             re.escape(h.really_unicode(self.path()).encode('utf-8'))))
         lc_index = dict(
             (lc.name, lc.commit_info)
-            for lc in LastCommitDoc.m.find(dict(_id=id_re)))
+            for lc in LastCommitDoc_old.m.find(dict(_id=id_re)))
 
         # FIXME: Temporarily fall back to old, semi-broken lookup behavior until refresh is done
         oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
         id_re = re.compile("^{0}:".format(self.repo._id))
         lc_index.update(dict(
             (lc.object_id, lc.commit_info)
-            for lc in LastCommitDoc.m.find(dict(_id=id_re, object_id={'$in': oids}))))
+            for lc in LastCommitDoc_old.m.find(dict(_id=id_re, object_id={'$in': oids}))))
         # /FIXME
+
+        if not lc_index:
+            # allow fallback to new method instead
+            # of showing a bunch of Nones
+            return []
 
         results = []
         def _get_last_commit(name, oid):
@@ -486,11 +671,9 @@ class Blob(object):
 
     @LazyProperty
     def prev_commit(self):
-        lc = self.repo.get_last_commit(self)
-        if lc['id']:
-            last_commit = self.repo.commit(lc.id)
-            if last_commit.parent_ids:
-                return self.repo.commit(last_commit.parent_ids[0])
+        pcid = LastCommit._prev_commit_id(self.commit, self.path().strip('/'))
+        if pcid:
+            return self.repo.commit(pcid)
         return None
 
     @LazyProperty
@@ -502,11 +685,11 @@ class Blob(object):
             while next:
                 cur = next[0]
                 next = cur.context()['next']
-                other_blob = cur.get_path(path)
+                other_blob = cur.get_path(path, create=False)
                 if other_blob is None or other_blob._id != self._id:
                     return cur
         except:
-            log.exception('Lookup prev_commit')
+            log.exception('Lookup next_commit')
             return None
 
     @LazyProperty
@@ -544,8 +727,16 @@ class Blob(object):
         path = self.path()
         prev = self.prev_commit
         next = self.next_commit
-        if prev is not None: prev = prev.get_path(path)
-        if next is not None: next = next.get_path(path)
+        if prev is not None:
+            try:
+                prev = prev.get_path(path, create=False)
+            except KeyError as e:
+                prev = None
+        if next is not None:
+            try:
+                next = next.get_path(path, create=False)
+            except KeyError as e:
+                next = None
         return dict(
             prev=prev,
             next=next)
@@ -569,5 +760,263 @@ class Blob(object):
         differ = SequenceMatcher(v0, v1)
         return differ.get_opcodes()
 
+class LastCommit(RepoObject):
+    def __repr__(self):
+        return '<LastCommit /%s %s>' % (self.path, self.commit_id)
+
+    @classmethod
+    def _last_commit_id(cls, commit, path):
+        commit_id = list(commit.repo.commits(path, commit._id, limit=1))
+        if commit_id:
+            commit_id = commit_id[0]
+        else:
+            log.error('Tree node not recognized by SCM: %s @ %s', path, commit._id)
+            commit_id = commit._id
+        return commit_id
+
+    @classmethod
+    def _prev_commit_id(cls, commit, path):
+        if not commit.parent_ids or path in commit.added_paths:
+            return None  # new paths by definition have no previous LCD
+        lcid_cache = getattr(c, 'lcid_cache', '')
+        if lcid_cache != '' and path in lcid_cache:
+            return lcid_cache[path]
+        commit_id = list(commit.repo.commits(path, commit._id, skip=1, limit=1))
+        if not commit_id:
+            return None
+        return commit_id[0]
+
+    @classmethod
+    def get(cls, tree, create=True):
+        '''Find or build the LastCommitDoc for the given tree.'''
+        cache = getattr(c, 'model_cache', '') or ModelCache()
+        path = tree.path().strip('/')
+        last_commit_id = cls._last_commit_id(tree.commit, path)
+        lcd = cache.get(cls, {'path': path, 'commit_id': last_commit_id})
+        if lcd is None and create:
+            commit = cache.get(Commit, {'_id': last_commit_id})
+            commit.set_context(tree.repo)
+            lcd = cls._build(commit.get_path(path))
+        return lcd
+
+    @classmethod
+    def _build(cls, tree):
+        '''
+          Build the LCD record, presuming that this tree is where it was most
+          recently changed.
+        '''
+        model_cache = getattr(c, 'model_cache', '') or ModelCache()
+        path = tree.path().strip('/')
+        entries = []
+        prev_lcd = None
+        prev_lcd_cid = cls._prev_commit_id(tree.commit, path)
+        if prev_lcd_cid:
+            prev_lcd = model_cache.get(cls, {'path': path, 'commit_id': prev_lcd_cid})
+        entries = {}
+        nodes = set([node.name for node in chain(tree.tree_ids, tree.blob_ids, tree.other_ids)])
+        changed = set([node for node in nodes if os.path.join(path, node) in tree.commit.changed_paths])
+        unchanged = [os.path.join(path, node) for node in nodes - changed]
+        if prev_lcd:
+            # get unchanged entries from previously computed LCD
+            entries = prev_lcd.by_name
+        elif unchanged:
+            # no previously computed LCD, so get unchanged entries from SCM
+            # (but only ask for the ones that we know we need)
+            entries = tree.commit.repo.last_commit_ids(tree.commit, unchanged)
+            if entries is None:
+                # something strange went wrong; bail out and possibly try again later
+                return None
+            # paths are fully-qualified; shorten them back to just node names
+            entries = {os.path.basename(path):commit_id for path,commit_id in entries.iteritems()}
+        # update with the nodes changed in this tree's commit
+        entries.update({node: tree.commit._id for node in changed})
+        # convert to a list of dicts, since mongo doesn't handle arbitrary keys well (i.e., . and $ not allowed)
+        entries = [{'name':name, 'commit_id':value} for name,value in entries.iteritems()]
+        lcd = cls(
+                commit_id=tree.commit._id,
+                path=path,
+                entries=entries,
+            )
+        model_cache.set(cls, {'path': path, 'commit_id': tree.commit._id}, lcd)
+        return lcd
+
+    @LazyProperty
+    def by_name(self):
+        return {n.name: n.commit_id for n in self.entries}
+
 mapper(Commit, CommitDoc, repository_orm_session)
 mapper(Tree, TreeDoc, repository_orm_session)
+mapper(LastCommit, LastCommitDoc, repository_orm_session)
+
+
+class ModelCache(object):
+    '''
+    Cache model instances based on query params passed to get.
+    '''
+    def __init__(self, max_instances=None, max_queries=None):
+        '''
+        By default, each model type can have 2000 instances and
+        8000 queries.  You can override these for specific model
+        types by passing in a dict() for either max_instances or
+        max_queries keyed by the class(es) with the max values.
+        Classes not in the dict() will use the default 2000/8000
+        default.
+
+        If you pass in a number instead of a dict, that value will
+        be used as the max for all classes.
+        '''
+        max_instances_default = 2000
+        max_queries_default = 8000
+        if isinstance(max_instances, int):
+            max_instances_default = max_instances
+        if isinstance(max_queries, int):
+            max_queries_default = max_queries
+        self._max_instances = defaultdict(lambda:max_instances_default)
+        self._max_queries = defaultdict(lambda:max_queries_default)
+        if hasattr(max_instances, 'items'):
+            self._max_instances.update(max_instances)
+        if hasattr(max_queries, 'items'):
+            self._max_queries.update(max_queries)
+
+        self._query_cache = defaultdict(OrderedDict)  # keyed by query, holds _id
+        self._instance_cache = defaultdict(OrderedDict)  # keyed by _id
+        self._synthetic_ids = defaultdict(set)
+        self._synthetic_id_queries = defaultdict(set)
+
+    def _normalize_query(self, query):
+        _query = query
+        if not isinstance(_query, tuple):
+            _query = tuple(sorted(_query.items(), key=lambda k: k[0]))
+        return _query
+
+    def _model_query(self, cls):
+        if hasattr(cls, 'query'):
+            return cls.query
+        elif hasattr(cls, 'm'):
+            return cls.m
+        else:
+            raise AttributeError('%s has neither "query" nor "m" attribute' % cls)
+
+    def get(self, cls, query):
+        _query = self._normalize_query(query)
+        self._touch(cls, _query)
+        if _query not in self._query_cache[cls]:
+            val = self._model_query(cls).get(**query)
+            self.set(cls, _query, val)
+            return val
+        _id = self._query_cache[cls][_query]
+        if _id is None:
+            return None
+        if _id not in self._instance_cache[cls]:
+            val = self._model_query(cls).get(**query)
+            self.set(cls, _query, val)
+            return val
+        return self._instance_cache[cls][_id]
+
+    def set(self, cls, query, val):
+        _query = self._normalize_query(query)
+        if val is not None:
+            _id = getattr(val, '_model_cache_id',
+                    getattr(val, '_id',
+                        self._query_cache[cls].get(_query,
+                            None)))
+            if _id is None:
+                _id = val._model_cache_id = bson.ObjectId()
+                self._synthetic_ids[cls].add(_id)
+            if _id in self._synthetic_ids:
+                self._synthetic_id_queries[cls].add(_query)
+            self._query_cache[cls][_query] = _id
+            self._instance_cache[cls][_id] = val
+        else:
+            self._query_cache[cls][_query] = None
+        self._touch(cls, _query)
+        self._check_sizes(cls)
+
+    def _touch(self, cls, query):
+        '''
+        Keep track of insertion order, prevent duplicates,
+        and expire from the cache in a FIFO manner.
+        '''
+        _query = self._normalize_query(query)
+        if _query not in self._query_cache[cls]:
+            return
+        _id = self._query_cache[cls].pop(_query)
+        self._query_cache[cls][_query] = _id
+
+        if _id not in self._instance_cache[cls]:
+            return
+        val = self._instance_cache[cls].pop(_id)
+        self._instance_cache[cls][_id] = val
+
+    def _check_sizes(self, cls):
+        if self.num_queries(cls) > self._max_queries[cls]:
+            _id = self._remove_least_recently_used(self._query_cache[cls])
+            if _id in self._instance_cache[cls]:
+                instance = self._instance_cache[cls][_id]
+                self._try_flush(instance, expunge=False)
+        if self.num_instances(cls) > self._max_instances[cls]:
+            instance = self._remove_least_recently_used(self._instance_cache[cls])
+            self._try_flush(instance, expunge=True)
+
+    def _try_flush(self, instance, expunge=False):
+        try:
+            inst_session = session(instance)
+        except AttributeError:
+            inst_session = None
+        if inst_session:
+            inst_session.flush(instance)
+            if expunge:
+                inst_session.expunge(instance)
+
+    def _remove_least_recently_used(self, cache):
+        # last-used (most-recently-used) is last in cache, so take first
+        key, val = cache.popitem(last=False)
+        return val
+
+    def expire_new_instances(self, cls):
+        '''
+        Expire any instances that were "new" or had no _id value.
+
+        If a lot of new instances of a class are being created, it's possible
+        for a query to pull a copy from mongo when a copy keyed by the synthetic
+        ID is still in the cache, potentially causing de-sync between the copies
+        leading to one with missing data overwriting the other.  Clear new
+        instances out of the cache relatively frequently (depending on the query
+        and instance cache sizes) to avoid this.
+        '''
+        for _query in self._synthetic_id_queries[cls]:
+            self._query_cache[cls].pop(_query)
+        self._synthetic_id_queries[cls] = set()
+        for _id in self._synthetic_ids[cls]:
+            instance = self._instance_cache[cls].pop(_id)
+            self._try_flush(instance, expunge=True)
+        self._synthetic_ids[cls] = set()
+
+    def num_queries(self, cls=None):
+        if cls is None:
+            return sum([len(c) for c in self._query_cache.values()])
+        else:
+            return len(self._query_cache[cls])
+
+    def num_instances(self, cls=None):
+        if cls is None:
+            return sum([len(c) for c in self._instance_cache.values()])
+        else:
+            return len(self._instance_cache[cls])
+
+    def instance_ids(self, cls):
+        return self._instance_cache[cls].keys()
+
+    def batch_load(self, cls, query, attrs=None):
+        '''
+        Load multiple results given a query.
+
+        Optionally takes a list of attribute names to use
+        as the cache key.  If not given, uses the keys of
+        the given query.
+        '''
+        if attrs is None:
+            attrs = query.keys()
+        for result in self._model_query(cls).find(query):
+            keys = {a: getattr(result, a) for a in attrs}
+            self.set(cls, keys, result)

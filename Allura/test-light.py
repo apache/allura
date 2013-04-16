@@ -1,6 +1,6 @@
 import sys
 
-from pylons import c
+from pylons import tmpl_context as c
 
 from allura.lib import helpers as h
 from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc

@@ -3,7 +3,7 @@ import os.path
 import cProfile
 import warnings
 
-from pylons import c
+from pylons import tmpl_context as c
 import pylons
 import webob
 

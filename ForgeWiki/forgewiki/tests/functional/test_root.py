@@ -3,7 +3,7 @@ import os
 import Image, StringIO
 import allura
 
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_equal
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
@@ -206,7 +206,8 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/tést/')
         assert 'tést' in response
 
-    def test_page_update(self):
+    @patch('forgewiki.wiki_main.g.spam_checker')
+    def test_page_update(self, spam_checker):
         self.app.get('/wiki/tést/')
         response = self.app.post(
             '/wiki/tést/update',
@@ -215,6 +216,7 @@ class TestRootController(TestController):
                 'text':'sometext',
                 'labels':'',
                 'viewable_by-0.id':'all'})
+        assert_equal(spam_checker.check.call_args[0][0], 'sometext')
         assert 'tést' in response
 
     def test_page_label_unlabel(self):

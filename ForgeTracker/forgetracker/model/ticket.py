@@ -5,11 +5,9 @@ import difflib
 from datetime import datetime, timedelta
 
 import pymongo
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from pymongo.errors import OperationFailure
-from pylons import c, g
+from pylons import tmpl_context as c, app_globals as g
+from pprint import pformat
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -24,7 +22,7 @@ from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.model.timeline import ActivityObject
 
 from allura.lib import security
-from allura.lib.search import search_artifact
+from allura.lib.search import search_artifact, SearchError
 from allura.lib import utils
 from allura.lib import helpers as h
 
@@ -54,8 +52,9 @@ class Globals(MappedClass):
     _bin_counts = FieldProperty(schema.Deprecated) # {str:int})
     _bin_counts_data = FieldProperty([dict(summary=str, hits=int)])
     _bin_counts_expire = FieldProperty(datetime)
-    _milestone_counts = FieldProperty([dict(name=str,hits=int,closed=int)])
-    _milestone_counts_expire = FieldProperty(datetime)
+    _bin_counts_invalidated = FieldProperty(datetime)
+    _milestone_counts = FieldProperty(schema.Deprecated) #[dict(name=str,hits=int,closed=int)])
+    _milestone_counts_expire = FieldProperty(schema.Deprecated) #datetime)
     show_in_search = FieldProperty({str: bool}, if_missing={'ticket_num': True,
                                                             'summary': True,
                                                             '_milestone': True,
@@ -115,20 +114,25 @@ class Globals(MappedClass):
                 return fld
         return None
 
-    def _refresh_counts(self):
+    def update_bin_counts(self):
         # Refresh bin counts
         self._bin_counts_data = []
         for b in Bin.query.find(dict(
                 app_config_id=self.app_config_id)):
-            r = search_artifact(Ticket, b.terms, rows=0)
+            if b.terms and '$USER' in b.terms:
+                continue  # skip queries with $USER variable, hits will be inconsistent for them
+            r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False)
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
         self._bin_counts_expire = \
             datetime.utcnow() + timedelta(minutes=60)
+        self._bin_counts_invalidated = None
 
     def bin_count(self, name):
+        # not sure why we expire bin counts after an hour even if unchanged
+        # I guess a catch-all in case invalidate_bin_counts is missed
         if self._bin_counts_expire < datetime.utcnow():
-            self._refresh_counts()
+            self.invalidate_bin_counts()
         for d in self._bin_counts_data:
             if d['summary'] == name: return d
         return dict(summary=name, hits=0)
@@ -140,7 +144,7 @@ class Globals(MappedClass):
             return d
         mongo_query = {'custom_fields.%s' % fld_name: m_name}
         r = Ticket.query.find(dict(
-            mongo_query, app_config_id=c.app.config._id))
+            mongo_query, app_config_id=c.app.config._id, deleted=False))
         tickets = [t for t in r if security.has_access(t, 'read')]
         d['hits'] = len(tickets)
         d['closed'] = sum(1 for t in tickets
@@ -148,10 +152,19 @@ class Globals(MappedClass):
         return d
 
     def invalidate_bin_counts(self):
-        '''Expire it just a bit in the future to allow data to propagate through
-        the search task
-        '''
-        self._bin_counts_expire = datetime.utcnow() + timedelta(seconds=5)
+        '''Force expiry of bin counts and queue them to be updated.'''
+        # To prevent multiple calls to this method from piling on redundant
+        # tasks, we set _bin_counts_invalidated when we post the task, and
+        # the task clears it when it's done.  However, in the off chance
+        # that the task fails or is interrupted, we ignore the flag if it's
+        # older than 5 minutes.
+        invalidation_expiry = datetime.utcnow() - timedelta(minutes=5)
+        if self._bin_counts_invalidated is not None and \
+           self._bin_counts_invalidated > invalidation_expiry:
+            return
+        self._bin_counts_invalidated = datetime.utcnow()
+        from forgetracker import tasks  # prevent circular import
+        tasks.update_bin_counts.post(self.app_config_id, delay=5)
 
     def sortable_custom_fields_shown_in_search(self):
         return [dict(sortable_name='%s_s' % field['name'],
@@ -159,6 +172,10 @@ class Globals(MappedClass):
                      label=field['label'])
                 for field in self.custom_fields
                 if field.get('show_in_search')]
+
+    def has_deleted_tickets(self):
+        return  Ticket.query.find(dict(
+            app_config_id=c.app.config._id, deleted=True)).count() > 0
 
 
 class TicketHistory(Snapshot):
@@ -193,10 +210,13 @@ class TicketHistory(Snapshot):
             return None
         result = Snapshot.index(self)
         result.update(
-            title_s='Version %d of %s' % (
+            title='Version %d of %s' % (
                 self.version, orig.summary),
             type_s='Ticket Snapshot',
             text=self.data.summary)
+        # Tracker uses search with default solr parser. It would match only on
+        # `text`, so we're appending all other field values into `text`, to match on it too.
+        result['text'] += pformat(result.values())
         return result
 
 class Bin(Artifact, ActivityObject):
@@ -287,7 +307,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def index(self):
         result = VersionedArtifact.index(self)
         result.update(
-            title_s='Ticket %s' % self.ticket_num,
+            title='Ticket %s' % self.ticket_num,
             version_i=self.version,
             type_s=self.type_s,
             ticket_num_i=self.ticket_num,
@@ -307,6 +327,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             result['reported_by_s'] = self.reported_by.username
         if self.assigned_to:
             result['assigned_to_s'] = self.assigned_to.username
+        # Tracker uses search with default solr parser. It would match only on
+        # `text`, so we're appending all other field values into `text`, to match on it too.
+        result['text'] += pformat(result.values())
         return result
 
     @classmethod
@@ -397,12 +420,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     def _set_private(self, bool_flag):
         if bool_flag:
-            role_developer = ProjectRole.by_name('Developer')._id
-            role_creator = self.reported_by.project_role()._id
-            self.acl = [
-                ACE.allow(role_developer, ALL_PERMISSIONS),
-                ACE.allow(role_creator, ALL_PERMISSIONS),
-                DENY_ALL]
+            role_developer = ProjectRole.by_name('Developer')
+            role_creator = self.reported_by.project_role()
+            _allow_all = lambda role, perms: [ACE.allow(role._id, perm) for perm in perms]
+            # maintain existing access for developers and the ticket creator,
+            # but revoke all access for everyone else
+            self.acl = _allow_all(role_developer, security.all_allowed(self, role_developer)) \
+                     + _allow_all(role_creator, security.all_allowed(self, role_creator)) \
+                     + [DENY_ALL]
         else:
             self.acl = []
     private = property(_get_private, _set_private)
@@ -421,6 +446,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 ('Status', old.status, self.status) ]
             if old.status != self.status and self.status in c.app.globals.set_of_closed_status_names:
                 h.log_action(log, 'closed').info('')
+                g.statsUpdater.ticketEvent("closed", self, self.project, self.assigned_to)
             for key in self.custom_fields:
                 fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
@@ -433,6 +459,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 changes.append('Owner updated: %r => %r' % (
                         o and o.username, n and n.username))
                 self.subscribe(user=n)
+                g.statsUpdater.ticketEvent("assigned", self, self.project, n)
+                if o: 
+                    g.statsUpdater.ticketEvent("revoked", self, self.project, o)
             if old.description != self.description:
                 changes.append('Description updated:')
                 changes.append('\n'.join(
@@ -445,7 +474,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         else:
             self.subscribe()
             if self.assigned_to_id:
-                self.subscribe(user=User.query.get(_id=self.assigned_to_id))
+                user = User.query.get(_id=self.assigned_to_id)
+                g.statsUpdater.ticketEvent("assigned", self, self.project, user)
+                self.subscribe(user=user)
             description = ''
             subject = self.email_subject
             Thread.new(discussion_id=self.app_config.discussion_id,
@@ -477,7 +508,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             app_config_id=self.app_config_id, artifact_id=self._id, type='attachment'))
 
     def update(self, ticket_form):
-        self.globals.invalidate_bin_counts()
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
         self.labels = ticket_form.pop('labels', [])
@@ -522,6 +552,109 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 attachment.filename, attachment.file,
                 content_type=attachment.type)
 
+    def _move_attach(self, attachments, attach_metadata, app_config):
+        for attach in attachments:
+            attach.app_config_id = app_config._id
+            if attach.attachment_type == 'DiscussionAttachment':
+                attach.discussion_id = app_config.discussion_id
+            attach_thumb = BaseAttachment.query.get(filename=attach.filename, **attach_metadata)
+            if attach_thumb:
+                if attach_thumb.attachment_type == 'DiscussionAttachment':
+                    attach_thumb.discussion_id = app_config.discussion_id
+                attach_thumb.app_config_id = app_config._id
+
+    def move(self, app_config):
+        '''Move ticket from current tickets app to tickets app with given app_config'''
+        app = app_config.project.app_instance(app_config)
+        prior_url = self.url()
+        prior_app = self.app
+        attachments = self.attachments
+        attach_metadata = BaseAttachment.metadata_for(self)
+        prior_cfs = [
+            (cf['name'], cf['type'], cf['label'])
+            for cf in prior_app.globals.custom_fields or []]
+        new_cfs = [
+            (cf['name'], cf['type'], cf['label'])
+            for cf in app.globals.custom_fields or []]
+        skipped_fields = []
+        user_fields = []
+        for cf in prior_cfs:
+            if cf not in new_cfs:  # can't convert
+                skipped_fields.append(cf)
+            elif cf[1] == 'user':  # can convert and field type == user
+                user_fields.append(cf)
+        messages = []
+        for cf in skipped_fields:
+            name = cf[0]
+            messages.append('- **%s**: %s' % (name, self.custom_fields.get(name, '')))
+        for cf in user_fields:
+            name = cf[0]
+            username = self.custom_fields.get(name, None)
+            user = app_config.project.user_in_project(username)
+            if not user or user == User.anonymous():
+                messages.append('- **%s**: %s (user not in project)' % (name, username))
+                self.custom_fields[name] = ''
+        # special case: not custom user field (assigned_to_id)
+        user = self.assigned_to
+        if user and not app_config.project.user_in_project(user.username):
+            messages.append('- **assigned_to**: %s (user not in project)' % user.username)
+            self.assigned_to_id = None
+
+        custom_fields = {}
+        for cf in new_cfs:
+            fn, ft, fl = cf
+            old_val = self.custom_fields.get(fn, None)
+            if old_val is None:
+                custom_fields[fn] = None if ft == 'user' else ''
+            custom_fields[fn] = old_val
+        self.custom_fields = custom_fields
+
+        # move ticket. ensure unique ticket_num
+        while True:
+            with h.push_context(app_config.project_id, app_config_id=app_config._id):
+                ticket_num = app.globals.next_ticket_num()
+            self.ticket_num = ticket_num
+            self.app_config_id = app_config._id
+            new_url = app_config.url() + str(self.ticket_num) + '/'
+            try:
+                session(self).flush(self)
+                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, new_url))
+                break
+            except OperationFailure, err:
+                if 'duplicate' in err.args[0]:
+                    log.warning('Try to create duplicate ticket %s when moving from %s' % (new_url, prior_url))
+                    session(self).expunge(self)
+                    continue
+
+        attach_metadata['type'] = 'thumbnail'
+        self._move_attach(attachments, attach_metadata, app_config)
+
+        # move ticket's discussion thread, thus all new commnets will go to a new ticket's feed
+        self.discussion_thread.app_config_id = app_config._id
+        self.discussion_thread.discussion_id = app_config.discussion_id
+        for post in self.discussion_thread.posts:
+            attach_metadata = BaseAttachment.metadata_for(post)
+            attach_metadata['type'] = 'thumbnail'
+            self._move_attach(post.attachments, attach_metadata, app_config)
+            post.app_config_id = app_config._id
+            post.app_id = app_config._id
+            post.discussion_id = app_config.discussion_id
+
+        session(self.discussion_thread).flush(self.discussion_thread)
+        # need this to reset app_config RelationProperty on ticket to a new one
+        session(self.discussion_thread).expunge(self.discussion_thread)
+        session(self).expunge(self)
+        ticket = Ticket.query.find(dict(
+            app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
+
+        message = 'Ticket moved from %s' % prior_url
+        if messages:
+            message += '\n\nCan\'t be converted:\n\n'
+        message += '\n'.join(messages)
+        with h.push_context(ticket.project_id, app_config_id=app_config._id):
+            ticket.discussion_thread.add_post(text=message)
+        return ticket
+
     def __json__(self):
         return dict(super(Ticket,self).__json__(),
             created_date=self.created_date,
@@ -537,15 +670,15 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             custom_fields=self.custom_fields)
 
     @classmethod
-    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, **kw):
+    def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False, **kw):
         """
         Query tickets, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_search which does a solr search
         """
         limit, page, start = g.handle_paging(limit, page, default=25)
-        q = cls.query.find(dict(query, app_config_id=app_config._id))
-        q = q.sort('ticket_num')
+        q = cls.query.find(dict(query, app_config_id=app_config._id, deleted=deleted))
+        q = q.sort('ticket_num', pymongo.DESCENDING)
         if sort:
             field, direction = sort.split()
             if field.startswith('_'):
@@ -570,7 +703,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             **kw)
 
     @classmethod
-    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, **kw):
+    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, show_deleted=False, **kw):
         """Query tickets from Solr, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_query which does a mongo search.
@@ -594,19 +727,19 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         limit, page, start = g.handle_paging(limit, page, default=25)
         count = 0
         tickets = []
-        refined_sort = sort if sort else 'ticket_num_i asc'
+        refined_sort = sort if sort else 'ticket_num_i desc'
         if  'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
         try:
             if q:
                 matches = search_artifact(
-                    cls, q,
+                    cls, q, short_timeout=True,
                     rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw)
             else:
                 matches = None
             solr_error = None
-        except ValueError, e:
-            solr_error = e.args[0]
+        except SearchError as e:
+            solr_error = e
             matches = []
         if matches:
             count = matches.hits
@@ -622,7 +755,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             tickets = []
             for tn in ticket_numbers:
                 if tn in ticket_for_num:
-                    if security.has_access(ticket_for_num[tn], 'read', user, app_config.project):
+                    show_deleted = show_deleted and security.has_access(ticket_for_num[tn], 'delete', user, app_config.project)
+                    if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project) and
+                        (show_deleted or ticket_for_num[tn].deleted==False)):
                         tickets.append(ticket_for_num[tn])
                     else:
                         count = count -1

@@ -2,16 +2,14 @@
 import os
 import urllib
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 import mock
 import beaker.session
 from formencode import variabledecode
 from paste.deploy import loadapp
 from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
-from pylons import c, g, url, request, response, session
+from pylons import tmpl_context as c, app_globals as g
+from pylons import url, request, response, session
 import tg
 from webtest import TestApp
 from webob import Request, Response
@@ -80,6 +78,7 @@ def setup_unit_test():
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     c.memoize_cache = {}
     c.queued_messages = None
+    c.model_cache = None
     ThreadLocalORMSession.close_all()
 
 def setup_global_objects():

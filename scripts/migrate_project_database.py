@@ -3,7 +3,7 @@ import sys
 import shutil
 import logging
 
-from pylons import c
+from pylons import tmpl_context as c
 from ming.orm import session
 from allura import model as M
 log = logging.getLogger(__name__)

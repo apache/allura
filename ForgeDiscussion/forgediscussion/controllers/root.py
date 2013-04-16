@@ -1,21 +1,20 @@
+import re
 import json
 import logging
 import pymongo
 from urllib import urlencode, unquote
 
-import pylons
-pylons.c = pylons.tmpl_context
-pylons.g = pylons.app_globals
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
-from pylons import g, c, request
+from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from formencode import validators
 from webob import exc
 
 
 from allura.lib.security import require_access, has_access, require_authenticated
 from allura.model import Feed
-from allura.lib.search import search
+from allura.lib.search import search, SearchError
 from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
@@ -119,18 +118,24 @@ class RootController(BaseController, DispatchIndex):
         if project:
             redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=history)))
         results = []
+        search_error = None
         count=0
         limit, page, start = g.handle_paging(limit, page, default=25)
         if not q:
             q = ''
         else:
-            results = search(
-                q, rows=limit, start=start,
-                fq=[
-                    'is_history_b:%s' % history,
-                    'project_id_s:%s' % c.project._id,
-                    'mount_point_s:%s'% c.app.config.options.mount_point,
-                    '-deleted_b:true'])
+            try:
+                results = search(
+                    q, rows=limit, start=start,
+                    fq=[
+                        'is_history_b:%s' % history,
+                        'project_id_s:%s' % c.project._id,
+                        'mount_point_s:%s'% c.app.config.options.mount_point,
+                        '-deleted_b:true'],
+                    short_timeout=True,
+                    ignore_errors=False)
+            except SearchError as e:
+                search_error = e
             if results: count=results.hits
         c.search_results = self.W.search_results
         if results is not None:
@@ -141,7 +146,7 @@ class RootController(BaseController, DispatchIndex):
                     p = model.ForumPost.query.get(_id=_id)
                     doc['url_paginated'] = p.url_paginated()
         return dict(q=q, history=history, results=results or [],
-                    count=count, limit=limit, page=page)
+                    count=count, limit=limit, page=page, search_error=search_error)
 
     @expose('jinja:allura:templates/markdown_syntax.html')
     def markdown_syntax(self):

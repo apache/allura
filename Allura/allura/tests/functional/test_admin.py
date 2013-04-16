@@ -99,15 +99,15 @@ class TestProjectAdmin(TestController):
                     'new.mount_point':'test-tool2',
                     'new.mount_label':'Test Tool2'})
         assert 'error' not in self.webflash(r)
-        # check the nav - the similarly named tool should NOT be active
+        # check the nav - tools of same type are grouped
         r = self.app.get('/p/test/test-tool/Home/')
-        active_link = r.html.findAll('span',{'class':'diamond'})
+        active_link = r.html.findAll('span', {'class':'diamond'})
         assert len(active_link) == 1
-        assert active_link[0].parent['href'] == '/p/test/test-tool/'
-        r = self.app.get('/p/test/test-tool2/Home/')
-        active_link = r.html.findAll('span',{'class':'diamond'})
-        assert len(active_link) == 1
-        assert active_link[0].parent['href'] == '/p/test/test-tool2/'
+        assert active_link[0].parent['href'] == '/p/test/_list/wiki'
+        # check tool-count of grouped tools
+        tool_count = active_link[0].findNextSibling('span')
+        assert tool_count['class'] == u'tool-count', tool_count['class']
+        assert tool_count.text == u'2', tool_count.text
         # check can't create dup tool
         r = self.app.post('/admin/update_mounts', params={
                 'new.install':'install',
@@ -174,6 +174,19 @@ class TestProjectAdmin(TestController):
         # check using sets, because their may be more tools installed by default
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
+
+    def test_grouping_threshold(self):
+        r = self.app.get('/admin/tools')
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '1')
+        r = self.app.post('/admin/configure_tool_grouping', params={
+                'grouping_threshold': '2',
+            }).follow()
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '2')
+        r = self.app.get('/admin/tools')
+        grouping_threshold = r.html.find('input',{'name':'grouping_threshold'})
+        assert_equals(grouping_threshold['value'], '2')
 
     def test_project_icon(self):
         file_name = 'neo-icon-set-454545-256x350.png'

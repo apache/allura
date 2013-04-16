@@ -21,6 +21,15 @@
 {% endblock %}
 
 {% block content %}
+    {%if h.has_access(c.app, 'delete') and c.app.globals.has_deleted_tickets()%}
+        <p>
+            {%if deleted%}
+                <a href="{{tg.url('', dict(q=q, page=page, limit=limit, sort=sort, deleted=False))}}">Hide deleted tickets</a>
+            {%else%}
+                <a  href="{{tg.url('', dict(q=q, page=page, limit=limit, sort=sort, deleted=True))}}">Show deleted tickets</a>
+            {%endif%}
+        </p>
+    {%endif%}
   {% if help_msg %}
     <div id="search-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
   {% endif %}
@@ -37,4 +46,5 @@
     {% else %}
       <p>No open tickets found.</p>
     {% endif %}
+
 {% endblock %}

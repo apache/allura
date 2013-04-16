@@ -1,4 +1,4 @@
-from pylons import g, c
+from pylons import tmpl_context as c, app_globals as g
 
 import ew as ew_core
 from ew import jinja2_ew as ew
@@ -163,6 +163,7 @@ class MetadataAdmin(ff.AdminForm):
         undelete = ew.InputField(field_type="hidden", label='Undelete')
         tracking_id = ew.InputField(field_type="text", label="Analytics Tracking ID")
         twitter_handle = ew.InputField(field_type="text", label='Twitter Handle')
+        facebook_page = ew.InputField(field_type="text", label='Facebook page')
 
 class AuditLog(ew_core.Widget):
     template='jinja:allura.ext.admin:templates/widgets/audit.html'
