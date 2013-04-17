@@ -50,26 +50,27 @@ class TestSolr(unittest.TestCase):
 
 class TestSolarize(unittest.TestCase):
 
-    def setUp(self):
-        self.obj = mock.MagicMock()
-        self.obj.index.return_value = {}
-
     def test_no_object(self):
         assert_equal(solarize(None), None)
 
     def test_empty_index(self):
-        self.obj.index.return_value = None
-        assert_equal(solarize(self.obj), None)
+        obj = mock.MagicMock()
+        obj.index.return_value = None
+        assert_equal(solarize(obj), None)
 
     def test_doc_without_text(self):
-        assert_equal(solarize(self.obj), {'text': ''})
+        obj = mock.MagicMock()
+        obj.index.return_value = {}
+        assert_equal(solarize(obj), {'text': ''})
 
     def test_strip_markdown(self):
-        self.obj.index.return_value = {'text': '# Header'}
-        assert_equal(solarize(self.obj), {'text': 'Header'})
+        obj = mock.MagicMock()
+        obj.index.return_value = {'text': '# Header'}
+        assert_equal(solarize(obj), {'text': 'Header'})
 
     def test_html_in_text(self):
-        self.obj.index.return_value = {'text': '<script>alert(1)</script>'}
-        assert_equal(solarize(self.obj), {'text': ''})
-        self.obj.index.return_value = {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'}
-        assert_equal(solarize(self.obj), {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'})
+        obj = mock.MagicMock()
+        obj.index.return_value = {'text': '<script>alert(1)</script>'}
+        assert_equal(solarize(obj), {'text': ''})
+        obj.index.return_value = {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'}
+        assert_equal(solarize(obj), {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'})
