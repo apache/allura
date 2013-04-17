@@ -164,11 +164,11 @@ def search_app(q='', fq=None, app=True, **kw):
                 title = h.get_first(m, 'title')
                 text = h.get_first(m, 'text')
                 if title:
-                    title = (jinja2.Markup(title)
+                    title = (jinja2.escape(title)
                                    .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
                                    .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
                 if text:
-                    text = (jinja2.Markup(text)
+                    text = (jinja2.escape(text)
                                   .replace('#ALLURA-HIGHLIGHT-START#', jinja2.Markup('<strong>'))
                                   .replace('#ALLURA-HIGHLIGHT-END#', jinja2.Markup('</strong>')))
                 doc['title_match'] = title
