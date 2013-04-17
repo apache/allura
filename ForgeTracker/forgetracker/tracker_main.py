@@ -1220,14 +1220,14 @@ def filtered_by_subscription(tickets, project_id=None, app_config_id=None):
             project_id=p_id,
             app_config_id=ac_id)
         if M.Mailbox.subscribed(**params):
-            filtered[uid] = ticket_ids  # subscribed to entire tool, will see all changes
+            filtered[uid] = set(ticket_ids)  # subscribed to entire tool, will see all changes
             continue
         for t_id, ticket in tickets.iteritems():
             params.update({'artifact': ticket})
             if M.Mailbox.subscribed(**params):
-                if filtered.get('uid') is None:
-                    filtered[uid] = []
-                filtered[uid].append(t_id)
+                if filtered.get(uid) is None:
+                    filtered[uid] = set()
+                filtered[uid].add(t_id)
     return filtered
 
 

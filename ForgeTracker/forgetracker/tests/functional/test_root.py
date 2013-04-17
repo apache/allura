@@ -1222,6 +1222,7 @@ class TestFunctionalController(TrackerTestController):
         users.append(M.User.by_username('test-user-2'))
         admin = M.User.by_username('test-admin')
         tickets[0].subscribe(user=users[0])
+        tickets[0].subscribe(user=users[1])
         tickets[1].subscribe(user=users[1])
         tickets[2].subscribe(user=users[2])
         ThreadLocalORMSession.flush_all()
@@ -1233,8 +1234,8 @@ class TestFunctionalController(TrackerTestController):
         # test-user-2 shoudn't be notified
         # (he has subscription to third ticket, but it didn't change).
         # test-user-0 should see changes only for first ticket.
-        # test-user-1 - only for second.
-        # admin - for both (since he has tool subscription).
+        # test-user-1 - for both (separate subscription for both tickets).
+        # admin - for both (tool subscription).
         changes = {
             tickets[0]._id: tickets[0],
             tickets[1]._id: tickets[1],
@@ -1243,9 +1244,9 @@ class TestFunctionalController(TrackerTestController):
         filtered_users = [uid for uid, data in filtered_changes.iteritems()]
         assert_equal(sorted(filtered_users), sorted([u._id for u in users[:-1] + [admin]]))
         ticket_ids = [t._id for t in tickets]
-        assert_equal(filtered_changes[users[0]._id], ticket_ids[0:1])
-        assert_equal(filtered_changes[users[1]._id], ticket_ids[1:2])
-        assert_equal(sorted(filtered_changes[admin._id]), sorted(ticket_ids[:-1]))
+        assert_equal(filtered_changes[users[0]._id], set(ticket_ids[0:1]))
+        assert_equal(filtered_changes[users[1]._id], set(ticket_ids[:-1]))
+        assert_equal(filtered_changes[admin._id], set(ticket_ids[:-1]))
 
     def test_vote(self):
         r = self.new_ticket(summary='test vote').follow()
