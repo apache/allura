@@ -1148,17 +1148,17 @@ class TestFunctionalController(TrackerTestController):
 - **Milestone**: 2.0
 
 '''
-        first_ticket_changes = '''ticket: [bugs:#1]
+        first_ticket_changes = '''ticket: [bugs:#1] test first ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Status**: open --> accepted
 '''
-        second_ticket_changes = '''ticket: [bugs:#2]
+        second_ticket_changes = '''ticket: [bugs:#2] test second ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Milestone**: 1.0 --> 2.0
 '''
-        third_ticket_changes = '''ticket: [bugs:#3]
+        third_ticket_changes = '''ticket: [bugs:#3] test third ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Status**: unread --> accepted

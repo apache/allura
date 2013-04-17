@@ -852,7 +852,7 @@ class RootController(BaseController):
         users = M.User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
-                yield (changed_tickets[t_id].ticket_num, changes[t_id])
+                yield (changed_tickets[t_id], changes[t_id])
         mail = dict(
             fromaddr = str(c.user._id),
             reply_to = str(c.user._id),
@@ -889,7 +889,7 @@ class RootController(BaseController):
             monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
             def all_changes():
                 for t_id in changed_tickets.keys():
-                    yield (changed_tickets[t_id].ticket_num, changes[t_id])
+                    yield (changed_tickets[t_id], changes[t_id])
             tmpl_context['data'].update({'changes': all_changes()})
             mail.update(dict(
                 message_id = h.gen_message_id(),

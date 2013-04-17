@@ -1,7 +1,7 @@
 {{ data.header }}
 
-{% for t_num, change_text in data.changes %}
-ticket: [{{ context.app.config.options.mount_point }}:#{{ t_num }}]
+{% for ticket, change_text in data.changes %}
+ticket: [{{ context.app.config.options.mount_point }}:#{{ ticket.ticket_num }}] {{ ticket.summary }}
 
 {{ change_text }}
 {% endfor %}
