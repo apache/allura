@@ -1,4 +1,4 @@
-{#
+{#-
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -15,7 +15,7 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-#}
+-#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{action}}" enctype="multipart/form-data">
   {{widget.display_field_by_name('ticket_num')|safe}}
