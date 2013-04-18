@@ -15,7 +15,7 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-#}
+#}\
 {% python import difflib %}\
 {% python from allura.model import User %}\
 {% for key, values in changelist %}\
