@@ -36,11 +36,15 @@
         </a>
         {% set grouped_tool_count = s.matching_urls|length %}
         {% if grouped_tool_count %}
-          <ul>
-              {%for tool in s.children%}
-                <li><span><a href="{{tool.url}}">{{tool.label}}</a></span></li>
-              {%endfor%}
-          </ul>
+            <ul>
+                {%for tool in s.children%}
+                    {% set selected = False %}
+                    {% if tool.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info%}
+                        {% set selected = True %}
+                    {% endif %}
+                    <li class="{% if selected %}selected{% endif %}"><a href="{{tool.url}}">{{tool.label}}</a></li>
+                {%endfor%}
+            </ul>
         {% endif %}
     </li>
 	{% endfor %}

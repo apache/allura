@@ -119,7 +119,7 @@ class TestProjectAdmin(TestController):
         # check the nav - tools of same type are grouped
         r = self.app.get('/p/test/test-tool/Home/')
         active_link = r.html.findAll('li',{'class':'selected'})
-        assert len(active_link) == 1
+        assert len(active_link) == 2
         assert active_link[0].contents[1]['href'] == '/p/test/_list/wiki'
         assert r.html.findAll('a', {'href':'/p/test/test-tool2/'})
         assert r.html.findAll('a', {'href':'/p/test/test-tool/'})

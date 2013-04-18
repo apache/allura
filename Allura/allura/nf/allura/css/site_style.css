@@ -994,7 +994,6 @@ a.btn:active {
   text-align: center;
   position: relative;
   margin: 0 0 20px;
-  height: 50px;
 }
 .btn-bar.pop, .pop#top_nav {
   height: 150px;
@@ -2123,8 +2122,8 @@ nav .ico {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset,0 1px 0 rgba(255, 255, 255, 0.9);
   border: medium none;
   margin: 0 0 20px 0;
-  display: block;
   overflow: visible;
+  width: 940px;
 }
 #top_nav a {
   float: left;
@@ -2923,6 +2922,9 @@ ul.dropdown ul {
     background-color: #ffffff;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    -o-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -khtml-border-radius: 5px;
     border-radius: 5px;
     border-width: 1px;
     border-style: solid;
@@ -2942,6 +2944,7 @@ ul.dropdown ul li a {
     height: 20px !important;
     font-weight:normal;
 }
-li.selected {
+li.selected,
+ul.dropdown ul li.selected a{
     font-weight:bold;
 }

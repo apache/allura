@@ -511,7 +511,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                         grouped_nav[tool_name].children.append(e)
                     elif len(grouped_nav[tool_name].children) == 10:
                         e.url = self.url() + '_list/' + tool_name
-                        e.label = '...more...'
+                        e.label = 'More...'
                         grouped_nav[tool_name].children.append(e)
         return grouped_nav.values()
 

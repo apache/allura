@@ -65,7 +65,7 @@ class TestProjectHome(TestController):
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
         assert_equal(len(menu[1]['children']), 11)
-        assert {u'url': u'/p/test/_list/wiki', u'name': u'...more...', u'icon': u'tool-wiki'} in menu[1]['children']
+        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...', u'icon': u'tool-wiki'} in menu[1]['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):
