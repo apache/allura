@@ -33,30 +33,55 @@
       {% for commit in value %}
         <tr class="rev">
           <td>
-            {%if is_file%}
+            <div class="grid-14">
+                {%if is_file%}
                 <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
-            {%endif%}
-            {{commit.summary}}
-            <br/>
-            {% if commit.committed.email != commit.authored.email %}
-              {% if commit.committer_url %}
+                {%endif%}
+                {%for tag in c.app.repo.symbolics_for_commit(commit)[1]%}
+                        <a href="{{c.app.repo.url()}}ci/{{tag}}/tree{{request.params.get('path')}}">{{tag}}</a>
+                {%endfor%}
+                {% if commit.committed.email != commit.authored.email %}
+                {% if commit.committer_url %}
                 <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
-                {{commit.committed.name}}</a>
+                    {{commit.committed.name}}</a>
                 pushed
-              {% else %}
+                {% else %}
                 {{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}} {{commit.committed.name}}
                 pushed
-              {% endif %}
-            {% endif %}
-             <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
-            by
-              {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
+                {% endif %}
+                {% endif %}
+                <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
+                by
+                {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
+                {%if is_file%}
+                    {%if request.params.get('path')[:1]=='/'%}
+                        {%set path = request.params.get('path')[1:]%}
+                    {%else%}
+                        {%set path = request.params.get('path')%}
+                    {%endif%}
+
+                    {{commit.tree.get_blob(path).size}} Bytes
+                {%endif%}
+            </div>
+            <div>
+              {{g.markdown.convert(commit.message)}}
+            </div>
           </td>
-          <td>
-            {% if commit.committed.date %}{{abbr_date(commit.committed.date)}}{% endif %}
+          <td style="vertical-align: text-top">
+            {% if commit.committed.date %}{{commit.committed.date}}{% endif %}
           </td>
-          <td style="text-align: right">
-            <a href="{{commit.url()}}tree/">Tree</a>
+          <td style="text-align: left; vertical-align: text-top">
+            <a href="{{commit.url()}}tree{{request.params.get('path')}}">
+            {%if is_file%}
+                View
+            {% else %}
+                Tree
+            {%endif%}
+            </a>
+              {%if is_file%}
+              <br/>
+              <a href="{{commit.url()}}tree{{request.params.get('path')}}?format=raw ">Download</a>
+              {%endif%}
           </td>
         </tr>
       {% endfor %}

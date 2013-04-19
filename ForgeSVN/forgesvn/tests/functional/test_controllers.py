@@ -138,10 +138,10 @@ class TestRootController(SVNTestController):
         assert 'Create readme' in r
         r = self.app.get('/src/2/log/?path=')
         assert "Create readme" in r
-        assert "Add path " in r
+        assert "Add path" in r
         r = self.app.get('/src/2/log/?path=README')
         assert "Modify readme" not in r
-        assert "Create readme " in r
+        assert "Create readme" in r
         r = self.app.get('/src/2/log/?path=/a/b/c/')
         assert 'Add path' in r
         assert 'Remove hello.txt' not in r

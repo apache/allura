@@ -110,10 +110,16 @@ class TestRootController(_TestCase):
     def test_log(self):
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert 'Initial commit' in resp
-        assert 'Change README' in resp
+        assert '<div class="markdown_content"><p>Change README</p></div>' in resp
+        assert 'tree/README?format=raw ">Download</a>' not in resp
+        assert'28 Bytes' not in resp.html.find('td').contents[1].text
+        assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
-        assert 'Change README ' in resp
-        assert 'Add README ' in resp
+        assert'28 Bytes' in resp.html.find('td').contents[1].text
+        assert 'View' in resp.html.findAll('td')[2].text
+        assert 'Change README' in resp
+        assert 'tree/README?format=raw ">Download</a>' in resp
+        assert 'Add README' in resp
         assert "Initial commit " not in resp
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/a/b/c/')
         assert 'Remove file' in resp
