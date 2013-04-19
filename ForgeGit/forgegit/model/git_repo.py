@@ -355,6 +355,9 @@ class GitImplementation(M.RepositoryImplementation):
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
 
+    def is_empty(self):
+        return len(self._git.heads) == 0
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

@@ -666,5 +666,8 @@ class SVNImplementation(M.RepositoryImplementation):
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
 
+    def is_empty(self):
+        return self._svn.revpropget('revision', url=self._url)[0].number == 0
+
 
 Mapper.compile_all()

@@ -30,9 +30,10 @@ class BranchBrowser(repository.BranchBrowser):
     @expose('jinja:forgesvn:templates/svn/index.html')
     @with_trailing_slash
     def index(self, limit=None, page=0, count=0, **kw):
+        is_empty = c.app.repo.is_empty()
         latest = c.app.repo.latest(branch=self._branch)
-        if not latest:
-            return dict(allow_fork=False, log=[])
+        if empty or not latest:
+            return dict(allow_fork=False, log=[], is_empty=is_empty)
         redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
 
     @expose()

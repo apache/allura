@@ -163,6 +163,10 @@ class RepositoryImplementation(object):
             commit = parent
         return result
 
+    def is_empty(self):
+        '''Determine if the repository is empty by checking the filesystem'''
+        raise NotImplementedError, 'is_empty'
+
     @classmethod
     def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
@@ -342,6 +346,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.commits_count(path, rev)
     def last_commit_ids(self, commit, paths):
         return self._impl.last_commit_ids(commit, paths)
+    def is_empty(self):
+        return self._impl.is_empty()
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
