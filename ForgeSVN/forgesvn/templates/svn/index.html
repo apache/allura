@@ -37,7 +37,7 @@
     {% if count > limit %}
       <a href="{{c.app.url}}log?page=1">More</a>
     {% endif %}
-  {% elif c.app.repo.status == 'ready' %}
+  {% elif is_empty %}
     {% if h.has_access(c.app, 'write')() %}
     <div class="message warning scm-learn-basics">
       <div class="content">
@@ -90,6 +90,12 @@ svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</
         Did you get asked for your SourceForge password during this process? You can securely use your Subversion repository and avoid having to re-enter your password by <a href="https://sourceforge.net/account/ssh">setting up an ssh-key</a>.
       </div>
     </div>
+    {% else %}
+    <p><b>No (more) commits</b></p>
+    {% endif %}
+  {% elif c.app.repo.status == 'ready' %}
+    {% if h.has_access(c.app, 'write')() %}
+    <p>The metadata for this repository is to be missing.  Please try <a href="{{c.app.url}}refresh">refreshing</a> to correct this.</p>
     {% else %}
     <p><b>No (more) commits</b></p>
     {% endif %}

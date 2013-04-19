@@ -27,6 +27,7 @@ import tg
 from ming.base import Object
 from ming.orm import ThreadLocalORMSession, session
 from nose.tools import assert_equal
+from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
@@ -306,6 +307,21 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
         os.makedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD")
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
+
+    def test_is_empty(self):
+        assert not self.repo.is_empty()
+        with TempDirectory() as d:
+            repo2 = GM.Repository(
+                name='test',
+                fs_path=d.path,
+                url_path = '/test/',
+                tool = 'git',
+                status = 'creating')
+            repo2.init()
+            assert repo2.is_empty()
+            repo2.refresh()
+            ThreadLocalORMSession.flush_all()
+            assert repo2.is_empty()
 
 
 class TestGitCommit(unittest.TestCase):

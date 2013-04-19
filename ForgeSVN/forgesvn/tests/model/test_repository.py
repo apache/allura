@@ -30,6 +30,7 @@ import tg
 import ming
 from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
+from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
@@ -291,6 +292,21 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.tar.gz')
         self.repo.tarball('1')
         assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.tar.gz")
+
+    def test_is_empty(self):
+        assert not self.repo.is_empty()
+        with TempDirectory() as d:
+            repo2 = SM.Repository(
+                name='test',
+                fs_path=d.path,
+                url_path = '/test/',
+                tool = 'svn',
+                status = 'creating')
+            repo2.init()
+            assert repo2.is_empty()
+            repo2.refresh()
+            ThreadLocalORMSession.flush_all()
+            assert repo2.is_empty()
 
 class TestSVNRev(unittest.TestCase):
 
