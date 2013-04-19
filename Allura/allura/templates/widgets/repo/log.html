@@ -34,7 +34,6 @@
         <tr class="rev">
           <td>
             <div class="grid-14">
-                {{g.markdown.convert(commit.message)}}
                 {%if is_file%}
                     <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
                 {%endif%}
@@ -59,6 +58,7 @@
                 {%if is_file%}
                     ({{commit.tree.get_obj_by_path(request.params.get('path')).size|filesizeformat}})
                 {%endif%}
+                {{g.markdown.convert(commit.message)}}
             </div>
           </td>
           <td style="vertical-align: text-top">
