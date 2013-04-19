@@ -34,12 +34,10 @@
         <tr class="rev">
           <td>
             <div class="grid-14">
+                {{g.markdown.convert(commit.message)}}
                 {%if is_file%}
-                <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
+                    <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
                 {%endif%}
-                {%for tag in c.app.repo.symbolics_for_commit(commit)[1]%}
-                        <a href="{{c.app.repo.url()}}ci/{{tag}}/tree{{request.params.get('path')}}">{{tag}}</a>
-                {%endfor%}
                 {% if commit.committed.email != commit.authored.email %}
                 {% if commit.committer_url %}
                 <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
@@ -51,20 +49,16 @@
                 {% endif %}
                 {% endif %}
                 <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
+                {% if c.app.repo.symbolics_for_commit(commit)[1] %}
+                    ({% for tag in c.app.repo.symbolics_for_commit(commit)[1] -%}
+                        <a href="{{c.app.repo.url()}}ci/{{tag}}/tree{{request.params.get('path')}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
+                    {%- endfor %})
+                {% endif %}
                 by
                 {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
                 {%if is_file%}
-                    {%if request.params.get('path')[:1]=='/'%}
-                        {%set path = request.params.get('path')[1:]%}
-                    {%else%}
-                        {%set path = request.params.get('path')%}
-                    {%endif%}
-
-                    {{commit.tree.get_blob(path).size}} Bytes
+                    ({{commit.tree.get_obj_by_path(request.params.get('path')).size|filesizeformat}})
                 {%endif%}
-            </div>
-            <div>
-              {{g.markdown.convert(commit.message)}}
             </div>
           </td>
           <td style="vertical-align: text-top">
@@ -80,7 +74,7 @@
             </a>
               {%if is_file%}
               <br/>
-              <a href="{{commit.url()}}tree{{request.params.get('path')}}?format=raw ">Download</a>
+              <a href="{{commit.url()}}tree{{request.params.get('path')}}?format=raw">Download</a>
               {%endif%}
           </td>
         </tr>
