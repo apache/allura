@@ -72,3 +72,15 @@ def apply():
         if request.method == 'GET' and not(request.path.endswith('/')) and not(request.response_type) and len(request.params)==0:
             raise webob.exc.HTTPMovedPermanently(location=request.url+'/')
         return func(*args, **kwargs)
+
+
+def newrelic():
+    old_call = tg.controllers.DecoratedController._call
+
+    @h.monkeypatch(tg.controllers.DecoratedController,
+                   tg.controllers.decoratedcontroller.DecoratedController)
+    def _call(self, controller, *args, **kwargs):
+        '''Set NewRelic transaction name to actual controller name'''
+        import newrelic.agent
+        newrelic.agent.set_transaction_name(newrelic.agent.callable_name(controller))
+        return old_call(self, controller, *args, **kwargs)
