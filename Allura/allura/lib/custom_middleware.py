@@ -165,10 +165,10 @@ class SSLMiddleware(object):
         elif secure:
             resp = exc.HTTPFound(location='http://' + srv_path)
 
-        if resp is None:
-            resp = req.get_response(self.app)
+        if not resp:
+            resp = self.app
         return resp(environ, start_response)
-
+    
 class AlluraTimerMiddleware(TimerMiddleware):
     def timers(self):
         import genshi

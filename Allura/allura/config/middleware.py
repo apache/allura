@@ -124,6 +124,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Required for sessions
     app = SessionMiddleware(app, config)
     # Converts exceptions to HTTP errors, shows traceback in debug mode
+    tg.error.footer_html = '<!-- %s %s -->'  # don't use TG footer with extra CSS & images that take time to load
     app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
     # Redirect some status codes to /error/document
     if config.get('override_root') != 'task':
