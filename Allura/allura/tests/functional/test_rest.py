@@ -18,11 +18,11 @@
 #       under the License.
 
 from datetime import datetime, timedelta
+import json
 
 from pylons import app_globals as g
-from nose.tools import assert_equal
 import mock
-import json
+from nose.tools import assert_equal, assert_in, assert_not_in
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -70,6 +70,30 @@ class TestRestHome(TestRestApiBase):
     def test_project_code(self):
         r = self.api_get('/rest/p/test/')
         assert r.status_int == 200
+
+    @td.with_tool('test', 'Tickets', 'bugs')
+    @td.with_tool('test', 'Tickets', 'private-bugs')
+    def test_project_data(self):
+        # Deny anonymous to see 'private-bugs' tool
+        role = M.ProjectRole.by_name('*anonymous')._id
+        read_permission = M.ACE.allow(role, 'read')
+        app = M.Project.query.get(shortname='test').app_instance('private-bugs')
+        if read_permission in app.config.acl:
+            app.config.acl.remove(read_permission)
+
+        # admin sees both 'Tickets' tools
+        r = self.api_get('/rest/p/test/')
+        assert_equal(r.json['name'], 'test')
+        tool_mounts = [t['mount_point'] for t in r.json['tools']]
+        assert_in('bugs', tool_mounts)
+        assert_in('private-bugs', tool_mounts)
+
+        # anonymous sees only non-private tool
+        r = self.app.get('/rest/p/test/', extra_environ={'username': '*anonymous'})
+        assert_equal(r.json['name'], 'test')
+        tool_mounts = [t['mount_point'] for t in r.json['tools']]
+        assert_in('bugs', tool_mounts)
+        assert_not_in('private-bugs', tool_mounts)
 
     def test_unicode(self):
         self.app.post(
