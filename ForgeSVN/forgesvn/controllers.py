@@ -32,7 +32,7 @@ class BranchBrowser(repository.BranchBrowser):
     def index(self, limit=None, page=0, count=0, **kw):
         is_empty = c.app.repo.is_empty()
         latest = c.app.repo.latest(branch=self._branch)
-        if empty or not latest:
+        if is_empty or not latest:
             return dict(allow_fork=False, log=[], is_empty=is_empty)
         redirect(c.app.repo._impl.url_for_symbolic(latest._id) + 'tree/')
 

@@ -356,7 +356,7 @@ class GitImplementation(M.RepositoryImplementation):
                 os.remove(tmpfilename)
 
     def is_empty(self):
-        return len(self._git.heads) == 0
+        return not self._git or len(self._git.heads) == 0
 
 
 class _OpenedGitBlob(object):

@@ -667,7 +667,13 @@ class SVNImplementation(M.RepositoryImplementation):
                 os.remove(tmpfilename)
 
     def is_empty(self):
-        return self._svn.revpropget('revision', url=self._url)[0].number == 0
+        try:
+            return self._svn.revpropget('revision', url=self._url)[0].number == 0
+        except pysvn.ClientError as e:
+            if str(e).startswith("Unable to connect"):
+                return True
+            else:
+                raise
 
 
 Mapper.compile_all()

@@ -95,7 +95,7 @@ svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</
     {% endif %}
   {% elif c.app.repo.status == 'ready' %}
     {% if h.has_access(c.app, 'write')() %}
-    <p>The metadata for this repository is to be missing.  Please try <a href="{{c.app.url}}refresh">refreshing</a> to correct this.</p>
+    <p>The metadata for this repository is missing.  To fix, please try a <a href="{{c.app.url}}refresh">refresh</a>.</p>
     {% else %}
     <p><b>No (more) commits</b></p>
     {% endif %}
