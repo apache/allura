@@ -23,7 +23,7 @@ import logging
 import oauth2 as oauth
 from webob import exc
 from tg import expose, flash, redirect
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 
 from ming.orm import session
@@ -59,6 +59,13 @@ class RestController(object):
                 raise exc.HTTPForbidden
         else:
             return None
+
+    @expose('json:')
+    def index(self, **kw):
+        provider = g.entry_points['site_stats'].get('provider')
+        if provider:
+            return provider()
+        return dict()
 
     @expose()
     def _lookup(self, name, *remainder):
