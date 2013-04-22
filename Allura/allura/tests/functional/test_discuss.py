@@ -220,3 +220,21 @@ class TestAttachment(TestController):
         r = self.app.post(self.post_link + 'attach',
                           upload_files=[('file_info', 'test.o12', 'HiThere!')])
         r = self.app.post(alink, params=dict(delete='on'))
+
+    @patch('allura.model.discuss.Post.notify')
+    def test_reply_attach(self, notify):
+        notify.return_value = True
+        r = self.app.get(self.thread_link)
+        post_form = r.html.find('form', {'action':self.post_link + 'reply'})
+        params = dict()
+        inputs = post_form.findAll('input')
+
+        for field in inputs:
+            if field.has_key('name') and (field['name']!='file_info'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[post_form.find('textarea')['name']] = 'Reply'
+        r = self.app.post(self.post_link + 'reply',
+                          params=params,
+                          upload_files=[('file_info', 'test.txt', 'HiThere!')])
+        r = self.app.get(self.thread_link)
+        assert "test.txt" in r

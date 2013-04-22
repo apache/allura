@@ -344,11 +344,20 @@ class PostController(BaseController):
     @validate(pass_validator, error_handler=index)
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post(redir='.')
-    def reply(self, **kw):
+    def reply(self, file_info=None, **kw):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
         is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
+        if hasattr(file_info, 'file'):
+            mime_type = file_info.type
+            if not mime_type or '/' not in mime_type:
+                mime_type = utils.guess_mime_type(file_info.filename)
+            p.attach(
+                file_info.filename, file_info.file, content_type=mime_type,
+                post_id=p._id,
+                thread_id=p.thread_id,
+                discussion_id=p.discussion_id)
         redirect(request.referer)
 
     @h.vardec
