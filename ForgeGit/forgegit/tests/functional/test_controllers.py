@@ -140,7 +140,7 @@ class TestRootController(_TestCase):
         resp = self.app.get('/src-git/ref/master~/tags/')
 
     def _get_ci(self):
-        r = self.app.get('/src-git/ref/master:/')
+        r = self.app.get('/src-git/ref/master/')
         resp = r.follow()
         for tag in resp.html.findAll('a'):
             if tag['href'].startswith('/p/test/src-git/ci/'):
