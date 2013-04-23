@@ -670,7 +670,8 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             return self._svn.revpropget('revision', url=self._url)[0].number == 0
         except pysvn.ClientError as e:
-            if str(e).startswith("Unable to connect"):
+            if str(e).startswith("Unable to connect") or \
+                    str(e).startswith("Unable to open"):
                 return True
             else:
                 raise
