@@ -21,6 +21,8 @@ html2text==3.200.3dev-20121112
 # for unmerged fix for [#5411]
 GitPython==0.3.2.RC1.20130214
 
+WebError==0.10.3-20130423
+
 # for the migration scripts only
 postmarkup==1.2.0dev-20121116
 # suds needed for teamforge import script
