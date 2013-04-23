@@ -380,7 +380,7 @@ class RefsController(object):
         EOR = quote(c.app.END_OF_REF_ESCAPE)
         if EOR in remainder:
             i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
-            ref = '/'.join((ci,) + remainder[:i])
+            ref = '/'.join((ref,) + remainder[:i])
             remainder = remainder[i+1:]
         return self.BranchBrowserClass(ref), remainder
 
