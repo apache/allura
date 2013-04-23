@@ -24,7 +24,8 @@ $ mkdir ~/vagrant_allura && cd ~/vagrant_allura
 $ vagrant box add ubuntu-1204-server-amd64 http://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-vagrant-amd64-disk1.box
 $ vagrant init ubuntu-1204-server-amd64
 
-# Get a copy of the provisioning scripts (note, Vagrantfile may change from release to release and may need manual updating)
+# Get a copy of the provisioning scripts (note, Vagrantfile may change from
+# release to release and may need manual updating)
 $ cp -R /var/local/allura/vagrant/* .
 
 # At this point you can make whatever changes you want to the provisioning
@@ -34,7 +35,17 @@ $ cp -R /var/local/allura/vagrant/* .
 # Provision the box (this will take a while)
 $ vagrant up
 
-# If you get an error, you can run `vagrant ssh` to get in and debug, and then `vagrant destroy` to start over
+# If you get an error, you can run `vagrant ssh` to get in and debug, and then
+# `vagrant destroy` to start over
+
+# Once the provisioning succeeds, `vagrant ssh` to the vm and do any testing
+# you want to do. You should at least run `./update.sh && ~/start_allura` and
+# make sure you can access the app at http://localhost:8080. After testing,
+# remain logged into the vm for the next step (compression).
+
+# Compress the VM. This will make your final .box file much smaller. It'll
+# take a while. Once it finished, logout of the vm.
+$ sudo /vagrant/compress.sh
 
 # Package the Allura box
 $ vagrant package --vagrantfile Vagrantfile.pkg

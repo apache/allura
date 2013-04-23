@@ -47,6 +47,9 @@ then
     chown vagrant:vagrant /home/vagrant/.bash_profile
 fi
 
+# Make sure vagrant user can execute venv bin scripts
+sudo chown -R vagrant:vagrant /home/vagrant/env-allura/bin/
+
 # Setup Allura python packages
 cd /home/vagrant/src/allura
 sudo -u vagrant bash -c '. /home/vagrant/env-allura/bin/activate; ./rebuild-all.bash'
@@ -58,12 +61,6 @@ aptitude -y -q purge installation-report landscape-client landscape-common wirel
 aptitude -y -q purge python-dbus libnl1 python-smartpm linux-headers-server python-twisted-core libiw30 language-selector-common
 aptitude -y -q purge cloud-init juju python-twisted python-twisted-bin libdbus-glib-1-2 python-pexpect python-serial python-gobject python-pam accountsservice libaccountsservice0
 
-echo "Zeroing free space to aid VM compression..."
-cat /dev/zero > zero.fill;
-echo "Errors about 'No space left' are ok; carrying on..."
-sync;sleep 1;sync;rm -f zero.fill
-dd if=/dev/zero of=/EMPTY bs=1M
-rm -f /EMPTY
 echo "Done with allura_setup.sh"
 
 # sometimes mongo ends up stopped
