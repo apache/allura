@@ -134,7 +134,8 @@ class RepositoryApp(Application):
             max_branches = 10
             for b in self.repo.branches[:max_branches]:
                 links.append(SitemapEntry(
-                        b.name, self.repo.url_for_commit(b.name)+'tree/',
+                        b.name,
+                        quote(self.repo.url_for_commit(b.name) + 'tree/'),
                         small=b.count))
             if len(self.repo.branches) > max_branches:
                 links.append(
@@ -147,7 +148,8 @@ class RepositoryApp(Application):
             max_tags = 10
             for b in self.repo.repo_tags[:max_tags]:
                 links.append(SitemapEntry(
-                        b.name, self.repo.url_for_commit(b.name)+'tree/',
+                        b.name,
+                        quote(self.repo.url_for_commit(b.name) + 'tree/'),
                         small=b.count))
             if len(self.repo.repo_tags) > max_tags:
                 links.append(
