@@ -17,6 +17,7 @@
 
 import ew as ew_core
 import ew.jinja2_ew as ew
+import jinja2
 
 from allura.lib.widgets import form_fields as ffw
 
@@ -47,8 +48,11 @@ class SearchHelp(ffw.Lightbox):
         name='search_help_modal',
         trigger='a.search_help_modal')
 
-    content_template = '<div style="height:400px; overflow:auto;">%s</div>'
-
-    def __init__(self, content=''):
+    def __init__(self, comments=True, history=True):
         super(SearchHelp, self).__init__()
-        self.content = self.content_template % content
+        # can't use g.jinja2_env since this widget gets imported too early :(
+        jinja2_env = jinja2.Environment(loader=jinja2.PackageLoader('allura', 'templates/widgets'))
+        self.content = jinja2_env.get_template('search_help.html').render(dict(
+            comments=comments,
+            history=history,
+        ))

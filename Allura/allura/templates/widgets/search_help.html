@@ -1,0 +1,13 @@
+<div style="height:400px; overflow:auto;">
+    
+<h1>Searching</h1>
+<p>To search for an exact phrase, put it in quotes.  Example: "getting started docs"</p>
+<p>To exclude a word or phrase, put a dash in front of it.  Example: docs -help</p>
+{% if comments %}
+<p>You can use the 'Search comments?' checkbox to include comments in the search results.</p>
+{% endif %}
+{% if history %}
+<p>You can use the 'Search history?' checkbox to include previous revisions of items in the search results.</p>
+{% endif %}
+
+</div>

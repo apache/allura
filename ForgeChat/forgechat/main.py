@@ -33,7 +33,7 @@ from allura.lib import helpers as h
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post
 from allura.lib.security import require_access
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController
 
@@ -140,6 +140,7 @@ class RootController(BaseController):
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = SearchResults()
+        c.help_modal = SearchHelp(comments=False, history=False)
         search_params = kw
         search_params.update({
             'q': q or '',

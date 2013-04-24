@@ -42,7 +42,7 @@ from forgediscussion import model
 from forgediscussion import utils
 from forgediscussion import widgets as FW
 from allura.lib.widgets import discuss as DW
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 
 from forgediscussion.widgets.admin import AddForumShort
 
@@ -56,6 +56,7 @@ class RootController(BaseController, DispatchIndex):
         announcements_table=FW.AnnouncementsTable()
         add_forum=AddForumShort()
         search_results = SearchResults()
+        search_help = SearchHelp(comments=False, history=False)
 
     def _check_security(self):
         require_access(c.app, 'read')
@@ -131,6 +132,7 @@ class RootController(BaseController, DispatchIndex):
                    page=validators.Int(if_empty=0)))
     def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
         c.search_results = self.W.search_results
+        c.help_modal = self.W.search_help
         search_params = kw
         search_params.update({
             'q': q or '',

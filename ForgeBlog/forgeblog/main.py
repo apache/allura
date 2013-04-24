@@ -43,7 +43,7 @@ from allura.lib.security import has_access, require_access
 from allura.lib import widgets as w
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.widgets import form_fields as ffw
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController
 
@@ -68,6 +68,7 @@ class W:
     preview_post_form = widgets.PreviewPostForm()
     subscribe_form = SubscribeForm()
     search_results = SearchResults()
+    help_modal = SearchHelp()
 
 class ForgeBlogApp(Application):
     __version__ = version.__version__
@@ -212,6 +213,7 @@ class RootController(BaseController):
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, history=None, search_comments=None, project=None, limit=None, page=0, **kw):
         c.search_results = W.search_results
+        c.help_modal = W.help_modal
         search_params = kw
         search_params.update({
             'q': q or '',

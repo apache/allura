@@ -25,7 +25,7 @@ from allura.lib import helpers as h
 from allura.lib.search import search_app
 from allura.controllers import BaseController
 from allura.lib.widgets import form_fields as ffw
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 
 from webob import exc
 from pylons import tmpl_context as c, app_globals as g
@@ -44,6 +44,7 @@ log = logging.getLogger(__name__)
 
 class W:
     search_results = SearchResults()
+    search_help = SearchHelp(comments=False, history=False)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     create_short_url_lightbox = suw.CreateShortUrlWidget(
@@ -164,6 +165,7 @@ class RootController(BaseController):
                    project=validators.StringBool(if_empty=False)))
     def search(self, q=None, project=None, limit=None, page=0, **kw):
         c.search_results = W.search_results
+        c.help_modal = W.search_help
         search_params = kw
         search_params.update({
             'q': q or '',

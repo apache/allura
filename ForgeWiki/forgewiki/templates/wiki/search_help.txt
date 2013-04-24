@@ -1,6 +1,0 @@
-<h1>Searching the wiki</h1>
-<p>Searches use wiki page title and body text for matching.<p>
-<p>To search for an exact phrase, put it in quotes.  Example: "getting started docs"</p>
-<p>To exclude a word or phrase, put a dash in front of it.  Example: docs -help</p>
-<p>You can also use 'Search comments?' and 'Search history?' checkboxes to include comments and previous revisions of pages in the search results.</p>
-

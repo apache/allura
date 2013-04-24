@@ -26,7 +26,7 @@ from formencode import validators as V
 from allura.app import Application
 from allura import version
 from allura.lib.search import search_app
-from allura.lib.widgets.search import SearchResults
+from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ class SearchController(BaseController):
     @with_trailing_slash
     def index(self, q=None, history=None, **kw):
         c.search_results = SearchResults()
+        c.help_modal = SearchHelp(comments=False)
         pids = [c.project._id] + [
             p._id for p in c.project.subprojects ]
         project_match = ' OR '.join(

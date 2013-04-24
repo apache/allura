@@ -30,7 +30,6 @@ from pylons import request
 from formencode import validators
 from webob import exc
 from ming.orm import session
-import jinja2
 
 # Pyforge-specific imports
 from allura import model as M
@@ -54,9 +53,6 @@ from forgewiki.widgets.wiki import CreatePageWidget
 
 log = logging.getLogger(__name__)
 
-jinja_env = jinja2.Environment(loader=jinja2.PackageLoader('forgewiki', 'templates'))
-search_help_text = jinja_env.get_template('wiki/search_help.txt').render()
-
 
 class W:
     thread=w.Thread(
@@ -72,7 +68,7 @@ class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     search_results = SearchResults()
-    help_modal = SearchHelp(search_help_text)
+    help_modal = SearchHelp()
     icons={
         24:'images/wiki_24.png',
         32:'images/wiki_32.png',
