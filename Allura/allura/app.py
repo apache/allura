@@ -324,8 +324,7 @@ class Application(object):
         return ""
 
     def admin_menu(self, force_options=False):
-        """
-        Return the admin menu for this Application.
+        """Return the admin menu for this Application.
 
         Default implementation will return a menu with up to 3 links:
 
