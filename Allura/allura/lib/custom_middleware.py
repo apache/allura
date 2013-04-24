@@ -93,7 +93,8 @@ class LoginRedirectMiddleware(object):
     def __call__(self, environ, start_response):
         status, headers, app_iter, exc_info = call_wsgi_application(
             self.app, environ, catch_exc_info=True)
-        if status[:3] == '401':
+        is_api_request = environ.get('PATH_INFO', '').startswith('/rest/')
+        if status[:3] == '401' and not is_api_request:
             login_url = tg.config.get('auth.login_url', '/auth/')
             if environ['REQUEST_METHOD'] == 'GET':
                 return_to = environ['PATH_INFO']
