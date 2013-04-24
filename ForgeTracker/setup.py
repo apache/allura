@@ -43,6 +43,9 @@ setup(name='ForgeTracker',
       [allura]
       Tickets=forgetracker.tracker_main:ForgeTrackerApp
 
+      [allura.site_stats]
+      tickets_24hr=forgetracker.site_stats:tickets_stats_24hr
+
       [easy_widgets.resources]
       ew_resources=forgetracker.config.resources:register_ew_resources
 

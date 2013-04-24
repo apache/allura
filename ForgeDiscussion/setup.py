@@ -44,5 +44,8 @@ setup(name='ForgeDiscussion',
       # -*- Entry points: -*-
       [allura]
       Discussion=forgediscussion.forum_main:ForgeDiscussionApp
+
+      [allura.site_stats]
+      posts_24hr=forgediscussion.site_stats:posts_24hr
       """,
       )

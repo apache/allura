@@ -62,10 +62,13 @@ class RestController(object):
 
     @expose('json:')
     def index(self, **kw):
-        provider = g.entry_points['site_stats'].get('provider')
-        if provider:
-            return provider()
-        return dict()
+        summary = dict()
+        stats = dict()
+        for stat, provider in g.entry_points['site_stats'].iteritems():
+            stats[stat] = provider()
+        if stats:
+            summary['site_stats'] = stats
+        return summary
 
     @expose()
     def _lookup(self, name, *remainder):
