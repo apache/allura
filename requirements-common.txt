@@ -59,7 +59,6 @@ Pylons==1.0
 simplejson==2.2.1
 Tempita==0.5.1
 Routes==1.12.3
-WebError==0.10.3
 WebFlash==0.1a9
 WebHelpers==1.3
 

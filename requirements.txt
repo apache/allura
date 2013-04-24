@@ -4,3 +4,4 @@
 -r requirements-common.txt
 
 GitPython==0.3.2.RC1
+WebError==0.10.3
