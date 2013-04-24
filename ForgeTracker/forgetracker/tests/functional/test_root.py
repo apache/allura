@@ -328,9 +328,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/feed.atom')
         assert 'Private Ticket' not in r
         # ... or in the API ...
-        r = self.app.get('/rest/p/test/bugs/2/')
-        assert 'Private Ticket' not in r
-        assert '/auth/?return_to' in r.headers['Location']
+        r = self.app.get('/rest/p/test/bugs/2/', status=401)
         r = self.app.get('/rest/p/test/bugs/')
         assert 'Private Ticket' not in r
 
