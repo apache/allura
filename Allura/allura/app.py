@@ -204,13 +204,19 @@ class Application(object):
         return ''
 
     def has_access(self, user, topic):
-        '''Whether the user has access to send email to the given topic'''
+        """Return True if ``user`` can send email to ``topic``.
+        Default is False.
+
+        :type user: :class:`allura.model.User` instance
+        :type topic: str
+        :rtype: bool
+
+        """
         return False
 
     def is_visible_to(self, user):
-        """Return whether ``user`` can view this app.
+        """Return True if ``user`` can view this app.
 
-        :param user: user to check
         :type user: :class:`allura.model.User` instance
         :rtype: bool
 
@@ -235,7 +241,12 @@ class Application(object):
 
     @classmethod
     def default_options(cls):
-        ":return: the default config options"
+        """Return a ``(name, default value)`` mapping of this Application's
+        :class:`config_options <ConfigOption>`.
+
+        :rtype: dict
+
+        """
         return dict(
             (co.name, co.default)
             for co in cls.config_options)
@@ -297,8 +308,23 @@ class Application(object):
 
     def admin_menu(self, force_options=False):
         """
-        Apps may override this to provide additional admin menu items
+        Return the admin menu for this Application.
+
+        Default implementation will return a menu with up to 3 links:
+
+            - 'Permissions', if the current user has admin access to the
+                project in which this Application is installed
+            - 'Options', if this Application has custom options, or
+                ``force_options`` is True
+            - 'Label', for editing this Application's label
+
+        Subclasses should override this method to provide additional admin
+        menu items.
+
+        :param force_options: always include an 'Options' link in the menu,
+            even if this Application has no custom options
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+
         """
         admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
         links = []
@@ -310,7 +336,17 @@ class Application(object):
         return links
 
     def handle_message(self, topic, message):
-        '''Handle incoming email msgs addressed to this tool'''
+        """Handle incoming email msgs addressed to this tool.
+        Default is a no-op.
+
+        :param topic: portion of destination email address preceeding the '@'
+        :type topic: str
+        :param message: parsed email message
+        :type message: dict - result of
+            :func:`allura.lib.mail_util.parse_message`
+        :rtype: None
+
+        """
         pass
 
     def handle_artifact_message(self, artifact, message):

@@ -7,5 +7,3 @@
 
   .. autoclass:: Application
       :members:
-      :inherited-members:
-      :undoc-members:

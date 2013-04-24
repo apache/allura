@@ -63,9 +63,9 @@ API Documentation
 
 .. toctree::
    :maxdepth: 1
-      :glob:
+   :glob:
 
-      api/*
+   api/*
 
 Frequently Asked Questions
 =====================================================================
