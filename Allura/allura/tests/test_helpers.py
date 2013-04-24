@@ -90,9 +90,6 @@ def test_find_project():
     proj, rest = h.find_project('/p/testable/foo')
     assert proj is None
 
-def test_find_executable():
-    assert h.find_executable('bash') == '/bin/bash'
-
 def test_make_users():
     r = h.make_users([None]).next()
     assert r.username == '*anonymous', r
