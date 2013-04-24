@@ -72,6 +72,14 @@ def test_project():
     with td.raises(ToolError):
         # mount point reserved
         c.project.install_app('Wiki', 'feed')
+    with td.raises(ToolError):
+        # mount point too long
+        c.project.install_app('Wiki', 'a' * 64)
+    with td.raises(ToolError):
+        # mount point must begin with letter
+        c.project.install_app('Wiki', '1')
+    # single letter mount points are allowed
+    c.project.install_app('Wiki', 'a')
     # Make sure the project support page is reset if the tool it was pointing
     # to is uninstalled.
     assert c.project.support_page == ''
