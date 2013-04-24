@@ -2,9 +2,12 @@ rat-excludes.txt
 **/setup.cfg
 **/*.json
 **/*.git/
+**/*.egg-info/
 requirements*
 **/MANIFEST.in
+**/test.log
 Allura/allura/controllers/controller.template
+Allura/docs/_build/
 Allura/allura/etc/mime.types
 Allura/allura/lib/AsciiDammit.py
 Allura/allura/lib/widgets/resources/css/autocomplete.css
@@ -31,3 +34,4 @@ ForgeSVN/forgesvn/tests/data/testsvn/
 solr_config/core0/conf/spellings.txt
 solr_config/core1/conf/spellings.txt
 solr_config/solr.xml
+
