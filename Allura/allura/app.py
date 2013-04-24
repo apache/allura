@@ -118,41 +118,58 @@ class SitemapEntry(object):
         return self.url in request.upath_info or any([
             url in request.upath_info for url in self.matching_urls])
 
+
 class Application(object):
     """
     The base Allura pluggable application
 
-    After extending this, expose the app by adding an entry point in your setup.py:
+    After extending this, expose the app by adding an entry point in your
+    setup.py:
 
         [allura]
         myapp = foo.bar.baz:MyAppClass
 
-    :var status: the status level of this app.  'production' apps are available to all projects
-    :var bool searchable: toggle if the search box appears in the left menu
-    :var permissions: a list of named permissions used by the app
-    :var sitemap: a list of :class:`SitemapEntries <allura.app.SitemapEntry>` to create an app navigation.
-    :var bool installable: toggle if the app can be installed in a project
-    :var bool hidden: toggle if the app should be hidden from the list of tools
-    :var tool_description: tool's description that will be displayed to forge users
-    :var Controller self.root: the root Controller used for the app
-    :var Controller self.api_root: a Controller used for API access at /rest/<neighborhood>/<project>/<app>/
-    :var Controller self.admin: a Controller used in the admin interface
-    :var icons: a dictionary mapping icon sizes to application-specific icons paths
+    :cvar str status: One of 'production', 'beta', 'alpha', or 'user'. By
+        default, only 'production' apps are installable in projects. Default
+        is 'production'.
+    :cvar bool searchable: If True, show search box in the left menu of this
+        Application. Default is True.
+    :cvar list permissions: Named permissions used by instances of this
+        Application. Default is [].
+    :cvar list sitemap: :class:`SitemapEntries <allura.app.SitemapEntry>`
+        used to create the Application's navigation in the left side bar.
+        Default is [].
+    :cvar bool installable: Default is True, Application can be installed in
+        projects.
+    :cvar bool hidden: Default is False, Application is not hidden from the
+        list of a project's installed tools.
+    :cvar str tool_description: Text description of this Application.
+    :cvar Controller root: Serves content at
+        /<neighborhood>/<project>/<app>/. Default is None - subclasses should
+        override.
+    :cvar Controller api_root: Serves API access at
+        /rest/<neighborhood>/<project>/<app>/. Default is None - subclasses
+        should override to expose API access to the Application.
+    :ivar Controller admin: Serves admin functions at
+        /<neighborhood>/<project>/<admin>/<app>/. Default is a
+        :class:`DefaultAdminController` instance.
+    :cvar dict icons: Mapping of icon sizes to application-specific icon paths.
+
     """
 
     __version__ = None
     config_options = [
         ConfigOption('mount_point', str, 'app'),
         ConfigOption('mount_label', str, 'app'),
-        ConfigOption('ordinal', int, '0') ]
-    status_map = [ 'production', 'beta', 'alpha', 'user' ]
-    status='production'
-    script_name=None
-    root=None  # root controller
-    api_root=None
-    permissions=[]
-    sitemap = [ ]
-    installable=True
+        ConfigOption('ordinal', int, '0')]
+    status_map = ['production', 'beta', 'alpha', 'user']
+    status = 'production'
+    script_name = None
+    root = None  # root controller
+    api_root = None
+    permissions = []
+    sitemap = []
+    installable = True
     searchable = False
     DiscussionClass = model.Discussion
     PostClass = model.Post
@@ -207,8 +224,8 @@ class Application(object):
         """Return True if ``user`` can send email to ``topic``.
         Default is False.
 
-        :type user: :class:`allura.model.User` instance
-        :type topic: str
+        :param user: :class:`allura.model.User` instance
+        :param topic: str
         :rtype: bool
 
         """
