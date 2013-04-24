@@ -19,9 +19,12 @@
 
 from datetime import datetime, timedelta
 
+from nose.tools import assert_equal
+
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
+from allura import model as M
 
 class TestRestHome(TestRestApiBase):
 
@@ -77,3 +80,19 @@ class TestRestHome(TestRestApiBase):
         assert r.status_int == 200
         assert r.json['title'].encode('utf-8') == 'tést', r.json
 
+    @td.with_wiki
+    def test_deny_access(self):
+        wiki = M.Project.query.get(shortname='test').app_instance('wiki')
+        anon_read_perm = M.ACE.allow(M.ProjectRole.by_name('*anonymous')._id, 'read')
+        auth_read_perm = M.ACE.allow(M.ProjectRole.by_name('*authenticated')._id, 'read')
+        acl = wiki.config.acl
+        if anon_read_perm in acl:
+            acl.remove(anon_read_perm)
+        if auth_read_perm in acl:
+            acl.remove(auth_read_perm)
+        self.app.get('/rest/p/test/wiki/Home/',
+                     extra_environ={'username': '*anonymous'},
+                     status=401)
+        self.app.get('/rest/p/test/wiki/Home/',
+                     extra_environ={'username': 'test-user-0'},
+                     status=401)
