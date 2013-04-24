@@ -454,16 +454,18 @@ class CommitBrowser(BaseController):
     def tarball(self, **kw):
         if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
             raise exc.HTTPNotFound()
-        status = c.app.repo.get_tarball_status(self._revision)
+        rev = self._commit.url().split('/')[-2]
+        status = c.app.repo.get_tarball_status(rev)
         if status is None:
-            allura.tasks.repo_tasks.tarball.post(revision=self._revision)
-        return dict(commit=self._commit, revision=self._revision, status=status)
+            allura.tasks.repo_tasks.tarball.post(revision=rev)
+        return dict(commit=self._commit, revision=rev, status=status)
 
     @expose('json:')
     def tarball_status(self):
         if not asbool(tg.config.get('scm.repos.tarball.enable', False)):
             raise exc.HTTPNotFound()
-        return dict(status=c.app.repo.get_tarball_status(self._revision))
+        rev = self._commit.url().split('/')[-2]
+        return dict(status=c.app.repo.get_tarball_status(rev))
 
 
     @expose('jinja:allura:templates/repo/log.html')

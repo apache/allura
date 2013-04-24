@@ -336,12 +336,15 @@ class TestRootController(_TestCase):
     def test_tarball(self):
         ci = self._get_ci()
         r = self.app.get(ci + 'tree/')
+        assert '/p/test/src-git/ci/master/tarball' in r
         assert 'Download Snapshot' in r
-        r = self.app.get(ci + 'tarball')
+        r = self.app.get('/p/test/src-git/ci/master/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')
+        assert '{"status": "ready"}' in r
+        r = self.app.get('/p/test/src-git/ci/master/tarball_status')
         assert '{"status": "ready"}' in r
 
 
