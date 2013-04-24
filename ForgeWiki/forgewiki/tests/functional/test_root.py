@@ -131,7 +131,7 @@ class TestRootController(TestController):
         assert btn is not None, "Can't find a help button"
         div = r.html.find('div', attrs={'id': 'lightbox_search_help_modal'})
         assert div is not None, "Can't find help text"
-        assert_in('Searching the wiki', div.text)
+        assert_in('To search for an exact phrase', div.text)
 
     def test_page_index(self):
         response = self.app.get('/wiki/tést/')
