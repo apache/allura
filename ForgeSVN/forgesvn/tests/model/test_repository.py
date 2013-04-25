@@ -21,6 +21,7 @@ import unittest
 import pkg_resources
 from itertools import count, product
 from datetime import datetime
+from zipfile import ZipFile
 
 from collections import defaultdict
 from pylons import tmpl_context as c
@@ -292,6 +293,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.zip')
         self.repo.tarball('1')
         assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip")
+        tarball_zip = ZipFile('/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip', 'r')
+        assert_equal(tarball_zip.namelist(), ['test-src-1/README'])
 
     def test_is_empty(self):
         assert not self.repo.is_empty()

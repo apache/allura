@@ -29,7 +29,7 @@ from datetime import datetime
 import tempfile
 import tarfile
 from shutil import rmtree
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import tg
 import pysvn
@@ -640,8 +640,8 @@ class SVNImplementation(M.RepositoryImplementation):
     def tarball(self, commit):
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
-        path = os.path.join(self._repo.tarball_path, commit)
         archive_name = self._repo.tarball_filename(commit)
+        path = os.path.join(self._repo.tarball_path, archive_name)
         filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
         if os.path.exists(path):
@@ -651,9 +651,11 @@ class SVNImplementation(M.RepositoryImplementation):
                              path,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
             with ZipFile(tmpfilename, 'w') as tarball_zip:
-                for dirname, subdirs, files in os.walk(path):
-                    for f in files:
-                        tarball_zip.write(os.path.join(dirname, f), os.path.relpath(os.path.join(dirname, f), path))
+               for root, dirs, files in os.walk(path):
+                    for name in files:
+                        file_to_zip = os.path.join(root, name)
+                        arcname = file_to_zip[len(os.path.dirname(path)):].strip('/')
+                        tarball_zip.write(file_to_zip, arcname, compress_type=ZIP_DEFLATED)
 
             os.rename(tmpfilename, filename)
         finally:
