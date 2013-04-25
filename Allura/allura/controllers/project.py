@@ -317,8 +317,6 @@ class ProjectController(object):
     @expose()
     def _lookup(self, name, *remainder):
         name = unquote(name)
-        if not h.re_path_portion.match(name):
-            raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
                                          neighborhood_id=c.project.neighborhood_id)
         if subproject:
@@ -592,7 +590,7 @@ class NeighborhoodAdminController(object):
 
 
         for tool in validate_tools.keys():
-            if not h.re_tool_mount_point.match(tool):
+            if tool not in g.entry_points['tool']:
                 flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
                 result = False
         if result:

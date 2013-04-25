@@ -15,11 +15,24 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
+from unittest import TestCase
+
 from allura.app import Application
 from allura import model
 from allura.tests.unit import WithDatabase
 from allura.tests.unit.patches import fake_app_patch
 from allura.tests.unit.factories import create_project, create_app_config
+
+
+class TestApplication(TestCase):
+
+    def test_validate_mount_point(self):
+        app = Application
+        mount_point = '1.2+foo_bar'
+        self.assertIsNone(app.validate_mount_point(mount_point))
+        app.relaxed_mount_points = True
+        self.assertIsNotNone(app.validate_mount_point(mount_point))
 
 
 class TestInstall(WithDatabase):

@@ -53,6 +53,7 @@ class RepositoryApp(Application):
     tool_label='Repository'
     default_mount_label='Code'
     default_mount_point='code'
+    relaxed_mount_points=True
     ordinal=2
     forkable=False
     default_branch_name=None # master or default or some such
