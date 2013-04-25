@@ -46,8 +46,6 @@ def solarize(obj):
     text = doc['text']
     text = g.markdown.convert(text)
     doc['text'] = jinja2.Markup.escape(text).striptags()
-    # striptags decodes html entities, so we should escape them again
-    doc['text'] = jinja2.Markup.escape(doc['text'])
     return doc
 
 class SearchError(SolrError):
@@ -201,7 +199,7 @@ def search_app(q='', fq=None, app=True, **kw):
     score_url = url(request.path, params=params)
     params.update({'sort': date_url})
     date_url = url(request.path, params=params)
-    return dict(q=q, history=history, results=results or [],
+    return dict(q=q, history=history, results=list(results) or [],
                 count=count, limit=limit, page=page, search_error=search_error,
                 sort_score_url=score_url, sort_date_url=date_url,
                 sort_field=field)
