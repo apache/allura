@@ -60,9 +60,16 @@ from allura.lib.zarkov_helpers import ZarkovClient, zmq
 
 log = logging.getLogger(__name__)
 
+BIG_TEXT_THRESHOLD = 90000
+
 
 class ForgeMarkdown(markdown.Markdown):
     def convert(self, source):
+        if len(source) > BIG_TEXT_THRESHOLD:
+            # if text is too big, markdown can take a long time to process it, so we return it as a plain text
+            log.info('Text is too big. Skipping markdown processing')
+            escaped = cgi.escape(h.really_unicode(source))
+            return h.html.literal(u'<pre>%s</pre>' % escaped)
         try:
             return markdown.Markdown.convert(self, source)
         except Exception:

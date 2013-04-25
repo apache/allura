@@ -283,6 +283,14 @@ def test_markdown_within_html():
 </div>''' in r, r
 
 
+def test_markdown_big_text():
+    '''If text is too big g.markdown.convert should return plain text'''
+    from allura.lib.app_globals import BIG_TEXT_THRESHOLD
+    text = 'a' * (BIG_TEXT_THRESHOLD + 1)
+    assert_equal(g.markdown.convert(text), '<pre>%s</pre>' % text)
+    assert_equal(g.markdown_wiki.convert(text), '<pre>%s</pre>' % text)
+
+
 @td.with_wiki
 def test_markdown_basics():
     with h.push_context('test', 'wiki', neighborhood='Projects'):
