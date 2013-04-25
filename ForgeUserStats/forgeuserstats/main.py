@@ -106,8 +106,8 @@ class ForgeUserStatsApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        role_admin = M.ProjectRole.by_name('Admin')._id
-        role_anon = M.ProjectRole.by_name('*anonymous')._id
+        role_admin = M.ProjectRole.by_name('Admin', project)._id
+        role_anon = M.ProjectRole.by_name('*anonymous', project)._id
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'admin')]
