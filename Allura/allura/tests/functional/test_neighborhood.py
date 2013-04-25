@@ -741,10 +741,9 @@ class TestNeighborhood(TestController):
         assert_equal(r.json, dict(suggested_name='test'))
 
     def test_name_check(self):
-        r = self.app.get('/p/check_names?unix_name=My+Moz')
-        assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        r = self.app.get('/p/check_names?unix_name=Te%st!')
-        assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
+        for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):
+            r = self.app.get('/p/check_names?unix_name=%s' % name)
+            assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.get('/p/check_names?unix_name=mymoz')
         assert_equal(r.json['unixname_message'], False)
         r = self.app.get('/p/check_names?unix_name=test')
