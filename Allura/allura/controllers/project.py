@@ -583,14 +583,16 @@ class NeighborhoodAdminController(object):
         result = True
         if anchored_tools.strip() != '':
             try:
-                validate_tools = dict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools.replace(' ', '').split(','))
+                validate_tools = dict(
+                    (tool.split(':')[0].lower(), tool.split(':')[1])
+                    for tool in anchored_tools.replace(' ', '').split(','))
             except Exception:
                 flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
                 result = False
 
 
         for tool in validate_tools.keys():
-            if not h.re_path_portion.match(tool):
+            if not h.re_tool_mount_point.match(tool):
                 flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
                 result = False
         if result:
