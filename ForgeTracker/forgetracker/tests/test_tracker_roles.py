@@ -41,7 +41,7 @@ def test_role_assignments():
     assert check_access('configure') == (True, False, False)
     assert check_access('read') == (True, True, True)
     assert check_access('update') == (True, False, False)
-    assert check_access('create') == (True, False, False)
+    assert check_access('create') == (True, True, False)
     assert check_access('unmoderated_post') == (True, True, False)
     assert check_access('post') == (True, True, False)
     assert check_access('moderate') == (True, False, False)
