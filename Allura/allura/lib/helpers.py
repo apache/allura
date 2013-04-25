@@ -53,8 +53,9 @@ from allura.lib import AsciiDammit
 from .security import has_access
 
 re_path_portion_fragment = re.compile(r'[a-z][-a-z0-9]*')
-re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,}$')
+re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,62}$')
 re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
+re_relaxed_tool_mount_point = re.compile(r'^[a-z0-9][-a-z0-9_\.\+]{0,62}$')
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
 \w+# name...

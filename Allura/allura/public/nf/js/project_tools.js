@@ -28,20 +28,30 @@
     var new_mount_point = install_form.find('input.new_mount_point');
     var new_mount_label = install_form.find('input.new_mount_label');
     var install_tool_label = $('#install_tool_label');
+    var mount_point_rule_names = $('#install_form .mount-point-rule-names');
     install_popup.append(install_form.show());
     $('a.install_trig').click(function () {
-        var datatool = $(this).attr('data-tool');
+        var datatool = $(this).data('tool');
+        var relaxed_mount_points = $(this).data('relaxed-mount-points');
+        install_form.find('.mount-point-name-rules').hide();
         if (datatool) {
             var tool = defaults[datatool];
             install_tool_label.html(tool.default_label);
             new_ep_name.val(datatool);
             new_mount_point.val(tool.default_mount);
             new_mount_label.val(tool.default_label);
+            if (relaxed_mount_points) {
+              install_form.find('.mount-point-name-rules.tool-relaxed').show();
+            }
+            else {
+              install_form.find('.mount-point-name-rules.tool').show();
+            }
         } else {
             install_tool_label.html("Subproject");
             new_ep_name.val('');
             new_mount_point.val('');
             new_mount_label.val('');
+            install_form.find('.mount-point-name-rules.subproject').show();
         }
     });
     // Edit popup

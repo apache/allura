@@ -226,8 +226,6 @@ class ProjectRestController(object):
     def _lookup(self, name, *remainder):
         if not name:
             return self, ()
-        if not h.re_path_portion.match(name):
-            raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
                                          neighborhood_id=c.project.neighborhood_id,
                                          deleted=False)

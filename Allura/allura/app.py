@@ -28,7 +28,7 @@ from bson import ObjectId
 from ming.orm import session, state
 from ming.utils import LazyProperty
 
-from allura.lib.helpers import push_config, vardec
+from allura.lib import helpers as h
 from allura.lib.security import require, has_access, require_access
 from allura import model
 from allura.controllers import BaseController
@@ -134,6 +134,10 @@ class Application(object):
     :var bool installable: toggle if the app can be installed in a project
     :var bool hidden: toggle if the app should be hidden from the list of tools
     :var tool_description: tool's description that will be displayed to forge users
+    :var relaxed_mount_points: Set to True to relax the default mount point
+        naming restrictions for this Application. Default is False. See
+        :attr:`default mount point naming rules <allura.lib.helpers.re_tool_mount_point>` and
+        :attr:`relaxed mount point naming rules <allura.lib.helpers.re_relaxed_tool_mount_point>`.
     :var Controller self.root: the root Controller used for the app
     :var Controller self.api_root: a Controller used for API access at /rest/<neighborhood>/<project>/<app>/
     :var Controller self.admin: a Controller used in the admin interface
@@ -161,6 +165,7 @@ class Application(object):
     tool_description="This is a tool for Allura forge."
     default_mount_label='Tool Name'
     default_mount_point='tool'
+    relaxed_mount_points=False
     ordinal=0
     hidden = False
     icons={
@@ -184,6 +189,24 @@ class Application(object):
 
     def parent_security_context(self):
         return self.config.parent_security_context()
+
+    @classmethod
+    def validate_mount_point(cls, mount_point):
+        """Check if ``mount_point`` is valid for this Application.
+
+        In general, subclasses should not override this, but rather toggle
+        the strictness of allowed mount point names by toggling
+        :attr:`Application.relaxed_mount_points`.
+
+        :param mount_point: the mount point to validate
+        :type mount_point: str
+        :rtype: A :class:`regex Match object <_sre.SRE_Match>` if the mount
+                point is valid, else None
+
+        """
+        re = (h.re_relaxed_tool_mount_point if cls.relaxed_mount_points
+                else h.re_tool_mount_point)
+        return re.match(mount_point)
 
     @classmethod
     def status_int(self):
@@ -392,7 +415,7 @@ class DefaultAdminController(BaseController):
     @expose()
     @require_post()
     def configure(self, **kw):
-        with push_config(c, app=self.app):
+        with h.push_config(c, app=self.app):
             require_access(self.app, 'configure')
             is_admin = self.app.config.tool_name == 'admin'
             if kw.pop('delete', False):
@@ -423,7 +446,7 @@ class DefaultAdminController(BaseController):
 
     @without_trailing_slash
     @expose()
-    @vardec
+    @h.vardec
     @require_post()
     def update(self, card=None, **kw):
         self.app.config.acl = []
