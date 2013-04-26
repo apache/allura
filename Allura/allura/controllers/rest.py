@@ -62,6 +62,27 @@ class RestController(object):
 
     @expose('json:')
     def index(self, **kw):
+        """Return site summary information as JSON.
+
+        Currently, the only summary information returned are any site_stats
+        whose providers are defined as entry points under the
+        'allura.site_stats' group in a package or tool's setup.py, e.g.::
+
+            [allura.site_stats]
+            new_users_24hr = allura.site_stats:new_users_24hr
+
+        The stat provider will be called with no arguments to generate the
+        stat, which will be included under a key equal to the name of the
+        entry point.
+
+        Example output::
+
+            {
+                'site_stats': {
+                    'new_users_24hr': 10
+                }
+            }
+        """
         summary = dict()
         stats = dict()
         for stat, provider in g.entry_points['site_stats'].iteritems():
