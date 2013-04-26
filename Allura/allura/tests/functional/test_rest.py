@@ -19,7 +19,10 @@
 
 from datetime import datetime, timedelta
 
+from pylons import app_globals as g
 from nose.tools import assert_equal
+import mock
+import json
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -96,3 +99,21 @@ class TestRestHome(TestRestApiBase):
         self.app.get('/rest/p/test/wiki/Home/',
                      extra_environ={'username': 'test-user-0'},
                      status=401)
+
+    def test_index(self):
+        eps = {
+                'site_stats': {
+                    'foo_24hr': lambda: 42,
+                    'bar_24hr': lambda: 84,
+                    'qux_24hr': lambda: 0,
+                },
+            }
+        with mock.patch.dict(g.entry_points, eps):
+            response = self.app.get('/rest/')
+            assert_equal(response.json, {
+                'site_stats': {
+                        'foo_24hr': 42,
+                        'bar_24hr': 84,
+                        'qux_24hr': 0,
+                    },
+                })
