@@ -36,8 +36,8 @@ then
     echo "Solr is running."
 else
     echo "Starting Solr..."
-    cd /home/vagrant/src/apache-solr-1.4.1/example
-    nohup java -Dsolr.solr.home=/home/vagrant/src/allura/solr_config -jar start.jar >/var/log/allura/solr.log 2>&1 &
+    cd /home/vagrant/src/solr-4.2.1/example
+    nohup java -jar start.jar >/var/log/allura/solr.log 2>&1 &
 fi
 
 cd /home/vagrant/src/allura/Allura
