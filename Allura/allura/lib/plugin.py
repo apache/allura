@@ -464,7 +464,7 @@ class ProjectRegistrationProvider(object):
 
         self.rate_limit(user, neighborhood)
 
-        if not h.re_path_portion.match(shortname.replace('/', '')):
+        if not h.re_project_name.match(shortname.replace('/', '')):
             raise ValueError('Invalid project shortname: %s' % shortname)
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
@@ -582,7 +582,7 @@ class ProjectRegistrationProvider(object):
 
     def register_subproject(self, project, name, user, install_apps):
         from allura import model as M
-        assert h.re_path_portion.match(name), 'Invalid subproject shortname'
+        assert h.re_project_name.match(name), 'Invalid subproject shortname'
         shortname = project.shortname + '/' + name
         sp = M.Project(
             parent_id=project._id,

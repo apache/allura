@@ -99,7 +99,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     @expose()
     def _lookup(self, name, *remainder):
-        if not h.re_path_portion.match(name):
+        if not h.re_project_name.match(name):
             raise exc.HTTPNotFound, name
         subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
                                          neighborhood_id=self.p_nbhd._id)

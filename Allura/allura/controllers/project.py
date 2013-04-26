@@ -79,7 +79,7 @@ class NeighborhoodController(object):
     @expose()
     def _lookup(self, pname, *remainder):
         pname = unquote(pname)
-        if not h.re_path_portion.match(pname):
+        if not h.re_project_name.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
@@ -185,7 +185,7 @@ class NeighborhoodController(object):
             W.add_project.fields['project_name'].validate(project_name, '')
         except Invalid as e:
             result['name_message'] = str(e)
-        if not h.re_path_portion.match(unix_name) or not (3 <= len(unix_name) <= 15):
+        if not h.re_project_name.match(unix_name) or not (3 <= len(unix_name) <= 15):
             result['unixname_message'] = 'Please use only letters, numbers, and dashes 3-15 characters long.'
         else:
             result['unixname_message'] = plugin.ProjectRegistrationProvider.get().name_taken(unix_name, self.neighborhood)

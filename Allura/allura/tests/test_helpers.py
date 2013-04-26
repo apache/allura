@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from unittest import TestCase
 from os import path
 from mock import Mock, patch
 
@@ -34,13 +35,31 @@ def setUp(self):
     """Method called by nose before running each test"""
     setup_basic_test()
 
-def test_make_safe_path_portion():
-    s = u'Задачи'
-    new_s = h.make_safe_path_portion(s)
-    assert len(new_s) == 0
-    s = 'åß∂ƒ'
-    new_s = h.make_safe_path_portion(s)
-    assert new_s == 'ab'
+
+class TestMakeSafePathPortion(TestCase):
+    def setUp(self):
+        self.f = h.make_safe_path_portion
+
+    def test_no_latin1_chars(self):
+        s = self.f(u'Задачи')
+        self.assertEqual(s, '')
+
+    def test_some_latin1_chars(self):
+        s = self.f('åß∂ƒ')
+        self.assertEqual(s, 'ab')
+
+    def test_strict_mount_point_names(self):
+        s = self.f('1this+is.illegal', relaxed=False)
+        self.assertEqual(s, 'this-is-illegal')
+        s = self.f('this-1-is-legal', relaxed=False)
+        self.assertEqual(s, 'this-1-is-legal')
+
+    def test_relaxed_mount_point_names(self):
+        s = self.f('1_this+is.legal')
+        self.assertEqual(s, '1_this+is.legal')
+        s = self.f('not*_legal')
+        self.assertEqual(s, 'not-legal')
+
 
 def test_really_unicode():
     here_dir = path.dirname(__file__)

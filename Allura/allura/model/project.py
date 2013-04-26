@@ -606,7 +606,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 return ac
 
     def new_subproject(self, name, install_apps=True, user=None):
-        if not h.re_path_portion.match(name):
+        if not h.re_project_name.match(name):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         provider = plugin.ProjectRegistrationProvider.get()
         return provider.register_subproject(self, name, user or c.user, install_apps)
