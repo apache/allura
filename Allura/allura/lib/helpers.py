@@ -52,10 +52,16 @@ from allura.lib.decorators import exceptionless
 from allura.lib import AsciiDammit
 from .security import has_access
 
-re_path_portion_fragment = re.compile(r'[a-z][-a-z0-9]*')
-re_path_portion = re.compile(r'^[a-z][-a-z0-9]{2,62}$')
+
+# validates project, subproject, and user names
+re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,62}$')
+
+# validates tool mount point names
 re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
+re_tool_mount_point_fragment = re.compile(r'[a-z][-a-z0-9]*')
 re_relaxed_tool_mount_point = re.compile(r'^[a-z0-9][-a-z0-9_\.\+]{0,62}$')
+re_relaxed_tool_mount_point_fragment = re.compile(r'[a-z0-9][-a-z0-9_\.\+]*')
+
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
 \w+# name...
@@ -67,17 +73,24 @@ re_clean_vardec_key = re.compile(r'''\A
 )+
 \Z''', re.VERBOSE)
 
-def make_safe_path_portion(ustr):
-    """Return an ascii representation of `ustr`
+def make_safe_path_portion(ustr, relaxed=True):
+    """Return an ascii representation of ``ustr`` that conforms to mount point
+    naming :attr:`rules <re_tool_mount_point_fragment>`.
 
-    Will return an empty string if no char in `ustr`
-    is latin1-encodable.
+    Will return an empty string if no char in ``ustr`` is latin1-encodable.
+
+    :param relaxed: Use relaxed mount point naming rules (allows more
+        characters. See :attr:`re_relaxed_tool_mount_point_fragment`.
+    :returns: The converted string.
+
     """
+    regex = (re_relaxed_tool_mount_point_fragment if relaxed else
+                re_tool_mount_point_fragment)
     ustr = really_unicode(ustr)
     s = ustr.encode('latin1', 'ignore')
     s = AsciiDammit.asciiDammit(s)
     s = s.lower()
-    s = '-'.join(re_path_portion_fragment.findall(s))
+    s = '-'.join(regex.findall(s))
     s = s.replace('--', '-')
     return s
 

@@ -88,7 +88,7 @@ class BasetestNeighborhoodRootController(WsgiDispatchController, NeighborhoodCon
     @expose()
     def _lookup(self, pname, *remainder):
         pname = unquote(pname)
-        if not h.re_path_portion.match(pname):
+        if not h.re_project_name.match(pname):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None:

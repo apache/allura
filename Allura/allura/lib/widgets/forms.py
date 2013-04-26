@@ -618,7 +618,7 @@ class RegistrationForm(ForgeForm):
         username = ew.TextField(
             label='Desired Username',
             validator=fev.Regex(
-                h.re_path_portion))
+                h.re_project_name))
         username.validator._messages['invalid'] = (
             'Usernames must include only letters, numbers, and dashes.'
             ' They must also start with a letter and be at least 3 characters'

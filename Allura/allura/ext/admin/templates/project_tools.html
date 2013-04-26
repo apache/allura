@@ -30,7 +30,7 @@
   <div class="nested-grid-container">
     {% for tool in installable_tools %}
       <span class="tcenter grid-4 installable_tool">
-        <a class="install_trig" data-tool="{{ tool['name'] }}" data-relaxed-mount-points="{{ tool.app.relaxed_mount_points and 'true' or 'false' }}">
+        <a class="install_trig" data-tool="{{ tool['name'] }}" data-relaxed-mount-points="{{ 'true' if tool.app.relaxed_mount_points else 'false' }}">
           <span class="tool_title">{{ tool['app'].tool_label }}{{' (%s)' % tool.app.status if tool.app.status != 'production' else ''}}</span><br />
           <img src="{{ g.theme.app_icon_url(tool['app'], 32) or 'unk.png' }}" alt="">
         </a>
