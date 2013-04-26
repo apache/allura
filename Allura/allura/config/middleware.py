@@ -84,7 +84,11 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
         [pkg_resources.resource_filename('allura', 'etc/mime.types')]
         + mimetypes.knownfiles)
     patches.apply()
-    if asbool(app_conf.get('newrelic')):
+    try:
+        import newrelic
+    except ImportError:
+        pass
+    else:
         patches.newrelic()
     # Configure MongoDB
     ming.configure(**app_conf)

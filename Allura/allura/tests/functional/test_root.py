@@ -31,6 +31,8 @@ Please read http://pythonpaste.org/webtest/ for more information.
 from tg import config
 from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
+import mock
+from IPython.testing.decorators import module_not_available, skipif
 
 from allura.tests import decorators as td
 from allura.tests import TestController
@@ -146,3 +148,14 @@ class TestRootController(TestController):
     def test_slash_redirect(self):
         r = self.app.get('/p',status=301)
         r = self.app.get('/p/',status=302)
+
+    @skipif(module_not_available('newrelic'))
+    def test_newrelic_set_transaction_name(self):
+        from allura.controllers.project import NeighborhoodController
+        with mock.patch('newrelic.agent.callable_name') as callable_name,\
+             mock.patch('newrelic.agent.set_transaction_name') as set_transaction_name:
+            callable_name.return_value = 'foo'
+            r = self.app.get('/p/')
+            arg = callable_name.call_args[0][0]
+            assert_equal(arg.undecorated, NeighborhoodController.index.undecorated)
+            set_transaction_name.assert_called_with('foo')
