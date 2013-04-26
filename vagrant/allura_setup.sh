@@ -19,15 +19,13 @@
 
 # Install Solr
 cd /home/vagrant/src
-if [ ! -d apache-solr-1.4.1 ]
+if [ ! -d solr-4.2.1 ]
 then
     echo "Installing Solr..."
-    wget -nv http://archive.apache.org/dist/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
-    tar xf apache-solr-1.4.1.tgz && rm -f apache-solr-1.4.1.tgz
-    cd apache-solr-1.4.1/example/
-    mkdir -p /home/vagrant/src/allura/solr_config/conf
-    cp solr/conf/solrconfig.xml /home/vagrant/src/allura/solr_config/conf/
-    chown -R vagrant:vagrant /home/vagrant/src/apache-solr* /home/vagrant/src/allura/solr_config/conf/
+    wget -nv http://archive.apache.org/dist/lucene/solr/4.2.1/solr-4.2.1.tgz
+    tar xf solr-4.2.1.tgz && rm -f solr-4.2.1.tgz
+    cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
+    chown -R vagrant:vagrant /home/vagrant/src/solr-4.2.1
 fi
 
 # Create startup script
