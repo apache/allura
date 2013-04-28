@@ -175,14 +175,11 @@ def test_macro_members():
     p_test.add_user(M.User.by_username('test-user-0'), ['Member'])
     ThreadLocalORMSession.flush_all()
     r = g.markdown_wiki.convert('[[members limit=2]]')
-    assert_equal(r,
-        '<div class="markdown_content">'
-            '<h6>Project Members:</h6>'
-            '<ul class="md-users-list">'
-                '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li>'
-                '<li><a href="/u/test-user/">Test User</a></li>'
-                '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>'
-            '</ul>\n'
+    assert_equal(r, '<div class="markdown_content"><h6>Project Members:</h6>\n'
+        '<ul class="md-users-list">\n'
+        '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li><li><a href="/u/test-user/">Test User</a></li>\n'
+        '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>\n'
+        '</ul>\n'
         '</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
@@ -190,7 +187,7 @@ def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6><ul class="md-users-list"><li><a href="/u/test-admin/">Test Ådmin</a></li></ul>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin</a></li>\n</ul>\n</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins_one_br():

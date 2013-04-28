@@ -1,0 +1,10 @@
+<div class="neighborhood_feed_entry">
+{% for feed in feeds%}
+    <h3><a href="{{feed.href}}">{{feed.title}}</a></h3>
+    <p>
+    by <em>{{feed.author}}</em>
+    <small>{{feed.ago}}</small>
+    </p>
+    <p>{{feed.description}}</p>
+</div>
+{%endfor%}

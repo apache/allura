@@ -34,3 +34,25 @@ class DownloadButton(ew.Widget):
         yield ew.jinja2_ew.JSScript('''
             $(function(){$(".download-button-%s").load("%s");
         });''' % (self.project._id,self.project.best_download_url()))
+
+class NeighborhoodFeeds(ew.Widget):
+    template = 'jinja:allura:templates/macro/neighborhood_feeds.html'
+    params=['feeds']
+    feeds = None
+
+class BlogPosts(ew.Widget):
+    template = 'jinja:allura:templates/macro/blog_posts.html'
+    params = ['posts']
+    posts = None
+
+class ProjectAdmins(ew.Widget):
+    template = 'jinja:allura:templates/macro/project_admins.html'
+    params = ['users']
+    users = None
+
+class Members(ew.Widget):
+    template = 'jinja:allura:templates/macro/members.html'
+    params = ['users', 'over_limit']
+    users = None
+    over_limit = None
+
