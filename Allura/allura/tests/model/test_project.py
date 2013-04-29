@@ -91,7 +91,10 @@ def test_project():
     c.app.config.breadcrumbs()
 
 def test_subproject():
-    sp = c.project.new_subproject('test-project-nose')
+    with td.raises(ToolError):
+        # name exceeds 15 chars
+        sp = c.project.new_subproject('test-project-nose')
+    sp = c.project.new_subproject('test-proj-nose')
     spp = sp.new_subproject('spp')
     ThreadLocalORMSession.flush_all()
     sp.delete()
