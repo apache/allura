@@ -23,6 +23,7 @@ from markupsafe import Markup
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
+from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr
 from allura.lib.search import solarize, search_app
 
@@ -82,6 +83,10 @@ class TestSolarize(unittest.TestCase):
 
 
 class TestSearch_app(unittest.TestCase):
+
+    def setUp(self):
+        # need to create the "test" project so @td.with_wiki works
+        setup_basic_test()
 
     @td.with_wiki
     @mock.patch('allura.lib.search.url')
