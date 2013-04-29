@@ -33,6 +33,7 @@ from pylons.middleware import StatusCodeRedirect
 
 import activitystream
 import ew
+import formencode
 import ming
 from ming.orm.middleware import MingMiddleware
 
@@ -99,6 +100,9 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Configure EW variable provider
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
+    
+    # Set FormEncode language to english, as we don't support any other locales
+    formencode.api.set_stdtranslation(domain='FormEncode', languages=['en'])
 
     # Create base app
     base_config = ForgeConfig(root)
