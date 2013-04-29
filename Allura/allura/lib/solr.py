@@ -20,28 +20,53 @@ import pysolr
 from pysolr import SolrError
 
 
-class Solr(pysolr.Solr):
-    """Solr server that accepts default values for `commit` and
-    `commitWithin` and passes those values through to each `add` and
-    `delete` call, unless explicitly overridden.
+class Solr(object):
+    """Solr interface that pushes updates to multiple solr instances.
+
+    `push_servers`: list of servers to push to.
+    `query_server`: server to read from. Uses `push_servers[0]` if not specified.
+
+    Also, accepts default values for `commit` and `commitWithin`
+    and passes those values through to each `add` and `delete` call,
+    unless explicitly overridden.
     """
 
-    def __init__(self, server, commit=True, commitWithin=None, **kw):
-        pysolr.Solr.__init__(self, server, **kw)
-        self.commit = commit
+    def __init__(self, push_servers, query_server=None,
+                 commit=True, commitWithin=None, **kw):
+        self.push_pool = [pysolr.Solr(s, **kw) for s in push_servers]
+        if query_server:
+            self.query_server = pysolr.Solr(query_server, **kw)
+        else:
+            self.query_server = self.push_pool[0]
+        self._commit = commit
         self.commitWithin = commitWithin
 
     def add(self, *args, **kw):
         if 'commit' not in kw:
-            kw['commit'] = self.commit
+            kw['commit'] = self._commit
         if self.commitWithin and 'commitWithin' not in kw:
             kw['commitWithin'] = self.commitWithin
-        return pysolr.Solr.add(self, *args, **kw)
+        responses = []
+        for solr in self.push_pool:
+            responses.append(solr.add(*args, **kw))
+        return responses
 
     def delete(self, *args, **kw):
         if 'commit' not in kw:
-            kw['commit'] = self.commit
-        return pysolr.Solr.delete(self, *args, **kw)
+            kw['commit'] = self._commit
+        responses = []
+        for solr in self.push_pool:
+            responses.append(solr.delete(*args, **kw))
+        return responses
+
+    def commit(self, *args, **kw):
+        responses = []
+        for solr in self.push_pool:
+            responses.append(solr.commit(*args, **kw))
+        return responses
+
+    def search(self, *args, **kw):
+        return self.query_server.search(*args, **kw)
 
 
 class MockSOLR(object):

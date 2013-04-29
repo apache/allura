@@ -38,7 +38,7 @@ import pygments.util
 from tg import config, session
 from pylons import request
 from pylons import tmpl_context as c
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool, asint, aslist
 from pypeline.markup import markup as pypeline_markup
 
 import ew as ew_core
@@ -93,14 +93,21 @@ class Globals(object):
         self.allura_templates = pkg_resources.resource_filename('allura', 'templates')
 
         # Setup SOLR
-        self.solr_server = config.get('solr.server')
+        self.solr_server = aslist(config.get('solr.server'), ',')
+        # skip empty strings in case of extra commas
+        self.solr_server = [s for s in self.solr_server if s]
+        self.solr_query_server = config.get('solr.query_server')
         if asbool(config.get('solr.mock')):
             self.solr = self.solr_short_timeout = MockSOLR()
         elif self.solr_server:
-            self.solr = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
-                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.long_timeout', 60)))
-            self.solr_short_timeout = Solr(self.solr_server, commit=asbool(config.get('solr.commit', True)),
-                    commitWithin=config.get('solr.commitWithin'), timeout=int(config.get('solr.short_timeout', 10)))
+            self.solr = Solr(self.solr_server, self.solr_query_server,
+                             commit=asbool(config.get('solr.commit', True)),
+                             commitWithin=config.get('solr.commitWithin'),
+                             timeout=int(config.get('solr.long_timeout', 60)))
+            self.solr_short_timeout = Solr(self.solr_server, self.solr_query_server,
+                                           commit=asbool(config.get('solr.commit', True)),
+                                           commitWithin=config.get('solr.commitWithin'),
+                                           timeout=int(config.get('solr.short_timeout', 10)))
         else: # pragma no cover
             self.solr = None
             self.solr_short_timeout = None

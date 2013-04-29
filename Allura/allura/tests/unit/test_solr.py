@@ -28,30 +28,67 @@ from allura.lib.solr import Solr
 from allura.lib.search import solarize, search_app
 
 class TestSolr(unittest.TestCase):
+
     @mock.patch('allura.lib.solr.pysolr')
-    def setUp(self, pysolr):
-        self.solr = Solr('server', commit=False, commitWithin='10000')
+    def test_init(self, pysolr):
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        calls = [mock.call('server1'), mock.call('server2')]
+        pysolr.Solr.assert_has_calls(calls)
+        assert_equal(len(solr.push_pool), 2)
+
+        pysolr.reset_mock()
+        solr = Solr(servers, 'server3', commit=False, commitWithin='10000')
+        calls = [mock.call('server1'), mock.call('server2'), mock.call('server3')]
+        pysolr.Solr.assert_has_calls(calls)
+        assert_equal(len(solr.push_pool), 2)
 
     @mock.patch('allura.lib.solr.pysolr')
     def test_add(self, pysolr):
-        s = self.solr
-        s.add('foo', commit=True, commitWithin=None)
-        pysolr.Solr.add.assert_called_once_with(s, 'foo', commit=True,
-                commitWithin=None)
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        solr.add('foo', commit=True, commitWithin=None)
+        calls = [mock.call('foo', commit=True, commitWithin=None)] * 2
+        pysolr.Solr().add.assert_has_calls(calls)
         pysolr.reset_mock()
-        s.add('bar', somekw='value')
-        pysolr.Solr.add.assert_called_once_with(s, 'bar', commit=False,
-                commitWithin='10000', somekw='value')
+        solr.add('bar', somekw='value')
+        calls = [mock.call('bar', commit=False,
+            commitWithin='10000', somekw='value')] * 2
+        pysolr.Solr().add.assert_has_calls(calls)
 
     @mock.patch('allura.lib.solr.pysolr')
     def test_delete(self, pysolr):
-        s = self.solr
-        s.delete('foo', commit=True)
-        pysolr.Solr.delete.assert_called_once_with(s, 'foo', commit=True)
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        solr.delete('foo', commit=True)
+        calls = [mock.call('foo', commit=True)] * 2
+        pysolr.Solr().delete.assert_has_calls(calls)
         pysolr.reset_mock()
-        s.delete('bar', somekw='value')
-        pysolr.Solr.delete.assert_called_once_with(s, 'bar', commit=False,
-                somekw='value')
+        solr.delete('bar', somekw='value')
+        calls = [mock.call('bar', commit=False, somekw='value')] * 2
+        pysolr.Solr().delete.assert_has_calls(calls)
+
+    @mock.patch('allura.lib.solr.pysolr')
+    def test_commit(self, pysolr):
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        solr.commit('arg')
+        pysolr.Solr().commit.assert_has_calls([mock.call('arg')] * 2)
+        pysolr.reset_mock()
+        solr.commit('arg', kw='kw')
+        calls = [mock.call('arg', kw='kw')] * 2
+        pysolr.Solr().commit.assert_has_calls(calls)
+
+    @mock.patch('allura.lib.solr.pysolr')
+    def test_search(self, pysolr):
+        servers = ['server1', 'server2']
+        solr = Solr(servers, commit=False, commitWithin='10000')
+        solr.search('foo')
+        solr.query_server.search.assert_called_once_with('foo')
+        pysolr.reset_mock()
+        solr.search('bar', kw='kw')
+        solr.query_server.search.assert_called_once_with('bar', kw='kw')
+
 
 class TestSolarize(unittest.TestCase):
 
