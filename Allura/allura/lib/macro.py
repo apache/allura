@@ -18,7 +18,6 @@
 import cgi
 import random
 import shlex
-import string
 import logging
 import traceback
 from operator import attrgetter
@@ -28,7 +27,6 @@ import jinja2
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asint
-from urlparse import urljoin
 
 from . import helpers as h
 from . import security
