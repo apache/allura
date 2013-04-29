@@ -94,7 +94,7 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
                 title=item.title,
                 author=item.author_name,
                 ago=h.ago(item.pubdate),
-                description=item.description))
+                description=g.markdown.convert(item.description)))
         for item in feed)
     feeds = NeighborhoodFeeds(feeds=output)
     g.resource_manager.register(feeds)

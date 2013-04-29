@@ -364,6 +364,7 @@ def test_macro_nbhd_feeds():
     with h.push_context('--init--', 'wiki', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
         assert 'Home modified by ' in r, r
+        assert '&lt;div class="markdown_content"&gt;' not in r
 
 
 def test_sort_alpha():
