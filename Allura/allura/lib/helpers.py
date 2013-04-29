@@ -54,7 +54,7 @@ from .security import has_access
 
 
 # validates project, subproject, and user names
-re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,62}$')
+re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,14}$')
 
 # validates tool mount point names
 re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
