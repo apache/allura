@@ -25,7 +25,7 @@ from allura import model as M
 from allura.lib import helpers as h
 
 
-class Feed(object):
+class FeedArgs(object):
     """A facade for the arguments required by
     :meth:`allura.model.artifact.Feed.feed`.
 
@@ -92,17 +92,17 @@ class FeedController(object):
         return feed.writeString('utf-8')
 
     def get_feed(self, project, app, user):
-        """Return a default :class:`Feed` for this controller.
+        """Return a default :class:`FeedArgs` for this controller.
 
         Subclasses should override to customize the feed.
 
         :param project: :class:`allura.model.project.Project`
         :param app: :class:`allura.app.Application`
         :param user: :class:`allura.model.auth.User`
-        :rtype: :class:`Feed`
+        :rtype: :class:`FeedArgs`
 
         """
-        return Feed(
+        return FeedArgs(
             dict(project_id=project._id, app_config_id=app.config._id),
             'Recent changes to %s' % app.config.options.mount_point,
             app.url)
