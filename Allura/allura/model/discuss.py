@@ -31,6 +31,7 @@ from ming.utils import LazyProperty
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib.security import require_access, has_access
+from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
@@ -512,6 +513,17 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def attachments(self):
         return self.attachment_class().query.find(dict(
             post_id=self._id, type='attachment'))
+
+    def add_attachment(self, file_info):
+        if hasattr(file_info, 'file'):
+            mime_type = file_info.type
+            if not mime_type or '/' not in mime_type:
+                mime_type = utils.guess_mime_type(file_info.filename)
+            self.attach(
+                file_info.filename, file_info.file, content_type=mime_type,
+                post_id=self._id,
+                thread_id=self.thread_id,
+                discussion_id=self.discussion_id)
 
     def last_edit_by(self):
         return User.query.get(_id=self.last_edit_by_id) or User.anonymous()

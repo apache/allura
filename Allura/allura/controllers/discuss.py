@@ -211,7 +211,7 @@ class ThreadController(BaseController):
         file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
         is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
-        h.attach_to_post(p, file_info)
+        p.add_attachment(file_info)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.utcnow()
         flash('Message posted')
@@ -294,7 +294,7 @@ class PostController(BaseController):
             require_access(self.post, 'moderate')
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
-            h.attach_to_post(self.post, file_info)
+            self.post.add_attachment(file_info)
             for k,v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
@@ -339,7 +339,7 @@ class PostController(BaseController):
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
         is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
-        h.attach_to_post(p, file_info)
+        p.add_attachment(file_info)
         redirect(request.referer)
 
     @h.vardec
@@ -373,7 +373,7 @@ class PostController(BaseController):
     @require_post()
     def attach(self, file_info=None):
         require_access(self.post, 'moderate')
-        h.attach_to_post(self.post, file_info)
+        self.post.add_attachment(file_info)
         redirect(request.referer)
 
     @expose()
