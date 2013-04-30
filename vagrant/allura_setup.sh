@@ -17,6 +17,24 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+# Install mongodb
+MONGODB_VERSION=2.2.3
+MONGODB_PKG_URL="deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen"
+MONGODB_SRC_LST=/etc/apt/sources.list.d/10gen.list
+if [ $(mongo --version 2>/dev/null | sed 's/.*: //') != $MONGODB_VERSION ]
+then
+  echo "Installing Mongodb $MONGODB_VERSION..."
+  sudo apt-get -y -q purge mongodb mongodb-clients mongodb-server mongodb-dev
+  sudo apt-get -y -q purge mongodb-10gen
+  sudo apt-get -y -q autoremove
+  rm -rf /var/lib/mongodb/* 2>/dev/null
+  apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+  grep -q "$MONGODB_PKG_URL" $MONGODB_SRC_LST || echo "$MONGODB_PKG_URL" >> $MONGODB_SRC_LST
+  apt-get -y -q update
+  apt-get -y -q install mongodb-10gen=$MONGODB_VERSION
+  echo "mongodb-10gen hold" | dpkg --set-selections
+fi
+
 # Install Solr
 cd /home/vagrant/src
 if [ ! -d solr-4.2.1 ]

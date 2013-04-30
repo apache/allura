@@ -38,7 +38,6 @@ $packages = [
  "libsasl2-dev",
  "libjpeg8-dev",
  "zlib1g-dev",
- "mongodb-server",
  "python-pip",
  "libfreetype6-dev",
  "libpng-dev"
