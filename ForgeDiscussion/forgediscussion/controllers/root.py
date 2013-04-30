@@ -27,14 +27,13 @@ from pylons import request
 from formencode import validators
 from webob import exc
 
-
 from allura.lib.security import require_access, has_access, require_authenticated
-from allura.model import Feed
 from allura.lib.search import search_app
 from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController, DispatchIndex
+from allura.controllers.feed import Feed, FeedController
 
 from .forum import ForumController
 from forgediscussion import import_support
@@ -48,7 +47,7 @@ from forgediscussion.widgets.admin import AddForumShort
 
 log = logging.getLogger(__name__)
 
-class RootController(BaseController, DispatchIndex):
+class RootController(BaseController, DispatchIndex, FeedController):
 
     class W(object):
         forum_subscription_form=FW.ForumSubscriptionForm()
@@ -57,10 +56,6 @@ class RootController(BaseController, DispatchIndex):
         add_forum=AddForumShort()
         search_results = SearchResults()
         search_help = SearchHelp(comments=False, history=False)
-
-    def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
 
     def _check_security(self):
         require_access(c.app, 'read')
@@ -191,29 +186,18 @@ class RootController(BaseController, DispatchIndex):
                 obj['obj'].subscriptions.pop(str(c.user._id), None)
         redirect(request.referer)
 
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None),
-            until=h.DateTimeConverter(if_empty=None),
-            page=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent posts to %s' % c.app.config.options.mount_label
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
 
-        feed = Feed.feed(
-            dict(project_id=c.project._id, app_config_id=c.app.config._id),
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        return Feed(
+            dict(project_id=project._id, app_config_id=app.config._id),
+             'Recent posts to %s' % app.config.options.mount_label,
+            app.url)
+
 
 class RootRestController(BaseController):
 

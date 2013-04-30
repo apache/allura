@@ -41,6 +41,7 @@ from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
+from allura.controllers.feed import Feed, FeedController
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -277,11 +278,9 @@ The wiki uses [Markdown](%s) syntax.
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
-class RootController(BaseController, DispatchIndex):
+class RootController(BaseController, DispatchIndex, FeedController):
 
     def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
         c.create_page_lightbox = W.create_page_lightbox
         self._discuss = AppDiscussionController()
 
@@ -409,31 +408,8 @@ class RootController(BaseController, DispatchIndex):
         'Display a page about how to use markdown.'
         return dict(example=MARKDOWN_EXAMPLE)
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = M.Feed.feed(
-            dict(project_id=c.project._id,app_config_id=c.app.config._id),
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
 
-class PageController(BaseController):
+class PageController(BaseController, FeedController):
 
     def __init__(self, title):
         self.title = h.really_unicode(unquote(title))
@@ -442,8 +418,6 @@ class PageController(BaseController):
         if self.page is not None:
             self.attachment = WikiAttachmentsController(self.page)
         c.create_page_lightbox = W.create_page_lightbox
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
 
     def _check_security(self):
         if self.page:
@@ -583,30 +557,19 @@ class PageController(BaseController):
             raise exc.HTTPNotFound
         return pformat(self.page)
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
         if not self.page:
-            raise exc.HTTPNotFound
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        feed = M.Feed.feed(
-            {'ref_id':self.page.index_id()},
-            feed_type,
+            return None
+        return Feed(
+            {'ref_id': self.page.index_id()},
             'Recent changes to %s' % self.page.title,
-            self.page.url(),
-            'Recent changes to %s' % self.page.title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+            self.page.url())
 
     @without_trailing_slash
     @expose('json')

@@ -32,6 +32,7 @@ from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
 from allura.model import User, Feed, ACE
 from allura.controllers import BaseController
+from allura.controllers.feed import Feed, FeedController
 from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
@@ -79,11 +80,7 @@ class UserProfileApp(Application):
         pass
 
 
-class UserProfileController(BaseController):
-
-    def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
+class UserProfileController(BaseController, FeedController):
 
     def _check_security(self):
         require_access(c.project, 'read')
@@ -94,38 +91,16 @@ class UserProfileController(BaseController):
         if not user:
             raise exc.HTTPNotFound()
         return dict(user=user)
-    # This will be fully implemented in a future iteration
-    # @expose('jinja:allura.ext.user_profile:templates/user_subscriptions.html')
-    # def subscriptions(self):
-    #     username = c.project.shortname.split('/')[1]
-    #     user = User.by_username(username)
-    #     subs = Subscriptions.query.find({'user_id':user._id}).all()
-    #     for sub in subs:
-    #         for s in sub.subscriptions:
-    #             r = g.solr_short_timeout.search(s.artifact_index_id)
-    #             print r.docs
-    #     return dict(user=user)
 
-    @expose()
-    @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
-            page=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None, **kw):
-        user = c.project.user_project_of
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent posts by %s' % user.display_name
-        feed = Feed.feed(
-            {'author_link':user.url()},
-            feed_type,
-            title,
-            c.project.url(),
-            title,
-            since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        user = project.user_project_of
+        return Feed(
+            {'author_link': user.url()},
+            'Recent posts by %s' % user.display_name,
+            project.url())

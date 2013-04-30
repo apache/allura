@@ -46,6 +46,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController
+from allura.controllers.feed import Feed, FeedController
 
 # Local imports
 from forgeblog import model as BM
@@ -180,11 +181,9 @@ class ForgeBlogApp(Application):
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeBlogApp, self).uninstall(project)
 
-class RootController(BaseController):
+class RootController(BaseController, FeedController):
 
     def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
         self._discuss = AppDiscussionController()
 
     def _check_security(self):
@@ -255,30 +254,6 @@ class RootController(BaseController):
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = '%s - %s' % (c.project.name, c.app.config.options.mount_label)
-        feed = M.Feed.feed(
-            dict(project_id=c.project._id, app_config_id=c.app.config._id),
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
-
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
     def markdown_syntax_dialog(self, **kw):
@@ -293,12 +268,10 @@ class RootController(BaseController):
             raise exc.HTTPNotFound()
         return PostController(post), rest
 
-class PostController(BaseController):
+class PostController(BaseController, FeedController):
 
     def __init__(self, post):
         self.post = post
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
 
     def _check_security(self):
         require_access(self.post, 'read')
@@ -380,28 +353,17 @@ class PostController(BaseController):
             self.post.unsubscribe()
         redirect(h.really_unicode(request.referer).encode('utf-8'))
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        feed = M.Feed.feed(
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        return Feed(
             dict(ref_id=self.post.index_id()),
-            feed_type,
             'Recent changes to %s' % self.post.title,
-            self.post.url(),
-            'Recent changes to %s' % self.post.title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+            self.post.url())
 
     def _get_version(self, version):
         if not version: return self.post

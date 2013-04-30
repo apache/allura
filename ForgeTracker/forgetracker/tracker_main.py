@@ -61,6 +61,7 @@ from allura.lib.zarkov_helpers import zero_fill_zarkov_result
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
+from allura.controllers.feed import Feed, FeedController
 from allura.tasks import mail_tasks
 
 # Local imports
@@ -467,11 +468,9 @@ def solr_columns():
         columns.append(dict(name='votes', sort_name='votes_total_i', label='Votes', active=True))
     return columns
 
-class RootController(BaseController):
+class RootController(BaseController, FeedController):
 
     def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
         setattr(self, 'search_feed.atom', self.search_feed)
         setattr(self, 'search_feed.rss', self.search_feed)
         self._discuss = AppDiscussionController()
@@ -710,30 +709,6 @@ class RootController(BaseController):
     def markdown_syntax_dialog(self):
         'Static page explaining markdown.'
         return dict()
-
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = M.Feed.feed(
-            dict(project_id=c.project._id,app_config_id=c.app.config._id),
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
 
     @expose()
     @h.vardec
@@ -1233,7 +1208,7 @@ def filtered_by_subscription(tickets, project_id=None, app_config_id=None):
     return filtered
 
 
-class TicketController(BaseController):
+class TicketController(BaseController, FeedController):
 
     def __init__(self, ticket_num=None):
         if ticket_num is not None:
@@ -1248,8 +1223,6 @@ class TicketController(BaseController):
                     utils.permanent_redirect(self.ticket.url())
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
 
     def _check_security(self):
         if self.ticket is not None:
@@ -1285,30 +1258,19 @@ class TicketController(BaseController):
         else:
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
         title = 'Recent changes to %d: %s' % (
             self.ticket.ticket_num, self.ticket.summary)
-        feed = M.Feed.feed(
-            {'ref_id':self.ticket.index_id()},
-            feed_type,
+        return Feed(
+            {'ref_id': self.ticket.index_id()},
             title,
-            self.ticket.url(),
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+            self.ticket.url())
 
     @expose()
     @require_post()
