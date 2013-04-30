@@ -36,15 +36,17 @@ We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubun
 
 Before we begin, you'll need to install some system packages.  [Use google if you need additional PIL/jpeg help.](http://www.google.com/search?q=ubuntu+pil+jpeg+virtualenv)
 
-    ~$ sudo aptitude install mongodb-server git-core default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
+    ~$ sudo aptitude install git-core default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib
     ~$ sudo ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
+
+To install MongoDB 2.2.3, follow the instructions here:
+
+   <http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>
 
 Optional, for SVN support:
 
     ~$ sudo aptitude install subversion python-svn
-
-If you are using a different base system, make sure you have Mongo 1.8 or better.  If you need to upgrade, you can download the latest from <http://www.mongodb.org/downloads>
 
 ## Setting up a virtual python environment
 
