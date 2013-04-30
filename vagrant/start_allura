@@ -20,7 +20,7 @@
 # Starts Allura platform services
 
 # Activate Allura virtualenv
-. /home/vagrant/anvil/bin/activate
+. /home/vagrant/env-allura/bin/activate
 
 # Create log dir
 if [ ! -d /var/log/allura ]
