@@ -465,8 +465,10 @@ class ProjectRegistrationProvider(object):
         self.rate_limit(user, neighborhood)
 
         if user_project and shortname.startswith('u/'):
-            shortname = shortname.replace('u/', '', 1)
-        if not h.re_project_name.match(shortname):
+            check_shortname = shortname.replace('u/', '', 1)
+        else:
+            check_shortname = shortname
+        if not h.re_project_name.match(check_shortname):
             raise ValueError('Invalid project shortname: %s' % shortname)
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
