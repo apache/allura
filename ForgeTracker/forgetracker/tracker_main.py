@@ -139,6 +139,25 @@ def get_change_text(name, new_value, old_value):
         changelist=changes.get_changed())
 
 
+def _my_trackers(user, current_tracker_app_config):
+    '''Collect all 'Tickets' instances in all user's projects
+    for which user has admin permissions.
+
+    Returns list of 3-tuples (<tracker_id>, '<project>/<mount_point>', <is current tracker?>)
+    '''
+    trackers = []
+    projects = user.my_projects()
+    projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
+    for p in projects:
+        for ac in p.app_configs:
+            if ac.tool_name.lower() == 'tickets':
+                trac = (str(ac._id),
+                        '%s/%s' % (p.shortname, ac.options['mount_point']),
+                        bool(current_tracker_app_config == ac))
+                trackers.append(trac)
+    return trackers
+
+
 class W:
     thread=w.Thread(
         page=None, limit=None, page_size=None, count=None,
@@ -775,7 +794,8 @@ class RootController(BaseController, FeedController):
         result['globals'] = c.app.globals
         result['cancel_href'] = url(c.app.url + 'search/', dict(q=q, limit=limit, sort=sort))
         c.mass_move = W.mass_edit
-        c.mass_move_form = W.mass_move_form(tracker=[])
+        trackers = _my_trackers(c.user, c.app.config)
+        c.mass_move_form = W.mass_move_form(trackers=trackers)
         return result
 
     @expose()
@@ -1475,17 +1495,7 @@ class TicketController(BaseController, FeedController):
             flash('Ticket successfully moved')
             redirect(new_ticket.url())
 
-        # collect all 'Tickets' instances in all user project for which his has admin perms
-        trackers = []
-        projects = c.user.my_projects()
-        projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
-        for p in projects:
-            for ac in p.app_configs:
-                if ac.tool_name.lower() == 'tickets':
-                    trac = (str(ac._id),
-                            '%s/%s' % (p.shortname, ac.options['mount_point']),
-                            bool(self.ticket.app.config == ac))
-                    trackers.append(trac)
+        trackers = _my_trackers(c.user, self.ticket.app.config)
         return {
             'ticket': self.ticket,
             'form': W.move_ticket_form(trackers=trackers),
