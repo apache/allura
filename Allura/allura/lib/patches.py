@@ -61,7 +61,9 @@ def apply():
     @decorator
     def without_trailing_slash(func, *args, **kwargs):
         '''Monkey-patched to use 301 redirects for SEO'''
-        if request.method == 'GET' and request.path.endswith('/') and not(request.response_type) and len(request.params)==0:
+        response_type = getattr(request, 'response_type', None)
+        if (request.method == 'GET' and request.path.endswith('/')
+                and not response_type and len(request.params)==0):
             raise webob.exc.HTTPMovedPermanently(location=request.url[:-1])
         return func(*args, **kwargs)
 
@@ -69,7 +71,9 @@ def apply():
     @decorator
     def with_trailing_slash(func, *args, **kwargs):
         '''Monkey-patched to use 301 redirects for SEO'''
-        if request.method == 'GET' and not(request.path.endswith('/')) and not(request.response_type) and len(request.params)==0:
+        response_type = getattr(request, 'response_type', None)
+        if (request.method == 'GET' and not(request.path.endswith('/'))
+                and not response_type and len(request.params)==0):
             raise webob.exc.HTTPMovedPermanently(location=request.url+'/')
         return func(*args, **kwargs)
 

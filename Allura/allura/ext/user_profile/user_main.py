@@ -81,6 +81,10 @@ class UserProfileApp(Application):
 
 class UserProfileController(BaseController):
 
+    def __init__(self):
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
+
     def _check_security(self):
         require_access(c.project, 'read')
 

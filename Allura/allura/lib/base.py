@@ -19,6 +19,7 @@
 
 """The base Controller API."""
 from webob import exc
+import pylons
 from tg import TGController, config
 
 __all__ = ['WsgiDispatchController']
@@ -51,4 +52,18 @@ class WsgiDispatchController(TGController):
         for chunk in response: yield chunk
         self._cleanup_request()
 
+    def _get_dispatchable(self, url_path):
+        """Patch ``TGController._get_dispatchable`` by overriding.
 
+        This fixes a bug in TG 2.1.5 that causes ``request.response_type``
+        to not be created if ``disable_request_extensions = True`` (see
+        allura/config/app_cfg.py).
+
+        ``request.response_type`` must be set because the "trailing slash"
+        decorators use it (see allura/lib/patches.py).
+
+        This entire method can be removed if/when we upgrade to TG >= 2.2.1
+
+        """
+        pylons.request.response_type = None
+        return super(WsgiDispatchController, self)._get_dispatchable(url_path)

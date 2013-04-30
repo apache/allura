@@ -472,6 +472,8 @@ class RootController(BaseController):
     def __init__(self):
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'search_feed.atom', self.search_feed)
+        setattr(self, 'search_feed.rss', self.search_feed)
         self._discuss = AppDiscussionController()
 
     def _check_security(self):

@@ -90,8 +90,8 @@ class TestRootController(SVNTestController):
                 assert val['message'] == 'Create readme'
 
     def test_feed(self):
-        r = self.app.get('/src/feed.rss')
-        assert 'Remove hello.txt' in str(r), r
+        for ext in ['', '.rss', '.atom']:
+            assert 'Remove hello.txt' in self.app.get('/src/feed%s' % ext)
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')

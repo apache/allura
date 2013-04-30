@@ -156,7 +156,8 @@ class TestRootController(_TestCase):
         assert 'Rick' in resp, resp.showbrowser()
 
     def test_feed(self):
-        assert 'Add README' in self.app.get('/feed')
+        for ext in ['', '.rss', '.atom']:
+            assert 'Add README' in self.app.get('/feed%s' % ext)
 
     def test_tree(self):
         ci = self._get_ci()
