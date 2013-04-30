@@ -40,7 +40,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.security import require_access, has_access
 from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
@@ -367,13 +367,13 @@ class ProjectController(FeedController):
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
-        return Feed(
+        return FeedArgs(
             dict(project_id=project._id),
             'Recent changes to Project %s' % project.name,
             project.url())

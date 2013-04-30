@@ -46,7 +46,7 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
 from allura.controllers import BaseController, AppDiscussionController
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 
 # Local imports
 from forgeblog import model as BM
@@ -354,13 +354,13 @@ class PostController(BaseController, FeedController):
         redirect(h.really_unicode(request.referer).encode('utf-8'))
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
-        return Feed(
+        return FeedArgs(
             dict(ref_id=self.post.index_id()),
             'Recent changes to %s' % self.post.title,
             self.post.url())

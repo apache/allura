@@ -32,7 +32,7 @@ from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
 from allura.model import User, Feed, ACE
 from allura.controllers import BaseController
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
@@ -93,14 +93,14 @@ class UserProfileController(BaseController, FeedController):
         return dict(user=user)
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
         user = project.user_project_of
-        return Feed(
+        return FeedArgs(
             {'author_link': user.url()},
             'Recent posts by %s' % user.display_name,
             project.url())

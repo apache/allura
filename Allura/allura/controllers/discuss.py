@@ -38,7 +38,7 @@ from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
 from .attachments import AttachmentsController, AttachmentController
-from .feed import Feed, FeedController
+from .feed import FeedArgs, FeedController
 
 log = logging.getLogger(__name__)
 
@@ -106,13 +106,13 @@ class DiscussionController(BaseController, FeedController):
         redirect(request.referer)
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
-        return Feed(
+        return FeedArgs(
             dict(ref_id={'$in': [t.index_id() for t in self.discussion.threads]}),
             'Recent posts to %s' % self.discussion.name,
             self.discussion.url())
@@ -224,13 +224,13 @@ class ThreadController(BaseController, FeedController):
         redirect(self.discussion.url())
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
-        return Feed(
+        return FeedArgs(
             dict(ref_id=self.thread.index_id()),
             'Recent posts to %s' % (self.thread.subject or '(no subject)'),
             self.thread.url())

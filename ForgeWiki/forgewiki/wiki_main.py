@@ -41,7 +41,7 @@ from allura.lib.security import require_access, has_access
 from allura.controllers import AppDiscussionController, BaseController
 from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib import widgets as w
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
@@ -558,7 +558,7 @@ class PageController(BaseController, FeedController):
         return pformat(self.page)
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
@@ -566,7 +566,7 @@ class PageController(BaseController, FeedController):
         """
         if not self.page:
             return None
-        return Feed(
+        return FeedArgs(
             {'ref_id': self.page.index_id()},
             'Recent changes to %s' % self.page.title,
             self.page.url())

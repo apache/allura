@@ -61,7 +61,7 @@ from allura.lib.zarkov_helpers import zero_fill_zarkov_result
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 from allura.tasks import mail_tasks
 
 # Local imports
@@ -1259,7 +1259,7 @@ class TicketController(BaseController, FeedController):
             raise exc.HTTPNotFound, 'Ticket #%s does not exist.' % self.ticket_num
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
@@ -1267,7 +1267,7 @@ class TicketController(BaseController, FeedController):
         """
         title = 'Recent changes to %d: %s' % (
             self.ticket.ticket_num, self.ticket.summary)
-        return Feed(
+        return FeedArgs(
             {'ref_id': self.ticket.index_id()},
             title,
             self.ticket.url())

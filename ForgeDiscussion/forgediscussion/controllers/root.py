@@ -33,7 +33,7 @@ from allura.lib import helpers as h
 from allura.lib.utils import AntiSpam
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController, DispatchIndex
-from allura.controllers.feed import Feed, FeedController
+from allura.controllers.feed import FeedArgs, FeedController
 
 from .forum import ForumController
 from forgediscussion import import_support
@@ -187,13 +187,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
         redirect(request.referer)
 
     def get_feed(self, project, app, user):
-        """Return a :class:`allura.controllers.feed.Feed` object describing
+        """Return a :class:`allura.controllers.feed.FeedArgs` object describing
         the xml feed for this controller.
 
         Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
 
         """
-        return Feed(
+        return FeedArgs(
             dict(project_id=project._id, app_config_id=app.config._id),
              'Recent posts to %s' % app.config.options.mount_label,
             app.url)
