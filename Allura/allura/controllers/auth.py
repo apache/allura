@@ -188,7 +188,7 @@ class AuthController(BaseController):
         c.user.set_pref('display_name', display_name)
         if u is None:
             n = M.Neighborhood.query.get(name='Users')
-            n.register_project('u/' + username)
+            n.register_project('u/' + username, user_project=True)
         flash('Your username has been set to %s.' % username)
         redirect('/')
 
