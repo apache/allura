@@ -21,7 +21,7 @@
 MONGODB_VERSION=2.2.3
 MONGODB_PKG_URL="deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen"
 MONGODB_SRC_LST=/etc/apt/sources.list.d/10gen.list
-if [ $(mongo --version 2>/dev/null | sed 's/.*: //') != $MONGODB_VERSION ]
+if [ "$(mongo --version 2>/dev/null | sed 's/.*: //')" != "$MONGODB_VERSION" ]
 then
   echo "Installing Mongodb $MONGODB_VERSION..."
   sudo apt-get -y -q purge mongodb mongodb-clients mongodb-server mongodb-dev
