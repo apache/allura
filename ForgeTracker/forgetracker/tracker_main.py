@@ -71,7 +71,7 @@ from forgetracker import version
 from forgetracker.widgets.admin import OptionsAdmin
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
 from forgetracker.widgets.bin_form import BinForm
-from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, SearchHelp
+from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm, SearchHelp
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 from forgetracker.import_support import ImportSupport
 from forgetracker.plugins import ImportIdConverter
@@ -163,6 +163,7 @@ class W:
     search_help_modal = SearchHelp()
     vote_form = w.VoteForm()
     move_ticket_form = w.forms.MoveTicketForm
+    mass_move_form = MassMoveForm
 
 class ForgeTrackerApp(Application):
     __version__ = version.__version__
@@ -547,6 +548,7 @@ class RootController(BaseController, FeedController):
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['subscribed'] = M.Mailbox.subscribed()
         result['allow_edit'] = has_access(c.app, 'update')()
+        result['allow_move'] = has_access(c.app, 'admin')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         result['url_q'] = c.app.globals.not_closed_query
         result['url_sort'] = ''
@@ -650,6 +652,7 @@ class RootController(BaseController, FeedController):
         result['columns'] = columns or solr_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
+        result['allow_move'] = has_access(c.app, 'admin')()
         result['bin'] = bin
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch', '').strip()
         result['deleted'] = deleted
@@ -756,6 +759,23 @@ class RootController(BaseController, FeedController):
         c.user_select = ffw.ProjectUserCombo()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
+        return result
+
+    @with_trailing_slash
+    @expose('jinja:forgetracker:templates/tracker/mass_move.html')
+    @validate(dict(q=validators.UnicodeString(if_empty=None),
+                   limit=validators.Int(if_empty=10),
+                   page=validators.Int(if_empty=0),
+                   sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
+    def move(self, q=None, limit=None, page=None, sort=None, **kw):
+        require_access(c.app, 'admin')
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, sort=sort, limit=limit, page=page, show_deleted=False, **kw)
+        result['columns'] = solr_columns()
+        result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
+        result['globals'] = c.app.globals
+        result['cancel_href'] = url(c.app.url + 'search/', dict(q=q, limit=limit, sort=sort))
+        c.mass_move = W.mass_edit
+        c.mass_move_form = W.mass_move_form(tracker=[])
         return result
 
     @expose()
@@ -1768,6 +1788,7 @@ class MilestoneController(BaseController):
         result['columns'] = columns or mongo_columns()
         result['sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
         result['allow_edit'] = has_access(c.app, 'update')()
+        result['allow_move'] = has_access(c.app, 'admin')()
         result['help_msg'] = c.app.config.options.get('TicketHelpSearch','').strip()
         result['deleted'] = deleted
         progress = c.app.globals.milestone_count(self.progress_key)

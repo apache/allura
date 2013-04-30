@@ -23,6 +23,7 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets import forms
 
 class TicketSearchResults(ew_core.SimpleForm):
     template='jinja:forgetracker:templates/tracker_widgets/ticket_search_results.html'
@@ -80,6 +81,14 @@ class MassEditForm(ew_core.Widget):
         cancel_href=None,
         limit=None,
         sort=None)
+
+    def resources(self):
+        yield ew.JSLink('tracker_js/mass-edit.js')
+
+class MassMoveForm(forms.MoveTicketForm):
+    defaults=dict(
+        forms.MoveTicketForm.defaults,
+        action='.')
 
     def resources(self):
         yield ew.JSLink('tracker_js/mass-edit.js')

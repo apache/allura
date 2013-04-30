@@ -33,6 +33,9 @@
 {% if allow_edit and count != 0 %}
   <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
+{% if allow_move and count != 0 %}
+  <a href="{{tg.url(c.app.url + 'move/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Move"><b data-icon="" class=""></b>Bulk Move</a>
+{% endif %}
 {% endblock %}
 
 {% if q and h.has_access(c.app, 'save_searches')() %}
@@ -67,7 +70,7 @@
   <input type="text" name="q" value="{{q}}" style="width: 280px; float: left; margin-right: .5em" id="bin_terms">
   {% if bin and h.has_access(c.app, 'save_searches')() %}
     <input type="button" value="Update Search" id="save_search"/>
-  {% endif %}  
+  {% endif %}
   <input type="submit" value="Search"/>
 </form>
 <a href="#" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>

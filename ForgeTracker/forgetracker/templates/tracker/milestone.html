@@ -28,6 +28,9 @@
 {% if allow_edit %}
   <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=url_sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
+{% if allow_move %}
+  <a href="{{tg.url(c.app.url + 'move/', dict(q=q, limit=limit, sort=url_sort, page=page))}}" title="Bulk Move"><b data-icon="" class=""></b>Bulk Move</a>
+{% endif %}
 {% endblock %}
 
 {% block edit_box %}
