@@ -66,8 +66,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     '''
 
     def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
         for n in M.Neighborhood.query.find():
             if n.url_prefix.startswith('//'): continue
             n.bind_controller(self)

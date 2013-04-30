@@ -64,9 +64,6 @@ class ForgeSVNApp(RepositoryApp):
         self.root = BranchBrowser()
         default_root = RepoRootController()
         self.root.refresh = default_root.refresh
-        self.root.feed = default_root.feed
-        setattr(self.root, 'feed.rss', self.root.feed)
-        setattr(self.root, 'feed.atom', self.root.feed)
         self.root.commit_browser = default_root.commit_browser
         self.root.commit_browser_data = default_root.commit_browser_data
         self.root.status = default_root.status

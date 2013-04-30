@@ -38,6 +38,7 @@ from allura.lib.helpers import DateTimeConverter
 
 from allura.lib.widgets import discuss as DW
 from .attachments import AttachmentsController, AttachmentController
+from .feed import Feed, FeedController
 
 log = logging.getLogger(__name__)
 
@@ -68,13 +69,11 @@ class WidgetConfig(object):
     thread_header = DW.ThreadHeader()
 
 # Controllers
-class DiscussionController(BaseController):
+class DiscussionController(BaseController, FeedController):
     M=ModelConfig
     W=WidgetConfig
 
     def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
         if not hasattr(self, 'ThreadController'):
             self.ThreadController = ThreadController
         if not hasattr(self, 'PostController'):
@@ -106,29 +105,18 @@ class DiscussionController(BaseController):
             M.session.artifact_orm_session._get().skip_mod_date = True
         redirect(request.referer)
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
-            page=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent posts to %s' % self.discussion.name
-        feed = M.Feed.feed(
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        return Feed(
             dict(ref_id={'$in': [t.index_id() for t in self.discussion.threads]}),
-            feed_type,
-            title,
-            self.discussion.url(),
-            title,
-            since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+            'Recent posts to %s' % self.discussion.name,
+            self.discussion.url())
+
 
 class AppDiscussionController(DiscussionController):
 
@@ -156,7 +144,7 @@ class ThreadsController(BaseController):
         else:
             raise exc.HTTPNotFound()
 
-class ThreadController(BaseController):
+class ThreadController(BaseController, FeedController):
     __metaclass__=h.ProxiedAttrMeta
     M=h.attrproxy('_discussion_controller', 'M')
     W=h.attrproxy('_discussion_controller', 'W')
@@ -170,8 +158,6 @@ class ThreadController(BaseController):
             require_access(self.thread.ref.artifact, 'read')
 
     def __init__(self, discussion_controller, thread_id):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
         self._discussion_controller = discussion_controller
         self.discussion = discussion_controller.discussion
         self.thread = self.M.Thread.query.get(_id=thread_id)
@@ -242,29 +228,18 @@ class ThreadController(BaseController):
         flash('Thread flagged as spam.')
         redirect(self.discussion.url())
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=DateTimeConverter(if_empty=None),
-            until=DateTimeConverter(if_empty=None),
-            page=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent posts to %s' % (self.thread.subject or '(no subject)')
-        feed = M.Feed.feed(
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        return Feed(
             dict(ref_id=self.thread.index_id()),
-            feed_type,
-            title,
-            self.thread.url(),
-            title,
-            since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+            'Recent posts to %s' % (self.thread.subject or '(no subject)'),
+            self.thread.url())
+
 
 class PostController(BaseController):
     __metaclass__=h.ProxiedAttrMeta

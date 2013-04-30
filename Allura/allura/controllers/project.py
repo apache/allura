@@ -40,6 +40,7 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
+from allura.controllers.feed import Feed, FeedController
 from allura.lib.security import require_access, has_access
 from allura.lib.security import RoleCache
 from allura.lib.widgets import forms as ff
@@ -299,11 +300,9 @@ class ToolListController(object):
                 if e.tool_name and e.tool_name.lower() == tool_name]
         return dict(entries=entries, type=entries[0].tool_name.capitalize() if entries else None)
 
-class ProjectController(object):
+class ProjectController(FeedController):
 
     def __init__(self):
-        setattr(self, 'feed.rss', self.feed)
-        setattr(self, 'feed.atom', self.feed)
         setattr(self, '_nav.json', self._nav)
         self.screenshot = ScreenshotsController()
         self._list = ToolListController()
@@ -367,29 +366,17 @@ class ProjectController(object):
         else:
             redirect(c.project.app_configs[0].options.mount_point + '/')
 
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            page=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, page=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to Project %s' % c.project.name
-        feed = M.Feed.feed(
-            dict(project_id=c.project._id),
-            feed_type,
-            title,
-            c.project.url(),
-            title,
-            since, until, page, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
+    def get_feed(self, project, app, user):
+        """Return a :class:`allura.controllers.feed.Feed` object describing
+        the xml feed for this controller.
+
+        Overrides :meth:`allura.controllers.feed.FeedController.get_feed`.
+
+        """
+        return Feed(
+            dict(project_id=project._id),
+            'Recent changes to Project %s' % project.name,
+            project.url())
 
     @expose()
     def icon(self, **kw):

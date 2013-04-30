@@ -49,6 +49,7 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
+from allura.controllers.feed import FeedController
 from allura.lib.diff import HtmlSideBySideDiff
 from paste.deploy.converters import asbool
 from allura.app import SitemapEntry
@@ -61,13 +62,9 @@ def on_import():
     CommitBrowser.TreeBrowserClass = TreeBrowser
     TreeBrowser.FileBrowserClass = FileBrowser
 
-class RepoRootController(BaseController):
+class RepoRootController(BaseController, FeedController):
     _discuss = AppDiscussionController()
     commit_browser_widget=SCMCommitBrowserWidget()
-
-    def __init__(self):
-        setattr(self, 'feed.atom', self.feed)
-        setattr(self, 'feed.rss', self.feed)
 
     def _check_security(self):
         security.require(security.has_access(c.app, 'read'))
@@ -185,30 +182,6 @@ class RepoRootController(BaseController):
                     mr.request_number, mr.summary))
             session(t).flush()
             redirect(mr.url())
-
-    @without_trailing_slash
-    @expose()
-    @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            offset=validators.Int(if_empty=None),
-            limit=validators.Int(if_empty=None)))
-    def feed(self, since=None, until=None, offset=None, limit=None, **kw):
-        if request.environ['PATH_INFO'].endswith('.atom'):
-            feed_type = 'atom'
-        else:
-            feed_type = 'rss'
-        title = 'Recent changes to %s' % c.app.config.options.mount_point
-        feed = M.Feed.feed(
-            dict(project_id=c.project._id,app_config_id=c.app.config._id),
-            feed_type,
-            title,
-            c.app.url,
-            title,
-            since, until, offset, limit)
-        response.headers['Content-Type'] = ''
-        response.content_type = 'application/xml'
-        return feed.writeString('utf-8')
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/commit_browser.html')

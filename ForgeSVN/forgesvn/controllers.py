@@ -20,9 +20,10 @@ from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
 
 from allura.controllers import repository
+from allura.controllers.feed import FeedController
 
 
-class BranchBrowser(repository.BranchBrowser):
+class BranchBrowser(repository.BranchBrowser, FeedController):
 
     def __init__(self):
         super(BranchBrowser, self).__init__(None)
