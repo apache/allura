@@ -730,4 +730,6 @@ class TestForum(TestController):
         assert '<a href="flag_as_spam" class="sidebar_thread_spam"><b data-icon="^" class="ico ico-flag"></b> <span>Mark as Spam</span></a>' not in thread_sidebarmenu
 
     def test_feed(self):
-        r = self.app.get('/discussion/general/feed', status=200)
+        for ext in ['', '.rss', '.atom']:
+            self.app.get('/discussion/feed%s' % ext, status=200)
+            self.app.get('/discussion/general/feed%s' % ext, status=200)

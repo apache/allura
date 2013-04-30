@@ -828,10 +828,9 @@ class TestFunctionalController(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        response = self.app.get('/p/test/bugs/search_feed?q=test')
-        assert '<title>test first ticket</title>' in response
-        response = self.app.get('/p/test/bugs/search_feed.atom?q=test')
-        assert '<title>test first ticket</title>' in response
+        for ext in ['', '.rss', '.atom']:
+            assert '<title>test first ticket</title>' in \
+                    self.app.get('/p/test/bugs/search_feed%s?q=test' % ext)
 
     def test_search_current_user(self):
         self.new_ticket(summary='test first ticket')

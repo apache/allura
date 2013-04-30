@@ -104,11 +104,6 @@ class RootController(BaseController):
     @expose()
     def _lookup(self, *remainder):
         path = "/".join(remainder)
-        # HACK: The TG request extension machinery will strip off the end of
-        # a dotted wiki page name if it matches a known file extension. Here,
-        # we reassemble the original page name.
-        if request.response_ext:
-            path += request.response_ext
         url = c.app.config.options.get('url')
         if url:
             permanent_redirect(url + h.really_unicode(path).encode('utf-8'))

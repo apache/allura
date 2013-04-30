@@ -61,6 +61,7 @@ class ForgeConfig(AppConfig):
         self.use_transaction_manager = False
         # self.handle_status_codes = [ 403, 404 ]
         self.handle_status_codes = [ 403, 404 ]
+        self.disable_request_extensions = True
 
     def after_init_config(self):
         config['pylons.strict_c'] = True

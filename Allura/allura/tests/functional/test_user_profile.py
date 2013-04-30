@@ -53,6 +53,7 @@ class TestUserProfile(TestController):
     @td.with_user_project('test-admin')
     @td.with_wiki
     def test_feed(self):
-        response = self.app.get('/u/test-admin/profile/feed')
-        assert 'Recent posts by Test Admin' in response
-        assert 'Home modified by Test Admin' in response
+        for ext in ['', '.rss', '.atom']:
+            r = self.app.get('/u/test-admin/profile/feed%s' % ext, status=200)
+            assert 'Recent posts by Test Admin' in r
+            assert 'Home modified by Test Admin' in r

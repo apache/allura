@@ -58,6 +58,10 @@ class RootController(BaseController, DispatchIndex):
         search_results = SearchResults()
         search_help = SearchHelp(comments=False, history=False)
 
+    def __init__(self):
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
+
     def _check_security(self):
         require_access(c.app, 'read')
 

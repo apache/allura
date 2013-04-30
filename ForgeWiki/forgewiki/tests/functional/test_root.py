@@ -80,6 +80,10 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/search?q=tést')
         assert 'Search wiki: tést' in response
 
+    def test_feed(self):
+        for ext in ['', '.rss', '.atom']:
+            self.app.get('/wiki/feed%s' % ext, status=200)
+
     @patch('allura.lib.search.search')
     def test_search(self, search):
         r = self.app.get('/wiki/search?q=test')

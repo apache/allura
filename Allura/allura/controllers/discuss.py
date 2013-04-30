@@ -73,6 +73,8 @@ class DiscussionController(BaseController):
     W=WidgetConfig
 
     def __init__(self):
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
         if not hasattr(self, 'ThreadController'):
             self.ThreadController = ThreadController
         if not hasattr(self, 'PostController'):
@@ -168,6 +170,8 @@ class ThreadController(BaseController):
             require_access(self.thread.ref.artifact, 'read')
 
     def __init__(self, discussion_controller, thread_id):
+        setattr(self, 'feed.rss', self.feed)
+        setattr(self, 'feed.atom', self.feed)
         self._discussion_controller = discussion_controller
         self.discussion = discussion_controller.discussion
         self.thread = self.M.Thread.query.get(_id=thread_id)
