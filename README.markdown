@@ -101,13 +101,13 @@ The Allura forge consists of several components, all of which need to be running
 We have a custom config ready for use.
 
     (anvil)~$ cd ~/src
-    (anvil)~/src$ wget http://archive.apache.org/dist/lucene/solr/1.4.1/apache-solr-1.4.1.tgz
-    (anvil)~/src$ tar xf apache-solr-1.4.1.tgz
-    (anvil)~/src$ cd apache-solr-1.4.1/example/
-    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir -p ~/src/allura/solr_config/conf
-    (anvil)~/src/apache-solr-1.4.1/example/$ cp solr/conf/solrconfig.xml ~/src/allura/solr_config/conf/
+    (anvil)~/src$ wget -nv http://archive.apache.org/dist/lucene/solr/4.2.1/solr-4.2.1.tgz
+    (anvil)~/src$ tar xf solr-4.2.1.tgz && rm -f solr-4.2.1.tgz
+    (anvil)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
+
+    (anvil)~/src$ cd solr-4.2.1/example/
     (anvil)~/src/apache-solr-1.4.1/example/$ mkdir ~/logs/
-    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -Dsolr.solr.home=$(cd;pwd)/src/allura/solr_config -jar start.jar > ~/logs/solr.log &
+    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
 
 
 ### Allura task processing
