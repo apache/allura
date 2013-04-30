@@ -211,12 +211,7 @@ class ThreadController(BaseController):
         file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
         is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
-        if hasattr(file_info, 'file'):
-            p.attach(
-                file_info.filename, file_info.file, content_type=file_info.type,
-                post_id=p._id,
-                thread_id=p.thread_id,
-                discussion_id=p.discussion_id)
+        h.attach_to_post(p, file_info)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.utcnow()
         flash('Message posted')
@@ -299,12 +294,7 @@ class PostController(BaseController):
             require_access(self.post, 'moderate')
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
-            if hasattr(file_info, 'file'):
-                self.post.attach(
-                    file_info.filename, file_info.file, content_type=file_info.type,
-                    post_id=self.post._id,
-                    thread_id=self.post.thread_id,
-                    discussion_id=self.post.discussion_id)
+            h.attach_to_post(self.post, file_info)
             for k,v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
@@ -349,15 +339,7 @@ class PostController(BaseController):
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
         is_spam = g.spam_checker.check(kw['text'], artifact=p, user=c.user)
-        if hasattr(file_info, 'file'):
-            mime_type = file_info.type
-            if not mime_type or '/' not in mime_type:
-                mime_type = utils.guess_mime_type(file_info.filename)
-            p.attach(
-                file_info.filename, file_info.file, content_type=mime_type,
-                post_id=p._id,
-                thread_id=p.thread_id,
-                discussion_id=p.discussion_id)
+        h.attach_to_post(p, file_info)
         redirect(request.referer)
 
     @h.vardec
@@ -391,16 +373,7 @@ class PostController(BaseController):
     @require_post()
     def attach(self, file_info=None):
         require_access(self.post, 'moderate')
-        if hasattr(file_info, 'file'):
-            mime_type = file_info.type
-            # If mime type was not passed or bogus, guess it
-            if not mime_type or '/' not in mime_type:
-                mime_type = utils.guess_mime_type(file_info.filename)
-            self.post.attach(
-                file_info.filename, file_info.file, content_type=mime_type,
-                post_id=self.post._id,
-                thread_id=self.post.thread_id,
-                discussion_id=self.post.discussion_id)
+        h.attach_to_post(self.post, file_info)
         redirect(request.referer)
 
     @expose()

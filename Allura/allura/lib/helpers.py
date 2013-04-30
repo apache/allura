@@ -51,6 +51,7 @@ from allura.lib import exceptions as exc
 from allura.lib.decorators import exceptionless
 from allura.lib import AsciiDammit
 from .security import has_access
+from allura.lib import utils
 
 
 # validates project, subproject, and user names
@@ -702,3 +703,15 @@ def get_first(d, key):
     if isinstance(v, list):
         return v[0] if len(v) > 0 else None
     return v
+
+
+def attach_to_post(post, file_info):
+    if hasattr(file_info, 'file'):
+        mime_type = file_info.type
+        if not mime_type or '/' not in mime_type:
+            mime_type = utils.guess_mime_type(file_info.filename)
+        post.attach(
+            file_info.filename, file_info.file, content_type=mime_type,
+            post_id=post._id,
+            thread_id=post.thread_id,
+            discussion_id=post.discussion_id)
