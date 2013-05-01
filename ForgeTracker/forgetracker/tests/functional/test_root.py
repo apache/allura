@@ -2236,10 +2236,15 @@ class TestBulkMove(TrackerTestController):
 
     def test_access_restriction(self):
        self.app.get('/bugs/move/', status=200)
-       self.app.get('/bugs/move/', extra_environ={'username': 'test-user-0'},
+       self.app.get('/bugs/move/',
+                    extra_environ={'username': 'test-user-0'},
                     status=403)
-       self.app.get('/bugs/move/', extra_environ={'username': '*anonymous'},
+       self.app.get('/bugs/move/',
+                    extra_environ={'username': '*anonymous'},
                     status=302)
+       self.app.post('/bugs/move_tickets',
+                     extra_environ={'username': 'test-user-0'},
+                     status=403)
 
     def test_ticket_list(self):
         r = self.app.get('/bugs/move/?q=The')
@@ -2285,7 +2290,7 @@ class TestBulkMove(TrackerTestController):
             assert_equal(ticket.discussion_thread.app_config_id, ac_id)
             assert_equal(ticket.discussion_thread.discussion.app_config_id, ac_id)
             post = ticket.discussion_thread.last_post
-            assert_equal(post.text, 'Ticket moved from /p/test/bugs/1/')
+            assert_in('Ticket moved from /p/test/bugs/', post.text)
         for t in original_tickets:
             assert_equal(t.discussion_thread.app_config_id, original_ac_id)
             assert_equal(t.discussion_thread.discussion.app_config_id, original_ac_id)

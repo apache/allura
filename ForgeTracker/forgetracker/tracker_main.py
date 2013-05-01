@@ -795,8 +795,41 @@ class RootController(BaseController, FeedController):
         result['cancel_href'] = url(c.app.url + 'search/', dict(q=q, limit=limit, sort=sort))
         c.mass_move = W.mass_edit
         trackers = _my_trackers(c.user, c.app.config)
-        c.mass_move_form = W.mass_move_form(trackers=trackers)
+        c.mass_move_form = W.mass_move_form(
+            trackers=trackers,
+            action=c.app.url + 'move_tickets')
         return result
+
+    @expose()
+    @require_post()
+    def move_tickets(self, **post_data):
+        require_access(c.app, 'admin')
+        ticket_ids = aslist(post_data.get('__ticket_ids', []))
+        search = post_data.get('__search', '')
+        try:
+            destination_tracker_id = ObjectId(post_data.get('tracker', ''))
+        except InvalidId:
+            destination_tracker_id = None
+        tracker = M.AppConfig.query.get(_id=destination_tracker_id)
+        if tracker is None:
+            flash('Select valid tracker', 'error')
+            redirect('move/' + search)
+        if tracker == c.app.config:
+            flash('Ticket already in a selected tracker', 'info')
+            redirect('move/' + search)
+        if not has_access(tracker, 'admin')():
+            flash('You should have admin access to destination tracker', 'error')
+            redirect('move/' + search)
+        tickets = TM.Ticket.query.find(dict(
+            _id={'$in': [ObjectId(id) for id in ticket_ids]},
+            app_config_id=c.app.config._id)).all()
+        for ticket in tickets:
+            ticket.move(tracker)
+        c.app.globals.invalidate_bin_counts()
+        ThreadLocalORMSession.flush_all()
+        count = len(tickets)
+        flash('Moved {} ticket{}'.format(count, 's' if count != 1 else ''), 'ok')
+        redirect('move/' + search)
 
     @expose()
     @require_post()
