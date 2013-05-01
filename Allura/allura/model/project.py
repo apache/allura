@@ -577,7 +577,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         options.update(override_options)
         cfg = AppConfig(
             project_id=self._id,
-            tool_name=ep_name,
+            tool_name=ep_name.lower(),
             options=options)
         app = App(self, cfg)
         with h.push_config(c, project=self, app=app):

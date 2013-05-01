@@ -20,7 +20,7 @@
 """
 Model tests for project
 """
-from nose.tools import with_setup
+from nose.tools import with_setup, assert_equal
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -62,6 +62,7 @@ def test_project():
 
     c.project.install_app('Wiki', 'hello-test-mount-point')
     c.project.support_page = 'hello-test-mount-point'
+    assert_equal(c.project.app_config('wiki').tool_name, 'wiki')
     ThreadLocalORMSession.flush_all()
     with td.raises(ToolError):
         # already installed
