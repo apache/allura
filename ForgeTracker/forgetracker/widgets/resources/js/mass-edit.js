@@ -18,7 +18,7 @@
 */
 
 $(function(){
-    $form = $('#update-values')
+    $form = $('#update-values');
     if ($form.length == 0) {
         $form = $('.editbox > form');
     }
