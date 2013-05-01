@@ -218,11 +218,15 @@ class SMTPClient(object):
         if asbool(tg.config.get('smtp_ssl', False)):
             smtp_client = smtplib.SMTP_SSL(
                 tg.config.get('smtp_server', 'localhost'),
-                asint(tg.config.get('smtp_port', 25)))
+                asint(tg.config.get('smtp_port', 25)),
+                timeout=float(tg.config.get('smtp_timeout', 10)),
+            )
         else:
             smtp_client = smtplib.SMTP(
                 tg.config.get('smtp_server', 'localhost'),
-                asint(tg.config.get('smtp_port', 465)))
+                asint(tg.config.get('smtp_port', 465)),
+                timeout=float(tg.config.get('smtp_timeout', 10)),
+            )
         if tg.config.get('smtp_user', None):
             smtp_client.login(tg.config['smtp_user'], tg.config['smtp_password'])
         if asbool(tg.config.get('smtp_tls', False)):
