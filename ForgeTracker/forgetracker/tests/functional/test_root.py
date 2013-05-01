@@ -2352,6 +2352,43 @@ class TestBulkMove(TrackerTestController):
         assert_in(second_ticket_changes, admin_email.kwargs.text)
         assert_in(third_ticket_changes, admin_email.kwargs.text)
 
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_monitoring_email(self):
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllTicketChanges',
+        })
+        tickets = [
+            tm.Ticket.query.find({'summary': 'A New Hope'}).first(),
+            tm.Ticket.query.find({'summary': 'The Empire Strikes Back'}).first(),
+            tm.Ticket.query.find({'summary': 'Return Of The Jedi'}).first()]
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        M.MonQTask.query.remove()
+        r = self.app.post('/p/test/bugs/move_tickets', {
+                    'tracker': str(tracker.config._id),
+                    '__ticket_ids': [t._id for t in tickets],
+                    '__search': '',
+                })
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 2)
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(M.User.by_username('test-admin')._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 1)
+        admin_email_text = admin_email[0].kwargs.text
+        monitoring_email_text = monitoring_email[0].kwargs.text
+        assert_equal(admin_email_text, monitoring_email_text)
+
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})

@@ -861,6 +861,19 @@ class RootController(BaseController, FeedController):
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
+        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
+            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            tmpl_context['tickets'] = ({
+                    'original_num': original_ticket_nums[_id],
+                    'destination_num': moved_tickets[_id].ticket_num,
+                    'summary': moved_tickets[_id].summary
+                } for _id in moved_tickets.keys())
+            mail.update(dict(
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [monitoring_email]))
+            mail_tasks.sendmail.post(**mail)
+
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         count = len(tickets)
