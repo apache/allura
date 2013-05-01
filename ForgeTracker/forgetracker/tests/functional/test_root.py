@@ -2225,6 +2225,73 @@ class test_show_default_fields(TrackerTestController):
         assert '<td>Labels</td> <td><input type="checkbox" name="labels" ></td>' in r
 
 
+class TestBulkMove(TrackerTestController):
+
+    def setUp(self):
+        super(TestBulkMove, self).setUp()
+        self.new_ticket(summary='A New Hope')
+        self.new_ticket(summary='The Empire Strikes Back')
+        self.new_ticket(summary='Return Of The Jedi')
+        M.MonQTask.run_ready()
+
+    def test_access_restriction(self):
+       self.app.get('/bugs/move/', status=200)
+       self.app.get('/bugs/move/', extra_environ={'username': 'test-user-0'},
+                    status=403)
+       self.app.get('/bugs/move/', extra_environ={'username': '*anonymous'},
+                    status=302)
+
+    def test_ticket_list(self):
+        r = self.app.get('/bugs/move/?q=The')
+        tickets_table = r.html.find('tbody', attrs={'class': 'ticket-list'})
+        tickets = tickets_table.findAll('tr')
+        assert_equal(len(tickets), 2)
+        assert_in('The Empire Strikes Back', tickets_table.text)
+        assert_in('Return Of The Jedi', tickets_table.text)
+
+    @td.with_tool('test', 'Tickets', 'bugs2')
+    @td.with_tool('test2', 'Tickets', 'bugs')
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_controls_present(self):
+        r = self.app.get('/bugs/move/')
+        trackers = r.html.find('select', {'name': 'tracker'}).findAll('option')
+        trackers = set([t.text for t in trackers])
+        expected = set(['test/bugs', 'test/bugs2', 'test2/bugs', 'test2/bugs2'])
+        assert_equal(trackers, expected)
+        move_btn = r.html.find('input', attrs={'type': 'submit', 'value': 'Move'})
+        assert move_btn is not None
+
+    @td.with_tool('test2', 'Tickets', 'bugs')
+    def test_move(self):
+        tickets = [
+            tm.Ticket.query.find({'summary': 'The Empire Strikes Back'}).first(),
+            tm.Ticket.query.find({'summary': 'Return Of The Jedi'}).first()]
+        p = M.Project.query.get(shortname='test2')
+        original_p = M.Project.query.get(shortname='test')
+        tracker = p.app_instance('bugs')
+        original_tracker = original_p.app_instance('bugs')
+        r = self.app.post('/p/test/bugs/move_tickets', {
+                    'tracker': str(tracker.config._id),
+                    '__ticket_ids': [t._id for t in tickets],
+                    '__search': '',
+                })
+        ac_id = tracker.config._id
+        original_ac_id = original_tracker.config._id
+        moved_tickets = tm.Ticket.query.find({'app_config_id': ac_id}).all()
+        original_tickets = tm.Ticket.query.find({'app_config_id': original_ac_id}).all()
+        assert_equal(len(moved_tickets), 2)
+        assert_equal(len(original_tickets), 1)
+        for ticket in moved_tickets:
+            assert_equal(ticket.discussion_thread.app_config_id, ac_id)
+            assert_equal(ticket.discussion_thread.discussion.app_config_id, ac_id)
+            post = ticket.discussion_thread.last_post
+            assert_equal(post.text, 'Ticket moved from /p/test/bugs/1/')
+        for t in original_tickets:
+            assert_equal(t.discussion_thread.app_config_id, original_ac_id)
+            assert_equal(t.discussion_thread.discussion.app_config_id, original_ac_id)
+            assert t.discussion_thread.last_post is None
+
+
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
     return text in str(sidebar_menu)
