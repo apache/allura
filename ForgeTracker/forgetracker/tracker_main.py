@@ -824,8 +824,8 @@ class RootController(BaseController, FeedController):
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
             app_config_id=c.app.config._id)).all()
 
-        original_tickets = {t._id: t for t in tickets}
-        filtered = filtered_by_subscription(original_tickets)
+        filtered = filtered_by_subscription({t._id: t for t in tickets})
+        original_ticket_nums = {t._id: t.ticket_num for t in tickets}
         users = M.User.query.find({'_id': {'$in': filtered.keys()}}).all()
         moved_tickets = {}
         for ticket in tickets:
@@ -851,7 +851,7 @@ class RootController(BaseController, FeedController):
         }
         for user in users:
             tmpl_context['tickets'] = ({
-                    'original_num': original_tickets[_id].ticket_num,
+                    'original_num': original_ticket_nums[_id],
                     'destination_num': moved_tickets[_id].ticket_num,
                     'summary': moved_tickets[_id].summary
                 } for _id in filtered.get(user._id, []))
