@@ -181,11 +181,9 @@ class TestProjectAdmin(TestController):
         new_ep_opts = r.html.findAll('a',{'class':"install_trig"})
         tool_strings = [ ' '.join(opt.find('span').string.strip().split()) for opt in new_ep_opts ]
         expected_tools = [
-            'External Link',
             'Wiki',
             'Tickets',
             'Discussion',
-            'Chat (alpha)',
             'Blog',
             'Subproject']
         # check using sets, because their may be more tools installed by default
