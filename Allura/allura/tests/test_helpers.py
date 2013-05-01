@@ -238,3 +238,7 @@ def test_inject_user(context):
     context.user = Mock(username='*anonymous')
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
     assert_equals(result, 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')
+
+def test_datetimeformat():
+    from datetime import date
+    assert h.datetimeformat(date(2013, 01, 01)) == '2013-01-01 00:00:00'

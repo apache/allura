@@ -33,10 +33,16 @@
       {% for commit in value %}
         <tr class="rev">
           <td>
-            <div class="grid-14">
+            <div>
                 {%if is_file%}
                     <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
                 {%endif%}
+                <a href="{{c.app.repo.url_for_commit(commit)}}">{{commit.shorthand_id()}}</a>
+                {% if c.app.repo.symbolics_for_commit(commit)[1] %}
+                    ({% for tag in c.app.repo.symbolics_for_commit(commit)[1] -%}
+                        <a href="{{c.app.repo.url_for_commit(tag)}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
+                    {%- endfor %})
+                {% endif %}
                 {% if commit.committed.email != commit.authored.email %}
                 {% if commit.committer_url %}
                 <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
@@ -47,12 +53,6 @@
                 pushed
                 {% endif %}
                 {% endif %}
-                <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a>
-                {% if c.app.repo.symbolics_for_commit(commit)[1] %}
-                    ({% for tag in c.app.repo.symbolics_for_commit(commit)[1] -%}
-                        <a href="{{c.app.repo.url()}}ci/{{tag}}/tree{{request.params.get('path')}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
-                    {%- endfor %})
-                {% endif %}
                 by
                 {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}
                 {%if is_file%}
@@ -62,7 +62,7 @@
             </div>
           </td>
           <td style="vertical-align: text-top">
-            {% if commit.committed.date %}{{commit.committed.date}}{% endif %}
+            {% if commit.committed.date %}{{commit.committed.date|datetimeformat}}{% endif %}
           </td>
           <td style="text-align: left; vertical-align: text-top">
             <a href="{{commit.url()}}tree{{request.params.get('path')}}">

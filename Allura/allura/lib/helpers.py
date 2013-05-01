@@ -702,3 +702,7 @@ def get_first(d, key):
     if isinstance(v, list):
         return v[0] if len(v) > 0 else None
     return v
+
+
+def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
+    return value.strftime(format)
