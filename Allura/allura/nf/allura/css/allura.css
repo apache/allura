@@ -211,6 +211,8 @@ b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
 .pagination_size {
     height: 40px;
 }
+
 tr.rev div.markdown_content p {
     padding: 0;
+    margin-bottom: 0;
 }

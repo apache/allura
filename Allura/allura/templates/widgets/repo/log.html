@@ -45,11 +45,13 @@
                 {% endif %}
                 {% if commit.committed.email != commit.authored.email %}
                 {% if commit.committer_url %}
+                by
                 <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
-                    {{commit.committed.name}}</a>
+                    {{commit.committed.name}}</a>,
                 pushed
                 {% else %}
-                {{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}} {{commit.committed.name}}
+                by
+                {{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}} {{commit.committed.name}},
                 pushed
                 {% endif %}
                 {% endif %}
