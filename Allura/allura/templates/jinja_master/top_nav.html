@@ -19,18 +19,7 @@
 {% if c.project %}
 <ul class="dropdown">
   {% for s in c.project.grouped_navbar_entries() %}
-    {% set selected = False %}
-    {% if s.label == 'Home' %}
-      {% set url_length = s.url|length %}
-      {% if request.url.rfind(s.url, -url_length) != -1 %}
-        {% set selected = True %}
-      {% endif %}
-    {% else %}
-      {% if s.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info %}
-        {% set selected = True %}
-      {% endif %}
-    {% endif %}
-    <li class="{% if selected %}selected{% endif %}">
+    <li class="{% if s.matches_url(request) %}selected{% endif %}">
         <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
             {{s.label}}
         </a>
@@ -38,11 +27,7 @@
         {% if grouped_tool_count %}
             <ul>
                 {%for tool in s.children%}
-                    {% set selected = False %}
-                    {% if tool.matches_url(request) or c.project.neighborhood.url()+'_admin' in request.upath_info%}
-                        {% set selected = True %}
-                    {% endif %}
-                    <li class="{% if selected %}selected{% endif %}"><a href="{{tool.url}}">{{tool.label}}</a></li>
+                    <li class="{% if tool.matches_url(request) %}selected{% endif %}"><a href="{{tool.url}}">{{tool.label}}</a></li>
                 {%endfor%}
             </ul>
         {% endif %}

@@ -445,6 +445,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                         ordinal = anchored_tools.keys().index(entry.tool_name.lower())
                     else:
                         ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
+                    if self.is_nbhd_project and entry.label == 'Admin':
+                        entry.matching_urls.append('%s_admin/' % self.url())
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
                     entries.append({'ordinal':ordinal,'entry':entry})
