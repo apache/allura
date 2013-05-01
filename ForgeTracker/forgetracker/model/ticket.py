@@ -530,7 +530,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         o and o.username, n and n.username))
                 self.subscribe(user=n)
                 g.statsUpdater.ticketEvent("assigned", self, self.project, n)
-                if o: 
+                if o:
                     g.statsUpdater.ticketEvent("revoked", self, self.project, o)
             if old.description != self.description:
                 changes.append('Description updated:')
@@ -635,7 +635,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     attach_thumb.discussion_id = app_config.discussion_id
                 attach_thumb.app_config_id = app_config._id
 
-    def move(self, app_config):
+    def move(self, app_config, notify=True):
         '''Move ticket from current tickets app to tickets app with given app_config'''
         app = app_config.project.app_instance(app_config)
         prior_url = self.url()
@@ -724,7 +724,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             message += '\n\nCan\'t be converted:\n\n'
         message += '\n'.join(messages)
         with h.push_context(ticket.project_id, app_config_id=app_config._id):
-            ticket.discussion_thread.add_post(text=message)
+            ticket.discussion_thread.add_post(text=message, notify=notify)
         return ticket
 
     def __json__(self):

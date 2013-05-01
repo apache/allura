@@ -823,8 +823,44 @@ class RootController(BaseController, FeedController):
         tickets = TM.Ticket.query.find(dict(
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
             app_config_id=c.app.config._id)).all()
+
+        original_tickets = {t._id: t for t in tickets}
+        filtered = filtered_by_subscription(original_tickets)
+        users = M.User.query.find({'_id': {'$in': filtered.keys()}}).all()
+        moved_tickets = {}
         for ticket in tickets:
-            ticket.move(tracker)
+            moved = ticket.move(tracker, notify=False)
+            moved_tickets[moved._id] = moved
+
+        mail = dict(
+            fromaddr = str(c.user._id),
+            reply_to = str(c.user._id),
+            subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
+                                                           c.app.config.options.mount_point,
+                                                           c.user.display_name))
+        tmpl = jinja2.Environment(
+                loader=jinja2.PackageLoader('forgetracker', 'data'),
+                auto_reload=asbool(config.get('auto_reload_templates', True))
+        ).get_template('mass_move_report.html')
+        tmpl_context = {
+            'original_tracker': '%s:%s' % (c.project.shortname,
+                                           c.app.config.options.mount_point),
+            'destination_tracker': '%s:%s' % (tracker.project.shortname,
+                                              tracker.options.mount_point),
+            'tickets': [],
+        }
+        for user in users:
+            tmpl_context['tickets'] = ({
+                    'original_num': original_tickets[_id].ticket_num,
+                    'destination_num': moved_tickets[_id].ticket_num,
+                    'summary': moved_tickets[_id].summary
+                } for _id in filtered.get(user._id, []))
+            mail.update(dict(
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [str(user._id)]))
+            mail_tasks.sendmail.post(**mail)
+
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         count = len(tickets)

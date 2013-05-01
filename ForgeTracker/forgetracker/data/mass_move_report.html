@@ -1,0 +1,5 @@
+Tickets were moved from [{{original_tracker}}] to [{{destination_tracker}}]
+
+{% for t in tickets %}
+- [{{original_tracker}}:#{{t['original_num']}}] --> [{{destination_tracker}}:#{{t['destination_num']}}] {{t['summary']}}
+{% endfor %}

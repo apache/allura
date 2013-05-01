@@ -2296,6 +2296,62 @@ class TestBulkMove(TrackerTestController):
             assert_equal(t.discussion_thread.discussion.app_config_id, original_ac_id)
             assert t.discussion_thread.last_post is None
 
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_notifications(self):
+        tickets = [
+            tm.Ticket.query.find({'summary': 'A New Hope'}).first(),
+            tm.Ticket.query.find({'summary': 'The Empire Strikes Back'}).first(),
+            tm.Ticket.query.find({'summary': 'Return Of The Jedi'}).first()]
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        first_user = M.User.by_username('test-user-0')
+        second_user = M.User.by_username('test-user-1')
+        admin = M.User.by_username('test-admin')
+        tickets[0].subscribe(user=first_user)
+        tickets[1].subscribe(user=second_user)
+        M.MonQTask.query.remove()
+        r = self.app.post('/p/test/bugs/move_tickets', {
+                    'tracker': str(tracker.config._id),
+                    '__ticket_ids': [t._id for t in tickets],
+                    '__search': '',
+                })
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 3)
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+        first_user_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(first_user._id)
+        }).all()
+        assert_equal(len(first_user_email), 1)
+        first_user_email = first_user_email[0]
+        second_user_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(second_user._id)
+        }).all()
+        assert_equal(len(second_user_email), 1)
+        second_user_email = second_user_email[0]
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        assert_equal(len(admin_email), 1)
+        admin_email = admin_email[0]
+
+        email_header = 'Tickets were moved from [test:bugs] to [test2:bugs2]\n'
+        first_ticket_changes = 'A New Hope'
+        second_ticket_changes = 'The Empire Strikes Back'
+        third_ticket_changes = 'Return Of The Jedi'
+        assert_in(email_header, first_user_email.kwargs.text)
+        assert_in(first_ticket_changes, first_user_email.kwargs.text)
+        assert_in(email_header, second_user_email.kwargs.text)
+        assert_in(second_ticket_changes, second_user_email.kwargs.text)
+        assert_in(email_header, admin_email.kwargs.text)
+        assert_in(first_ticket_changes, admin_email.kwargs.text)
+        assert_in(second_ticket_changes, admin_email.kwargs.text)
+        assert_in(third_ticket_changes, admin_email.kwargs.text)
+
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
