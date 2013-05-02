@@ -214,6 +214,32 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
 class RootRestController(BaseController):
 
+    def _check_security(self):
+        require_access(c.app, 'read')
+
+    @expose('json:')
+    def index(self, **kw):
+        forums = model.Forum.query.find(dict(
+                        app_config_id=c.app.config._id,
+                        parent_id=None, deleted=False)).all()
+        json = {'forums': []}
+        for f in forums:
+            if h.has_access(f, 'read')():
+                forum = {
+                    'name': f.name,
+                    'description': f.description,
+                    'url': h.absurl('/rest' + f.url()),
+                    'num_topics': f.num_topics,
+                }
+                if f.last_post:
+                    forum['last_post'] = {
+                        'author': f.last_post.author().display_name,
+                        'subject': f.last_post.subject,
+                        'date': f.last_post.mod_date
+                    }
+                json['forums'].append(forum)
+        return json
+
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):
         require_access(c.project, 'admin')
