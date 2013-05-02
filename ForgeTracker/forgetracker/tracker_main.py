@@ -113,7 +113,7 @@ def _mongo_col_to_solr_col(name):
     elif name == 'mod_date':
         return 'mod_date_dt'
     elif name == 'labels':
-        return 'labels_s'
+        return 'labels_t'
     else:
         for field in c.app.globals.sortable_custom_fields_shown_in_search():
             if name == field['name']:
@@ -458,7 +458,7 @@ def solr_columns():
                     label='Updated',
                     active=c.app.globals.show_in_search['mod_date']),
                dict(name='labels',
-                   sort_name='labels_s',
+                   sort_name='labels_t',
                    label='Labels',
                    active=c.app.globals.show_in_search['labels']),
                ]

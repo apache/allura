@@ -111,10 +111,9 @@ class Artifact(MappedClass):
     @classmethod
     def translate_query(cls, q, fields):
         for f in fields:
-            if f[-2] == '_':
-                base = f[:-2]
-                actual = f
-                q = q.replace(base+':', actual+':')
+            if '_' in f:
+                base, typ = f.rsplit('_', 1)
+                q = q.replace(base + ':', f + ':')
         return q
 
     @LazyProperty
