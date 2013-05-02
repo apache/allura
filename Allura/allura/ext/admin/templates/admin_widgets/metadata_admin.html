@@ -46,7 +46,7 @@
     <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
     <label for="support_page_none">None</label><br>
     {% for ac in value.app_configs %}
-      {% if ac.tool_name in ['Wiki', 'Tickets', 'Discussion'] %}
+      {% if ac.tool_name.lower() in ['wiki', 'tickets', 'discussion'] %}
         <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
                {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
         <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>

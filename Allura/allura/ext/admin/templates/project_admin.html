@@ -49,7 +49,7 @@
   </div>
   <div class="grid-4">
     {% for tool in c.project.app_configs %}
-      {% if tool.tool_name == 'Wiki' and not wiki_found %}
+      {% if tool.tool_name.lower() == 'wiki' and not wiki_found %}
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/add">Add Page</a><br>
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Wiki</a>
         {% set wiki_found = True %}
@@ -82,7 +82,7 @@
   </div>
   <div class="grid-4">
     {% for tool in c.project.app_configs %}
-      {% if tool.tool_name == 'Tickets' and not tracker_found %}
+      {% if tool.tool_name.lower() == 'tickets' and not tracker_found %}
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/new">Create Ticket</a><br>
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/milestones">Edit Milestones</a><br>
         <a href="{{c.project.url()}}{{tool.options.mount_point}}/">View Tickets</a>

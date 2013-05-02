@@ -143,7 +143,7 @@ def test_macros():
     r = g.markdown_wiki.convert('[[download_button]]')
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
     h.set_context('--init--', 'wiki', neighborhood='Projects')
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
     assert 'Home modified by' in r, r
     orig_len = len(r)
     # Make project private & verify we don't see its new feed items
@@ -155,7 +155,7 @@ def test_macros():
     pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
     pg.text = 'Change'
     pg.commit()
-    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+    r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
     new_len = len(r)
     assert new_len == orig_len
     p = BM.BlogPost(title='test me', neighborhood_id=p_test.neighborhood_id)
@@ -361,7 +361,7 @@ def test_macro_include():
 
 def test_macro_nbhd_feeds():
     with h.push_context('--init--', 'wiki', neighborhood='Projects'):
-        r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=Wiki]]')
+        r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
         assert 'Home modified by ' in r, r
 
 

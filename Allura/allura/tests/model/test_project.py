@@ -107,7 +107,7 @@ def test_anchored_tools():
     c.project.install_app = MagicMock()
     assert c.project.sitemap()[0].label == 'Wiki'
     assert c.project.install_app.call_args[0][0] == 'tickets'
-    assert c.project.ordered_mounts()[0]['ac'].tool_name == 'Wiki'
+    assert c.project.ordered_mounts()[0]['ac'].tool_name == 'wiki'
 
 
 def test_set_ordinal_to_admin_tool():
