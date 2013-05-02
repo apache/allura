@@ -20,6 +20,7 @@ import logging
 from urllib import unquote
 from itertools import imap
 
+import pymongo
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -217,6 +218,10 @@ class RootRestController(BaseController):
     def _check_security(self):
         require_access(c.app, 'read')
 
+    @expose()
+    def _lookup(self, forum, *remainder):
+        return ForumRestController(unquote(forum)), remainder
+
     @expose('json:')
     def index(self, **kw):
         forums = model.Forum.query.find(dict(
@@ -272,3 +277,44 @@ class RootRestController(BaseController):
             raise
             log.exception(e)
             return dict(status=False, errors=[str(e)])
+
+
+class ForumRestController(BaseController):
+
+    def __init__(self, forum):
+        self.forum = model.Forum.query.get(
+            app_config_id=c.app.config._id,
+            shortname=forum)
+        if not self.forum and not self.forum.deleted:
+            raise exc.HTTPNotFound()
+        super(ForumRestController, self).__init__()
+
+    def _check_security(self):
+        require_access(self.forum, 'read')
+
+    @expose('json:')
+    def index(self, **kw):
+        topics = model.ForumThread.query.find(
+            dict(discussion_id=self.forum._id, num_replies={'$gt': 0}))
+        topics = topics.sort([('flags', pymongo.DESCENDING),
+                              ('last_post_date', pymongo.DESCENDING)])
+        json = {
+            'forum': {
+                'name': self.forum.name,
+                'description': self.forum.description,
+                'topics': [],
+            }
+        }
+        for t in topics:
+            topic = {
+                'subject': t.subject,
+                'num_views': t.num_views,
+                'num_replies': t.num_replies,
+                'url': h.absurl('/rest' + t.url()),
+                'last_post': {
+                    'author': t.last_post.author().display_name,
+                    'date': t.last_post.mod_date
+                },
+            }
+            json['forum']['topics'].append(topic)
+        return json
