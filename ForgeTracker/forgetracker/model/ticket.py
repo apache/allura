@@ -47,6 +47,8 @@ from forgetracker.plugins import ImportIdConverter
 
 log = logging.getLogger(__name__)
 
+CUSTOM_FIELD_SOLR_TYPES = dict(boolean='_b', number='_i')
+
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
 
@@ -131,6 +133,20 @@ class Globals(MappedClass):
                 return fld
         return None
 
+    def get_custom_field_solr_type(self, field_name):
+        """Return the Solr type for a custom field.
+
+        :param field_name: Name of the custom field
+        :type field_name: str
+        :returns: The Solr type suffix (e.g. '_s', '_i', '_b') or None if
+            there is no custom_field named ``field_name``.
+
+        """
+        fld = self.get_custom_field(field_name)
+        if fld:
+            return CUSTOM_FIELD_SOLR_TYPES.get(fld.type, '_s')
+        return None
+
     def update_bin_counts(self):
         # Refresh bin counts
         self._bin_counts_data = []
@@ -184,14 +200,23 @@ class Globals(MappedClass):
         tasks.update_bin_counts.post(self.app_config_id, delay=5)
 
     def sortable_custom_fields_shown_in_search(self):
-        return [dict(sortable_name='%s_s' % field['name'],
-                     name=field['name'],
-                     label=field['label'])
-                for field in self.custom_fields
-                if field.get('show_in_search')]
+        def solr_type(field_name):
+            # TODO POST-SOLR-REINDEX: Remove the following line. It temporarily
+            # forces the solr field type to string (_s) until the new index
+            # (with newly typed fields) is built.
+            return '_s'
+            return self.get_custom_field_solr_type(field_name) or '_s'
+
+        return [dict(
+            sortable_name='{0}{1}'.format(field['name'],
+                solr_type(field['name'])),
+            name=field['name'],
+            label=field['label'])
+            for field in self.custom_fields
+            if field.get('show_in_search')]
 
     def has_deleted_tickets(self):
-        return  Ticket.query.find(dict(
+        return Ticket.query.find(dict(
             app_config_id=c.app.config._id, deleted=True)).count() > 0
 
 
@@ -335,17 +360,29 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             snippet_s=self.summary,
             votes_up_i=self.votes_up,
             votes_down_i=self.votes_down,
-            votes_total_i=(self.votes_up-self.votes_down),
+            votes_total_i=(self.votes_up - self.votes_down),
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
             )
-        for k,v in self.custom_fields.iteritems():
-            result[k + '_s'] = unicode(v)
+        for k, v in self.custom_fields.iteritems():
+            field_value = unicode(v)
+            # Index all custom fields as Solr strings. This is actually wrong,
+            # but it's what the current code expects.
+            # TODO POST-SOLR-REINDEX: remove this line
+            result[k + '_s'] = field_value
+
+            # Now let's also index with proper Solr types. After reindexing to
+            # add these, remove the catch-all string-type indexing above.
+            solr_type = self.app.globals.get_custom_field_solr_type(k)
+            if solr_type:
+                result[k + solr_type] = field_value
+
         if self.reported_by:
             result['reported_by_s'] = self.reported_by.username
         if self.assigned_to:
             result['assigned_to_s'] = self.assigned_to.username
         # Tracker uses search with default solr parser. It would match only on
-        # `text`, so we're appending all other field values into `text`, to match on it too.
+        # `text`, so we're appending all other field values into `text`, to
+        # match on it too.
         result['text'] += pformat(result.values())
         return result
 
@@ -357,10 +394,16 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def translate_query(cls, q, fields):
         q = super(Ticket, cls).translate_query(q, fields)
         cf = [f.name for f in c.app.globals.custom_fields]
+        solr_field = '{0}{1}'
+        solr_type = '_s'
         for f in cf:
-            actual = '_%s_s' % f[1:]
-            base = f
-            q = q.replace(base+':', actual+':')
+            # TODO POST-SOLR-REINDEX: uncomment this line to enable searching
+            # on new properly typed solr fields instead of the old catch-all
+            # string fields.
+            # solr_type = (c.app.globals.get_custom_field_solr_type(f)
+                    # or solr_type)
+            actual = solr_field.format(f, solr_type)
+            q = q.replace(f + ':', actual + ':')
         return q
 
     @property
