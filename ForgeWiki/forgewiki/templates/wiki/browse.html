@@ -43,7 +43,7 @@
         <td><a href="{{page.url|safe}}">{{page['title']}}</a></td>
       
         {% if 'user_label' in page %}
-          <td>{{page['user_label']}}</td>
+          <td>{{page['user_label']}} ({{page['user_name']}})</td>
         {% else %}
           <td></td>
         {% endif %}

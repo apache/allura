@@ -216,15 +216,15 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/tést/history')
         assert 'tést' in response
         # two revisions are shown
-        assert '2 by Test Admin' in response
-        assert '1 by Test Admin' in response
+        assert '2 by Test Admin (test-admin)' in response
+        assert '1 by Test Admin (test-admin)' in response
         # you can revert to an old revison, but not the current one
         assert response.html.find('a',{'href':'./revert?version=1'})
         assert not response.html.find('a',{'href':'./revert?version=2'})
         response = self.app.get('/wiki/tést/history', extra_environ=dict(username='*anonymous'))
         # two revisions are shown
-        assert '2 by Test Admin' in response
-        assert '1 by Test Admin' in response
+        assert '2 by Test Admin (test-admin)' in response
+        assert '1 by Test Admin (test-admin)' in response
         # you cannot revert to any revision
         assert not response.html.find('a',{'href':'./revert?version=1'})
         assert not response.html.find('a',{'href':'./revert?version=2'})
@@ -616,3 +616,7 @@ class TestRootController(TestController):
                 assert 'notfound' not in link.get('class', '')
                 mailto_links += 1
         assert mailto_links == 3, 'Wrong number of mailto links'
+
+    def test_user_browse_page(self):
+        r = self.app.get('/wiki/browse_pages/')
+        assert '<td>Test Admin (test-admin)</td>' in r
