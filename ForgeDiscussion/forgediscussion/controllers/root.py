@@ -96,11 +96,19 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')
     def create_topic(self, new_forum=False, **kw):
+        forums = model.Forum.query.find(dict(app_config_id=c.app.config._id,
+                                             parent_id=None,
+                                             deleted=False))
+        current_forum = None
+        for f in forums:
+                if request.referer and (f.url() in request.referer):
+                    current_forum = f.shortname
+
         c.new_topic = self.W.new_topic
         forums = [f for f in model.Forum.query.find(dict(
                              app_config_id=c.app.config._id,
                              parent_id=None)).all() if has_access(f, 'post')() and not f.deleted]
-        return dict(forums=forums)
+        return dict(forums=forums, current_forum=current_forum)
 
     @h.vardec
     @expose()

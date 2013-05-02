@@ -733,3 +733,7 @@ class TestForum(TestController):
         for ext in ['', '.rss', '.atom']:
             self.app.get('/discussion/feed%s' % ext, status=200)
             self.app.get('/discussion/general/feed%s' % ext, status=200)
+
+    def test_create_topic(self):
+        r = self.app.get('/p/test/discussion/create_topic/', headers={'Referer':'/p/test/discussion/testforum/'})
+        assert '<option value="testforum"selected>Test Forum</option>' in r

@@ -30,7 +30,7 @@
       <label for="{{ widget.context_for(widget.fields.forum)['id'] }}" class="cr">Forum:</label>
       <select id="{{ widget.context_for(widget.fields.forum)['id'] }}" name="{{ widget.context_for(widget.fields.forum)['rendered_name'] }}">
         {% for forum in forums %}
-          <option value="{{forum.shortname}}">{{forum.name}}</option>
+          <option value="{{forum.shortname}}"{% if forum.shortname==current_forum %}selected{% endif %}>{{forum.name}}</option>
         {% endfor %}
       </select>
     </div>
