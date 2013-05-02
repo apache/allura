@@ -31,7 +31,7 @@ fi
 echo "Logs are in /var/log/allura"
 
 # Start solr
-if pgrep -f solr.*start.jar >/dev/null
+if pgrep -f start.jar >/dev/null
 then
     echo "Solr is running."
 else

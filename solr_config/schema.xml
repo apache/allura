@@ -203,6 +203,7 @@
    <dynamicField name="*_f"  type="float"  indexed="true"  stored="true"/>
    <dynamicField name="*_d"  type="double" indexed="true"  stored="true"/>
    <dynamicField name="*_dt" type="date"    indexed="true"  stored="true"/>
+   <dynamicField name="*_ws" type="text_ws" indexed="true"  stored="true"/>
 
  </fields>
 
@@ -240,6 +241,7 @@
 
    <!-- copy name to alphaNameSort, a field designed for sorting by name -->
    <!-- <copyField source="name" dest="alphaNameSort"/> -->
+   <copyField source="labels_t" dest="labels_ws"/>
 
   <types>
     <!-- field type definitions. The "name" attribute is

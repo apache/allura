@@ -122,7 +122,7 @@ class SearchHelp(ffw.Lightbox):
 <h2>Sorting search results</h2>
 <p>Ticket search results can be sorted by clicking the header of the column you want to sort by. The first click will sort the results in ascending order. Clicking the header again will sort the column in descending order. In addition to sorting by the column headers, you can manually sort on these properties:</p>
 <ul>
-<li>Labels assigned to the ticket - labels_s</li>
+<li>Labels assigned to the ticket - labels_t</li>
 <li>Milestone the ticket is assigned to - _milestone_s</li>
 <li>Last modified date - mod_date_dt</li>
 <li>Body of the ticket - text_s</li>
