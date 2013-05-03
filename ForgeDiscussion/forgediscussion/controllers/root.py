@@ -275,9 +275,8 @@ class ForumRestController(BaseController):
         self.forum = model.Forum.query.get(
             app_config_id=c.app.config._id,
             shortname=forum)
-        if not self.forum and not self.forum.deleted:
+        if not self.forum or self.forum.deleted:
             raise exc.HTTPNotFound()
-        super(ForumRestController, self).__init__()
 
     def _check_security(self):
         require_access(self.forum, 'read')
@@ -285,3 +284,27 @@ class ForumRestController(BaseController):
     @expose('json:')
     def index(self, **kw):
         return dict(forum=self.forum)
+
+    @expose()
+    def _lookup(self, thread, thread_id, *remainder):
+        if thread == 'thread':
+            topic = model.Forum.thread_class().query.find(dict(
+                app_config_id=c.app.config._id,
+                discussion_id=self.forum._id,
+                _id=unquote(thread_id))).first()
+            if topic:
+                return ForumTopicRestController(self.forum, topic), remainder
+        raise exc.HTTPNotFound()
+
+class ForumTopicRestController(BaseController):
+
+    def __init__(self, forum, topic):
+        self.forum = forum
+        self.topic = topic
+
+    def _check_security(self):
+        require_access(self.forum, 'read')
+
+    @expose('json:')
+    def index(self, **kw):
+        return dict(topic=self.topic)

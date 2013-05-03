@@ -146,7 +146,7 @@ class Forum(M.Discussion):
                                subject=t.subject,
                                num_replies=t.num_replies,
                                num_views=t.num_views,
-                               url=t.url(),
+                               url=h.absurl('/rest' + t.url()),
                                last_post=t.last_post)
                           for t in self.all_threads]
         return json
@@ -169,7 +169,7 @@ class ForumThread(M.Thread):
     flags = FieldProperty([str])
 
     discussion = RelationProperty(Forum)
-    posts = RelationProperty('ForumPost')
+    posts = RelationProperty('ForumPost', via='thread_id')
     first_post = RelationProperty('ForumPost', via='first_post_id')
 
     @property
@@ -206,6 +206,7 @@ class ForumThread(M.Thread):
             {'discussion_id':self.discussion_id, 'thread_id':self._id},
             {'$set':dict(discussion_id=new_forum._id)})
         self.discussion_id = new_forum._id
+
 
 class ForumPostHistory(M.PostHistory):
     class __mongometa__:

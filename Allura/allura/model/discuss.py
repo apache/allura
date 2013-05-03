@@ -165,6 +165,7 @@ class Thread(Artifact, ActivityObject):
             discussion_id=str(self.discussion_id),
             subject=self.subject,
             posts=[dict(slug=p.slug,
+                        text=p.text,
                         subject=p.subject,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])

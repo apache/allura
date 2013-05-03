@@ -4,6 +4,7 @@ from nose.tools import assert_equal
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
+from forgediscussion.model import ForumThread
 
 
 class TestDiscussionApiBase(TestRestApiBase):
@@ -72,8 +73,27 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topics[0]['num_replies'], 1)
         assert_equal(topics[0]['last_post']['author'], 'test-admin')
         assert_equal(topics[0]['last_post']['text'], 'Hi boys and girls')
+        t = ForumThread.query.find({'subject': 'Hi guys'}).first()
+        url = 'http://localhost:80/rest/p/test/discussion/general/thread/%s/' % t._id
+        assert_equal(topics[0]['url'], url)
         assert_equal(topics[1]['subject'], 'Let\'s talk')
         assert_equal(topics[1]['num_views'], 0)
         assert_equal(topics[1]['num_replies'], 1)
         assert_equal(topics[1]['last_post']['author'], 'test-admin')
         assert_equal(topics[1]['last_post']['text'], '1st post')
+        t = ForumThread.query.find({'subject': 'Let\'s talk'}).first()
+        url = 'http://localhost:80/rest/p/test/discussion/general/thread/%s/' % t._id
+        assert_equal(topics[1]['url'], url)
+
+    def test_topic(self):
+        forum = self.api_get('/rest/p/test/discussion/general/')
+        forum = forum.json['forum']
+        assert_equal(forum['name'], 'General Discussion')
+        assert_equal(forum['description'], 'Forum about anything you want to talk about.')
+        topics = forum['topics']
+        topic = self.api_get(topics[0]['url'][len('http://localhost:80'):])
+        topic = topic.json['topic']
+        assert_equal(len(topic['posts']), 1)
+        assert_equal(topic['subject'], 'Hi guys')
+        assert_equal(topic['posts'][0]['text'], 'Hi boys and girls')
+        assert_equal(topic['posts'][0]['subject'], 'Hi guys')
