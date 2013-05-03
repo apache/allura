@@ -238,7 +238,8 @@ class TestRootController(_TestCase):
 
     def test_refresh(self):
         notification = M.Notification.query.find(
-            dict(subject='[test:src-git] 5 new commits to test Git')).first()
+            dict(subject='[test:src-git] 5 new commits to Test Project Git')).first()
+        assert notification
         domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
         email = 'noreply@%s%s' % (domain, common_suffix)
@@ -428,7 +429,7 @@ class TestFork(_TestCase):
     def test_fork_form(self):
         r = self.app.get('%sfork/' % c.app.repo.url())
         assert '<input type="text" name="mount_point" value="test"/>' in r
-        assert '<input type="text" name="mount_label" value="test - Git"/>' in r
+        assert '<input type="text" name="mount_label" value="Test Project - Git"/>' in r, r
 
     def test_fork_listed_in_parent(self):
         assert 'Forks' in self._upstream_page()
@@ -510,4 +511,3 @@ class TestDiff(TestController):
         r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
         assert 'alt="2ce83a2..."' in r
         assert 'alt="d961abb..."' in r
-

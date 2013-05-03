@@ -139,7 +139,7 @@ class TestForumAsync(TestController):
         r = self.app.get('/admin/discussion/forums')
         assert 'Test Forum 1' in r
         h.set_context('test', 'discussion', neighborhood='Projects')
-        self.user_id = M.User.query.get(username='root')._id
+        self.user = M.User.query.get(username='root')
 
     def test_has_access(self):
         assert False == c.app.has_access(M.User.anonymous(), 'testforum')
@@ -248,15 +248,15 @@ class TestForumAsync(TestController):
 
     def _post(self, topic, subject, body, **kw):
         message_id = kw.pop('message_id', '%s@test.com' % random.random())
-        c.app.handle_message(
-            topic,
-            dict(kw,
-                 project_id=c.project._id,
-                 mount_point='discussion',
-                 headers=dict(Subject=subject),
-                 user_id=self.user_id,
-                 payload=body,
-                 message_id=message_id))
+        with h.push_config(c, user=self.user):
+            c.app.handle_message(
+                topic,
+                dict(kw,
+                     project_id=c.project._id,
+                     mount_point='discussion',
+                     headers=dict(Subject=subject),
+                     payload=body,
+                     message_id=message_id))
         M.artifact_orm_session.flush()
 
 class TestForum(TestController):
