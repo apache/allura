@@ -19,6 +19,7 @@ import re
 import logging
 from itertools import chain
 
+import pymongo
 from ming import schema
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
@@ -54,8 +55,10 @@ class Forum(M.Discussion):
         return ForumThread
 
     @LazyProperty
-    def threads(self):
-        threads = self.thread_class().query.find(dict(discussion_id=self._id)).all()
+    def all_threads(self):
+        threads = self.thread_class().query.find(dict(discussion_id=self._id))
+        threads = threads.sort([('flags', pymongo.DESCENDING),
+                                ('last_post_date', pymongo.DESCENDING)]).all()
         sorted_threads = chain(
             (t for t in threads if 'Announcement' in t.flags),
             (t for t in threads if 'Sticky' in t.flags and 'Announcement' not in t.flags),
@@ -135,6 +138,18 @@ class Forum(M.Discussion):
                     self.project.url(),
                     self.app.config.options.mount_point)))
         return super(Forum, self).get_mail_footer(notification, toaddr)
+
+    def __json__(self):
+        json = super(Forum, self).__json__()
+        json.pop('threads')  # it's always empty and useless here
+        json['topics'] = [dict(_id=t._id,
+                               subject=t.subject,
+                               num_replies=t.num_replies,
+                               num_views=t.num_views,
+                               url=t.url(),
+                               last_post=t.last_post)
+                          for t in self.all_threads]
+        return json
 
 class ForumFile(M.File):
     forum_id=FieldProperty(schema.ObjectId)

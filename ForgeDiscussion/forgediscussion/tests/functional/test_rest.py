@@ -17,7 +17,7 @@ class TestDiscussionApiBase(TestRestApiBase):
         h.set_context('test', 'discussion', neighborhood='Projects')
         self.create_forum('héllo', 'Say Héllo', 'Say héllo here')
         self.create_topic('general', 'Let\'s talk', '1st post')
-        self.create_topic('general', 'Hi guys', 'Hi guys')
+        self.create_topic('general', 'Hi guys', 'Hi boys and girls')
 
     def create_forum(self, shortname, name, description):
         r = self.app.get('/admin/discussion/forums')
@@ -52,11 +52,13 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(forums[0]['num_topics'], 2)
         assert_equal(forums[0]['url'], 'http://localhost:80/rest/p/test/discussion/general/')
         assert_equal(forums[0]['last_post']['subject'], 'Hi guys')
-        assert_equal(forums[0]['last_post']['author'], 'Test Admin')
+        assert_equal(forums[0]['last_post']['author'], 'test-admin')
+        assert_equal(forums[0]['last_post']['text'], 'Hi boys and girls')
         assert_equal(forums[1]['name'], u'Say Héllo')
         assert_equal(forums[1]['description'], u'Say héllo here')
         assert_equal(forums[1]['num_topics'], 0)
         assert_equal(forums[1]['url'], 'http://localhost:80/rest/p/test/discussion/h%C3%A9llo/')
+        assert_equal(forums[1]['last_post'], None)
 
     def test_forum(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
@@ -68,8 +70,10 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topics[0]['subject'], 'Hi guys')
         assert_equal(topics[0]['num_views'], 0)
         assert_equal(topics[0]['num_replies'], 1)
-        assert_equal(topics[0]['last_post']['author'], 'Test Admin')
+        assert_equal(topics[0]['last_post']['author'], 'test-admin')
+        assert_equal(topics[0]['last_post']['text'], 'Hi boys and girls')
         assert_equal(topics[1]['subject'], 'Let\'s talk')
         assert_equal(topics[1]['num_views'], 0)
         assert_equal(topics[1]['num_replies'], 1)
-        assert_equal(topics[1]['last_post']['author'], 'Test Admin')
+        assert_equal(topics[1]['last_post']['author'], 'test-admin')
+        assert_equal(topics[1]['last_post']['text'], '1st post')

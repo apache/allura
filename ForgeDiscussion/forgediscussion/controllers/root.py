@@ -20,7 +20,6 @@ import logging
 from urllib import unquote
 from itertools import imap
 
-import pymongo
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
@@ -227,23 +226,14 @@ class RootRestController(BaseController):
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
                         parent_id=None, deleted=False)).all()
-        json = {'forums': []}
-        for f in forums:
-            if h.has_access(f, 'read')():
-                forum = {
-                    'name': f.name,
-                    'description': f.description,
-                    'url': h.absurl('/rest' + f.url()),
-                    'num_topics': f.num_topics,
-                }
-                if f.last_post:
-                    forum['last_post'] = {
-                        'author': f.last_post.author().display_name,
-                        'subject': f.last_post.subject,
-                        'date': f.last_post.mod_date
-                    }
-                json['forums'].append(forum)
-        return json
+        return dict(forums=[dict(_id=f._id,
+                                 name=f.name,
+                                 shortname=f.shortname,
+                                 description=f.description,
+                                 num_topics=f.num_topics,
+                                 last_post=f.last_post,
+                                 url=h.absurl('/rest' + f.url()))
+                            for f in forums])
 
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):
@@ -294,27 +284,4 @@ class ForumRestController(BaseController):
 
     @expose('json:')
     def index(self, **kw):
-        topics = model.ForumThread.query.find(
-            dict(discussion_id=self.forum._id, num_replies={'$gt': 0}))
-        topics = topics.sort([('flags', pymongo.DESCENDING),
-                              ('last_post_date', pymongo.DESCENDING)])
-        json = {
-            'forum': {
-                'name': self.forum.name,
-                'description': self.forum.description,
-                'topics': [],
-            }
-        }
-        for t in topics:
-            topic = {
-                'subject': t.subject,
-                'num_views': t.num_views,
-                'num_replies': t.num_replies,
-                'url': h.absurl('/rest' + t.url()),
-                'last_post': {
-                    'author': t.last_post.author().display_name,
-                    'date': t.last_post.mod_date
-                },
-            }
-            json['forum']['topics'].append(topic)
-        return json
+        return dict(forum=self.forum)
