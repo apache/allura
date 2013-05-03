@@ -30,6 +30,7 @@ from ming import schema as S
 from ming.orm import session, FieldProperty
 from ming.orm.declarative import MappedClass
 
+from allura.lib.helpers import log_output
 from .session import task_orm_session
 
 log = logging.getLogger(__name__)
@@ -251,7 +252,8 @@ class MonQTask(MappedClass):
                 if app_config:
                     c.app = c.project.app_instance(app_config)
             c.user = M.User.query.get(_id=self.context.user_id)
-            self.result = func(*self.args, **self.kwargs)
+            with log_output(log):
+                self.result = func(*self.args, **self.kwargs)
             self.state = 'complete'
             return self.result
         except Exception, exc:

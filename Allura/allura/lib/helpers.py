@@ -17,6 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import sys
 import os
 import os.path
 import difflib
@@ -706,3 +707,23 @@ def get_first(d, key):
 
 def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
     return value.strftime(format)
+
+
+@contextmanager
+def log_output(log):
+    class Writer(object):
+        def __init__(self, func):
+            self.func = func
+
+        def write(self, buf):
+            self.func(buf)
+
+    _stdout = sys.stdout
+    _stderr = sys.stderr
+    sys.stdout = Writer(log.info)
+    sys.stderr = Writer(log.error)
+    try:
+        yield log
+    finally:
+        sys.stdout = _stdout
+        sys.stderr = _stderr

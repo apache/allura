@@ -55,13 +55,6 @@ from allura.lib.decorators import task
 log = logging.getLogger(__name__)
 
 
-class Writer(object):
-    def __init__(self, func):
-        self.func = func
-
-    def write(self, buf):
-        self.func(buf)
-
 
 class ScriptTask(object):
     """Base class for a command-line script that is also executable as a task."""
@@ -79,18 +72,10 @@ class ScriptTask(object):
     @classmethod
     def _execute_task(cls, arg_string):
         try:
-            _stdout = sys.stdout
-            _stderr = sys.stderr
-            sys.stdout = Writer(log.info)
-            sys.stderr = Writer(log.error)
-            try:
-                options = cls.parser().parse_args(shlex.split(arg_string or ''))
-            except SystemExit:
-                raise Exception("Error parsing args: '%s'" % arg_string)
-            cls.execute(options)
-        finally:
-            sys.stdout = _stdout
-            sys.stderr = _stderr
+            options = cls.parser().parse_args(shlex.split(arg_string or ''))
+        except SystemExit:
+            raise Exception("Error parsing args: '%s'" % arg_string)
+        cls.execute(options)
 
     @classmethod
     def execute(cls, options):
