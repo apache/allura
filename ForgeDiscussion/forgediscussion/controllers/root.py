@@ -222,11 +222,14 @@ class RootRestController(BaseController):
         return ForumRestController(unquote(forum)), remainder
 
     @expose('json:')
-    def index(self, **kw):
+    def index(self, limit=100, page=0, **kw):
+        limit, page, start = g.handle_paging(int(limit), int(page))
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
-                        parent_id=None, deleted=False)).all()
-        return dict(forums=[dict(_id=f._id,
+                        parent_id=None, deleted=False)
+                ).skip(start).limit(limit)
+        count = forums.count()
+        json = dict(forums=[dict(_id=f._id,
                                  name=f.name,
                                  shortname=f.shortname,
                                  description=f.description,
@@ -234,6 +237,10 @@ class RootRestController(BaseController):
                                  last_post=f.last_post,
                                  url=h.absurl('/rest' + f.url()))
                             for f in forums])
+        json['limit'] = limit
+        json['page'] = page
+        json['count'] = count
+        return json
 
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):

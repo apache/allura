@@ -97,3 +97,19 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topic['subject'], 'Hi guys')
         assert_equal(topic['posts'][0]['text'], 'Hi boys and girls')
         assert_equal(topic['posts'][0]['subject'], 'Hi guys')
+
+    def test_forum_list_pagination(self):
+        resp = self.app.get('/rest/p/test/discussion/?limit=1')
+        forums = resp.json['forums']
+        assert_equal(len(forums), 1)
+        assert_equal(forums[0]['name'], 'General Discussion')
+        assert_equal(resp.json['count'], 2)
+        assert_equal(resp.json['page'], 0)
+        assert_equal(resp.json['limit'], 1)
+        resp = self.app.get('/rest/p/test/discussion/?limit=1&page=1')
+        forums = resp.json['forums']
+        assert_equal(len(forums), 1)
+        assert_equal(forums[0]['name'], u'Say Héllo')
+        assert_equal(resp.json['count'], 2)
+        assert_equal(resp.json['page'], 1)
+        assert_equal(resp.json['limit'], 1)
