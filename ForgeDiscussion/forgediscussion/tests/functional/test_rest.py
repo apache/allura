@@ -3,6 +3,7 @@ from nose.tools import assert_equal
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
+from allura import model as M
 from alluratest.controller import TestRestApiBase
 from forgediscussion.model import ForumThread
 
@@ -113,3 +114,26 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(resp.json['count'], 2)
         assert_equal(resp.json['page'], 1)
         assert_equal(resp.json['limit'], 1)
+
+    def test_security(self):
+        p = M.Project.query.get(shortname='test')
+        acl = p.app_instance('discussion').config.acl
+        anon = M.ProjectRole.by_name('*anonymous')._id
+        auth = M.ProjectRole.by_name('*authenticated')._id
+        anon_read = M.ACE.allow(anon, 'read')
+        auth_read = M.ACE.allow(auth, 'read')
+        acl.remove(anon_read)
+        acl.append(auth_read)
+        self.api_get('/rest/p/test/discussion/')
+        self.app.get('/rest/p/test/discussion/',
+                     extra_environ={'username': '*anonymous'},
+                     status=401)
+        self.api_get('/rest/p/test/discussion/general/')
+        self.app.get('/rest/p/test/discussion/general/',
+                     extra_environ={'username': '*anonymous'},
+                     status=401)
+        t = ForumThread.query.find({'subject': 'Hi guys'}).first()
+        self.api_get('/rest/p/test/discussion/general/thread/%s/' % t._id)
+        self.app.get('/rest/p/test/discussion/general/thread/%s/' % t._id,
+                     extra_environ={'username': '*anonymous'},
+                     status=401)
