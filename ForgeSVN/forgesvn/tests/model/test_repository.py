@@ -536,9 +536,9 @@ class TestSVNRev(unittest.TestCase):
         commits = self.repo.commits()
         send_notifications(self.repo, [commits[4], ])
         ThreadLocalORMSession.flush_all()
-        notifications = M.Notification.query.find().sort('pubdate')
-        n = notifications.all()[3]
-        assert_equal(n.subject, '[test:src] [r1] - rick446: Create readme')
+        n = M.Notification.query.find(
+            dict(subject='[test:src] [r1] - rick446: Create readme')).first()
+        assert n
         assert_equal(n.text, 'Create readme http://localhost//p/test/src/1/')
 
 

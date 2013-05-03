@@ -330,7 +330,10 @@ class Globals(object):
                 c.user.set_pref('results_per_page', int(limit))
         else:
             if c.user in (None, M.User.anonymous()):
-                limit = 'results_per_page' in session and session['results_per_page'] or default
+                try:
+                    limit = session['results_per_page']
+                except (KeyError, TypeError):  # TypeError if no session registered for thread
+                    limit = default
             else:
                 limit = c.user.get_pref('results_per_page') or default
         return limit

@@ -40,7 +40,7 @@ class TestStats(TestController):
 
     def test_login(self):
         user = User.by_username('test-user')
-        init_logins = c.user.stats.tot_logins_count
+        init_logins = user.stats.tot_logins_count
         r = self.app.post('/auth/do_login', params=dict(
                 username=user.username, password='foo'))
 
@@ -52,7 +52,7 @@ class TestStats(TestController):
         initial_artifacts = c.user.stats.getArtifacts()
         initial_wiki = c.user.stats.getArtifacts(art_type="Wiki")
 
-        self.app.post('/wiki/TestPage/update', 
+        self.app.post('/wiki/TestPage/update',
             params=dict(title='TestPage', text='some text'),
             extra_environ=dict(username=str(c.user.username)))
 
@@ -64,7 +64,7 @@ class TestStats(TestController):
         assert wiki['created'] == 1 + initial_wiki['created']
         assert wiki['modified'] == initial_wiki['modified']
 
-        self.app.post('/wiki/TestPage2/update', 
+        self.app.post('/wiki/TestPage2/update',
             params=dict(title='TestPage2', text='some text'),
             extra_environ=dict(username=str(c.user.username)))
 
@@ -76,7 +76,7 @@ class TestStats(TestController):
         assert wiki['created'] == 2 + initial_wiki['created']
         assert wiki['modified'] == initial_wiki['modified']
 
-        self.app.post('/wiki/TestPage2/update', 
+        self.app.post('/wiki/TestPage2/update',
             params=dict(title='TestPage2', text='some modified text'),
             extra_environ=dict(username=str(c.user.username)))
 
@@ -93,7 +93,7 @@ class TestStats(TestController):
         initial_tickets = c.user.stats.getTickets()
         initial_tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
 
-        r = self.app.post('/tickets/save_ticket', 
+        r = self.app.post('/tickets/save_ticket',
             params={'ticket_form.summary':'test',
                     'ticket_form.assigned_to' : str(c.user.username)},
             extra_environ=dict(username=str(c.user.username)))
@@ -109,7 +109,7 @@ class TestStats(TestController):
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 1
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified']
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum, 
+        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
             params={'ticket_form.ticket_num' : ticketnum,
                     'ticket_form.summary':'footext3',
                     'ticket_form.status' : 'closed'},
@@ -124,12 +124,12 @@ class TestStats(TestController):
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 1
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 1
 
-        r = self.app.post('/tickets/save_ticket', 
+        r = self.app.post('/tickets/save_ticket',
             params={'ticket_form.summary':'test2'},
             extra_environ=dict(username=str(c.user.username)))
 
         ticketnum = str(TM.Ticket.query.get(summary='test2').ticket_num)
-        
+
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
 
@@ -139,7 +139,7 @@ class TestStats(TestController):
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 1
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum, 
+        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
             params={'ticket_form.ticket_num' : ticketnum,
                     'ticket_form.summary':'test2',
                     'ticket_form.assigned_to' : str(c.user.username)},
@@ -147,14 +147,14 @@ class TestStats(TestController):
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
-        
+
         assert tickets['assigned'] == initial_tickets['assigned'] + 2
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked']
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 2
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum, 
+        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
             params={'ticket_form.ticket_num' : ticketnum,
                     'ticket_form.summary':'test2',
                     'ticket_form.assigned_to' : 'test-user'},
@@ -162,7 +162,7 @@ class TestStats(TestController):
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
-        
+
         assert tickets['assigned'] == initial_tickets['assigned'] + 2
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked'] + 1
