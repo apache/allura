@@ -78,13 +78,16 @@ def apply():
         return func(*args, **kwargs)
 
 
-def newrelic():
-    old_call = tg.controllers.DecoratedController._call
+# must be saved outside the newrelic() method so that multiple newrelic()
+# calls (e.g. during tests) don't cause the patching to get applied to itself
+# over and over
+old_controller_call = tg.controllers.DecoratedController._call
 
+def newrelic():
     @h.monkeypatch(tg.controllers.DecoratedController,
                    tg.controllers.decoratedcontroller.DecoratedController)
     def _call(self, controller, *args, **kwargs):
         '''Set NewRelic transaction name to actual controller name'''
         import newrelic.agent
         newrelic.agent.set_transaction_name(newrelic.agent.callable_name(controller))
-        return old_call(self, controller, *args, **kwargs)
+        return old_controller_call(self, controller, *args, **kwargs)
