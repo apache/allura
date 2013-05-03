@@ -262,15 +262,14 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_notification_email(self):
         send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
         ThreadLocalORMSession.flush_all()
-        notifications = M.Notification.query.find().sort('pubdate')
-        n = notifications.all()[2]
-        assert_equal(n.subject, '[test:src-git] [1e146e] - Rick Copeland: Change README')
+        n = M.Notification.query.find(
+            dict(subject='[test:src-git] [1e146e] - Rick Copeland: Change README')).first()
+        assert n
         assert 'master,zz: ' in n.text
         send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         ThreadLocalORMSession.flush_all()
-        notifications = M.Notification.query.find().sort('pubdate')
-        n = notifications.all()[3]
-        assert_equal(n.subject, '[test:src-git] 2 new commits to test Git')
+        assert M.Notification.query.find(
+            dict(subject='[test:src-git] 2 new commits to Test Project Git')).first()
 
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
