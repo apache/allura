@@ -117,66 +117,6 @@ class Stats(MappedClass):
                 return round(float(tickets.solved) / tickets.assigned, 2)
         return 0
 
-    @classmethod
-    def getMaxAndAverageCodeContribution(self):
-        res = self.query.find()
-        n = res.count()
-        if n == 0:
-            return 0, 0
-        values = [x.getCodeContribution() for x in res]
-        maxcontribution=max(values)
-        averagecontribution=sum(values) / n
-        return maxcontribution, round(averagecontribution, 2)
-
-    @classmethod
-    def getMaxAndAverageDiscussionContribution(self):
-        res = self.query.find()
-        n = res.count()
-        if n == 0:
-            return 0, 0
-        values = [x.getDiscussionContribution() for x in res]
-        maxcontribution=max(values)
-        averagecontribution=sum(values)/n
-        return maxcontribution, round(averagecontribution, 2)
-
-    @classmethod
-    def getMaxAndAverageTicketsSolvingPercentage(self):
-        res = self.query.find()
-        n = res.count()
-        if n == 0:
-            return 0, 0
-        values = [x.getTicketsContribution() for x in res]
-        maxcontribution=max(values)
-        averagecontribution=sum(values)/n
-        return maxcontribution, round(averagecontribution, 2)
-
-    def codeRanking(self):
-        res = self.query.find()
-        totn = res.count()
-        if totn == 0:
-            return 0
-        codcontr = self.getCodeContribution()
-        upper = len([x for x in res if x.getCodeContribution() > codcontr])
-        return round((totn - upper) * 100.0 / totn, 2)
-
-    def discussionRanking(self):
-        res = self.query.find()
-        totn = res.count()
-        if totn == 0:
-            return 0
-        disccontr = self.getDiscussionContribution()
-        upper=len([x for x in res if x.getDiscussionContribution()>disccontr])
-        return round((totn - upper) * 100.0 / totn, 2)
-
-    def ticketsRanking(self):
-        res = self.query.find()
-        totn = res.count()
-        if totn == 0:
-            return 0
-        ticketscontr = self.getTicketsContribution()
-        upper=len([x for x in res if x.getTicketsContribution()>ticketscontr])
-        return round((totn - upper) * 100.0 / totn, 2)
-
     def getCommits(self, category = None):
         i = getElementIndex(self.general, category = category)
         if i is None:

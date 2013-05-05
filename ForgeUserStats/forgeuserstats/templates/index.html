@@ -391,50 +391,6 @@
           </p>
         {% endif %}
     {% endif %}
-    {% if not category %}
-      <h2>Overview</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Field</th>
-            <th>Value</th>
-            <th>Average per-user value</th>
-            <th>Maximum per-user value</th>
-            <th>Rank bar</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Code</td>
-            <td>{{codecontribution}} LOC{% if codecontribution != 1 %}s{% endif %}/month</td>
-            <td>{{averagecodecontrib}} LOC{% if averagecodecontrib != 1 %}s{% endif %}/month</td>
-            <td>{{maxcodecontrib}} LOC{% if maxcodecontrib != 1 %}s{% endif %}/month</td>
-            <td><img src="{{c.project.url()}}userstats/code_ranking_bar"/> {{codepercentage}} %</td>
-          </tr>
-          <tr>
-            <td>Discussion</td>
-            <td>{{discussioncontribution}} contr./month</td>
-            <td>{{averagedisccontrib}} contr./month</td>
-            <td>{{maxdisccontrib}} contr./month</td>
-            <td><img src="{{c.project.url()}}userstats/discussion_ranking_bar"/> {{discussionpercentage}} %</td>
-          </tr>
-          <tr>
-            <td>Solved issues</td>
-            <td>{{ticketcontribution*100}} %</td>
-            <td>{{averageticketcontrib*100}} %</td>
-            <td>{{maxticketcontrib*100}} %</td>
-            <td><img src="{{c.project.url()}}userstats/tickets_ranking_bar"/> {{ticketspercentage}} %</td>
-          </tr>
-        </tbody>
-      </table>
-      <h3>Note</h3>
-      <p>
-         The above table compares the average monthly contribution of this user with the average monthly contributions of the
-         other users of the forge. The progressbar and the percentage refer to the user's position in an overall ranking of the
-         users of this forge. For example, a value of 100% in the field "Code" is associated to the user who has the highest
-         average number of committed LOCs per month. Of course, this doesn't consider the quality of the contributions.
-      </p>
-    {% endif %}
   {% else %}
     {% if user %}
       <h2>Statistics not available</h2>
