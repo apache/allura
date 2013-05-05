@@ -107,19 +107,6 @@ file { '/home/vagrant/src/allura':
   require => [ File['/home/vagrant/src'], Exec['clone repo'] ],
 }
 
-# HACK to get numpy installed in the venv before installing
-# remaining dependencies via requirements file
-exec { "pip install numpy":
-  command => "/home/vagrant/env-allura/bin/pip install numpy==1.6.1",
-  cwd     => "/vagrant/allura",
-  timeout => 0,
-  logoutput => true,
-  returns => 0,
-  tries => 3,
-  require => [ Exec[ "clone repo"], Exec[ "create allura venv" ],
-               ],
-}
-
 # install Allura dependencies
 exec { "pip install":
   command => "/home/vagrant/env-allura/bin/pip install -r requirements.txt",
@@ -132,7 +119,6 @@ exec { "pip install":
   tries => 3,
   require => [ Exec[ "clone repo"], Exec[ "create allura venv" ],
                File["/usr/lib/libjpeg.so"], File["/usr/lib/libz.so"],
-               Exec["pip install numpy"],
                ],
 }
 
