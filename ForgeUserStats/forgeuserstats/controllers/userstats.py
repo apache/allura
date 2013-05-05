@@ -20,7 +20,6 @@ from tg.decorators import with_trailing_slash
 from datetime import datetime
 from allura.controllers import BaseController
 import allura.model as M
-from allura.lib.graphics.graphic_methods import create_histogram, create_progress_bar
 from forgeuserstats.model.stats import UserStats
 from pylons import tmpl_context as c
 from allura.lib.security import require_access
@@ -194,35 +193,6 @@ class ForgeUserStatsController(BaseController):
         return dict(
             user=self.user,
             data=artifacts)
-
-    @expose()
-    def categories_graph(self):
-        self.user = c.project.user_project_of
-        if not self.user:
-            return None
-
-        categories = {}
-        for p in self.user.my_projects():
-            for cat in p.trove_topic:
-                cat = M.TroveCategory.query.get(_id = cat)
-                if categories.get(cat):
-                    categories[cat] += 1
-                else:
-                    categories[cat] = 1
-        data = []
-        labels = []
-        i = 0
-        for cat in sorted(categories.keys(), key=lambda x:x.fullname):
-            n = categories[cat]
-            data = data + [i] * n
-            label = cat.fullname
-            if len(label) > 15:
-                label = label[:15] + "..."
-            labels.append(label)
-            i += 1
-
-        return create_histogram(data, labels,
-            'Number of projects', 'Projects by category')
 
 
 def _getDataForCategory(category, stats):

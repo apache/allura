@@ -381,15 +381,6 @@
             {% endfor %}
           </tbody>
         </table>
-
-        {% if categories|length > 1 %}
-          <p>
-            The same data listed in the previous table is graphically presented by the following histogram.
-          </p>
-          <p>
-            <img src="{{c.project.url()}}userstats/categories_graph"/>
-          </p>
-        {% endif %}
     {% endif %}
   {% else %}
     {% if user %}
