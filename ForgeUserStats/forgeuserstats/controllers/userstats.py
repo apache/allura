@@ -45,14 +45,14 @@ class ForgeUserStatsCatController(BaseController):
     @with_trailing_slash
     def index(self, **kw):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return None
         stats = self.user.stats
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
-        
+
         cat_id = None
-        if self.category: 
+        if self.category:
             cat_id = self.category._id
         ret_dict = _getDataForCategory(cat_id, stats)
         ret_dict['user'] = self.user
@@ -62,23 +62,23 @@ class ForgeUserStatsCatController(BaseController):
 
 class ForgeUserStatsController(BaseController):
 
-    category = ForgeUserStatsCatController()            
-    
+    category = ForgeUserStatsCatController()
+
     @expose('jinja:forgeuserstats:templates/settings.html')
     @with_trailing_slash
     def settings(self, **kw):
         require_access(c.project, 'admin')
 
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
         return dict(
-            user = self.user, 
+            user = self.user,
             form = StatsPreferencesForm(
                 action = c.project.url() + 'userstats/change_settings'))
-      
+
     @expose()
     @require_post()
     @validate(stats_preferences_form, error_handler=settings)
@@ -86,7 +86,7 @@ class ForgeUserStatsController(BaseController):
         require_access(c.project, 'admin')
 
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
@@ -98,7 +98,7 @@ class ForgeUserStatsController(BaseController):
     @with_trailing_slash
     def index(self, **kw):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
@@ -131,25 +131,12 @@ class ForgeUserStatsController(BaseController):
         ret_dict['lastmonth_logins'] = stats.getLastMonthLogins()
         ret_dict['categories'] = categories
         days = ret_dict['days']
-        if days >= 30: 
+        if days >= 30:
             ret_dict['permonthlogins'] = \
                 round(stats.tot_logins_count*30.0/days,2)
         else:
             ret_dict['permonthlogins'] = 'n/a'
 
-        ret_dict['codepercentage'] = stats.codeRanking()
-        ret_dict['discussionpercentage'] = stats.discussionRanking()
-        ret_dict['ticketspercentage'] = stats.ticketsRanking()
-        ret_dict['codecontribution'] = stats.getCodeContribution()
-        ret_dict['discussioncontribution'] = stats.getDiscussionContribution()
-        ret_dict['ticketcontribution'] = stats.getTicketsContribution()
-        ret_dict['maxcodecontrib'], ret_dict['averagecodecontrib'] =\
-            stats.getMaxAndAverageCodeContribution()
-        ret_dict['maxdisccontrib'], ret_dict['averagedisccontrib'] =\
-            stats.getMaxAndAverageDiscussionContribution()
-        ret_dict['maxticketcontrib'], ret_dict['averageticketcontrib'] =\
-            stats.getMaxAndAverageTicketsSolvingPercentage()
-        
         return ret_dict
 
 
@@ -157,7 +144,7 @@ class ForgeUserStatsController(BaseController):
     @with_trailing_slash
     def commits(self, **kw):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
@@ -165,17 +152,17 @@ class ForgeUserStatsController(BaseController):
 
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
-        
+
         commits = stats.getCommitsByCategory()
         return dict(
             user = self.user,
-            data = commits) 
+            data = commits)
 
     @expose('jinja:forgeuserstats:templates/artifacts.html')
     @with_trailing_slash
     def artifacts(self, **kw):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
@@ -184,7 +171,7 @@ class ForgeUserStatsController(BaseController):
         if (not stats.visible) and (c.user != self.user):
             return dict(user=self.user)
 
-        stats = self.user.stats       
+        stats = self.user.stats
         artifacts = stats.getArtifactsByCategory(detailed=True)
         return dict(
             user = self.user,
@@ -194,7 +181,7 @@ class ForgeUserStatsController(BaseController):
     @with_trailing_slash
     def tickets(self, **kw):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return dict(user=None)
         if not self.user.stats:
             UserStats.create(self.user)
@@ -211,7 +198,7 @@ class ForgeUserStatsController(BaseController):
     @expose()
     def categories_graph(self):
         self.user = c.project.user_project_of
-        if not self.user: 
+        if not self.user:
             return None
 
         categories = {}
@@ -234,39 +221,16 @@ class ForgeUserStatsController(BaseController):
             labels.append(label)
             i += 1
 
-        return create_histogram(data, labels, 
+        return create_histogram(data, labels,
             'Number of projects', 'Projects by category')
 
-    @expose()
-    def code_ranking_bar(self):
-        self.user = c.project.user_project_of
-        if not self.user: 
-            return None
-        stats = self.user.stats
-        return create_progress_bar(stats.codeRanking())
-
-    @expose()
-    def discussion_ranking_bar(self):
-        self.user = c.project.user_project_of
-        if not self.user: 
-            return None
-        stats = self.user.stats
-        return create_progress_bar(stats.discussionRanking())
-
-    @expose()
-    def tickets_ranking_bar(self):
-        self.user = c.project.user_project_of
-        if not self.user: 
-            return None
-        stats = self.user.stats
-        return create_progress_bar(stats.ticketsRanking())
 
 def _getDataForCategory(category, stats):
     totcommits = stats.getCommits(category)
     tottickets = stats.getTickets(category)
     averagetime = tottickets.get('averagesolvingtime')
     artifacts_by_type = stats.getArtifactsByType(category)
-    totartifacts = artifacts_by_type.get(None) 
+    totartifacts = artifacts_by_type.get(None)
     if totartifacts:
         del artifacts_by_type[None]
     else:
@@ -279,7 +243,7 @@ def _getDataForCategory(category, stats):
     averagetime = lm_tickets.get('averagesolvingtime')
 
     days = (datetime.utcnow() - stats.registration_date).days
-    if days >= 30: 
+    if days >= 30:
         pmartifacts = dict(
             created = round(totartifacts['created']*30.0/days,2),
             modified=round(totartifacts['modified']*30.0/days,2))
@@ -297,7 +261,7 @@ def _getDataForCategory(category, stats):
                 round(value['created']*30.0/days,2)
             artifacts_by_type[key]['pmmodified']= \
                 round(value['modified']*30.0/days,2)
-    else: 
+    else:
         pmartifacts = dict(created='n/a', modified='n/a')
         pmcommits = dict(number='n/a', lines='n/a')
         pmtickets = dict(
@@ -322,4 +286,3 @@ def _getDataForCategory(category, stats):
         artifacts_by_type = artifacts_by_type,
         lastmonth_artifacts_by_type = lm_artifacts_by_type,
         permonthtickets = pmtickets)
-
