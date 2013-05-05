@@ -45,10 +45,10 @@
           <th>Time interval</th>
         </tr>
       </thead>
-      <tbody> 
+      <tbody>
         <tr>
           <td>Registration date</td>
-          <td>{{registration_date.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td> 
+          <td>{{registration_date.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td>
            <td>{{days}} day{% if days != 1 %}s{% endif %} ago</td>
         </tr>
         {% if last_login %}
@@ -187,7 +187,7 @@
             </td>
           {% endif %}
         </tr>
-        
+
         {% for key, value in artifacts_by_type.items() %}
           <tr>
             <td>
@@ -332,7 +332,7 @@
           </td>
           <td>
             {% if tottickets.averagesolvingtime %}
-              {{tottickets.averagesolvingtime.days}} days, 
+              {{tottickets.averagesolvingtime.days}} days,
               {{tottickets.averagesolvingtime.hours}} hours,
               {{tottickets.averagesolvingtime.minutes}} min
             {% else %}n/a{% endif %}
@@ -340,7 +340,7 @@
           <td>n/a</td>
           <td>
             {% if lastmonthtickets.averagesolvingtime %}
-              {{lastmonthtickets.averagesolvingtime.days}} days, 
+              {{lastmonthtickets.averagesolvingtime.days}} days,
               {{lastmonthtickets.averagesolvingtime.hours}} hours,
               {{lastmonthtickets.averagesolvingtime.minutes}} min
             {% else %}n/a{% endif %}
@@ -381,7 +381,7 @@
             {% endfor %}
           </tbody>
         </table>
-         
+
         {% if categories|length > 1 %}
           <p>
             The same data listed in the previous table is graphically presented by the following histogram.
@@ -420,9 +420,9 @@
           </tr>
           <tr>
             <td>Solved issues</td>
-            <td>{{ticketcontribution}} %</td>
-            <td>{{averageticketcontrib}} %</td>
-            <td>{{maxticketcontrib}} %</td>
+            <td>{{ticketcontribution*100}} %</td>
+            <td>{{averageticketcontrib*100}} %</td>
+            <td>{{maxticketcontrib*100}} %</td>
             <td><img src="{{c.project.url()}}userstats/tickets_ranking_bar"/> {{ticketspercentage}} %</td>
           </tr>
         </tbody>
@@ -438,13 +438,13 @@
   {% else %}
     {% if user %}
       <h2>Statistics not available</h2>
-      <div class="grid-20"> 
+      <div class="grid-20">
         This user has set his or her preferences so that personal statistics are not visible
         to other users of the forge.
       </div>
     {% else %}
       <h2>Invalid user</h2>
-      <div class="grid-20"> 
+      <div class="grid-20">
         You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
       </div>
     {% endif %}
