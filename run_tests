@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
@@ -17,38 +17,106 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-if [ -n "$SF_SYSTEM_FUNC" ]; then
-	if [ -z "$VIRTUAL_ENV" ]; then
-        source /var/local/env-allura/bin/activate
-	fi
-fi
+import argparse
+from copy import copy
+from glob import glob
+from multiprocessing.pool import ThreadPool
+import subprocess
+import sys
+import threading
+import textwrap
 
-# main
 
-if [ "$TEST_MODULES"  == "" ]; then
-    TEST_MODULES="\
-    AlluraTest \
-    Allura \
-    ForgeBlog \
-    ForgeLink \
-    ForgeChat \
-    ForgeDiscussion \
-    ForgeGit \
-    ForgeSVN \
-    ForgeTracker \
-    ForgeWiki \
-    ForgeActivity \
-    ForgeShortUrl \
-    ForgeUserStats \
-    "
-fi
+def run_one(cmd, **popen_kwargs):
+    print '{} running {} {}'.format(threading.current_thread(), cmd, popen_kwargs)
+    all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
+                            stdout=subprocess.PIPE,
+                            bufsize=1,  # 1 == line-buffered
+                            close_fds='posix' in sys.builtin_module_names)
+    all_popen_kwargs.update(popen_kwargs)
+    proc = subprocess.Popen(cmd, **all_popen_kwargs)
+    while proc.poll() is None:
+        line = proc.stdout.readline()
+        sys.stdout.write(line)
+        sys.stdout.flush()
+    # wait for completion and get remainder of output
+    out_remainder, _ = proc.communicate()
+    sys.stdout.write(out_remainder)
+    sys.stdout.flush()
+    return proc
 
-# Run with --with-coverage for coverage (add --cover-html for html report)
-for module in $TEST_MODULES; do
-    (
-        echo "Running tests in module $module"
-        cd $module
-        cover_package=$(echo $module | tr "[:upper:]" "[:lower:]")
-        nosetests --cover-package=$cover_package --cover-html-dir=report.coverage --cover-erase $* || exit
-    ) || exit
-done
+
+def run_many(cmds, processes=None):
+    """
+    cmds: list of shell commands, or list of (shell cmds, popen_kwargs)
+    processes: number of processes, or None for # of CPU cores
+    """
+    thread_pool = ThreadPool(processes=processes)
+
+    async_results = []
+    for cmd_kwds in cmds:
+        if type(cmd_kwds) == ():
+            cmd = cmd_kwds
+            kwds = {}
+        else:
+            cmd = cmd_kwds[0]
+            kwds = cmd_kwds[1]
+        result = thread_pool.apply_async(run_one, args=(cmd,), kwds=kwds)
+        async_results.append(result)
+
+    thread_pool.close()
+    thread_pool.join()
+
+    procs = [async_result.get() for async_result in async_results]
+    return [p.returncode for p in procs]
+
+
+def get_packages():
+    packages = [p.split('/')[0] for p in glob("*/setup.py")]
+
+    # make it first, to catch syntax errors
+    packages.remove('AlluraTest')
+    packages.insert(0, 'AlluraTest')
+    return packages
+
+
+def check_packages(packages):
+    for pkg in packages:
+        try:
+            __import__(pkg.lower())
+        except ImportError:
+            print "Not running tests for {}, since it isn't set up".format(pkg)
+        else:
+            yield pkg
+
+
+def run_tests_in_parallel(options, nosetests_args):
+    cmds = []
+    for package in check_packages(options.packages):
+        cover_package = package.lower()
+        our_nosetests_args = copy(nosetests_args)
+        our_nosetests_args.append('--cover-package={}'.format(cover_package))
+        cmd = "nosetests {nosetests_args}".format(
+            nosetests_args=' '.join(our_nosetests_args),
+        )
+        cmds.append((cmd, dict(cwd=package)))
+    return run_many(cmds, processes=options.num_processes)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     epilog=textwrap.dedent('''
+                                        All additional arguments are passed along to nosetests
+                                          (e.g. -v --with-coverage)
+                                        Note: --cover-package will be set automatically to the appropriate value'''))
+    parser.add_argument('-n', help='Number of processes to use at once. Default: # CPUs',
+                        dest='num_processes', type=int, default=None)
+    parser.add_argument('-p', help='List of packages to run tests on. Default: all',
+                        dest='packages', choices=get_packages(), default=get_packages(),
+                        nargs='+')
+    return parser.parse_known_args()
+
+
+if __name__ == "__main__":
+    ret_codes = run_tests_in_parallel(*parse_args())
+    sys.exit(any(ret_codes))
