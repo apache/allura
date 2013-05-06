@@ -15,13 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_in
 from datadiff.tools import assert_equal
 from ming.orm import ThreadLocalORMSession
-from mock import Mock, call
+from mock import Mock, call, patch
 
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.command import script, set_neighborhood_features, \
+from allura.command import base, script, set_neighborhood_features, \
                            create_neighborhood, show_models, taskd_cleanup
 from allura import model as M
 from forgeblog import model as BM
@@ -316,3 +316,25 @@ def test_status_log_retries():
     cmd._check_task(123, Mock())
     expected_calls = [call(123, False if i == 0 else True) for i in range(3)]
     assert cmd._taskd_status.mock_calls == expected_calls
+
+
+class TestBackgroundCommand(object):
+
+    cmd = 'allura.command.show_models.ReindexCommand'
+    task_name = 'allura.command.base.run_command'
+
+    def test_command_post(self):
+        show_models.ReindexCommand.post('-p "project 3"')
+        tasks = M.MonQTask.query.find({'task_name': self.task_name}).all()
+        assert_equal(len(tasks), 1)
+        task = tasks[0]
+        assert_equal(task.args, [self.cmd, '-p "project 3"'])
+
+    def test_command_doc(self):
+        assert_in('Usage:', show_models.ReindexCommand.__doc__)
+
+    @patch('allura.command.show_models.ReindexCommand')
+    def test_run_command(self, command):
+        command.__name__ = 'ReindexCommand'
+        base.run_command(self.cmd, 'dev.ini -p "project 3"')
+        command(command.__name__).run.assert_called_with(['dev.ini', '-p', 'project 3'])
