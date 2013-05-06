@@ -32,7 +32,7 @@ Allura/allura/public/nf/js/sylvester.js
 Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
 Allura/run/dummy.txt
-AlluraTesting/jslint/
+AlluraTest/jslint/
 ForgeGit/forgegit/data/post-receive_tmpl
 ForgeSVN/forgesvn/tests/data/
 solr_config/core0/conf/spellings.txt
