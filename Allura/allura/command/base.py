@@ -18,6 +18,7 @@
 import os
 import sys
 import logging
+import shlex
 from multiprocessing import Process
 from pkg_resources import iter_entry_points
 
@@ -39,7 +40,7 @@ def run_command(command, args):
     mod, cls = command.rsplit('.', 1)
     mod = __import__(mod, fromlist=[str(cls)])
     command = getattr(mod, cls)
-    return command(command.__name__).run(args.split())
+    return command(command.__name__).run(shlex.split(args or ''))
 
 class EmptyClass(object): pass
 
