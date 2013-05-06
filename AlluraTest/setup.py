@@ -18,7 +18,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-setup(name='AlluraTesting',
+setup(name='AlluraTest',
       version='0.1',
       description="Allura testing support",
       long_description="""\
