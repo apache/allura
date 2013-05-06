@@ -29,8 +29,17 @@ from paste.registry import Registry
 import activitystream
 import ming
 from allura.config.environment import load_environment
+from allura.lib.decorators import task
 
 log = None
+
+@task
+def run_command(command, args):
+    """Run paster command asynchronously"""
+    mod, cls = command.rsplit('.', 1)
+    mod = __import__(mod, fromlist=[str(cls)])
+    command = getattr(mod, cls)
+    return command(command.__name__).run(args.split())
 
 class EmptyClass(object): pass
 
@@ -39,6 +48,16 @@ class Command(command.Command):
     max_args = 1
     usage = '[<ini file>]'
     group_name = 'Allura'
+
+    class __metaclass__(type):
+        @property
+        def __doc__(cls):
+            return cls.parser.format_help()
+
+    @classmethod
+    def post(cls, *args, **kw):
+        cmd = '%s.%s' % (cls.__module__, cls.__name__)
+        return run_command.post(cmd, *args, **kw)
 
     @ming.utils.LazyProperty
     def registry(self):
