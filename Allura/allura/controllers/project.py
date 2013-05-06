@@ -298,7 +298,7 @@ class ToolListController(object):
         tool_name = tool_name.lower()
         entries = [e for e in c.project.sitemap()
                 if e.tool_name and e.tool_name.lower() == tool_name]
-        return dict(entries=entries, type=entries[0].tool_name.capitalize() if entries else None)
+        return dict(entries=entries, type=g.entry_points['tool'][tool_name].tool_label if entries else None)
 
 class ProjectController(FeedController):
 
