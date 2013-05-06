@@ -19,6 +19,8 @@ import logging
 import cPickle as pickle
 from collections import defaultdict
 from datetime import datetime
+from urlparse import urljoin
+from tg import config
 
 import bson
 import pymongo
@@ -96,7 +98,8 @@ class Artifact(MappedClass):
             labels=self.labels,
             related_artifacts=[a.url() for a in self.related_artifacts()],
             discussion_thread=self.discussion_thread,
-            discussion_thread_url=self.discussion_thread.url(),
+            discussion_thread_url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
+                                          '/rest%s' % self.discussion_thread.url()),
         )
 
     def parent_security_context(self):

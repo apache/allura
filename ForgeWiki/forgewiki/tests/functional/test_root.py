@@ -20,6 +20,7 @@
 import os
 import Image, StringIO
 import allura
+import json
 
 from nose.tools import assert_true, assert_equal, assert_in
 
@@ -216,15 +217,15 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/tést/history')
         assert 'tést' in response
         # two revisions are shown
-        assert '2 by Test Admin (test-admin)' in response
-        assert '1 by Test Admin (test-admin)' in response
+        assert '2 by Test Admin' in response
+        assert '1 by Test Admin' in response
         # you can revert to an old revison, but not the current one
         assert response.html.find('a',{'href':'./revert?version=1'})
         assert not response.html.find('a',{'href':'./revert?version=2'})
         response = self.app.get('/wiki/tést/history', extra_environ=dict(username='*anonymous'))
         # two revisions are shown
-        assert '2 by Test Admin (test-admin)' in response
-        assert '1 by Test Admin (test-admin)' in response
+        assert '2 by Test Admin' in response
+        assert '1 by Test Admin' in response
         # you cannot revert to any revision
         assert not response.html.find('a',{'href':'./revert?version=1'})
         assert not response.html.find('a',{'href':'./revert?version=2'})
@@ -620,3 +621,14 @@ class TestRootController(TestController):
     def test_user_browse_page(self):
         r = self.app.get('/wiki/browse_pages/')
         assert '<td>Test Admin (test-admin)</td>' in r
+
+    def test_rest_wiki(self):
+        r = self.app.get('/p/test/wiki/Home/')
+        discussion_url = r.html.findAll('form')[2]['action'][:-4]
+        content = file(__file__).read()
+        self.app.post('/wiki/Home/attach', upload_files=[('file_info', 'test_root.py', content)])
+        r = self.app.get('/rest/p/test/wiki/Home/')
+        r = json.loads(r.body)
+        assert_equal(r['attachments'][0]['url'], 'http://localhost/p/test/wiki/Home/attachment/test_root.py')
+        assert_equal(r['discussion_thread_url'], 'http://localhost/rest%s' % discussion_url)
+        assert_equal(r['discussion_thread']['_id'], discussion_url.split('/')[-2])

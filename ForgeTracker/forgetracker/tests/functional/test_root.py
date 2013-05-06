@@ -1694,6 +1694,44 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/tags?term=')
         assert_equal(json.loads(r.body), [])
 
+    def test_rest_tickets(self):
+        ticket_view = self.new_ticket(summary='test').follow()
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'test comment'
+        self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        r = self.app.get('/bugs/1/', dict(page=1))
+        post_link = str(r.html.find('div', {'class':'edit_post_form reply'}).find('form')['action'])
+        self.app.post(post_link + 'attach',
+                          upload_files=[('file_info', 'test.txt', 'test attach')])
+        r = self.app.get('/p/test/bugs/1/')
+        discussion_url = r.html.findAll('form')[-1]['action'][:-4]
+        r = self.app.get('/rest/p/test/bugs/1/')
+        r = json.loads(r.body)
+        assert_equal(r['ticket']['discussion_thread_url'],'http://localhost/rest%s' % discussion_url)
+        slug = r['ticket']['discussion_thread']['posts'][0]['slug']
+        assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'],
+                     'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
+        assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'], 11)
+
+        file_name = 'test_root.py'
+        file_data = file(__file__).read()
+        upload = ('attachment', file_name, file_data)
+        r = self.app.post('/bugs/1/update_ticket',{
+            'summary':'test rest attach'
+        }, upload_files=[upload]).follow()
+        r = self.app.get('/rest/p/test/bugs/1/')
+        r = json.loads(r.body)
+        assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost/p/test/bugs/1/attachment/test_root.py')
+
+
 
 class TestMilestoneAdmin(TrackerTestController):
     def _post(self, params, **kw):

@@ -21,6 +21,8 @@ from datetime import datetime
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
+from urlparse import urljoin
+from tg import config
 
 from ming import schema
 from ming.orm.base import session
@@ -163,7 +165,11 @@ class Thread(Artifact, ActivityObject):
             _id=self._id,
             discussion_id=str(self.discussion_id),
             subject=self.subject,
-            posts=[dict(slug=p.slug, subject=p.subject)
+            posts=[dict(slug=p.slug,
+                        subject=p.subject,
+                        attachments=[dict(bytes=attach.length,
+                                          url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
+                                                      attach.url())) for attach in p.attachments])
                    for p in self.posts])
 
     @property

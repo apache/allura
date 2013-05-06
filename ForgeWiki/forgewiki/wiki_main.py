@@ -22,7 +22,7 @@ from urllib import unquote
 from datetime import datetime
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response, flash, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
@@ -30,6 +30,7 @@ from pylons import request
 from formencode import validators
 from webob import exc
 from ming.orm import session
+from urlparse import urljoin
 
 # Pyforge-specific imports
 from allura import model as M
@@ -697,7 +698,15 @@ class RootRestController(RestController):
         if page is None:
             raise exc.HTTPNotFound, title
         require_access(page, 'read')
-        return dict(title=page.title, text=page.text, labels=page.labels)
+        return dict(title=page.title,
+                    text=page.text,
+                    labels=page.labels,
+                    discussion_thread=page.discussion_thread,
+                    discussion_thread_url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
+                                                  '/rest%s' % page.discussion_thread.url()),
+                    attachments=[dict(bytes=attach.length,
+                                      url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
+                                                  attach.url())) for attach in page.attachments])
 
     @h.vardec
     @expose()
