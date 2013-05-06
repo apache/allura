@@ -498,7 +498,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 if tool_name not in grouped_nav:
                     child = deepcopy(e)
                     # change label to be the tool name (type)
-                    e.label = tool_name.capitalize()
+                    e.label = g.entry_points['tool'][tool_name].tool_label
                     # add tool url to list of urls that will match this nav entry
                     # have to do this before changing the url to the list page
                     e.matching_urls.append(e.url)
