@@ -332,5 +332,15 @@ class ForumTopicRestController(BaseController):
         require_access(self.forum, 'read')
 
     @expose('json:')
-    def index(self, **kw):
-        return dict(topic=self.topic)
+    def index(self, limit=100, page=0, **kw):
+        limit, page, start = g.handle_paging(int(limit), int(page))
+        posts = model.ForumPost.query.find(dict(thread_id=self.topic._id))
+        posts = posts.skip(start).limit(limit)
+        count = posts.count()
+        json = {}
+        json['topic'] = self.topic.__json__()
+        json['topic']['posts'] = posts.all()
+        json['count'] = count
+        json['page'] = page
+        json['limit'] = limit
+        return json
