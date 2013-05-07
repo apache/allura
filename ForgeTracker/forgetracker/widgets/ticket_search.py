@@ -95,7 +95,7 @@ class SearchHelp(ffw.Lightbox):
 <li>User who owns the ticket - assigned_to</li>
 <li>Labels assigned to the ticket - labels</li>
 <li>Milestone the ticket is assigned to - _milestone</li>
-<li>Last modified date - mod_date_dt</li>
+<li>Last modified date - mod_date</li>
 <li>Body of the ticket - text</li>
 <li>Number of ticket - ticket_num</li>
 <li>User who created the ticket - reported_by</li>
@@ -130,7 +130,7 @@ class SearchHelp(ffw.Lightbox):
 <li>User who created the ticket - reported_by_s</li>
 <li>Status of the ticket - status_s</li>
 <li>Title of the ticket - snippet_s</li>
-<li>Custom field - the field name with an _ in front and _s at the end like _custom_s</li>
+<li>Custom field - the field name with an _ in front and _s at the end like _custom_s. For Boolean custom fields use _b instead of _s. For Number custom fields use _i.</li>
 </ul>
 <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
 <div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&amp;sort=snippet_s+asc</pre></div></div>
