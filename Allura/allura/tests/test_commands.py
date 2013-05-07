@@ -338,3 +338,15 @@ class TestBackgroundCommand(object):
         command.__name__ = 'ReindexCommand'
         base.run_command(self.cmd, 'dev.ini -p "project 3"')
         command(command.__name__).run.assert_called_with(['dev.ini', '-p', 'project 3'])
+
+
+class TestReindexCommand(object):
+
+    @patch('allura.command.show_models.g')
+    def test_skip_solr_delete(self, g):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.run([test_config, '-p', 'test', '--solr'])
+        assert g.solr.delete.called, 'solr.delete() must be called'
+        g.solr.delete.reset_mock()
+        cmd.run([test_config, '-p', 'test', '--solr', '--skip-solr-delete'])
+        assert not g.solr.delete.called, 'solr.delete() must not be called'

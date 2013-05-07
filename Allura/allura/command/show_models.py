@@ -57,6 +57,8 @@ class ReindexCommand(base.Command):
 
     parser.add_option('--solr', action='store_true', dest='solr',
                       help='Solr needs artifact references to already exist.')
+    parser.add_option('--skip-solr-delete', action='store_true', dest='skip_solr_delete',
+                      help='Skip clearing solr index.')
     parser.add_option('--refs', action='store_true', dest='refs',
                       help='Update artifact references and shortlinks')
     parser.add_option('--tasks', action='store_true', dest='tasks',
@@ -86,7 +88,7 @@ class ReindexCommand(base.Command):
                 c.project = p
                 base.log.info('Reindex project %s', p.shortname)
                 # Clear index for this project
-                if self.options.solr:
+                if self.options.solr and not self.options.skip_solr_delete:
                     g.solr.delete(q='project_id_s:%s' % p._id)
                 if self.options.refs:
                     M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
