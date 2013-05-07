@@ -559,7 +559,7 @@ class ProjectAdminController(BaseController):
                     sp.ordinal = int(new['ordinal'])
                 else:
                     require_access(c.project, 'admin')
-                    mount_point = new['mount_point'].lower() or ep_name.lower()
+                    mount_point = new['mount_point'] or ep_name
                     M.AuditLog.log('install tool %s', mount_point)
                     h.log_action(log, 'install tool').info(
                         'install tool %s', mount_point,

@@ -41,11 +41,11 @@ class TestMakeSafePathPortion(TestCase):
         self.f = h.make_safe_path_portion
 
     def test_no_latin1_chars(self):
-        s = self.f(u'Задачи')
+        s = self.f(u'Задачи', relaxed=False)
         self.assertEqual(s, '')
 
     def test_some_latin1_chars(self):
-        s = self.f('åß∂ƒ')
+        s = self.f('åß∂ƒ', relaxed=False)
         self.assertEqual(s, 'ab')
 
     def test_strict_mount_point_names(self):
@@ -53,12 +53,16 @@ class TestMakeSafePathPortion(TestCase):
         self.assertEqual(s, 'this-is-illegal')
         s = self.f('this-1-is-legal', relaxed=False)
         self.assertEqual(s, 'this-1-is-legal')
+        s = self.f('THIS-IS-Illegal', relaxed=False)
+        self.assertEqual(s, 'this-is-illegal')
 
     def test_relaxed_mount_point_names(self):
         s = self.f('1_this+is.legal')
         self.assertEqual(s, '1_this+is.legal')
         s = self.f('not*_legal')
         self.assertEqual(s, 'not-legal')
+        s = self.f('THIS-IS-Illegal')
+        self.assertEqual(s, 'THIS-IS-Illegal')
 
 
 def test_really_unicode():
