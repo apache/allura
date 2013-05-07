@@ -23,7 +23,7 @@ from os import path
 
 import pylons
 from webob import Request
-from mock import Mock
+from mock import Mock, patch
 from nose.tools import assert_equal
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename
@@ -32,6 +32,26 @@ from alluratest.controller import setup_unit_test
 
 from allura import model as M
 from allura.lib import utils
+
+
+@patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
+class TestConfigProxy(unittest.TestCase):
+    def setUp(self):
+        self.cp = utils.ConfigProxy(mybaz="baz")
+
+    def test_getattr(self):
+        self.assertEqual(self.cp.foo, "bar")
+        self.assertEqual(self.cp.mybaz, "true")
+
+    def test_get(self):
+        self.assertEqual(self.cp.get("foo"), "bar")
+        self.assertEqual(self.cp.get("mybaz"), "true")
+        self.assertEqual(self.cp.get("fake"), None)
+        self.assertEqual(self.cp.get("fake", "default"), "default")
+
+    def test_get_bool(self):
+        self.assertEqual(self.cp.get_bool("mybaz"), True)
+        self.assertEqual(self.cp.get_bool("fake"), False)
 
 
 class TestChunkedIterator(unittest.TestCase):
