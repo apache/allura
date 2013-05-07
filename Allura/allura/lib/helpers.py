@@ -60,8 +60,8 @@ re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,14}$')
 # validates tool mount point names
 re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
 re_tool_mount_point_fragment = re.compile(r'[a-z][-a-z0-9]*')
-re_relaxed_tool_mount_point = re.compile(r'^[a-z0-9][-a-z0-9_\.\+]{0,62}$')
-re_relaxed_tool_mount_point_fragment = re.compile(r'[a-z0-9][-a-z0-9_\.\+]*')
+re_relaxed_tool_mount_point = re.compile(r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$')
+re_relaxed_tool_mount_point_fragment = re.compile(r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*')
 
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
@@ -90,7 +90,8 @@ def make_safe_path_portion(ustr, relaxed=True):
     ustr = really_unicode(ustr)
     s = ustr.encode('latin1', 'ignore')
     s = AsciiDammit.asciiDammit(s)
-    s = s.lower()
+    if not relaxed:
+        s = s.lower()
     s = '-'.join(regex.findall(s))
     s = s.replace('--', '-')
     return s

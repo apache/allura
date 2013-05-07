@@ -558,6 +558,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             for x in range(10):
                 if self.app_instance(mount_point) is None: break
                 mount_point = base_mount_point + '-%d' % x
+        if not App.relaxed_mount_points:
+            mount_point = mount_point.lower()
         if not App.validate_mount_point(mount_point):
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
         # HACK: reserved url components
