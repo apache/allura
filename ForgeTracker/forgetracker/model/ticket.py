@@ -48,6 +48,11 @@ from forgetracker.plugins import ImportIdConverter
 log = logging.getLogger(__name__)
 
 CUSTOM_FIELD_SOLR_TYPES = dict(boolean='_b', number='_i')
+SOLR_TYPE_DEFAULTS = dict(_b=False, _i=0)
+
+
+def get_default_for_solr_type(solr_type):
+    return SOLR_TYPE_DEFAULTS.get(solr_type, u'')
 
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
@@ -365,16 +370,16 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
             )
         for k, v in self.custom_fields.iteritems():
-            field_value = unicode(v)
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
             if not config.get_bool('new_solr'):
-                result[k + '_s'] = field_value
+                result[k + '_s'] = unicode(v)
 
             # Now let's also index with proper Solr types.
             solr_type = self.app.globals.get_custom_field_solr_type(k)
             if solr_type:
-                result[k + solr_type] = field_value
+                result[k + solr_type] = (v or
+                        get_default_for_solr_type(solr_type))
 
         if self.reported_by:
             result['reported_by_s'] = self.reported_by.username
