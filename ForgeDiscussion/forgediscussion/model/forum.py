@@ -142,13 +142,6 @@ class Forum(M.Discussion):
     def __json__(self):
         json = super(Forum, self).__json__()
         json.pop('threads')  # it's always empty and useless here
-        json['topics'] = [dict(_id=t._id,
-                               subject=t.subject,
-                               num_replies=t.num_replies,
-                               num_views=t.num_views,
-                               url=h.absurl('/rest' + t.url()),
-                               last_post=t.last_post)
-                          for t in self.all_threads]
         return json
 
 class ForumFile(M.File):

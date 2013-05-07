@@ -115,6 +115,22 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(resp.json['page'], 1)
         assert_equal(resp.json['limit'], 1)
 
+    def test_forum_pagination(self):
+        resp = self.app.get('/rest/p/test/discussion/general/?limit=1')
+        topics = resp.json['forum']['topics']
+        assert_equal(len(topics), 1)
+        assert_equal(topics[0]['subject'], 'Hi guys')
+        assert_equal(resp.json['count'], 2)
+        assert_equal(resp.json['page'], 0)
+        assert_equal(resp.json['limit'], 1)
+        resp = self.app.get('/rest/p/test/discussion/general/?limit=1&page=1')
+        topics = resp.json['forum']['topics']
+        assert_equal(len(topics), 1)
+        assert_equal(topics[0]['subject'], 'Let\'s talk')
+        assert_equal(resp.json['count'], 2)
+        assert_equal(resp.json['page'], 1)
+        assert_equal(resp.json['limit'], 1)
+
     def test_security(self):
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('discussion').config.acl

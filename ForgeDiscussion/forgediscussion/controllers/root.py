@@ -26,6 +26,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from formencode import validators
 from webob import exc
+import pymongo
 
 from allura.lib.security import require_access, has_access, require_authenticated
 from allura.lib.search import search_app
@@ -289,8 +290,26 @@ class ForumRestController(BaseController):
         require_access(self.forum, 'read')
 
     @expose('json:')
-    def index(self, **kw):
-        return dict(forum=self.forum)
+    def index(self, limit=100, page=0, **kw):
+        limit, page, start = g.handle_paging(int(limit), int(page))
+        topics = model.Forum.thread_class().query.find(dict(discussion_id=self.forum._id))
+        topics = topics.sort([('flags', pymongo.DESCENDING),
+                              ('last_post_date', pymongo.DESCENDING)])
+        topics = topics.skip(start).limit(limit)
+        count = topics.count()
+        json = {}
+        json['forum'] = self.forum.__json__()
+        json['forum']['topics'] = [dict(_id=t._id,
+                                        subject=t.subject,
+                                        num_replies=t.num_replies,
+                                        num_views=t.num_views,
+                                        url=h.absurl('/rest' + t.url()),
+                                        last_post=t.last_post)
+                                   for t in topics]
+        json['count'] = count
+        json['page'] = page
+        json['limit'] = limit
+        return json
 
     @expose()
     def _lookup(self, thread, thread_id, *remainder):
