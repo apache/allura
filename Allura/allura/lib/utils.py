@@ -37,6 +37,7 @@ from formencode import Invalid
 from tg.decorators import before_validate
 from pylons import response
 from pylons import tmpl_context as c
+from paste.deploy.converters import asbool
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc
@@ -64,6 +65,7 @@ def guess_mime_type(filename):
         content_type = 'application/octet-stream'
     return content_type
 
+
 class ConfigProxy(object):
     '''Wrapper for loading config values at module-scope so we don't
     have problems when a module is imported before tg.config is initialized
@@ -73,7 +75,14 @@ class ConfigProxy(object):
         self._kw = kw
 
     def __getattr__(self, k):
-        return tg.config[self._kw[k]]
+        return self.get(k)
+
+    def get(self, key, default=None):
+        return tg.config.get(self._kw.get(key, key), default)
+
+    def get_bool(self, key):
+        return asbool(self.get(key))
+
 
 class lazy_logger(object):
     '''Lazy instatiation of a logger, to ensure that it does not get

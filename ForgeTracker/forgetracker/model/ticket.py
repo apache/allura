@@ -50,7 +50,8 @@ log = logging.getLogger(__name__)
 CUSTOM_FIELD_SOLR_TYPES = dict(boolean='_b', number='_i')
 
 config = utils.ConfigProxy(
-    common_suffix='forgemail.domain')
+    common_suffix='forgemail.domain',
+    new_solr='solr.use_new_types')
 
 class Globals(MappedClass):
 
@@ -201,10 +202,10 @@ class Globals(MappedClass):
 
     def sortable_custom_fields_shown_in_search(self):
         def solr_type(field_name):
-            # TODO POST-SOLR-REINDEX: Remove the following line. It temporarily
-            # forces the solr field type to string (_s) until the new index
-            # (with newly typed fields) is built.
-            return '_s'
+            # Pre solr-4.2.1 code indexed all custom fields as strings, so
+            # they must be searched as such.
+            if not config.get_bool('new_solr'):
+                return '_s'
             return self.get_custom_field_solr_type(field_name) or '_s'
 
         return [dict(
@@ -365,13 +366,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             )
         for k, v in self.custom_fields.iteritems():
             field_value = unicode(v)
-            # Index all custom fields as Solr strings. This is actually wrong,
-            # but it's what the current code expects.
-            # TODO POST-SOLR-REINDEX: remove this line
-            result[k + '_s'] = field_value
+            # Pre solr-4.2.1 code expects all custom fields to be indexed
+            # as strings.
+            if not config.get_bool('new_solr'):
+                result[k + '_s'] = field_value
 
-            # Now let's also index with proper Solr types. After reindexing to
-            # add these, remove the catch-all string-type indexing above.
+            # Now let's also index with proper Solr types.
             solr_type = self.app.globals.get_custom_field_solr_type(k)
             if solr_type:
                 result[k + solr_type] = field_value
@@ -397,11 +397,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         solr_field = '{0}{1}'
         solr_type = '_s'
         for f in cf:
-            # TODO POST-SOLR-REINDEX: uncomment this line to enable searching
-            # on new properly typed solr fields instead of the old catch-all
-            # string fields.
-            # solr_type = (c.app.globals.get_custom_field_solr_type(f)
-                    # or solr_type)
+            # Solr 4.2.1 index contains properly typed custom fields, so we
+            # can search on those instead of the old string-type solr fields.
+            if config.get_bool('new_solr'):
+                solr_type = (c.app.globals.get_custom_field_solr_type(f)
+                        or solr_type)
             actual = solr_field.format(f, solr_type)
             q = q.replace(f + ':', actual + ':')
         return q
