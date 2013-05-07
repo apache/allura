@@ -96,16 +96,19 @@ class SearchHelp(ffw.Lightbox):
 <li>Labels assigned to the ticket - labels</li>
 <li>Milestone the ticket is assigned to - _milestone</li>
 <li>Last modified date - mod_date</li>
+<li>Created date - created_date</li>
 <li>Body of the ticket - text</li>
 <li>Number of ticket - ticket_num</li>
 <li>User who created the ticket - reported_by</li>
 <li>Status of the ticket - status</li>
 <li>Title of the ticket - summary</li>
+<li>Private ticket - private</li>
 <li>Votes up/down of the ticket - votes_up/votes_down (if enabled in tool options)</li>
 <li>Votes total of the ticket - votes_total</li>
 <li>Imported legacy id - import_id</li>
 <li>Custom field - the field name with an underscore in front, like _custom</li>
 </ul>
+
 <h2>Example searches</h2>
 <p>Any ticket that is not closed in the 1.0 milestone with "foo" in the title</p>
 <div class="codehilite"><pre>!status:closed AND summary:foo* AND _milestone:1.0</pre></div>
@@ -117,6 +120,9 @@ class SearchHelp(ffw.Lightbox):
 <div class="codehilite"><pre>(summary:foo or text:foo) AND ticket_num:[* TO 50]</pre></div>
 <p>Tickets last modified in April 2012</p>
 <div class="codehilite"><pre>mod_date_dt:[2012-04-01T00:00:00Z TO 2012-04-30T23:59:59Z]</pre></div>
+<p>Private tickets</p>
+<div class="codehilite"><pre>private:true</pre></div>
+
 <h2>Saving searches</h2>
 <p>Ticket searches may be saved for later use by project administrators. To save a search, click "Edit Searches" in the tracker sidebar. Click "Add Bin" then enter a summary and search terms for the saved search. Your search will now show up in the sidebar under "Searches" with a count of how many tickets match the query.</p>
 <h2>Sorting search results</h2>
@@ -125,11 +131,13 @@ class SearchHelp(ffw.Lightbox):
 <li>Labels assigned to the ticket - labels_t</li>
 <li>Milestone the ticket is assigned to - _milestone_s</li>
 <li>Last modified date - mod_date_dt</li>
+<li>Created date - created_date_dt</li>
 <li>Body of the ticket - text_s</li>
 <li>Number of ticket - ticket_num_i</li>
 <li>User who created the ticket - reported_by_s</li>
 <li>Status of the ticket - status_s</li>
 <li>Title of the ticket - snippet_s</li>
+<li>Private ticket - private_b</li>
 <li>Custom field - the field name with an _ in front and _s at the end like _custom_s. For Boolean custom fields use _b instead of _s. For Number custom fields use _i.</li>
 </ul>
 <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
