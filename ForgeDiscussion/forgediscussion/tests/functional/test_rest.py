@@ -172,3 +172,18 @@ class TestRootRestController(TestDiscussionApiBase):
         self.app.get('/rest/p/test/discussion/general/thread/%s/' % t._id,
                      extra_environ={'username': '*anonymous'},
                      status=401)
+
+    def test_private_forums(self):
+        r = self.app.get('/p/test/admin/discussion/forums')
+        form = r.forms[0]
+        if form['forum-0.shortname'].value == u'héllo':
+            form['forum-0.members_only'] = True
+        else:
+            form['forum-1.members_only'] = True
+        form.submit()
+        r = self.api_get('/rest/p/test/discussion/')
+        assert_equal(len(r.json['forums']), 2)
+        r = self.app.get('/rest/p/test/discussion/',
+                         extra_environ={'username': '*anonymous'})
+        assert_equal(len(r.json['forums']), 1)
+        assert_equal(r.json['forums'][0]['shortname'], 'general')

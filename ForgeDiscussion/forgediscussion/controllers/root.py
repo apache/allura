@@ -237,7 +237,7 @@ class RootRestController(BaseController):
                                  num_topics=f.num_topics,
                                  last_post=f.last_post,
                                  url=h.absurl('/rest' + f.url()))
-                            for f in forums])
+                            for f in forums if has_access(f, 'read')])
         json['limit'] = limit
         json['page'] = page
         json['count'] = count
