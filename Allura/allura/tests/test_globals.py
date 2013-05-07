@@ -183,11 +183,21 @@ def test_macro_members():
         '</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
+def test_macro_members_escaping():
+    user = M.User.by_username('test-admin')
+    user.display_name = u'Test Admin <script>'
+    r = g.markdown_wiki.convert('[[members]]')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Members:</h6>\n'
+        u'<ul class="md-users-list">\n'
+        u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>\n'
+        u'</ul>\n</div>')
+
+@with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
-    user.display_name = u'Test Ådmin'
+    user.display_name = u'Test Ådmin <script>'
     r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin</a></li>\n</ul>\n</div>')
+    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
 
 @with_setup(teardown=setUp) # reset everything we changed
 def test_macro_project_admins_one_br():

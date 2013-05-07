@@ -23,7 +23,6 @@ import traceback
 from operator import attrgetter
 
 import pymongo
-import jinja2
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asint
@@ -346,7 +345,7 @@ def project_admins():
     from allura.lib.widgets.macros import ProjectAdmins
     output = ((dict(
             url=user.url(),
-            name=jinja2.escape(user.display_name)))
+            name=user.display_name))
         for user in admins)
     users = ProjectAdmins(users=output)
     g.resource_manager.register(users)
@@ -361,7 +360,7 @@ def members(limit=20):
     members = sorted(c.project.users(), key=attrgetter('display_name'))
     output = [dict(
             url=user.url(),
-            name=jinja2.escape(user.display_name),
+            name=user.display_name,
             admin=' (admin)' if user in admins else '',
             )
         for user in members[:limit]]
