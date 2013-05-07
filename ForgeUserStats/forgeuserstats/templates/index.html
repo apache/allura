@@ -76,7 +76,7 @@
         </tr>
       </thead>
       <tbody>
-        {% if not category %}
+        {% if not category and last_login %}
           <tr>
             <td>Logins</td>
             <td>{{totlogins}}</td>
