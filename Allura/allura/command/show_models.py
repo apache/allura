@@ -52,6 +52,9 @@ class ReindexCommand(base.Command):
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-p', '--project', dest='project',  default=None,
                       help='project to reindex')
+    parser.add_option('--project-regex', dest='project_regex', default='',
+                      help='Restrict reindex to projects for which the shortname matches '
+                      'the provided regex.')
     parser.add_option('-n', '--neighborhood', dest='neighborhood', default=None,
                       help='neighborhood to reindex (e.g. p)')
 
@@ -72,6 +75,8 @@ class ReindexCommand(base.Command):
         graph = build_model_inheritance_graph()
         if self.options.project:
             q_project = dict(shortname=self.options.project)
+        elif self.options.project_regex:
+            q_project = dict(shortname={'$regex': self.options.project_regex})
         elif self.options.neighborhood:
             neighborhood_id = M.Neighborhood.query.get(
                 url_prefix='/%s/' % self.options.neighborhood)._id

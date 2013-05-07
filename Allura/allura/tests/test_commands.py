@@ -350,3 +350,10 @@ class TestReindexCommand(object):
         g.solr.delete.reset_mock()
         cmd.run([test_config, '-p', 'test', '--solr', '--skip-solr-delete'])
         assert not g.solr.delete.called, 'solr.delete() must not be called'
+
+    @patch('allura.command.show_models.utils')
+    def test_project_regex(self, utils):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.run([test_config, '--project-regex', '^test'])
+        utils.chunked_find.assert_called_once_with(
+            M.Project, {'shortname': {'$regex': '^test'}})
