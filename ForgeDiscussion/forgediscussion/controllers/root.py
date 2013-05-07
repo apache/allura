@@ -228,7 +228,7 @@ class RootRestController(BaseController):
         forums = model.Forum.query.find(dict(
                         app_config_id=c.app.config._id,
                         parent_id=None, deleted=False)
-                ).skip(start).limit(limit)
+                ).sort([('shortname', pymongo.ASCENDING)]).skip(start).limit(limit)
         count = forums.count()
         json = dict(forums=[dict(_id=f._id,
                                  name=f.name,
@@ -334,13 +334,11 @@ class ForumTopicRestController(BaseController):
     @expose('json:')
     def index(self, limit=100, page=0, **kw):
         limit, page, start = g.handle_paging(int(limit), int(page))
-        posts = model.ForumPost.query.find(dict(thread_id=self.topic._id))
-        posts = posts.skip(start).limit(limit)
-        count = posts.count()
+        posts = self.topic.query_posts(page=page, limit=limit, style='')
         json = {}
         json['topic'] = self.topic.__json__()
-        json['topic']['posts'] = posts.all()
-        json['count'] = count
+        json['count'] = posts.count()
         json['page'] = page
         json['limit'] = limit
+        json['topic']['posts'] = posts.all()
         return json
