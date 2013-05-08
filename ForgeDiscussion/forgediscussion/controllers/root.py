@@ -100,15 +100,15 @@ class RootController(BaseController, DispatchIndex, FeedController):
                                              parent_id=None,
                                              deleted=False))
         current_forum = None
+        c.new_topic = self.W.new_topic
+        my_forums = []
         for f in forums:
                 if request.referer and (f.url() in request.referer):
                     current_forum = f.shortname
+                if has_access(f, 'post')():
+                    my_forums.append(f)
 
-        c.new_topic = self.W.new_topic
-        forums = [f for f in model.Forum.query.find(dict(
-                             app_config_id=c.app.config._id,
-                             parent_id=None)).all() if has_access(f, 'post')() and not f.deleted]
-        return dict(forums=forums, current_forum=current_forum)
+        return dict(forums=my_forums, current_forum=current_forum)
 
     @h.vardec
     @expose()
