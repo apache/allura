@@ -252,7 +252,15 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'href')
         for link in soup.findAll('img'):
             rewrite(link, 'src')
-        return unicode(str(soup), "utf-8" )
+        # BeautifulSoup always stores data in unicode,
+        # but when doing unicode(soup) it does some strange things
+        # like nesting html comments, e.g. returns <!--<!-- comment -->-->
+        # instead of <!-- comment -->.
+        # Converting soup object to string representation first,
+        # and then back to unicode avoids that.
+        # str() called on BeautifulSoup document always returns string
+        # encoded in utf-8, so this should always work.
+        return h.really_unicode(str(soup))
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
