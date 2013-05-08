@@ -163,6 +163,17 @@ class TestAuth(TestController):
         s = M.Mailbox.query.get(_id=s_id)
         assert not s, "User still has subscription with Mailbox._id %s" % s_id
 
+    def test_format_email(self):
+        self.app.post('/auth/subscriptions/update_subscriptions', params={'email_format': 'html', 'subscriptions': ''})
+        r = self.app.get('/auth/subscriptions/')
+        assert '<option selected value="html">HTML</option>' in r
+        self.app.post('/auth/subscriptions/update_subscriptions', params={'email_format': 'plain', 'subscriptions': ''})
+        r = self.app.get('/auth/subscriptions/')
+        assert '<option selected value="plain">Plain Text</option>' in r
+        self.app.post('/auth/subscriptions/update_subscriptions', params={'email_format': 'both', 'subscriptions': ''})
+        r = self.app.get('/auth/subscriptions/')
+        assert '<option selected value="both">Combined</option>' in r
+
     def test_api_key(self):
          r = self.app.get('/auth/preferences/')
          assert 'No API token generated' in r

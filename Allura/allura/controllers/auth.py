@@ -744,7 +744,7 @@ class SubscriptionsController(BaseController):
     @expose()
     @require_post()
     @validate(F.subscription_form, error_handler=index)
-    def update_subscriptions(self, subscriptions=None, **kw):
+    def update_subscriptions(self, subscriptions=None, email_format=None, **kw):
         for s in subscriptions:
             if s['subscribed']:
                 if s['tool_id'] and s['project_id']:
@@ -754,6 +754,9 @@ class SubscriptionsController(BaseController):
             else:
                 if s['subscription_id'] is not None:
                     s['subscription_id'].delete()
+        if email_format:
+            c.user.set_pref('email_format', email_format)
+
         redirect(request.referer)
 
 class OAuthController(BaseController):

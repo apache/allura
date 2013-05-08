@@ -49,24 +49,11 @@
   <h2>Subscriptions</h2>
   {% if subscriptions %}
     <p><em>Mark tools that you want to subscribe to. Unmark tools that you want to unsubscribe from. Press 'Save' button.</em></p>
-    {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions))}}
+        <div class="grid-24">
+        {{c.form.display(action='update_subscriptions', value=dict(subscriptions=subscriptions, email_format=c.user.preferences.email_format))}}
+        </div>
   {% else%}
     <p>No subscriptions.</p>
   {% endif %}
-  <hr/>
-  <div style="clear:both">&nbsp;</div>
-  <form action="update" method="post">
-        <label class="grid-4">Email Format</label>
-        <div class="grid-18">
-          <select name="preferences.email_format">
-            <option value="plain" {{'selected' if c.user.preferences.email_format == 'plain' else ''}}>Plain Text</option>
-            <option value="html" {{'selected' if c.user.preferences.email_format == 'html' else ''}}>HTML</option>
-            <option value="both" {{'selected' if c.user.preferences.email_format == 'both' else ''}}>Combined</option>
-          </select>
-        </div>
 
-    <div class="grid-18">
-    {{lib.submit_button('Save Changes')}}
-    </div>
-  </form>
 {% endblock %}
