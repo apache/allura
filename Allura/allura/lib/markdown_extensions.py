@@ -252,7 +252,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             rewrite(link, 'href')
         for link in soup.findAll('img'):
             rewrite(link, 'src')
-        return unicode(soup)
+        return unicode(str(soup), "utf-8" )
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)

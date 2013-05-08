@@ -282,6 +282,10 @@ def test_markdown_within_html():
 <p><strong>blah</strong></p>
 </div>''' in r, r
 
+def test_markdown_with_html_comments():
+    text = g.markdown.convert('test <!-- comment -->')
+    assert '<div class="markdown_content"><p>test <!-- comment --></p></div>' == text, text
+
 
 def test_markdown_big_text():
     '''If text is too big g.markdown.convert should return plain text'''
