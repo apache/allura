@@ -122,7 +122,7 @@ class TaskdCommand(base.Command):
                             only=only)
                     if self.task:
                         # Build the (fake) request
-                        r = Request.blank('/--%s--/' % self.task.task_name,
+                        r = Request.blank('/--%s--/%s' % (self.task.task_name, self.task._id),
                                           {'task': self.task,
                                            'wsgi.errors': wsgi_error_log,  # ErrorMiddleware records error details here
                                            })
