@@ -19,6 +19,7 @@ from nose.tools import assert_raises, assert_in
 from datadiff.tools import assert_equal
 from ming.orm import ThreadLocalORMSession
 from mock import Mock, call, patch
+import pymongo
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import base, script, set_neighborhood_features, \
@@ -26,6 +27,7 @@ from allura.command import base, script, set_neighborhood_features, \
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
+from allura.tests import decorators as td
 
 test_config = 'test.ini#main'
 
@@ -357,3 +359,48 @@ class TestReindexCommand(object):
         cmd.run([test_config, '--project-regex', '^test'])
         utils.chunked_find.assert_called_once_with(
             M.Project, {'shortname': {'$regex': '^test'}})
+
+    @patch('allura.command.show_models.add_artifacts')
+    def test_chunked_add_artifacts(self, add_artifacts):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.options = Mock()
+        ref_ids = list(range(100 * 1000 * 2 + 20))
+        cmd._chunked_add_artifacts(ref_ids)
+        assert_equal(len(add_artifacts.post.call_args_list), 3)
+        assert_equal(len(add_artifacts.post.call_args_list[0][0][0]), 100 * 1000)
+        assert_equal(len(add_artifacts.post.call_args_list[1][0][0]), 100 * 1000)
+        assert_equal(len(add_artifacts.post.call_args_list[2][0][0]), 20)
+
+    @patch('allura.command.show_models.add_artifacts')
+    def test_post_add_artifacts_too_large(self, add_artifacts):
+        def on_post(chunk, **kw):
+            if len(chunk) > 1:
+                raise pymongo.errors.InvalidDocument(
+                        "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
+        add_artifacts.post.side_effect = on_post
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.options = Mock()
+        cmd._post_add_artifacts(range(5))
+        kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs}
+        expected = [
+            call([0, 1, 2, 3, 4], **kw),
+            call([0, 1], **kw),
+            call([0], **kw),
+            call([1], **kw),
+            call([2, 3, 4], **kw),
+            call([2], **kw),
+            call([3, 4], **kw),
+            call([3], **kw),
+            call([4], **kw)
+        ]
+        assert_equal(expected, add_artifacts.post.call_args_list)
+
+    @patch('allura.command.show_models.add_artifacts')
+    def test_post_add_artifacts_other_error(self, add_artifacts):
+        def on_post(chunk, **kw):
+            raise pymongo.errors.InvalidDocument("Cannot encode object...")
+        add_artifacts.post.side_effect = on_post
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.options = Mock()
+        with td.raises(pymongo.errors.InvalidDocument):
+            cmd._post_add_artifacts(range(5))

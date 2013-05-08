@@ -20,12 +20,12 @@ from collections import defaultdict
 from itertools import groupby
 
 from pylons import tmpl_context as c, app_globals as g
-from pymongo.errors import DuplicateKeyError
+from pymongo.errors import DuplicateKeyError, InvalidDocument
 
 from ming.orm import mapper, session, Mapper
 from ming.orm.declarative import MappedClass
 
-import allura.tasks.index_tasks
+from allura.tasks.index_tasks import add_artifacts
 from allura.lib.exceptions import CompoundError
 from allura.lib import utils
 from . import base
@@ -119,18 +119,43 @@ class ReindexCommand(base.Command):
                     M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
-                        add_artifacts = allura.tasks.index_tasks.add_artifacts
                         if self.options.tasks:
-                            add_artifacts = add_artifacts.post
-                        add_artifacts(ref_ids,
-                                       update_solr=self.options.solr,
-                                       update_refs=self.options.refs)
+                            self._chunked_add_artifacts(ref_ids)
+                        else:
+                            add_artifacts(ref_ids,
+                                    update_solr=self.options.solr,
+                                    update_refs=self.options.refs)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
                     M.main_orm_session.flush()
                     M.main_orm_session.clear()
         base.log.info('Reindex %s', 'queued' if self.options.tasks else 'done')
+
+    def _chunked_add_artifacts(self, ref_ids):
+        # ref_ids contains solr index ids which can easily be over
+        # 100 bytes. Here we allow for 160 bytes avg, plus
+        # room for other document overhead.
+        for chunk in utils.chunked_list(ref_ids, 100 * 1000):
+            self._post_add_artifacts(chunk)
+
+    def _post_add_artifacts(self, chunk):
+        """
+        Post task, recursively splitting and re-posting if the resulting
+        mongo document is too large.
+        """
+        try:
+            add_artifacts.post(chunk,
+                    update_solr=self.options.solr,
+                    update_refs=self.options.refs)
+        except InvalidDocument as e:
+            # there are many types of InvalidDocument, only recurse if its expected to help
+            if str(e).startswith('BSON document too large'):
+                self._post_add_artifacts(chunk[:len(chunk) // 2])
+                self._post_add_artifacts(chunk[len(chunk) // 2:])
+            else:
+                raise
+
 
 class EnsureIndexCommand(base.Command):
     min_args=1
