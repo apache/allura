@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
+{% set app = app or c.app %}
 <div>
   {%if is_file%}
   <div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>
@@ -37,10 +38,10 @@
                 {%if is_file%}
                     <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
                 {%endif%}
-                <a href="{{c.app.repo.url_for_commit(commit)}}">{{commit.shorthand_id()}}</a>
-                {% if c.app.repo.symbolics_for_commit(commit)[1] %}
-                    ({% for tag in c.app.repo.symbolics_for_commit(commit)[1] -%}
-                        <a href="{{c.app.repo.url_for_commit(tag)}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
+                <a href="{{app.repo.url_for_commit(commit)}}">{{commit.shorthand_id()}}</a>
+                {% if app.repo.symbolics_for_commit(commit)[1] %}
+                    ({% for tag in app.repo.symbolics_for_commit(commit)[1] -%}
+                        <a href="{{app.repo.url_for_commit(tag)}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
                     {%- endfor %})
                 {% endif %}
                 {%if is_file%}
@@ -62,7 +63,7 @@
             {% if commit.committed.date %}{{commit.committed.date|datetimeformat}}{% endif %}
           </td>
           <td style="text-align: left; vertical-align: text-top">
-            <a href="{{commit.url()}}tree{{request.params.get('path')}}">
+            <a href="{{commit.url()}}tree{{request.params.get('path', '')}}">
             {%if is_file%}
                 View
             {% else %}
@@ -71,7 +72,7 @@
             </a>
               {%if is_file%}
               <br/>
-              <a href="{{commit.url()}}tree{{request.params.get('path')}}?format=raw">Download</a>
+              <a href="{{commit.url()}}tree{{request.params.get('path', '')}}?format=raw">Download</a>
               {%endif%}
           </td>
         </tr>

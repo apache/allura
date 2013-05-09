@@ -40,7 +40,7 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 
   <div>{{g.markdown.convert(req.description)}}</div>
 
-  {{ c.log_widget.display(value=req.commits) }}
+  {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
   <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
 
   {% if h.has_access(c.app, 'write')() %}

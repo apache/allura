@@ -331,7 +331,10 @@ class MergeRequestController(object):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
         c.mr_dispose_form = self.mr_dispose_form
+        with self.req.push_downstream_context():
+            downstream_app = c.app
         return dict(
+            downstream_app = downstream_app,
             req=self.req,
             page=page,
             limit=limit,

@@ -20,6 +20,7 @@ import re
 import os
 import shutil
 
+from nose.tools import assert_equal
 import tg
 import pkg_resources
 from pylons import tmpl_context as c
@@ -357,6 +358,7 @@ class TestFork(_TestCase):
             cloned.index.commit('Improve documentation')
             cloned.remotes[0].push()
             c.app.repo.refresh()
+            self.forked_repo = c.app.repo
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
@@ -428,6 +430,13 @@ class TestFork(_TestCase):
         r, mr_num = self._request_merge()
         assert 'would like you to merge' in r, r.showbrowser()
         assert 'Improve documentation' in r, r.showbrowser()
+        revs = r.html.findAll('tr', attrs={'class': 'rev'})
+        links = revs[0].findAll('a')
+        c_id = self.forked_repo.heads[0]['object_id']
+        assert_equal(links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
+        assert_equal(links[0].getText(), '[%s]' % c_id[:6])
+        assert_equal(links[1].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
+        assert_equal(links[1].getText(), 'Tree')
 
     def test_merge_request_list_view(self):
         r, mr_num = self._request_merge()
