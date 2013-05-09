@@ -97,6 +97,14 @@ class Page(VersionedArtifact, ActivityObject):
     def activity_name(self):
         return 'wiki page %s' % self.title
 
+    def __json__(self):
+        return dict(super(Page, self).__json__(),
+                    title=self.title,
+                    text=self.text,
+                    labels=self.labels,
+                    attachments=[dict(bytes=attach.length,
+                                      url=h.absurl(attach.url())) for attach in self.attachments])
+
     def commit(self):
         ss = VersionedArtifact.commit(self)
         session(self).flush()

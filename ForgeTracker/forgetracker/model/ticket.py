@@ -25,8 +25,6 @@ import pymongo
 from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
 from pprint import pformat
-from urlparse import urljoin
-from tg import config as tg_config
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -737,8 +735,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             status=self.status,
             private=self.private,
             attachments=[dict(bytes=attach.length,
-                              url=urljoin(tg_config.get('base_url', 'http://sourceforge.net/'),
-                                          attach.url())) for attach in self.attachments],
+                              url=h.absurl(attach.url())) for attach in self.attachments],
             custom_fields=self.custom_fields)
 
     @classmethod

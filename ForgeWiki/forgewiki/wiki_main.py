@@ -22,7 +22,7 @@ from urllib import unquote
 from datetime import datetime
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash, config
+from tg import expose, validate, redirect, response, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
@@ -30,7 +30,6 @@ from pylons import request
 from formencode import validators
 from webob import exc
 from ming.orm import session
-from urlparse import urljoin
 
 # Pyforge-specific imports
 from allura import model as M
@@ -39,7 +38,7 @@ from allura.app import Application, SitemapEntry, DefaultAdminController
 from allura.lib.search import search_app
 from allura.lib.decorators import require_post, Property
 from allura.lib.security import require_access, has_access
-from allura.controllers import AppDiscussionController, BaseController
+from allura.controllers import AppDiscussionController, BaseController, AppDiscussionRestController
 from allura.controllers import DispatchIndex
 from allura.controllers import attachments as ac
 from allura.controllers.feed import FeedArgs, FeedController
@@ -681,10 +680,16 @@ Some *emphasized* and **strong** text
 
 '''
 
-class RootRestController(RestController):
+class RootRestController(BaseController):
+
+    def __init__(self):
+        self._discuss = AppDiscussionRestController()
+
+    def _check_security(self):
+        require_access(c.app, 'read')
 
     @expose('json:')
-    def get_all(self, **kw):
+    def index(self, **kw):
         page_titles = []
         pages = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
@@ -692,21 +697,10 @@ class RootRestController(RestController):
                 page_titles.append(page.title)
         return dict(pages=page_titles)
 
-    @expose('json:')
-    def get_one(self, title, **kw):
-        page = WM.Page.query.get(app_config_id=c.app.config._id, title=h.really_unicode(title), deleted=False)
-        if page is None:
-            raise exc.HTTPNotFound, title
-        require_access(page, 'read')
-        return dict(title=page.title,
-                    text=page.text,
-                    labels=page.labels,
-                    discussion_thread=page.discussion_thread,
-                    discussion_thread_url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
-                                                  '/rest%s' % page.discussion_thread.url()),
-                    attachments=[dict(bytes=attach.length,
-                                      url=urljoin(config.get('base_url', 'http://sourceforge.net/'),
-                                                  attach.url())) for attach in page.attachments])
+    @expose()
+    def _lookup(self, title, *remainder):
+        return PageRestController(title), remainder
+
 
     @h.vardec
     @expose()
@@ -726,6 +720,23 @@ class RootRestController(RestController):
         if 'labels' in post_data:
             page.labels = post_data['labels'].split(',')
         page.commit()
+
+class PageRestController(BaseController):
+
+    def __init__(self, title):
+        if title is not None:
+            self.page = WM.Page.query.get(app_config_id=c.app.config._id,
+                                          title=h.really_unicode(unquote(title)),
+                                          deleted=False)
+            if self.page is None:
+                raise exc.HTTPNotFound()
+
+    def _check_security(self):
+        require_access(self.page, 'read')
+
+    @expose('json:')
+    def index(self, **kw):
+        return dict(page=self.page)
 
 
 class WikiAdminController(DefaultAdminController):

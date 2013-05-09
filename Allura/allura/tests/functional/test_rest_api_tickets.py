@@ -68,7 +68,7 @@ class TestApiTicket(TestRestApiBase):
         self.set_api_ticket()
         r = self.api_get('/rest/p/test/wiki/Home/')
         assert r.status_int == 200
-        assert r.json['title'] == 'Home', r.json
+        assert r.json['page']['title'] == 'Home', r.json
 
     def test_project_ping_expired_ticket(self):
         self.set_api_ticket(timedelta(seconds=-1))
@@ -80,4 +80,4 @@ class TestApiTicket(TestRestApiBase):
         self.set_api_ticket()
         r = self.api_get('/rest/p/test/sub1/wiki/Home/')
         assert r.status_int == 200
-        assert r.json['title'] == 'Home', r.json
+        assert r.json['page']['title'] == 'Home', r.json

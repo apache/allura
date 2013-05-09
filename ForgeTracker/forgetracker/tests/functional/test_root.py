@@ -1715,10 +1715,10 @@ class TestFunctionalController(TrackerTestController):
         discussion_url = r.html.findAll('form')[-1]['action'][:-4]
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.body)
-        assert_equal(r['ticket']['discussion_thread_url'],'http://localhost/rest%s' % discussion_url)
+        assert_equal(r['ticket']['discussion_thread_url'],'http://localhost:80/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'],
-                     'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
+                     'http://localhost:80%s%s/attachment/test.txt' % (discussion_url, slug))
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'], 11)
 
         file_name = 'test_root.py'
@@ -1729,7 +1729,7 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.body)
-        assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost/p/test/bugs/1/attachment/test_root.py')
+        assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost:80/p/test/bugs/1/attachment/test_root.py')
 
 
 
