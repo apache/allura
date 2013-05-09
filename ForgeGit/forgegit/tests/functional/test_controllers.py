@@ -17,6 +17,8 @@
 
 import json
 import re
+import os
+import shutil
 
 import tg
 import pkg_resources
@@ -343,6 +345,18 @@ class TestFork(_TestCase):
                     cloned_from.full_fs_path,
                     cloned_from.app.config.script_name(),
                     cloned_from.full_fs_path)
+            # Add commit to a forked repo, thus merge requests will not be empty
+            # clone repo to tmp location first (can't add commit to bare repos directly)
+            clone_path = '/tmp/test2-code-clone'
+            if os.path.exists(clone_path):
+                shutil.rmtree(clone_path)
+            cloned = c.app.repo._impl._git.clone(clone_path)
+            with open(clone_path + '/README', 'w+') as f:
+                f.write('Very useful README')
+            cloned.index.add(['README'])
+            cloned.index.commit('Improve documentation')
+            cloned.remotes[0].push()
+            c.app.repo.refresh()
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
@@ -413,6 +427,7 @@ class TestFork(_TestCase):
     def test_merge_request_detail_view(self):
         r, mr_num = self._request_merge()
         assert 'would like you to merge' in r, r.showbrowser()
+        assert 'Improve documentation' in r, r.showbrowser()
 
     def test_merge_request_list_view(self):
         r, mr_num = self._request_merge()
