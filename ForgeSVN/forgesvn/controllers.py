@@ -20,13 +20,20 @@ from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
 
 from allura.controllers import repository
-from allura.controllers.feed import FeedController
+from allura.controllers.feed import FeedController, FeedArgs
 
 
 class BranchBrowser(repository.BranchBrowser, FeedController):
 
     def __init__(self):
         super(BranchBrowser, self).__init__(None)
+
+    def get_feed(self, project, app, user):
+        query = dict(project_id=project._id, app_config_id=app.config._id)
+        pname, repo =  (project.shortname, app.config.options.mount_label)
+        title = '%s %s changes' % (pname, repo)
+        description = 'Recent changes to %s repository in %s project' % (repo, pname)
+        return FeedArgs(query, title, app.url, description=description)
 
     @expose('jinja:forgesvn:templates/svn/index.html')
     @with_trailing_slash

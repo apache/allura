@@ -20,6 +20,7 @@ import json
 import pkg_resources
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
+from nose.tools import assert_equal
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -90,8 +91,31 @@ class TestRootController(SVNTestController):
                 assert val['message'] == 'Create readme'
 
     def test_feed(self):
-        for ext in ['', '.rss', '.atom']:
-            assert 'Remove hello.txt' in self.app.get('/src/feed%s' % ext)
+        for ext in ['', '.rss']:
+            r = self.app.get('/src/feed%s' % ext)
+            channel = r.xml.find('channel')
+            title = channel.find('title').text
+            assert_equal(title, 'test SVN changes')
+            description = channel.find('description').text
+            assert_equal(description, 'Recent changes to SVN repository in test project')
+            link = channel.find('link').text
+            assert_equal(link, 'http://localhost:80/p/test/src/')
+            commit = channel.find('item')
+            assert_equal(commit.find('title').text, 'Create readme')
+            link = 'http://localhost:80/p/test/src/1/'
+            assert_equal(commit.find('link').text, link)
+            assert_equal(commit.find('guid').text, link)
+        # .atom has slightly different structure
+        prefix = '{http://www.w3.org/2005/Atom}'
+        r = self.app.get('/src/feed.atom')
+        title = r.xml.find(prefix + 'title').text
+        assert_equal(title, 'test SVN changes')
+        link = r.xml.find(prefix + 'link').attrib['href']
+        assert_equal(link, 'http://localhost:80/p/test/src/')
+        commit = r.xml.find(prefix + 'entry')
+        assert_equal(commit.find(prefix + 'title').text, 'Create readme')
+        link = 'http://localhost:80/p/test/src/1/'
+        assert_equal(commit.find(prefix + 'link').attrib['href'], link)
 
     def test_commit(self):
         resp = self.app.get('/src/3/tree/')
