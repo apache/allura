@@ -347,6 +347,14 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/src-git/ci/master/tarball_status')
         assert '{"status": "ready"}' in r
 
+    def test_tarball_link_in_subdirs(self):
+        '''Go to repo subdir and check 'Download Snapshot' link'''
+        self.setup_testgit_index_repo()
+        r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
+        links = r.html.findAll('a')
+        download_link = [a for a in links if a.text == 'Download Snapshot'][0]
+        assert_equal(download_link.get('href'), '/p/test/testgit-index/ci/master/tarball')
+
 
 class TestRestController(_TestCase):
 
