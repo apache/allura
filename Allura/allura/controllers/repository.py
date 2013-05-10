@@ -516,6 +516,12 @@ class TreeBrowser(BaseController, DispatchIndex):
         c.tree_widget = self.tree_widget
         c.subscribe_form = self.subscribe_form
         tool_subscribed = M.Mailbox.subscribed()
+        tarball_url = None
+        if asbool(tg.config.get('scm.repos.tarball.enable', False)):
+            cutout = len('tree' + self._path)
+            if request.path.endswith('/') and not self._path.endswith('/'):
+                cutout += 1
+            tarball_url = '%starball' % request.path[:-cutout]
         return dict(
             repo=c.app.repo,
             commit=self._commit,
@@ -523,7 +529,7 @@ class TreeBrowser(BaseController, DispatchIndex):
             path=self._path,
             parent=self._parent,
             tool_subscribed=tool_subscribed,
-            tarball_enable = asbool(tg.config.get('scm.repos.tarball.enable', False)))
+            tarball_url=tarball_url)
 
     @expose()
     def _lookup(self, next, *rest):

@@ -30,8 +30,8 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 {% endblock %}
 
 {% block actions %}
-{% if tarball_enable %}
-    <a href="{{request.path[:-5]}}tarball" rel="nofollow">
+{% if tarball_url %}
+    <a href="{{tarball_url}}" rel="nofollow">
         <b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"> </b> Download Snapshot
 </a>
 {% endif %}
