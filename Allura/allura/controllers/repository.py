@@ -49,7 +49,7 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.controllers.base import DispatchIndex
-from allura.controllers.feed import FeedController
+from allura.controllers.feed import FeedController, FeedArgs
 from allura.lib.diff import HtmlSideBySideDiff
 from paste.deploy.converters import asbool
 from allura.app import SitemapEntry
@@ -65,6 +65,13 @@ def on_import():
 class RepoRootController(BaseController, FeedController):
     _discuss = AppDiscussionController()
     commit_browser_widget=SCMCommitBrowserWidget()
+
+    def get_feed(self, project, app, user):
+        query = dict(project_id=project._id, app_config_id=app.config._id)
+        pname, repo =  (project.shortname, app.config.options.mount_label)
+        title = '%s %s changes' % (pname, repo)
+        description = 'Recent changes to %s repository in %s project' % (repo, pname)
+        return FeedArgs(query, title, app.url, description=description)
 
     def _check_security(self):
         security.require(security.has_access(c.app, 'read'))

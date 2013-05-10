@@ -23,7 +23,7 @@ from collections import OrderedDict
 import bson
 
 import tg
-
+import jinja2
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.base import Object
@@ -400,13 +400,15 @@ def send_notifications(repo, commit_ids):
         for oid in chunk:
             ci = index[oid]
             href = repo.url_for_commit(oid)
+            title = _title(ci.message)
             summary = _summarize(ci.message)
             Feed.post(
-                repo, title='New commit',
+                repo, title=title,
                 description='%s<br><a href="%s">View Changes</a>' % (
                     summary, href),
                 author_link=ci.author_url,
-                author_name=ci.authored.name)
+                author_name=ci.authored.name,
+                link=href)
             branches = repo.symbolics_for_commit(ci)[0]
             commit_msgs.append('%s: %s by %s %s%s' % (
                     ",".join(b for b in branches),
@@ -432,6 +434,14 @@ def send_notifications(repo, commit_ids):
             topic='metadata',
             subject=subject,
             text=text)
+
+
+def _title(message):
+    if not message:
+        return ''
+    line = message.splitlines()[0]
+    return jinja2.filters.do_truncate(line, 200, True)
+
 
 def _summarize(message):
     if not message: return ''
