@@ -335,7 +335,7 @@ class GitImplementation(M.RepositoryImplementation):
         try:
             containing_branches = self._git.git.branch(contains=commit._id)
         except git.GitCommandError:
-            return []
+            return [], tags
         containing_branches = [br.strip(' *') for br in containing_branches.split('\n')]
         return containing_branches, tags
 

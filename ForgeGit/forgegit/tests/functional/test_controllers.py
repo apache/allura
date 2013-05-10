@@ -19,6 +19,7 @@ import json
 import re
 import os
 import shutil
+import tempfile
 
 from nose.tools import assert_equal
 import tg
@@ -348,9 +349,7 @@ class TestFork(_TestCase):
                     cloned_from.full_fs_path)
             # Add commit to a forked repo, thus merge requests will not be empty
             # clone repo to tmp location first (can't add commit to bare repos directly)
-            clone_path = '/tmp/test2-code-clone'
-            if os.path.exists(clone_path):
-                shutil.rmtree(clone_path)
+            clone_path = tempfile.mkdtemp()
             cloned = c.app.repo._impl._git.clone(clone_path)
             with open(clone_path + '/README', 'w+') as f:
                 f.write('Very useful README')
@@ -359,6 +358,7 @@ class TestFork(_TestCase):
             cloned.remotes[0].push()
             c.app.repo.refresh()
             self.forked_repo = c.app.repo
+            shutil.rmtree(clone_path, ignore_errors=True)
 
     def _follow(self, r, **kw):
         if r.status_int == 302:
