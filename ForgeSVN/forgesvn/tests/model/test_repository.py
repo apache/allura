@@ -594,8 +594,7 @@ class TestRepo(_TestWithRepo):
         else:
             assert False, 'Did not find notification'
         assert M.Feed.query.find(dict(
-            title='New commit',
-            author_name=committer_name)).count()
+            author_name=committer_name)).count() == 100
 
     def test_refresh_private(self):
         ci = mock.Mock()
