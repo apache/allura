@@ -179,6 +179,7 @@ class TestRootController(_TestCase):
             assert_equal(commit.find('title').text, 'Initial commit')
             link = 'http://localhost:80/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
             assert_equal(commit.find('link').text, link)
+            assert_equal(commit.find('guid').text, link)
         # .atom has slightly different structure
         prefix = '{http://www.w3.org/2005/Atom}'
         r = self.app.get('/src-git/feed.atom')

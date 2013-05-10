@@ -408,7 +408,8 @@ def send_notifications(repo, commit_ids):
                     summary, href),
                 author_link=ci.author_url,
                 author_name=ci.authored.name,
-                link=href)
+                link=href,
+                unique_id=href)
             branches = repo.symbolics_for_commit(ci)[0]
             commit_msgs.append('%s: %s by %s %s%s' % (
                     ",".join(b for b in branches),

@@ -388,7 +388,7 @@ class VersionedArtifact(Artifact):
         session(ss).insert_now(ss, state(ss))
         log.info('Snapshot version %s of %s',
                  self.version, self.__class__)
-        if update_stats: 
+        if update_stats:
             if self.version > 1:
                 g.statsUpdater.modifiedArtifact(
                     self.type_s, self.mod_date, self.project, c.user)
@@ -644,7 +644,7 @@ class Feed(MappedClass):
 
 
     @classmethod
-    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None):
+    def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None, **kw):
         """
         Create a Feed item.  Returns the item.
         But if anon doesn't have read access, create does not happen and None is returned
@@ -666,10 +666,8 @@ class Feed(MappedClass):
         if description is None: description = title
         if pubdate is None:
             pubdate = datetime.utcnow()
-
         if link is None:
             link=artifact.url()
-
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -682,6 +680,9 @@ class Feed(MappedClass):
             pubdate=pubdate,
             author_name=author_name,
             author_link=author_link or author.url())
+        unique_id = kw.pop('unique_id', None)
+        if unique_id:
+            item.unique_id = unique_id
         return item
 
     @classmethod
@@ -709,7 +710,7 @@ class Feed(MappedClass):
                           link=h.absurl(r.link.encode('utf-8')),
                           pubdate=r.pubdate,
                           description=r.description,
-                          unique_id=r.unique_id,
+                          unique_id=h.absurl(r.unique_id),
                           author_name=r.author_name,
                           author_link=h.absurl(r.author_link))
         return feed
