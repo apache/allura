@@ -16,6 +16,7 @@
 #       under the License.
 
 from allura.lib.widgets import form_fields as ffw
+import shlex
 
 from pylons import tmpl_context as c
 from formencode import validators as fev
@@ -149,7 +150,7 @@ class TicketCustomField(object):
 
     def _select(field):
         options = []
-        for opt in field.options.split():
+        for opt in shlex.split(field.options):
             selected = False
             if opt.startswith('*'):
                 opt = opt[1:]

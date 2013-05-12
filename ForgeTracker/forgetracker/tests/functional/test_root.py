@@ -627,6 +627,24 @@ class TestFunctionalController(TrackerTestController):
         assert 'normal' in ticket_view
         assert 'Test Admin' in ticket_view
 
+    def test_select_custom_field(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_testselect', label='Test', type='select',
+                     options='"test select"'),
+               ],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        r = self.app.get('/bugs/new/')
+        assert '<option value="test select">test select</option>' in r
+        kw = {'custom_fields._testselect':'test select'}
+        ticket_view = self.new_ticket(summary='test select custom fields', **kw).follow()
+        assert '<option selected value="test select">test select</option>' in ticket_view
+
     def test_custom_field_update_comments(self):
         params = dict(
             custom_fields=[
