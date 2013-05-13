@@ -36,6 +36,7 @@ from IPython.testing.decorators import onlyif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
+from allura.model.repo_refresh import send_notifications
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
@@ -399,6 +400,27 @@ class TestSVNRev(unittest.TestCase):
         assert commits == 1, commits
         commits = self.repo.commits_count('not/exist/')
         assert commits == 0, commits
+
+    def test_notification_email(self):
+        setup_global_objects()
+        h.set_context('test', 'src', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/')
+        self.repo = SM.Repository(
+            name='testsvn',
+            fs_path=repo_dir,
+            url_path = '/test/',
+            tool = 'svn',
+            status = 'creating')
+        self.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        commits = self.repo.commits()
+        send_notifications(self.repo, [commits[4], ])
+        ThreadLocalORMSession.flush_all()
+        notifications = M.Notification.query.find().sort('pubdate')
+        n = notifications.all()[3]
+        assert_equal(n.subject, '[test:src] rick446 committed revision 1: Create readme')
+        assert_equal(n.text, 'Create readme http://localhost//p/test/src/1/')
 
 
 class _Test(unittest.TestCase):

@@ -420,13 +420,19 @@ def send_notifications(repo, commit_ids):
                 len(commit_msgs), repo.app.project.name, repo.app.config.options.mount_label)
             text='\n\n'.join(commit_msgs)
         else:
-            subject = '%s committed to %s %s: %s' % (
+            if c.app.tool_label.lower() == 'svn':
+                revision_id = c.app.repo._impl._revno(ci._id)
+            else:
+                revision_id = ci._id
+            subject = '%s committed revision %s: %s' % (
                 ci.authored.name,
-                repo.app.project.name,
-                repo.app.config.options.mount_label,
+                revision_id,
                 summary)
             branches = repo.symbolics_for_commit(ci)[0]
-            text = "%s: %s %s%s" % (",".join(b for b in branches),
+            text_branches = ''
+            if branches:
+                text_branches = '%s: ' % ",".join(b for b in branches)
+            text = "%s%s %s%s" % (text_branches,
                                ci.message,
                                base_url, ci.url())
 
