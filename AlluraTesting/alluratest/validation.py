@@ -288,9 +288,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
             pass
         elif content_type.startswith('application/json'):
             validate_json(content)
-        elif content_type.startswith('application/x-javascript'):
-            validate_js(content)
-        elif content_type.startswith('application/javascript'):
+        elif content_type.startswith(('application/x-javascript','application/javascript', 'text/javascript')):
             validate_js(content)
         elif content_type.startswith('application/xml'):
             import feedparser
