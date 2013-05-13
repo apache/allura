@@ -87,6 +87,7 @@ class Page(VersionedArtifact, ActivityObject):
     class __mongometa__:
         name='page'
         history_class = PageHistory
+        unique_indexes = [('app_config_id', 'title')]
 
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
