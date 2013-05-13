@@ -20,6 +20,7 @@ import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from tg import config
+from paste.deploy.converters import asbool
 
 import bson
 from ming import schema as S
@@ -501,19 +502,20 @@ class Stats(MappedClass):
             oldcommit = newcommit.repo.commit(newcommit.parent_ids[0])
 
         totlines = 0
-        for changed in d.changed:
-            newblob = newcommit.tree.get_blob_by_path(changed)
-            oldblob = oldcommit.tree.get_blob_by_path(changed)
-            totlines+=_computeLines(newblob, oldblob)
+        if asbool(config.get('userstats.count_lines_of_code', True)):
+            for changed in d.changed:
+                newblob = newcommit.tree.get_blob_by_path(changed)
+                oldblob = oldcommit.tree.get_blob_by_path(changed)
+                totlines+=_computeLines(newblob, oldblob)
 
-        for copied in d.copied:
-            newblob = newcommit.tree.get_blob_by_path(copied['new'])
-            oldblob = oldcommit.tree.get_blob_by_path(copied['old'])
-            totlines+=_computeLines(newblob, oldblob)
+            for copied in d.copied:
+                newblob = newcommit.tree.get_blob_by_path(copied['new'])
+                oldblob = oldcommit.tree.get_blob_by_path(copied['old'])
+                totlines+=_computeLines(newblob, oldblob)
 
-        for added in d.added:
-            newblob = newcommit.tree.get_blob_by_path(added)
-            totlines+=_computeLines(newblob)
+            for added in d.added:
+                newblob = newcommit.tree.get_blob_by_path(added)
+                totlines+=_computeLines(newblob)
 
         _addCommitData(self, topics, languages, totlines)
 

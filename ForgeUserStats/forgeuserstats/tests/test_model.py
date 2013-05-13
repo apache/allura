@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 
 from pylons import tmpl_context as c
 from tg import config
+import mock
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
@@ -400,3 +401,32 @@ class TestUserStats(unittest.TestCase):
             self.assertEqual(stats.start_date, datetime(2013,04,01))
         with h.push_config(config, **{'userstats.start_date': '2011-04-01'}):
             self.assertEqual(stats.start_date, datetime(2012,04,01))
+
+    @mock.patch('allura.model.stats.difflib.unified_diff')
+    def test_count_loc(self, unified_diff):
+        stats = USM.UserStats()
+        newcommit = mock.Mock(
+                parent_ids=['deadbeef'],
+                diffs=mock.Mock(
+                    changed=[mock.MagicMock()],
+                    copied=[mock.MagicMock()],
+                    added=[mock.MagicMock()],
+                ),
+            )
+        unified_diff.return_value = ['+++','---','+line']
+        newcommit.tree.get_blob_by_path.return_value = mock.MagicMock()
+        newcommit.tree.get_blob_by_path.return_value.__iter__.return_value = ['one']
+        newcommit.repo.commit().tree.get_blob_by_path.return_value = mock.MagicMock()
+        newcommit.repo.commit().tree.get_blob_by_path.return_value.__iter__.return_value = ['two']
+        commit_datetime = datetime.now()
+        project = mock.Mock(
+                trove_topic=[],
+                trove_language=[],
+            )
+        stats.addCommit(newcommit, commit_datetime, project)
+        self.assertEqual(stats.general[0].commits[0], {'lines': 3, 'number': 1, 'language': None})
+        unified_diff.reset_mock()
+        with h.push_config(config, **{'userstats.count_lines_of_code': 'false'}):
+            stats.addCommit(newcommit, commit_datetime, project)
+        self.assertEqual(stats.general[0].commits[0], {'lines': 3, 'number': 2, 'language': None})
+        unified_diff.assert_not_called()
