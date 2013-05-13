@@ -20,13 +20,17 @@ import unittest
 from datetime import datetime, timedelta
 
 from pylons import tmpl_context as c
+from tg import config
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.tests import decorators as td
 from allura.model import User, Project, TroveCategory
+from allura.lib import helpers as h
 from allura import model as M
 
 from forgegit.tests import with_git
+
+from forgeuserstats.model import stats as USM
 
 class TestUserStats(unittest.TestCase):
 
@@ -339,7 +343,7 @@ class TestUserStats(unittest.TestCase):
         assert init_commits['number'] == 4
         init_lmcommits = self.user.stats.getLastMonthCommits()
         assert init_lmcommits['number'] == 4
- 
+
         p.trove_topic = [topic._id]
         self.user.stats.addCommit(commit, datetime.utcnow(), p)
         commits = self.user.stats.getCommits()
@@ -389,3 +393,10 @@ class TestUserStats(unittest.TestCase):
         assert lm_logins == init_lm_logins + 1 
         assert abs(self.user.stats.last_login - login_datetime) < timedelta(seconds=1)
 
+    def test_start_date(self):
+        stats = USM.UserStats(registration_date=datetime(2012,04,01))
+        self.assertEqual(stats.start_date, datetime(2012,04,01))
+        with h.push_config(config, **{'userstats.start_date': '2013-04-01'}):
+            self.assertEqual(stats.start_date, datetime(2013,04,01))
+        with h.push_config(config, **{'userstats.start_date': '2011-04-01'}):
+            self.assertEqual(stats.start_date, datetime(2012,04,01))

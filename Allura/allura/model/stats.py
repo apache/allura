@@ -15,9 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from datetime import datetime
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
+from tg import config
 
 import bson
 from ming import schema as S
@@ -79,8 +81,17 @@ class Stats(MappedClass):
             programming_languages=[S.ObjectId],
             lines=int)]))
 
+    @property
+    def start_date(self):
+        """Date from which stats should be calculated.
+
+        The user may have registered before stats were collected,
+        making calculations based on registration date unfair."""
+        min_date = config.get('userstats.start_date', '0001-1-1')
+        return max(datetime.strptime(min_date,'%Y-%m-%d'), self.registration_date)
+
     def getCodeContribution(self):
-        days=(datetime.today() - self.registration_date).days
+        days=(datetime.today() - self.start_date).days
         if not days:
             days=1
         for val in self['general']:
@@ -94,7 +105,7 @@ class Stats(MappedClass):
         return 0
 
     def getDiscussionContribution(self):
-        days=(datetime.today() - self.registration_date).days
+        days=(datetime.today() - self.start_date).days
         if not days:
             days=1
         for val in self['general']:
