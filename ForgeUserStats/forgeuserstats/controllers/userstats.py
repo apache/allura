@@ -212,7 +212,7 @@ def _getDataForCategory(category, stats):
 
     averagetime = lm_tickets.get('averagesolvingtime')
 
-    days = (datetime.utcnow() - stats.registration_date).days
+    days = (datetime.utcnow() - stats.start_date).days
     if days >= 30:
         pmartifacts = dict(
             created = round(totartifacts['created']*30.0/days,2),
