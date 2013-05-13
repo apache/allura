@@ -40,15 +40,19 @@
           <tr>
             <th>Category</th>
             <th>Number of commits</th>
-            <th>Lines of code</th>
+            {% if h.asbool(config.get('userstats.count_lines_of_code', True)) %}
+                <th>Lines of code</th>
+            {% endif %}
           </tr>
         </thead>
-        <tbody> 
+        <tbody>
           {% for cat, el in data.items() %}
             <tr>
               <td>{% if cat %}{{cat.fullname}}{% else %}All categories{% endif %}</td>
               <td>{{el.number}}</td>
-              <td>{{el.lines}}</td>
+              {% if h.asbool(config.get('userstats.count_lines_of_code', True)) %}
+                <td>{{el.lines}}</td>
+              {% endif %}
             {% endfor %}
           </tr>
         </tbody>
@@ -58,13 +62,13 @@
   {% else %}
     {% if user %}
       <h2>Statistics not available</h2>
-      <div class="grid-20"> 
+      <div class="grid-20">
         This user has set his or her preferences so that personal statistics are not visible
         to other users of the forge.
       </div>
     {% else %}
       <h2>Invalid user</h2>
-      <div class="grid-20"> 
+      <div class="grid-20">
         You are looking for personal statistics of a user which doesn't exist on this forge. Check your url.
       </div>
     {% endif %}

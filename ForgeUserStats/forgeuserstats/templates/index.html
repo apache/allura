@@ -118,6 +118,7 @@
             </td>
           {% endif %}
         </tr>
+        {% if h.asbool(config.get('userstats.count_lines_of_code', True)) %}
         <tr>
           <td>
             {% if totcommits.lines > 0 %}
@@ -141,6 +142,7 @@
             </td>
           {% endif %}
         </tr>
+        {% endif %}
         <tr>
           <td>
             {% if totartifacts.created > 0 %}
