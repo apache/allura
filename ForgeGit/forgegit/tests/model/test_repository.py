@@ -163,7 +163,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
         assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK), os.stat('/tmp/testgit.git/hooks/post-receive')
 
     @mock.patch('forgegit.model.git_repo.g.post_event')
     def test_clone(self, post_event):
@@ -184,7 +184,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert not os.path.exists('/tmp/testgit.git/hooks/update')
         assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
         assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+        assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK), os.stat('/tmp/testgit.git/hooks/post-receive')
         with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
@@ -213,7 +213,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             assert os.path.exists('/tmp/testgit.git/hooks/update')
             assert os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
             assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-            assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK)
+            assert os.access('/tmp/testgit.git/hooks/post-receive', os.X_OK), os.stat('/tmp/testgit.git/hooks/post-receive')
             with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
             self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
