@@ -733,16 +733,6 @@ class SubscriptionsController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def update(self,
-               preferences=None,
-               **kw):
-        if 'email_format' in preferences:
-            c.user.set_pref('email_format', preferences['email_format'])
-        redirect('.')
-
-    @h.vardec
-    @expose()
-    @require_post()
     @validate(F.subscription_form, error_handler=index)
     def update_subscriptions(self, subscriptions=None, email_format=None, **kw):
         for s in subscriptions:
