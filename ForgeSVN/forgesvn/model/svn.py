@@ -42,7 +42,7 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.model.auth import User
-from allura.model.repository import zip
+from allura.model.repository import zipdir
 
 log = logging.getLogger(__name__)
 
@@ -649,7 +649,7 @@ class SVNImplementation(M.RepositoryImplementation):
             self._svn.export(self._url,
                              path,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-            zip(path, tmpfilename)
+            zipdir(path, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
             rmtree(path)

@@ -1344,7 +1344,7 @@ def topological_sort(graph):
     assert not graph, 'Cycle detected'
 
 
-def zip(source, zipfile, exclude=None):
+def zipdir(source, zipfile, exclude=None):
     """Create zip archive using zip binary."""
     zipbin = tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')
     source = source.rstrip('/')
