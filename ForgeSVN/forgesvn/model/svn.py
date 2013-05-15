@@ -27,9 +27,7 @@ from hashlib import sha1
 from cStringIO import StringIO
 from datetime import datetime
 import tempfile
-import tarfile
 from shutil import rmtree
-from zipfile import ZipFile, ZIP_DEFLATED
 
 import tg
 import pysvn
@@ -44,6 +42,7 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.model.auth import User
+from allura.model.repository import zip
 
 log = logging.getLogger(__name__)
 
@@ -650,13 +649,7 @@ class SVNImplementation(M.RepositoryImplementation):
             self._svn.export(self._url,
                              path,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-            with ZipFile(tmpfilename, 'w') as tarball_zip:
-               for root, dirs, files in os.walk(path):
-                    for name in files:
-                        file_to_zip = os.path.join(root, name)
-                        arcname = file_to_zip[len(os.path.dirname(path)):].strip('/')
-                        tarball_zip.write(file_to_zip, arcname, compress_type=ZIP_DEFLATED)
-
+            zip(path, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
             rmtree(path)
