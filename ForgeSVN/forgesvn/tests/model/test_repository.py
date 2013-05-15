@@ -32,6 +32,7 @@ import ming
 from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
 from testfixtures import TempDirectory
+from IPython.testing.decorators import onlyif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
@@ -288,6 +289,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         ci = mock.Mock(_id='deadbeef:100')
         self.assertEqual(self.repo.count_revisions(ci), 100)
 
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
         assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/t/te/test/testsvn')
         assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.zip')
