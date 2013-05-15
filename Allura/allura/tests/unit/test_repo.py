@@ -24,6 +24,7 @@ from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.controllers.repository import topo_sort
+from allura.model.repository import zipdir
 from alluratest.controller import setup_unit_test
 
 class TestCommitRunBuilder(unittest.TestCase):
@@ -285,3 +286,17 @@ class TestCommit(unittest.TestCase):
         commit.get_tree = Mock()
         tree = commit.tree
         commit.get_tree.assert_called_with(create=True)
+
+
+@patch('allura.model.repository.Popen')
+@patch('allura.model.repository.tg')
+def test_zipdir(tg, popen):
+    tg.config = {'scm.repos.tarball.zip_binary': '/bin/zip'}
+    src = '/fake/path/to/repo'
+    zipfile = '/fake/zip/file.tmp'
+    zipdir(src, zipfile)
+    popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo'], cwd='/fake/path/to')
+    popen.reset_mock()
+    src = '/fake/path/to/repo/'
+    zipdir(src, zipfile, exclude='file.txt')
+    popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo', '-x', 'file.txt'], cwd='/fake/path/to')
