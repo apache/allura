@@ -35,7 +35,7 @@
          {% endif %}
       </div>
   {% endif %}
-  <a href="{{c.project.url()}}">
+  <a href="{{c.project.url()}}" class="project_link">
     {% if c.project.user_project_of %}
       {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
     {% elif c.project.icon %}
@@ -48,5 +48,16 @@
         {{c.project.name}}
       {% endif %}
 	</h1>
-	</a>
+        {{c.project.summary}}
+    </a>
+    <div class="brought-by{% if c.project.icon %} with-icon{% endif %}">
+        Brought to you by:
+        {% set users = c.project.users()|sort(attribute='display_name') %}
+        {% for user in users[:4] %}
+            <a href="{{ user.url() }}">{{ user.username }}</a>{{ ',' if not loop.last }}
+        {%- endfor -%}
+        {% if users|length > 4 -%}
+            , and <a href="{{ c.project.url() }}_members/">{{ users|length - 4 }} others</a>
+        {% endif %}
+    </div>
 {% endif %}
