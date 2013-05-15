@@ -35,6 +35,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
+from allura.model.repo_refresh import send_notifications
 from forgegit import model as GM
 from forgegit.tests import with_git
 from forgewiki import model as WM
@@ -257,6 +258,19 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.tree_ids, orig_tree.tree_ids)
         self.assertEqual(new_tree.blob_ids, orig_tree.blob_ids)
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
+
+    def test_notification_email(self):
+        send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
+        ThreadLocalORMSession.flush_all()
+        notifications = M.Notification.query.find().sort('pubdate')
+        n = notifications.all()[2]
+        assert_equal(n.subject, '[test:src-git] Rick Copeland committed revision 1e146e67985dcd71c74de79613719bef7bddca4a: Change README')
+        assert 'master,zz: ' in n.text
+        send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
+        ThreadLocalORMSession.flush_all()
+        notifications = M.Notification.query.find().sort('pubdate')
+        n = notifications.all()[3]
+        assert_equal(n.subject, '[test:src-git] 2 new commits to test Git')
 
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
