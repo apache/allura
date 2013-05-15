@@ -147,6 +147,12 @@ def test_ago():
     assert_equals(h.ago_string('bad format'), 'unknown')
     assert_equals(h.ago_string(None), 'unknown')
 
+    monthish = datetime.utcnow() - timedelta(days=32)
+    assert 'ago' not in h.ago(monthish)
+    assert_equals(h.ago(monthish, show_date_after=90), '1 month ago')
+    assert_equals(h.ago(monthish, show_date_after=None), '1 month ago')
+
+
 def test_urlquote_unicode():
     # No exceptions please
     h.urlquote(u'\u0410')

@@ -49,7 +49,7 @@
         <tr>
           <td>Registration date</td>
           <td>{{registration_date.strftime("%d %b %Y, %H:%M:%S (UTC)")}}</td>
-           <td>{{days}} day{% if days != 1 %}s{% endif %} ago</td>
+          <td>{{h.ago(registration_date, show_date_after=None)}}</td>
         </tr>
         {% if last_login %}
           <tr>

@@ -277,7 +277,7 @@ def cryptographic_nonce(length=40):
     hex_format = '%.2x' * length
     return hex_format % tuple(map(ord, os.urandom(length)))
 
-def ago(start_time):
+def ago(start_time, show_date_after=7):
     """
     Return time since starting time as a rounded, human readable string.
     E.g., "3 hours ago"
@@ -287,7 +287,7 @@ def ago(start_time):
     granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
                      'minute']
     end_time = datetime.utcnow()
-    if end_time - start_time > timedelta(days=7):
+    if show_date_after is not None and end_time - start_time > timedelta(days=show_date_after):
         return start_time.strftime('%Y-%m-%d')
 
     while True:
