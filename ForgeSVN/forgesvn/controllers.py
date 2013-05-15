@@ -29,11 +29,7 @@ class BranchBrowser(repository.BranchBrowser, FeedController):
         super(BranchBrowser, self).__init__(None)
 
     def get_feed(self, project, app, user):
-        query = dict(project_id=project._id, app_config_id=app.config._id)
-        pname, repo =  (project.shortname, app.config.options.mount_label)
-        title = '%s %s changes' % (pname, repo)
-        description = 'Recent changes to %s repository in %s project' % (repo, pname)
-        return FeedArgs(query, title, app.url, description=description)
+        return repository.RepoRootController().get_feed(project, app, user)
 
     @expose('jinja:forgesvn:templates/svn/index.html')
     @with_trailing_slash
