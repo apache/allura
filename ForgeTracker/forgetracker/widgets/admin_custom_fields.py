@@ -83,7 +83,7 @@ class CustomFieldAdminDetail(ffw.StateField):
             select=ffw.FieldCluster(
                 fields=[
                     ffw.AdminField(field=ew.TextField(name='options',
-                        label='Options (separate with spaces; prefix with * to set a default)',
+                        label='Options (separate with spaces; quote if containing spaces; prefix with * to set a default)',
                         )) ],
                 show_labels=False),
             milestone=ffw.FieldCluster(
