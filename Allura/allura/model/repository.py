@@ -23,6 +23,7 @@ import mimetypes
 import logging
 import string
 import re
+from subprocess import Popen
 from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
@@ -1341,5 +1342,19 @@ def topological_sort(graph):
                 graph.pop(child)
                 roots.append(child)
     assert not graph, 'Cycle detected'
+
+
+def zip(source, zipfile, exclude=None):
+    """Create zip archive using zip binary."""
+    zipbin = tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')
+    source = source.rstrip('/')
+    # this is needed to get proper prefixes inside zip-file
+    working_dir = os.path.dirname(source)
+    source_fn = os.path.basename(source)
+    command = [zipbin, '-r', zipfile, source_fn]
+    if exclude:
+        command += ['-x', exclude]
+    Popen(command, cwd=working_dir).communicate()
+
 
 Mapper.compile_all()
