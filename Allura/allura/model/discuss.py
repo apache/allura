@@ -240,7 +240,7 @@ class Thread(Artifact, ActivityObject):
         if c.user in c.project.users_with_role('Admin', 'Developer'):
             return False
         else:
-            return g.spam_checker.check('%s\n%s' % (post.subject, post.text), artifact=post, user=c.user)
+            return g.spam_checker.check(post.text, artifact=post, user=c.user)
 
     def post(self, text, message_id=None, parent_id=None,
              timestamp=None, ignore_security=False, **kw):

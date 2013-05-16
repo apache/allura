@@ -429,3 +429,15 @@ def test_spam_and_has_unmoderated_post_permission(spam_checker, notify_moderator
         post = t.post('Hey')
     assert_equal(post.status, 'pending')
     notify_moderators.assert_called_once()
+
+
+@with_setup(setUp, tearDown)
+@mock.patch('allura.controllers.discuss.g.spam_checker')
+def test_thread_subject_not_included_in_text_checked(spam_checker):
+    spam_checker.check.return_value = False
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    admin = M.User.by_username('test-admin')
+    post = t.post('Hello')
+    spam_checker.check.assert_called_once()
+    assert_equal(spam_checker.check.call_args[0][0], 'Hello')
