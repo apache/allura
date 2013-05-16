@@ -735,5 +735,20 @@ class TestForum(TestController):
             self.app.get('/discussion/general/feed%s' % ext, status=200)
 
     def test_create_topic(self):
-        r = self.app.get('/p/test/discussion/create_topic/', headers={'Referer':'/p/test/discussion/testforum/'})
-        assert '<option value="testforum"selected>Test Forum</option>' in r
+        r = self.app.get('/p/test/discussion/create_topic/')
+        assert 'Test Forum' in r
+        assert 'General Discussion' in r
+        r = self.app.get('/p/test/discussion/create_topic/general/')
+        assert '<option value="general" selected>General Discussion</option>' in r
+        r = self.app.get('/p/test/discussion/create_topic/testforum/')
+        assert '<option value="testforum" selected>Test Forum</option>' in r
+
+    def test_create_topic_unicode(self):
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = u'téstforum'.encode('utf-8')
+        r.forms[1]['add_forum.name'] = u'Tést Forum'.encode('utf-8')
+        r.forms[1].submit()
+        r = self.app.get('/admin/discussion/forums')
+        assert u'téstforum'.encode('utf-8') in r
+        r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
+        assert u'<option value="téstforum" selected>Tést Forum</option>' in r

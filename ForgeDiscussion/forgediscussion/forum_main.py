@@ -152,7 +152,9 @@ class ForgeDiscussionApp(Application):
                         moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
                         small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
                     forum_links.append(SitemapEntry(f.name, f.url(), small=f.num_topics))
-            l.append(SitemapEntry('Create Topic', c.app.url + 'create_topic', ui_icon=g.icons['plus']))
+            url = c.app.url + 'create_topic/'
+            url = h.urlquote(url + c.forum.shortname if getattr(c, 'forum', None) and c.forum else url)
+            l.append(SitemapEntry('Create Topic', url, ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
                 l.append(SitemapEntry('Add Forum', c.app.url + 'new_forum', ui_icon=g.icons['conversation']))
                 l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))

@@ -95,19 +95,19 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/create_topic.html')
-    def create_topic(self, new_forum=False, **kw):
+    def create_topic(self, forum_name=None, new_forum=False, **kw):
         forums = model.Forum.query.find(dict(app_config_id=c.app.config._id,
                                              parent_id=None,
                                              deleted=False))
-        current_forum = None
         c.new_topic = self.W.new_topic
         my_forums = []
+        forum_name = h.really_unicode(unquote(forum_name)) if forum_name else None
+        current_forum = None
         for f in forums:
-                if request.referer and (f.url() in request.referer):
-                    current_forum = f.shortname
-                if has_access(f, 'post')():
-                    my_forums.append(f)
-
+            if forum_name == f.shortname:
+                current_forum = f
+            if has_access(f, 'post')():
+                my_forums.append(f)
         return dict(forums=my_forums, current_forum=current_forum)
 
     @h.vardec
@@ -168,6 +168,12 @@ class RootController(BaseController, DispatchIndex, FeedController):
     def _lookup(self, id=None, *remainder):
         if id:
             id = unquote(id)
+            forum = model.Forum.query.get(
+                app_config_id=c.app.config._id,
+                shortname=id)
+            if forum is None:
+                raise exc.HTTPNotFound()
+            c.forum = forum
             return ForumController(id), remainder
         else:
             raise exc.HTTPNotFound()
