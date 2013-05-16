@@ -688,7 +688,7 @@ class TestForum(TestController):
     def test_sidebar_menu(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/create_topic/"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
@@ -710,7 +710,7 @@ class TestForum(TestController):
     def test_sidebar_menu_anon(self):
         r = self.app.get('/discussion/')
         sidebarmenu = str(r.html.find('div',{'id':'sidebar'}))
-        assert '<a href="/p/test/discussion/create_topic"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
+        assert '<a href="/p/test/discussion/create_topic/"><b data-icon="+" class="ico ico-plus"></b> <span>Create Topic</span></a>' in sidebarmenu
         assert '<a href="/p/test/discussion/new_forum"><b data-icon="q" class="ico ico-conversation"></b> <span>Add Forum</span></a>' in sidebarmenu
         assert '<h3 class="">Help</h3>' in sidebarmenu
         assert '<a href="/p/test/discussion/markdown_syntax"><span>Formatting Help</span></a>' in sidebarmenu
