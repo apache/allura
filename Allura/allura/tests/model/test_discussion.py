@@ -399,7 +399,8 @@ def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
 
 @with_setup(setUp, tearDown)
 @mock.patch('allura.controllers.discuss.g.spam_checker')
-def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker):
+@mock.patch.object(M.Thread, 'notify_moderators')
+def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker, notify_moderators):
     spam_checker.check.return_value = False
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
@@ -409,6 +410,7 @@ def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker):
     with h.push_config(c, user=M.User.anonymous()):
         post = t.post('Hey')
     assert_equal(post.status, 'pending')
+    notify_moderators.assert_called_once()
 
 
 @with_setup(setUp, tearDown)

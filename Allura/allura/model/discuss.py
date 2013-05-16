@@ -265,7 +265,7 @@ class Thread(Artifact, ActivityObject):
         if message_id is not None:
             kwargs['_id'] = message_id
         post = self.post_class()(**kwargs)
-        if ignore_security or not self.is_spam(post):
+        if ignore_security or not self.is_spam(post) and has_access(self, 'unmoderated_post')():
             log.info('Auto-approving message from %s', c.user.username)
             file_info = kw.get('file_info', None)
             post.approve(file_info, notify=kw.get('notify', True))
