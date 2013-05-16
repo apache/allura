@@ -30,6 +30,7 @@ from pylons import request, response
 from nose.tools import assert_raises, assert_equals, with_setup
 import mock
 from mock import patch
+from nose.tools import assert_equal
 
 from ming.orm import session, ThreadLocalORMSession
 from webob import Request, Response, exc
@@ -378,3 +379,51 @@ def test_is_spam(role):
         post = mock.Mock()
         assert t.is_spam(post), t.is_spam(post)
         assert spam_checker.check.call_count == 1, spam_checker.call_count
+
+
+@with_setup(setUp, tearDown)
+@mock.patch('allura.controllers.discuss.g.spam_checker')
+def test_not_spam_and_has_unmoderated_post_permission(spam_checker):
+    spam_checker.check.return_value = False
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    role = M.ProjectRole.by_name('*anonymous')._id
+    post_permission = M.ACE.allow(role, 'post')
+    unmoderated_post_permission = M.ACE.allow(role, 'unmoderated_post')
+    t.acl.append(post_permission)
+    t.acl.append(unmoderated_post_permission)
+    with h.push_config(c, user=M.User.anonymous()):
+        post = t.post('Hey')
+    assert_equal(post.status, 'ok')
+
+
+@with_setup(setUp, tearDown)
+@mock.patch('allura.controllers.discuss.g.spam_checker')
+def test_not_spam_but_has_no_unmoderated_post_permission(spam_checker):
+    spam_checker.check.return_value = False
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    role = M.ProjectRole.by_name('*anonymous')._id
+    post_permission = M.ACE.allow(role, 'post')
+    t.acl.append(post_permission)
+    with h.push_config(c, user=M.User.anonymous()):
+        post = t.post('Hey')
+    assert_equal(post.status, 'pending')
+
+
+@with_setup(setUp, tearDown)
+@mock.patch('allura.controllers.discuss.g.spam_checker')
+@mock.patch.object(M.Thread, 'notify_moderators')
+def test_spam_and_has_unmoderated_post_permission(spam_checker, notify_moderators):
+    spam_checker.check.return_value = True
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    role = M.ProjectRole.by_name('*anonymous')._id
+    post_permission = M.ACE.allow(role, 'post')
+    unmoderated_post_permission = M.ACE.allow(role, 'unmoderated_post')
+    t.acl.append(post_permission)
+    t.acl.append(unmoderated_post_permission)
+    with h.push_config(c, user=M.User.anonymous()):
+        post = t.post('Hey')
+    assert_equal(post.status, 'pending')
+    notify_moderators.assert_called_once()
