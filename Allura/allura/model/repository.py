@@ -272,8 +272,8 @@ class Repository(Artifact, ActivityObject):
         filename = '%s-%s-%s' % (shortname, mount_point, revision)
         return filename
 
-    def tarball_url(self, revision):
-        filename = '%s%s' % (self.tarball_filename(revision), '.zip')
+    def tarball_url(self, revision, path=None):
+        filename = '%s%s' % (self.tarball_filename(revision, path), '.zip')
         r = os.path.join(self.tool,
                          self.project.shortname[:1],
                          self.project.shortname[:2],
