@@ -17,11 +17,14 @@
 
 import json
 import shutil
+import os
 
+import tg
 import pkg_resources
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from nose.tools import assert_equal
+from IPython.testing.decorators import onlyif
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -185,6 +188,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/2/log/?path=does/not/exist/')
         assert 'No (more) commits' in r
 
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
         r = self.app.get('/src/3/tree/')
         assert 'Download Snapshot' in r
@@ -195,6 +199,7 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tarball_status')
         assert '{"status": "ready"}' in r
 
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_tags_aware(self):
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
