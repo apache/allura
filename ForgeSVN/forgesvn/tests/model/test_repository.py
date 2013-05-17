@@ -44,6 +44,7 @@ from allura.tests.model.test_repo import RepoImplTestBase
 from forgesvn import model as SM
 from forgesvn.model.svn import svn_path_exists
 from forgesvn.tests import with_svn
+from allura.tests.decorators import with_tool
 
 class TestNewRepo(unittest.TestCase):
 
@@ -110,6 +111,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.setup_with_tools()
 
     @with_svn
+    @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
     def setup_with_tools(self):
         setup_global_objects()
         h.set_context('test', 'src', neighborhood='Projects')
@@ -122,6 +124,13 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             tool = 'svn',
             status = 'creating')
         self.repo.refresh()
+        self.svn_tags = SM.Repository(
+            name='testsvn-trunk-tags-branches',
+            fs_path=repo_dir,
+            url_path = '/test/',
+            tool = 'svn',
+            status = 'creating')
+        self.svn_tags.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -301,6 +310,65 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.isfile(os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-1.zip"))
         tarball_zip = ZipFile(os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-1.zip'), 'r')
         assert_equal(tarball_zip.namelist(), ['test-src-1/', 'test-src-1/README'])
+
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    def test_tarball_aware_of_tags(self):
+        # TODO: check zip that it actually contains only needed files
+        tarball_path = '/tmp/tarball/svn/t/te/test/svn-tags/'
+        fn = tarball_path + 'test-svn-tags-1-tags-tag-1.0.zip'
+        self.svn_tags.tarball('1', '/tags/tag-1.0/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        self.svn_tags.tarball('1', '/tags/tag-1.0/some/path/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        # if inside of tags, but no tag is specified
+        # expect snapshot of trunk
+        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
+        self.svn_tags.tarball('1', '/tags/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    def test_tarball_aware_of_branches(self):
+        # TODO: check zip that it actually contains only needed files
+        tarball_path = '/tmp/tarball/svn/t/te/test/svn-tags/'
+        fn = tarball_path + 'test-svn-tags-1-branches-aaa.zip'
+        self.svn_tags.tarball('1', '/branches/aaa/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        self.svn_tags.tarball('1', '/branches/aaa/some/path/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        # if inside of branches, but no branch is specified
+        # expect snapshot of trunk
+        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
+        self.svn_tags.tarball('1', '/branches/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    def test_tarball_aware_of_trunk(self):
+        # TODO: check zip that it actually contains only needed files
+        tarball_path = '/tmp/tarball/svn/t/te/test/svn-tags/'
+        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
+        self.svn_tags.tarball('1', '/trunk/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        self.svn_tags.tarball('1', '/trunk/some/path/')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        # no path, but there are trunk in the repo
+        # expect snapshot of trunk
+        self.svn_tags.tarball('1')
+        assert os.path.isfile(fn)
+        os.remove(fn)
+        # no path, and no trunk dir
+        # expect snapshot of repo root
+        fn = '/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip'
+        self.repo.tarball('1')
+        assert os.path.isfile(fn)
+        os.remove(fn)
 
     def test_is_empty(self):
         assert not self.repo.is_empty()
