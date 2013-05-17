@@ -125,7 +125,7 @@ def svn_path_exists(path, rev=None):
     if rev:
         rev = pysvn.Revision(pysvn.opt_revision_kind.number, rev)
     else:
-        rev = pysvn.Revision(pysvn.opt_revision_kind.unspecified)
+        rev = pysvn.Revision(pysvn.opt_revision_kind.head)
     try:
         svn.info2(path, revision=rev)
         return True
