@@ -59,13 +59,13 @@ class TestRestHome(TestRestApiBase):
     def test_project_ping(self):
         r = self.api_get('/rest/p/test/wiki/Home/')
         assert r.status_int == 200
-        assert r.json['page']['title'] == 'Home', r.json
+        assert r.json['title'] == 'Home', r.json
 
     @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_subproject_ping(self):
         r = self.api_get('/rest/p/test/sub1/wiki/Home/')
         assert r.status_int == 200
-        assert r.json['page']['title'] == 'Home', r.json
+        assert r.json['title'] == 'Home', r.json
 
     def test_project_code(self):
         r = self.api_get('/rest/p/test/')
@@ -105,7 +105,7 @@ class TestRestHome(TestRestApiBase):
                 'viewable_by-0.id':'all'})
         r = self.api_get('/rest/p/test/wiki/tést/')
         assert r.status_int == 200
-        assert r.json['page']['title'].encode('utf-8') == 'tést', r.json
+        assert r.json['title'].encode('utf-8') == 'tést', r.json
 
     @td.with_wiki
     def test_deny_access(self):

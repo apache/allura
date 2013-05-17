@@ -736,7 +736,7 @@ class PageRestController(BaseController):
 
     @expose('json:')
     def index(self, **kw):
-        return dict(page=self.page)
+        return self.page.__json__()
 
 
 class WikiAdminController(DefaultAdminController):
