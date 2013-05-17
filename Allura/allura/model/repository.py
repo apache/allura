@@ -132,7 +132,7 @@ class RepositoryImplementation(object):
         '''Return count of the commits related to path'''
         raise NotImplementedError, 'commits_count'
 
-    def tarball(self, revision):
+    def tarball(self, revision, path=None):
         '''Create a tarball for the revision'''
         raise NotImplementedError, 'tarball'
 
@@ -266,10 +266,13 @@ class Repository(Artifact, ActivityObject):
                             self.project.shortname,
                             self.name)
 
-    def tarball_filename(self, revision):
+    def tarball_filename(self, revision, path=None):
         shortname = c.project.shortname.replace('/', '-')
         mount_point = c.app.config.options.mount_point
         filename = '%s-%s-%s' % (shortname, mount_point, revision)
+        if path:
+            path = path.strip('/')
+            filename += '-' + '-'.join(path.split('/'))
         return filename
 
     def tarball_url(self, revision):
@@ -282,8 +285,8 @@ class Repository(Artifact, ActivityObject):
                          filename)
         return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
-    def get_tarball_status(self, revision):
-        pathname = os.path.join(self.tarball_path, self.tarball_filename(revision))
+    def get_tarball_status(self, revision, path=None):
+        pathname = os.path.join(self.tarball_path, self.tarball_filename(revision, path))
         filename = '%s%s' % (pathname, '.zip')
         tmpfilename = '%s%s' % (pathname, '.tmp')
 
@@ -551,8 +554,10 @@ class Repository(Artifact, ActivityObject):
     def forks(self):
         return self.query.find({'upstream_repo.name': self.url()}).all()
 
-    def tarball(self, revision):
-        self._impl.tarball(revision)
+    def tarball(self, revision, path=None):
+        if path:
+            path = path.strip('/')
+        self._impl.tarball(revision, path)
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses=['open', 'merged', 'rejected']

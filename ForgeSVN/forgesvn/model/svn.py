@@ -636,23 +636,45 @@ class SVNImplementation(M.RepositoryImplementation):
                 entries[path] = self._oid(info.last_changed_rev.number)
         return entries
 
-    def tarball(self, commit):
+    def _path_to_root(self, path):
+        '''Return tag/branch/trunk root for given path inside svn repo'''
+        if path:
+            path = path.strip('/').split('/')
+            idx = None
+            if 'tags' in path:
+                idx = path.index('tags')
+            elif 'branches' in path:
+                idx = path.index('branches')
+            if idx is not None and idx < len(path) - 1:  # e.g. path/tags/tag-1.0/...
+                return '/'.join(path[:idx + 2])  # path/tags/tag-1.0
+            if 'trunk' in path:
+                idx = path.index('trunk')
+                return '/'.join(path[:idx + 1])  # path/trunk
+        # no tag/brach/trunk in path
+        trunk_exists = svn_path_exists(
+            'file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'))
+        if trunk_exists:
+            return 'trunk'
+        return ''
+
+    def tarball(self, commit, path=None):
+        path = self._path_to_root(path)
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
-        archive_name = self._repo.tarball_filename(commit)
-        path = os.path.join(self._repo.tarball_path, archive_name)
+        archive_name = self._repo.tarball_filename(commit, path)
+        dest = os.path.join(self._repo.tarball_path, archive_name)
         filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
-        if os.path.exists(path):
-            rmtree(path)
+        rmtree(dest, ignore_errors=True)
+        path = os.path.join(self._url, '')#path)
         try:
-            self._svn.export(self._url,
-                             path,
+            self._svn.export(path,
+                             dest,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
-            zipdir(path, tmpfilename)
+            zipdir(dest, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
-            rmtree(path)
+            rmtree(dest, ignore_errors=True)
             if os.path.exists(tmpfilename):
                 os.remove(tmpfilename)
 
