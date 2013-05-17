@@ -506,15 +506,29 @@ class DefaultAdminController(BaseController):
     @h.vardec
     @require_post()
     def update(self, card=None, **kw):
+        old_acl = self.app.config.acl
         self.app.config.acl = []
         for args in card:
             perm = args['id']
             new_group_ids = args.get('new', [])
+            del_group_ids = []
             group_ids = args.get('value', [])
             if isinstance(new_group_ids, basestring):
                 new_group_ids = [ new_group_ids ]
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
+
+            for acl in old_acl:
+                if (acl['permission']==perm) and (str(acl['role_id']) not in group_ids):
+                    del_group_ids.append(str(acl['role_id']))
+
+            if new_group_ids or del_group_ids:
+                model.AuditLog.log('updated "%s" permissions: "%s" => "%s" for %s' % (
+                    perm,
+                    ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+del_group_ids)),
+                    ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+new_group_ids)),
+                    self.app.config.options['mount_point']))
+
             role_ids = map(ObjectId, group_ids + new_group_ids)
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]

@@ -706,13 +706,13 @@ class GroupsController(BaseController):
     @h.vardec
     def change_perm(self, role_id, permission, allow="true", **kw):
         if allow=="true":
-            M.AuditLog.log('granted permission %s to group with id %s', permission, role_id)
+            M.AuditLog.log('granted permission %s to group %s', permission, M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
             c.project.acl.append(M.ACE.allow(ObjectId(role_id), permission))
         else:
             admin_group_id = str(M.ProjectRole.by_name('Admin')._id)
             if admin_group_id == role_id and permission == 'admin':
                 return dict(error='You cannot remove the admin permission from the admin group.')
-            M.AuditLog.log('revoked permission %s from group with id %s', permission, role_id)
+            M.AuditLog.log('revoked permission %s from group %s', permission, M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
             c.project.acl.remove(M.ACE.allow(ObjectId(role_id), permission))
         g.post_event('project_updated')
         return self._map_group_permissions()

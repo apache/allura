@@ -385,6 +385,26 @@ class TestProjectAdmin(TestController):
         assert_equals(p.labels, ['asdf'])
         assert form['labels'].value == 'asdf'
 
+    @td.with_wiki
+    def test_log_permission(self):
+        r = self.app.get('/admin/wiki/permissions')
+        select = r.html.find('select', {'name': 'card-0.new'})
+        opt_admin = select.find(text='Admin').parent
+        opt_developer = select.find(text='Developer').parent
+        assert opt_admin.name == 'option'
+        assert opt_developer.name == 'option'
+
+        with audits('updated "admin" permissions: "Admin" => "Admin, Developer" for wiki'):
+            self.app.post('/admin/wiki/update', params={
+                        'card-0.new': opt_developer['value'],
+                        'card-0.value': opt_admin['value'],
+                        'card-0.id': 'admin'})
+
+        with audits('updated "admin" permissions: "Admin, Developer" => "Admin" for wiki'):
+            self.app.post('/admin/wiki/update', params={
+                        'card-0.value': opt_admin['value'],
+                        'card-0.id': 'admin'})
+
     def test_project_permissions(self):
         r = self.app.get('/admin/permissions/')
         assert len(r.html.findAll('input', {'name': 'card-0.value'})) == 1
