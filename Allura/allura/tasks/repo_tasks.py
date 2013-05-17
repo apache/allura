@@ -120,17 +120,17 @@ def reclone_repo(*args, **kwargs):
         g.post_event('repo_clone_task_failed', source_url, source_path, traceback.format_exc())
 
 @task
-def tarball(revision=None):
+def tarball(revision=None, path=None):
     log = logging.getLogger(__name__)
     if revision:
         repo = c.app.repo
-        status = repo.get_tarball_status(revision)
+        status = repo.get_tarball_status(revision, path)
         if status:
             log.info('Skipping tarball for repository %s:%s rev %s because it is already %s' %
                      (c.project.shortname, c.app.config.options.mount_point, revision, status))
         else:
             try:
-                repo.tarball(revision)
+                repo.tarball(revision, path)
             except:
                 log.error('Could not create tarball for repository %s:%s revision %s' % (c.project.shortname, c.app.config.options.mount_point, revision), exc_info=True)
     else:

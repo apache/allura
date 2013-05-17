@@ -101,6 +101,12 @@ class Repository(M.Repository):
         if not self.heads: return None
         return self._impl.commit(self.heads[0].object_id)
 
+    def tarball_filename(self, revision, path=None):
+        fn =  super(Repository, self).tarball_filename(revision, path)
+        path = self._impl._path_to_root(path, revision)
+        fn += '-' + '-'.join(path.split('/'))
+        return fn
+
 
 class SVNCalledProcessError(Exception):
     def __init__(self, cmd, returncode, stdout, stderr):

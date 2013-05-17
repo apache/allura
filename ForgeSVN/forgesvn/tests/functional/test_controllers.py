@@ -16,6 +16,7 @@
 #       under the License.
 
 import json
+import shutil
 
 import pkg_resources
 from pylons import tmpl_context as c
@@ -26,6 +27,7 @@ from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestController
 from forgesvn.tests import with_svn
+from allura.tests.decorators import with_tool
 
 class SVNTestController(TestController):
     def setUp(self):
@@ -33,6 +35,7 @@ class SVNTestController(TestController):
         self.setup_with_tools()
 
     @with_svn
+    @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
     def setup_with_tools(self):
         h.set_context('test', 'src', neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
@@ -43,6 +46,13 @@ class SVNTestController(TestController):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         h.set_context('test', 'src', neighborhood='Projects')
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'svn-tags', neighborhood='Projects')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'testsvn-trunk-tags-branches'
         c.app.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -184,6 +194,56 @@ class TestRootController(SVNTestController):
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/src/3/tarball_status')
         assert '{"status": "ready"}' in r
+
+    def test_tarball_tags_aware(self):
+        h.set_context('test', 'svn-tags', neighborhood='Projects')
+        shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
+        r = self.app.get('/svn-tags/19/tree/')
+        link = r.html.find('h2', attrs={'class': 'dark title'})
+        link = link.find('small').findAll('a')[0]
+        assert_equal(link.text, 'Download Snapshot')
+        assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball')
+
+        r = self.app.get('/svn-tags/19/tree/tags/tag-1.0/')
+        link = r.html.find('h2', attrs={'class': 'dark title'})
+        link = link.find('small').findAll('a')[0]
+        assert_equal(link.text, 'Download Snapshot')
+        assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball?path=/tags/tag-1.0')
+
+        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        assert_equal(r.json['status'], None)
+        r = self.app.get(link.get('href'))
+        assert 'Generating snapshot...' in r
+        M.MonQTask.run_ready()
+        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        assert_equal(r.json['status'], 'ready')
+
+        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk')
+        assert_equal(r.json['status'], None)
+        r = self.app.get('/svn-tags/19/tarball?path=/trunk/')
+        assert 'Generating snapshot...' in r
+        M.MonQTask.run_ready()
+        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk')
+        assert_equal(r.json['status'], 'ready')
+
+        r = self.app.get('/svn-tags/19/tarball_status?path=/branches/aaa/')
+        assert_equal(r.json['status'], None)
+
+        # All of the following also should be ready because...
+        # ...this is essentially the same as trunk snapshot
+        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk/some/path/')
+        assert_equal(r.json['status'], 'ready')
+        r = self.app.get('/svn-tags/19/tarball_status')
+        assert_equal(r.json['status'], 'ready')
+        # ...the same as trunk, 'cause concrete tag isn't specified
+        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/')
+        assert_equal(r.json['status'], 'ready')
+        # ...the same as trunk, 'cause concrete branch isn't specified
+        r = self.app.get('/svn-tags/19/tarball_status?path=/branches/')
+        assert_equal(r.json['status'], 'ready')
+        # ...this is essentially the same as tag snapshot
+        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
+        assert_equal(r.json['status'], 'ready')
 
 
 class TestImportController(SVNTestController):

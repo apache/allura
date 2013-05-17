@@ -270,9 +270,6 @@ class Repository(Artifact, ActivityObject):
         shortname = c.project.shortname.replace('/', '-')
         mount_point = c.app.config.options.mount_point
         filename = '%s-%s-%s' % (shortname, mount_point, revision)
-        if path:
-            path = path.strip('/')
-            filename += '-' + '-'.join(path.split('/'))
         return filename
 
     def tarball_url(self, revision):
