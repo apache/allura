@@ -69,6 +69,7 @@ class Notification(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'notification'
+        indexes = ['project_id']
 
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 

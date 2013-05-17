@@ -28,6 +28,7 @@ class ChatChannel(MappedClass):
     class __mongometa__:
         name = 'globals'
         session = M.main_orm_session
+        indexes  ['project_id']
         unique_indexes = [ 'channel' ]
 
     _id = FieldProperty(S.ObjectId)
