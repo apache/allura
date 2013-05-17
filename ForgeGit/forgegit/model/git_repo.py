@@ -344,7 +344,7 @@ class GitImplementation(M.RepositoryImplementation):
         tree = self.refresh_tree_info(ci.tree, set())
         return tree._id
 
-    def tarball(self, commit):
+    def tarball(self, commit, path=None):
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit)
