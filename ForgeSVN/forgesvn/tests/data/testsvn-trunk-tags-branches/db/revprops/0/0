@@ -1,0 +1,17 @@
+K 8
+svn:date
+V 27
+2012-09-14T09:24:53.167845Z
+K 17
+svn:sync-from-url
+V 45
+svn://svn.code.sf.net/p/jetest/test-svn/trunk
+K 18
+svn:sync-from-uuid
+V 36
+2f15bc49-05cb-4844-b76f-9b7a511244b3
+K 24
+svn:sync-last-merged-rev
+V 1
+3
+END

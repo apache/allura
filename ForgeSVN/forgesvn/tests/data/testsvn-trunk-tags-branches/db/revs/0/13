@@ -1,0 +1,41 @@
+id: 0-13.0.r13/0
+type: dir
+count: 0
+cpath: /branches
+copyroot: 0 /
+
+id: 2-13.0.r13/68
+type: dir
+count: 0
+cpath: /tags
+copyroot: 0 /
+
+PLAIN
+K 8
+branches
+V 16
+dir 0-13.0.r13/0
+K 4
+tags
+V 17
+dir 2-13.0.r13/68
+K 5
+trunk
+V 17
+dir 0-1.0.r12/320
+END
+ENDREP
+id: 0.0.r13/250
+type: dir
+pred: 0.0.r12/509
+count: 13
+text: 13 133 104 104 3f9f56b54a923ea2d82149d15bed2320
+cpath: /
+copyroot: 0 /
+
+_0.0.t12-d add-dir false false /branches
+
+_2.0.t12-d add-dir false false /tags
+
+
+250 382

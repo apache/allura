@@ -1,0 +1,25 @@
+id: 0-1.0.r1/0
+type: dir
+count: 0
+cpath: /trunk
+copyroot: 0 /
+
+PLAIN
+K 5
+trunk
+V 14
+dir 0-1.0.r1/0
+END
+ENDREP
+id: 0.0.r1/110
+type: dir
+pred: 0.0.r0/17
+count: 1
+text: 1 63 34 34 a669707b1f7dfac13baa7cbf8b292233
+cpath: /
+copyroot: 0 /
+
+_0.0.t0-0 add-dir false false /trunk
+
+
+110 234

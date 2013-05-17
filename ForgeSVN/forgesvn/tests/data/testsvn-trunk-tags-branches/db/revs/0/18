@@ -1,0 +1,50 @@
+PLAIN
+K 6
+README
+V 17
+file 1-2.0.r12/37
+K 7
+aaa.txt
+V 18
+file 1-15.0.r15/31
+K 7
+bbb.txt
+V 18
+file 1-17.0.r17/29
+END
+ENDREP
+id: 0-1.0.r18/123
+type: dir
+pred: 0-1.0.r17/367
+count: 14
+text: 18 0 110 110 2272a90f79e98a1cbae4a108ee067708
+cpath: /trunk
+copyroot: 0 /
+
+PLAIN
+K 8
+branches
+V 18
+dir 0-13.0.r16/204
+K 4
+tags
+V 18
+dir 2-13.0.r14/206
+K 5
+trunk
+V 17
+dir 0-1.0.r18/123
+END
+ENDREP
+id: 0.0.r18/382
+type: dir
+pred: 0.0.r17/628
+count: 18
+text: 18 262 107 107 438df4be71cf3d5878ab91f8cdb6b9e9
+cpath: /
+copyroot: 0 /
+
+1-3.0.r3/82 delete-file false false /trunk/svn-commit.tmp
+
+
+382 514
