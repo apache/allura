@@ -114,10 +114,14 @@ class SVNCalledProcessError(Exception):
             (self.cmd, self.returncode, self.stdout, self.stderr)
 
 
-def svn_path_exists(path):
+def svn_path_exists(path, rev=None):
     svn = SVNLibWrapper(pysvn.Client())
+    if rev:
+        rev = pysvn.Revision(pysvn.opt_revision_kind.number, rev)
+    else:
+        rev = pysvn.Revision(pysvn.opt_revision_kind.unspecified)
     try:
-        svn.info2(path)
+        svn.info2(path, revision=rev)
         return True
     except pysvn.ClientError:
         return False
@@ -636,7 +640,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 entries[path] = self._oid(info.last_changed_rev.number)
         return entries
 
-    def _path_to_root(self, path):
+    def _path_to_root(self, path, rev=None):
         '''Return tag/branch/trunk root for given path inside svn repo'''
         if path:
             path = path.strip('/').split('/')
@@ -652,13 +656,13 @@ class SVNImplementation(M.RepositoryImplementation):
                 return '/'.join(path[:idx + 1])  # path/trunk
         # no tag/brach/trunk in path
         trunk_exists = svn_path_exists(
-            'file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'))
+            'file://%s%s/%s' % (self._repo.fs_path, self._repo.name, 'trunk'), rev)
         if trunk_exists:
             return 'trunk'
         return ''
 
     def tarball(self, commit, path=None):
-        path = self._path_to_root(path)
+        path = self._path_to_root(path, commit)
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit, path)
@@ -666,7 +670,7 @@ class SVNImplementation(M.RepositoryImplementation):
         filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
         tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
         rmtree(dest, ignore_errors=True)
-        path = os.path.join(self._url, '')#path)
+        path = os.path.join(self._url, path)
         try:
             self._svn.export(path,
                              dest,

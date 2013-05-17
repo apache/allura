@@ -310,105 +310,113 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.isfile(os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-1.zip"))
         tarball_zip = ZipFile(os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-1.zip'), 'r')
         assert_equal(tarball_zip.namelist(), ['test-src-1/', 'test-src-1/README'])
+        shutil.rmtree(self.repo.tarball_path, ignore_errors=True)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_aware_of_tags(self):
-        tag_content = ['test-svn-tags-1-tags-tag-1.0/',
-                       'test-svn-tags-1-tags-tag-1.0/svn-commit.tmp',
-                       'test-svn-tags-1-tags-tag-1.0/README']
+        rev = '19'
+        tag_content = sorted(['test-svn-tags-19-tags-tag-1.0/',
+                              'test-svn-tags-19-tags-tag-1.0/svn-commit.tmp',
+                              'test-svn-tags-19-tags-tag-1.0/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         tarball_path = '/tmp/tarball/svn/t/te/test/testsvn-trunk-tags-branches/'
-        fn = tarball_path + 'test-svn-tags-1-tags-tag-1.0.zip'
-        self.svn_tags.tarball('1', '/tags/tag-1.0/')
+        fn = tarball_path + 'test-svn-tags-19-tags-tag-1.0.zip'
+        self.svn_tags.tarball(rev, '/tags/tag-1.0/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), tag_content)
+        assert_equal(sorted(snapshot.namelist()), tag_content)
         os.remove(fn)
-        self.svn_tags.tarball('1', '/tags/tag-1.0/some/path/')
+        self.svn_tags.tarball(rev, '/tags/tag-1.0/some/path/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), tag_content)
+        assert_equal(sorted(snapshot.namelist()), tag_content)
         os.remove(fn)
         # if inside of tags, but no tag is specified
         # expect snapshot of trunk
-        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
-        self.svn_tags.tarball('1', '/tags/')
+        fn = tarball_path + 'test-svn-tags-19-trunk.zip'
+        self.svn_tags.tarball(rev, '/tags/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), ['test-svn-tags-1-trunk/',
-                                           'test-svn-tags-1-trunk/aaa.txt',
-                                           'test-svn-tags-1-trunk/bbb.txt',
-                                           'test-svn-tags-1-trunk/ccc.txt',
-                                           'test-svn-tags-1-trunk/README'])
-        os.remove(fn)
+        assert_equal(sorted(snapshot.namelist()),
+                     sorted(['test-svn-tags-19-trunk/',
+                             'test-svn-tags-19-trunk/aaa.txt',
+                             'test-svn-tags-19-trunk/bbb.txt',
+                             'test-svn-tags-19-trunk/ccc.txt',
+                             'test-svn-tags-19-trunk/README']))
+        shutil.rmtree(tarball_path, ignore_errors=True)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_aware_of_branches(self):
-        branch_content = ['test-svn-tags-1-branches-aaa/',
-                          'test-svn-tags-1-branches-aaa/aaa.txt',
-                          'test-svn-tags-1-branches-aaa/svn-commit.tmp',
-                          'test-svn-tags-1-branches-aaa/README']
+        rev = '19'
+        branch_content = sorted(['test-svn-tags-19-branches-aaa/',
+                                 'test-svn-tags-19-branches-aaa/aaa.txt',
+                                 'test-svn-tags-19-branches-aaa/svn-commit.tmp',
+                                 'test-svn-tags-19-branches-aaa/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         tarball_path = '/tmp/tarball/svn/t/te/test/testsvn-trunk-tags-branches/'
-        fn = tarball_path + 'test-svn-tags-1-branches-aaa.zip'
-        self.svn_tags.tarball('1', '/branches/aaa/')
+        fn = tarball_path + 'test-svn-tags-19-branches-aaa.zip'
+        self.svn_tags.tarball(rev, '/branches/aaa/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), branch_content)
+        assert_equal(sorted(snapshot.namelist()), branch_content)
         os.remove(fn)
-        self.svn_tags.tarball('1', '/branches/aaa/some/path/')
+        self.svn_tags.tarball(rev, '/branches/aaa/some/path/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), branch_content)
+        assert_equal(sorted(snapshot.namelist()), branch_content)
         os.remove(fn)
         # if inside of branches, but no branch is specified
         # expect snapshot of trunk
-        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
-        self.svn_tags.tarball('1', '/branches/')
+        fn = tarball_path + 'test-svn-tags-19-trunk.zip'
+        self.svn_tags.tarball(rev, '/branches/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), ['test-svn-tags-1-trunk/',
-                                           'test-svn-tags-1-trunk/aaa.txt',
-                                           'test-svn-tags-1-trunk/bbb.txt',
-                                           'test-svn-tags-1-trunk/ccc.txt',
-                                           'test-svn-tags-1-trunk/README'])
-        os.remove(fn)
+        assert_equal(sorted(snapshot.namelist()),
+                     sorted(['test-svn-tags-19-trunk/',
+                             'test-svn-tags-19-trunk/aaa.txt',
+                             'test-svn-tags-19-trunk/bbb.txt',
+                             'test-svn-tags-19-trunk/ccc.txt',
+                             'test-svn-tags-19-trunk/README']))
+        shutil.rmtree(tarball_path, ignore_errors=True)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_aware_of_trunk(self):
-        trunk_content = ['test-svn-tags-1-trunk/',
-                        'test-svn-tags-1-trunk/aaa.txt',
-                        'test-svn-tags-1-trunk/bbb.txt',
-                        'test-svn-tags-1-trunk/ccc.txt',
-                        'test-svn-tags-1-trunk/README']
+        rev = '19'
+        trunk_content = sorted(['test-svn-tags-19-trunk/',
+                                'test-svn-tags-19-trunk/aaa.txt',
+                                'test-svn-tags-19-trunk/bbb.txt',
+                                'test-svn-tags-19-trunk/ccc.txt',
+                                'test-svn-tags-19-trunk/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         tarball_path = '/tmp/tarball/svn/t/te/test/testsvn-trunk-tags-branches/'
-        fn = tarball_path + 'test-svn-tags-1-trunk.zip'
-        self.svn_tags.tarball('1', '/trunk/')
+        fn = tarball_path + 'test-svn-tags-19-trunk.zip'
+        self.svn_tags.tarball(rev, '/trunk/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), trunk_content)
+        assert_equal(sorted(snapshot.namelist()), trunk_content)
         os.remove(fn)
-        self.svn_tags.tarball('1', '/trunk/some/path/')
+        self.svn_tags.tarball(rev, '/trunk/some/path/')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), trunk_content)
+        assert_equal(sorted(snapshot.namelist()), trunk_content)
         os.remove(fn)
         # no path, but there are trunk in the repo
         # expect snapshot of trunk
-        self.svn_tags.tarball('1')
+        self.svn_tags.tarball(rev)
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
-        assert_equal(snapshot.namelist(), trunk_content)
+        assert_equal(sorted(snapshot.namelist()), trunk_content)
         os.remove(fn)
         # no path, and no trunk dir
         # expect snapshot of repo root
+        h.set_context('test', 'src', neighborhood='Projects')
         fn = '/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip'
         self.repo.tarball('1')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
         assert_equal(snapshot.namelist(), ['test-src-1/', 'test-src-1/README'])
-        os.remove(fn)
+        shutil.rmtree('/tmp/tarball/svn/t/te/test/testsvn/', ignore_errors=True)
+        shutil.rmtree(tarball_path, ignore_errors=True)
 
     def test_is_empty(self):
         assert not self.repo.is_empty()
