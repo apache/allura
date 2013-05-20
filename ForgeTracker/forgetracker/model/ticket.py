@@ -242,7 +242,7 @@ class Globals(MappedClass):
         mail = dict(
             fromaddr = str(c.user.email_address_header()),
             reply_to = str(c.user.email_address_header()),
-            subject = '%s:%s Mass ticket moving by %s' % (c.project.shortname,
+            subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
                                                           c.app.config.options.mount_point,
                                                           c.user.display_name))
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_move_report.html')

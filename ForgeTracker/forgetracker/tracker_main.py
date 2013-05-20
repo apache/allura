@@ -829,7 +829,7 @@ class RootController(BaseController, FeedController):
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
         count = len(tickets)
-        flash('Moved {} ticket{}'.format(count, 's' if count != 1 else ''), 'ok')
+        flash('Move scheduled ({} ticket{})'.format(count, 's' if count != 1 else ''), 'ok')
         redirect('move/' + search)
 
     @expose()
