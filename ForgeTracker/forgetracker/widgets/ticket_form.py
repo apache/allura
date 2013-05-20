@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from allura.lib.widgets import form_fields as ffw
 import shlex
 
 from pylons import tmpl_context as c
@@ -25,6 +24,8 @@ import ew as ew_core
 import ew.jinja2_ew as ew
 
 from allura import model as M
+from allura.lib.widgets import form_fields as ffw
+from allura.lib import helpers as h
 
 class TicketCustomFields(ew.CompoundField):
     template='jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
@@ -150,7 +151,21 @@ class TicketCustomField(object):
 
     def _select(field):
         options = []
-        for opt in shlex.split(field.options):
+        field_options = h.really_unicode(field.options)
+        try:
+            # shlex have problems with parsing unicode,
+            # it's better to pass properly encoded byte-string
+            field_options = shlex.split(field_options.encode('utf-8'))
+            # convert splitted string back to unicode
+            field_options = map(h.really_unicode, field_options)
+        except ValueError:
+            field_options = field_options.split()
+            # After regular split field_options might contain a " characters,
+            # which would break html when rendered inside tag's value attr.
+            # Escaping doesn't help here, 'cause it breaks EasyWidgets' validation,
+            # so we're getting rid of those.
+            field_options = [o.replace('"', '') for o in field_options]
+        for opt in field_options:
             selected = False
             if opt.startswith('*'):
                 opt = opt[1:]

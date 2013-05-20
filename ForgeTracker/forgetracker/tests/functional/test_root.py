@@ -645,6 +645,40 @@ class TestFunctionalController(TrackerTestController):
         ticket_view = self.new_ticket(summary='test select custom fields', **kw).follow()
         assert '<option selected value="test select">test select</option>' in ticket_view
 
+    def test_select_custom_field_unicode(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_testselect', label='Test', type='select',
+                     options='oné "one and á half" two'),
+               ],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        r = self.app.get('/bugs/new/')
+        assert u'<option value="oné">oné</option>'.encode('utf-8') in r
+        assert u'<option value="one and á half">one and á half</option>'.encode('utf-8') in r
+        assert u'<option value="two">two</option>' in r
+
+    def test_select_custom_field_invalid_quotes(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_testselect', label='Test', type='select',
+                     options='closéd "quote missing'),
+               ],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        r = self.app.get('/bugs/new/')
+        assert u'<option value="closéd">closéd</option>'.encode('utf-8') in r
+        assert u'<option value="quote">quote</option>' in r
+        assert u'<option value="missing">missing</option>' in r
+
     def test_custom_field_update_comments(self):
         params = dict(
             custom_fields=[
