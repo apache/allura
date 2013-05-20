@@ -18,12 +18,12 @@
 #       under the License.
 
 import os
-import Image, StringIO
+import StringIO
 import allura
 import json
 
+import PIL
 from nose.tools import assert_true, assert_equal, assert_in
-
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 
@@ -379,13 +379,13 @@ class TestRootController(TestController):
         page = model.Page.query.find(dict(title='TEST')).first()
         filename = page.attachments.first().filename
 
-        uploaded = Image.open(file_path)
+        uploaded = PIL.Image.open(file_path)
         r = self.app.get('/wiki/TEST/attachment/'+filename)
-        downloaded = Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/wiki/TEST/attachment/'+filename+'/thumb')
 
-        thumbnail = Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
         assert thumbnail.size == (255,255)
 
         # Make sure thumbnail is present

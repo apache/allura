@@ -21,9 +21,10 @@ import urllib
 import os
 import time
 import json
-import Image, StringIO
+import StringIO
 import allura
 
+import PIL
 from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
 from nose.tools import assert_raises, assert_not_in
@@ -543,13 +544,13 @@ class TestFunctionalController(TrackerTestController):
         ticket = tm.Ticket.query.find({'ticket_num':1}).first()
         filename = ticket.attachments.first().filename
 
-        uploaded = Image.open(file_path)
+        uploaded = PIL.Image.open(file_path)
         r = self.app.get('/bugs/1/attachment/'+filename)
-        downloaded = Image.open(StringIO.StringIO(r.body))
+        downloaded = PIL.Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == downloaded.size
         r = self.app.get('/bugs/1/attachment/'+filename+'/thumb')
 
-        thumbnail = Image.open(StringIO.StringIO(r.body))
+        thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
         assert thumbnail.size == (100,100)
 
     def test_sidebar_static_page(self):
