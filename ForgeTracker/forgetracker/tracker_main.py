@@ -62,7 +62,7 @@ from allura.controllers import AppDiscussionController, AppDiscussionRestControl
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
-from allura.tasks import mail_tasks
+from allura.tasks import mail_tasks, tracker_task
 
 # Local imports
 from forgetracker import model as TM
@@ -824,55 +824,7 @@ class RootController(BaseController, FeedController):
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
             app_config_id=c.app.config._id)).all()
 
-        filtered = filtered_by_subscription({t._id: t for t in tickets})
-        original_ticket_nums = {t._id: t.ticket_num for t in tickets}
-        users = M.User.query.find({'_id': {'$in': filtered.keys()}}).all()
-        moved_tickets = {}
-        for ticket in tickets:
-            moved = ticket.move(tracker, notify=False)
-            moved_tickets[moved._id] = moved
-
-        mail = dict(
-            fromaddr = str(c.user._id),
-            reply_to = str(c.user._id),
-            subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
-                                                           c.app.config.options.mount_point,
-                                                           c.user.display_name))
-        tmpl = jinja2.Environment(
-                loader=jinja2.PackageLoader('forgetracker', 'data'),
-                auto_reload=asbool(config.get('auto_reload_templates', True))
-        ).get_template('mass_move_report.html')
-        tmpl_context = {
-            'original_tracker': '%s:%s' % (c.project.shortname,
-                                           c.app.config.options.mount_point),
-            'destination_tracker': '%s:%s' % (tracker.project.shortname,
-                                              tracker.options.mount_point),
-            'tickets': [],
-        }
-        for user in users:
-            tmpl_context['tickets'] = ({
-                    'original_num': original_ticket_nums[_id],
-                    'destination_num': moved_tickets[_id].ticket_num,
-                    'summary': moved_tickets[_id].summary
-                } for _id in filtered.get(user._id, []))
-            mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [str(user._id)]))
-            mail_tasks.sendmail.post(**mail)
-
-        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
-            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
-            tmpl_context['tickets'] = ({
-                    'original_num': original_ticket_nums[_id],
-                    'destination_num': moved_tickets[_id].ticket_num,
-                    'summary': moved_tickets[_id].summary
-                } for _id in moved_tickets.keys())
-            mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [monitoring_email]))
-            mail_tasks.sendmail.post(**mail)
+        tracker_task.move_tickets.post(ticket_ids, destination_tracker_id)
 
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
@@ -948,7 +900,7 @@ class RootController(BaseController, FeedController):
                 ticket.discussion_thread.post(message, notify=False)
                 ticket.commit()
 
-        filtered_changes = filtered_by_subscription(changed_tickets)
+        filtered_changes = c.app.globals.filtered_by_subscription(changed_tickets)
         users = M.User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
@@ -1311,31 +1263,6 @@ class changelog(object):
                 if not orig_value == curr_value:
                     t.append((key, (orig_value, curr_value)))
         return t
-
-
-def filtered_by_subscription(tickets, project_id=None, app_config_id=None):
-    p_id = project_id if project_id else c.project._id
-    ac_id = app_config_id if app_config_id else c.app.config._id
-    ticket_ids = tickets.keys()
-    users = M.Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
-    users = [u.user_id for u in users]
-    filtered = {}
-    for uid in users:
-        params = dict(
-            user_id=uid,
-            project_id=p_id,
-            app_config_id=ac_id)
-        if M.Mailbox.subscribed(**params):
-            filtered[uid] = set(ticket_ids)  # subscribed to entire tool, will see all changes
-            continue
-        for t_id, ticket in tickets.iteritems():
-            params.update({'artifact': ticket})
-            if M.Mailbox.subscribed(**params):
-                if filtered.get(uid) is None:
-                    filtered[uid] = set()
-                filtered[uid].add(t_id)
-    return filtered
-
 
 class TicketController(BaseController, FeedController):
 

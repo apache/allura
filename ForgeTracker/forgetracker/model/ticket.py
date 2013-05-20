@@ -20,6 +20,7 @@ import urllib
 import json
 import difflib
 from datetime import datetime, timedelta
+from bson import ObjectId
 
 import pymongo
 from pymongo.errors import OperationFailure
@@ -33,7 +34,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 
 from allura.model import (Artifact, VersionedArtifact, Snapshot,
-                          project_orm_session, BaseAttachment, VotableArtifact)
+                          project_orm_session, BaseAttachment, VotableArtifact, AppConfig, Mailbox, User)
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.model.timeline import ActivityObject
@@ -42,6 +43,7 @@ from allura.lib import security
 from allura.lib.search import search_artifact, SearchError
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.tasks import mail_tasks
 
 from forgetracker.plugins import ImportIdConverter
 
@@ -224,6 +226,81 @@ class Globals(MappedClass):
     def has_deleted_tickets(self):
         return Ticket.query.find(dict(
             app_config_id=c.app.config._id, deleted=True)).count() > 0
+
+    def move_tickets(self, ticket_ids, destination_tracker_id):
+        tracker = AppConfig.query.get(_id=destination_tracker_id)
+        tickets = Ticket.query.find(dict(
+            _id={'$in': [ObjectId(id) for id in ticket_ids]},
+            app_config_id=c.app.config._id)).all()
+        filtered = self.filtered_by_subscription({t._id: t for t in tickets})
+        original_ticket_nums = {t._id: t.ticket_num for t in tickets}
+        users = User.query.find({'_id': {'$in': filtered.keys()}}).all()
+        moved_tickets = {}
+        for ticket in tickets:
+            moved = ticket.move(tracker, notify=False)
+            moved_tickets[moved._id] = moved
+        mail = dict(
+            fromaddr = str(c.user.email_address_header()),
+            reply_to = str(c.user.email_address_header()),
+            subject = '%s:%s Mass ticket moving by %s' % (c.project.shortname,
+                                                          c.app.config.options.mount_point,
+                                                          c.user.display_name))
+        tmpl = g.jinja2_env.get_template('forgetracker:data/mass_move_report.html')
+
+        tmpl_context = {
+            'original_tracker': '%s:%s' % (c.project.shortname,
+                                           c.app.config.options.mount_point),
+            'destination_tracker': '%s:%s' % (tracker.project.shortname,
+                                              tracker.options.mount_point),
+            'tickets': [],
+        }
+        for user in users:
+            tmpl_context['tickets'] = ({
+                    'original_num': original_ticket_nums[_id],
+                    'destination_num': moved_tickets[_id].ticket_num,
+                    'summary': moved_tickets[_id].summary
+                } for _id in filtered.get(user._id, []))
+            mail.update(dict(
+            message_id = h.gen_message_id(),
+            text = tmpl.render(tmpl_context),
+            destinations = [str(user._id)]))
+            mail_tasks.sendmail.post(**mail)
+
+        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
+            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            tmpl_context['tickets'] = ({
+                    'original_num': original_ticket_nums[_id],
+                    'destination_num': moved_tickets[_id].ticket_num,
+                    'summary': moved_tickets[_id].summary
+                } for _id in moved_tickets.keys())
+            mail.update(dict(
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [monitoring_email]))
+            mail_tasks.sendmail.post(**mail)
+
+    def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
+        p_id = project_id if project_id else c.project._id
+        ac_id = app_config_id if app_config_id else c.app.config._id
+        ticket_ids = tickets.keys()
+        users = Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
+        users = [u.user_id for u in users]
+        filtered = {}
+        for uid in users:
+            params = dict(
+                user_id=uid,
+                project_id=p_id,
+                app_config_id=ac_id)
+            if Mailbox.subscribed(**params):
+                filtered[uid] = set(ticket_ids)  # subscribed to entire tool, will see all changes
+                continue
+            for t_id, ticket in tickets.iteritems():
+                params.update({'artifact': ticket})
+                if Mailbox.subscribed(**params):
+                    if filtered.get(uid) is None:
+                        filtered[uid] = set()
+                    filtered[uid].add(t_id)
+        return filtered
 
 
 class TicketHistory(Snapshot):

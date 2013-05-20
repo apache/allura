@@ -28,12 +28,12 @@ from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
 from nose.tools import assert_raises, assert_not_in
 from formencode.variabledecode import variable_encode
+from pylons import tmpl_context as c
 
 from alluratest.controller import TestController
 from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
-from forgetracker.tracker_main import filtered_by_subscription
 
 from allura.lib.security import has_access
 from allura.lib import helpers as h
@@ -1264,17 +1264,17 @@ class TestFunctionalController(TrackerTestController):
 - **Milestone**: 2.0
 
 '''
-        first_ticket_changes = '''ticket: [bugs:#1] test first ticket
+        first_ticket_changes = '''ticket: bugs:#1 test first ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Status**: open --> accepted
 '''
-        second_ticket_changes = '''ticket: [bugs:#2] test second ticket
+        second_ticket_changes = '''ticket: bugs:#2 test second ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Milestone**: 1.0 --> 2.0
 '''
-        third_ticket_changes = '''ticket: [bugs:#3] test third ticket
+        third_ticket_changes = '''ticket: bugs:#3 test third ticket
 
 - **Owner**: Anonymous --> Test Admin
 - **Status**: unread --> accepted
@@ -1432,7 +1432,7 @@ class TestFunctionalController(TrackerTestController):
             tickets[0]._id: tickets[0],
             tickets[1]._id: tickets[1],
         }
-        filtered_changes = filtered_by_subscription(changes)
+        filtered_changes = c.app.globals.filtered_by_subscription(changes)
         filtered_users = [uid for uid, data in filtered_changes.iteritems()]
         assert_equal(sorted(filtered_users), sorted([u._id for u in users[:-1] + [admin]]))
         ticket_ids = [t._id for t in tickets]
@@ -2280,6 +2280,8 @@ class TestBulkMove(TrackerTestController):
                     '__ticket_ids': [t._id for t in tickets],
                     '__search': '',
                 })
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
         ac_id = tracker.config._id
         original_ac_id = original_tracker.config._id
         moved_tickets = tm.Ticket.query.find({'app_config_id': ac_id}).all()
@@ -2319,7 +2321,7 @@ class TestBulkMove(TrackerTestController):
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 3)
         for email in emails:
-            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+            assert_equal(email.kwargs.subject, 'test:bugs Mass ticket moving by Test Admin')
         first_user_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': str(first_user._id)
@@ -2374,7 +2376,7 @@ class TestBulkMove(TrackerTestController):
         emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(emails), 2)
         for email in emails:
-            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+            assert_equal(email.kwargs.subject, 'test:bugs Mass ticket moving by Test Admin')
         admin_email = M.MonQTask.query.find({
             'task_name': 'allura.tasks.mail_tasks.sendmail',
             'kwargs.destinations': str(M.User.by_username('test-admin')._id)
