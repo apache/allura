@@ -27,7 +27,7 @@ oauth2==1.5.170
 Paste==1.7.5.1
 PasteDeploy==1.5.0
 PasteScript==1.7.4.2
-PIL==1.1.7
+Pillow==2.0.0
 poster==0.8.1
 Pygments==1.5
 pymongo==2.4.2
