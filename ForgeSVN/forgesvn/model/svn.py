@@ -204,7 +204,7 @@ class SVNImplementation(M.RepositoryImplementation):
         # make first commit with dir structure
         if default_dirs:
             tmp_working_dir = tempfile.mkdtemp(prefix='allura-svn-r1-',
-                                               dir=tg.config.get('scm.svn.tmpdir', '/tmp'))
+                                               dir=tg.config.get('scm.svn.tmpdir', g.tmpdir))
             log.info('tmp dir = %s', tmp_working_dir)
             self._repo._impl._svn.checkout('file://'+fullname, tmp_working_dir)
             os.mkdir(tmp_working_dir+'/trunk')

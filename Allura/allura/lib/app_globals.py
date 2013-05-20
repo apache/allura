@@ -27,6 +27,7 @@ import json
 import datetime
 from urllib import urlencode
 from subprocess import Popen, PIPE
+import os
 
 import activitystream
 import pkg_resources
@@ -208,6 +209,8 @@ class Globals(object):
         for name, ep in self.entry_points['stats'].iteritems():
             statslisteners.append(ep())
         self.statsUpdater = PostEvent(statslisteners)
+
+        self.tmpdir = os.getenv('TMPDIR', '/tmp')
 
     @LazyProperty
     def spam_checker(self):

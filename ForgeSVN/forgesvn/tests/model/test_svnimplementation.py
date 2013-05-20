@@ -18,6 +18,7 @@
 from mock import Mock, MagicMock, patch
 import pysvn
 from nose.tools import assert_equal
+from pylons import app_globals as g
 
 from allura.model.repo import Commit
 from forgesvn.model.svn import Repository, SVNImplementation
@@ -36,7 +37,7 @@ class TestSVNImplementation(object):
     @patch('allura.model.repo.Tree.upsert')
     @patch('allura.model.repo.Tree.query.get')
     def _test_compute_tree_new(self, path, tree_get, tree_upsert, treesdoc_partial, lcd_partial):
-        repo = Mock(fs_path='/tmp/')
+        repo = Mock(fs_path=g.tmpdir+'/')
         repo.name = 'code'
         impl = SVNImplementation(repo)
         impl._svn.info2 = Mock()
@@ -48,7 +49,7 @@ class TestSVNImplementation(object):
 
         tree_id = impl.compute_tree_new(commit, path)
 
-        assert_equal(impl._svn.info2.call_args[0][0], 'file:///tmp/code/trunk/foo')
+        assert_equal(impl._svn.info2.call_args[0][0], 'file://'+g.tmpdir+'/code/trunk/foo')
         treesdoc_partial.assert_called()
         lcd_partial.assert_called()
 
@@ -60,7 +61,7 @@ class TestSVNImplementation(object):
         self._test_last_commit_ids('trunk/foo')
 
     def _test_last_commit_ids(self, path):
-        repo = Mock(fs_path='/tmp/')
+        repo = Mock(fs_path=g.tmpdir+'/')
         repo.name = 'code'
         repo._id = '5057636b9c1040636b81e4b1'
         impl = SVNImplementation(repo)
@@ -72,4 +73,4 @@ class TestSVNImplementation(object):
         entries = impl.last_commit_ids(commit, [path])
 
         assert_equal(entries, {path.strip('/'): '5057636b9c1040636b81e4b1:1'})
-        assert_equal(impl._svn.info2.call_args[0][0], 'file:///tmp/code/trunk')
+        assert_equal(impl._svn.info2.call_args[0][0], 'file://'+g.tmpdir+'/code/trunk')

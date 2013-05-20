@@ -15,10 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import mock
+import os
 import json
 from datetime import datetime
+
+import mock
 from IPython.testing.decorators import module_not_available, skipif
+from pylons import app_globals as g
 
 from forgewiki.scripts.wiki2markdown.extractors import MySQLExtractor
 from forgewiki.scripts.wiki2markdown.loaders import MediawikiLoader
@@ -35,7 +38,7 @@ class TestMySQLExtractor(object):
     def setUp(self):
         setup_basic_test()
         self.options = mock.Mock()
-        self.options.dump_dir = '/tmp/w2m_test'
+        self.options.dump_dir = os.path.join(g.tmpdir, 'w2m_test')
 
         # monkey-patch MySQLExtractor for test
         def pages(self):
@@ -85,7 +88,7 @@ class TestMySQLExtractor(object):
         self.extractor.extract_pages()
 
         # rev 1 of page 1
-        with open('/tmp/w2m_test/pages/1/history/1.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/1/history/1.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 1,
@@ -97,7 +100,7 @@ class TestMySQLExtractor(object):
         assert page == res_page
 
         # rev 2 of page 1
-        with open('/tmp/w2m_test/pages/1/history/2.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/1/history/2.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 2,
@@ -109,7 +112,7 @@ class TestMySQLExtractor(object):
         assert page == res_page
 
         # rev 1 of page 2
-        with open('/tmp/w2m_test/pages/2/history/1.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/2/history/1.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 1,
@@ -121,7 +124,7 @@ class TestMySQLExtractor(object):
         assert page == res_page
 
         # rev 2 of page 2
-        with open('/tmp/w2m_test/pages/2/history/2.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/2/history/2.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 2,
@@ -133,7 +136,7 @@ class TestMySQLExtractor(object):
         assert page == res_page
 
         # rev 1 of page 3
-        with open('/tmp/w2m_test/pages/3/history/1.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/3/history/1.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 1,
@@ -145,7 +148,7 @@ class TestMySQLExtractor(object):
         assert page == res_page
 
         # rev 2 of page 3
-        with open('/tmp/w2m_test/pages/3/history/2.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/3/history/2.json'), 'r') as f:
             page = json.load(f)
         res_page = {
             'timestamp': 2,
@@ -166,21 +169,21 @@ class TestMySQLExtractor(object):
         for page in pages:
             self.extractor.extract_talk(page)
 
-        with open('/tmp/w2m_test/pages/1/discussion.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/1/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
                         'text': 'Talk for page Test 1.',
                         'username': 'test-user',
                         'timestamp': 1}
 
-        with open('/tmp/w2m_test/pages/2/discussion.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/2/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
                         'text': 'Talk for page Test 2.',
                         'timestamp': 1,
                         'username': 'test-user'}
 
-        with open('/tmp/w2m_test/pages/3/discussion.json', 'r') as f:
+        with open(os.path.join(self.options.dump_dir, 'pages/3/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
                         'text': 'Talk for page Test 3.',
