@@ -19,7 +19,7 @@ import sys
 import time
 
 import pkg_resources
-import Image
+import PIL
 import tg
 from pylons import tmpl_context as c
 from paste.deploy.converters import asint
@@ -55,7 +55,7 @@ class RethumbCommand(base.Command):
                 base.log.warning("There are %d thumbnails for '%s' - consider clearing them with --force", count, attachment.filename)
                 return
 
-            image = Image.open(attachment.rfile())
+            image = PIL.Image.open(attachment.rfile())
             del doc['content_type']
             del doc['filename']
             att_cls.save_thumbnail(attachment.filename, image, attachment.content_type, att_cls.thumbnail_size, doc, square=True)
@@ -133,4 +133,3 @@ if __name__ == '__main__':
     command = RethumbCommand('rethumb')
     command.parse_args(sys.argv)
     command.command()
-

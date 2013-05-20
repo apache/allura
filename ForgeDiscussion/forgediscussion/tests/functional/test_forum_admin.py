@@ -17,10 +17,10 @@
 
 import os
 import allura
-import Image
 from StringIO import StringIO
 import logging
 
+import PIL
 from alluratest.controller import TestController
 from allura.lib import helpers as h
 
@@ -136,7 +136,7 @@ class TestForumAdmin(TestController):
                                   },
                           upload_files=[upload]),
         r = self.app.get('/discussion/testforum/icon')
-        image = Image.open(StringIO(r.body))
+        image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48,48)
 
     def test_delete_undelete(self):
