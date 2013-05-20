@@ -24,7 +24,7 @@ from datetime import datetime
 from zipfile import ZipFile
 
 from collections import defaultdict
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 import mock
 from nose.tools import assert_equal
 import tg
@@ -127,7 +127,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_init(self):
         repo = SM.Repository(
             name='testsvn',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir+'/',
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
@@ -140,7 +140,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_fork(self):
         repo = SM.Repository(
             name='testsvn',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir+'/',
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
@@ -151,10 +151,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        assert not os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
-        assert os.path.exists('/tmp/testsvn/hooks/post-commit')
-        assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
-        with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testsvn/hooks/pre-revprop-change'))
+        assert os.path.exists(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'))
+        assert os.access(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
+        with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
+            c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
@@ -186,7 +187,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
     def test_clone(self, post_event):
         repo = SM.Repository(
             name='testsvn',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir+'/',
             url_path = '/test/',
             tool = 'svn',
             status = 'creating')
@@ -197,10 +198,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from('file://' + repo_path)
-        assert not os.path.exists('/tmp/testsvn/hooks/pre-revprop-change')
-        assert os.path.exists('/tmp/testsvn/hooks/post-commit')
-        assert os.access('/tmp/testsvn/hooks/post-commit', os.X_OK)
-        with open('/tmp/testsvn/hooks/post-commit') as f: c = f.read()
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testsvn/hooks/pre-revprop-change'))
+        assert os.path.exists(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'))
+        assert os.access(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
+        with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
+            c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
@@ -291,11 +293,12 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
-        assert_equal(self.repo.tarball_path, '/tmp/tarball/svn/t/te/test/testsvn')
+        tmpdir = tg.config['scm.repos.tarball.root']
+        assert_equal(self.repo.tarball_path, os.path.join(tmpdir, 'svn/t/te/test/testsvn'))
         assert_equal(self.repo.tarball_url('1'), 'file:///svn/t/te/test/testsvn/test-src-1.zip')
         self.repo.tarball('1')
-        assert os.path.isfile("/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip")
-        tarball_zip = ZipFile('/tmp/tarball/svn/t/te/test/testsvn/test-src-1.zip', 'r')
+        assert os.path.isfile(os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-1.zip"))
+        tarball_zip = ZipFile(os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-1.zip'), 'r')
         assert_equal(tarball_zip.namelist(), ['test-src-1/', 'test-src-1/README'])
 
     def test_is_empty(self):

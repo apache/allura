@@ -137,7 +137,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_init(self):
         repo = GM.Repository(
             name='testgit.git',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir+'/',
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
@@ -150,7 +150,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_fork(self):
         repo = GM.Repository(
             name='testgit.git',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir + '/',
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
@@ -161,16 +161,16 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
-        assert not os.path.exists('/tmp/testgit.git/hooks/update')
-        assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
-        assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-        assert os.stat('/tmp/testgit.git/hooks/post-receive')[0] & stat.S_IXUSR
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+        assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+        assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
 
     @mock.patch('forgegit.model.git_repo.g.post_event')
     def test_clone(self, post_event):
         repo = GM.Repository(
             name='testgit.git',
-            fs_path='/tmp/',
+            fs_path=g.tmpdir + '/',
             url_path = '/test/',
             tool = 'git',
             status = 'creating')
@@ -182,11 +182,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         repo._impl.clone_from(repo_path)
         assert len(repo.log())
-        assert not os.path.exists('/tmp/testgit.git/hooks/update')
-        assert not os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
-        assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-        assert os.stat('/tmp/testgit.git/hooks/post-receive')[0] & stat.S_IXUSR
-        with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+        assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+        assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
+        with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
         self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
@@ -197,7 +197,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
             repo = GM.Repository(
                 name='testgit.git',
-                fs_path='/tmp/',
+                fs_path=g.tmpdir+'/',
                 url_path = '/test/',
                 tool = 'git',
                 status = 'creating')
@@ -211,11 +211,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             repo._impl.clone_from(repo_path)
             assert not clone_from.called
             assert len(repo.log())
-            assert os.path.exists('/tmp/testgit.git/hooks/update')
-            assert os.path.exists('/tmp/testgit.git/hooks/post-receive-user')
-            assert os.path.exists('/tmp/testgit.git/hooks/post-receive')
-            assert os.stat('/tmp/testgit.git/hooks/post-receive')[0] & stat.S_IXUSR
-            with open('/tmp/testgit.git/hooks/post-receive') as f: c = f.read()
+            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+            assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
+            with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
             self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
@@ -259,12 +259,13 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
     def test_tarball(self):
-        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip"):
-            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip")
-        assert_equal(self.repo.tarball_path, '/tmp/tarball/git/t/te/test/testgit.git')
+        tmpdir = tg.config['scm.repos.tarball.root']
+        if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
+            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+        assert_equal(self.repo.tarball_path, os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
         assert_equal(self.repo.tarball_url('HEAD'), 'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
         self.repo.tarball('HEAD')
-        assert os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip")
+        assert os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
 
     def test_all_commit_ids(self):
         cids = list(self.repo.all_commit_ids())
@@ -293,20 +294,21 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
                 'name': u'README'}])
 
     def test_tarball_status(self):
-        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip"):
-            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip")
-        if os.path.isfile("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp"):
-            os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
-        if os.path.isdir("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/"):
-            os.removedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD/")
+        tmpdir = tg.config['scm.repos.tarball.root']
+        if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
+            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+        if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp")):
+            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
+        if os.path.isdir(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/")):
+            os.removedirs(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/"))
         self.repo.tarball('HEAD')
         assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
-        os.rename("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.zip",
-                  "/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        os.rename(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"),
+                  os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
         assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
-        os.remove("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD.tmp")
+        os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
-        os.makedirs("/tmp/tarball/git/t/te/test/testgit.git/test-src-git-HEAD")
+        os.makedirs(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD"))
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
 
     def test_is_empty(self):

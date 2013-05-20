@@ -19,10 +19,11 @@
 
 import shutil
 import unittest
+import os
 
 import tg
 import mock
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from ming.orm import ThreadLocalORMSession
 from paste.deploy.converters import asbool
 
@@ -42,7 +43,7 @@ class TestRepoTasks(unittest.TestCase):
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock = mock.patch('allura.lib.mail_util.smtplib.SMTP')
             self.smtp_mock.start()
-        
+
     def tearDown(self):
         if asbool(tg.config.get('smtp.mock')):
             self.smtp_mock.stop()
@@ -75,4 +76,5 @@ class TestRepoTasks(unittest.TestCase):
     def test_uninstall(self):
         with mock.patch.object(shutil, 'rmtree') as f:
             repo_tasks.uninstall()
-            f.assert_called_with('/tmp/svn/p/test/src', ignore_errors=True)
+            f.assert_called_with(os.path.join(tg.config['scm.repos.root'], 'svn/p/test/src'),
+                                 ignore_errors=True)
