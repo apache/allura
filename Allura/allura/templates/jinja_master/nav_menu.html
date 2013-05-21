@@ -43,7 +43,7 @@
     <h1 class="project_title">
       <a href="{{c.project.url()}}" class="project_link">{{ c.project.neighborhood.name if c.project.is_nbhd_project else c.project.name }}</a>
     </h1>
-    <h2>
+    <h2 class="project_summary">
         {{c.project.summary}}
     </h2>
     <div class="brought-by{% if c.project.icon %} with-icon{% endif %}">
