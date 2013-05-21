@@ -708,9 +708,13 @@ def log_output(log):
     class Writer(object):
         def __init__(self, func):
             self.func = func
+            self.closed = False
 
         def write(self, buf):
             self.func(buf)
+
+        def flush(self):
+            pass
 
     _stdout = sys.stdout
     _stderr = sys.stderr
