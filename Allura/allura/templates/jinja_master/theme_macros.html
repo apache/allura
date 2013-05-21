@@ -78,3 +78,21 @@
 {%- macro extra_header(path_to_static) %}
 
 {%- endmacro %}
+
+{%- macro breadcrumbs(project, app) %}
+    <nav id="breadcrumbs">
+        <ul>
+            <li><a href="/">Home</a></li>
+            {% for label,url in project.breadcrumbs() %}
+                {% if not loop.last or app %}
+                    <li><a href="{{ url }}">{{ label }}</a></li>
+                {% else %}
+                    <li>{{ label }}</li>
+                {% endif %}
+            {% endfor %}
+            {% if app %}
+                <li>{{ app.config.options.mount_label }}</li>
+            {% endif %}
+        </ul>
+    </nav>
+{%- endmacro %}
