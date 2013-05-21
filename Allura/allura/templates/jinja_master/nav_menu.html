@@ -43,6 +43,11 @@
     <h1 class="project_title">
       <a href="{{c.project.url()}}" class="project_link">{{ c.project.neighborhood.name if c.project.is_nbhd_project else c.project.name }}</a>
     </h1>
+    {% set status = c.project.troves_by_type('developmentstatus')|sort(attribute='fullname') %}
+    {% set status = status[-1] %}
+    {% if status and status.shortname not in ['production', 'mature'] %}
+    <span id="dev-status" class="{{ status.shortname }}">{{ status.shortname }}</span>
+    {% endif %}
     <h2 class="project_summary">
         {{c.project.summary}}
     </h2>
