@@ -173,6 +173,30 @@ def post_install_update_ticket_permission(app):
     app.config.acl.append(M.ACE.allow(role, 'update'))
 
 
+class TestSubprojectTrackerController(TrackerTestController):
+    @td.with_tool('test/sub1', 'Tickets', 'tickets')
+    def test_index_page_ticket_visibility(self):
+        """Test that non-admin users can see tickets created by admins."""
+        self.new_ticket(summary="my ticket", mount_point="/sub1/tickets/")
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/sub1/tickets/',
+                extra_environ=dict(username='*anonymous'))
+        assert 'my ticket' in response
+
+    @td.with_tool('test/sub1', 'Tickets', 'tickets')
+    def test_search_page_ticket_visibility(self):
+        """Test that non-admin users can see tickets created by admins."""
+        self.new_ticket(summary="my ticket", mount_point="/sub1/tickets/")
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        response = self.app.get('/p/test/sub1/tickets/search/?q=my',
+                extra_environ=dict(username='*anonymous'))
+        assert 'my ticket' in response, response.showbrowser()
+
+
 class TestFunctionalController(TrackerTestController):
     def test_bad_ticket_number(self):
         self.app.get('/bugs/input.project_user_select', status=404)
