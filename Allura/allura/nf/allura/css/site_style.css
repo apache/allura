@@ -2091,8 +2091,33 @@ nav .ico {
   vertical-align: middle;
 }
 
-.project_title {
-  line-height: 48px;
+#nav_menu_holder {
+    margin: 0 0 15px;
+}
+
+#nav_menu_holder h1.project_title {
+  line-height: 1em;
+  font-size: 32px;
+  margin-bottom: 0;
+}
+
+#nav_menu_holder h1.project_title a,
+#nav_menu_holder h1.project_title a:hover,
+#nav_menu_holder h1.project_title a:visited,
+#nav_menu_holder h1.project_title a:focus {
+    color: #555;
+    text-decoration: none;
+}
+
+#nav_menu_holder h2.project_summary {
+  line-height: 1em;
+  font-size: 16px;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+#nav_menu_holder .brought-by.with-icon {
+  margin-left: 55px;
 }
 
 .neighborhood_icon {
