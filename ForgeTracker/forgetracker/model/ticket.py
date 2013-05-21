@@ -461,7 +461,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def notify_post(self):
-        return c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges'
+        monitoring_type = c.app.config.options.get('TicketMonitoringType')
+        return monitoring_type == 'AllTicketChanges' or (
+                monitoring_type == 'AllPublicTicketChanges' and
+                not self.private)
 
     def get_custom_user(self, custom_user_field_name):
         fld = None
@@ -549,7 +552,9 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             Thread.new(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
             n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
-            if monitoring_email and n:
+            if monitoring_email and n and (not self.private or
+                    self.app.config.options.get('TicketMonitoringType') in (
+                        'NewTicketsOnly', 'AllTicketChanges')):
                 n.send_simple(monitoring_email)
         Feed.post(
             self,

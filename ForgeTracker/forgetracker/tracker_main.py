@@ -172,7 +172,8 @@ class ForgeTrackerApp(Application):
         ConfigOption('EnableVoting', bool, False),
         ConfigOption('TicketMonitoringEmail', str, ''),
         ConfigOption('TicketMonitoringType',
-            schema.OneOf('NewTicketsOnly', 'AllTicketChanges'), None)
+            schema.OneOf('NewTicketsOnly', 'AllTicketChanges',
+                'NewPublicTicketsOnly', 'AllPublicTicketChanges'), None)
         ]
     searchable=True
     tool_label='Tickets'
@@ -862,17 +863,23 @@ class RootController(BaseController, FeedController):
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
-        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
+        if c.app.config.options.get('TicketMonitoringType') in (
+                'AllTicketChanges', 'AllPublicTicketChanges'):
             monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
-            def all_changes():
-                for t_id in changed_tickets.keys():
-                    yield (changed_tickets[t_id], changes[t_id])
-            tmpl_context['data'].update({'changes': all_changes()})
-            mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [monitoring_email]))
-            mail_tasks.sendmail.post(**mail)
+            visible_changes = []
+            for t_id, t in changed_tickets.items():
+                if (not t.private or
+                        c.app.config.options.get('TicketMonitoringType') ==
+                        'AllTicketChanges'):
+                    visible_changes.append(
+                            (changed_tickets[t_id], changes[t_id]))
+            if visible_changes:
+                tmpl_context['data'].update({'changes': visible_changes})
+                mail.update(dict(
+                    message_id = h.gen_message_id(),
+                    text = tmpl.render(tmpl_context),
+                    destinations = [monitoring_email]))
+                mail_tasks.sendmail.post(**mail)
 
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()

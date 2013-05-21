@@ -26,7 +26,7 @@ import allura
 
 from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_not_in
 from formencode.variabledecode import variable_encode
 
 from alluratest.controller import TestController
@@ -1227,7 +1227,7 @@ class TestFunctionalController(TrackerTestController):
             'TicketMonitoringEmail': 'monitoring@email.com',
             'TicketMonitoringType': 'AllTicketChanges',
         })
-        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
+        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0', private=True)
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -1256,6 +1256,82 @@ class TestFunctionalController(TrackerTestController):
         admin_email_text = admin_email[0].kwargs.text
         monitoring_email_text = monitoring_email[0].kwargs.text
         assert_equal(admin_email_text, monitoring_email_text)
+
+    def test_bulk_edit_notifications_monitoring_email_public_only(self):
+        """Test that private tickets are not included in bulk edit
+        notifications if the "public only" option is selected.
+        """
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllPublicTicketChanges',
+        })
+        self.new_ticket(summary='test first ticket', status='open', _milestone='2.0')
+        self.new_ticket(summary='test second ticket', status='open', private=True)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        tickets = tm.Ticket.query.find(dict(status='open')).all()
+        M.MonQTask.query.remove()
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': [t._id for t in tickets],
+                      'status': 'accepted'})
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 2)  # one for admin and one for monitoring email
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
+        admin = M.User.by_username('test-admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 1)
+        admin_email_text = admin_email[0].kwargs.text
+        monitoring_email_text = monitoring_email[0].kwargs.text
+        assert_in('second ticket', admin_email_text)
+        assert_not_in('second ticket', monitoring_email_text)
+
+    def test_bulk_edit_monitoring_email_all_private_edits(self):
+        """Test that no monitoring email is sent if the "public only"
+        option is selected, and only private tickets were updated.
+        """
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllPublicTicketChanges',
+        })
+        self.new_ticket(summary='test first ticket', status='open', private=True)
+        self.new_ticket(summary='test second ticket', status='open', private=True)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        tickets = tm.Ticket.query.find(dict(status='open')).all()
+        M.MonQTask.query.remove()
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': [t._id for t in tickets],
+                      'status': 'accepted'})
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 1)  # only admin email sent
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass edit changes by Test Admin')
+        admin = M.User.by_username('test-admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 0)
 
     def test_filtered_by_subscription(self):
         self.new_ticket(summary='test first ticket', status='open')
@@ -1873,12 +1949,17 @@ class TestEmailMonitoring(TrackerTestController):
     @patch('forgetracker.model.ticket.Notification.send_simple')
     def test_notifications_new(self, send_simple):
         self._set_options('NewTicketsOnly')
-        self.new_ticket(summary='test')
-        self.app.post('/bugs/1/update_ticket',{
-            'summary':'test',
-            'description':'update',
-        })
+        self.new_ticket(summary='test', private=True)
         send_simple.assert_called_once_with(self.test_email)
+
+    @patch('forgetracker.model.ticket.Notification.send_simple')
+    def test_notifications_new_public_only(self, send_simple):
+        """Test that notification not sent for new private ticket
+        if "public only" option selected.
+        """
+        self._set_options('NewPublicTicketsOnly')
+        self.new_ticket(summary='test', private=True)
+        assert not send_simple.called
 
     @patch('forgetracker.tracker_main.M.Notification.send_simple')
     def test_notifications_all(self, send_simple):
@@ -1886,10 +1967,10 @@ class TestEmailMonitoring(TrackerTestController):
         self.new_ticket(summary='test')
         send_simple.assert_called_once_with(self.test_email)
         send_simple.reset_mock()
-        response = self.app.post(
-            '/bugs/1/update_ticket',
-            {'summary': 'test',
-            'description': 'update'})
+        response = self.app.post('/bugs/1/update_ticket', {
+            'summary': 'test',
+            'description': 'update',
+            'private': '1'})
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
         send_simple.reset_mock()
@@ -1906,6 +1987,25 @@ class TestEmailMonitoring(TrackerTestController):
         assert send_simple.call_count == 1, send_simple.call_count
         send_simple.assert_called_with(self.test_email)
 
+    @patch('forgetracker.tracker_main.M.Notification.send_simple')
+    def test_notifications_all_public_only(self, send_simple):
+        """Test that notifications are not sent for private tickets
+        if "public only" option selected.
+        """
+        self._set_options('AllPublicTicketChanges')
+        self.new_ticket(summary='test')
+        send_simple.assert_called_once_with(self.test_email)
+        send_simple.reset_mock()
+        self.app.post('/bugs/1/update_ticket', {
+                'summary': 'test',
+                'description': 'update 1'})
+        send_simple.assert_called_once_with(self.test_email)
+        send_simple.reset_mock()
+        self.app.post('/bugs/1/update_ticket', {
+                'summary': 'test',
+                'description': 'update 2',
+                'private': '1'})
+        assert not send_simple.called
 
     @patch('forgetracker.tracker_main.M.Notification.send_simple')
     def test_notifications_off(self, send_simple):
@@ -1919,6 +2019,7 @@ class TestEmailMonitoring(TrackerTestController):
             get.side_effect = lambda *a,**k: None if 'bugs' in k.get('shortname', '') else p
             self.new_ticket(summary='test')
         assert send_simple.call_count == 0, send_simple.call_count
+
 
 class TestCustomUserField(TrackerTestController):
     def setUp(self):

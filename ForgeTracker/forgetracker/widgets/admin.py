@@ -44,7 +44,10 @@ class OptionsAdmin(ff.AdminForm):
                 grid_width='7',
                 options=[
                     ew.Option(py_value='NewTicketsOnly', label='New tickets only'),
-                    ew.Option(py_value='AllTicketChanges', label='All ticket changes')]),
+                    ew.Option(py_value='NewPublicTicketsOnly', label='New public tickets only'),
+                    ew.Option(py_value='AllTicketChanges', label='All ticket changes'),
+                    ew.Option(py_value='AllPublicTicketChanges', label='All public ticket changes'),
+                    ]),
             ffw.MarkdownEdit(
                 name='TicketHelpNew',
                 label='Help text to display on new ticket page',
