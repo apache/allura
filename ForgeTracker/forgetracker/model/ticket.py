@@ -766,7 +766,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         tickets = []
         count = q.count()
         for t in q:
-            if security.has_access(t, 'read', user, app_config.project):
+            if security.has_access(t, 'read', user, app_config.project.root_project):
                 tickets.append(t)
             else:
                 count = count -1
@@ -830,7 +830,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             for tn in ticket_numbers:
                 if tn in ticket_for_num:
                     show_deleted = show_deleted and security.has_access(ticket_for_num[tn], 'delete', user, app_config.project)
-                    if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project) and
+                    if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project.root_project) and
                         (show_deleted or ticket_for_num[tn].deleted==False)):
                         tickets.append(ticket_for_num[tn])
                     else:
