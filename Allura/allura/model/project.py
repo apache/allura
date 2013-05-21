@@ -117,6 +117,24 @@ class TroveCategory(MappedClass):
             trove = trove.parent_category
         return trove.shortname
 
+    @LazyProperty
+    def ancestors(self):
+        ancestors = []
+        trove = self
+        while trove:
+            ancestors.append(trove)
+            trove = trove.parent_category
+        return ancestors
+
+    @LazyProperty
+    def breadcrumbs(self):
+        url = '/directory/'
+        crumbs = []
+        for trove in reversed(self.ancestors[:-1]):
+            url += trove.shortname + '/'
+            crumbs.append((trove.fullname, url))
+        return crumbs
+
 class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)

@@ -2095,6 +2095,28 @@ nav .ico {
     margin: 0 0 15px;
 }
 
+#nav_menu_holder #breadcrumbs {
+    margin-bottom: 5px;
+}
+
+#nav_menu_holder #breadcrumbs ul {
+    list-style: none;
+    margin: 0;
+}
+
+#nav_menu_holder #breadcrumbs li {
+    display: inline;
+    font-size: 11px;
+}
+
+#nav_menu_holder #breadcrumbs li:after {
+    content: ' / ';
+}
+
+#nav_menu_holder #breadcrumbs li:last-child:after {
+    content: '';
+}
+
 #nav_menu_holder h1.project_title {
   line-height: 1em;
   font-size: 32px;

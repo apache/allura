@@ -17,10 +17,12 @@
        under the License.
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import g.theme.jinja_macros as theme_macros with context %}
 {% set n = c.project.neighborhood %}
 {% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
   <div id="nav_menu_missing"></div>
 {% else %}
+  {{ theme_macros.breadcrumbs(c.project, c.app) }}
   {% if c.project.neighborhood.icon %}
     <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon"
        alt="Return to {{c.project.neighborhood.name}}" title="Return to {{c.project.neighborhood.name}}"></a>
