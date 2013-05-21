@@ -178,9 +178,6 @@ class TestSubprojectTrackerController(TrackerTestController):
     def test_index_page_ticket_visibility(self):
         """Test that non-admin users can see tickets created by admins."""
         self.new_ticket(summary="my ticket", mount_point="/sub1/tickets/")
-        ThreadLocalORMSession.flush_all()
-        M.MonQTask.run_ready()
-        ThreadLocalORMSession.flush_all()
         response = self.app.get('/p/test/sub1/tickets/',
                 extra_environ=dict(username='*anonymous'))
         assert 'my ticket' in response
@@ -195,6 +192,19 @@ class TestSubprojectTrackerController(TrackerTestController):
         response = self.app.get('/p/test/sub1/tickets/search/?q=my',
                 extra_environ=dict(username='*anonymous'))
         assert 'my ticket' in response, response.showbrowser()
+
+    @td.with_tool('test/sub1', 'Tickets', 'tickets')
+    def test_deleted_ticket_visibility(self):
+        """Test that admins can see deleted tickets in a subproject tracker."""
+        self.new_ticket(summary='test', mount_point="/sub1/tickets/")
+        self.app.post('/sub1/tickets/1/delete')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/p/test/sub1/tickets/search/',
+                params=dict(q='test', deleted='True'))
+        assert '<td><a href="/p/test/sub1/tickets/1/">test' in r
+        assert '<tr class=" deleted">' in r
 
 
 class TestFunctionalController(TrackerTestController):
