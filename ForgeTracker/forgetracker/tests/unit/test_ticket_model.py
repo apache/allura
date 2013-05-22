@@ -17,13 +17,15 @@
 
 from pylons import tmpl_context as c
 from datetime import datetime
+import urllib2
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming import schema
 from nose.tools import raises, assert_raises, assert_equal
 
-from forgetracker.model import Ticket
+from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
+from forgetracker.import_support import ResettableStream
 from allura.model import Feed, Post, User
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -261,3 +263,17 @@ class TestTicketModel(TrackerTestWithModel):
         message += '\n- **_user_field_2**: test-user-0 (user not in project)'
         message += '\n- **assigned_to**: test-user-0 (user not in project)'
         assert_equal(post.text, message)
+
+    @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
+    def test_attach_with_resettable_stream(self):
+        with h.push_context(c.project._id, app_config_id=c.app.config._id):
+            ticket = Ticket.new()
+            ticket.summary = 'test ticket'
+            ticket.description = 'test description'
+        assert_equal(len(ticket.attachments), 0)
+        f = urllib2.urlopen('http://sourceforge.net/apps/trac/sourceforge/raw-attachment/ticket/204/SF%20display%20error.JPG')
+        TicketAttachment.save_attachment('filename.txt', ResettableStream(f),
+                                            artifact_id=ticket._id)
+        ThreadLocalORMSession.flush_all()
+        assert_equal(len(ticket.attachments), 1)
+        assert_equal(ticket.attachments.first().filename, 'filename.txt')
