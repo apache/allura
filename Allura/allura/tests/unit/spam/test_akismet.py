@@ -22,13 +22,10 @@ import mock
 import unittest
 import urllib
 
-try:
-    from allura.lib.spam.akismetfilter import AkismetSpamFilter
-except ImportError:
-    AkismetSpamFilter = None
+from allura.lib.spam.akismetfilter import AKISMET_AVAILABLE, AkismetSpamFilter
 
 
-@unittest.skipIf(AkismetSpamFilter is None, "Can't import AkismetSpamFilter")
+@unittest.skipIf(not AKISMET_AVAILABLE, "Akismet not available")
 class TestAkismet(unittest.TestCase):
     @mock.patch('allura.lib.spam.akismetfilter.akismet')
     def setUp(self, akismet_lib):

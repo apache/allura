@@ -22,13 +22,11 @@ import mock
 import unittest
 import urllib
 
-try:
-    from allura.lib.spam.mollomfilter import MollomSpamFilter
-except ImportError:
-    MollomSpamFilter = None
+
+from allura.lib.spam.mollomfilter import MOLLOM_AVAILABLE, MollomSpamFilter
 
 
-@unittest.skipIf(MollomSpamFilter is None, "Can't import MollomSpamFilter")
+@unittest.skipIf(not MOLLOM_AVAILABLE, "Mollom not available")
 class TestMollom(unittest.TestCase):
     @mock.patch('allura.lib.spam.mollomfilter.Mollom')
     def setUp(self, mollom_lib):

@@ -23,7 +23,11 @@ from pylons import tmpl_context as c
 from allura.lib import helpers as h
 from allura.lib.spam import SpamFilter
 
-import akismet
+try:
+    import akismet
+    AKISMET_AVAILABLE = True
+except ImportError:
+    AKISMET_AVAILABLE = False
 
 
 log = logging.getLogger(__name__)
@@ -44,6 +48,8 @@ class AkismetSpamFilter(SpamFilter):
         spam.key = <your Akismet key here>
     """
     def __init__(self, config):
+        if not AKISMET_AVAILABLE:
+            raise ImportError('akismet not available')
         self.service = akismet.Akismet(config.get('spam.key'), config.get('base_url'))
         self.service.verify_key()
 

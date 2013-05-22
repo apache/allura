@@ -23,7 +23,11 @@ from pylons import tmpl_context as c
 from allura.lib import helpers as h
 from allura.lib.spam import SpamFilter
 
-import Mollom
+try:
+    import Mollom
+    MOLLOM_AVAILABLE = True
+except ImportError:
+    MOLLOM_AVAILABLE = False
 
 
 log = logging.getLogger(__name__)
@@ -45,6 +49,8 @@ class MollomSpamFilter(SpamFilter):
         spam.private_key = <your Mollom private key here>
     """
     def __init__(self, config):
+        if not MOLLOM_AVAILABLE:
+            raise ImportError('Mollom not available')
         self.service = Mollom.MollomAPI(
             publicKey=config.get('spam.public_key'),
             privateKey=config.get('spam.private_key'))
