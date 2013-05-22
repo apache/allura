@@ -2133,6 +2133,8 @@ nav .ico {
 }
 
 #nav_menu_holder #dev-status {
+    display: inline-block;
+    line-height: 1em;
     vertical-align: top;
     text-transform: capitalize;
     font-size: 10px;
