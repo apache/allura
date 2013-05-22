@@ -215,7 +215,8 @@ class Thread(Artifact, ActivityObject):
     def post_count(self):
         return Post.query.find(dict(
                 discussion_id=self.discussion_id,
-                thread_id=self._id)).count()
+                thread_id=self._id,
+                status={'$in': ['ok', 'pending']})).count()
 
     def primary(self):
         if self.ref is None:

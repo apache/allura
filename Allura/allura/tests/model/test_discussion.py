@@ -441,3 +441,22 @@ def test_thread_subject_not_included_in_text_checked(spam_checker):
     post = t.post('Hello')
     spam_checker.check.assert_called_once()
     assert_equal(spam_checker.check.call_args[0][0], 'Hello')
+
+
+def test_post_count():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread')
+    p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
+    p2 = M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
+    p3 = M.Post(discussion_id=d._id, thread_id=t._id, status='pending')
+    ThreadLocalORMSession.flush_all()
+    assert_equal(t.post_count, 2)
+
+
+@mock.patch('allura.controllers.discuss.g.spam_checker')
+def test_spam_num_replies(spam_checker):
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread(discussion_id=d._id, subject='Test Thread', num_replies=2)
+    p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
+    p1.spam()
+    assert_equal(t.num_replies, 1)
