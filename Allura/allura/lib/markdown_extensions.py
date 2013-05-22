@@ -238,11 +238,6 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
         self._make_absolute = make_absolute
 
     def run(self, text):
-        try:
-            if not request.path_info.endswith('/'): return text
-        except:
-            # Must be being called outside the request context
-            pass
         soup = BeautifulSoup(text)
         if self._make_absolute:
             rewrite = self._rewrite_abs
