@@ -218,6 +218,7 @@ class RepositoryImplementation(object):
     def tags(self):
         raise NotImplementedError, 'tags'
 
+
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
     class __mongometa__:
