@@ -16,6 +16,7 @@ Allura/allura/lib/widgets/resources/css/autocomplete.css
 Allura/allura/lib/widgets/resources/css/jquery.ui.datepicker.css
 Allura/allura/lib/widgets/resources/js/jqfontselector.js
 Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
+Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
 Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
 Allura/allura/lib/widgets/resources/js/jquery.textarea.js
 Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
@@ -27,6 +28,7 @@ Allura/allura/public/nf/js/jquery.daterangepicker.js
 Allura/allura/public/nf/js/jquery.flot.js
 Allura/allura/public/nf/js/jquery.maxlength.min.js
 Allura/allura/public/nf/js/spin.min.js
+Allura/allura/public/nf/js/sylvester.js
 Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
 Allura/run/dummy.txt
@@ -36,4 +38,3 @@ ForgeSVN/forgesvn/tests/data/testsvn/
 solr_config/core0/conf/spellings.txt
 solr_config/core1/conf/spellings.txt
 solr_config/solr.xml
-
