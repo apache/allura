@@ -266,18 +266,24 @@ class Globals(MappedClass):
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
-        if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
+        if c.app.config.options.get('TicketMonitoringType') in (
+                'AllTicketChanges', 'AllPublicTicketChanges'):
             monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
-            tmpl_context['tickets'] = ({
+            tmpl_context['tickets'] = [{
                     'original_num': original_ticket_nums[_id],
                     'destination_num': moved_tickets[_id].ticket_num,
                     'summary': moved_tickets[_id].summary
-                } for _id in moved_tickets.keys())
-            mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [monitoring_email]))
-            mail_tasks.sendmail.post(**mail)
+                } for _id, t in moved_tickets.iteritems()
+                  if (not t.private or
+                      c.app.config.options.get('TicketMonitoringType') ==
+                      'AllTicketChanges')]
+            if len(tmpl_context['tickets']) > 0:
+                mail.update(dict(
+                    message_id = h.gen_message_id(),
+                    text = tmpl.render(tmpl_context),
+                    destinations = [monitoring_email]))
+                mail_tasks.sendmail.post(**mail)
+
         moved_from = '%s/%s' % (c.project.shortname, c.app.config.options.mount_point)
         moved_to = '%s/%s' % (tracker.project.shortname, tracker.options.mount_point)
         text = 'Tickets moved from %s to %s' % (moved_from, moved_to)

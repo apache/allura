@@ -2396,6 +2396,93 @@ class TestBulkMove(TrackerTestController):
         monitoring_email_text = monitoring_email[0].kwargs.text
         assert_equal(admin_email_text, monitoring_email_text)
 
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_monitoring_email_public_only(self):
+        """Test that private tickets are not included in bulk move
+        notifications if the "public only" option is selected.
+        """
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllPublicTicketChanges',
+        })
+        self.new_ticket(summary='test first ticket', status='open')
+        self.new_ticket(summary='test second ticket', status='open', private=True)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        tickets = [
+            tm.Ticket.query.find({'summary': 'test first ticket'}).first(),
+            tm.Ticket.query.find({'summary': 'test second ticket'}).first()]
+        M.MonQTask.query.remove()
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        self.app.post('/p/test/bugs/move_tickets', {
+                'tracker': str(tracker.config._id),
+                '__ticket_ids': [t._id for t in tickets],
+                '__search': '',
+            })
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 2)  # one for admin and one for monitoring email
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+        admin = M.User.by_username('test-admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 1)
+        admin_email_text = admin_email[0].kwargs.text
+        monitoring_email_text = monitoring_email[0].kwargs.text
+        assert_in('second ticket', admin_email_text)
+        assert_not_in('second ticket', monitoring_email_text)
+
+    @td.with_tool('test2', 'Tickets', 'bugs2')
+    def test_monitoring_email_all_private_moved(self):
+        """Test that no monitoring email is sent if the "public only"
+        option is selected, and only private tickets were moved.
+        """
+        self.app.post('/admin/bugs/set_options', params={
+            'TicketMonitoringEmail': 'monitoring@email.com',
+            'TicketMonitoringType': 'AllPublicTicketChanges',
+        })
+        self.new_ticket(summary='test first ticket', status='open', private=True)
+        self.new_ticket(summary='test second ticket', status='open', private=True)
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        tickets = [
+            tm.Ticket.query.find({'summary': 'test first ticket'}).first(),
+            tm.Ticket.query.find({'summary': 'test second ticket'}).first()]
+        M.MonQTask.query.remove()
+        p = M.Project.query.get(shortname='test2')
+        tracker = p.app_instance('bugs2')
+        self.app.post('/p/test/bugs/move_tickets', {
+                'tracker': str(tracker.config._id),
+                '__ticket_ids': [t._id for t in tickets],
+                '__search': '',
+            })
+        M.MonQTask.run_ready()
+        emails = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
+        assert_equal(len(emails), 1)  # only admin email sent
+        for email in emails:
+            assert_equal(email.kwargs.subject, '[test:bugs] Mass ticket moving by Test Admin')
+        admin = M.User.by_username('test-admin')
+        admin_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': str(admin._id)
+        }).all()
+        monitoring_email = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.mail_tasks.sendmail',
+            'kwargs.destinations': 'monitoring@email.com'
+        }).all()
+        assert_equal(len(admin_email), 1)
+        assert_equal(len(monitoring_email), 0)
 
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
