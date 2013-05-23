@@ -38,9 +38,7 @@ $packages = [
  "libsasl2-dev",
  "libjpeg8-dev",
  "zlib1g-dev",
- "python-pip",
- "libfreetype6-dev",
- "libpng-dev"
+ "python-pip"
 ]
 
 package { $packages:
