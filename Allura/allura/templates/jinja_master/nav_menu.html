@@ -56,11 +56,12 @@
     <div class="brought-by{% if c.project.icon %} with-icon{% endif %}">
         Brought to you by:
         {% set admins = c.project.admins()|sort(attribute='username') %}
-        {% for admin in admins[:4] %}
-            <a href="{{ admin.url() }}">{{ admin.username }}</a>{{ ',' if not loop.last }}
+        {% for admin in admins[:5] %}
+            {% if loop.last and admins|length > 5 -%}
+                and <a href="{{ c.project.url() }}_members/">{{ admins|length - 4 }} others</a>
+            {% else %}
+                <a href="{{ admin.url() }}">{{ admin.username }}</a>{{ ',' if not loop.last }}
+            {% endif %}
         {%- endfor -%}
-        {% if admins|length > 4 -%}
-            , and <a href="{{ c.project.url() }}_members/">{{ admins|length - 4 }} others</a>
-        {% endif %}
     </div>
 {% endif %}
