@@ -523,7 +523,7 @@ class DefaultAdminController(BaseController):
                     del_group_ids.append(str(acl['role_id']))
 
             if new_group_ids or del_group_ids:
-                model.AuditLog.log('updated "%s" permissions: "%s" => "%s" for %s' % (
+                model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
                     ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+del_group_ids)),
                     ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+new_group_ids)),

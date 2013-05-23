@@ -394,13 +394,13 @@ class TestProjectAdmin(TestController):
         assert opt_admin.name == 'option'
         assert opt_developer.name == 'option'
 
-        with audits('updated "admin" permissions: "Admin" => "Admin, Developer" for wiki'):
+        with audits('updated "admin" permission: "Admin" => "Admin, Developer" for wiki'):
             self.app.post('/admin/wiki/update', params={
                         'card-0.new': opt_developer['value'],
                         'card-0.value': opt_admin['value'],
                         'card-0.id': 'admin'})
 
-        with audits('updated "admin" permissions: "Admin, Developer" => "Admin" for wiki'):
+        with audits('updated "admin" permission: "Admin, Developer" => "Admin" for wiki'):
             self.app.post('/admin/wiki/update', params={
                         'card-0.value': opt_admin['value'],
                         'card-0.id': 'admin'})
