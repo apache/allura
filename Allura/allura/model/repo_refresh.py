@@ -420,7 +420,7 @@ def send_notifications(repo, commit_ids):
                 len(commit_msgs), repo.app.project.name, repo.app.config.options.mount_label)
             text='\n\n'.join(commit_msgs)
         else:
-            subject = '{0} - {1} committed: {2}'.format(
+            subject = '{0} - {1}: {2}'.format(
                 repo.shorthand_for_commit(ci._id),
                 ci.authored.name,
                 summary)
