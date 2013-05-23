@@ -33,6 +33,12 @@ class TicketCustomFields(ew.CompoundField):
     def __init__(self, *args, **kwargs):
         super(TicketCustomFields, self).__init__(*args, **kwargs)
         self._fields = None
+        self._custom_fields_values = {}
+
+    def context_for(self, field):
+        response = super(TicketCustomFields, self).context_for(field)
+        response['value'] = self._custom_fields_values.get(field.name)
+        return response
 
     @property
     def fields(self):
@@ -59,6 +65,7 @@ class GenericTicketForm(ew.SimpleForm):
         if idx == 'assigned_to':
             self._add_current_value_to_user_field(field, ctx.get('value'))
         elif idx == 'custom_fields':
+            field._custom_fields_values = ctx.get('value') or {}
             for cf in c.app.globals.custom_fields:
                 if cf and cf.type == 'user':
                     val = ctx.get('value')
