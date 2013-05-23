@@ -830,6 +830,39 @@ class TestFunctionalController(TrackerTestController):
         response = self.app.get('/p/test/bugs/search/')
         assert 'Edit All' not in response
 
+    def test_custom_fields_preserve_user_input_on_form_errors(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_priority', label='Priority', type='select',
+                     options='normal urgent critical'),
+                dict(name='_category', label='Category', type='string',
+                     options='')],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields', params=variable_encode(params))
+        # Test new ticket form
+        r = self.app.get('/bugs/new/')
+        form = r.forms[1]
+        form['ticket_form.custom_fields._priority'] = 'urgent'
+        form['ticket_form.custom_fields._category'] = 'bugs'
+        error_form = form.submit()
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value, 'urgent')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value, 'bugs')
+        # Test edit ticket form
+        self.new_ticket(summary='Test ticket')
+        response = self.app.get('/bugs/1/')
+        form = response.forms[1]
+        assert_equal(form['ticket_form.custom_fields._priority'].value, 'normal')
+        assert_equal(form['ticket_form.custom_fields._category'].value, '')
+        form['ticket_form.summary'] = ''
+        form['ticket_form.custom_fields._priority'] = 'urgent'
+        form['ticket_form.custom_fields._category'] = 'bugs'
+        error_form = form.submit()
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._priority'].value, 'urgent')
+        assert_equal(error_form.forms[1]['ticket_form.custom_fields._category'].value, 'bugs')
+
     def test_new_ticket_validation(self):
         summary = 'ticket summary'
         response = self.app.get('/bugs/new/')
