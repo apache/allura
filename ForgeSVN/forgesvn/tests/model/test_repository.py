@@ -419,7 +419,7 @@ class TestSVNRev(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().sort('pubdate')
         n = notifications.all()[3]
-        assert_equal(n.subject, '[test:src] rick446 committed revision 1: Create readme')
+        assert_equal(n.subject, '[test:src] [r1] - rick446 committed: Create readme')
         assert_equal(n.text, 'Create readme http://localhost//p/test/src/1/')
 
 
