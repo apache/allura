@@ -62,11 +62,12 @@ from allura.controllers import AppDiscussionController, AppDiscussionRestControl
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
-from allura.tasks import mail_tasks, tracker_task
+from allura.tasks import mail_tasks
 
 # Local imports
 from forgetracker import model as TM
 from forgetracker import version
+from forgetracker import tasks
 
 from forgetracker.widgets.admin import OptionsAdmin
 from forgetracker.widgets.ticket_form import TicketForm, TicketCustomField
@@ -824,7 +825,7 @@ class RootController(BaseController, FeedController):
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
             app_config_id=c.app.config._id)).all()
 
-        tracker_task.move_tickets.post(ticket_ids, destination_tracker_id)
+        tasks.move_tickets.post(ticket_ids, destination_tracker_id)
 
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()

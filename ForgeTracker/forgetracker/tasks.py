@@ -32,3 +32,8 @@ def update_bin_counts(app_config_id):
     app = app_config.project.app_instance(app_config)
     with h.push_config(c, app=app):
         app.globals.update_bin_counts()
+
+
+@task
+def move_tickets(ticket_ids, destination_tracker_id):
+    c.app.globals.move_tickets(ticket_ids, destination_tracker_id)
