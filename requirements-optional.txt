@@ -14,4 +14,4 @@ MySQL-python  # GPL
 
 # One or the other is required to enable spam checking
 akismet==0.2.0
-pymollom==0.1  # GPL
+PyMollom==0.1  # GPL
