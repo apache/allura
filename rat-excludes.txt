@@ -5,7 +5,9 @@ rat-excludes.txt
 **/*.egg-info/
 requirements*
 **/MANIFEST.in
-**/test.log
+**/*.log
+**/.coverage
+**/nosetests.xml
 Allura/allura/controllers/controller.template
 Allura/docs/_build/
 Allura/allura/etc/mime.types
