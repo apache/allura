@@ -339,6 +339,26 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
 
+class TestGitImplementation(unittest.TestCase):
+    def test_get_branches(self):
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data/testgit.git')
+        repo = mock.Mock(full_fs_path=repo_dir)
+        impl = GM.git_repo.GitImplementation(repo)
+        self.assertEqual(impl.get_branches(), [
+                Object(name='master', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
+                Object(name='zz', object_id='5c47243c8e424136fd5cdd18cd94d34c66d1955c')
+            ])
+
+    def test_get_tags(self):
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data/testgit.git')
+        repo = mock.Mock(full_fs_path=repo_dir)
+        impl = GM.git_repo.GitImplementation(repo)
+        self.assertEqual(impl.get_tags(), [
+                Object(name='foo', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
+            ])
+
 
 class TestGitCommit(unittest.TestCase):
 

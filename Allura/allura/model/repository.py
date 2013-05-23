@@ -214,6 +214,12 @@ class RepositoryImplementation(object):
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
         self._setup_hooks(source_path)
 
+    def get_branches(self):
+        return self.repo.branches
+
+    def get_tags(self):
+        return self.repo.tags
+
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
     class __mongometa__:
@@ -326,6 +332,10 @@ class Repository(Artifact, ActivityObject):
         return self._impl.last_commit_ids(commit, paths)
     def is_empty(self):
         return self._impl.is_empty()
+    def get_branches(self):
+        return self._impl.get_branches()
+    def get_tags(self):
+        return self._impl.get_tags()
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)

@@ -698,5 +698,11 @@ class SVNImplementation(M.RepositoryImplementation):
             else:
                 raise
 
+    def get_branches(self):
+        return []
+
+    def get_tags(self):
+        return []
+
 
 Mapper.compile_all()

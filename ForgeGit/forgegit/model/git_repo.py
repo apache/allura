@@ -361,6 +361,12 @@ class GitImplementation(M.RepositoryImplementation):
     def is_empty(self):
         return not self._git or len(self._git.heads) == 0
 
+    def get_branches(self):
+        return [Object(name=b.name,object_id=b.commit.hexsha) for b in self._git.heads]
+
+    def get_tags(self):
+        return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags]
+
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

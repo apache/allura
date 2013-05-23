@@ -130,29 +130,34 @@ class RepositoryApp(Application):
                         self.repo.upstream_repo.name + 'merge-requests/',
                         small=pending_upstream_merges))
         ref_url = self.repo.url_for_commit(self.default_branch_name, url_type='ref')
-        if self.repo.branches:
+        branches = self.repo.get_branches()
+        if branches:
             links.append(SitemapEntry('Branches'))
+            for branch in branches:
+                if branch.name == self.default_branch_name:
+                    branches.remove(branch)
+                    branches.insert(0, branch)
+                    break
             max_branches = 10
-            for b in self.repo.branches[:max_branches]:
+            for branch in branches[:max_branches]:
                 links.append(SitemapEntry(
-                        b.name,
-                        quote(self.repo.url_for_commit(b.name) + 'tree/'),
-                        small=b.count))
-            if len(self.repo.branches) > max_branches:
+                        branch.name,
+                        quote(self.repo.url_for_commit(branch.name) + 'tree/')))
+            if len(branches) > max_branches:
                 links.append(
                     SitemapEntry(
                         'More Branches',
                         ref_url + 'branches/',
                         ))
-        if self.repo.repo_tags:
+        tags = self.repo.get_tags()
+        if tags:
             links.append(SitemapEntry('Tags'))
             max_tags = 10
-            for b in self.repo.repo_tags[:max_tags]:
+            for b in tags[:max_tags]:
                 links.append(SitemapEntry(
                         b.name,
-                        quote(self.repo.url_for_commit(b.name) + 'tree/'),
-                        small=b.count))
-            if len(self.repo.repo_tags) > max_tags:
+                        quote(self.repo.url_for_commit(b.name) + 'tree/')))
+            if len(tags) > max_tags:
                 links.append(
                     SitemapEntry(
                         'More Tags',
