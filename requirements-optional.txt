@@ -11,3 +11,7 @@
 # for ForgeWiki's mediawiki importer:
 -e git://github.com/zikzakmedia/python-mediawiki.git#egg=python-mediawiki   # GPL
 MySQL-python  # GPL
+
+# One or the other is required to enable spam checking
+akismet==0.2.0
+pymollom==0.1  # GPL
