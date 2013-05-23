@@ -1,0 +1,6 @@
+<h6>Project Admins:</h6>
+<ul class="md-users-list">
+    {% for user in users -%}
+        <li><a href="{{user.url}}">{{user.name}}</a></li>
+    {%- endfor %}
+</ul>

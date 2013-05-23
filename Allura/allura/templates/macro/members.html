@@ -1,0 +1,9 @@
+<h6>Project Members:</h6>
+	<ul class="md-users-list">
+		{% for user in users -%}
+			<li><a href="{{user.url}}">{{user.name}}</a>{{user.admin}}</li>
+		{%- endfor %}
+		{% if over_limit -%}
+				<li class="md-users-list-more"><a href="{{c.project.url()}}_members">All Members</a></li>
+		{%- endif %}
+	</ul>

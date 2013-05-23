@@ -18,17 +18,14 @@
 import cgi
 import random
 import shlex
-import string
 import logging
 import traceback
 from operator import attrgetter
 
 import pymongo
-import jinja2
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asint
-from urlparse import urljoin
 
 from . import helpers as h
 from . import security
@@ -82,53 +79,36 @@ class parse(object):
         else:
             return None
 
-template_neighborhood_feeds = string.Template('''
-<div class="neighborhood_feed_entry">
-<h3><a href="$href">$title</a></h3>
-<p>
-by <em>$author</em>
-<small>$ago</small>
-</p>
-<p>$description</p>
-</div>
-''')
 @macro('neighborhood-wiki')
 def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     from allura import model as M
+    from allura.lib.widgets.macros import NeighborhoodFeeds
     feed = M.Feed.query.find(
         dict(
             tool_name=tool_name,
             neighborhood_id=c.project.neighborhood._id))
     feed = feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = '\n'.join(
-        template_neighborhood_feeds.substitute(dict(
+    output = ((dict(
                 href=item.link,
                 title=item.title,
                 author=item.author_name,
                 ago=h.ago(item.pubdate),
-                description=item.description))
+                description=g.markdown.convert(item.description)))
         for item in feed)
-    return output
+    feeds = NeighborhoodFeeds(feeds=output)
+    g.resource_manager.register(feeds)
+    response = feeds.display(feeds=output)
+    return response
 
-template_neighborhood_blog_posts = string.Template('''
-<div class="neighborhood_feed_entry">
-<h3><a href="$href">$title</a></h3>
-<p>
-by <em>$author</em>
-<small>$ago</small>
-</p>
-$description
-</div>
-''')
 @macro('neighborhood-wiki')
 def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
     from forgeblog import model as BM
+    from allura.lib.widgets.macros import BlogPosts
     posts = BM.BlogPost.query.find(dict(
         neighborhood_id=c.project.neighborhood._id,
         state='published'))
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = '\n'.join(
-        template_neighborhood_blog_posts.substitute(dict(
+    output = ((dict(
                 href=post.url(),
                 title=post.title,
                 author=post.author().display_name,
@@ -137,19 +117,23 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
         for post in posts if post.app and
                              security.has_access(post, 'read', project=post.app.project)() and
                              security.has_access(post.app.project, 'read', project=post.app.project)())
-    return output
+
+    posts = BlogPosts(posts=output)
+    g.resource_manager.register(posts)
+    response = posts.display(posts=output)
+    return response
 
 @macro()
 def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_point=None):
     from forgeblog import model as BM
+    from allura.lib.widgets.macros import BlogPosts
     app_config_ids = []
     for conf in c.project.app_configs:
         if conf.tool_name.lower() == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
             app_config_ids.append(conf._id)
     posts = BM.BlogPost.query.find({'state':'published','app_config_id':{'$in':app_config_ids}})
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
-    output = '\n'.join(
-        template_neighborhood_blog_posts.substitute(dict(
+    output = ((dict(
                 href=post.url(),
                 title=post.title,
                 author=post.author().display_name,
@@ -157,7 +141,10 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
                 description=summary and '&nbsp;' or g.markdown.convert(post.text)))
         for post in posts if security.has_access(post, 'read', project=post.app.project)() and
                              security.has_access(post.app.project, 'read', project=post.app.project)())
-    return output
+    posts = BlogPosts(posts=output)
+    g.resource_manager.register(posts)
+    response = posts.display(posts=output)
+    return response
 
 def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
@@ -352,31 +339,35 @@ def img(src=None, **kw):
     else:
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
 
-
-template_project_admins = string.Template('<li><a href="$url">$name</a></li>')
 @macro()
 def project_admins():
     admins = c.project.users_with_role('Admin')
-    output = ''.join(
-        template_project_admins.substitute(dict(
+    from allura.lib.widgets.macros import ProjectAdmins
+    output = ((dict(
             url=user.url(),
-            name=jinja2.escape(user.display_name)))
+            name=user.display_name))
         for user in admins)
-    return u'<h6>Project Admins:</h6><ul class="md-users-list">{0}</ul>'.format(output)
+    users = ProjectAdmins(users=output)
+    g.resource_manager.register(users)
+    response = users.display(users=output)
+    return response
 
-template_members = string.Template('<li><a href="$url">$name</a>$admin</li>')
 @macro()
 def members(limit=20):
+    from allura.lib.widgets.macros import Members
     limit = asint(limit)
     admins = set(c.project.users_with_role('Admin'))
     members = sorted(c.project.users(), key=attrgetter('display_name'))
-    output = ''.join(
-        template_members.substitute(dict(
+    output = [dict(
             url=user.url(),
-            name=jinja2.escape(user.display_name),
+            name=user.display_name,
             admin=' (admin)' if user in admins else '',
-            ))
-        for user in members[:limit])
-    if len(members) > limit:
-        output = output + '<li class="md-users-list-more"><a href="%s_members">All Members</a></li>' % c.project.url()
-    return u'<h6>Project Members:</h6><ul class="md-users-list">{0}</ul>'.format(output)
+            )
+        for user in members[:limit]]
+
+    over_limit = len(members) > limit
+    users = Members(users=output, over_limit=over_limit)
+    g.resource_manager.register(users)
+    response = users.display(users=output, over_limit=over_limit)
+    return response
+

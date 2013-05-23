@@ -1,0 +1,10 @@
+{% for post in posts %}
+    <div class="neighborhood_feed_entry">
+    <h3><a href="{{post.href}}">{{post.title}}</a></h3>
+    <p>
+    by <em>{{post.author}}</em>
+    <small>{{post.ago}}</small>
+    </p>
+    {{post.description}}
+    </div>
+{% endfor %}
