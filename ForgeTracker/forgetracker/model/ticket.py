@@ -261,9 +261,9 @@ class Globals(MappedClass):
                     'summary': moved_tickets[_id].summary
                 } for _id in filtered.get(user._id, []))
             mail.update(dict(
-            message_id = h.gen_message_id(),
-            text = tmpl.render(tmpl_context),
-            destinations = [str(user._id)]))
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
         if c.app.config.options.get('TicketMonitoringType') == 'AllTicketChanges':
