@@ -2235,14 +2235,14 @@ class TestBulkMove(TrackerTestController):
         M.MonQTask.run_ready()
 
     def test_access_restriction(self):
-       self.app.get('/bugs/move/', status=200)
-       self.app.get('/bugs/move/',
+        self.app.get('/bugs/move/', status=200)
+        self.app.get('/bugs/move/',
                     extra_environ={'username': 'test-user-0'},
                     status=403)
-       self.app.get('/bugs/move/',
+        self.app.get('/bugs/move/',
                     extra_environ={'username': '*anonymous'},
                     status=302)
-       self.app.post('/bugs/move_tickets',
+        self.app.post('/bugs/move_tickets',
                      extra_environ={'username': 'test-user-0'},
                      status=403)
 
@@ -2353,6 +2353,11 @@ class TestBulkMove(TrackerTestController):
         assert_in(first_ticket_changes, admin_email.kwargs.text)
         assert_in(second_ticket_changes, admin_email.kwargs.text)
         assert_in(third_ticket_changes, admin_email.kwargs.text)
+        # After tickets moved, user should see a flash
+        mbox = M.Mailbox.query.get(user_id=admin._id, is_flash=True)
+        notification_id = mbox.queue[-1]
+        notification = M.Notification.query.get(_id=notification_id)
+        assert_equal(notification.text, 'Tickets moved from test/bugs to test2/bugs2')
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_monitoring_email(self):

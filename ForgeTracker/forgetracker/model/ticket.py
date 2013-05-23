@@ -278,6 +278,10 @@ class Globals(MappedClass):
                 text = tmpl.render(tmpl_context),
                 destinations = [monitoring_email]))
             mail_tasks.sendmail.post(**mail)
+        moved_from = '%s/%s' % (c.project.shortname, c.app.config.options.mount_point)
+        moved_to = '%s/%s' % (tracker.project.shortname, tracker.options.mount_point)
+        text = 'Tickets moved from %s to %s' % (moved_from, moved_to)
+        Notification.post_user(c.user, None, 'flash', text=text)
 
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
