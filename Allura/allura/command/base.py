@@ -40,7 +40,13 @@ def run_command(command, args):
     mod, cls = command.rsplit('.', 1)
     mod = __import__(mod, fromlist=[str(cls)])
     command = getattr(mod, cls)
-    return command(command.__name__).run(shlex.split(args or ''))
+    command = command(command.__name__)
+    arg_list = shlex.split(args or '')
+    try:
+        command.parser.parse_args(arg_list)
+    except SystemExit:
+        raise Exception("Error parsing args: '%s'" % args)
+    return command.run(arg_list)
 
 class EmptyClass(object): pass
 
