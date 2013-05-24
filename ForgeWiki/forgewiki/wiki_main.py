@@ -702,41 +702,39 @@ class RootRestController(BaseController):
         return PageRestController(title), remainder
 
 
-    @h.vardec
-    @expose()
-    @require_post()
-    def post(self, title, **post_data):
-        page = WM.Page.query.get(
-            app_config_id=c.app.config._id,
-            title=title,
-            deleted=False)
-        if not page:
-            require_access(c.app, 'create')
-            page = WM.Page.upsert(title)
-            page.viewable_by = ['all']
-        else:
-            require_access(page, 'edit')
-        page.text = post_data['text']
-        if 'labels' in post_data:
-            page.labels = post_data['labels'].split(',')
-        page.commit()
-
 class PageRestController(BaseController):
 
     def __init__(self, title):
-        if title is not None:
-            self.page = WM.Page.query.get(app_config_id=c.app.config._id,
-                                          title=h.really_unicode(unquote(title)),
-                                          deleted=False)
-            if self.page is None:
-                raise exc.HTTPNotFound()
+        self.title = h.really_unicode(unquote(title)) if title else None
+        self.page = WM.Page.query.get(app_config_id=c.app.config._id,
+                                      title=self.title,
+                                      deleted=False)
 
     def _check_security(self):
-        require_access(self.page, 'read')
+        if self.page:
+            require_access(self.page, 'read')
 
+    @h.vardec
     @expose('json:')
     def index(self, **kw):
+        if request.method == 'POST':
+            return self._update_page(self.title, **kw)
+        if self.page is None:
+            raise exc.HTTPNotFound()
         return self.page.__json__()
+
+    def _update_page(self, title, **post_data):
+        if not self.page:
+            require_access(c.app, 'create')
+            self.page = WM.Page.upsert(title)
+            self.page.viewable_by = ['all']
+        else:
+            require_access(self.page, 'edit')
+        self.page.text = post_data['text']
+        if 'labels' in post_data:
+            self.page.labels = post_data['labels'].split(',')
+        self.page.commit()
+        return {}
 
 
 class WikiAdminController(DefaultAdminController):
