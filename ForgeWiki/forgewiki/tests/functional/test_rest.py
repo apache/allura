@@ -1,3 +1,4 @@
+# coding: utf-8
 import json
 
 from nose.tools import assert_equal
@@ -32,7 +33,11 @@ class TestWikiApi(TestRestApiBase):
         r = json.loads(r.body)
         assert_equal(len(r['attachments']), 2)
 
-    def test_post_page(self):
+    def test_page_does_not_exist(self):
+        r = self.api_get('/rest/p/test/wiki/fake/')
+        assert_equal(r.status_int, 404)
+
+    def test_update_page(self):
         data = {
             'text': 'Embrace the Dark Side',
             'labels': 'head hunting,dark side'
@@ -40,5 +45,16 @@ class TestWikiApi(TestRestApiBase):
         r = self.api_post('/rest/p/test/wiki/Home/', **data)
         assert_equal(r.status_int, 200)
         r = self.api_get('/rest/p/test/wiki/Home/')
+        assert_equal(r.json['text'], data['text'])
+        assert_equal(r.json['labels'], data['labels'].split(','))
+
+    def test_create_page(self):
+        data = {
+            'text': 'Embrace the Dark Side',
+            'labels': 'head hunting,dark side'
+        }
+        r = self.api_post(u'/rest/p/test/wiki/tést/'.encode('utf-8'), **data)
+        assert_equal(r.status_int, 200)
+        r = self.api_get(u'/rest/p/test/wiki/tést/'.encode('utf-8'))
         assert_equal(r.json['text'], data['text'])
         assert_equal(r.json['labels'], data['labels'].split(','))
