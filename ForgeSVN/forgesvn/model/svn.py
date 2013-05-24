@@ -102,9 +102,9 @@ class Repository(M.Repository):
         return self._impl.commit(self.heads[0].object_id)
 
     def tarball_filename(self, revision, path=None):
-        fn =  super(Repository, self).tarball_filename(revision, path)
+        fn = super(Repository, self).tarball_filename(revision, path)
         path = self._impl._path_to_root(path, revision)
-        fn += '-' + '-'.join(path.split('/'))
+        fn += ('-' + '-'.join(path.split('/'))) if path else ''
         return fn
 
 
