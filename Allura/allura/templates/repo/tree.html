@@ -31,7 +31,7 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 
 {% block actions %}
 {% if tarball_url %}
-<a href="{{ tarball_url + ('?path=' + path if c.app.tool_label.lower() == 'svn' and path else '') }}" rel="nofollow">
+<a href="{{ tarball_url + ('?path=' + path if path else '') }}" rel="nofollow">
     <b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"> </b> Download Snapshot
 </a>
 {% endif %}
