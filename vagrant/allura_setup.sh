@@ -63,8 +63,8 @@ then
     chown vagrant:vagrant /home/vagrant/.bash_profile
 fi
 
-# Make sure vagrant user can execute venv bin scripts
-sudo chown -R vagrant:vagrant /home/vagrant/env-allura/bin/
+# Make sure vagrant user has full ownership of venv
+sudo chown -R vagrant:vagrant /home/vagrant/env-allura/
 
 # Setup Allura python packages
 cd /home/vagrant/src/allura
