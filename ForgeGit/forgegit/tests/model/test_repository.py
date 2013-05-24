@@ -75,7 +75,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[1e146e]'
-        assert self.rev.symbolic_ids == (['master'], ['foo']), self.rev.symbolic_ids
+        assert self.rev.symbolic_ids == (['master', 'zz'], ['foo'])
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
