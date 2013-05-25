@@ -45,17 +45,6 @@ package { $packages:
     require => Exec[ "package index update" ],
 }
 
-file { '/usr/lib/libz.so':
-  ensure => 'link',
-  target => '/usr/lib/x86_64-linux-gnu/libz.so',
-  require => Package[ "zlib1g-dev" ],
-}
-file { '/usr/lib/libjpeg.so':
-  ensure => 'link',
-  target => '/usr/lib/x86_64-linux-gnu/libjpeg.so',
-  require => Package[ "libjpeg8-dev" ],
-}
-
 # install python pip
 exec { "install venv":
   command => "/usr/bin/pip install virtualenv",
@@ -115,7 +104,6 @@ exec { "pip install":
   returns => 0,
   tries => 3,
   require => [ Exec[ "clone repo"], Exec[ "create allura venv" ],
-               File["/usr/lib/libjpeg.so"], File["/usr/lib/libz.so"],
                ],
 }
 
