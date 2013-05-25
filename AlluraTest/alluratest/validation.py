@@ -115,118 +115,125 @@ def report_validation_error(val_name, filename, message):
     else:
         sys.stderr.write('=' * 40 + '\n' + message)
 
+
 def dump_to_file(prefix, html):
     f = tempfile.NamedTemporaryFile(prefix=prefix, delete=False)
     f.write(html)
     f.close()
     return f.name
 
+
 def validate_html(html_or_response):
-        if hasattr(html_or_response, 'body'):
-            html = html_or_response.body
-        else:
-            html = html_or_response
+    if hasattr(html_or_response, 'body'):
+        html = html_or_response.body
+    else:
+        html = html_or_response
 
-        html = html.lstrip()
+    html = html.lstrip()
 
-        if html.startswith('<!DOCTYPE html>'):
-            return validate_html5(html)
-        else:
-            assert False, 'Non-valid HTML: ' + html[:100] + '...'
+    if html.startswith('<!DOCTYPE html>'):
+        return validate_html5(html)
+    else:
+        assert False, 'Non-valid HTML: ' + html[:100] + '...'
+
 
 def validate_json(json_or_response):
-        if hasattr(json_or_response, 'body'):
-            j = json_or_response.body
-        else:
-            j = json_or_response
+    if hasattr(json_or_response, 'body'):
+        j = json_or_response.body
+    else:
+        j = json_or_response
 
-        try:
-            obj = json.loads(j)
-        except Exception, e:
-            ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
+    try:
+        obj = json.loads(j)
+    except Exception, e:
+        ok_(False, "Couldn't validate JSON: " + str(e) + ':' + j[:100] + '...')
 
-        return obj
+    return obj
+
 
 def validate_html5(html_or_response):
-        if hasattr(html_or_response, 'body'):
-            html = html_or_response.body
-        else:
-            html = html_or_response
-        register_openers()
-        params = [("out","text"),("content",html)]
-        datagen, headers = multipart_encode(params)
-        request = urllib2.Request("http://html5.validator.nu/", datagen, headers)
-        count = 3
-        while True:
-            try:
-                resp = urllib2.urlopen(request, timeout=3).read()
+    if hasattr(html_or_response, 'body'):
+        html = html_or_response.body
+    else:
+        html = html_or_response
+    register_openers()
+    params = [("out","text"),("content",html)]
+    datagen, headers = multipart_encode(params)
+    request = urllib2.Request("http://html5.validator.nu/", datagen, headers)
+    count = 3
+    while True:
+        try:
+            resp = urllib2.urlopen(request, timeout=3).read()
+            break
+        except:
+            resp = "Couldn't connect to validation service to check the HTML"
+            count -= 1
+            if count == 0:
+                sys.stderr.write('WARNING: ' + resp + '\n')
                 break
-            except:
-                resp = "Couldn't connect to validation service to check the HTML"
-                count -= 1
-                if count == 0:
-                    sys.stderr.write('WARNING: ' + resp + '\n')
-                    break
 
-        resp = resp.replace('“','"').replace('”','"').replace('–','-')
+    resp = resp.replace('“','"').replace('”','"').replace('–','-')
 
-        ignored_errors = [
-            'Required attributes missing on element "object"',
-            'Stray end tag "embed".',
-            'Stray end tag "param".',
-            r'Bad value .+? for attribute "onclick" on element "input": invalid return',
-        ]
-        for ignore in ignored_errors:
-            resp = re.sub('Error: ' + ignore, 'Ignoring: ' + ignore, resp)
+    ignored_errors = [
+        'Required attributes missing on element "object"',
+        'Stray end tag "embed".',
+        'Stray end tag "param".',
+        r'Bad value .+? for attribute "onclick" on element "input": invalid return',
+    ]
+    for ignore in ignored_errors:
+        resp = re.sub('Error: ' + ignore, 'Ignoring: ' + ignore, resp)
 
-        if 'Error:' in resp:
-            fname = dump_to_file('html5-', html)
-            message = resp.decode('ascii','ignore')
-            report_validation_error('html5', fname, message)
+    if 'Error:' in resp:
+        fname = dump_to_file('html5-', html)
+        message = resp.decode('ascii','ignore')
+        report_validation_error('html5', fname, message)
 
 
 def validate_html5_chunk(html):
-        """ When you don't have a html & body tags - this adds it"""
-        # WebTest doesn't like HTML fragments without doctype,
-        # so we output them sometimes for fragments, which is hack.
-        # Unhack it here.
-        doctype = '<!DOCTYPE html>'
-        if html.startswith(doctype):
-            html = html[len(doctype):]
+    """ When you don't have a html & body tags - this adds it"""
+    # WebTest doesn't like HTML fragments without doctype,
+    # so we output them sometimes for fragments, which is hack.
+    # Unhack it here.
+    doctype = '<!DOCTYPE html>'
+    if html.startswith(doctype):
+        html = html[len(doctype):]
 
-        html = '''<!DOCTYPE html>
-        <html>
-        <head><title></title></head>
-        <body>
-        %s
-        </body></html>''' % html
-        return validate_html5(html)
+    html = '''<!DOCTYPE html>
+    <html>
+    <head><title></title></head>
+    <body>
+    %s
+    </body></html>''' % html
+    return validate_html5(html)
+
 
 def validate_js(html_or_response):
-        if hasattr(html_or_response, 'body'):
-            if html_or_response.status_int != 200:
-                return
-            html = html_or_response.body
-        else:
-            html = html_or_response
-        basedir = path.dirname(path.abspath(__file__))
-        jslint_dir = basedir + '/../jslint'
-        fname = dump_to_file('jslint-', html)
-        cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + fname
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout, stderr = p.communicate(html)
-        if stdout.startswith('jslint: No problems found'):
-            os.unlink(fname)
+    if hasattr(html_or_response, 'body'):
+        if html_or_response.status_int != 200:
             return
-        stdout = stdout.decode('UTF-8', 'replace')
-        msg = '\n'.join(repr(s) for s in stdout.split('\n') if s)
-        report_validation_error('js', fname, msg)
+        html = html_or_response.body
+    else:
+        html = html_or_response
+    basedir = path.dirname(path.abspath(__file__))
+    jslint_dir = basedir + '/../jslint'
+    fname = dump_to_file('jslint-', html)
+    cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + fname
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, stderr = p.communicate(html)
+    if stdout.startswith('jslint: No problems found'):
+        os.unlink(fname)
+        return
+    stdout = stdout.decode('UTF-8', 'replace')
+    msg = '\n'.join(repr(s) for s in stdout.split('\n') if s)
+    report_validation_error('js', fname, msg)
+
 
 def validate_page(html_or_response):
     if Config.instance().validation_enabled('html5'):
         validate_html(html_or_response)
     if Config.instance().validation_enabled('inlinejs'):
         validate_js(html_or_response)
+
 
 class AntiSpamTestApp(TestApp):
 
