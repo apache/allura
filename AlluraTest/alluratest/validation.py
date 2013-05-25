@@ -47,11 +47,6 @@ from ming.utils import LazyProperty
 
 from allura.lib import utils
 
-ENABLE_CONTENT_VALIDATION = False
-# By default we want to run only validations which are fast,
-# but on special test hosts - all.
-COMPLETE_TESTS_HOST = 'sb-forge-4039'
-
 log = logging.getLogger(__name__)
 
 class Config(object):
@@ -93,9 +88,6 @@ class Config(object):
         elif env_var is not None:
             return val_type in env_var.split(',')
 
-        if self.hostname == COMPLETE_TESTS_HOST:
-            return True
-
         enabled = self.test_ini.getboolean('validation', 'validate_' + val_type)
         return enabled
 
@@ -103,9 +95,7 @@ class Config(object):
         env_var = os.getenv('ALLURA_VALIDATION')
         if env_var == 'all':
             return True
-        if self.hostname == COMPLETE_TESTS_HOST:
-            return True
-        return ENABLE_CONTENT_VALIDATION
+        return False
 
 
 def report_validation_error(val_name, filename, message):
