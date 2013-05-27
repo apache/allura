@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,6 +18,7 @@
 
 import os
 import json
+from formencode.variabledecode import variable_encode
 from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
@@ -89,6 +91,39 @@ class TestImportController(TestRestApiBase):
         assert not r.json['errors']
 
     @td.with_tracker
+    def test_import_custom_field(self):
+        params = dict(
+            custom_fields=[
+                dict(name='_resolution', label='Resolution', type='select',
+                     options='oné "one and á half" two'),
+               ],
+            open_status_names='aa bb',
+            closed_status_names='cc',
+            )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        here_dir = os.path.dirname(__file__)
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+                                 expires=datetime.utcnow() + timedelta(days=1))
+        ming.orm.session(api_ticket).flush()
+        self.set_api_token(api_ticket)
+
+        doc_text = open(here_dir + '/data/sf.json').read()
+        doc_json = json.loads(doc_text)
+        ticket_json = doc_json['trackers']['default']['artifacts'][0]
+        self.api_post('/rest/p/test/bugs/perform_import',
+            doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+
+        ming.orm.ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ming.orm.ThreadLocalORMSession.flush_all()
+
+        r = self.app.get('/p/test/bugs/204/')
+        assert '<option selected value="fixed">fixed</option>' in r
+        assert '<option value="one and á half">one and á half</option>' in r
+
+    @td.with_tracker
     def test_import(self):
         here_dir = os.path.dirname(__file__)
         api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
@@ -124,6 +159,8 @@ class TestImportController(TestRestApiBase):
         assert_equal(r.json['tickets'][0]['summary'], ticket_json['summary'])
 
         r = self.app.get('/p/test/bugs/204/')
+        assert '<option value="2.0">2.0</option>' in r
+        assert '<option selected value="test_milestone">test_milestone</option>' in r
         assert ticket_json['summary'] in r
         r = self.app.get('/p/test/bugs/')
         assert ticket_json['summary'] in r

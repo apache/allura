@@ -18,11 +18,13 @@
 #-*- python -*-
 import logging
 import json
+import shlex
 from datetime import datetime
 from cStringIO import StringIO
 
 # Non-stdlib imports
 from pylons import tmpl_context as c
+from allura.lib import helpers as h
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -140,6 +142,33 @@ class ImportSupport(object):
             return u._id
         return None
 
+    def check_suctom_field(self, field, value):
+        field = c.app.globals.get_custom_field(field)
+        if (field['type'] == 'select') and (value != ''):
+            field_options = h.really_unicode(field['options'])
+            try:
+                field_options = shlex.split(field_options.encode('utf-8'))
+                field_options = map(h.really_unicode, field_options)
+            except ValueError:
+                field_options = field_options.split()
+            field_options = [o.replace('"', '') for o in field_options]
+            if value not in field_options:
+                field['options'] = ' '.join([field['options'], value])
+        elif (field['type'] == 'milestone') and (value != ''):
+            milestones = field['milestones']
+            is_exists = False
+            for milestone in milestones:
+                if milestone['name'] == value:
+                    is_exists = True
+            if not is_exists:
+                milestone = {'due_date': '',
+                             'complete': False,
+                             'description': '',
+                             'name': value,
+                             'old_name': value}
+                field['milestones'].append(milestone)
+        ThreadLocalORMSession.flush_all()
+
     def custom(self, ticket, field, value):
         field = '_' + field
         if not c.app.has_custom_field(field):
@@ -148,6 +177,7 @@ class ImportSupport(object):
             ThreadLocalORMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
+        self.check_suctom_field(field, value)
         ticket['custom_fields'][field] = value
 
     #
