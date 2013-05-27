@@ -174,3 +174,18 @@ def test_dup_api_token():
     except DuplicateKeyError:
         pass
     assert len(M.ApiToken.query.find().all()) == 1, "Duplicate entries with unique key found"
+
+@with_setup(setUp)
+def test_openid_claimed_by_user():
+    oid = M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID')
+    c.user.disabled = True
+    oid.claimed_by_user_id = c.user._id
+    ThreadLocalORMSession.flush_all()
+    assert oid.claimed_by_user() is not c.user
+
+@with_setup(setUp)
+def test_q():
+    addr = M.EmailAddress(_id='test_admin@sf.net', claimed_by_user_id=c.user._id)
+    c.user.disabled = True
+    ThreadLocalORMSession.flush_all()
+    assert addr.claimed_by_user() is not c.user

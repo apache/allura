@@ -197,7 +197,7 @@ class EmailAddress(MappedClass):
     nonce = FieldProperty(str)
 
     def claimed_by_user(self):
-        return User.query.get(_id=self.claimed_by_user_id)
+        return User.query.get(_id=self.claimed_by_user_id, disabled=False)
 
     @classmethod
     def upsert(cls, addr):
@@ -256,7 +256,7 @@ class OpenId(MappedClass):
 
     def claimed_by_user(self):
         if self.claimed_by_user_id:
-            result = User.query.get(_id=self.claimed_by_user_id)
+            result = User.query.get(_id=self.claimed_by_user_id, disabled=False)
         else: # pragma no cover
             result = User.register(
                 dict(username=None, password=None,
