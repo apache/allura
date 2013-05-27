@@ -206,6 +206,9 @@
             $(this).trigger('editTicket');
             return false;
           });
+          if ($('div > div.error').hasClass('error')){
+            $('a.edit_ticket').click();
+          }
           $('a.cancel_form').click(function () {
             form_holder.hide();
             view_holder.show();
