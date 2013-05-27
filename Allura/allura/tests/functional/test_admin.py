@@ -18,9 +18,10 @@
 import re
 import os, allura
 import pkg_resources
-import Image, StringIO
+import StringIO
 from contextlib import contextmanager
 
+import PIL
 from nose.tools import assert_equals
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -216,7 +217,7 @@ class TestProjectAdmin(TestController):
                     short_description='A Test Project'),
                     upload_files=[upload])
         r = self.app.get('/p/test/icon')
-        image = Image.open(StringIO.StringIO(r.body))
+        image = PIL.Image.open(StringIO.StringIO(r.body))
         assert image.size == (48,48)
 
         r = self.app.get('/p/test/icon?foo=bar')
@@ -236,11 +237,11 @@ class TestProjectAdmin(TestController):
         project = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
         filename = project.get_screenshots()[0].filename
         r = self.app.get('/p/test/screenshot/'+filename)
-        uploaded = Image.open(file_path)
-        screenshot = Image.open(StringIO.StringIO(r.body))
+        uploaded = PIL.Image.open(file_path)
+        screenshot = PIL.Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == screenshot.size
         r = self.app.get('/p/test/screenshot/'+filename+'/thumb')
-        thumb = Image.open(StringIO.StringIO(r.body))
+        thumb = PIL.Image.open(StringIO.StringIO(r.body))
         assert thumb.size == (150,150)
         #FIX: home pages don't currently support screenshots (now that they're a wiki);
         # reinstate this code (or appropriate) when we have a macro for that

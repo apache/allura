@@ -20,7 +20,7 @@ import os
 from cStringIO import StringIO
 import urllib2
 
-import Image
+import PIL
 from tg import config
 from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -234,7 +234,7 @@ class TestNeighborhood(TestController):
                           params=dict(name='Mozq1', css='', homepage='# MozQ1'),
                           extra_environ=dict(username='root'), upload_files=[upload])
         r = self.app.get('/adobe/icon')
-        image = Image.open(StringIO(r.body))
+        image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
 
         r = self.app.get('/adobe/icon?foo=bar')
@@ -788,7 +788,7 @@ class TestNeighborhood(TestController):
         assert 'Updated description.' in r
         r = self.app.get('/adobe/_admin/awards/%s' % foo_id, extra_environ=dict(username='root'))
         r = self.app.get('/adobe/_admin/awards/%s/icon' % foo_id, extra_environ=dict(username='root'))
-        image = Image.open(StringIO(r.body))
+        image = PIL.Image.open(StringIO(r.body))
         assert image.size == (48, 48)
         self.app.post('/adobe/_admin/awards/grant',
                           params=dict(grant='FOO', recipient='adobe-1'),

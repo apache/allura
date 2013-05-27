@@ -68,7 +68,6 @@ setup(
         "Pygments >= 1.1.1",
         "python-openid >= 2.2.4",
         "EasyWidgets >= 0.1.1",
-        "PIL >= 1.1.7",
         "iso8601",
         "chardet >= 1.0.1",
         "feedparser >= 5.0.1",

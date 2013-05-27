@@ -20,7 +20,7 @@ from cStringIO import StringIO
 import logging
 
 import pylons
-import Image
+import PIL
 from gridfs import GridFS
 from tg import config
 from paste.deploy.converters import asint
@@ -136,9 +136,9 @@ class File(MappedClass):
         if square and height != width:
             sz = max(width, height)
             if 'transparency' in image.info:
-                new_image = Image.new('RGBA', (sz,sz))
+                new_image = PIL.Image.new('RGBA', (sz,sz))
             else:
-                new_image = Image.new('RGB', (sz,sz), 'white')
+                new_image = PIL.Image.new('RGB', (sz,sz), 'white')
             if height < width:
                 # image is wider than tall, so center horizontally
                 new_image.paste(image, ((width-height)/2, 0))
@@ -148,7 +148,7 @@ class File(MappedClass):
             image = new_image
 
         if thumbnail_size:
-            image.thumbnail(thumbnail_size, Image.ANTIALIAS)
+            image.thumbnail(thumbnail_size, PIL.Image.ANTIALIAS)
 
         thumbnail_meta = thumbnail_meta or {}
         thumbnail = cls(
@@ -175,9 +175,9 @@ class File(MappedClass):
             return None, None
 
         try:
-            image = Image.open(fp)
+            image = PIL.Image.open(fp)
         except IOError as e:
-            log.error('Error opening image %s %s', filename, e)
+            log.error('Error opening image %s %s', filename, e, exc_info=True)
             return None, None
 
         format = image.format
