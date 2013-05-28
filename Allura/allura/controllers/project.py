@@ -311,9 +311,10 @@ class ProjectController(FeedController):
     def _nav(self):
         menu = []
         for s in c.project.grouped_navbar_entries():
-            entry = dict(name=s.label, url=s.url, icon=s.ui_icon)
+            entry = dict(name=s.label, url=s.url, icon=s.ui_icon, tool_name=s.tool_name)
             if s.children:
-                entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon) for child in s.children]
+                entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon, tool_name=child.tool_name) 
+                                    for child in s.children]
             menu.append(entry)
         return dict(menu=menu)
 
