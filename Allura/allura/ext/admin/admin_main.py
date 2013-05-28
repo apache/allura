@@ -392,6 +392,7 @@ class ProjectAdminController(BaseController):
                 square=True, thumbnail_size=(48,48),
                 thumbnail_meta=dict(project_id=c.project._id,category='icon'))
         g.post_event('project_updated')
+        flash('Saved', 'success')
         redirect('overview')
 
     def _add_trove(self, type, new_trove):
