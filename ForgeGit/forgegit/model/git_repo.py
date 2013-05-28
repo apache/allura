@@ -148,13 +148,6 @@ class GitImplementation(M.RepositoryImplementation):
 
     def commit(self, rev):
         '''Return a Commit object.  rev can be _id or a branch/tag name'''
-        # See if the rev is a named ref that we have cached, and use the sha1
-        # from the cache. This ensures that we don't return a sha1 that we
-        # don't have indexed into mongo yet.
-        for ref in self._repo.heads + self._repo.branches + self._repo.repo_tags:
-            if ref.name == rev:
-                rev = ref.object_id
-                break
         cache = getattr(c, 'model_cache', '') or M.repo.ModelCache()
         result = cache.get(M.repo.Commit, dict(_id=rev))
         if result is None:
@@ -170,8 +163,8 @@ class GitImplementation(M.RepositoryImplementation):
                 except:
                     pass
                 log.exception('Error with rev_parse(%s)%s' % (str(rev) + '^0', url))
-        if result is None: return None
-        result.set_context(self._repo)
+        if result:
+            result.set_context(self._repo)
         return result
 
     def all_commit_ids(self):
@@ -189,7 +182,7 @@ class GitImplementation(M.RepositoryImplementation):
     def new_commits(self, all_commits=False):
         graph = {}
 
-        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self._repo.heads ]
+        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self.heads ]
         while to_visit:
             obj = to_visit.pop()
             if obj.hexsha in graph: continue
@@ -201,21 +194,6 @@ class GitImplementation(M.RepositoryImplementation):
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
             to_visit += obj.parents
         return list(topological_sort(graph))
-
-    def refresh_heads(self):
-        self._repo.heads = [
-            Object(name=head.name, object_id=head.commit.hexsha)
-            for head in self._git.heads
-            if head.is_valid() ]
-        self._repo.branches = [
-            Object(name=head.name, object_id=head.commit.hexsha)
-            for head in self._git.branches
-            if head.is_valid() ]
-        self._repo.repo_tags = [
-            Object(name=tag.name, object_id=tag.commit.hexsha)
-            for tag in self._git.tags
-            if tag.is_valid() ]
-        session(self._repo).flush()
 
     def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
@@ -331,13 +309,12 @@ class GitImplementation(M.RepositoryImplementation):
         return git.Object.new_from_sha(self._git, binsha)
 
     def symbolics_for_commit(self, commit):
-        branch_heads, tags = super(self.__class__, self).symbolics_for_commit(commit)
         try:
-            containing_branches = self._git.git.branch(contains=commit._id)
+            branches = [b.name for b in self.branches if b.object_id == commit._id]
+            tags = [t.name for t in self.tags if t.object_id == commit._id]
+            return branches, tags
         except git.GitCommandError:
-            return [], tags
-        containing_branches = [br.strip(' *') for br in containing_branches.split('\n')]
-        return containing_branches, tags
+            return [], []
 
     def compute_tree_new(self, commit, tree_path='/'):
         ci = self._git.rev_parse(commit._id)
@@ -361,11 +338,17 @@ class GitImplementation(M.RepositoryImplementation):
     def is_empty(self):
         return not self._git or len(self._git.heads) == 0
 
-    def get_branches(self):
-        return [Object(name=b.name,object_id=b.commit.hexsha) for b in self._git.heads]
+    @LazyProperty
+    def heads(self):
+        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.heads if b.is_valid()]
 
-    def get_tags(self):
-        return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags]
+    @LazyProperty
+    def branches(self):
+        return [Object(name=b.name, object_id=b.commit.hexsha) for b in self._git.branches if b.is_valid()]
+
+    @LazyProperty
+    def tags(self):
+        return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags if t.is_valid()]
 
 
 class _OpenedGitBlob(object):

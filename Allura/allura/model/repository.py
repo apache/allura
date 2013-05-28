@@ -92,10 +92,6 @@ class RepositoryImplementation(object):
         commit'''
         raise NotImplementedError, 'commit_parents'
 
-    def refresh_heads(self): # pragma no cover
-        '''Sets repository metadata such as heads, tags, and branches'''
-        raise NotImplementedError, 'refresh_heads'
-
     def refresh_commit_info(self, oid, lazy=True): # pragma no cover
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
@@ -173,12 +169,8 @@ class RepositoryImplementation(object):
         return '[%s]' % oid[:6]
 
     def symbolics_for_commit(self, commit):
-        '''Return symbolic branch and tag names for a commit.
-        Default generic implementation is provided, subclasses
-        may override if they have more efficient means.'''
-        branches = [b.name for b in self._repo.branches if b.object_id == commit._id]
-        tags = [t.name for t in self._repo.repo_tags if t.object_id == commit._id]
-        return branches, tags
+        '''Return symbolic branch and tag names for a commit.'''
+        raise NotImplementedError, 'symbolics_for_commit'
 
     def url_for_commit(self, commit, url_type='ci'):
         'return an URL, given either a commit or object id'
@@ -214,11 +206,17 @@ class RepositoryImplementation(object):
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
         self._setup_hooks(source_path)
 
-    def get_branches(self):
-        return self.repo.branches
+    @property
+    def heads(self):
+        raise NotImplementedError, 'heads'
 
-    def get_tags(self):
-        return self.repo.tags
+    @property
+    def branches(self):
+        raise NotImplementedError, 'branches'
+
+    @property
+    def tags(self):
+        raise NotImplementedError, 'tags'
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
@@ -237,9 +235,9 @@ class Repository(Artifact, ActivityObject):
     status=FieldProperty(str)
     email_address=''
     additional_viewable_extensions=FieldProperty(str)
-    heads = FieldProperty([dict(name=str,object_id=str, count=int)])
-    branches = FieldProperty([dict(name=str,object_id=str, count=int)])
-    repo_tags = FieldProperty([dict(name=str,object_id=str, count=int)])
+    heads = FieldProperty(S.Deprecated)
+    branches = FieldProperty(S.Deprecated)
+    repo_tags = FieldProperty(S.Deprecated)
     upstream_repo = FieldProperty(dict(name=str,url=str))
 
     def __init__(self, **kw):
@@ -332,10 +330,12 @@ class Repository(Artifact, ActivityObject):
         return self._impl.last_commit_ids(commit, paths)
     def is_empty(self):
         return self._impl.is_empty()
+    def get_heads(self):
+        return self._impl.heads
     def get_branches(self):
-        return self._impl.get_branches()
+        return self._impl.branches
     def get_tags(self):
-        return self._impl.get_tags()
+        return self._impl.tags
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
@@ -531,13 +531,8 @@ class Repository(Artifact, ActivityObject):
             log.info('... %r analyzing', self)
             self.status = 'analyzing'
             session(self).flush(self)
-            self._impl.refresh_heads()
             if asbool(tg.config.get('scm.new_refresh')):
                 refresh_repo(self, all_commits, notify, new_clone)
-            for head in self.heads + self.branches + self.repo_tags:
-                ci = self.commit(head.object_id)
-                if ci is not None:
-                    head.count = self.count_revisions(ci)
         finally:
             log.info('... %s ready', self)
             self.status = 'ready'

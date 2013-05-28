@@ -65,8 +65,7 @@ class TestNewRepo(unittest.TestCase):
             tool = 'svn',
             status = 'creating')
         self.repo.refresh()
-        self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
-        self.rev.repo = self.repo
+        self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -723,10 +722,7 @@ class TestRepo(_TestWithRepo):
                         name=committer_name,
                         email=committer_email),
                     _id=oid)).m.insert()
-        def set_heads():
-            self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
         self.repo._impl.refresh_commit_info = refresh_commit_info
-        self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
         _id = lambda oid: getattr(oid, '_id', str(oid))
         self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
         self.repo.url_for_commit = lambda oid: 'ci/' + _id(oid) + '/'
@@ -747,9 +743,6 @@ class TestRepo(_TestWithRepo):
         self.repo.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
-        def set_heads():
-            self.repo.heads = [ ming.base.Object(name='head', object_id='foo0', count=100) ]
-        self.repo._impl.refresh_heads = mock.Mock(side_effect=set_heads)
 
         # make unreadable by *anonymous, so additional notification logic executes
         self.repo.acl = []

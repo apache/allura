@@ -63,8 +63,7 @@ class TestNewGit(unittest.TestCase):
         #     tool = 'git',
         #     status = 'creating')
         self.repo.refresh()
-        self.rev = M.repo.Commit.query.get(_id=self.repo.heads[0]['object_id'])
-        self.rev.repo = self.repo
+        self.rev = self.repo.commit('master')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
@@ -76,7 +75,7 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[1e146e]'
-        assert self.rev.symbolic_ids == (['master', 'zz'], ['foo'])
+        assert self.rev.symbolic_ids == (['master'], ['foo']), self.rev.symbolic_ids
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
@@ -234,12 +233,6 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         entry = self.repo.commit('HEAD')
         assert str(entry.authored.name) == 'Rick Copeland', entry.authored
         assert entry.message
-        # Test that sha1s for named refs are looked up in cache first, instead
-        # of from disk.
-        with mock.patch('forgegit.model.git_repo.M.repo.Commit.query') as q:
-            self.repo.heads.append(Object(name='HEAD', object_id='deadbeef'))
-            self.repo.commit('HEAD')
-            q.get.assert_called_with(_id='deadbeef')
         # test the auto-gen tree fall-through
         orig_tree = M.repo.Tree.query.get(_id=entry.tree_id)
         assert orig_tree
@@ -340,22 +333,22 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             assert repo2.is_empty()
 
 class TestGitImplementation(unittest.TestCase):
-    def test_get_branches(self):
+    def test_branches(self):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
-        self.assertEqual(impl.get_branches(), [
+        self.assertEqual(impl.branches, [
                 Object(name='master', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
                 Object(name='zz', object_id='5c47243c8e424136fd5cdd18cd94d34c66d1955c')
             ])
 
-    def test_get_tags(self):
+    def test_tags(self):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
-        self.assertEqual(impl.get_tags(), [
+        self.assertEqual(impl.tags, [
                 Object(name='foo', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
             ])
 

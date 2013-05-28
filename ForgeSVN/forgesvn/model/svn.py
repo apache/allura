@@ -98,8 +98,7 @@ class Repository(M.Repository):
 
     def latest(self, branch=None):
         if self._impl is None: return None
-        if not self.heads: return None
-        return self._impl.commit(self.heads[0].object_id)
+        return self._impl.commit('HEAD')
 
     def tarball_filename(self, revision, path=None):
         fn = super(Repository, self).tarball_filename(revision, path)
@@ -299,42 +298,27 @@ class SVNImplementation(M.RepositoryImplementation):
             c.app.config.options['checkout_url'] = ""
         self._setup_special_files(source_url)
 
-    def refresh_heads(self):
-        info = self._svn.info2(
-            self._url,
-            revision=pysvn.Revision(pysvn.opt_revision_kind.head),
-            recurse=False)[0][1]
-        oid = self._oid(info.rev.number)
-        self._repo.heads = [ Object(name=None, object_id=oid) ]
-        # Branches and tags aren't really supported in subversion
-        self._repo.branches = []
-        self._repo.repo_tags = []
-        session(self._repo).flush(self._repo)
-
     def commit(self, rev):
         if rev in ('HEAD', None):
-            if not self._repo.heads: return None
-            oid = self._repo.heads[0].object_id
+            oid = self._oid(self.head)
         elif isinstance(rev, int) or rev.isdigit():
             oid = self._oid(rev)
         else:
             oid = rev
         result = M.repo.Commit.query.get(_id=oid)
-        if result is None: return None
-        result.set_context(self._repo)
+        if result:
+            result.set_context(self._repo)
         return result
 
     def all_commit_ids(self):
         """Return a list of commit ids, starting with the head (most recent
         commit) and ending with the root (first commit).
         """
-        if not self._repo.heads:
-            return []
-        head_revno = self._revno(self._repo.heads[0].object_id)
+        head_revno = self.head
         return map(self._oid, range(head_revno, 0, -1))
 
     def new_commits(self, all_commits=False):
-        head_revno = self._revno(self._repo.heads[0].object_id)
+        head_revno = self.head
         oids = [ self._oid(revno) for revno in range(1, head_revno+1) ]
         if all_commits:
             return oids
@@ -689,19 +673,32 @@ class SVNImplementation(M.RepositoryImplementation):
                 os.remove(tmpfilename)
 
     def is_empty(self):
+        return self.head == 0
+
+    def symbolics_for_commit(self, commit):
+        return [], []
+
+    @LazyProperty
+    def head(self):
         try:
-            return self._svn.revpropget('revision', url=self._url)[0].number == 0
+            return int(self._svn.revpropget('revision', url=self._url)[0].number)
         except pysvn.ClientError as e:
             if str(e).startswith("Unable to connect") or \
                     str(e).startswith("Unable to open"):
-                return True
+                return 0
             else:
                 raise
 
-    def get_branches(self):
+    @LazyProperty
+    def heads(self):
+        return [Object(name=None, object_id=self._oid(self.head))]
+
+    @LazyProperty
+    def branches(self):
         return []
 
-    def get_tags(self):
+    @LazyProperty
+    def tags(self):
         return []
 
 

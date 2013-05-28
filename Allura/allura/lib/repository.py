@@ -119,7 +119,7 @@ class RepositoryApp(Application):
                     (repo_path_parts[1], repo_path_parts[-1]),
                     self.repo.upstream_repo.name)
                 ]
-            if len(c.app.repo.branches) and has_access(c.app.repo, 'admin'):
+            if not c.app.repo.is_empty() and has_access(c.app.repo, 'admin'):
                 links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
                              ui_icon=g.icons['merge'],
                              ))

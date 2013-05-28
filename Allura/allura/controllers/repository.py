@@ -147,11 +147,11 @@ class RepoRootController(BaseController, FeedController):
     def mr_widget(self):
         source_branches = [
             b.name
-            for b in c.app.repo.branches + c.app.repo.repo_tags]
+            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
         with c.app.repo.push_upstream_context():
             target_branches = [
                 b.name
-                for b in c.app.repo.branches + c.app.repo.repo_tags]
+                for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
         return SCMMergeRequestWidget(
             source_branches=source_branches,
             target_branches=target_branches)
@@ -162,7 +162,7 @@ class RepoRootController(BaseController, FeedController):
         security.require(security.has_access(c.app.repo, 'admin'))
         c.form = self.mr_widget
         if branch is None:
-            source_branch=c.app.repo.branches[0].name
+            source_branch=c.app.default_branch_name
         return dict(source_branch=source_branch)
 
     @expose()
@@ -205,7 +205,7 @@ class RepoRootController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     def commit_browser_data(self):
-        head_ids = [ head.object_id for head in c.app.repo.heads ]
+        head_ids = [ head.object_id for head in c.app.repo.get_heads() ]
         commit_ids = list(c.app.repo.commitlog(head_ids))
         log.info('Grab %d commit objects by ID', len(commit_ids))
         commits_by_id = dict(
@@ -394,12 +394,12 @@ class BranchBrowser(BaseController):
     @expose('jinja:allura:templates/repo/tags.html')
     @with_trailing_slash
     def tags(self, **kw):
-        return dict(tags=c.app.repo.repo_tags)
+        return dict(tags=c.app.repo.get_tags())
 
     @expose('jinja:allura:templates/repo/tags.html')
     @with_trailing_slash
     def branches(self, **kw):
-        return dict(title='Branches', tags=c.app.repo.branches)
+        return dict(title='Branches', tags=c.app.repo.get_branches())
 
     @expose()
     @with_trailing_slash

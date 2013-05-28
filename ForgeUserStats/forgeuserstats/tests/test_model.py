@@ -337,8 +337,7 @@ class TestUserStats(unittest.TestCase):
         c.app.repo.name = 'testgit.git'
         repo = c.app.repo
         repo.refresh()
-        commit = M.repo.Commit.query.get(_id=repo.heads[0]['object_id'])
-        commit.repo = repo
+        commit = repo.commit()
 
         init_commits = self.user.stats.getCommits()
         assert init_commits['number'] == 4

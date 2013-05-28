@@ -467,7 +467,7 @@ class TestFork(_TestCase):
         assert 'Improve documentation' in r, r.showbrowser()
         revs = r.html.findAll('tr', attrs={'class': 'rev'})
         links = revs[0].findAll('a')
-        c_id = self.forked_repo.heads[0]['object_id']
+        c_id = self.forked_repo.get_heads()[0]['object_id']
         assert_equal(links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
         assert_equal(links[0].getText(), '[%s]' % c_id[:6])
         assert_equal(links[1].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
