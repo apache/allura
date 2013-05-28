@@ -41,7 +41,7 @@
     {{widget.display_field(widget.fields.short_description) }}
 
     <div style="clear:both">&nbsp;</div>
-    Support Page:
+    Preferred Support Page (for users of your project):
     <br>
     <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
     <label for="support_page_none">None</label><br>
@@ -52,6 +52,8 @@
         <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
       {% endif %}
     {% endfor %}
+    <input name="support_page" type="radio" value="_members" {% if value.support_page == '_members' %} checked{% endif %} id="support_page_members">
+    <label for="support_page_members">Contact project admins</label><br>
     <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
            {% if value.support_page == '_url' %} checked{% endif %}>
     <label for="support_page_url_cb">URL: </label>
