@@ -29,6 +29,8 @@ import textwrap
 
 def run_one(cmd, **popen_kwargs):
     print '{} running {} {}'.format(threading.current_thread(), cmd, popen_kwargs)
+    sys.stdout.flush()
+
     all_popen_kwargs = dict(shell=True, stderr=subprocess.STDOUT,
                             stdout=subprocess.PIPE,
                             bufsize=1,  # 1 == line-buffered
@@ -42,6 +44,8 @@ def run_one(cmd, **popen_kwargs):
     # wait for completion and get remainder of output
     out_remainder, _ = proc.communicate()
     sys.stdout.write(out_remainder)
+    sys.stdout.flush()
+    print 'finished {} {}'.format(cmd, popen_kwargs)
     sys.stdout.flush()
     return proc
 

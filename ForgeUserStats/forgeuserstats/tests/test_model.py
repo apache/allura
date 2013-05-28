@@ -29,9 +29,10 @@ from allura.model import User, Project, TroveCategory
 from allura.lib import helpers as h
 from allura import model as M
 
-from forgegit.tests import with_git
-
 from forgeuserstats.model import stats as USM
+
+test_project_with_repo = 'test2'  # important to be distinct from 'test' which ForgeGit uses, so that the tests can run in parallel and not clobber each other
+with_git = td.with_tool(test_project_with_repo, 'Git', 'src-git', 'Git', type='git')
 
 class TestUserStats(unittest.TestCase):
 
