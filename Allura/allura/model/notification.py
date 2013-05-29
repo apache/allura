@@ -454,13 +454,20 @@ class Mailbox(MappedClass):
             'topic':{'$in':[None, topic]}
             }
         for mbox in cls.query.find(d):
-            mbox.query.update(
-                {'$push':dict(queue=nid),
-                 '$set':dict(last_modified=datetime.utcnow(),
-                             queue_empty=False),
-                })
-            # Make sure the mbox doesn't stick around to be flush()ed
-            session(mbox).expunge(mbox)
+            try:
+                mbox.query.update(
+                    {'$push':dict(queue=nid),
+                     '$set':dict(last_modified=datetime.utcnow(),
+                                 queue_empty=False),
+                    })
+                # Make sure the mbox doesn't stick around to be flush()ed
+                session(mbox).expunge(mbox)
+            except:
+                # log error but try to keep processing, lest all the other eligible
+                # mboxes for this notification get skipped and lost forever
+                log.exception(
+                    'Error adding notification: %s for artifact %s on project %s to user %s',
+                    nid, artifact_index_id, c.project._id, mbox.user_id)
 
     @classmethod
     def fire_ready(cls):
@@ -490,7 +497,11 @@ class Mailbox(MappedClass):
                 new=False)
 
         for mbox in take_while_true(find_and_modify_direct_mbox):
-            mbox.fire(now)
+            try:
+                mbox.fire(now)
+            except:
+                log.exception('Error firing mbox: %s with queue: [%s]', str(mbox._id), ', '.join(mbox.queue))
+                raise  # re-raise so we don't keep (destructively) trying to process mboxes
 
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
@@ -519,20 +530,36 @@ class Mailbox(MappedClass):
         if self.type == 'direct':
             ngroups = defaultdict(list)
             for n in notifications:
-                if n.topic == 'message':
-                    n.send_direct(self.user_id)
-                    # Messages must be sent individually so they can be replied
-                    # to individually
-                else:
-                    key = (n.subject, n.from_address, n.reply_to_address, n.author_id)
-                    ngroups[key].append(n)
+                try:
+                    if n.topic == 'message':
+                        n.send_direct(self.user_id)
+                        # Messages must be sent individually so they can be replied
+                        # to individually
+                    else:
+                        key = (n.subject, n.from_address, n.reply_to_address, n.author_id)
+                        ngroups[key].append(n)
+                except:
+                    # log error but keep trying to deliver other notifications,
+                    # lest the other notifications (which have already been removed
+                    # from the mobx's queue in mongo) be lost
+                    log.exception(
+                        'Error sending notification: %s to mbox %s (user %s)',
+                        n._id, self._id, self.user_id)
             # Accumulate messages from same address with same subject
             for (subject, from_address, reply_to_address, author_id), ns in ngroups.iteritems():
-                if len(ns) == 1:
-                    n.send_direct(self.user_id)
-                else:
-                    Notification.send_digest(
-                        self.user_id, from_address, subject, ns, reply_to_address)
+                try:
+                    if len(ns) == 1:
+                        n.send_direct(self.user_id)
+                    else:
+                        Notification.send_digest(
+                            self.user_id, from_address, subject, ns, reply_to_address)
+                except:
+                    # log error but keep trying to deliver other notifications,
+                    # lest the other notifications (which have already been removed
+                    # from the mobx's queue in mongo) be lost
+                    log.exception(
+                        'Error sending notifications: [%s] to mbox %s (user %s)',
+                        ', '.join([n._id for n in ns]), self._id, self.user_id)
         elif self.type == 'digest':
             Notification.send_digest(
                 self.user_id, u'noreply@in.sf.net', 'Digest Email',
