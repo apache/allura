@@ -17,10 +17,13 @@
 
 import unittest
 from datetime import timedelta
+import collections
 
 from pylons import tmpl_context as c, app_globals as g
 from nose.tools import assert_equal, assert_in
 from ming.orm import ThreadLocalORMSession
+import mock
+import bson
 
 from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
 from allura import model as M
@@ -257,6 +260,43 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def _post_notification(self, text=None):
         return M.Notification.post(self.pg, 'metadata', text=text)
+
+    @mock.patch('allura.model.notification.defaultdict')
+    @mock.patch('allura.model.notification.Notification')
+    def test_direct_accumulation(self, mocked_notification, mocked_defaultdict):
+        class OrderedDefaultDict(collections.OrderedDict):
+            def __init__(self, factory=list, *a, **kw):
+                self._factory = factory
+                super(OrderedDefaultDict, self).__init__(*a, **kw)
+
+            def __getitem__(self, key):
+                if key not in self:
+                    value = self[key] = self._factory()
+                else:
+                    value = super(OrderedDefaultDict, self).__getitem__(key)
+                return value
+
+        notifications = mocked_notification.query.find.return_value.all.return_value = [
+                mock.Mock(_id='n0', topic='metadata', subject='s1', from_address='f1', reply_to_address='rt1', author_id='a1'),
+                mock.Mock(_id='n1', topic='metadata', subject='s2', from_address='f2', reply_to_address='rt2', author_id='a2'),
+                mock.Mock(_id='n2', topic='metadata', subject='s2', from_address='f2', reply_to_address='rt2', author_id='a2'),
+                mock.Mock(_id='n3', topic='message', subject='s3', from_address='f3', reply_to_address='rt3', author_id='a3'),
+                mock.Mock(_id='n4', topic='message', subject='s3', from_address='f3', reply_to_address='rt3', author_id='a3'),
+            ]
+        mocked_defaultdict.side_effect = OrderedDefaultDict
+
+        u0 = bson.ObjectId()
+        mbox = M.Mailbox(type='direct', user_id=u0, queue=['n0', 'n1', 'n2', 'n3', 'n4'])
+        mbox.fire('now')
+
+        mocked_notification.query.find.assert_called_once_with({'_id': {'$in': ['n0', 'n1', 'n2', 'n3', 'n4']}})
+        # first notification should be sent direct, as its key values are unique
+        notifications[0].send_direct.assert_called_once_with(u0)
+        # next two notifications should be sent as a digest as they have matching key values
+        mocked_notification.send_digest.assert_called_once_with(u0, 'f2', 's2', [notifications[1], notifications[2]], 'rt2')
+        # final two should be sent direct even though they matching keys, as they are messages
+        notifications[3].send_direct.assert_called_once_with(u0)
+        notifications[4].send_direct.assert_called_once_with(u0)
 
 def _clear_subscriptions():
         M.Mailbox.query.remove({})

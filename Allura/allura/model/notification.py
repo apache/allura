@@ -549,7 +549,7 @@ class Mailbox(MappedClass):
             for (subject, from_address, reply_to_address, author_id), ns in ngroups.iteritems():
                 try:
                     if len(ns) == 1:
-                        n.send_direct(self.user_id)
+                        ns[0].send_direct(self.user_id)
                     else:
                         Notification.send_digest(
                             self.user_id, from_address, subject, ns, reply_to_address)
