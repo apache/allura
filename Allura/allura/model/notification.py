@@ -106,6 +106,8 @@ class Notification(MappedClass):
         import allura.tasks.notification_tasks
         n = cls._make_notification(artifact, topic, **kw)
         if n:
+            # make sure notification is flushed in time for task to process it
+            session(n).flush(n)
             allura.tasks.notification_tasks.notify.post(
                 n._id, artifact.index_id(), topic)
         return n
@@ -532,7 +534,10 @@ class Mailbox(MappedClass):
         '''
         notifications = Notification.query.find(dict(_id={'$in':self.queue}))
         notifications = notifications.all()
-        log.debug('Firing mailbox %s notifications [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
+        if len(notifications) != len(self.queue):
+            log.error('Mailbox queue error: Mailbox %s queued [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
+        else:
+            log.debug('Firing mailbox %s notifications [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
         if self.type == 'direct':
             ngroups = defaultdict(list)
             for n in notifications:
