@@ -21,11 +21,11 @@
     {{ widget.display_label(widget.fields.name) }}
     <br>
     {{widget.display_field(widget.fields.name) }}
-    {%if value.neighborhood.name != 'Users'%}
+    {%if c.project.neighborhood.name != 'Users'%}
     <label for="shortname">Unixname</label>
     <br>
     <input id="shortname" type="text" disabled="disabled"
-           value="{{value.shortname}}">
+           value="{{c.project.shortname}}">
 
     {{ widget.display_label(widget.fields.external_homepage) }}
     <br>
@@ -41,11 +41,13 @@
     {{widget.display_field(widget.fields.short_description) }}
 
     <div style="clear:both">&nbsp;</div>
-    Preferred Support Page (for users of your project):
-    <br>
+    Preferred Support Page (for users of your project):<br>
+    {% if c.form_errors.get('support_page_url') %}
+        <div class="error">{{c.form_errors.get('support_page_url')}}</div>
+    {% endif %}
     <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
     <label for="support_page_none">None</label><br>
-    {% for ac in value.app_configs %}
+    {% for ac in c.project.app_configs %}
       {% if ac.tool_name.lower() in ['wiki', 'tickets', 'discussion'] %}
         <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
                {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
@@ -57,14 +59,14 @@
     <input name="support_page" type="radio" value="_url" id="support_page_url_cb"
            {% if value.support_page == '_url' %} checked{% endif %}>
     <label for="support_page_url_cb">URL: </label>
-    <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%">
+    <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
     {{ widget.display_label(widget.fields.twitter_handle) }}
     <br>
     {{widget.display_field(widget.fields.twitter_handle) }}
     {{ widget.display_label(widget.fields.facebook_page) }}
     <br>
     {{widget.display_field(widget.fields.facebook_page) }}
-    {% if value.neighborhood.features['google_analytics'] %}
+    {% if c.project.neighborhood.features['google_analytics'] %}
     {{ widget.display_label(widget.fields.tracking_id) }}
     <br>
     {{widget.display_field(widget.fields.tracking_id) }}
@@ -94,7 +96,7 @@
           <input type="submit" value="Save" name="save" style="float: none" />
       </div>
     </div>
-    {%if value.neighborhood.name != 'Users'%}
+    {%if c.project.neighborhood.name != 'Users'%}
     <div style="clear:both">&nbsp;</div>
 
     <div id="project-status">
@@ -109,8 +111,11 @@
             Deleted
         {% endif %}
         <a href="#" title="Edit"><b data-icon="p" class="ico ico-pencil"></b></a>
-        <div id="project-status-edit" class="hidden">
+        <div id="project-status-edit" class="{% if not c.form_errors %}hidden{% endif %}">
             <br>
+            {% if c.form_errors.get('moved_to_url') %}
+                <div class="error">{{c.form_errors.get('moved_to_url')}}</div>
+            {% endif %}
             <input name="removal" type="radio" value="" id="removal_active_cb"
                    {% if value.removal == '' %} checked{% endif %}>
             <label for="removal_active_cb">Active Project</label>
