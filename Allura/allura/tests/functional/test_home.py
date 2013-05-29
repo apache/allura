@@ -23,6 +23,7 @@ from pylons import tmpl_context as c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
+from ming.orm import ThreadLocalORMSession
 
 from nose.tools import assert_equal, assert_not_in
 
@@ -105,10 +106,31 @@ class TestProjectHome(TestController):
         assert_equal(j['options'], expected)
 
     def test_members(self):
+        nbhd = M.Neighborhood.query.get(name='Projects')
+        self.app.post('/admin/groups/create', params={'name': 'B_role'})
+        test_project = M.Project.query.get(shortname='test', neighborhood_id=nbhd._id)
+        test_project.add_user(M.User.by_username('test-user-1'), ['B_role'])
+        test_project.add_user(M.User.by_username('test-user'), ['Developer'])
+        test_project.add_user(M.User.by_username('test-user-0'), ['Member'])
+        test_project.add_user(M.User.by_username('test-user-2'), ['Member'])
+        test_project.add_user(M.User.by_username('test-user-3'), ['Member'])
+        test_project.add_user(M.User.by_username('test-user-3'), ['Developer'])
+        test_project.add_user(M.User.by_username('test-user-4'), ['Admin'])
+        ThreadLocalORMSession.flush_all()
         r = self.app.get('/p/test/_members/')
+
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r
+        tr = r.html.findAll('tr')
+        assert "<td>Test Admin</td>" in str(tr[1])
+        assert "<td>Test User 4</td>" in str(tr[2])
+        assert "<td>Test User</td>" in str(tr[3])
+        assert "<td>Test User 3</td>" in str(tr[4])
+        assert "<td>Test User 0</td>" in str(tr[5])
+        assert "<td>Test User 1</td>" in str(tr[6])
+        assert "<td>Test User 2</td>" in str(tr[7])
+
 
     def test_members_anonymous(self):
         r = self.app.get('/p/test/_members/', extra_environ=dict(username='*anonymous'))

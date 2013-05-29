@@ -340,16 +340,27 @@ class ProjectController(FeedController):
     @with_trailing_slash
     def _members(self, **kw):
         users = []
+        admins = []
+        developers = []
         for user in c.project.users():
             roles = M.ProjectRole.query.find({'_id': {'$in': user.project_role().roles}})
             roles = set([r.name for r in roles])
-            users.append(dict(
-                display_name=user.display_name,
-                username=user.username,
-                url=user.url(),
-                roles=roles,
-                ))
-        return dict(users=users)
+            u = dict(
+                    display_name=user.display_name,
+                    username=user.username,
+                    url=user.url(),
+                    roles=' '.join(sorted(roles)))
+            if 'Admin' in roles:
+                admins.append(u)
+            elif 'Developer' in roles:
+                developers.append(u)
+            else:
+                users.append(u)
+        get_username = lambda user: user['username']
+        admins = sorted(admins, key=get_username)
+        developers = sorted(developers, key=get_username)
+        users = sorted(users, key=get_username)
+        return dict(users=admins + developers + users)
 
     def _check_security(self):
         require_access(c.project, 'read')
