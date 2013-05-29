@@ -237,6 +237,7 @@ class Notification(MappedClass):
     def send_direct(self, user_id):
         user = User.query.get(_id=ObjectId(user_id))
         artifact = self.ref.artifact
+        log.debug('Sending direct notification %s to user %s', self._id, user_id)
         # Don't send if user doesn't have read perms to the artifact
         if user and artifact and \
                 not security.has_access(artifact, 'read', user)():
@@ -265,6 +266,7 @@ class Notification(MappedClass):
                     security.has_access(artifact, 'read', user)()
         notifications = filter(perm_check, notifications)
 
+        log.debug('Sending digest of notifications [%s] to user %s', ', '.join([n._id for n in notifications]), user_id)
         if reply_to_address is None:
             reply_to_address = from_address
         text = [ 'Digest of %s' % subject ]
@@ -287,6 +289,7 @@ class Notification(MappedClass):
     @classmethod
     def send_summary(self, user_id, from_address, subject, notifications):
         if not notifications: return
+        log.debug('Sending summary of notifications [%s] to user %s', ', '.join([n._id for n in notifications]), user_id)
         text = [ 'Digest of %s' % subject ]
         for n in notifications:
             text.append('From: %s' % n.from_address)
@@ -453,7 +456,9 @@ class Mailbox(MappedClass):
             'artifact_index_id':{'$in':[None, artifact_index_id]},
             'topic':{'$in':[None, topic]}
             }
-        for mbox in cls.query.find(d):
+        mboxes = cls.query.find(d).all()
+        log.debug('Delivering notification %s to mailboxes [%s]', nid, ', '.join([str(m._id) for m in mboxes]))
+        for mbox in mboxes:
             try:
                 mbox.query.update(
                     {'$push':dict(queue=nid),
@@ -527,6 +532,7 @@ class Mailbox(MappedClass):
         '''
         notifications = Notification.query.find(dict(_id={'$in':self.queue}))
         notifications = notifications.all()
+        log.debug('Firing mailbox %s notifications [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
         if self.type == 'direct':
             ngroups = defaultdict(list)
             for n in notifications:
