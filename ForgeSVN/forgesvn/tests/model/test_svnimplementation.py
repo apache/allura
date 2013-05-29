@@ -74,3 +74,35 @@ class TestSVNImplementation(object):
 
         assert_equal(entries, {path.strip('/'): '5057636b9c1040636b81e4b1:1'})
         assert_equal(impl._svn.info2.call_args[0][0], 'file://'+g.tmpdir+'/code/trunk')
+
+    @patch('forgesvn.model.svn.svn_path_exists')
+    def test__path_to_root(self, path_exists):
+        repo = Mock(fs_path=g.tmpdir+'/')
+        repo.name = 'code'
+        repo._id = '5057636b9c1040636b81e4b1'
+        impl = SVNImplementation(repo)
+        path_exists.return_value = False
+        # edge cases
+        assert_equal(impl._path_to_root(None), '')
+        assert_equal(impl._path_to_root(''), '')
+        assert_equal(impl._path_to_root('/some/path/'), '')
+        assert_equal(impl._path_to_root('some/path'), '')
+        # tags
+        assert_equal(impl._path_to_root('/some/path/tags/1.0/some/dir'), 'some/path/tags/1.0')
+        assert_equal(impl._path_to_root('/some/path/tags/1.0/'), 'some/path/tags/1.0')
+        assert_equal(impl._path_to_root('/some/path/tags/'), '')
+        # branches
+        assert_equal(impl._path_to_root('/some/path/branches/b1/dir'), 'some/path/branches/b1')
+        assert_equal(impl._path_to_root('/some/path/branches/b1/'), 'some/path/branches/b1')
+        assert_equal(impl._path_to_root('/some/path/branches/'), '')
+        # trunk
+        assert_equal(impl._path_to_root('/some/path/trunk/some/dir/'), 'some/path/trunk')
+        assert_equal(impl._path_to_root('/some/path/trunk'), 'some/path/trunk')
+        # with fallback to trunk
+        path_exists.return_value = True
+        assert_equal(impl._path_to_root(''), 'trunk')
+        assert_equal(impl._path_to_root('/some/path/'), 'trunk')
+        assert_equal(impl._path_to_root('/tags/'), 'trunk')
+        assert_equal(impl._path_to_root('/branches/'), 'trunk')
+        assert_equal(impl._path_to_root('/tags/1.0'), 'tags/1.0')
+        assert_equal(impl._path_to_root('/branches/branch'), 'branches/branch')
