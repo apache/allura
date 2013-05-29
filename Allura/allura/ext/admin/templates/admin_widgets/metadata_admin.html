@@ -41,6 +41,8 @@
     {{widget.display_field(widget.fields.short_description) }}
 
     <div style="clear:both">&nbsp;</div>
+    
+    {% if tg.config.get('support_tool_choices') %}
     Preferred Support Page (for users of your project):<br>
     {% if c.form_errors.get('support_page_url') %}
         <div class="error">{{c.form_errors.get('support_page_url')}}</div>
@@ -48,7 +50,7 @@
     <input name="support_page" type="radio" value=""{% if value.support_page == '' %} checked{% endif %} id="support_page_none">
     <label for="support_page_none">None</label><br>
     {% for ac in c.project.app_configs %}
-      {% if ac.tool_name.lower() in ['wiki', 'tickets', 'discussion'] %}
+      {% if ac.tool_name.lower() in tg.config['support_tool_choices'].split() %}
         <input name="support_page" type="radio" value="{{ac.options.mount_point}}" id="support_page_{{ac.options.mount_point}}"
                {% if value.support_page == ac.options.mount_point %} checked{% endif %}>
         <label for="support_page_{{ac.options.mount_point}}">{{ac.options.mount_label}}</label><br>
@@ -60,6 +62,8 @@
            {% if value.support_page == '_url' %} checked{% endif %}>
     <label for="support_page_url_cb">URL: </label>
     <input type="text" name="support_page_url" value="{{value.support_page_url}}" style="width: 70%"><br>
+    {% endif %}
+
     {{ widget.display_label(widget.fields.twitter_handle) }}
     <br>
     {{widget.display_field(widget.fields.twitter_handle) }}
