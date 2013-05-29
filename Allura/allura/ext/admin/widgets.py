@@ -168,11 +168,14 @@ class MetadataAdmin(ff.AdminForm):
                                             V.MaxBytesValidator(max=1000)),
                                         attrs=dict(title="Add a few paragraphs describing your project to new users."))
         icon = ew.FileField(label='Icon')
-        external_homepage = ew.InputField(field_type="text", label='Homepage')
+        external_homepage = ew.InputField(field_type="text", label='Homepage',
+                                          validator=fev.URL(add_http=True))
         support_page = ew.InputField(field_type="text", label='Support Page')
-        support_page_url = ew.InputField(field_type="text", label='Support Page URL')
+        support_page_url = ew.InputField(field_type="text", label='Support Page URL',
+                                         validator=fev.URL(add_http=True, if_empty=''))
         removal = ew.InputField(field_type="text", label='Removal')
-        moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL')
+        moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL',
+                                     validator=fev.URL(add_http=True, if_empty=''))
         export_controlled = ew.InputField(field_type="text", label='Export Control')
         export_control_type = ew.InputField(field_type="text", label='Export Control Type')
         delete = ew.InputField(field_type="hidden", label='Delete')
@@ -180,7 +183,8 @@ class MetadataAdmin(ff.AdminForm):
         undelete = ew.InputField(field_type="hidden", label='Undelete')
         tracking_id = ew.InputField(field_type="text", label="Analytics Tracking ID")
         twitter_handle = ew.InputField(field_type="text", label='Twitter Handle')
-        facebook_page = ew.InputField(field_type="text", label='Facebook page')
+        facebook_page = ew.InputField(field_type="text", label='Facebook page',
+                                      validator=fev.URL(add_http=True))
 
 class AuditLog(ew_core.Widget):
     template='jinja:allura.ext.admin:templates/widgets/audit.html'
