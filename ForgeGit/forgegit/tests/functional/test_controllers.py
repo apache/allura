@@ -353,7 +353,7 @@ class TestRootController(_TestCase):
         r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
         links = r.html.findAll('a')
         download_link = [a for a in links if a.text == 'Download Snapshot'][0]
-        assert_equal(download_link.get('href'), '/p/test/testgit-index/ci/master/tarball')
+        assert_equal(download_link.get('href'), '/p/test/testgit-index/ci/master/tarball?path=/index')
 
 
 class TestRestController(_TestCase):

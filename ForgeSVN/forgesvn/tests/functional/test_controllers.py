@@ -203,51 +203,51 @@ class TestRootController(SVNTestController):
     def test_tarball_tags_aware(self):
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
-        r = self.app.get('/svn-tags/19/tree/')
+        r = self.app.get('/p/test/svn-tags/19/tree/')
         link = r.html.find('h2', attrs={'class': 'dark title'})
         link = link.find('small').findAll('a')[0]
         assert_equal(link.text, 'Download Snapshot')
         assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball')
 
-        r = self.app.get('/svn-tags/19/tree/tags/tag-1.0/')
+        r = self.app.get('/p/test/svn-tags/19/tree/tags/tag-1.0/')
         link = r.html.find('h2', attrs={'class': 'dark title'})
         link = link.find('small').findAll('a')[0]
         assert_equal(link.text, 'Download Snapshot')
         assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball?path=/tags/tag-1.0')
 
-        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], None)
         r = self.app.get(link.get('href'))
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], 'ready')
 
-        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], None)
-        r = self.app.get('/svn-tags/19/tarball?path=/trunk/')
+        r = self.app.get('/p/test/svn-tags/19/tarball?path=/trunk/')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], 'ready')
 
-        r = self.app.get('/svn-tags/19/tarball_status?path=/branches/aaa/')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
         assert_equal(r.json['status'], None)
 
         # All of the following also should be ready because...
         # ...this is essentially the same as trunk snapshot
-        r = self.app.get('/svn-tags/19/tarball_status?path=/trunk/some/path/')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk/some/path/')
         assert_equal(r.json['status'], 'ready')
-        r = self.app.get('/svn-tags/19/tarball_status')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status')
         assert_equal(r.json['status'], 'ready')
         # ...the same as trunk, 'cause concrete tag isn't specified
-        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/')
         assert_equal(r.json['status'], 'ready')
         # ...the same as trunk, 'cause concrete branch isn't specified
-        r = self.app.get('/svn-tags/19/tarball_status?path=/branches/')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/')
         assert_equal(r.json['status'], 'ready')
         # ...this is essentially the same as tag snapshot
-        r = self.app.get('/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
+        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
         assert_equal(r.json['status'], 'ready')
 
 
