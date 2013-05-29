@@ -522,7 +522,7 @@ class TreeBrowser(BaseController, DispatchIndex):
             cutout = len('tree' + self._path)
             if request.path.endswith('/') and not self._path.endswith('/'):
                 cutout += 1
-            tarball_url = '%starball' % request.path[:-cutout]
+            tarball_url = quote('%starball' % unquote(request.path)[:-cutout])
         return dict(
             repo=c.app.repo,
             commit=self._commit,
