@@ -231,7 +231,7 @@ class Globals(MappedClass):
         tracker = AppConfig.query.get(_id=destination_tracker_id)
         tickets = Ticket.query.find(dict(
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
-            app_config_id=c.app.config._id)).all()
+            app_config_id=c.app.config._id)).sort('ticket_num').all()
         filtered = self.filtered_by_subscription({t._id: t for t in tickets})
         original_ticket_nums = {t._id: t.ticket_num for t in tickets}
         users = User.query.find({'_id': {'$in': filtered.keys()}}).all()

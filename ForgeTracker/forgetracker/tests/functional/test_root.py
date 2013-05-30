@@ -2393,8 +2393,13 @@ class TestBulkMove(TrackerTestController):
         assert_equal(len(admin_email), 1)
         assert_equal(len(monitoring_email), 1)
         admin_email_text = admin_email[0].kwargs.text
+        assert_in('test:bugs:#1 --> test2:bugs2:#1 A New Hope', admin_email_text)
+        assert_in('test:bugs:#2 --> test2:bugs2:#2 The Empire Strikes Back', admin_email_text)
+        assert_in('test:bugs:#3 --> test2:bugs2:#3 Return Of The Jedi', admin_email_text)
         monitoring_email_text = monitoring_email[0].kwargs.text
-        assert_equal(admin_email_text, monitoring_email_text)
+        assert_in('test:bugs:#1 --> test2:bugs2:#1 A New Hope', monitoring_email_text)
+        assert_in('test:bugs:#2 --> test2:bugs2:#2 The Empire Strikes Back', monitoring_email_text)
+        assert_in('test:bugs:#3 --> test2:bugs2:#3 Return Of The Jedi', monitoring_email_text)
 
     @td.with_tool('test2', 'Tickets', 'bugs2')
     def test_monitoring_email_public_only(self):
