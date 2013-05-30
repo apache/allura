@@ -311,11 +311,13 @@ class ForgeTrackerApp(Application):
             $.ajax({
                 url:'%(app_url)sbin_counts',
                 success: function(data) {
+                    var $spans = $('.search_bin > span');
                     $.each(data.bin_counts, function(i, item) {
-                        var $span = $('.search_bin span:contains("' + item.label + '")');
-                        if ($span) {
-                            $span.after('<small>' + item.count + '</small>').fadeIn('fast');
-                        }
+                        $spans.each(function(){
+                            if ($(this).text() == item.label) {
+                                $(this).after('<small>' + item.count + '</small>').fadeIn('fast');
+                            }
+                        });
                     });
                 }
             });
@@ -323,11 +325,13 @@ class ForgeTrackerApp(Application):
                 $.ajax({
                     url: '%(app_url)smilestone_counts',
                     success: function(data) {
+                        var $spans = $('.milestones > span');
                         $.each(data.milestone_counts, function(i, item) {
-                            var $span = $('.milestones span:contains("' + item.name + '")');
-                            if ($span) {
-                                $span.after('<small>' + item.count + '</small>').fadeIn('fast');
-                            }
+                            $spans.each(function(){
+                                if ($(this)) {
+                                    $(this).after('<small>' + item.count + '</small>').fadeIn('fast');
+                                }
+                            });
                         });
                     }
                 });
