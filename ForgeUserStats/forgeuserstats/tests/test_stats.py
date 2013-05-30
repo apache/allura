@@ -169,9 +169,10 @@ class TestStats(TestController):
         assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
         assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 3
 
-class TestGitCommit(unittest.TestCase, TestController):
+class TestGitCommit(TestController, unittest.TestCase):
 
     def setUp(self):
+        super(TestGitCommit, self).setUp()
         setup_basic_test()
 
         user = User.by_username('test-admin')
