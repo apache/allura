@@ -34,7 +34,7 @@ Allura/allura/tests/data/test_mime/text_file.txt
 Allura/run/dummy.txt
 AlluraTesting/jslint/
 ForgeGit/forgegit/data/post-receive_tmpl
-ForgeSVN/forgesvn/tests/data/testsvn/
+ForgeSVN/forgesvn/tests/data/
 solr_config/core0/conf/spellings.txt
 solr_config/core1/conf/spellings.txt
 solr_config/solr.xml
