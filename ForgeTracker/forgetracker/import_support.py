@@ -50,14 +50,16 @@ class ResettableStream(object):
         self.buf_size = header_size if header_size >= 0 else self.HEADER_BUF_SIZE
         self.buf_pos = 0
         self.stream_pos = 0
-        
-    def read(self, size=-1):
+
+    def _read_header(self):
         if self.buf is None:
             data = self.fp.read(self.buf_size)
             self.buf = StringIO(data)
             self.buf_len = len(data)
             self.stream_pos = self.buf_len
-        
+
+    def read(self, size=-1):
+        self._read_header()
         data = ''
         if self.buf_pos < self.stream_pos:
             data = self.buf.read(size)
@@ -71,11 +73,7 @@ class ResettableStream(object):
         return data
 
     def seek(self, pos):
-        if self.buf is None:
-            data = self.fp.read(self.buf_size)
-            self.buf = StringIO(data)
-            self.buf_len = len(data)
-
+        self._read_header()
         if self.stream_pos > self.buf_len:
             assert False, 'Started reading stream body, cannot reset pos'
         self.buf.seek(pos)
