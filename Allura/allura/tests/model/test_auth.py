@@ -181,11 +181,11 @@ def test_openid_claimed_by_user():
     c.user.disabled = True
     oid.claimed_by_user_id = c.user._id
     ThreadLocalORMSession.flush_all()
-    assert oid.claimed_by_user() is not c.user
+    assert oid.claimed_by_user() is None
 
 @with_setup(setUp)
-def test_q():
+def test_email_address_claimed_by_user():
     addr = M.EmailAddress(_id='test_admin@sf.net', claimed_by_user_id=c.user._id)
     c.user.disabled = True
     ThreadLocalORMSession.flush_all()
-    assert addr.claimed_by_user() is not c.user
+    assert addr.claimed_by_user() is None
