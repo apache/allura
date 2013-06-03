@@ -331,10 +331,31 @@ class Repository(Artifact, ActivityObject):
     def is_empty(self):
         return self._impl.is_empty()
     def get_heads(self):
+        """
+        Return list of heads for the repo.
+
+        It's get_heads() instead of a heads (lazy) property because it would
+        conflict with the now deprecated heads field.  Eventually, we should
+        try to remove the deprecated fields and clean this up.
+        """
         return self._impl.heads
     def get_branches(self):
+        """
+        Return list of branches for the repo.
+
+        It's get_branches() instead of a branches (lazy) property because it
+        would conflict with the now deprecated branches field.  Eventually, we
+        should try to remove the deprecated fields and clean this up.
+        """
         return self._impl.branches
     def get_tags(self):
+        """
+        Return list of tags for the repo.
+
+        It's get_tags() instead of a tags (lazy) property because it
+        would conflict with the now deprecated tags field.  Eventually, we
+        should try to remove the deprecated fields and clean this up.
+        """
         return self._impl.tags
 
     def _log(self, rev, skip, limit):
