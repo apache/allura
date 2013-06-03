@@ -1,3 +1,19 @@
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
 '''
 A Jinja template loader which allows for:
  - dotted-notation package loading
@@ -93,8 +109,12 @@ The positioners are:
 '''
 import pkg_resources
 import os
+from collections import defaultdict
 
 import jinja2
+from ming.utils import LazyProperty
+
+from allura.lib.helpers import topological_sort
 
 
 class PackagePathLoader(jinja2.BaseLoader):
@@ -113,7 +133,7 @@ class PackagePathLoader(jinja2.BaseLoader):
         # TODO: How does one handle project-theme?
         if default_paths is None:
             default_paths = [
-                    #['projec-theme', None],
+                    #['project-theme', None],
                     ['site-theme', None],
                     ['allura', '/'],
                 ]
@@ -122,72 +142,108 @@ class PackagePathLoader(jinja2.BaseLoader):
         self.default_paths = default_paths
         self.override_root = override_root
 
-        # Finally instantiate the loader
-        self.fs_loader = jinja2.FileSystemLoader(self.init_paths())
+    @LazyProperty
+    def fs_loader(self):
+        return jinja2.FileSystemLoader(self.init_paths())
+
+    def _load_paths(self):
+        """
+        Load all the paths to be processed, including defaults, in the default order.
+        """
+        paths = self.default_paths[:]  # copy default_paths
+        paths[-1:0] = [  # insert all eps just before last item, by default
+                [ep.name, pkg_resources.resource_filename(ep.module_name, "")]
+                for ep in pkg_resources.iter_entry_points(self.override_entrypoint)
+            ]
+        return paths
+
+    def _load_rules(self):
+        """
+        Load and pre-process the rules from the entry points.
+
+        Rules are specified per-tool as a list of the form:
+
+            template_path_rules = [
+                    ['>', 'tool1'],  # this tool must be resolved before tool1
+                    ['<', 'tool2'],  # this tool must be resolved after tool2
+                    ['=', 'tool3'],  # this tool replaces all of tool3's templates
+                ]
+
+        Returns two lists of rules, order_rules and replacement_rules.
+
+        order_rules represents all of the '>' and '<' rules and are returned
+        as a list of pairs of the form ('a', 'b') indicating that path 'a' must
+        come before path 'b'.
+
+        replacement_rules represent all of the '=' rules and are returned as
+        a dictionary mapping the paths to replace to the paths to replace with.
+        """
+        order_rules = []
+        replacement_rules = {}
+        for ep in pkg_resources.iter_entry_points(self.override_entrypoint):
+            for rule in getattr(ep.load(), 'template_path_rules', []):
+                if rule[0] == '>':
+                    order_rules.append((ep.name, rule[1]))
+                elif rule[0] == '=':
+                    replacement_rules[rule[1]] = ep.name
+                elif rule[0] == '<':
+                    order_rules.append((rule[1], ep.name))
+                else:
+                    raise jinja2.TemplateError(
+                        'Unknown template path rule in %s: %s' % (
+                            ep.name, ' '.join(rule)))
+        return order_rules, replacement_rules
+
+    def _sort_paths(self, paths, rules):
+        """
+        Process all '>' and '<' rules, providing a partial ordering
+        of the paths based on the given rules.
+
+        The rules should already have been pre-processed by _load_rules
+        to a list of partial ordering pairs ('a', 'b') indicating that
+        path 'a' should come before path 'b'.
+        """
+        names = [p[0] for p in paths]
+        # filter rules that reference non-existent paths to prevent "loops" in the graph
+        rules = [r for r in rules if r[0] in names and r[1] in names]
+        ordered_paths = topological_sort(names, rules)
+        if ordered_paths is None:
+            raise jinja2.TemplateError(
+                'Loop detected in ordering of overrides')
+        return paths.sort(key=lambda p: ordered_paths.index(p[0]))
+
+    def _replace_signposts(self, paths, rules):
+        """
+        Process all '=' rules, replacing the rule target's path value with
+        the rule's entry's path value.
+
+        Multiple entries replacing the same signpost can cause indeterminate
+        behavior, as the order of the entries is not entirely defined.
+        However, if _sort_by_rules is called first, the partial ordering is
+        respected.
+
+        This mutates paths.
+        """
+        p_idx = lambda n: [e[0] for e in paths].index(n)
+        for target, replacement in rules.items():
+            try:
+                removed = paths.pop(p_idx(replacement))
+                paths[p_idx(target)][1] = removed[1]
+            except ValueError:
+                # target or replacement missing (may not be installed)
+                pass
 
     def init_paths(self):
         '''
         Set up the setuptools entry point-based paths.
         '''
-        paths = self.default_paths[:]
+        paths = self._load_paths()
+        order_rules, repl_rules = self._load_rules()
 
-        '''
-        Iterate through the overriders.
-        TODO: Can this be moved to allura.app_globals.Globals, or is this
-              executed before that is available?
-        '''
-        epoints = pkg_resources.iter_entry_points(self.override_entrypoint)
-        for epoint in epoints:
-            overrider = epoint.load()
-            # Get the path of the module
-            tmpl_path = pkg_resources.resource_filename(
-                overrider.__module__,
-                ""
-            )
-            # Default insert position is right before allura(/)
-            insert_position = len(paths) - 1
+        self._sort_paths(paths, order_rules)
+        self._replace_signposts(paths, repl_rules)
 
-            rules = getattr(overrider, 'template_path_rules', [])
-
-            # Check each of the rules for this overrider
-            for direction, signpost in rules:
-                sp_location = None
-
-                # Find the signpost
-                try:
-                    sp_location = [path[0] for path in paths].index(signpost)
-                except ValueError:
-                    # Couldn't find it, hope they specified another one, or
-                    # that the default is ok.
-                    continue
-
-                if direction == '=':
-                    # Set a signpost. Behavior if already set is undetermined,
-                    # as entry point ordering is undetermined
-                    paths[sp_location][1] = tmpl_path
-                    # already inserted! our work is done here
-                    insert_position = None
-                    break
-                elif direction == '>':
-                    # going to put it right before the signpost
-                    insert_position = min(sp_location, insert_position)
-                elif direction == '<':
-                    # going to put it right after the signpost
-                    insert_position = min(sp_location + 1, insert_position)
-                else:
-                    # don't know what that is!
-                    raise jinja2.TemplateError(
-                        'Unknown template path rule in %s: %s' % (
-                            overrider, direction))
-
-            # in the case that we've already replaced a signpost, carry on
-            if insert_position is not None:
-                # TODO: wouldn't OrderedDict be better? the allura.lib one
-                #       doesn't support ordering like the markdown one
-                paths.insert(insert_position, (epoint.name, tmpl_path))
-
-        # Get rid of None paths... not useful
-        return [path for name, path in paths if path is not None]
+        return [p[1] for p in paths if p[1] is not None]
 
     def get_source(self, environment, template):
         '''
@@ -195,40 +251,21 @@ class PackagePathLoader(jinja2.BaseLoader):
         - path/to/template.html
         - module:path/to/template.html
         '''
-        package, path = None, None
         src = None
-        bits = template.split(':')
-
-        if len(bits) == 2:
-            # splitting out the Python module name from the template string...
-            # the default allura behavior
-            package, path = template.split(':')
-            # TODO: is there a better way to do this?
-            path_fragment = os.path.join(self.override_root, package, path)
-        elif len(bits) == 1:
-            # TODO: is this even useful?
-            path = bits[0]
-            path_fragment = os.path.join(self.override_root, path)
-        else:
-            raise jinja2.TemplateNotFound(template)
 
         # look in all of the customized search locations...
         try:
-            src = self.fs_loader.get_source(environment, path_fragment)
+            parts = [self.override_root] + template.split(':')
+            if len(parts) > 2:
+                parts[1:2] = parts[1].split('.')
+            return self.fs_loader.get_source(environment, os.path.join(*parts))
         except jinja2.TemplateNotFound:
-            # ...this doesn't mean it's really not found... it's probably
-            # just specified in the Allura-normal manner
+            # fall-back to attempt non-override loading
             pass
 
-        # ...but if you don't find anything, fall back to the explicit package
-        # approach
-        if src is None and package is not None:
-            # gets the absolute filename of the template
+        if ':' in template:
+            package, path = template.split(':', 2)
             filename = pkg_resources.resource_filename(package, path)
-            # get the filename relative to the root: (default '/').. if this
-            # fails this error is not caught, so should get propagated
-            # normally
-            src = self.fs_loader.get_source(environment, filename)
-        elif src is None:
-            raise jinja2.TemplateNotFound(template)
-        return src
+            return self.fs_loader.get_source(environment, filename)
+        else:
+            return self.fs_loader.get_source(environment, template)
