@@ -28,6 +28,7 @@ import logging
 import cPickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 import tg
 import genshi.template
@@ -725,3 +726,67 @@ def log_output(log):
     finally:
         sys.stdout = _stdout
         sys.stderr = _stderr
+
+def topological_sort(items, partial_order):
+    """Perform topological sort.
+       items is a list of items to be sorted.
+       partial_order is a list of pairs. If pair (a,b) is in it, it means
+       that item a should appear before item b.
+       Returns a list of the items in one of the possible orders, or None
+       if partial_order contains a loop.
+
+       Modified from: http://www.bitformation.com/art/python_toposort.html
+    """
+
+    def add_arc(graph, fromnode, tonode):
+        """Add an arc to a graph. Can create multiple arcs.
+           The end nodes must already exist."""
+        graph[fromnode].append(tonode)
+        # Update the count of incoming arcs in tonode.
+        graph[tonode][0] = graph[tonode][0] + 1
+
+    # step 1 - create a directed graph with an arc a->b for each input
+    # pair (a,b).
+    # The graph is represented by a dictionary. The dictionary contains
+    # a pair item:list for each node in the graph. /item/ is the value
+    # of the node. /list/'s 1st item is the count of incoming arcs, and
+    # the rest are the destinations of the outgoing arcs. For example:
+    #           {'a':[0,'b','c'], 'b':[1], 'c':[1]}
+    # represents the graph:   c <-- a --> b
+    # The graph may contain loops and multiple arcs.
+    # Note that our representation does not contain reference loops to
+    # cause GC problems even when the represented graph contains loops,
+    # because we keep the node names rather than references to the nodes.
+    graph = defaultdict(lambda:[0])
+    for a,b in partial_order:
+        add_arc(graph, a, b)
+
+    # Step 2 - find all roots (nodes with zero incoming arcs).
+    roots = [n for n in items if graph[n][0] == 0]
+    roots.reverse()  # keep sort stable
+
+    # step 3 - repeatedly emit a root and remove it from the graph. Removing
+    # a node may convert some of the node's direct children into roots.
+    # Whenever that happens, we append the new roots to the list of
+    # current roots.
+    sorted = []
+    while roots:
+        # If len(roots) is always 1 when we get here, it means that
+        # the input describes a complete ordering and there is only
+        # one possible output.
+        # When len(roots) > 1, we can choose any root to send to the
+        # output; this freedom represents the multiple complete orderings
+        # that satisfy the input restrictions. We arbitrarily take one of
+        # the roots using pop(). Note that for the algorithm to be efficient,
+        # this operation must be done in O(1) time.
+        root = roots.pop()
+        sorted.append(root)
+        for child in graph[root][1:]:
+            graph[child][0] = graph[child][0] - 1
+            if graph[child][0] == 0:
+                roots.append(child)
+        del graph[root]
+    if len(graph) > 0:
+        # There is a loop in the input.
+        return None
+    return sorted
