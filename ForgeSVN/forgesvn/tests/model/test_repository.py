@@ -319,7 +319,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                               'test-svn-tags-19-tags-tag-1.0/svn-commit.tmp',
                               'test-svn-tags-19-tags-tag-1.0/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
-        tarball_path = os.path.join(g.tmpdir, 'tarball/svn/t/te/test/testsvn-trunk-tags-branches/')
+        tmpdir = tg.config['scm.repos.tarball.root']
+        tarball_path = os.path.join(tmpdir, 'svn/t/te/test/testsvn-trunk-tags-branches/')
         fn = tarball_path + 'test-svn-tags-19-tags-tag-1.0.zip'
         self.svn_tags.tarball(rev, '/tags/tag-1.0/')
         assert os.path.isfile(fn), fn
@@ -353,7 +354,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                                  'test-svn-tags-19-branches-aaa/svn-commit.tmp',
                                  'test-svn-tags-19-branches-aaa/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
-        tarball_path = os.path.join(g.tmpdir, 'tarball/svn/t/te/test/testsvn-trunk-tags-branches/')
+        tmpdir = tg.config['scm.repos.tarball.root']
+        tarball_path = os.path.join(tmpdir, 'svn/t/te/test/testsvn-trunk-tags-branches/')
         fn = tarball_path + 'test-svn-tags-19-branches-aaa.zip'
         self.svn_tags.tarball(rev, '/branches/aaa/')
         assert os.path.isfile(fn), fn
@@ -388,7 +390,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                                 'test-svn-tags-19-trunk/ccc.txt',
                                 'test-svn-tags-19-trunk/README'])
         h.set_context('test', 'svn-tags', neighborhood='Projects')
-        tarball_path = os.path.join(g.tmpdir, 'tarball/svn/t/te/test/testsvn-trunk-tags-branches/')
+        tmpdir = tg.config['scm.repos.tarball.root']
+        tarball_path = os.path.join(tmpdir, 'svn/t/te/test/testsvn-trunk-tags-branches/')
         fn = tarball_path + 'test-svn-tags-19-trunk.zip'
         self.svn_tags.tarball(rev, '/trunk/')
         assert os.path.isfile(fn), fn
@@ -410,12 +413,12 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         # no path, and no trunk dir
         # expect snapshot of repo root
         h.set_context('test', 'src', neighborhood='Projects')
-        fn = os.path.join(g.tmpdir, 'tarball/svn/t/te/test/testsvn/test-src-1.zip')
+        fn = os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-1.zip')
         self.repo.tarball('1')
         assert os.path.isfile(fn), fn
         snapshot = ZipFile(fn, 'r')
         assert_equal(snapshot.namelist(), ['test-src-1/', 'test-src-1/README'])
-        shutil.rmtree(os.path.join(g.tmpdir, 'tarball/svn/t/te/test/testsvn/'), ignore_errors=True)
+        shutil.rmtree(os.path.join(tmpdir, 'svn/t/te/test/testsvn/'), ignore_errors=True)
         shutil.rmtree(tarball_path, ignore_errors=True)
 
     def test_is_empty(self):
