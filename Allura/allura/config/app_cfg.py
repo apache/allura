@@ -30,6 +30,8 @@ convert them into boolean, for example, you should use the
     setting = asbool(global_conf.get('the_setting'))
 
 """
+import logging
+
 import tg
 import jinja2
 import pylons
@@ -44,6 +46,7 @@ import allura
 from allura.lib import app_globals, helpers
 from allura.lib.package_path_loader import PackagePathLoader
 
+log = logging.getLogger(__name__)
 
 class ForgeConfig(AppConfig):
 
