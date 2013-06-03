@@ -313,8 +313,8 @@ class ForgeTrackerApp(Application):
                 success: function(data) {
                     var $spans = $('.search_bin > span');
                     $.each(data.bin_counts, function(i, item) {
-                        $spans.each(function(){
-                            if ($(this).text() == item.label) {
+                        $spans.each(function() {
+                            if ($(this).text() === item.label) {
                                 $(this).after('<small>' + item.count + '</small>').fadeIn('fast');
                             }
                         });
@@ -327,8 +327,8 @@ class ForgeTrackerApp(Application):
                     success: function(data) {
                         var $spans = $('.milestones > span');
                         $.each(data.milestone_counts, function(i, item) {
-                            $spans.each(function(){
-                                if ($(this)) {
+                            $spans.each(function() {
+                                if ($(this).text() === item.name) {
                                     $(this).after('<small>' + item.count + '</small>').fadeIn('fast');
                                 }
                             });
