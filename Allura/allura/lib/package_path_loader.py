@@ -14,38 +14,45 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-'''
+"""
 A Jinja template loader which allows for:
- - dotted-notation package loading
- - search-path-based overriding of same
 
-## Dotted notation
+- dotted-notation package loading
+- search-path-based overriding of same
+
+Dotted notation
+---------------
+
 - Allow a Tool implementer to use a dotted-notation module name
-  (as occuring in the PYTONPATH), then the given path within the
-  module:
+  (as occuring in the ``PYTHONPATH``), then the given path within the
+  module::
 
-        @expose('jinja:module.name:path/within/module.html>')
+        @expose('jinja:<module.name>:<path/within/module.html>')
 
-  e.g.
+  e.g.::
 
         @expose('jinja:allura:templates/repo/file.html')
 
-## Overriding dotted notation
+Overriding dotted notation
+--------------------------
+
 Allow a Tool implementer to override the theme baseline (or any
 other Tool's) templates. This can be lighter-weight than subclassing
-allura.plugin.ThemeProvider, plus will allow for more fine-grained
+:ref:`allura.plugin.ThemeProvider`, plus will allow for more fine-grained
 changes.
 
-This will also override `extends` and `import` Jinja tags.
+This will also override ``extends`` and ``import`` Jinja tags.
 
 This approach uses a:
 
-- setup.py entry point to a class with...
-- _magic_ files and...
+- ``setup.py`` entry point to a class with...
+- *magic* files and...
 - (optionally) a class property to specify ordering
 
-### File Structure for Overriding dotted notation
-For the examples, assume the following directory structure:
+File Structure for Overriding dotted notation
+=============================================
+
+For the examples, assume the following directory structure::
 
     NewTool/
     |- setup.py                     <- entry point specified here
@@ -60,26 +67,28 @@ For the examples, assume the following directory structure:
                    |- file.html     <- actual template
 
 To override the above example, a Tool implementer would
-add the following line to their Tool's setup.py (assuming usage in Allura,
-with the default app_cfg):
+add the following line to their Tool's ``setup.py`` (assuming usage in Allura,
+with the default ``app_cfg``)::
 
     [allura.theme.override]
     newtool = newtool.app:NewToolApp
 
 Then, in the neighbor path (see below) for the file containing the
-Tool class, add the following path/file:
+Tool class, add the following path/file::
 
     override/allura/templates/repo/file.html
 
 The template will be overridden. Note that after changing
-setup.py, it would be required to re-initialize with setuptools:
+``setup.py``, it would be required to re-initialize with setuptools::
 
     python setup.py develop
 
-###  Specifying search path order with template_path_rules
+Specifying search path order with template_path_rules
+=====================================================
+
 If a highly specific ordering is required, such as if multiple Tools
 are trying to override the same template, the entry point target
-class can also contain a class property template_path_rules:
+class can also contain a class property template_path_rules::
 
     class NewToolApp(Application):
         template_path_rules = [
@@ -87,26 +96,29 @@ class can also contain a class property template_path_rules:
         ]
 
 Each rule specifies a postioner and an entry point or "signpost".
-If no rule is provided, the default is ['>', 'allura'].
+If no rule is provided, the default is ``['>', 'allura']``.
 
 The "signposts" are:
 
-- site-theme
-- allura (you probably shouldn't do this)
-- project-theme NOT IMPLEMENTED
-- tool-theme NOT IMPLEMENTED
+- Any other app's override entry point name
+- ``site-theme``
+- ``allura`` (you probably shouldn't do this)
+- ``project-theme`` **NOT IMPLEMENTED**
+- ``tool-theme`` **NOT IMPLEMENTED**
 
 The positioners are:
-- >
-    - This overrider will be found BEFORE the specified entry point
-- <
-    - This overrider will be found AFTER the specified entry point... not
-      exectly sure why you would use this.
-- =
-    - This will replace one of the "signpost" entry points... if multiple
-      entry points try to do this, the result is undefined.
-      TODO: Support multiple partial themes
-'''
+
+    >
+        This overrider will be found BEFORE the specified entry point
+    <
+        This overrider will be found AFTER the specified entry point
+    =
+        This will replace one of the "signpost" entry points (if multiple apps
+        try to do this for the same signpost, the result is undefined)
+
+**TODO:** Support multiple partial themes
+"""
+
 import pkg_resources
 import os
 from collections import defaultdict
@@ -118,11 +130,6 @@ from allura.lib.helpers import topological_sort
 
 
 class PackagePathLoader(jinja2.BaseLoader):
-    '''
-    Implements the following extensions to the BaseLoader for locating
-    templates: dotted-notation module-based template loading, and overriding
-    the same with other Tools.
-    '''
     def __init__(self, override_entrypoint='allura.theme.override',
                 default_paths=None,
                 override_root='override',
