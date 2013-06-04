@@ -258,7 +258,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         n = M.Notification.query.find(
             dict(subject='[test:src-git] [1e146e] - Rick Copeland: Change README')).first()
         assert n
-        assert 'master,zz: ' in n.text
+        assert 'master: ' in n.text, n.text
         send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         ThreadLocalORMSession.flush_all()
         assert M.Notification.query.find(
