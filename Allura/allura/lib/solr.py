@@ -16,8 +16,24 @@
 #       under the License.
 
 import shlex
+
+from tg import config
+from paste.deploy.converters import asbool
 import pysolr
-from pysolr import SolrError
+
+
+def make_solr_from_config(push_servers, query_server=None, **kwargs):
+    """
+    Make a :class:`Solr <Solr>` instance from config defaults.  Use
+    `**kwargs` to override any value
+    """
+    solr_kwargs = dict(
+        commit=asbool(config.get('solr.commit', True)),
+        commitWithin=config.get('solr.commitWithin'),
+        timeout=int(config.get('solr.long_timeout', 60)),
+    )
+    solr_kwargs.update(kwargs)
+    return Solr(push_servers, query_server, **solr_kwargs)
 
 
 class Solr(object):
@@ -131,4 +147,3 @@ class MockSOLR(object):
         elif kwargs.get('q', None):
             for doc in self.search(kwargs['q']):
                 self.delete(id=doc['id'])
-

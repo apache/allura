@@ -23,14 +23,24 @@ from pylons import app_globals as g
 
 from allura.lib.decorators import task
 from allura.lib.exceptions import CompoundError
+from allura.lib.solr import make_solr_from_config
 
 log = logging.getLogger(__name__)
 
 @task
-def add_artifacts(ref_ids, update_solr=True, update_refs=True):
-    '''Add the referenced artifacts to SOLR and shortlinks'''
+def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
+    '''
+    Add the referenced artifacts to SOLR and shortlinks.
+
+    :param solr_hosts: a list of solr hosts to use instead of the defaults
+    :type solr_hosts: [str]
+    '''
     from allura import model as M
     from allura.lib.search import find_shortlinks, solarize
+    if solr_hosts:
+        solr = make_solr_from_config(solr_hosts)
+    else:
+        solr = g.solr
     exceptions = []
     solr_updates = []
     with _indexing_disabled(M.session.artifact_orm_session._get()):
@@ -50,7 +60,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True):
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
-        g.solr.add(solr_updates)
+        solr.add(solr_updates)
 
     if len(exceptions) == 1:
         raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
