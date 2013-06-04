@@ -99,7 +99,7 @@ class TestUserStats(unittest.TestCase):
         assert art_by_type['Wiki']['modified'] == init_art_by_type['Wiki']['modified']
         assert lm_art_by_type['Wiki']['created'] == init_lm_art_by_type['Wiki']['created'] + 1
         assert lm_art_by_type['Wiki']['modified'] == init_lm_art_by_type['Wiki']['modified']
-        
+
         #In that case, last month stats should not be changed
         new_date = datetime.utcnow() + timedelta(-32)
         self.user.stats.addNewArtifact('Wiki', new_date, p)
@@ -119,7 +119,7 @@ class TestUserStats(unittest.TestCase):
         assert art_by_type['Wiki']['modified'] == init_art_by_type['Wiki']['modified']
         assert lm_art_by_type['Wiki']['created'] == init_lm_art_by_type['Wiki']['created'] + 1
         assert lm_art_by_type['Wiki']['modified'] == init_lm_art_by_type['Wiki']['modified']
-        
+
         p.trove_topic = [topic._id]
 
         self.user.stats.addNewArtifact('Wiki', datetime.utcnow(), p)
@@ -176,7 +176,7 @@ class TestUserStats(unittest.TestCase):
         assert art_by_type['Wiki']['modified'] == init_art_by_type['Wiki']['modified'] + 1
         assert lm_art_by_type['Wiki']['created'] == init_lm_art_by_type['Wiki']['created']
         assert lm_art_by_type['Wiki']['modified'] == init_lm_art_by_type['Wiki']['modified'] + 1
-        
+
         #In that case, last month stats should not be changed
         new_date = datetime.utcnow() + timedelta(-32)
         self.user.stats.addModifiedArtifact('Wiki', new_date, p)
@@ -186,9 +186,9 @@ class TestUserStats(unittest.TestCase):
         art_by_type = self.user.stats.getArtifactsByType()
         lm_art_by_type = self.user.stats.getLastMonthArtifactsByType()
 
-        assert lm_art['created'] == init_lm_art['created'] 
+        assert lm_art['created'] == init_lm_art['created']
         assert lm_art['modified'] == init_lm_art['modified'] + 1
-        assert artifacts['created'] == init_art['created'] 
+        assert artifacts['created'] == init_art['created']
         assert artifacts['modified'] == init_art['modified'] + 2
         assert art_wiki['created'] == init_art_wiki['created']
         assert art_wiki['modified'] == init_art_wiki['modified'] + 2
@@ -196,7 +196,7 @@ class TestUserStats(unittest.TestCase):
         assert art_by_type['Wiki']['modified'] == init_art_by_type['Wiki']['modified'] + 2
         assert lm_art_by_type['Wiki']['created'] == init_lm_art_by_type['Wiki']['created']
         assert lm_art_by_type['Wiki']['modified'] == init_lm_art_by_type['Wiki']['modified'] + 1
-        
+
         p.trove_topic = [topic._id]
 
         self.user.stats.addModifiedArtifact('Wiki', datetime.utcnow(), p)
@@ -208,13 +208,13 @@ class TestUserStats(unittest.TestCase):
         art_sci = self.user.stats.getArtifacts(category=topic._id)
         art_by_cat = self.user.stats.getArtifactsByCategory(detailed=True)
 
-        assert lm_art['created'] == init_lm_art['created'] 
+        assert lm_art['created'] == init_lm_art['created']
         assert lm_art['modified'] == init_lm_art['modified'] + 2
         assert artifacts['created'] == init_art['created']
         assert artifacts['modified'] == init_art['modified'] + 3
         assert art_wiki['created'] == init_art_wiki['created']
         assert art_wiki['modified'] == init_art_wiki['modified'] + 3
-        assert art_by_type['Wiki']['created'] == init_art_by_type['Wiki']['created'] 
+        assert art_by_type['Wiki']['created'] == init_art_by_type['Wiki']['created']
         assert art_by_type['Wiki']['modified'] == init_art_by_type['Wiki']['modified'] + 3
         assert lm_art_by_type['Wiki']['created'] == init_lm_art_by_type['Wiki']['created']
         assert lm_art_by_type['Wiki']['modified'] == init_lm_art_by_type['Wiki']['modified'] +2
@@ -247,39 +247,39 @@ class TestUserStats(unittest.TestCase):
         assert tickets_art['modified'] == init_tickets_art['modified']
         assert tickets_sci_art['created'] == tickets_sci_art['created']
         assert tickets_sci_art['modified'] == tickets_sci_art['modified']
-        
+
         p.trove_topic = [topic._id]
 
         self.user.stats.addAssignedTicket(create_time, p)
         tickets = self.user.stats.getTickets()
         lm_tickets = self.user.stats.getLastMonthTickets()
 
-        assert tickets['assigned'] == init_tickets['assigned'] + 1 
+        assert tickets['assigned'] == init_tickets['assigned'] + 1
         assert tickets['revoked'] == init_tickets['revoked']
-        assert tickets['solved'] == init_tickets['solved'] 
-        assert tickets['averagesolvingtime'] is None 
-        assert lm_tickets['assigned'] == init_lm_tickets['assigned'] + 1 
+        assert tickets['solved'] == init_tickets['solved']
+        assert tickets['averagesolvingtime'] is None
+        assert lm_tickets['assigned'] == init_lm_tickets['assigned'] + 1
         assert lm_tickets['revoked'] == init_lm_tickets['revoked']
-        assert lm_tickets['solved'] == init_lm_tickets['solved'] 
-        assert lm_tickets['averagesolvingtime'] is None 
+        assert lm_tickets['solved'] == init_lm_tickets['solved']
+        assert lm_tickets['averagesolvingtime'] is None
 
         self.user.stats.addRevokedTicket(create_time + timedelta(-32), p)
         tickets = self.user.stats.getTickets()
 
-        assert tickets['assigned'] == init_tickets['assigned'] + 1 
+        assert tickets['assigned'] == init_tickets['assigned'] + 1
         assert tickets['revoked'] == init_tickets['revoked'] + 1
-        assert tickets['solved'] == init_tickets['solved'] 
-        assert tickets['averagesolvingtime'] is None 
-        assert lm_tickets['assigned'] == init_lm_tickets['assigned'] + 1 
+        assert tickets['solved'] == init_tickets['solved']
+        assert tickets['averagesolvingtime'] is None
+        assert lm_tickets['assigned'] == init_lm_tickets['assigned'] + 1
         assert lm_tickets['revoked'] == init_lm_tickets['revoked']
-        assert lm_tickets['solved'] == init_lm_tickets['solved'] 
-        assert lm_tickets['averagesolvingtime'] is None 
+        assert lm_tickets['solved'] == init_lm_tickets['solved']
+        assert lm_tickets['averagesolvingtime'] is None
 
         self.user.stats.addClosedTicket(create_time, create_time + timedelta(1), p)
         tickets = self.user.stats.getTickets()
         lm_tickets = self.user.stats.getLastMonthTickets()
 
-        assert tickets['assigned'] == init_tickets['assigned'] + 1 
+        assert tickets['assigned'] == init_tickets['assigned'] + 1
         assert tickets['revoked'] == init_tickets['revoked'] + 1
         assert tickets['solved'] == init_tickets['solved'] + 1
 
@@ -297,7 +297,7 @@ class TestUserStats(unittest.TestCase):
 
         solving_time = dict(seconds=0,minutes=0,days=2,hours=0)
 
-        assert tickets['assigned'] == init_tickets['assigned'] + 1 
+        assert tickets['assigned'] == init_tickets['assigned'] + 1
         assert tickets['revoked'] == init_tickets['revoked'] + 1
         assert tickets['solved'] == init_tickets['solved'] + 2
         assert tickets['averagesolvingtime'] == solving_time
@@ -310,7 +310,7 @@ class TestUserStats(unittest.TestCase):
         lm_by_cat = self.user.stats.getLastMonthTicketsByCategory()
         solving_time=dict(days=1,hours=0,minutes=0,seconds=0)
 
-        assert by_cat[topic]['assigned'] == 1 
+        assert by_cat[topic]['assigned'] == 1
         assert by_cat[topic]['revoked'] == 1
         assert by_cat[topic]['solved'] == 1
         assert by_cat[topic]['averagesolvingtime'] == solving_time
@@ -329,7 +329,7 @@ class TestUserStats(unittest.TestCase):
         self.user.set_password('testpassword')
         addr = M.EmailAddress.upsert('rcopeland@geek.net')
         self.user.claim_address('rcopeland@geek.net')
-        
+
         repo_dir = pkg_resources.resource_filename(
             'forgeuserstats', 'tests/data')
 
@@ -337,7 +337,7 @@ class TestUserStats(unittest.TestCase):
         c.app.repo.name = 'testgit.git'
         repo = c.app.repo
         repo.refresh()
-        commit = repo.commit()
+        commit = repo.commit('HEAD')
 
         init_commits = self.user.stats.getCommits()
         assert init_commits['number'] == 4
@@ -377,20 +377,20 @@ class TestUserStats(unittest.TestCase):
     def test_login_stats(self):
         init_logins = self.user.stats.tot_logins_count
         init_lm_logins = self.user.stats.getLastMonthLogins()
-        
+
         login_datetime = datetime.utcnow()
         self.user.stats.addLogin(login_datetime)
         logins = self.user.stats.tot_logins_count
         lm_logins = self.user.stats.getLastMonthLogins()
-        assert logins == init_logins + 1 
-        assert lm_logins == init_lm_logins + 1 
+        assert logins == init_logins + 1
+        assert lm_logins == init_lm_logins + 1
         assert abs(self.user.stats.last_login - login_datetime) < timedelta(seconds=1)
 
         self.user.stats.addLogin(datetime.utcnow() + timedelta(-32))
         logins = self.user.stats.tot_logins_count
         lm_logins = self.user.stats.getLastMonthLogins()
         assert logins == init_logins + 2
-        assert lm_logins == init_lm_logins + 1 
+        assert lm_logins == init_lm_logins + 1
         assert abs(self.user.stats.last_login - login_datetime) < timedelta(seconds=1)
 
     def test_start_date(self):
