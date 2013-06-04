@@ -349,7 +349,7 @@ class ProjectController(FeedController):
                     display_name=user.display_name,
                     username=user.username,
                     url=user.url(),
-                    roles=' '.join(sorted(roles)))
+                    roles=', '.join(sorted(roles)))
             if 'Admin' in roles:
                 admins.append(u)
             elif 'Developer' in roles:
