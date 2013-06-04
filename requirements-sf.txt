@@ -4,7 +4,7 @@ akismet==0.2.0
 amqplib==0.6.1
 kombu==1.0.4
 coverage==3.5a1-20110413
-ForgeHg==0.1.11
+ForgeHg==0.1.12
 ForgePastebin==0.2.6
 mechanize==0.2.4
 mercurial==1.4.3
