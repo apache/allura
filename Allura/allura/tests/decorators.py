@@ -16,12 +16,16 @@
 #       under the License.
 
 from functools import wraps
+import contextlib
+
+from ming.orm.ormsession import ThreadLocalORMSession
+from pylons import tmpl_context as c
+from mock import patch
+import tg
+from paste.deploy.converters import asbool
 
 from allura import model as M
 
-from ming.orm.ormsession import ThreadLocalORMSession
-
-from pylons import tmpl_context as c
 
 def with_user_project(username):
     def _with_user_project(func):
@@ -40,6 +44,12 @@ def with_user_project(username):
         return wrapped
     return _with_user_project
 
+
+@contextlib.contextmanager
+def NullContextManager():
+    yield
+
+
 def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
         ordinal=None, post_install_hook=None, username='test-admin',
         **override_options):
@@ -53,8 +63,14 @@ def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
                 c.app = p.install_app(ep_name, mount_point, mount_label, ordinal, **override_options)
                 if post_install_hook:
                     post_install_hook(c.app)
-                while M.MonQTask.run_ready('setup'):
-                    pass
+
+                if asbool(tg.config.get('smtp.mock')):
+                    smtp_mock = patch('allura.lib.mail_util.smtplib.SMTP')
+                else:
+                    smtp_mock = NullContextManager()
+                with smtp_mock:
+                    while M.MonQTask.run_ready('setup'):
+                        pass
                 ThreadLocalORMSession.flush_all()
                 ThreadLocalORMSession.close_all()
             elif mount_point:
