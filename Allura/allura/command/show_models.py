@@ -68,6 +68,8 @@ class ReindexCommand(base.Command):
                       help='Run each individual index operation as a background task.  '
                            'Note: this is often better, since tasks have "request" objects '
                            'which are needed for some markdown macros to run properly')
+    parser.add_option('--solr-hosts', dest='solr_hosts',
+                      help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
 
     def command(self):
         from allura import model as M
@@ -87,6 +89,11 @@ class ReindexCommand(base.Command):
         # if none specified, do all
         if not self.options.solr and not self.options.refs:
             self.options.solr = self.options.refs = True
+
+        if self.options.solr_hosts:
+            self.add_artifact_kwargs = {'solr_hosts': self.options.solr_hosts.split(',')}
+        else:
+            self.add_artifact_kwargs = {}
 
         for projects in utils.chunked_find(M.Project, q_project):
             for p in projects:
@@ -123,8 +130,9 @@ class ReindexCommand(base.Command):
                             self._chunked_add_artifacts(ref_ids)
                         else:
                             add_artifacts(ref_ids,
-                                    update_solr=self.options.solr,
-                                    update_refs=self.options.refs)
+                                          update_solr=self.options.solr,
+                                          update_refs=self.options.refs,
+                                          **self.add_artifact_kwargs)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
@@ -146,8 +154,9 @@ class ReindexCommand(base.Command):
         """
         try:
             add_artifacts.post(chunk,
-                    update_solr=self.options.solr,
-                    update_refs=self.options.refs)
+                               update_solr=self.options.solr,
+                               update_refs=self.options.refs,
+                               **self.add_artifact_kwargs)
         except InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its expected to help
             if str(e).startswith('BSON document too large'):

@@ -57,7 +57,7 @@ from allura.lib import helpers as h
 from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.async import Connection, MockAMQ
-from allura.lib.solr import Solr, MockSOLR
+from allura.lib.solr import MockSOLR, make_solr_from_config
 from allura.lib.zarkov_helpers import ZarkovClient, zmq
 
 log = logging.getLogger(__name__)
@@ -103,14 +103,10 @@ class Globals(object):
         if asbool(config.get('solr.mock')):
             self.solr = self.solr_short_timeout = MockSOLR()
         elif self.solr_server:
-            self.solr = Solr(self.solr_server, self.solr_query_server,
-                             commit=asbool(config.get('solr.commit', True)),
-                             commitWithin=config.get('solr.commitWithin'),
-                             timeout=int(config.get('solr.long_timeout', 60)))
-            self.solr_short_timeout = Solr(self.solr_server, self.solr_query_server,
-                                           commit=asbool(config.get('solr.commit', True)),
-                                           commitWithin=config.get('solr.commitWithin'),
-                                           timeout=int(config.get('solr.short_timeout', 10)))
+            self.solr = make_solr_from_config(self.solr_server, self.solr_query_server)
+            self.solr_short_timeout = make_solr_from_config(
+                self.solr_server, self.solr_query_server,
+                timeout=int(config.get('solr.short_timeout', 10)))
         else: # pragma no cover
             self.solr = None
             self.solr_short_timeout = None

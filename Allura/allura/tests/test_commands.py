@@ -362,6 +362,21 @@ class TestReindexCommand(object):
         cmd.run([test_config, '-p', 'test', '--solr', '--skip-solr-delete'])
         assert not g.solr.delete.called, 'solr.delete() must not be called'
 
+    @patch('pysolr.Solr')
+    def test_solr_hosts_1(self, Solr):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.run([test_config, '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge'])
+        assert_equal(Solr.call_args[0][0], 'http://blah.com/solr/forge')
+
+    @patch('pysolr.Solr')
+    def test_solr_hosts_list(self, Solr):
+        cmd = show_models.ReindexCommand('reindex')
+        cmd.run([test_config, '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge,https://other.net/solr/forge'])
+        # check constructors of first and second Solr() instantiations
+        assert_equal(set([Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]]),
+                     set(['http://blah.com/solr/forge', 'https://other.net/solr/forge'])
+                     )
+
     @patch('allura.command.show_models.utils')
     def test_project_regex(self, utils):
         cmd = show_models.ReindexCommand('reindex')
@@ -373,6 +388,7 @@ class TestReindexCommand(object):
     def test_chunked_add_artifacts(self, add_artifacts):
         cmd = show_models.ReindexCommand('reindex')
         cmd.options = Mock()
+        cmd.add_artifact_kwargs = {}
         ref_ids = list(range(100 * 1000 * 2 + 20))
         cmd._chunked_add_artifacts(ref_ids)
         assert_equal(len(add_artifacts.post.call_args_list), 3)
@@ -389,6 +405,7 @@ class TestReindexCommand(object):
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
         cmd.options = Mock()
+        cmd.add_artifact_kwargs = {}
         cmd._post_add_artifacts(range(5))
         kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs}
         expected = [
@@ -411,5 +428,6 @@ class TestReindexCommand(object):
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
         cmd.options = Mock()
+        cmd.add_artifact_kwargs = {}
         with td.raises(pymongo.errors.InvalidDocument):
             cmd._post_add_artifacts(range(5))
