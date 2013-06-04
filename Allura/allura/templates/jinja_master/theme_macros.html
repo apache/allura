@@ -96,3 +96,20 @@
         </ul>
     </nav>
 {%- endmacro %}
+
+{%- macro project_header_right(project, app) %}
+  {% if project.neighborhood.icon %}
+    <a href="{{project.neighborhood.url()}}"><img src="{{project.neighborhood.url()}}/icon" class="neighborhood_icon"
+       alt="Return to {{project.neighborhood.name}}" title="Return to {{project.neighborhood.name}}"></a>
+       <div class="neighborhood_title">
+         <h1><a href="{{project.neighborhood.url()}}">{{project.neighborhood.name}}</a></h1>
+         {% if project.neighborhood.project_list_url %}
+           <div class="neighborhood_title_link">
+           <a href="{{project.neighborhood.project_list_url}}">
+             View More Projects
+           </a>
+           </div>
+         {% endif %}
+      </div>
+  {% endif %}
+{%- endmacro %}
