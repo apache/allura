@@ -22,21 +22,8 @@
 {% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
   <div id="nav_menu_missing"></div>
 {% else %}
-  {{ theme_macros.breadcrumbs(c.project, c.app) }}
-  {% if c.project.neighborhood.icon %}
-    <a href="{{c.project.neighborhood.url()}}"><img src="{{c.project.neighborhood.url()}}/icon" class="neighborhood_icon"
-       alt="Return to {{c.project.neighborhood.name}}" title="Return to {{c.project.neighborhood.name}}"></a>
-       <div class="neighborhood_title">
-         <h1><a href="{{c.project.neighborhood.url()}}">{{c.project.neighborhood.name}}</a></h1>
-         {% if c.project.neighborhood.project_list_url %}
-           <div class="neighborhood_title_link">
-           <a href="{{c.project.neighborhood.project_list_url}}">
-             View More Projects
-           </a>
-           </div>
-         {% endif %}
-      </div>
-  {% endif %}
+    {{ theme_macros.breadcrumbs(c.project, c.app) }}
+    {{ theme_macros.project_header_right(c.project, c.app) }}
     {% if c.project.user_project_of %}
       {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
     {% elif c.project.icon %}
