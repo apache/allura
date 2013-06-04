@@ -737,6 +737,7 @@ def topological_sort(items, partial_order):
 
        Modified from: http://www.bitformation.com/art/python_toposort.html
     """
+    # Original topological sort code written by Ofer Faigon (www.bitformation.com) and used with permission
 
     def add_arc(graph, fromnode, tonode):
         """Add an arc to a graph. Can create multiple arcs.
