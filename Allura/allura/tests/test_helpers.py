@@ -249,3 +249,8 @@ def test_inject_user(context):
 def test_datetimeformat():
     from datetime import date
     assert h.datetimeformat(date(2013, 01, 01)) == '2013-01-01 00:00:00'
+
+
+def test_split_select_field_options():
+    assert_equals(h.split_select_field_options('"test message" test2'), ['test message', 'test2'])
+    assert_equals(h.split_select_field_options('"test message test2'), ['test', 'message', 'test2'])

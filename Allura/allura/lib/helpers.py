@@ -29,6 +29,7 @@ import cPickle as pickle
 from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict
+import shlex
 
 import tg
 import genshi.template
@@ -839,3 +840,20 @@ def ming_config_from_ini(ini_path):
     conf = appconfig('config:%s' % os.path.join(root, ini_path))
     with ming_config(**conf):
         yield
+
+
+def split_select_field_options(field_options):
+    try:
+        # shlex have problems with parsing unicode,
+        # it's better to pass properly encoded byte-string
+        field_options = shlex.split(field_options.encode('utf-8'))
+        # convert splitted string back to unicode
+        field_options = map(really_unicode, field_options)
+    except ValueError:
+        field_options = field_options.split()
+        # After regular split field_options might contain a " characters,
+        # which would break html when rendered inside tag's value attr.
+        # Escaping doesn't help here, 'cause it breaks EasyWidgets' validation,
+        # so we're getting rid of those.
+        field_options = [o.replace('"', '') for o in field_options]
+    return field_options
