@@ -19,12 +19,15 @@ import logging
 import os
 import time
 import Queue
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 import signal
 import sys
 
 import faulthandler
 import pylons
+from setproctitle import setproctitle, getproctitle
+
 from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
@@ -36,6 +39,19 @@ faulthandler.enable()
 status_log = logging.getLogger('taskdstatus')
 
 
+@contextmanager
+def proctitle(title):
+    """Temporarily change the process title, then restore it."""
+    orig_title = getproctitle()
+    try:
+        setproctitle(title)
+        yield
+        setproctitle(orig_title)
+    except:
+        setproctitle(orig_title)
+        raise
+
+
 class TaskdCommand(base.Command):
     summary = 'Task server'
     parser = base.Command.standard_parser(verbose=True)
@@ -43,6 +59,7 @@ class TaskdCommand(base.Command):
                       help='only handle tasks of the given name(s) (can be comma-separated list)')
 
     def command(self):
+        setproctitle('taskd')
         self.basic_setup()
         self.keep_running = True
         self.restart_when_done = False
@@ -121,13 +138,15 @@ class TaskdCommand(base.Command):
                             waitfunc=waitfunc,
                             only=only)
                     if self.task:
-                        # Build the (fake) request
-                        r = Request.blank('/--%s--/%s/' % (self.task.task_name, self.task._id),
-                                          {'task': self.task,
-                                           'wsgi.errors': wsgi_error_log,  # ErrorMiddleware records error details here
-                                           })
-                        list(wsgi_app(r.environ, start_response))
-                        self.task = None
+                        with(proctitle("taskd:{0}:{1}".format(
+                            self.task.task_name, self.task._id))):
+                            # Build the (fake) request
+                            r = Request.blank('/--%s--/%s/' % (self.task.task_name, self.task._id),
+                                              {'task': self.task,
+                                               'wsgi.errors': wsgi_error_log,  # ErrorMiddleware records error details here
+                                               })
+                            list(wsgi_app(r.environ, start_response))
+                            self.task = None
             except Exception as e:
                 if self.keep_running:
                     base.log.exception('taskd error %s; pausing for 10s before taking more tasks' % e)
