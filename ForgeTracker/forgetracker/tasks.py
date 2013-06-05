@@ -18,9 +18,9 @@
 import logging
 
 from pylons import tmpl_context as c
+
 from allura.lib.decorators import task
 from allura.lib import helpers as h
-
 from allura import model as M
 
 log = logging.getLogger(__name__)
@@ -37,3 +37,8 @@ def update_bin_counts(app_config_id):
 @task
 def move_tickets(ticket_ids, destination_tracker_id):
     c.app.globals.move_tickets(ticket_ids, destination_tracker_id)
+
+
+@task
+def bulk_edit(**post_data):
+    c.app.globals.update_tickets(**post_data)

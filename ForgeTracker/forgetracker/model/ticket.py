@@ -26,12 +26,14 @@ import pymongo
 from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
 from pprint import pformat
+from paste.deploy.converters import aslist
 
 from ming import schema
 from ming.utils import LazyProperty
 from ming.orm import Mapper, session
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
+from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura.model import (Artifact, VersionedArtifact, Snapshot,
                           project_orm_session, BaseAttachment, VotableArtifact, AppConfig, Mailbox, User)
@@ -289,6 +291,126 @@ class Globals(MappedClass):
         moved_to = '%s/%s' % (tracker.project.shortname, tracker.options.mount_point)
         text = 'Tickets moved from %s to %s' % (moved_from, moved_to)
         Notification.post_user(c.user, None, 'flash', text=text)
+
+    def update_tickets(self, **post_data):
+        from forgetracker.tracker_main import get_change_text, get_label
+        tickets = Ticket.query.find(dict(
+                _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
+                app_config_id=c.app.config._id)).all()
+
+        fields = set(['status'])
+        values = {}
+        for k in fields:
+            v = post_data.get(k)
+            if v: values[k] = v
+        assigned_to = post_data.get('assigned_to')
+        if assigned_to == '-':
+            values['assigned_to_id'] = None
+        elif assigned_to:
+            user = c.project.user_in_project(assigned_to)
+            if user:
+                values['assigned_to_id'] = user._id
+
+        custom_values = {}
+        custom_fields = {}
+        for cf in c.app.globals.custom_fields or []:
+            v = post_data.get(cf.name)
+            if v:
+                custom_values[cf.name] = v
+                custom_fields[cf.name] = cf
+
+        changes = {}
+        changed_tickets = {}
+        for ticket in tickets:
+            message = ''
+            for k, v in sorted(values.iteritems()):
+                if k == 'assigned_to_id':
+                    new_user = User.query.get(_id=v)
+                    old_user = User.query.get(_id=getattr(ticket, k))
+                    if new_user:
+                        message += get_change_text(
+                            get_label(k),
+                            new_user.display_name,
+                            old_user.display_name)
+                else:
+                    message += get_change_text(
+                        get_label(k),
+                        v,
+                        getattr(ticket, k))
+                setattr(ticket, k, v)
+            for k, v in sorted(custom_values.iteritems()):
+                def cf_val(cf):
+                    return ticket.get_custom_user(cf.name) \
+                           if cf.type == 'user' \
+                           else ticket.custom_fields.get(cf.name)
+                cf = custom_fields[k]
+                old_value = cf_val(cf)
+                ticket.custom_fields[k] = v
+                new_value = cf_val(cf)
+                message += get_change_text(
+                    cf.label,
+                    new_value,
+                    old_value)
+            if message != '':
+                changes[ticket._id] = message
+                changed_tickets[ticket._id] = ticket
+                ticket.discussion_thread.post(message, notify=False)
+                ticket.commit()
+
+        filtered_changes = self.filtered_by_subscription(changed_tickets)
+        users = User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
+        def changes_iter(user):
+            for t_id in filtered_changes.get(user._id, []):
+                yield (changed_tickets[t_id], changes[t_id])
+        mail = dict(
+            fromaddr = str(c.user._id),
+            reply_to = str(c.user._id),
+            subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
+                                                           c.app.config.options.mount_point,
+                                                           c.user.display_name),
+        )
+        tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report')
+        head = []
+        for f, v in sorted(values.iteritems()):
+            if f == 'assigned_to_id':
+                user = User.query.get(_id=v)
+                v = user.display_name if user else v
+            head.append('- **%s**: %s' % (get_label(f), v))
+        for f, v in sorted(custom_values.iteritems()):
+            cf = custom_fields[f]
+            if cf.type == 'user':
+                user = User.by_username(v)
+                v = user.display_name if user else v
+            head.append('- **%s**: %s' % (cf.label, v))
+        tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:', ''] + head)}}
+        for user in users:
+            tmpl_context['data'].update({'changes': changes_iter(user)})
+            mail.update(dict(
+                message_id = h.gen_message_id(),
+                text = tmpl.render(tmpl_context),
+                destinations = [str(user._id)]))
+            mail_tasks.sendmail.post(**mail)
+
+        if c.app.config.options.get('TicketMonitoringType') in (
+                'AllTicketChanges', 'AllPublicTicketChanges'):
+            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            visible_changes = []
+            for t_id, t in changed_tickets.items():
+                if (not t.private or
+                        c.app.config.options.get('TicketMonitoringType') ==
+                        'AllTicketChanges'):
+                    visible_changes.append(
+                            (changed_tickets[t_id], changes[t_id]))
+            if visible_changes:
+                tmpl_context['data'].update({'changes': visible_changes})
+                mail.update(dict(
+                    message_id = h.gen_message_id(),
+                    text = tmpl.render(tmpl_context),
+                    destinations = [monitoring_email]))
+                mail_tasks.sendmail.post(**mail)
+
+        c.app.globals.invalidate_bin_counts()
+        ThreadLocalORMSession.flush_all()
 
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
