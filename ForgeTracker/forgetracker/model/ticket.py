@@ -403,7 +403,7 @@ class Globals(MappedClass):
                         c.app.config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
                     visible_changes.append(
-                            (changed_tickets[t_id], changes[t_id]))
+                            (changed_tickets[t_id], jinja2.Markup(changes[t_id])))
             if visible_changes:
                 tmpl_context['data'].update({'changes': visible_changes})
                 mail.update(dict(
