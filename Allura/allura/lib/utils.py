@@ -42,6 +42,7 @@ from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc
 from pygments.formatters import HtmlFormatter
+from setproctitle import getproctitle
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
@@ -148,6 +149,20 @@ class StatsHandler(TimedRotatingHandler):
             if v is not None)
         record.exc_info = None # Never put tracebacks in the rtstats log
         TimedRotatingHandler.emit(self, record)
+
+
+class CustomWatchedFileHandler(logging.handlers.WatchedFileHandler):
+    """Custom log handler for Allura"""
+
+    def format(self, record):
+        """Prepends current process name to ``record.name`` if running in the
+        context of a taskd process that is currently processing a task.
+
+        """
+        title = getproctitle()
+        if title.startswith('taskd:'):
+            record.name = "{0}:{1}".format(title, record.name)
+        return super(CustomWatchedFileHandler, self).format(record)
 
 
 def chunked_find(cls, query=None, pagesize=1024, sort_key='_id', sort_dir=1):
