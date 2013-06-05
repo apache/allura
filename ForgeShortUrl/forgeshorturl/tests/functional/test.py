@@ -16,6 +16,8 @@
 #       under the License.
 
 from pylons import tmpl_context as c
+from nose.tools import assert_equal
+
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -48,13 +50,14 @@ class TestRootController(TestController):
         assert redirected.request.url == 'http://www.google.com/'
 
         response = self.app.get('/url/')
-        form = response.forms['update-short-url-form']
+        form = response.forms['short-url-form']
+        form['update'] = 'True'
         form['short_url'] = 'g'
         form['full_url'] = 'http://www.yahoo.com/'
         form.action = '/admin/url/add/'
         form.submit()
         redirected = self.app.get('/url/g').follow()
-        assert redirected.request.url == 'http://www.yahoo.com/'
+        assert_equal(redirected.request.url, 'http://www.yahoo.com/')
 
     def test_shorturl_not_found(self):
         self.app.post('/admin/url/add',

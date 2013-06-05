@@ -18,5 +18,9 @@
 -#}
 <div id="lightbox_{{name}}" class="modal" style="display:none">
   <b data-icon="{{g.icons['close'].char}}" class="ico {{g.icons['close'].css}} close"></b>
-  {{content|safe}}
+  {% if content_template %}
+    {% include content_template with context %}
+  {% else %}
+    {{content|safe}}
+  {% endif %}
 </div>

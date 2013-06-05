@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import expose, validate, redirect, flash, request
+from tg import expose, validate, redirect, flash, request, config
 from tg.decorators import without_trailing_slash
 
 from allura.app import Application, SitemapEntry, DefaultAdminController
@@ -47,10 +47,7 @@ class W:
     search_help = SearchHelp(comments=False, history=False)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
-    create_short_url_lightbox = suw.CreateShortUrlWidget(
-            name='create_short_url',
-            trigger='#sidebar a.add_short_url')
-    update_short_url_lightbox = suw.UpdateShortUrlWidget()
+    short_url_lightbox = suw.ShortUrlFormWidget()
 
 
 class ForgeShortUrlApp(Application):
@@ -81,7 +78,7 @@ class ForgeShortUrlApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_label
-        return [SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
+        return [SitemapEntry(menu_id, '.')]
 
     def sidebar_menu(self):
         links = []
@@ -91,7 +88,7 @@ class ForgeShortUrlApp(Application):
             links = [SitemapEntry('Add Short URL',
                                   url,
                                   ui_icon=g.icons['plus'],
-                                  className="add_short_url"), ]
+                                  className="add-short-url"), ]
         return links
 
     def admin_menu(self):
@@ -132,8 +129,7 @@ class ForgeShortUrlApp(Application):
 
 class RootController(BaseController):
     def __init__(self):
-        c.create_short_url_lightbox = W.create_short_url_lightbox
-        c.update_short_url_lightbox = W.update_short_url_lightbox
+        c.short_url_lightbox = W.short_url_lightbox
 
     def _check_security(self):
         require_access(c.app, 'read')
@@ -157,7 +153,12 @@ class RootController(BaseController):
             'short_urls': short_urls,
             'limit': limit,
             'pagenum': pagenum,
-            'count': count
+            'count': count,
+            'url_len': len(config['short_url.url_pattern'].format(
+                    base_url=config['base_url'],
+                    project=c.project.shortname,
+                    mount_point=c.app.config.options.mount_point,
+                    short_name='')),
         }
 
     @expose('jinja:forgeshorturl:templates/search.html')
@@ -179,6 +180,11 @@ class RootController(BaseController):
         d = search_app(**search_params)
         d['search_comments_disable'] = True
         d['search_history_disable'] = True
+        d['url_len'] = len(config['short_url.url_pattern'].format(
+                base_url=config['base_url'],
+                project=c.project.shortname,
+                mount_point=c.app.config.options.mount_point,
+                short_name=''))
         return d
 
     @expose()
@@ -214,7 +220,7 @@ class ShortURLAdminController(DefaultAdminController):
             'short_name': shorturl})
         return dict(status='ok')
 
-    @expose('jinja:forgeshorturl:templates/add.html')
+    @expose('jinja:forgeshorturl:templates/form.html')
     @validate(dict(full_url=All(validators.URL(add_http=True),
                                 validators.NotEmpty()),
                    short_url=validators.NotEmpty()))
@@ -262,4 +268,10 @@ class ShortURLAdminController(DefaultAdminController):
 
             M.AuditLog.log(msg)
             redirect(request.referer)
-        return dict(app=self.app)
+        return dict(
+                app=self.app,
+                url_len=len(config['short_url.url_pattern'].format(
+                    base_url=config['base_url'],
+                    project=c.project.shortname,
+                    mount_point=self.app.config.options.mount_point,
+                    short_name='')))

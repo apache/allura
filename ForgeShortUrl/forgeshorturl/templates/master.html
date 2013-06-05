@@ -23,29 +23,19 @@
 {% block short_url_content %}{% endblock %}
 
 {% block extra_js %}
-{{c.create_short_url_lightbox.display(content='''
-<div>
-    <h1>Add Short URL</h1>
-    <form method="post" action="" id="add_url_form">
-        <label class="grid-13">Short name</label>
-        <div class="grid-13"><input type = "text" name = "short_url" style="width: 250px"></div>
-        <label class="grid-13">Full URL</label>
-        <div class="grid-13"><input type = "text" name = "full_url" style="width: 250px"></div>
-        <label class="grid-13">Description</label>
-        <div class="grid-13"><textarea name = "description" style="width: 250px; height: 100px"></textarea></div>
-        <div class="grid-1"><input type = "checkbox" name="private" id="private"></div>
-        <label for="private" class="grid-12">Private</label>
-        <div class="grid-13">&nbsp;</div>
-        <hr>
-        <div class="grid-13"><div class="grid-13">&nbsp;</div>
-            <input type="submit" value="Save">
-            <a href="#" class="close">Cancel</a></div>
-    </form>
-</div>
-''')}}
+{{c.short_url_lightbox.display(url_len=url_len)}}
 <script type="text/javascript">
-    /*<![CDATA[*/
-    $('#add_url_form').attr("action",$('#sidebar a.add_short_url').attr('href'));
-    /*]]>*/
+    $(function() {
+        $('a.add-short-url').click(function() {
+            var modal = $('#lightbox_short-url-modal');
+            modal.find('#short-url-form-title').show();
+            modal.find('#short-url-form-action-label').text('Add');
+            modal.find('input[name="update"]').val('False');
+            modal.find('input[name="short_url"]').val('').removeAttr('readonly').trigger('keyup');
+            modal.find('input[name="full_url"]').val('');
+            modal.find('textarea[name="description"]').val('');
+            modal.find('input[name="private"]').removeAttr('checked');
+        });
+    });
 </script>
 {% endblock %}

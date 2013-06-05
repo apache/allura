@@ -16,6 +16,7 @@
 #       under the License.
 
 import pymongo
+from tg import config
 from pylons import tmpl_context as c
 from ming.orm import FieldProperty, ForeignIdProperty, session
 from datetime import datetime
@@ -69,3 +70,10 @@ class ShortUrl(M.Artifact):
 
     def url(self):
         return self.app.url + self.short_name
+
+    def short_url(self):
+        return config['short_url.url_pattern'].format(
+                base_url=config['base_url'],
+                project=self.app.project.shortname,
+                mount_point=self.app.config.options.mount_point,
+                short_name=self.short_name)

@@ -435,7 +435,8 @@ class Lightbox(ew_core.Widget):
     defaults=dict(
         name=None,
         trigger=None,
-        content='')
+        content='',
+        content_template=None)
 
     def resources(self):
         yield ew.JSLink('js/jquery.lightbox_me.js')

@@ -18,15 +18,9 @@
 from allura.lib.widgets import form_fields as ffw
 
 
-class CreateShortUrlWidget(ffw.Lightbox):
-
-    def resources(self):
-        for r in super(CreateShortUrlWidget, self).resources():
-            yield r
-
-
-class UpdateShortUrlWidget(ffw.Lightbox):
+class ShortUrlFormWidget(ffw.Lightbox):
     defaults = dict(
             ffw.Lightbox.defaults,
-            name='update-short-url-modal',
-            trigger='a.update-url')
+            name='short-url-modal',
+            trigger='a.add-short-url, a.update-short-url',
+            content_template='forgeshorturl:templates/form.html')
