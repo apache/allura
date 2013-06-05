@@ -300,6 +300,7 @@ class TestFunctionalController(TrackerTestController):
                       '__ticket_ids': [first_ticket._id],
                       '_milestone': '2.0',
                       })
+        M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Milestone</strong>: 1.0 --&gt; 2.0</li>' in r
         r = self.app.get('/p/test/bugs/2/')
@@ -311,6 +312,7 @@ class TestFunctionalController(TrackerTestController):
                           second_ticket._id),
                       '_milestone': '1.0',
                       })
+        M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Milestone</strong>: 2.0 --&gt; 1.0</li>' in r
         r = self.app.get('/p/test/bugs/2/')
@@ -323,6 +325,7 @@ class TestFunctionalController(TrackerTestController):
                           second_ticket._id),
                       'status': 'accepted',
                       })
+        M.MonQTask.run_ready()
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
         r = self.app.get('/p/test/bugs/2/')
