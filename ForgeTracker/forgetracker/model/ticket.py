@@ -27,6 +27,7 @@ from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
 from pprint import pformat
 from paste.deploy.converters import aslist
+import jinja2
 
 from ming import schema
 from ming.utils import LazyProperty
@@ -361,7 +362,9 @@ class Globals(MappedClass):
         users = User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
-                yield (changed_tickets[t_id], changes[t_id])
+                # mark changes text as safe, thus it wouldn't be escaped in plain-text emails
+                # html part of email is handled by markdown and it'll be properly escaped
+                yield (changed_tickets[t_id], jinja2.Markup(changes[t_id]))
         mail = dict(
             fromaddr = str(c.user._id),
             reply_to = str(c.user._id),
@@ -369,7 +372,7 @@ class Globals(MappedClass):
                                                            c.app.config.options.mount_point,
                                                            c.user.display_name),
         )
-        tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report')
+        tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
         for f, v in sorted(values.iteritems()):
             if f == 'assigned_to_id':
