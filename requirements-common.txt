@@ -37,6 +37,8 @@ python-dateutil==1.5
 python-magic==0.4.3
 python-openid==2.2.5
 pytidylib==0.2.1
+# for taskd proc name switching
+setproctitle==1.1.7
 # dep of pypeline
 textile==2.1.5
 # dep of colander
