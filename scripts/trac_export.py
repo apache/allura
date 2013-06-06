@@ -19,7 +19,6 @@
 
 
 import sys
-from pprint import pprint
 import csv
 import urlparse
 import urllib2
@@ -77,9 +76,9 @@ class TracExport(object):
         # be get with single-ticket export (create/mod times is
         # and example).
         self.ticket_map = {}
-        self.ticket_queue = []
         self.start_id = start_id
         self.page = (start_id - 1) / self.PAGE_SIZE + 1
+        self.ticket_queue = self.next_ticket_ids()
 
     def remap_fields(self, dict):
         "Remap fields to adhere to standard taxonomy."
@@ -238,8 +237,8 @@ class TracExport(object):
 
     def next(self):
         while True:
-            if not self.ticket_queue:
-                self.ticket_queue = self.next_ticket_ids()
+            if len(self.ticket_queue) == 0:
+                raise StopIteration
             id, extra = self.ticket_queue.pop(0)
             if id >= self.start_id:
                 break
