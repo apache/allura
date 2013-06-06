@@ -44,6 +44,11 @@ from .validation import ValidatingTestApp
 
 DFL_APP_NAME = 'main_without_authn'
 
+# these are all helpers & base classes, and should never
+# be considered test cases when imported into some test module
+__test__ = False
+
+
 def get_config_file(config=None):
     if not config:
         config = 'test.ini'
@@ -53,6 +58,7 @@ def get_config_file(config=None):
     except AttributeError:
         conf_dir = os.getcwd()
     return os.path.join(conf_dir, config)
+
 
 def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests'''
@@ -68,6 +74,8 @@ def setup_basic_test(config=None, app_name=DFL_APP_NAME):
     # run all tasks, e.g. indexing from bootstrap operations
     while M.MonQTask.run_ready('setup'):
         ThreadLocalORMSession.flush_all()
+setup_basic_test.__test__ = False  # sometimes __test__ above isn't sufficient
+
 
 def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     '''Create clean environment for running tests.  Also return WSGI test app'''
@@ -77,6 +85,8 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     wsgiapp = loadapp('config:%s#%s' % (config, app_name),
                       relative_to=conf_dir)
     return wsgiapp
+setup_functional_test.__test__ = False  # sometimes __test__ above isn't sufficient
+
 
 def setup_unit_test():
     try:
@@ -97,6 +107,8 @@ def setup_unit_test():
     c.queued_messages = None
     c.model_cache = None
     ThreadLocalORMSession.close_all()
+setup_unit_test.__test__ = False  # sometimes __test__ above isn't sufficient
+
 
 def setup_global_objects():
     setup_unit_test()
