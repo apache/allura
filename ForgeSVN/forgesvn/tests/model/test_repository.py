@@ -165,7 +165,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.access(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
-        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
+        self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
@@ -212,7 +212,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.access(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
             c = f.read()
-        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src/\n', c)
+        self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
@@ -538,7 +538,7 @@ class TestSVNRev(unittest.TestCase):
         n = M.Notification.query.find(
             dict(subject='[test:src] [r1] - rick446: Create readme')).first()
         assert n
-        assert_equal(n.text, 'Create readme http://localhost//p/test/src/1/')
+        assert_equal(n.text, 'Create readme http://localhost/p/test/src/1/')
 
 
 class _Test(unittest.TestCase):
@@ -725,7 +725,7 @@ class TestRepo(_TestWithRepo):
         self.repo._impl.refresh_commit_info = refresh_commit_info
         _id = lambda oid: getattr(oid, '_id', str(oid))
         self.repo.shorthand_for_commit = lambda oid: '[' + _id(oid) + ']'
-        self.repo.url_for_commit = lambda oid: 'ci/' + _id(oid) + '/'
+        self.repo.url_for_commit = lambda oid: '/ci/' + _id(oid) + '/'
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         notifications = M.Notification.query.find().all()
