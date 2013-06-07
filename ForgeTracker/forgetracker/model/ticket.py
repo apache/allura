@@ -414,6 +414,10 @@ class Globals(MappedClass):
 
         c.app.globals.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
+        app = '%s/%s' % (c.project.shortname, c.app.config.options.mount_point)
+        count = len(tickets)
+        text = 'Updated {} ticket{} in {}'.format(count, 's' if count != 1 else '', app)
+        Notification.post_user(c.user, None, 'flash', text=text)
 
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
