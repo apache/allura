@@ -187,7 +187,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
         assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
         with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
-        self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+        self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
@@ -216,7 +216,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
             assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
             with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
-            self.assertIn('curl -s http://localhost//auth/refresh_repo/p/test/src-git/\n', c)
+            self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
 
