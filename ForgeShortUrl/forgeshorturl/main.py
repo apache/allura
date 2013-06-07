@@ -154,11 +154,7 @@ class RootController(BaseController):
             'limit': limit,
             'pagenum': pagenum,
             'count': count,
-            'url_len': len(config['short_url.url_pattern'].format(
-                    base_url=config['base_url'],
-                    project=c.project.shortname,
-                    mount_point=c.app.config.options.mount_point,
-                    short_name='')),
+            'url_len': len(ShortUrl.build_short_url(c.app, short_name='')),
         }
 
     @expose('jinja:forgeshorturl:templates/search.html')
@@ -180,11 +176,7 @@ class RootController(BaseController):
         d = search_app(**search_params)
         d['search_comments_disable'] = True
         d['search_history_disable'] = True
-        d['url_len'] = len(config['short_url.url_pattern'].format(
-                base_url=config['base_url'],
-                project=c.project.shortname,
-                mount_point=c.app.config.options.mount_point,
-                short_name=''))
+        d['url_len'] = len(ShortUrl.build_short_url(c.app, short_name=''))
         return d
 
     @expose()
@@ -270,8 +262,4 @@ class ShortURLAdminController(DefaultAdminController):
             redirect(request.referer)
         return dict(
                 app=self.app,
-                url_len=len(config['short_url.url_pattern'].format(
-                    base_url=config['base_url'],
-                    project=c.project.shortname,
-                    mount_point=self.app.config.options.mount_point,
-                    short_name='')))
+                url_len=len(ShortUrl.build_short_url(c.app, short_name='')))

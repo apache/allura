@@ -71,9 +71,14 @@ class ShortUrl(M.Artifact):
     def url(self):
         return self.app.url + self.short_name
 
-    def short_url(self):
+    @classmethod
+    def build_short_url(cls, app, short_name):
         return config['short_url.url_pattern'].format(
                 base_url=config['base_url'],
-                project=self.app.project.shortname,
-                mount_point=self.app.config.options.mount_point,
-                short_name=self.short_name)
+                nbhd=app.project.neighborhood.url_prefix.strip('/'),
+                project=app.project.shortname,
+                mount_point=app.config.options.mount_point,
+                short_name=short_name)
+
+    def short_url(self):
+        return self.build_short_url(self.app, self.short_name)

@@ -16,8 +16,11 @@
 #       under the License.
 
 from pylons import tmpl_context as c
+from tg import config
 from nose.tools import assert_equal
+import mock
 
+from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import TestController
 
@@ -107,3 +110,31 @@ class TestRootController(TestController):
                 extra_environ=dict(username='test-user'), status=403)
         self.app.post('/admin/url/remove', params=dict(shorturl='g'),
                 extra_environ=dict(username='test-user'), status=403)
+
+    def test_build_short_url(self):
+        with h.push_config(config, **{
+                'short_url.url_pattern': '{base_url}:{nbhd}:{project}:{mount_point}:{short_name}',
+                'base_url': 'b',
+            }):
+            nbhd = mock.Mock(url_prefix='/n/')
+            project = mock.Mock(shortname='p', neighborhood=nbhd)
+            app = mock.Mock(project=project)
+            app.config.options.mount_point = 'm'
+
+            url = ShortUrl.build_short_url(app, 's')
+
+            assert_equal(url, 'b:n:p:m:s')
+
+    def test_short_url(self):
+        response = self.app.get('/admin/url/add')
+        response.form['short_url'] = 'test'
+        response.form['full_url'] = 'http://www.google.com/'
+        response.form.submit()
+
+        surl = ShortUrl.query.get(short_name='test')
+
+        with h.push_config(config, **{
+                'short_url.url_pattern': '{base_url}:{nbhd}:{project}:{mount_point}:{short_name}',
+                'base_url': 'b',
+            }):
+            assert_equal(surl.short_url(), 'b:p:test:url:test')
