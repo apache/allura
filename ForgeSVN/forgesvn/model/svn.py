@@ -73,29 +73,6 @@ class Repository(M.Repository):
 
     def compute_diffs(self): return
 
-    def count(self, *args, **kwargs):
-        return super(Repository, self).count(None)
-
-    def count_revisions(self, ci):
-        # since SVN histories are inherently linear and the commit _id
-        # contains the revision, just parse it out from there
-        return int(self._impl._revno(ci._id))
-
-    def log(self, branch='HEAD', offset=0, limit=10):
-        return list(self._log(branch, offset, limit))
-
-    def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
-        ci_id = commit_ids[0]
-        if skip > 0:
-            rid, rev = ci_id.split(':')
-            rev = int(rev) - skip
-            ci_id = '%s:%s' % (rid, rev)
-        ci = self._impl.commit(ci_id)
-        while ci is not None and limit > 0:
-            yield ci._id
-            limit -= 1
-            ci = ci.get_parent()
-
     def latest(self, branch=None):
         if self._impl is None: return None
         return self._impl.commit('HEAD')
@@ -105,6 +82,9 @@ class Repository(M.Repository):
         path = self._impl._path_to_root(path, revision)
         fn += ('-' + '-'.join(path.split('/'))) if path else ''
         return fn
+
+    def rev_to_commit_id(self, rev):
+        return self._impl.rev_parse(rev)
 
 
 class SVNCalledProcessError(Exception):
@@ -186,13 +166,13 @@ class SVNImplementation(M.RepositoryImplementation):
         return 'file://%s%s' % (self._repo.fs_path, self._repo.name)
 
     def shorthand_for_commit(self, oid):
-        return '[r%d]' % self._revno(oid)
+        return '[r%d]' % self._revno(self.rev_parse(oid))
 
     def url_for_commit(self, commit, url_type=None):
-        if isinstance(commit, basestring):
-            object_id = commit
-        else:
+        if hasattr(commit, '_id'):
             object_id = commit._id
+        else:
+            object_id = self.rev_parse(commit)
         if ':' in object_id:
             object_id = str(self._revno(object_id))
         return os.path.join(self._repo.url(), object_id) + '/'
@@ -299,16 +279,19 @@ class SVNImplementation(M.RepositoryImplementation):
         self._setup_special_files(source_url)
 
     def commit(self, rev):
-        if rev in ('HEAD', None):
-            oid = self._oid(self.head)
-        elif isinstance(rev, int) or rev.isdigit():
-            oid = self._oid(rev)
-        else:
-            oid = rev
+        oid = self.rev_parse(rev)
         result = M.repo.Commit.query.get(_id=oid)
         if result:
             result.set_context(self._repo)
         return result
+
+    def rev_parse(self, rev):
+        if rev in ('HEAD', None):
+            return self._oid(self.head)
+        elif isinstance(rev, int) or rev.isdigit():
+            return self._oid(rev)
+        else:
+            return rev
 
     def all_commit_ids(self):
         """Return a list of commit ids, starting with the head (most recent
@@ -494,20 +477,79 @@ class SVNImplementation(M.RepositoryImplementation):
         else:
             return self._blob_oid(commit_id, path)
 
-    def log(self, object_id, skip, count):
-        revno = self._revno(object_id)
-        result = []
-        while count and revno:
-            if skip == 0:
-                result.append(self._oid(revno))
-                count -= 1
-            else:
-                skip -= 1
-            revno -= 1
-        if revno:
-            return result, [ self._oid(revno) ]
+    def log(self, revs=None, path=None, exclude=None, id_only=True, page_size=25, **kw):
+        """
+        Returns a generator that returns information about commits reacable
+        by revs.
+
+        revs can be None or a list or tuple of identifiers, each of which
+        can be anything parsable by self.commit().  If revs is None, the
+        default head will be used.
+
+        If path is not None, only commits which modify files under path
+        will be included.
+
+        Exclude can be None or a list or tuple of identifiers, each of which
+        can be anything parsable by self.commit().  If not None, then any
+        revisions reachable by any of the revisions in exclude will not be
+        included.
+
+        If id_only is True, returns only the commit ID, otherwise it returns
+        detailed information about each commit.
+
+        Since pysvn doesn't have a generator version of log, this tries to
+        balance pulling too much data from SVN with calling SVN too many
+        times by pulling in pages of page_size at a time.
+        """
+        if revs is None:
+            revno = self.head
         else:
-            return result, []
+            revno = max([self._revno(self.rev_parse(r)) for r in revs])
+        if exclude is None:
+            exclude = 0
+        else:
+            exclude = max([self._revno(self.rev_parse(r)) for r in exclude])
+        if path is None:
+            url = self._url
+        else:
+            url = '/'.join([self._url, path])
+        while revno > exclude:
+            rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
+            try:
+                logs = self._svn.log(url, revision_start=rev, limit=page_size)
+            except pysvn.ClientError as e:
+                if 'Unable to connect' in e.message:
+                    raise  # repo error
+                return  # no (more) history for this path
+            for ci in logs:
+                if ci.revision.number <= exclude:
+                    return
+                if id_only:
+                    yield ci.revision.number
+                else:
+                    yield self._map_log(ci)
+            if len(logs) < page_size:
+                return  # we didn't get a full page, don't bother calling SVN again
+            revno = ci.revision.number - 1
+
+    def _map_log(self, ci):
+        revno = ci.revision.number
+        return {
+                'id': revno,
+                'message': h.really_unicode(ci.get('message', '--none--')),
+                'authored': {
+                        'name': h.really_unicode(ci.get('author', '--none--')),
+                        'email': '',
+                        'date': datetime.utcfromtimestamp(ci.date),
+                    },
+                'committed': {
+                        'name': h.really_unicode(ci.get('author', '--none--')),
+                        'email': '',
+                        'date': datetime.utcfromtimestamp(ci.date),
+                    },
+                'refs': ['HEAD'] if revno == self.head else [],
+                'parents': [revno-1] if revno > 1 else [],
+            }
 
     def open_blob(self, blob):
         data = self._svn.cat(
