@@ -69,7 +69,7 @@
           <strong>Attachments</strong>
           <div class="clear"></div>
           {% for att in value.attachments %}
-            <div class="attachment_thumb" style="min-height: 130px;">
+            <div class="attachment_thumb">
                 <form method="POST" action="{{att.url()}}">
                 {% if att.is_image() %}
                     <a href="{{att.url()}}"><img src="{{att.url()}}/thumb" alt="Thumbnail"/></a>

@@ -91,10 +91,6 @@
               <a href="{{att.url()}}" class="file_type">
                 <img src="{{att.url()}}/thumb" alt="Thumbnail">
               </a>
-            {% else %}
-              <a href="{{att.url()}}" class="file_type">
-                <span>{{att.filename.split('.')[-1] or 'file'}}</span>
-              </a>
             {% endif %}
             <a href="{{att.url()}}">{{att.filename}}</a>
             <a href="{{att.url()}}" class="btn delete_attachment"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}"></b></a>

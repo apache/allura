@@ -78,27 +78,17 @@
       </a>
     {% endfor %}
   </div>
-  {% if page.attachments %}
-  <div class="grid-18">
-    <strong>Attachments</strong>
-  </div>
+   {% if page.attachments %}
+    <div class="grid-18">
+        <strong>Attachments</strong>
+        {% for att in page.attachments %}
+            <div>
+                <a href="{{att.url()}}">{{att.filename}}</a>
+                ({{att.length}} bytes)
+            </div>
+        {% endfor %}
+    </div>
   {% endif %}
-  {% for att in page.attachments %}
-    {% if att.is_image() and not att.is_embedded() %}
-    <div class="attachment_thumb">
-      <a href="{{att.url()}}">
-        <img src="{{att.url()}}/thumb" alt="Thumbnail"/>
-      </a><br/>
-      <a href="{{att.url()}}">{{att.filename}}</a>
-      ({{att.length}} bytes)
-    </div>
-    {% else %}
-    <div>
-      <a href="{{att.url()}}">{{att.filename}}</a>
-      ({{att.length}} bytes)
-    </div>
-    {% endif %}
-  {% endfor %}
 </div>
 {% endblock %}
 

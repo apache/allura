@@ -478,6 +478,7 @@ class TestFunctionalController(TrackerTestController):
             'summary':'zzz'
         }, upload_files=[upload]).follow()
         assert_true(file_name in ticket_editor)
+        assert '<span>py</span>' not in ticket_editor
 
     def test_delete_attachment(self):
         file_name = 'test_root.py'
@@ -489,7 +490,7 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         assert file_name in ticket_editor, ticket_editor.showbrowser()
         req = self.app.get('/bugs/1/')
-        file_link = req.html.findAll('form')[1].findAll('a')[7]
+        file_link = req.html.findAll('form')[1].findAll('a')[6]
         assert_equal(file_link.string, file_name)
         self.app.post(str(file_link['href']),{
             'delete':'True'

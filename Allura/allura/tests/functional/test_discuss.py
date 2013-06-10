@@ -220,6 +220,7 @@ class TestAttachment(TestController):
                 break
         else:
             assert False, 'attachment link not found'
+        assert '<div class="attachment_thumb" style="min-height: 130px;">' not in r
         r = self.app.get(alink)
         assert r.content_disposition == 'attachment;filename="test.txt"', 'Attachments should force download'
         r = self.app.post(self.post_link + 'attach',

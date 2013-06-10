@@ -391,7 +391,7 @@ class TestRootController(TestController):
         # Make sure thumbnail is present
         r = self.app.get('/wiki/TEST/')
         img_srcs = [ i['src'] for i in r.html.findAll('img') ]
-        assert ('/p/test/wiki/TEST/attachment/' + filename + '/thumb') in img_srcs, img_srcs
+        assert ('/p/test/wiki/TEST/attachment/' + filename + '/thumb') not in img_srcs, img_srcs
         # Update the page to embed the image, make sure the thumbnail is absent
         self.app.post('/wiki/TEST/update', params=dict(
                 title='TEST',
