@@ -79,13 +79,8 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
-        all_cis = self.repo.log(self.rev._id, 0, 1000)
+        all_cis = list(self.repo.log(self.rev._id, id_only=True))
         assert len(all_cis) == 4
-        assert_equal(self.repo.log(self.rev._id, 1,1000), all_cis[1:])
-        assert_equal(self.repo.log(self.rev._id, 0,3), all_cis[:3])
-        assert_equal(self.repo.log(self.rev._id, 1,2), all_cis[1:3])
-        for ci in all_cis:
-            ci.context()
         self.rev.tree.ls()
         # print self.rev.tree.readme()
         assert_equal(self.rev.tree.readme(), (
@@ -181,7 +176,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
-        assert len(repo.log())
+        assert len(list(repo.log()))
         assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
         assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
         assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
@@ -210,7 +205,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             repo.init()
             repo._impl.clone_from(repo_path)
             assert not clone_from.called
-            assert len(repo.log())
+            assert len(list(repo.log()))
             assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
             assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
             assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
@@ -225,9 +220,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         assert i['type_s'] == 'Git Repository', i
 
     def test_log(self):
-        for entry in self.repo.log():
-            assert str(entry.authored)
-            assert entry.message
+        for entry in self.repo.log(id_only=False):
+            assert str(entry['authored'])
+            assert entry['message']
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')

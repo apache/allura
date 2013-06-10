@@ -74,6 +74,9 @@ class Repository(M.Repository):
             merge_request.downstream.commit_id,
         )
 
+    def rev_to_commit_id(self, rev):
+        return self._impl.rev_parse(rev).hexsha
+
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
         '#!/bin/bash\n'
@@ -265,23 +268,78 @@ class GitImplementation(M.RepositoryImplementation):
         commit = self._git.commit(rev)
         return commit.count(path)
 
-    def log(self, object_id, skip, count):
-        obj = self._git.commit(object_id)
-        candidates = [ obj ]
-        result = []
-        seen = set()
-        while count and candidates:
-            candidates.sort(key=lambda c:c.committed_date)
-            obj = candidates.pop(-1)
-            if obj.hexsha in seen: continue
-            seen.add(obj.hexsha)
-            if skip == 0:
-                result.append(obj.hexsha)
-                count -= 1
+    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
+        """
+        Returns a generator that returns information about commits reacable
+        by revs.
+
+        revs can be None or a list or tuple of revisions, each of which
+        can be anything parsable by self.commit().  If revs is None, the
+        default branch head will be used.
+
+        If path is not None, only commits which modify files under path
+        will be included.
+
+        Exclude can be None or a list or tuple of identifiers, each of which
+        can be anything parsable by self.commit().  If not None, then any
+        revisions reachable by any of the revisions in exclude will not be
+        included.
+
+        If id_only is True, returns only the commit ID, otherwise it returns
+        detailed information about each commit.
+        """
+        if exclude is not None:
+            revs.extend(['^%s' % e for e in exclude])
+
+        for ci, refs in self._iter_commits_with_refs(revs, '--', path):
+            if id_only:
+                yield ci.hexsha
             else:
-                skip -= 1
-            candidates += obj.parents
-        return result, [ p.hexsha for p in candidates ]
+                yield {
+                        'id': ci.hexsha,
+                        'message': h.really_unicode(ci.message or '--none--'),
+                        'authored': {
+                                'name': h.really_unicode(ci.author.name or '--none--'),
+                                'email': h.really_unicode(ci.author.email),
+                                'date': datetime.utcfromtimestamp(ci.authored_date),
+                            },
+                        'committed': {
+                                'name': h.really_unicode(ci.committer.name or '--none--'),
+                                'email': h.really_unicode(ci.committer.email),
+                                'date': datetime.utcfromtimestamp(ci.committed_date),
+                            },
+                        'refs': refs,
+                        'parents': [pci.hexsha for pci in ci.parents],
+                    }
+
+    def _iter_commits_with_refs(self, *args, **kwargs):
+        """
+        A reimplementation of GitPython's iter_commits that includes
+        the --decorate option.
+
+        Unfortunately, iter_commits discards the additional info returned
+        by adding --decorate, and the ref names are not exposed on the
+        commit objects without making an entirely separate call to log.
+
+        Ideally, since we're reimplementing it anyway, we would prefer
+        to add all the info we need to the format to avoid the additional
+        overhead of the lazy-load of the commit data, but the commit
+        message is a problem since it can contain newlines which breaks
+        parsing of the log lines (iter_commits can be broken this way,
+        too).  This does keep the id_only case fast and the overhead
+        of lazy-loading the commit data is probably fine.  But if this
+        ends up being a bottleneck, that would be one possibile
+        optimization.
+        """
+        proc = self._git.git.log(*args, format='%H%x00%d', as_process=True, **kwargs)
+        stream = proc.stdout
+        while True:
+            line = stream.readline()
+            if not line:
+                break
+            hexsha, decoration = line.strip().split('\x00')
+            refs = decoration.strip(' ()').split(', ') if decoration else []
+            yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs)
 
     def open_blob(self, blob):
         return _OpenedGitBlob(
@@ -307,6 +365,9 @@ class GitImplementation(M.RepositoryImplementation):
         for e,o in zip(evens, odds):
             binsha += chr(int(e+o, 16))
         return git.Object.new_from_sha(self._git, binsha)
+
+    def rev_parse(self, rev):
+        return self._git.rev_parse(rev)
 
     def symbolics_for_commit(self, commit):
         try:
@@ -337,6 +398,10 @@ class GitImplementation(M.RepositoryImplementation):
 
     def is_empty(self):
         return not self._git or len(self._git.heads) == 0
+
+    @LazyProperty
+    def head(self):
+        return self._git.head.commit.hexsha
 
     @LazyProperty
     def heads(self):

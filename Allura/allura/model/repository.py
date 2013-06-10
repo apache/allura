@@ -101,11 +101,26 @@ class RepositoryImplementation(object):
         the repo.  Optionally provide a path from which to copy existing hooks.'''
         raise NotImplementedError, '_setup_hooks'
 
-    def log(self, object_id, skip, count): # pragma no cover
-        '''Return a list of (object_id, ci) beginning at the given commit ID and continuing
-        to the parent nodes in a breadth-first traversal.  Also return a list of 'next commit' options
-        (these are candidates for he next commit after 'count' commits have been
-        exhausted).'''
+    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw): # pragma no cover
+        """
+        Returns a generator that returns information about commits reacable
+        by revs.
+
+        revs can be None or a list or tuple of identifiers, each of which
+        can be anything parsable by self.commit().  If revs is None, the
+        default branch head will be used.
+
+        If path is not None, only commits which modify files under path
+        will be included.
+
+        Exclude can be None or a list or tuple of identifiers, each of which
+        can be anything parsable by self.commit().  If not None, then any
+        revisions reachable by any of the revisions in exclude will not be
+        included.
+
+        If id_only is True, returns only the commit ID (which can be faster),
+        otherwise it returns detailed information about each commit.
+        """
         raise NotImplementedError, 'log'
 
     def compute_tree_new(self, commit, path='/'): # pragma no cover
@@ -205,6 +220,10 @@ class RepositoryImplementation(object):
             f.write(self._repo.repo_id)
         os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
         self._setup_hooks(source_path)
+
+    @property
+    def head(self):
+        raise NotImplementedError, 'head'
 
     @property
     def heads(self):
@@ -357,14 +376,9 @@ class Repository(Artifact, ActivityObject):
         should try to remove the deprecated fields and clean this up.
         """
         return self._impl.tags
-
-    def _log(self, rev, skip, limit):
-        head = self.commit(rev)
-        if head is None: return
-        for _id in self.commitlog([head._id], skip, limit):
-            ci = head.query.get(_id=_id)
-            ci.set_context(self)
-            yield ci
+    @property
+    def head(self):
+        return self._impl.head
 
     def init_as_clone(self, source_path, source_name, source_url):
         self.upstream_repo.name = source_name
@@ -376,91 +390,41 @@ class Repository(Artifact, ActivityObject):
         g.post_event('repo_cloned', source_url, source_path)
         self.refresh(notify=False, new_clone=True)
 
-    def log(self, branch='master', offset=0, limit=10):
-        return list(self._log(branch, offset, limit))
+    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
+        """
+        Returns a generator that returns information about commits reacable
+        by revs which modify path.
 
-    def commitlog(self, commit_ids, skip=0, limit=sys.maxint):
-        seen = set()
-        def _visit(commit_id):
-            if commit_id in seen: return
-            run = CommitRunDoc.m.get(commit_ids=commit_id)
-            if run is None: return
-            index = False
-            for pos, (oid, time) in enumerate(izip(run.commit_ids, run.commit_times)):
-                if oid == commit_id: index = True
-                elif not index: continue
-                seen.add(oid)
-                ci_times[oid] = time
-                if pos+1 < len(run.commit_ids):
-                    ci_parents[oid] = [ run.commit_ids[pos+1] ]
-                else:
-                    ci_parents[oid] = run.parent_commit_ids
-            for oid in run.parent_commit_ids:
-                if oid not in seen:
-                    _visit(oid)
+        revs can either be a single revision identifier or a list or tuple
+        of identifiers, each of which can be anything parsable by self.commit().
+        If revs is None, the default branch head will be used.
 
-        def _gen_ids(commit_ids, skip, limit):
-            # Traverse the graph in topo order, yielding commit IDs
-            commits = set(commit_ids)
-            new_parent = None
-            while commits and limit:
-                # next commit is latest commit that's valid to log
-                if new_parent in commits:
-                    ci = new_parent
-                else:
-                    ci = max(commits, key=lambda ci:ci_times[ci])
-                commits.remove(ci)
-                # remove this commit from its parents children and add any childless
-                # parents to the 'ready set'
-                new_parent = None
-                for oid in ci_parents.get(ci, []):
-                    children = ci_children[oid]
-                    children.discard(ci)
-                    if not children:
-                        commits.add(oid)
-                        new_parent = oid
-                if skip:
-                    skip -= 1
-                    continue
-                else:
-                    limit -= 1
-                    yield ci
+        If path is not None, then only commits which change files under path
+        will be included.
 
-        # Load all the runs to build a commit graph
-        ci_times = {}
-        ci_parents = {}
-        ci_children = defaultdict(set)
-        log.info('Build commit graph')
-        for cid in commit_ids:
-            _visit(cid)
-        for oid, parents in ci_parents.iteritems():
-            for ci_parent in parents:
-                ci_children[ci_parent].add(oid)
+        Exclude can be None, a single revision identifier, or a list or tuple of
+        identifiers, each of which can be anything parsable by self.commit().
+        If not None, then any revisions reachable by any of the revisions in
+        exclude will not be included.
 
-        return _gen_ids(commit_ids, skip, limit)
+        If id_only is True, returns only the commit ID (which can be faster),
+        otherwise it returns detailed information about each commit.
+        """
+        if revs is not None and not isinstance(revs, (list, tuple)):
+            revs = [revs]
+        if exclude is not None and not isinstance(exclude, (list, tuple)):
+            exclude = [exclude]
+        return self._impl.log(revs, path, exclude=exclude, id_only=id_only, **kw)
 
-    def count(self, branch='master'):
-        try:
-            ci = self.commit(branch)
-            if ci is None: return 0
-            return self.count_revisions(ci)
-        except: # pragma no cover
-            log.exception('Error getting repo count')
-            return 0
-
-    def count_revisions(self, ci):
-        from .repo_refresh import CommitRunBuilder
-        result = 0
-        # If there's no CommitRunDoc for this commit, the call to
-        # commitlog() below will raise a KeyError. Repair the CommitRuns for
-        # this repo by rebuilding them entirely.
-        if not CommitRunDoc.m.find(dict(commit_ids=ci._id)).count():
-            log.info('CommitRun incomplete, rebuilding with all commits')
-            rb = CommitRunBuilder(list(self.all_commit_ids()))
-            rb.run()
-            rb.cleanup()
-        for oid in self.commitlog([ci._id]): result += 1
-        return result
+    def commitlog(self, revs):
+        """
+        Return a generator that returns Commit model instances reachable by
+        the commits specified by revs.
+        """
+        for ci_id in self.log(revs, id_only=True):
+            commit = self.commit(ci_id)
+            commit.set_context(self)
+            yield commit
 
     def latest(self, branch=None):
         if self._impl is None:
@@ -582,6 +546,9 @@ class Repository(Artifact, ActivityObject):
             path = path.strip('/')
         self._impl.tarball(revision, path)
 
+    def rev_to_commit_id(self, rev):
+        raise NotImplementedError, 'rev_to_commit_id'
+
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses=['open', 'merged', 'rejected']
     class __mongometa__:
@@ -639,19 +606,11 @@ class MergeRequest(VersionedArtifact, ActivityObject):
         return self._commits()
 
     def _commits(self):
-        from .repo import Commit
-        result = []
-        next = [ self.downstream.commit_id ]
-        while next:
-            oid = next.pop(0)
-            ci = Commit.query.get(_id=oid)
-            if self.app.repo._id in ci.repo_ids:
-                continue
-            result.append(ci)
-            next += ci.parent_ids
         with self.push_downstream_context():
-            for ci in result: ci.set_context(c.app.repo)
-        return result
+            return list(c.app.repo.log(
+                self.downstream.commit_id,
+                exclude=self.app.repo.head,
+                id_only=False))
 
     @classmethod
     def upsert(cls, **kw):
@@ -922,17 +881,6 @@ class Commit(RepoObject):
                     count -= 1
                 else:
                     skip -= 1
-
-    def count_revisions(self):
-        seen_oids = set()
-        candidates = [ self.object_id ]
-        while candidates:
-            candidate = candidates.pop()
-            if candidate in seen_oids: continue
-            lc = LogCache.get(self.repo, candidate)
-            seen_oids.update(lc.object_ids)
-            candidates += lc.candidates
-        return len(seen_oids)
 
     def compute_diffs(self):
         self.diffs.added = []

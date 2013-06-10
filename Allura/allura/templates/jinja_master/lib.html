@@ -58,6 +58,13 @@
   {% endif %}
 {%- endmacro %}
 
+{% macro user_link(email, name, size=16) -%}
+    {% set user = h.find_user(email) -%}
+    {% if user %}<a href="{{user.url()}}">{% endif -%}
+        {{ email_gravatar(email, name, size) }} {{ name }}
+    {%- if user %}</a>{% endif -%}
+{%- endmacro %}
+
 {% macro file_field(name, label) %}
   {% if label %}
   <label for="{{name}}">{{label}}</label>

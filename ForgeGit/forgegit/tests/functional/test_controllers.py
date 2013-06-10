@@ -116,10 +116,8 @@ class TestRootController(_TestCase):
         assert 'Initial commit' in resp
         assert '<div class="markdown_content"><p>Change README</p></div>' in resp
         assert 'tree/README?format=raw">Download</a>' not in resp
-        assert '28 Bytes' not in resp.html.find('td').contents[1].text
         assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
         resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
-        assert '28 Bytes' in resp.html.find('td').contents[1].text
         assert 'View' in resp.html.findAll('td')[2].text
         assert 'Change README' in resp
         assert 'tree/README?format=raw">Download</a>' in resp
@@ -466,12 +464,14 @@ class TestFork(_TestCase):
         assert 'would like you to merge' in r, r.showbrowser()
         assert 'Improve documentation' in r, r.showbrowser()
         revs = r.html.findAll('tr', attrs={'class': 'rev'})
-        links = revs[0].findAll('a')
+        assert_equal(len(revs), 1)
+        rev_links = revs[0].findAll('a', attrs={'class': 'rev'})
+        browse_links = revs[0].findAll('a', attrs={'class': 'browse'})
         c_id = self.forked_repo.get_heads()[0]['object_id']
-        assert_equal(links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
-        assert_equal(links[0].getText(), '[%s]' % c_id[:6])
-        assert_equal(links[1].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
-        assert_equal(links[1].getText(), 'Tree')
+        assert_equal(rev_links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
+        assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
+        assert_equal(browse_links[0].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
+        assert_equal(browse_links[0].getText(), 'Tree')
 
     def test_merge_request_list_view(self):
         r, mr_num = self._request_merge()

@@ -33,6 +33,7 @@ from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
 from testfixtures import TempDirectory
 from IPython.testing.decorators import onlyif
+import pysvn
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
@@ -85,13 +86,8 @@ class TestNewRepo(unittest.TestCase):
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == (
             '/p/test/src/5/')
-        all_cis = self.repo.log(self.rev._id, 0, 1000)
+        all_cis = list(self.repo.log(self.rev._id))
         assert len(all_cis) == 5
-        assert self.repo.log(self.rev._id, 1,1000) == all_cis[1:]
-        assert self.repo.log(self.rev._id, 0,3) == all_cis[:3]
-        assert self.repo.log(self.rev._id, 1,2) == all_cis[1:3]
-        for ci in all_cis:
-            ci.context()
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
             'README', 'This is readme\nAnother Line\n')
@@ -169,7 +165,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
-        assert len(repo.log())
+        assert len(list(repo.log()))
 
         shutil.rmtree(dirname)
 
@@ -216,7 +212,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
 
         repo.refresh(notify=False)
-        assert len(repo.log())
+        assert len(list(repo.log()))
 
         shutil.rmtree(dirname)
 
@@ -225,16 +221,12 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert i['type_s'] == 'SVN Repository', i
 
     def test_log(self):
-        for entry in self.repo.log():
-            assert entry.committed.name == 'rick446'
-            assert entry.message
-            print '=='
-            print entry._id
-            print entry.message
-            print entry.diffs
+        for entry in self.repo.log(id_only=False):
+            assert entry['committed']['name'] == 'rick446'
+            assert entry['message']
 
     def test_paged_diffs(self):
-        entry = self.repo.log(2, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
         self.assertEqual(entry.diffs, entry.paged_diffs())
         self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
         expected =  dict(
@@ -247,14 +239,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(sorted(actual.keys()), sorted(empty.keys()))
 
     def test_diff_create_file(self):
-        entry = self.repo.log(1, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(1, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
                 removed=[], added=['/README'], total=1))
 
     def test_diff_create_path(self):
-        entry = self.repo.log(2, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(2, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[], removed=[],
@@ -263,14 +255,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
                     '/a/b/c/hello.txt'], total=4))
 
     def test_diff_modify_file(self):
-        entry = self.repo.log(3, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(3, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=['/README'],
                 removed=[], added=[], total=1))
 
     def test_diff_delete(self):
-        entry = self.repo.log(4, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(4, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
@@ -278,7 +270,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_diff_copy(self):
         # Copies are currently only detected as 'add'
-        entry = self.repo.log(5, limit=1)[0]
+        entry = self.repo.commit(self.repo.log(5, id_only=True).next())
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[],
@@ -295,10 +287,6 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert svn_path_exists("file://%s/a" % repo_path)
         assert svn_path_exists("file://%s" % repo_path)
         assert not svn_path_exists("file://%s/badpath" % repo_path)
-
-    def test_count_revisions(self):
-        ci = mock.Mock(_id='deadbeef:100')
-        self.assertEqual(self.repo.count_revisions(ci), 100)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):
@@ -602,7 +590,6 @@ class _TestWithRepo(_Test):
         self.repo._impl.url_for_commit = (
             lambda *a, **kw: M.RepositoryImplementation.url_for_commit(
                 self.repo._impl, *a, **kw))
-        self.repo._impl.log = lambda *a,**kw:(['foo'], [])
         self.repo._impl._repo = self.repo
         self.repo._impl.all_commit_ids = lambda *a,**kw: []
         self.repo._impl.commit().symbolic_ids = None
@@ -651,23 +638,6 @@ class TestRepo(_TestWithRepo):
         assert self.repo._impl.clone_from.called_with('srcpath')
         post_event.assert_called_once_with('repo_cloned', 'srcurl', 'srcpath')
 
-    @mock.patch.object(M.repo.CommitRunDoc.m, 'get')
-    def test_log(self, crd):
-        head = mock.Mock(name='commit_head', _id=3)
-        commits = dict([(i, mock.Mock(name='commit_%s'%i, _id=i)) for i in range(3)])
-        commits[3] = head
-        head.query.get = lambda _id: commits[_id]
-        self.repo._impl.commit = mock.Mock(return_value=head)
-        crd.return_value = mock.Mock(commit_ids=[3, 2, 1, 0], commit_times=[4, 3, 2, 1], parent_commit_ids=[])
-        log = self.repo.log()
-        assert_equal([c._id for c in log], [3, 2, 1, 0])
-
-    def test_count_revisions(self):
-        ci = mock.Mock()
-        self.repo.count_revisions = mock.Mock(return_value=42)
-        self.repo._impl.commit = mock.Mock(return_value=ci)
-        assert self.repo.count() == 42
-
     def test_latest(self):
         ci = mock.Mock()
         self.repo._impl.commit = mock.Mock(return_value=ci)
@@ -711,7 +681,6 @@ class TestRepo(_TestWithRepo):
         ci.committed.name = committer_name
         ci.committed.email = committer_email
         ci.author_url = '/u/test-committer/'
-        self.repo.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
         self.repo._impl.all_commit_ids = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
@@ -740,7 +709,6 @@ class TestRepo(_TestWithRepo):
 
     def test_refresh_private(self):
         ci = mock.Mock()
-        self.repo.count_revisions=mock.Mock(return_value=100)
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(return_value=['foo%d' % i for i in range(100) ])
 
@@ -792,17 +760,28 @@ class TestMergeRequest(_TestWithRepoAndCommit):
             downstream=ming.base.Object(
                 project_id=c.project._id,
                 mount_point='test2',
-                commit_id='foo'),
+                commit_id='foo:2'),
             target_branch='foobranch',
             summary='summary',
             description='description')
         u = M.User.by_username('test-admin')
-        assert mr.creator == u
-        assert mr.creator_name == u.get_pref('display_name')
-        assert mr.creator_url == u.url()
-        assert mr.downstream_url == '/p/test/test2/'
-        assert mr.downstream_repo_url == 'http://svn.localhost/p/test/test2/'
-        assert mr.commits == [ self._make_commit('foo')[0] ]
+        assert_equal(mr.creator, u)
+        assert_equal(mr.creator_name,  u.get_pref('display_name'))
+        assert_equal(mr.creator_url,  u.url())
+        assert_equal(mr.downstream_url,  '/p/test/test2/')
+        assert_equal(mr.downstream_repo_url,  'http://svn.localhost/p/test/test2/')
+        with mock.patch('forgesvn.model.svn.SVNLibWrapper') as _svn,\
+             mock.patch('forgesvn.model.svn.SVNImplementation._map_log') as _map_log:
+            mr.app.repo._impl.head = 1
+            _svn().log.return_value = [mock.Mock(revision=mock.Mock(number=2))]
+            _map_log.return_value = 'bar'
+            assert_equal(mr.commits,  ['bar'])
+            # can't do assert_called_once_with because pysvn.Revision doesn't compare nicely
+            assert_equal(_svn().log.call_count, 1)
+            assert_equal(_svn().log.call_args[0], ('file:///tmp/svn/p/test/test2',))
+            assert_equal(_svn().log.call_args[1]['revision_start'].number, 2)
+            assert_equal(_svn().log.call_args[1]['limit'], 25)
+            _map_log.assert_called_once_with(_svn().log.return_value[0])
 
 class TestRepoObject(_TestWithRepoAndCommit):
 
@@ -852,12 +831,6 @@ class TestCommit(_TestWithRepo):
         assert isinstance(b, M.repo.Blob)
         x = self.ci.get_path('a/a')
         assert isinstance(x, M.repo.Tree)
-
-    def test_count_revisions(self):
-        rb = M.repo_refresh.CommitRunBuilder(['foo'])
-        rb.run()
-        rb.cleanup()
-        assert self.repo.count_revisions(self.ci) == 1
 
     def _unique_blobs(self):
         def counter():

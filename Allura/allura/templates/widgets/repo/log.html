@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
+{% from 'allura:templates/jinja_master/lib.html' import user_link, abbr_date with context %}
 {% set app = app or c.app %}
 <div>
   {%if is_file%}
@@ -36,25 +36,19 @@
           <td>
             <div>
                 {%if is_file%}
-                    <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit._id.split(':')[-1]}}" url_commit="{{commit.url()}}"></div>
+                    <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit.id}}" url_commit="{{app.repo.url_for_commit(commit.id)}}"></div>
                 {%endif%}
-                <a href="{{app.repo.url_for_commit(commit)}}">{{commit.shorthand_id()}}</a>
-                {% if app.repo.symbolics_for_commit(commit)[1] %}
-                    ({% for tag in app.repo.symbolics_for_commit(commit)[1] -%}
-                        <a href="{{app.repo.url_for_commit(tag)}}">{{tag}}</a>{% if not loop.last %}&nbsp;{% endif %}
-                    {%- endfor %})
-                {% endif %}
-                {%if is_file%}
-                    ({{commit.tree.get_obj_by_path(request.params.get('path')).size|filesizeformat}})
-                {%endif%}
-                by
-                {{email_gravatar(commit.authored.email, title=commit.authored.name, size=16)}} {{commit.authored.name}}{%if commit.committed.email != commit.authored.email %}, pushed by
-                {% if commit.committer_url %}
-                    <a href="{{commit.committer_url}}">{{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}}
-                    {{commit.committed.name}}</a>
-                {% else %}
-                {{email_gravatar(commit.committed.email, title=commit.committed.name, size=16)}} {{commit.committed.name}}
-                {% endif %}
+                <a class="rev" href="{{app.repo.url_for_commit(commit.id)}}">{{app.repo.shorthand_for_commit(commit.id)}}</a>
+                {% if commit.refs -%}
+                    (
+                    {%- for ref in commit.refs -%}
+                        <a class="ref" href="{{app.repo.url_for_commit(ref)}}">{{ref}}</a>{% if not loop.last %},&nbsp;{% endif %}
+                    {%- endfor -%}
+                    )
+                {%- endif %}
+                by {{ user_link(commit.authored.email, commit.authored.name) }}
+                {%- if commit.committed.email != commit.authored.email %},
+                pushed by {{ user_link(commit.committed.email, commit.committed.name) }}
                 {% endif %}
                 {{g.markdown.convert(commit.message)}}
             </div>
@@ -63,16 +57,12 @@
             {% if commit.committed.date %}{{commit.committed.date|datetimeformat}}{% endif %}
           </td>
           <td style="text-align: left; vertical-align: text-top">
-            <a href="{{commit.url()}}tree{{request.params.get('path', '')}}">
-            {%if is_file%}
-                View
-            {% else %}
-                Tree
-            {%endif%}
-            </a>
+              <a class="browse" href="{{app.repo.url_for_commit(commit.id)}}tree{{request.params.get('path', '')}}">
+                  {{ 'View' if is_file else 'Tree' }}
+              </a>
               {%if is_file%}
               <br/>
-              <a href="{{commit.url()}}tree{{request.params.get('path', '')}}?format=raw">Download</a>
+              <a class="download" href="{{app.repo.url_for_commit(commit.id)}}tree{{request.params.get('path', '')}}?format=raw">Download</a>
               {%endif%}
           </td>
         </tr>
@@ -80,6 +70,6 @@
     </tbody>
   </table>
   {% if show_paging and next_commit %}
-      <a class="page_list" href="{{next_commit.url()}}log{{tg.url(params=request.params)}}">Older ></a>
+      <a class="page_list" href="{{app.repo.url_for_commit(next_commit.id)}}log{{tg.url(params=request.params)}}">Older ></a>
   {% endif %}
 </div>

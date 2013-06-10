@@ -22,6 +22,7 @@ import re
 import difflib
 from urllib import quote, unquote
 from collections import defaultdict
+from itertools import islice
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -197,7 +198,7 @@ class RepoRootController(BaseController, FeedController):
             return dict(status='not_ready')
         # if c.app.repo.count() > 2000:
         #     return dict(status='too_many_commits')
-        if c.app.repo.count() == 0:
+        if c.app.repo.is_empty():
             return dict(status='no_commits')
         c.commit_browser_widget = self.commit_browser_widget
         return dict(status='ready')
@@ -206,11 +207,11 @@ class RepoRootController(BaseController, FeedController):
     @expose('json:')
     def commit_browser_data(self):
         head_ids = [ head.object_id for head in c.app.repo.get_heads() ]
-        commit_ids = list(c.app.repo.commitlog(head_ids))
+        commit_ids = [c.app.repo.rev_to_commit_id(r) for r in c.app.repo.log(head_ids, id_only=True)]
         log.info('Grab %d commit objects by ID', len(commit_ids))
-        commits_by_id = dict(
-            (c_obj._id, c_obj)
-            for c_obj in M.repo.CommitDoc.m.find(dict(_id={'$in': commit_ids})))
+        commits_by_id = {
+            c_obj._id: c_obj
+            for c_obj in M.repo.CommitDoc.m.find(dict(_id={'$in': commit_ids}))}
         log.info('... build graph')
         parents = {}
         children = defaultdict(list)
@@ -276,32 +277,30 @@ class RepoRestController(RepoRootController):
         return dict(commit_count=len(all_commits))
 
     @expose('json:')
-    def commits(self, **kw):
-        page_size = 25
-        offset = (int(kw.get('page',1)) * page_size) - page_size
-        revisions = c.app.repo.log(offset=offset, limit=page_size)
+    def commits(self, rev=None, **kw):
+        revisions = islice(c.app.repo.log(rev, id_only=False), 25)
 
-        return dict(
-            commits=[
-                dict(
-                    parents=[dict(id=p) for p in commit.parent_ids],
-                    author=dict(
-                        name=commit.authored.name,
-                        email=commit.authored.email,
-                    ),
-                    url=commit.url(),
-                    id=commit._id,
-                    committed_date=commit.committed.date,
-                    authored_date=commit.authored.date,
-                    message=commit.message,
-                    tree=commit.tree._id,
-                    committer=dict(
-                        name=commit.committed.name,
-                        email=commit.committed.email,
-                    ),
-                )
+        return {
+            'commits': [
+                {
+                    'parents': [{'id':p} for p in commit['parents']],
+                    'url': c.app.repo.url_for_commit(commit['id']),
+                    'id': commit['id'],
+                    'message': commit['message'],
+                    'tree': commit.get('tree'),
+                    'committed_date': commit['committed']['date'],
+                    'authored_date': commit['authored']['date'],
+                    'author': {
+                        'name': commit['authored']['name'],
+                        'email': commit['authored']['email'],
+                        },
+                    'committer': {
+                        'name': commit['committed']['name'],
+                        'email': commit['committed']['email'],
+                    },
+                }
             for commit in revisions
-        ])
+        ]}
 
 class MergeRequestsController(object):
     mr_filter=SCMMergeRequestFilterWidget()
@@ -478,21 +477,19 @@ class CommitBrowser(BaseController):
         if path:
             path = path.lstrip('/')
             is_file = self.tree._tree.get_blob_by_path(path) is not None
-        params = dict(path=path, rev=self._commit._id)
-        commits = list(c.app.repo.commits(limit=limit+1, **params))
+        commits = list(islice(c.app.repo.log(
+                revs=self._commit._id,
+                path=path,
+                id_only=False,
+                page_size=limit+1), limit+1))
         next_commit = None
         if len(commits) > limit:
-            next_commit = M.repo.Commit.query.get(_id=commits.pop())
-            next_commit.set_context(c.app.repo)
-        revisions = list(M.repo.Commit.query.find({'_id': {'$in': commits}}))
-        for commit in revisions:
-            commit.set_context(c.app.repo)
-        revisions = sorted(revisions, key=lambda c:commits.index(c._id))
+            next_commit = commits.pop()
         c.log_widget = self.log_widget
         return dict(
             username=c.user._id and c.user.username,
             branch=None,
-            log=revisions,
+            log=commits,
             next_commit=next_commit,
             limit=limit,
             path=path,
