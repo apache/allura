@@ -60,6 +60,8 @@ def _mock_feed(*entries):
         entry['updated_parsed'] = entry['updated'].timetuple()
         if 'content' in entry:
             entry['content'] = [attrdict(type=entry['content_type'], value=entry['content'])]
+        if 'summary_detail' in entry:
+            entry['summary_detail'] = attrdict(entry['summary_detail'])
         feed.entries.append(entry)
 
     return feed
@@ -68,21 +70,33 @@ _mock_feed.i = 0
 @skipif(module_not_available('html2text'))
 @mock.patch.object(feedparser, 'parse')
 def test_pull_rss_feeds(parsefeed):
+    html_content = (
+        "<p>1. foo</p>\n"
+        "\n"
+        "<p>\n"
+        "#foo bar <a href='baz'>baz</a>\n"
+        "foo bar\n"
+        "</p>\n"
+        "\n"
+        "<p>#foo bar <a href='baz'>\n"
+        "baz\n"
+        "</a></p>\n"
+    )
+
+    rendered_html_content = "\n".join([
+       r"1\. foo",
+        "",
+       r"\#foo bar [baz](baz) foo bar ",
+        "",
+       r"\#foo bar [ baz ](baz)",
+        " [link](http://example.com/)",
+    ])
+
     parsefeed.return_value = _mock_feed(
         dict(title='Test', subtitle='test', summary='This is a test'),
         dict(content_type='text/plain', content='Test feed'),
-        dict(content_type='text/html', content=
-                "<p>1. foo</p>\n"
-                "\n"
-                "<p>\n"
-                "#foo bar <a href='baz'>baz</a>\n"
-                "foo bar\n"
-                "</p>\n"
-                "\n"
-                "<p>#foo bar <a href='baz'>\n"
-                "baz\n"
-                "</a></p>\n"
-            ),
+        dict(content_type='text/html', content=html_content),
+        dict(summary_detail=dict(type='text/html', value=html_content)),
     )
 
     base_app =  M.AppConfig.query.find().all()[0]
@@ -102,21 +116,16 @@ def test_pull_rss_feeds(parsefeed):
     cmd.command()
     parsefeed.assert_called_with('http://example.com/news/feed/')
     posts = BM.BlogPost.query.find({'app_config_id': tmp_app._id}).sort('timestamp', 1)
-    assert_equal(posts.count(), 3)
+    assert_equal(posts.count(), 4)
     posts = posts.all()
     assert_equal(posts[0].title, 'Test')
     assert_equal(posts[0].text, 'This is a test [link](http://example.com/)')
     assert_equal(posts[1].title, 'Default Title 2')
     assert_equal(posts[1].text, 'Test feed [link](http://example.com/)')
     assert_equal(posts[2].title, 'Default Title 3')
-    assert_equal(posts[2].text, "\n".join([
-       r"1\. foo",
-        "",
-       r"\#foo bar [baz](baz) foo bar ",
-        "",
-       r"\#foo bar [ baz ](baz)",
-        " [link](http://example.com/)",
-    ]))
+    assert_equal(posts[2].text, rendered_html_content)
+    assert_equal(posts[3].title, 'Default Title 4')
+    assert_equal(posts[3].text, rendered_html_content)
 
 @skipif(module_not_available('html2text'))
 def test_plaintext_preprocessor():

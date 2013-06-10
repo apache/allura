@@ -145,9 +145,10 @@ class RssFeedsCommand(base.BlogCommand):
     def process_entry(self, e, appid):
         title = e.title
         allura_base.log.info(" ...entry '%s'", title)
-        if 'content' in e:
+        parsed_content = filter(None, e.get('content') or [e.get('summary_detail')])
+        if parsed_content:
             content = u''
-            for ct in e.content:
+            for ct in parsed_content:
                 if ct.type != 'text/html':
                     content += plain2markdown(ct.value)
                 else:
