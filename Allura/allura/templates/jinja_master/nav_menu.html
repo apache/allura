@@ -37,7 +37,7 @@
     {% if status and status.shortname not in ['production', 'mature'] %}
     <span id="dev-status" class="{{ status.shortname }}">{{ status.shortname }}</span>
     {% endif %}
-    <h2 class="project_summary">
+    <h2 class="project_summary{% if c.project.icon %} with-icon{% endif %}">
         {{c.project.summary}}
     </h2>
     <div class="brought-by{% if c.project.icon %} with-icon{% endif %}">
