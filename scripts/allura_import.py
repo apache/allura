@@ -15,19 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
-import sys
-import urllib
-import urllib2
-import urlparse
-import hmac
-import hashlib
 import json
 from optparse import OptionParser
-from pprint import pprint
 from datetime import datetime
 
 from allura.lib.import_api import AlluraImportApiClient
+from forgetracker.scripts.import_tracker import import_tracker
 
 
 def main():
@@ -69,46 +62,6 @@ def main():
     elif options.forum:
         import_forum(cli, options.project, options.forum, user_map, doc_txt, validate=options.validate)
 
-def import_tracker(cli, project, tool, import_options, options, doc_txt, validate=True, verbose=False):
-    url = '/rest/p/' + project + '/' + tool
-    if validate:
-        url += '/validate_import'
-    else:
-        url += '/perform_import'
-
-    existing_map = {}
-    if options.cont:
-        existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
-        for t in existing_tickets:
-            existing_map[t['ticket_num']] = t['summary']
-
-    doc = json.loads(doc_txt)
-
-    if 'trackers' in doc and 'default' in doc['trackers'] and 'artifacts' in doc['trackers']['default']:
-        tickets_in = doc['trackers']['default']['artifacts']
-        doc['trackers']['default']['artifacts'] = []
-    else:
-        tickets_in = doc
-        
-    if options.verbose:
-        print "Processing %d tickets" % len(tickets_in)
-
-    for cnt, ticket_in in enumerate(tickets_in):
-            if ticket_in['id'] in existing_map:
-                if options.verbose:
-                    print 'Ticket id %d already exists, skipping' % ticket_in['id']
-                continue
-            doc_import={}
-            doc_import['trackers'] = {}
-            doc_import['trackers']['default'] = {}
-            doc_import['trackers']['default']['artifacts'] = [ticket_in]
-            res = cli.call(url, doc=json.dumps(doc_import), options=json.dumps(import_options))
-            assert res['status'] and not res['errors']
-            if options.validate:
-                if res['warnings']:
-                    print "Ticket id %s warnings: %s" % (ticket_in['id'], res['warnings'])
-            else:
-                print "Imported ticket id %s" % (ticket_in['id'])
 
 def import_forum(cli, project, tool, user_map, doc_txt, validate=True):
     url = '/rest/p/' + project + '/' + tool
@@ -118,6 +71,7 @@ def import_forum(cli, project, tool, user_map, doc_txt, validate=True):
     else:
         url += '/perform_import'
         print cli.call(url, doc=doc_txt, user_map=json.dumps(user_map))
+
 
 def parse_options():
     optparser = OptionParser(usage='''%prog [options] <JSON dump>

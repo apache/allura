@@ -316,7 +316,6 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         for a in artifacts:
             comments = a.pop('comments', [])
             attachments = a.pop('attachments', [])
-#            log.info(a)
             t = self.make_artifact(a)
             for c_entry in comments:
                 self.make_comment(t.discussion_thread, c_entry)
