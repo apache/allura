@@ -37,7 +37,7 @@ from formencode import Invalid
 from tg.decorators import before_validate
 from pylons import response
 from pylons import tmpl_context as c
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
 from webob import exc
@@ -471,3 +471,26 @@ def take_while_true(source):
         yield x
         x = source()
 
+
+def serve_file(fp, filename, content_type, last_modified=None, cache_expires=None, size=None, embed=True):
+    '''Sets the response headers and serves as a wsgi iter'''
+    pylons.response.headers['Content-Type'] = ''
+    pylons.response.content_type = content_type.encode('utf-8')
+    pylons.response.cache_expires = cache_expires or asint(tg.config.get('files_expires_header_secs', 60 * 60))
+    pylons.response.last_modified = last_modified
+    if size:
+        pylons.response.content_length = size
+    if 'Pragma' in pylons.response.headers:
+        del pylons.response.headers['Pragma']
+    if 'Cache-Control' in pylons.response.headers:
+        del pylons.response.headers['Cache-Control']
+    if not embed:
+        pylons.response.headers.add(
+            'Content-Disposition',
+            'attachment;filename="%s"' % filename.encode('utf-8'))
+    # http://code.google.com/p/modwsgi/wiki/FileWrapperExtension
+    block_size = 4096
+    if 'wsgi.file_wrapper' in tg.request.environ:
+        return tg.request.environ['wsgi.file_wrapper'](fp, block_size)
+    else:
+        return iter(lambda: fp.read(block_size), '')

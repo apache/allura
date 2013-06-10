@@ -23,7 +23,6 @@ import pylons
 import PIL
 from gridfs import GridFS
 from tg import config
-from paste.deploy.converters import asint
 
 from ming import schema
 from ming.orm import session, FieldProperty
@@ -109,20 +108,11 @@ class File(MappedClass):
 
     def serve(self, embed=True):
         '''Sets the response headers and serves as a wsgi iter'''
-        fp = self.rfile()
-        pylons.response.headers['Content-Type'] = ''
-        pylons.response.content_type = self.content_type.encode('utf-8')
-        pylons.response.cache_expires = asint(config.get('files_expires_header_secs', 60 * 60))
-        pylons.response.last_modified = self._id.generation_time
-        if 'Pragma' in pylons.response.headers:
-            del pylons.response.headers['Pragma']
-        if 'Cache-Control' in pylons.response.headers:
-            del pylons.response.headers['Cache-Control']
-        if not embed:
-            pylons.response.headers.add(
-                'Content-Disposition',
-                'attachment;filename="%s"' % self.filename.encode('utf-8'))
-        return iter(fp)
+        gridfs_file = self.rfile()
+        return utils.serve_file(gridfs_file, self.filename, self.content_type,
+                                last_modified=self._id.generation_time,
+                                size=gridfs_file.length,
+                                embed=embed)
 
     @classmethod
     def save_thumbnail(cls, filename, image,
