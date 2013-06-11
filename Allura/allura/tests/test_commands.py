@@ -365,13 +365,17 @@ class TestReindexCommand(object):
     @patch('pysolr.Solr')
     def test_solr_hosts_1(self, Solr):
         cmd = show_models.ReindexCommand('reindex')
-        cmd.run([test_config, '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge'])
+        cmd.options, args = cmd.parser.parse_args([
+            '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge'])
+        cmd._chunked_add_artifacts(list(range(10)))
         assert_equal(Solr.call_args[0][0], 'http://blah.com/solr/forge')
 
     @patch('pysolr.Solr')
     def test_solr_hosts_list(self, Solr):
         cmd = show_models.ReindexCommand('reindex')
-        cmd.run([test_config, '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge,https://other.net/solr/forge'])
+        cmd.options, args = cmd.parser.parse_args([
+            '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge,https://other.net/solr/forge'])
+        cmd._chunked_add_artifacts(list(range(10)))
         # check constructors of first and second Solr() instantiations
         assert_equal(set([Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]]),
                      set(['http://blah.com/solr/forge', 'https://other.net/solr/forge'])
@@ -387,13 +391,12 @@ class TestReindexCommand(object):
     @patch('allura.command.show_models.add_artifacts')
     def test_chunked_add_artifacts(self, add_artifacts):
         cmd = show_models.ReindexCommand('reindex')
-        cmd.options = Mock()
-        cmd.add_artifact_kwargs = {}
-        ref_ids = list(range(100 * 1000 * 2 + 20))
+        cmd.options = Mock(tasks=True, max_chunk=10*1000)
+        ref_ids = list(range(10 * 1000 * 2 + 20))
         cmd._chunked_add_artifacts(ref_ids)
         assert_equal(len(add_artifacts.post.call_args_list), 3)
-        assert_equal(len(add_artifacts.post.call_args_list[0][0][0]), 100 * 1000)
-        assert_equal(len(add_artifacts.post.call_args_list[1][0][0]), 100 * 1000)
+        assert_equal(len(add_artifacts.post.call_args_list[0][0][0]), 10 * 1000)
+        assert_equal(len(add_artifacts.post.call_args_list[1][0][0]), 10 * 1000)
         assert_equal(len(add_artifacts.post.call_args_list[2][0][0]), 20)
 
     @patch('allura.command.show_models.add_artifacts')
@@ -404,8 +407,7 @@ class TestReindexCommand(object):
                         "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
-        cmd.options = Mock()
-        cmd.add_artifact_kwargs = {}
+        cmd.options, args = cmd.parser.parse_args([])
         cmd._post_add_artifacts(range(5))
         kw = {'update_solr': cmd.options.solr, 'update_refs': cmd.options.refs}
         expected = [
@@ -428,6 +430,5 @@ class TestReindexCommand(object):
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
         cmd.options = Mock()
-        cmd.add_artifact_kwargs = {}
         with td.raises(pymongo.errors.InvalidDocument):
             cmd._post_add_artifacts(range(5))
