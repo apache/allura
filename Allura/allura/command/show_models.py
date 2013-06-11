@@ -70,6 +70,8 @@ class ReindexCommand(base.Command):
                            'which are needed for some markdown macros to run properly')
     parser.add_option('--solr-hosts', dest='solr_hosts',
                       help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
+    parser.add_option('--max-chunk', dest='max_chunk', type=int, default=100*1000,
+                      help='Max number of artifacts to index in one Solr update command')
 
     def command(self):
         from allura import model as M
@@ -89,11 +91,6 @@ class ReindexCommand(base.Command):
         # if none specified, do all
         if not self.options.solr and not self.options.refs:
             self.options.solr = self.options.refs = True
-
-        if self.options.solr_hosts:
-            self.add_artifact_kwargs = {'solr_hosts': self.options.solr_hosts.split(',')}
-        else:
-            self.add_artifact_kwargs = {}
 
         for projects in utils.chunked_find(M.Project, q_project):
             for p in projects:
@@ -126,13 +123,7 @@ class ReindexCommand(base.Command):
                     M.main_orm_session.flush()
                     M.artifact_orm_session.clear()
                     try:
-                        if self.options.tasks:
-                            self._chunked_add_artifacts(ref_ids)
-                        else:
-                            add_artifacts(ref_ids,
-                                          update_solr=self.options.solr,
-                                          update_refs=self.options.refs,
-                                          **self.add_artifact_kwargs)
+                        self._chunked_add_artifacts(ref_ids)
                     except CompoundError, err:
                         base.log.exception('Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
@@ -140,12 +131,24 @@ class ReindexCommand(base.Command):
                     M.main_orm_session.clear()
         base.log.info('Reindex %s', 'queued' if self.options.tasks else 'done')
 
+    @property
+    def add_artifact_kwargs(self):
+        if self.options.solr_hosts:
+           return {'solr_hosts': self.options.solr_hosts.split(',')}
+        return {}
+
     def _chunked_add_artifacts(self, ref_ids):
         # ref_ids contains solr index ids which can easily be over
         # 100 bytes. Here we allow for 160 bytes avg, plus
         # room for other document overhead.
-        for chunk in utils.chunked_list(ref_ids, 100 * 1000):
-            self._post_add_artifacts(chunk)
+        for chunk in utils.chunked_list(ref_ids, self.options.max_chunk):
+            if self.options.tasks:
+                self._post_add_artifacts(chunk)
+            else:
+                add_artifacts(chunk,
+                              update_solr=self.options.solr,
+                              update_refs=self.options.refs,
+                              **self.add_artifact_kwargs)
 
     def _post_add_artifacts(self, chunk):
         """
