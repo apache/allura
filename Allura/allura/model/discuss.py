@@ -434,7 +434,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     class __mongometa__:
         name = 'post'
         history_class = PostHistory
-        indexes = ['discussion_id', 'thread_id']
+        indexes = [('discussion_id', 'status'), 'thread_id']
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)
