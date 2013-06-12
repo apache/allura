@@ -37,22 +37,40 @@ from allura.lib.utils import permanent_redirect
 
 log = logging.getLogger(__name__)
 
-class ConfigOption(object):
 
+class ConfigOption(object):
+    """Definition of a configuration option for an :class:`Application`.
+
+    """
     def __init__(self, name, ming_type, default, label=None):
+        """Create a new ConfigOption.
+
+        """
         self.name, self.ming_type, self._default, self.label = (
             name, ming_type, default, label or name)
 
     @property
     def default(self):
+        """Return the default value for this ConfigOption.
+
+        """
         if callable(self._default):
             return self._default()
         return self._default
 
-class SitemapEntry(object):
 
+class SitemapEntry(object):
+    """A labeled URL, which may optionally have
+    :class:`children <SitemapEntry>`.
+
+    Used for generating trees of links.
+
+    """
     def __init__(self, label, url=None, children=None, className=None,
-            ui_icon=None, small=None, tool_name=None):
+            ui_icon=None, small=None, tool_name=None, matching_urls=None):
+        """Create a new SitemapEntry.
+
+        """
         self.label = label
         self.className = className
         if url is not None:
@@ -60,15 +78,14 @@ class SitemapEntry(object):
         self.url = url
         self.small = small
         self.ui_icon = ui_icon
-        if children is None:
-            children = []
-        self.children = children
+        self.children = children or []
         self.tool_name = tool_name
-        self.matching_urls = []
+        self.matching_urls = matching_urls or []
 
     def __getitem__(self, x):
-        """
-        Automatically expand the list of sitemap child entries with the given items.  Example:
+        """Automatically expand the list of sitemap child entries with the
+        given items.  Example::
+
             SitemapEntry('HelloForge')[
                 SitemapEntry('foo')[
                     SitemapEntry('Pages')[pages]
@@ -76,6 +93,7 @@ class SitemapEntry(object):
             ]
 
         TODO: deprecate this; use a more clear method of building a tree
+
         """
         if isinstance(x, (list, tuple)):
             self.children.extend(list(x))
@@ -92,6 +110,12 @@ class SitemapEntry(object):
         return '\n'.join(l)
 
     def bind_app(self, app):
+        """Recreate this SitemapEntry in the context of
+        :class:`app <Application>`.
+
+        :returns: :class:`SitemapEntry`
+
+        """
         lbl = self.label
         url = self.url
         if callable(lbl):
@@ -99,12 +123,26 @@ class SitemapEntry(object):
         if url is not None:
             url = basejoin(app.url, url)
         return SitemapEntry(lbl, url, [
-                ch.bind_app(app) for ch in self.children], className=self.className)
+                ch.bind_app(app) for ch in self.children],
+                className=self.className,
+                ui_icon=self.ui_icon,
+                small=self.small,
+                tool_name=self.tool_name,
+                matching_urls=self.matching_urls)
 
-    def extend(self, sitemap):
+    def extend(self, sitemap_entries):
+        """Extend our children with ``sitemap_entries``.
+
+        :param sitemap_entries: list of :class:`SitemapEntry`
+
+        For each entry, if it doesn't already exist in our children, add it.
+        If it does already exist in our children, recursively extend the
+        children or our copy with the children of the new copy.
+
+        """
         child_index = dict(
             (ch.label, ch) for ch in self.children)
-        for e in sitemap:
+        for e in sitemap_entries:
             lbl = e.label
             match = child_index.get(e.label)
             if match and match.url == e.url:
@@ -114,7 +152,9 @@ class SitemapEntry(object):
                 child_index[lbl] = e
 
     def matches_url(self, request):
-        """Return true if this SitemapEntry 'matches' the url of `request`."""
+        """Return True if this SitemapEntry 'matches' the url of ``request``.
+
+        """
         return self.url in request.upath_info or any([
             url in request.upath_info for url in self.matching_urls])
 
@@ -137,7 +177,7 @@ class Application(object):
     :cvar list permissions: Named permissions used by instances of this
         Application. Default is [].
     :cvar list sitemap: :class:`SitemapEntries <allura.app.SitemapEntry>`
-        used to create the Application's navigation in the left side bar.
+        used to create the Application's navigation in the main project nav.
         Default is [].
     :cvar bool installable: Default is True, Application can be installed in
         projects.
@@ -177,33 +217,53 @@ class Application(object):
     DiscussionClass = model.Discussion
     PostClass = model.Post
     AttachmentClass = model.DiscussionAttachment
-    tool_label='Tool'
-    tool_description="This is a tool for Allura forge."
-    default_mount_label='Tool Name'
-    default_mount_point='tool'
-    relaxed_mount_points=False
-    ordinal=0
+    tool_label = 'Tool'
+    tool_description = "This is a tool for Allura forge."
+    default_mount_label = 'Tool Name'
+    default_mount_point = 'tool'
+    relaxed_mount_points = False
+    ordinal = 0
     hidden = False
-    icons={
+    icons = {
         24:'images/admin_24.png',
         32:'images/admin_32.png',
         48:'images/admin_48.png'
     }
 
     def __init__(self, project, app_config_object):
+        """Create an Application instance.
+
+        :param project: Project to which this Application belongs
+        :type project: :class:`allura.model.project.Project`
+        :param app_config_object: Config describing this Application
+        :type app_config_object: :class:`allura.model.project.AppConfig`
+
+        """
         self.project = project
         self.config = app_config_object
         self.admin = DefaultAdminController(self)
 
     @LazyProperty
     def url(self):
+        """Return the URL for this Application.
+
+        """
         return self.config.url(project=self.project)
 
     @property
     def acl(self):
+        """Return the :class:`Access Control List <allura.model.types.ACL>`
+        for this Application.
+
+        """
         return self.config.acl
 
     def parent_security_context(self):
+        """Return the parent of this object.
+
+        Used for calculating permissions based on trees of ACLs.
+
+        """
         return self.config.parent_security_context()
 
     @classmethod
@@ -226,17 +286,22 @@ class Application(object):
 
     @classmethod
     def status_int(self):
+        """Return the :attr:`status` of this Application as an int.
+
+        Used for sorting available Apps by status in the Admin interface.
+
+        """
         return self.status_map.index(self.status)
 
     @classmethod
     def icon_url(self, size):
-        '''Subclasses (tools) provide their own icons (preferred) or in
-        extraordinary circumstances override this routine to provide
-        the URL to an icon of the requested size specific to that tool.
+        """Return URL for icon of the given ``size``.
 
-        Application.icons is simply a default if no more specific icon
-        is available.
-        '''
+        Subclasses can define their own icons by overriding
+        :attr:`icons` or by overriding this method (which, by default,
+        returns the URLs defined in :attr:`icons`).
+
+        """
         resource = self.icons.get(size)
         if resource:
             return g.theme_href(resource)
@@ -263,6 +328,10 @@ class Application(object):
         return has_access(self, 'read')(user=user)
 
     def subscribe_admins(self):
+        """Subscribe all project Admins (for this Application's project) to the
+        :class:`allura.model.notification.Mailbox` for this Application.
+
+        """
         for uid in g.credentials.userids_with_named_role(self.project._id, 'Admin'):
             model.Mailbox.subscribe(
                 type='direct',
@@ -271,6 +340,10 @@ class Application(object):
                 app_config_id=self.config._id)
 
     def subscribe(self, user):
+        """Subscribe :class:`user <allura.model.auth.User>` to the
+        :class:`allura.model.notification.Mailbox` for this Application.
+
+        """
         if user and user != model.User.anonymous():
             model.Mailbox.subscribe(
                     type='direct',
@@ -322,26 +395,31 @@ class Application(object):
         By default, an app can be uninstalled iff it can be installed, although
         some apps may want/need to override this (e.g. an app which can
         not be installed directly by a user, but may be uninstalled).
+
         """
         return self.installable
 
     def main_menu(self):
-        '''Apps should provide their entries to be added to the main nav
-        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
-        '''
+        """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        to display in the main project nav for this Application.
+
+        Default implementation returns :attr:`sitemap`.
+
+        """
         return self.sitemap
 
     def sidebar_menu(self):
-        """
-        Apps should override this to provide their menu
-        :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        to render in the left sidebar for this Application.
+
         """
         return []
 
     def sidebar_menu_js(self):
-        """
-        Apps can override this to provide Javascript needed by the sidebar_menu.
+        """Return Javascript needed by the sidebar menu of this Application.
+
         :return: a string of Javascript code
+
         """
         return ""
 
@@ -388,6 +466,17 @@ class Application(object):
         pass
 
     def handle_artifact_message(self, artifact, message):
+        """Handle message addressed to this Application.
+
+        :param artifact: Specific artifact to which the message is addressed
+        :type artifact: :class:`allura.model.artifact.Artifact`
+        :param message: the message
+        :type message: :class:`allura.model.artifact.Message`
+
+        Default implementation posts the message to the appropriate discussion
+        thread for the artifact.
+
+        """
         # Find ancestor comment and thread
         thd, parent_id = artifact.get_discussion_thread(message)
         # Handle attachments
@@ -423,18 +512,41 @@ class Application(object):
                 text=text,
                 subject=message['headers'].get('Subject', 'no subject'))
 
-class DefaultAdminController(BaseController):
 
+class DefaultAdminController(BaseController):
+    """Provides basic admin functionality for an :class:`Application`.
+
+    To add more admin functionality for your Application, extend this
+    class and then assign an instance of it to the ``admin`` attr of
+    your Application::
+
+        class MyApp(Application):
+            def __init__(self, *args):
+                super(MyApp, self).__init__(*args)
+                self.admin = MyAdminController(self)
+
+    """
     def __init__(self, app):
+        """Instantiate this controller for an :class:`app <Application>`.
+
+        """
         self.app = app
 
     @expose()
     def index(self, **kw):
+        """Home page for this controller.
+
+        Redirects to the 'permissions' page by default.
+
+        """
         permanent_redirect('permissions')
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash
     def permissions(self):
+        """Render the permissions management web page.
+
+        """
         from ext.admin.widgets import PermissionCard
         c.card = PermissionCard()
         permissions = dict((p, []) for p in self.app.permissions)
@@ -452,6 +564,9 @@ class DefaultAdminController(BaseController):
 
     @expose('jinja:allura:templates/app_admin_edit_label.html')
     def edit_label(self):
+        """Renders form to update the Application's ``mount_label``.
+
+        """
         return dict(
             app=self.app,
             allow_config=has_access(self.app, 'configure')())
@@ -459,12 +574,18 @@ class DefaultAdminController(BaseController):
     @expose()
     @require_post()
     def update_label(self, mount_label):
+        """Handles POST to update the Application's ``mount_label``.
+
+        """
         require_access(self.app, 'configure')
         self.app.config.options['mount_label'] = mount_label
         redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_options.html')
     def options(self):
+        """Renders form to update the Application's ``config.options``.
+
+        """
         return dict(
             app=self.app,
             allow_config=has_access(self.app, 'configure')())
@@ -472,6 +593,10 @@ class DefaultAdminController(BaseController):
     @expose()
     @require_post()
     def configure(self, **kw):
+        """Handle POST to delete the Application or update its
+        ``config.options``.
+
+        """
         with h.push_config(c, app=self.app):
             require_access(self.app, 'configure')
             is_admin = self.app.config.tool_name == 'admin'
@@ -506,6 +631,9 @@ class DefaultAdminController(BaseController):
     @h.vardec
     @require_post()
     def update(self, card=None, **kw):
+        """Handle POST to update permissions for the Application.
+
+        """
         old_acl = self.app.config.acl
         self.app.config.acl = []
         for args in card:

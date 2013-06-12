@@ -15,22 +15,14 @@
        specific language governing permissions and limitations
        under the License.
 
-.. _app_module:
+.. _model_module:
 
-:mod:`allura.app`
+:mod:`allura.model`
 --------------------------------
 
-.. automodule:: allura.app
+.. automodule:: allura.model
 
-  .. autoclass:: Application
-      :members:
+  .. automodule:: allura.model.artifact
 
-  .. autoclass:: ConfigOption
-      :members:
-
-  .. autoclass:: DefaultAdminController
-      :members:
-
-  .. autoclass:: SitemapEntry
-      :members:
-
+    .. autoclass:: Artifact
+        :members:
