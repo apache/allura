@@ -18,7 +18,7 @@
 .. _package_path_loader_module:
 
 :mod:`allura.lib.package_path_loader`
---------------------------------
+-------------------------------------
 
 .. automodule:: allura.lib.package_path_loader
 
