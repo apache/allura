@@ -14,6 +14,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+
 """
 A Jinja template loader which allows for:
 
@@ -38,7 +39,7 @@ Overriding dotted notation
 
 Allow a Tool implementer to override the theme baseline (or any
 other Tool's) templates. This can be lighter-weight than subclassing
-:ref:`allura.plugin.ThemeProvider`, plus will allow for more fine-grained
+:class:`allura.plugin.ThemeProvider`, plus will allow for more fine-grained
 changes.
 
 This will also override ``extends`` and ``import`` Jinja tags.
@@ -110,15 +111,17 @@ The positioners are:
 
     >
         This overrider will be found BEFORE the specified entry point
+
     <
         This overrider will be found AFTER the specified entry point
+
     =
         This will replace one of the "signpost" entry points (if multiple apps
         try to do this for the same signpost, the result is undefined)
 
 **TODO:** Support multiple partial themes
-"""
 
+"""
 import pkg_resources
 import os
 from collections import defaultdict
