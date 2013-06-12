@@ -44,20 +44,20 @@ from filesystem import File
 
 log = logging.getLogger(__name__)
 
+
 class Artifact(MappedClass):
     """
-    The base class for anything you want to keep track of.
+    Base class for anything you want to keep track of.
 
-    It will automatically be added to solr (see index() method).  It also
-    gains a discussion thread and can have files attached to it.
+    - Automatically indexed into Solr (see index() method)
+    - Has a discussion thread that can have files attached to it
 
-    :var tool_version: default's to the app's version
+    :var mod_date: last-modified :class:`datetime`
+    :var tool_version: defaults to the parent Application's version
     :var acl: dict of permission name => [roles]
     :var labels: list of plain old strings
-    :var references: list of outgoing references to other tickets
-    :var backreferences: dict of incoming references to this artifact, mapped by solr id
-    """
 
+    """
     class __mongometa__:
         session = artifact_orm_session
         name='artifact'
@@ -90,6 +90,10 @@ class Artifact(MappedClass):
     deleted=FieldProperty(bool, if_missing=False)
 
     def __json__(self):
+        """Return a JSON-encodable :class:`dict` representation of this
+        Artifact.
+
+        """
         return dict(
             _id=str(self._id),
             mod_date=self.mod_date,
@@ -100,8 +104,14 @@ class Artifact(MappedClass):
         )
 
     def parent_security_context(self):
-        '''ACL processing should continue at the  AppConfig object. This lets
-        AppConfigs provide a 'default' ACL for all artifacts in the tool.'''
+        """Return the :class:`allura.model.project.AppConfig` instance for
+        this Artifact.
+
+        ACL processing for this Artifact continues at the AppConfig object.
+        This lets AppConfigs provide a 'default' ACL for all artifacts in the
+        tool.
+
+        """
         return self.app_config
 
     @classmethod
@@ -110,6 +120,11 @@ class Artifact(MappedClass):
 
     @classmethod
     def translate_query(cls, q, fields):
+        """Return a translated Solr query (``q``), where generic field
+        identifiers are replaced by the 'strongly typed' versions defined in
+        ``fields``.
+
+        """
         for f in fields:
             if '_' in f:
                 base, typ = f.rsplit('_', 1)
@@ -118,18 +133,34 @@ class Artifact(MappedClass):
 
     @LazyProperty
     def ref(self):
+        """Return :class:`allura.model.index.ArtifactReference` for this
+        Artifact.
+
+        """
         return ArtifactReference.from_artifact(self)
 
     @LazyProperty
     def refs(self):
+        """Artifacts referenced by this one.
+
+        :return: list of :class:`allura.model.index.ArtifactReference`
+        """
         return self.ref.references
 
     @LazyProperty
     def backrefs(self):
+        """Artifacts that reference this one.
+
+        :return: list of :attr:`allura.model.index.ArtifactReference._id`'s
+
+        """
         q = ArtifactReference.query.find(dict(references=self.index_id()))
         return [ aref._id for aref in q ]
 
     def related_artifacts(self):
+        """Return all Artifacts that are related to this one.
+
+        """
         related_artifacts = []
         for ref_id in self.refs+self.backrefs:
             ref = ArtifactReference.query.get(_id=ref_id)
@@ -140,6 +171,8 @@ class Artifact(MappedClass):
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
                 continue
+            # TODO: This should be refactored. We shouldn't be checking
+            # artifact type strings in platform code.
             if artifact.type_s == 'Commit' and not artifact.repo:
                 ac = AppConfig.query.get(
                         _id=ref.artifact_reference['app_config_id'])
@@ -151,6 +184,14 @@ class Artifact(MappedClass):
         return related_artifacts
 
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
+        """Subscribe ``user`` to the :class:`allura.model.notification.Mailbox`
+        for this Artifact.
+
+        :param user: :class:`allura.model.auth.User`
+
+        If ``user`` is None, ``c.user`` will be subscribed.
+
+        """
         from allura.model import Mailbox
         if user is None: user = c.user
         Mailbox.subscribe(
@@ -161,6 +202,14 @@ class Artifact(MappedClass):
             type=type, n=n, unit=unit)
 
     def unsubscribe(self, user=None):
+        """Unsubscribe ``user`` from the
+        :class:`allura.model.notification.Mailbox` for this Artifact.
+
+        :param user: :class:`allura.model.auth.User`
+
+        If ``user`` is None, ``c.user`` will be unsubscribed.
+
+        """
         from allura.model import Mailbox
         if user is None: user = c.user
         Mailbox.unsubscribe(
@@ -170,19 +219,27 @@ class Artifact(MappedClass):
             artifact_index_id=self.index_id())
 
     def primary(self):
-        '''If an artifact is a "secondary" artifact (discussion of a ticket, for
+        """If an artifact is a "secondary" artifact (discussion of a ticket, for
         instance), return the artifact that is the "primary".
-        '''
+
+        """
         return self
 
     @classmethod
     def artifacts_labeled_with(cls, label, app_config):
-        """Return all artifacts of type `cls` that have the label `label` and
-        are in the tool denoted by `app_config`.
+        """Return all artifacts of type ``cls`` that have the label ``label`` and
+        are in the tool denoted by ``app_config``.
+
+        :param label: str
+        :param app_config: :class:`allura.model.project.AppConfig` instance
+
         """
         return cls.query.find({'labels':label, 'app_config_id': app_config._id})
 
     def email_link(self, subject='artifact'):
+        """Return a 'mailto' URL for this Artifact, with optional subject.
+
+        """
         if subject:
             return 'mailto:%s?subject=[%s:%s:%s] Re: %s' % (
                 self.email_address,
@@ -195,14 +252,26 @@ class Artifact(MappedClass):
 
     @property
     def project(self):
+        """Return the :class:`allura.model.project.Project` instance to which
+        this Artifact belongs.
+
+        """
         return self.app_config.project
 
     @property
     def project_id(self):
+        """Return the ``_id`` of the :class:`allura.model.project.Project`
+        instance to which this Artifact belongs.
+
+        """
         return self.app_config.project_id
 
     @LazyProperty
     def app(self):
+        """Return the :class:`allura.model.app.Application` instance to which
+        this Artifact belongs.
+
+        """
         if not self.app_config:
             return None
         if getattr(c, 'app', None) and c.app.config._id == self.app_config._id:
@@ -211,9 +280,11 @@ class Artifact(MappedClass):
             return self.app_config.load()(self.project, self.app_config)
 
     def index_id(self):
-        '''Globally unique artifact identifier.  Used for
-        SOLR ID, shortlinks, and maybe elsewhere
-        '''
+        """Return a globally unique artifact identifier.
+
+        Used for SOLR ID, shortlinks, and possibly elsewhere.
+
+        """
         id = '%s.%s#%s' % (
             self.__class__.__module__,
             self.__class__.__name__,
@@ -221,17 +292,25 @@ class Artifact(MappedClass):
         return id.replace('.', '/')
 
     def index(self):
-        """
+        """Return a :class:`dict` representation of this Artifact suitable for
+        search indexing.
+
         Subclasses should override this, providing a dictionary of solr_field => value.
-        These fields & values will be stored by solr.  Subclasses should call the
+        These fields & values will be stored by Solr.  Subclasses should call the
         super() index() and then extend it with more fields.
 
-        The _s and _t suffixes, for example, follow solr dynamic field naming
-        pattern.
         You probably want to override at least title and text to have
         meaningful search results and email senders.
-        """
 
+        You can take advantage of Solr's dynamic field typing by adding a type
+        suffix to your field names, e.g.:
+
+            _s (string) (not analyzed)
+            _t (text) (analyzed)
+            _b (bool)
+            _i (int)
+
+        """
         project = self.project
         return dict(
             id=self.index_id(),
@@ -250,32 +329,39 @@ class Artifact(MappedClass):
             deleted_b=self.deleted)
 
     def url(self):
-        """
-        Subclasses should implement this, providing the URL to the artifact
+        """Return the URL for this Artifact.
+
+        Subclasses must implement this.
+
         """
         raise NotImplementedError, 'url' # pragma no cover
 
     def shorthand_id(self):
-        '''How to refer to this artifact within the app instance context.
+        """How to refer to this artifact within the app instance context.
 
         For a wiki page, it might be the title.  For a ticket, it might be the
         ticket number.  For a discussion, it might be the message ID.  Generally
         this should have a strong correlation to the URL.
-        '''
+
+        """
         return str(self._id) # pragma no cover
 
     def link_text(self):
-        '''The link text that will be used when a shortlink to this artifact
+        """Return the link text to use when a shortlink to this artifact
         is expanded into an <a></a> tag.
 
-        By default this method returns shorthand_id(). Subclasses should
+        By default this method returns :meth:`shorthand_id`. Subclasses should
         override this method to provide more descriptive link text.
-        '''
+
+        """
         return self.shorthand_id()
 
     def get_discussion_thread(self, data=None):
-        '''Return the discussion thread for this artifact (possibly made more
-        specific by the message_data)'''
+        """Return the discussion thread and parent_id for this artifact.
+
+        :return: (:class:`allura.model.discuss.Thread`, parent_thread_id (int))
+
+        """
         from .discuss import Thread
         t = Thread.query.get(ref_id=self.index_id())
         if t is None:
@@ -293,17 +379,32 @@ class Artifact(MappedClass):
 
     @LazyProperty
     def discussion_thread(self):
+        """Return the :class:`discussion thread <allura.model.discuss.Thread>`
+        for this Artifact.
+
+        """
         return self.get_discussion_thread()[0]
 
     def attach(self, filename, fp, **kw):
+        """Attach a file to this Artifact.
+
+        :param filename: file name
+        :param fp: a file-like object (implements ``read()``)
+        :param \*\*kw: passed through to Attachment class constructor
+
+        """
         att = self.attachment_class().save_attachment(
             filename=filename,
             fp=fp, artifact_id=self._id, **kw)
         return att
 
     def delete(self):
+        """Delete this Artifact.
+
+        """
         ArtifactReference.query.remove(dict(_id=self.index_id()))
         super(Artifact, self).delete()
+
 
 class Snapshot(Artifact):
     """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
