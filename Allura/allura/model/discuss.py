@@ -95,7 +95,7 @@ class Discussion(Artifact, ActivityObject):
                 discussion_id=self._id))\
             .sort('timestamp', pymongo.DESCENDING)\
             .limit(1)\
-            .hint([('discussion_id', pymongo.ASCENDING)])
+            .hint([('discussion_id', pymongo.ASCENDING), ('status', pymongo.ASCENDING)])
             # hint is to try to force the index to be used, since mongo wouldn't select it sometimes
             # https://groups.google.com/forum/#!topic/mongodb-user/0TEqPfXxQU8
         return q.first()
