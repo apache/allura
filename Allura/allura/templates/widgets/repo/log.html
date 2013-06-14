@@ -35,9 +35,9 @@
         <tr class="rev">
           <td>
             <div>
-                {%if is_file%}
+                {%if is_file %}
                     <div class="grid-1"><input type="checkbox" class="revision" revision="{{commit.id}}" url_commit="{{app.repo.url_for_commit(commit.id)}}"></div>
-                {%endif%}
+                {% endif %}
                 <a class="rev" href="{{app.repo.url_for_commit(commit.id)}}">{{app.repo.shorthand_for_commit(commit.id)}}</a>
                 {% if commit.refs -%}
                     (
@@ -46,6 +46,9 @@
                     {%- endfor -%}
                     )
                 {%- endif %}
+                {%if is_file %}
+                    ({{ commit.size|filesizeformat if commit.size else 'None' }})
+                {% endif %}
                 by {{ user_link(commit.authored.email, commit.authored.name) }}
                 {%- if commit.committed.email != commit.authored.email %},
                 pushed by {{ user_link(commit.committed.email, commit.committed.name) }}

@@ -475,8 +475,7 @@ class CommitBrowser(BaseController):
     def log(self, limit=25, path=None, **kw):
         is_file = False
         if path:
-            path = path.lstrip('/')
-            is_file = self.tree._tree.get_blob_by_path(path) is not None
+            is_file = c.app.repo.is_file(path, self._commit._id)
         commits = list(islice(c.app.repo.log(
                 revs=self._commit._id,
                 path=path,

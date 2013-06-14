@@ -220,10 +220,100 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         i = self.repo.index()
         assert i['type_s'] == 'SVN Repository', i
 
+    def test_log_id_only(self):
+        entries = list(self.repo.log(id_only=True))
+        assert_equal(entries, [5, 4, 3, 2, 1])
+
     def test_log(self):
-        for entry in self.repo.log(id_only=False):
-            assert entry['committed']['name'] == 'rick446'
-            assert entry['message']
+        entries = list(self.repo.log(id_only=False))
+        assert_equal(entries, [
+            {'authored': {'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 5,
+             'message': u'Copied a => b',
+             'parents': [4],
+             'refs': ['HEAD'],
+             'size': 0},
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 4,
+             'message': u'Remove hello.txt',
+             'parents': [3],
+             'refs': [],
+             'size': 0},
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 3,
+             'message': u'Modify readme',
+             'parents': [2],
+             'refs': [],
+             'size': 0},
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 2,
+             'message': u'Add path',
+             'parents': [1],
+             'refs': [],
+             'size': 0},
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 1,
+             'message': u'Create readme',
+             'parents': [],
+             'refs': [],
+             'size': 0},
+            ])
+
+    def test_log_file(self):
+        entries = list(self.repo.log(path='/README', id_only=False))
+        assert_equal(entries, [
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 3,
+             'message': u'Modify readme',
+             'parents': [2],
+             'refs': [],
+             'size': 28},
+            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                          'email': '',
+                          'name': u'rick446'},
+             'committed': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                           'email': '',
+                           'name': u'rick446'},
+             'id': 1,
+             'message': u'Create readme',
+             'parents': [],
+             'refs': [],
+             'size': 28},
+            ])
+
+    def test_is_file(self):
+        assert self.repo.is_file('/README')
+        assert not self.repo.is_file('/a')
 
     def test_paged_diffs(self):
         entry = self.repo.commit(self.repo.log(2, id_only=True).next())
@@ -784,7 +874,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
             assert_equal(_svn().log.call_args[0], ('file:///tmp/svn/p/test/test2',))
             assert_equal(_svn().log.call_args[1]['revision_start'].number, 2)
             assert_equal(_svn().log.call_args[1]['limit'], 25)
-            _map_log.assert_called_once_with(_svn().log.return_value[0])
+            _map_log.assert_called_once_with(_svn().log.return_value[0], 'file:///tmp/svn/p/test/test2')
 
 class TestRepoObject(_TestWithRepoAndCommit):
 

@@ -512,7 +512,7 @@ class SVNImplementation(M.RepositoryImplementation):
         if path is None:
             url = self._url
         else:
-            url = '/'.join([self._url, path])
+            url = '/'.join([self._url, path.strip('/')])
         while revno > exclude:
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
@@ -527,13 +527,17 @@ class SVNImplementation(M.RepositoryImplementation):
                 if id_only:
                     yield ci.revision.number
                 else:
-                    yield self._map_log(ci)
+                    yield self._map_log(ci, url)
             if len(logs) < page_size:
                 return  # we didn't get a full page, don't bother calling SVN again
             revno = ci.revision.number - 1
 
-    def _map_log(self, ci):
+    def _map_log(self, ci, url):
         revno = ci.revision.number
+        try:
+            size = int(self._svn.list(url)[0][0].size)
+        except pysvn.ClientError as e:
+            size = None
         return {
                 'id': revno,
                 'message': h.really_unicode(ci.get('message', '--none--')),
@@ -549,6 +553,7 @@ class SVNImplementation(M.RepositoryImplementation):
                     },
                 'refs': ['HEAD'] if revno == self.head else [],
                 'parents': [revno-1] if revno > 1 else [],
+                'size': size,
             }
 
     def open_blob(self, blob):
@@ -716,6 +721,15 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def is_empty(self):
         return self.head == 0
+
+    def is_file(self, path, rev=None):
+        url = '/'.join([self._url, path.strip('/')])
+        rev = pysvn.Revision(pysvn.opt_revision_kind.number, self._revno(self.rev_parse(rev)))
+        try:
+            info = self._svn.list(url, revision=rev, dirent_fields=pysvn.SVN_DIRENT_KIND)[0][0]
+            return info.kind == pysvn.node_kind.file
+        except pysvn.ClientError:
+            return False
 
     def symbolics_for_commit(self, commit):
         return [], []
