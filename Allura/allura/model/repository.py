@@ -179,6 +179,10 @@ class RepositoryImplementation(object):
         '''Determine if the repository is empty by checking the filesystem'''
         raise NotImplementedError, 'is_empty'
 
+    def is_file(self, path, rev=None):
+        '''Determine if the repository is a file by checking the filesystem'''
+        raise NotImplementedError, 'is_file'
+
     @classmethod
     def shorthand_for_commit(cls, oid):
         return '[%s]' % oid[:6]
@@ -349,6 +353,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.last_commit_ids(commit, paths)
     def is_empty(self):
         return self._impl.is_empty()
+    def is_file(self, path, rev=None):
+        return self._impl.is_file(path, rev)
     def get_heads(self):
         """
         Return list of heads for the repo.

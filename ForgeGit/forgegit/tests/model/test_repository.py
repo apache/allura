@@ -219,10 +219,89 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         i = self.repo.index()
         assert i['type_s'] == 'Git Repository', i
 
+    def test_log_id_only(self):
+        entries = list(self.repo.log(id_only=True))
+        assert_equal(entries, [
+            '1e146e67985dcd71c74de79613719bef7bddca4a',
+            'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+            '6a45885ae7347f1cac5103b0050cc1be6a1496c8',
+            '9a7df788cf800241e3bb5a849c8870f2f8259d98'])
+
     def test_log(self):
-        for entry in self.repo.log(id_only=False):
-            assert str(entry['authored'])
-            assert entry['message']
+        entries = list(self.repo.log(id_only=False))
+        assert_equal(entries, [
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': '1e146e67985dcd71c74de79613719bef7bddca4a',
+             'message': u'Change README\n',
+             'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
+             'refs': ['HEAD', 'foo', 'master'],
+             'size': None},
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+             'message': u'Add README\n',
+             'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+             'refs': [],
+             'size': None},
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 43, 26),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 43, 26),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': '6a45885ae7347f1cac5103b0050cc1be6a1496c8',
+             'message': u'Remove file\n',
+             'parents': ['9a7df788cf800241e3bb5a849c8870f2f8259d98'],
+             'refs': [],
+             'size': None},
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 42, 54),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 42, 54),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': '9a7df788cf800241e3bb5a849c8870f2f8259d98',
+             'message': u'Initial commit\n',
+             'parents': [],
+             'refs': [],
+             'size': None},
+            ])
+
+    def test_log_file(self):
+        entries = list(self.repo.log(path='README', id_only=False))
+        assert_equal(entries, [
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': '1e146e67985dcd71c74de79613719bef7bddca4a',
+             'message': u'Change README\n',
+             'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
+             'refs': ['HEAD', 'foo', 'master'],
+             'size': 28},
+            {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
+                          'email': u'rcopeland@geek.net',
+                          'name': u'Rick Copeland'},
+             'committed': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
+                           'email': u'rcopeland@geek.net',
+                           'name': u'Rick Copeland'},
+             'id': 'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+             'message': u'Add README\n',
+             'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+             'refs': [],
+             'size': 15},
+            ])
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')

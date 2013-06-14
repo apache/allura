@@ -288,6 +288,7 @@ class GitImplementation(M.RepositoryImplementation):
         If id_only is True, returns only the commit ID, otherwise it returns
         detailed information about each commit.
         """
+        path = path.strip('/') if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
 
@@ -295,6 +296,13 @@ class GitImplementation(M.RepositoryImplementation):
             if id_only:
                 yield ci.hexsha
             else:
+                size = None
+                if path:
+                    try:
+                        node = ci.tree/path
+                        size = node.size if node.type == 'blob' else None
+                    except KeyError as e:
+                        size = None
                 yield {
                         'id': ci.hexsha,
                         'message': h.really_unicode(ci.message or '--none--'),
@@ -310,6 +318,7 @@ class GitImplementation(M.RepositoryImplementation):
                             },
                         'refs': refs,
                         'parents': [pci.hexsha for pci in ci.parents],
+                        'size': size,
                     }
 
     def _iter_commits_with_refs(self, *args, **kwargs):
@@ -398,6 +407,15 @@ class GitImplementation(M.RepositoryImplementation):
 
     def is_empty(self):
         return not self._git or len(self._git.heads) == 0
+
+    def is_file(self, path, rev=None):
+        path = path.strip('/')
+        ci = self._git.rev_parse(rev)
+        try:
+            node = ci.tree/path
+            return node.type == 'blob'
+        except KeyError as e:
+            return False
 
     @LazyProperty
     def head(self):
