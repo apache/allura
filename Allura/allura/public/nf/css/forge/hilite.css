@@ -81,7 +81,8 @@
 .codehilite .vi { color: #19177C } /* Name.Variable.Instance */
 .codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
 
-.codehilite pre { margin:0; }
+.codehilite { overflow: auto; }
+.codehilite pre { margin:0; word-wrap: normal; }
 .codehilite div { margin:0; padding: 0; }
 .codehilite .code_block { width:100%; }
 .codehilite .code_block:hover { background-color: #ffff99; }
