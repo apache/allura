@@ -27,6 +27,7 @@ import bson
 
 from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
 from allura import model as M
+from allura.model.notification import MailFooter
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from forgewiki import model as WM
@@ -174,6 +175,17 @@ class TestPostNotifications(unittest.TestCase):
             assert M.MonQTask.get() == None
         finally:
             security.has_access = orig
+
+    def test_footer(self):
+        footer = MailFooter.monitored(
+                'test@mail.com',
+                'http://test1.com',
+                'http://test2.com')
+        assert 'test@mail.com is subscribed to http://test1.com' in footer
+        assert 'admin can change settings at http://test2.com' in footer
+        footer = MailFooter.standard(M.Notification())
+        assert 'Sent from sourceforge.net because you indicated interest in' in footer
+
 
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)

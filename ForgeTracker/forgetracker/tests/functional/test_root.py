@@ -2091,6 +2091,15 @@ class TestEmailMonitoring(TrackerTestController):
             self.new_ticket(summary='test')
         assert send_simple.call_count == 0, send_simple.call_count
 
+    def test_footer(self):
+        self._set_options(monitoring_type='AllTicketChanges')
+        M.MonQTask.query.remove()
+        self.new_ticket(summary='test')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        email_tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert 'Sent from sourceforge.net because mailinglist@example.com is subscribed to http://localhost:80/p/test/bugs/' in email_tasks[0].kwargs['text']
+        assert 'a project admin can change settings at http://localhost:80/p/test/admin/bugs/options' in email_tasks[0].kwargs['text']
 
 class TestCustomUserField(TrackerTestController):
     def setUp(self):

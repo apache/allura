@@ -24,6 +24,7 @@ from ming.utils import LazyProperty
 from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty, Mapper
 
 from allura import model as M
+from allura.model.notification import MailFooter
 from allura.lib import utils
 from allura.lib import helpers as h
 
@@ -124,6 +125,16 @@ class Forum(M.Discussion):
     @property
     def icon(self):
         return ForumFile.query.get(forum_id=self._id)
+
+    def get_mail_footer(self, notification, toaddr):
+        if toaddr and toaddr == self.monitoring_email:
+            return MailFooter.monitored(
+                toaddr,
+                h.absurl(self.url()),
+                h.absurl('{0}admin/{1}/forums'.format(
+                    self.project.url(),
+                    self.app.config.options.mount_point)))
+        return super(Forum, self).get_mail_footer(notification, toaddr)
 
 class ForumFile(M.File):
     forum_id=FieldProperty(schema.ObjectId)

@@ -38,6 +38,7 @@ from allura.model import (Artifact, VersionedArtifact, Snapshot,
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
 from allura.model.timeline import ActivityObject
+from allura.model.notification import MailFooter
 
 from allura.lib import security
 from allura.lib.search import search_artifact, SearchError
@@ -925,6 +926,16 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
+
+    def get_mail_footer(self, notification, toaddr):
+        if toaddr and toaddr == self.monitoring_email:
+            return MailFooter.monitored(
+                toaddr,
+                h.absurl(self.app.url),
+                h.absurl('{0}admin/{1}/options'.format(
+                    self.project.url(),
+                    self.app.config.options.mount_point)))
+        return super(Ticket, self).get_mail_footer(notification, toaddr)
 
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)

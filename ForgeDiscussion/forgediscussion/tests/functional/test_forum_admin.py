@@ -23,6 +23,7 @@ import logging
 import PIL
 from alluratest.controller import TestController
 from allura.lib import helpers as h
+from allura import model as M
 
 from forgediscussion import model as FM
 
@@ -258,3 +259,34 @@ class TestForumAdmin(TestController):
         params[f.find('input',{'style':'width: 90%'})['name']] = 'post topic'
         r = self.app.post('/discussion/save_new_topic', params=params)
         assert 'http://localhost/p/test/discussion/testforum/thread/' in r.location
+
+    def test_footer_monitoring_email(self):
+        r = self.app.get('/admin/discussion/forums')
+        r.forms[1]['add_forum.shortname'] = 'testforum'
+        r.forms[1]['add_forum.name'] = 'Test Forum'
+        r.forms[1].submit()
+        testforum = FM.Forum.query.get(shortname='testforum')
+        self.app.post('/admin/discussion/update_forums',
+                        params={'forum-0.anon_posts':'on',
+                                'forum-0.id':str(testforum._id),
+                                'forum-0.name':'Test Forum',
+                                'forum-0.shortname':'testforum',
+                                'forum-0.description':'',
+                                'forum-0.monitoring_email':'email@monitoring.com'
+                               })
+
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'post text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input',{'style':'width: 90%'})['name']] = 'post topic'
+        r = self.app.post('/discussion/save_new_topic', params=params)
+        M.MonQTask.run_ready()
+        email_tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
+        assert 'Sent from sourceforge.net because email@monitoring.com is subscribed to http://localhost:80/p/test/discussion/testforum/' in email_tasks[0].kwargs['text'],email_tasks[0].kwargs['text']
+        assert 'a project admin can change settings at http://localhost:80/p/test/admin/discussion/forums' in email_tasks[0].kwargs['text']

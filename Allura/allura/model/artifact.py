@@ -39,6 +39,7 @@ from .session import artifact_orm_session
 from .index import ArtifactReference
 from .types import ACL, ACE
 from .project import AppConfig
+from .notification import MailFooter
 
 from filesystem import File
 
@@ -404,6 +405,9 @@ class Artifact(MappedClass):
         """
         ArtifactReference.query.remove(dict(_id=self.index_id()))
         super(Artifact, self).delete()
+
+    def get_mail_footer(self, notification, toaddr):
+        return MailFooter.standard(notification)
 
 
 class Snapshot(Artifact):

@@ -220,11 +220,8 @@ class Notification(MappedClass):
                 **d)
         return n
 
-    def footer(self):
-        template = self.view.get_template('mail/footer.txt')
-        return template.render(dict(
-            notification=self,
-            prefix=config.get('forgemail.url', 'https://sourceforge.net')))
+    def footer(self, toaddr=''):
+        return self.ref.artifact.get_mail_footer(self, toaddr)
 
     def send_simple(self, toaddr):
         allura.tasks.mail_tasks.sendsimplemail.post(
@@ -234,7 +231,7 @@ class Notification(MappedClass):
             subject=self.subject,
             message_id=self._id,
             in_reply_to=self.in_reply_to,
-            text=(self.text or '') + self.footer())
+            text=(self.text or '') + self.footer(toaddr))
 
     def send_direct(self, user_id):
         user = User.query.get(_id=ObjectId(user_id))
@@ -579,3 +576,27 @@ class Mailbox(MappedClass):
             Notification.send_summary(
                 self.user_id, u'noreply@in.sf.net', 'Digest Email',
                 notifications)
+
+
+class MailFooter(object):
+    view = jinja2.Environment(
+        loader=jinja2.PackageLoader('allura', 'templates'),
+        auto_reload=asbool(config.get('auto_reload_templates', True)),
+    )
+
+    @classmethod
+    def _render(cls, template, **kw):
+        return cls.view.get_template(template).render(kw)
+
+    @classmethod
+    def standard(cls, notification):
+        return cls._render('mail/footer.txt',
+            notification=notification,
+            prefix=config.get('forgemail.url', 'https://sourceforge.net'))
+
+    @classmethod
+    def monitored(cls, toaddr, app_url, setting_url):
+        return cls._render('mail/monitor_email_footer.txt',
+            email=toaddr,
+            app_url=app_url,
+            setting_url=setting_url)
