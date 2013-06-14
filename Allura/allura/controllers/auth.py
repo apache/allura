@@ -61,7 +61,7 @@ class F(object):
     subscription_form=SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
-    oauth_revocation_form = OAuthRevocationForm(action='revoke_oauth')
+    oauth_revocation_form = OAuthRevocationForm(action='/auth/preferences/revoke_oauth')
     change_personal_data_form = forms.PersonalDataForm()
     add_socialnetwork_form = forms.AddSocialNetworkForm()
     remove_socialnetwork_form = forms.RemoveSocialNetworkForm()
@@ -408,7 +408,7 @@ class PreferencesController(BaseController):
             redirect('.')
         tok.delete()
         flash('Application access revoked')
-        redirect('.')
+        redirect(request.referer)
 
     @expose()
     @require_post()

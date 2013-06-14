@@ -187,11 +187,25 @@ class TestAuth(TestController):
          assert 'No API token generated' in r
 
     def test_oauth(self):
-         r = self.app.get('/auth/oauth/')
-         r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
-         assert 'oautstapp' in r
-         r = self.app.post('/auth/oauth/delete').follow()
-         assert 'Invalid app ID' in r
+        r = self.app.get('/auth/oauth/')
+        r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+        assert 'oautstapp' in r
+        r = self.app.post('/auth/oauth/delete').follow()
+        assert 'Invalid app ID' in r
+
+    def test_revoke_access(self):
+        self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+        M.OAuthAccessToken(
+            consumer_token_id=None,
+            request_token_id=None,
+            user_id=M.User.by_username('test-admin')._id)
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/auth/subscriptions/')
+        assert '<form method="post" action="/auth/preferences/revoke_oauth">' in r
+        r.forms[0].submit()
+        r = self.app.get('/auth/subscriptions/')
+        assert '<form method="post" action="/auth/preferences/revoke_oauth">' not in r
+        assert_equal(M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
 
     @mock.patch('allura.controllers.auth.verify_oid')
     def test_login_verify_oid_with_provider(self, verify_oid):
