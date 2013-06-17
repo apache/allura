@@ -385,7 +385,7 @@ class Globals(MappedClass):
                 user = User.by_username(v)
                 v = user.display_name if user else v
             head.append('- **%s**: %s' % (cf.label, v))
-        tmpl_context = {'context': c, 'data': {'header': '\n'.join(['Mass edit changing:', ''] + head)}}
+        tmpl_context = {'context': c, 'data': {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
