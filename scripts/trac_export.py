@@ -39,7 +39,7 @@ import pytz
 
 def parse_options():
     optparser = OptionParser(usage=''' %prog <Trac URL>
- 
+
 Export ticket data from a Trac instance''')
     optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
     optparser.add_option('--no-attachments', dest='do_attachments', action='store_false', default=True, help='Export attachment info')
@@ -69,10 +69,10 @@ class TracExport(object):
 
     def __init__(self, base_url, start_id=1):
         """start_id - start with at least that ticket number (actual returned
-                      ticket may have higher id if we don't have access to exact 
+                      ticket may have higher id if we don't have access to exact
                       one).
         """
-        self.base_url = base_url
+        self.base_url = base_url.rstrip('/') + '/'
         # Contains additional info for a ticket which cannot
         # be get with single-ticket export (create/mod times is
         # and example).
@@ -86,7 +86,7 @@ class TracExport(object):
         out = {}
         for k, v in dict.iteritems():
             out[self.FIELD_MAP.get(k, k)] = v
-            
+
         out['id'] = int(out['id'])
         if 'private' in out:
             out['private'] = bool(int(out['private']))
@@ -209,7 +209,7 @@ class TracExport(object):
     def next_ticket_ids(self):
         'Go thru ticket list and collect available ticket ids.'
         # We could just do CSV export, which by default dumps entire list
-        # Alas, for many busy servers with long ticket list, it will just 
+        # Alas, for many busy servers with long ticket list, it will just
         # time out. So, let's paginate it instead.
         res = []
 
@@ -244,8 +244,8 @@ class TracExport(object):
             if id >= self.start_id:
                 break
         return self.get_ticket(id, extra)
-            
-        
+
+
 class DateJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, time.struct_time):
