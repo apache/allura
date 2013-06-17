@@ -55,14 +55,14 @@ The first step to installing the Allura platform is installing a virtual environ
     ~$ sudo aptitude install python-pip
     ~$ sudo pip install virtualenv
 
-Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'anvil'.
+Once you have virtualenv installed, you need to create a virtual environment.  We'll call our Allura environment 'env-allura'.
 
-    ~$ virtualenv anvil
+    ~$ virtualenv env-allura
 
 This gives us a nice, clean environment into which we can install all the allura dependencies.
 In order to use the virtual environment, you'll need to activate it:
 
-    ~$ . anvil/bin/activate
+    ~$ . env-allura/bin/activate
 
 You'll need to do this whenever you're working on the Allura codebase so you may want to consider adding it to your `~/.bashrc` file.
 
@@ -70,20 +70,20 @@ You'll need to do this whenever you're working on the Allura codebase so you may
 
 Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.
 
-    (anvil)~$ mkdir src
-    (anvil)~$ cd src
-    (anvil)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
+    (env-allura)~$ mkdir src
+    (env-allura)~$ cd src
+    (env-allura)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
 
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
-    (anvil)~/src$ cd allura
-    (anvil)~/src/allura$ pip install -r requirements.txt
+    (env-allura)~/src$ cd allura
+    (env-allura)~/src/allura$ pip install -r requirements.txt
 
 This will take a while.  If you get an error from pip, it is typically a temporary download error.  Just run the command again and it will quickly pass through the packages it already downloaded and then continue.
 
 Optional, for SVN support: symlink the system pysvn package into our virtual environment
 
-    (anvil)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/anvil/lib/python2.7/site-packages/
+    (env-allura)~/src/allura$ ln -s /usr/lib/python2.7/dist-packages/pysvn ~/env-allura/lib/python2.7/site-packages/
 
 And now to setup the Allura applications for development.  If you want to setup all of them, run `./rebuild-all.bash`
 If you only want to use a few tools, run:
@@ -102,32 +102,32 @@ The Allura forge consists of several components, all of which need to be running
 
 We have a custom config ready for use.
 
-    (anvil)~$ cd ~/src
-    (anvil)~/src$ wget -nv http://archive.apache.org/dist/lucene/solr/4.2.1/solr-4.2.1.tgz
-    (anvil)~/src$ tar xf solr-4.2.1.tgz && rm -f solr-4.2.1.tgz
-    (anvil)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
+    (env-allura)~$ cd ~/src
+    (env-allura)~/src$ wget -nv http://archive.apache.org/dist/lucene/solr/4.2.1/solr-4.2.1.tgz
+    (env-allura)~/src$ tar xf solr-4.2.1.tgz && rm -f solr-4.2.1.tgz
+    (env-allura)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
 
-    (anvil)~/src$ cd solr-4.2.1/example/
-    (anvil)~/src/apache-solr-1.4.1/example/$ mkdir ~/logs/
-    (anvil)~/src/apache-solr-1.4.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
+    (env-allura)~/src$ cd solr-4.2.1/example/
+    (env-allura)~/src/apache-solr-1.4.1/example/$ mkdir ~/logs/
+    (env-allura)~/src/apache-solr-1.4.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
 
 
 ### Allura task processing
 
 Allura uses a background task service called "taskd" to do async tasks like sending emails, and indexing data into solr, etc.  Let's get it running
 
-    (anvil)~$ cd ~/src/allura/Allura
-    (anvil)~/src/allura/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
+    (env-allura)~$ cd ~/src/allura/Allura
+    (env-allura)~/src/allura/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
 
 ### The application server
 
 In order to initialize the Allura database, you'll need to run the following:
 
-    (anvil)~/src/allura/Allura$ paster setup-app development.ini
+    (env-allura)~/src/allura/Allura$ paster setup-app development.ini
 
 This shouldn't take too long, but it will start the taskd server doing tons of stuff in the background.  Once this is done, you can start the application server:
 
-    (anvil)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
+    (env-allura)~/src/allura/Allura$ nohup paster serve --reload development.ini > ~/logs/tg.log &
 
 ## Next Steps
 
