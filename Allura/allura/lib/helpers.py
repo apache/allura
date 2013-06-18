@@ -33,9 +33,11 @@ from collections import defaultdict
 import tg
 import genshi.template
 import chardet
+import pkg_resources
 from formencode.validators import FancyValidator
 from dateutil.parser import parse
 from bson import ObjectId
+from paste.deploy import appconfig
 from pymongo.errors import InvalidId
 from contextlib import contextmanager
 from pylons import tmpl_context as c, app_globals as g
@@ -791,3 +793,38 @@ def topological_sort(items, partial_order):
         # There is a loop in the input.
         return None
     return sorted
+
+
+@contextmanager
+def ming_config(**conf):
+    """Temporarily swap in a new ming configuration, restoring the previous
+    one when the contextmanager exits.
+
+    :param \*\*conf: keyword arguments defining the new ming configuration
+
+    """
+    import ming
+    from ming.session import Session
+    datastores = Session._datastores
+    try:
+        ming.configure(**conf)
+        yield
+    finally:
+        Session._datastores = datastores
+        for name, session in Session._registry.iteritems():
+            session.bind = datastores.get(name, None)
+            session._name = name
+
+
+@contextmanager
+def ming_config_from_ini(ini_path):
+    """Temporarily swap in a new ming configuration, restoring the previous
+    one when the contextmanager exits.
+
+    :param ini_path: Path to ini file containing the ming configuration
+
+    """
+    root = pkg_resources.get_distribution('allura').location
+    conf = appconfig('config:%s' % os.path.join(root, ini_path))
+    with ming_config(**conf):
+        yield
