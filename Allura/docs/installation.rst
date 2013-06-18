@@ -31,7 +31,7 @@ Enabling inbound email
 Allura can listen for email messages and update tools and artifacts.  For example, every ticket has an email address, and
 emails sent to that address will be added as comments on the ticket.  To set up the SMTP listener, run::
 
-(anvil)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
+(env-allura)~/src/forge/Allura$ nohup paster smtp_server development.ini > ~/logs/smtp.log &
 
 By default this uses port 8825.  Depending on your mail routing, you may need to change that port number.
 And if the port is in use, this command will fail.  You can check the log file for any errors.
@@ -44,15 +44,15 @@ Enabling RabbitMQ
 For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the README, run these commands
 to install rabbitmq and set it up::
 
-(anvil)~$ sudo aptitude install rabbitmq-server
-(anvil)~$ sudo rabbitmqctl add_user testuser testpw
-(anvil)~$ sudo rabbitmqctl add_vhost testvhost
-(anvil)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
-(anvil)~$ pip install amqplib==0.6.1 kombu==1.0.4
+(env-allura)~$ sudo aptitude install rabbitmq-server
+(env-allura)~$ sudo rabbitmqctl add_user testuser testpw
+(env-allura)~$ sudo rabbitmqctl add_vhost testvhost
+(env-allura)~$ sudo rabbitmqctl set_permissions -p testvhost testuser ""  ".*" ".*"
+(env-allura)~$ pip install amqplib==0.6.1 kombu==1.0.4
 
 Then edit Allura/development.ini and change `amqp.enabled = false` to `amqp.enabled = true` and uncomment the other `amqp` settings.
 
 If your `paster taskd` process is still running, restart it::
 
-(anvil)~/src/forge/Allura$ pkill -f taskd
-(anvil)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
+(env-allura)~/src/forge/Allura$ pkill -f taskd
+(env-allura)~/src/forge/Allura$ nohup paster taskd development.ini > ~/logs/taskd.log &
