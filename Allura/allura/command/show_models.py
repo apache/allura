@@ -17,6 +17,7 @@
 
 import sys
 from collections import defaultdict
+from contextlib import contextmanager
 from itertools import groupby
 
 from pylons import tmpl_context as c, app_globals as g
@@ -27,8 +28,10 @@ from ming.orm.declarative import MappedClass
 
 from allura.tasks.index_tasks import add_artifacts
 from allura.lib.exceptions import CompoundError
+from allura.lib import helpers as h
 from allura.lib import utils
 from . import base
+
 
 class ShowModelsCommand(base.Command):
     min_args=1
@@ -43,6 +46,7 @@ class ShowModelsCommand(base.Command):
         for depth, cls in dfs(MappedClass, graph):
             for line in dump_cls(depth, cls):
                 print line
+
 
 class ReindexCommand(base.Command):
     min_args=1
@@ -72,6 +76,8 @@ class ReindexCommand(base.Command):
                       help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
     parser.add_option('--max-chunk', dest='max_chunk', type=int, default=100*1000,
                       help='Max number of artifacts to index in one Solr update command')
+    parser.add_option('--ming-config', dest='ming_config', help='Path (absolute, or relative to '
+                        'Allura root) to .ini file defining ming configuration.')
 
     def command(self):
         from allura import model as M
@@ -156,10 +162,11 @@ class ReindexCommand(base.Command):
         mongo document is too large.
         """
         try:
-            add_artifacts.post(chunk,
-                               update_solr=self.options.solr,
-                               update_refs=self.options.refs,
-                               **self.add_artifact_kwargs)
+            with self.ming_config(self.options.ming_config):
+                add_artifacts.post(chunk,
+                                   update_solr=self.options.solr,
+                                   update_refs=self.options.refs,
+                                   **self.add_artifact_kwargs)
         except InvalidDocument as e:
             # there are many types of InvalidDocument, only recurse if its expected to help
             if str(e).startswith('BSON document too large'):
@@ -167,6 +174,21 @@ class ReindexCommand(base.Command):
                 self._post_add_artifacts(chunk[len(chunk) // 2:])
             else:
                 raise
+
+    @property
+    def ming_config(self):
+        """Return a contextmanager for the provided ming config, if there is
+        one.
+
+        Otherwise return a no-op contextmanager.
+
+        """
+        def noop_cm(*args):
+            yield
+
+        if self.options.ming_config:
+            return h.ming_config_from_ini
+        return contextmanager(noop_cm)
 
 
 class EnsureIndexCommand(base.Command):
