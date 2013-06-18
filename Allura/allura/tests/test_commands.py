@@ -391,7 +391,7 @@ class TestReindexCommand(object):
     @patch('allura.command.show_models.add_artifacts')
     def test_chunked_add_artifacts(self, add_artifacts):
         cmd = show_models.ReindexCommand('reindex')
-        cmd.options = Mock(tasks=True, max_chunk=10*1000)
+        cmd.options = Mock(tasks=True, max_chunk=10*1000, ming_config=None)
         ref_ids = list(range(10 * 1000 * 2 + 20))
         cmd._chunked_add_artifacts(ref_ids)
         assert_equal(len(add_artifacts.post.call_args_list), 3)
@@ -429,6 +429,6 @@ class TestReindexCommand(object):
             raise pymongo.errors.InvalidDocument("Cannot encode object...")
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
-        cmd.options = Mock()
+        cmd.options = Mock(ming_config=None)
         with td.raises(pymongo.errors.InvalidDocument):
             cmd._post_add_artifacts(range(5))
