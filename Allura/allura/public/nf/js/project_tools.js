@@ -85,7 +85,7 @@
         if (mount_point) {
             tool_label = 'the "' + mount_point + '"';
         }
-        $('div.warning_msg').text('Warning: This will destroy all data in ' + tool_label + ' tool and is irreversable!');
+        $('div.warning_msg').text('Warning: This will destroy all data in ' + tool_label + ' tool and is irreversible!');
 
         form_to_delete = this.parentNode;
         return false;
