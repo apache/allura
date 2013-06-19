@@ -16,4 +16,23 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{{c.discussion.display(value=discussion, threads=threads, limit=limit, page=page, count=count)}}
+{% extends g.theme.master %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Discussion{% endblock %}
+
+{% block header %}{{h.really_unicode(discussion.name)}}{% endblock %}
+
+{% block actions %}
+  {% if discussion.email_address %}
+    <a href="{{h.really_unicode(discussion.email_link(subject=None))}}" class="email" title="Send Email to Create a New Topic" ><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+    <a href="feed" title="Feed" ><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+  {% endif %}
+{% endblock %}
+
+{% block edit_box %}
+  <div class="editbox">{{c.discussion_header.display(value=discussion)}}</div>
+{% endblock %}
+
+{% block content %}
+  {{c.discussion.display(value=discussion, threads=threads, limit=limit, page=page, count=count)}}
+{% endblock %}

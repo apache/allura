@@ -16,11 +16,10 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{{widgets.subscription_form.display(value=value,
-                                    threads=threads,
-                                    action=value.url() + 'subscribe',
-                                    allow_create_thread=allow_create_thread,
-                                    show_subject=show_subject,
-                                    limit=limit,
-                                    page=page,
-                                    count=count)}}
+{% extends 'allura:templates/discussion/index.html' %}
+
+
+{% block actions %}
+  {{ super() }}
+  {{c.whole_forum_subscription_form.display(value=c.subscribed, action='subscribe_to_forum', style='icon', thing='discussion')}}
+{% endblock %}

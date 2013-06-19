@@ -66,6 +66,7 @@ class WidgetConfig(object):
     post = FW.Post()
     thread_header = FW.ThreadHeader()
     announcements_table = FW.AnnouncementsTable()
+    discussion_header = FW.ForumHeader()
 
 class ForumController(DiscussionController):
     M=ModelConfig
@@ -92,7 +93,7 @@ class ForumController(DiscussionController):
         else:
             raise exc.HTTPNotFound()
 
-    @expose('jinja:allura:templates/discussion/index.html')
+    @expose('jinja:forgediscussion:templates/index.html')
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=25)))
     def index(self, threads=None, limit=25, page=0, count=0, **kw):
@@ -102,7 +103,11 @@ class ForumController(DiscussionController):
         c.subscribed=M.Mailbox.subscribed(artifact=self.discussion)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('last_post_date', pymongo.DESCENDING)])
-        return super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(), limit=limit, page=page, count=threads.count(), **kw)
+        response =  super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(),
+                                                       limit=limit, page=page, count=threads.count(), **kw)
+        c.discussion_header = self.W.discussion_header
+        c.whole_forum_subscription_form = self.W.subscribe_form
+        return response
 
     @expose()
     def icon(self):
