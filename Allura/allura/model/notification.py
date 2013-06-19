@@ -330,6 +330,7 @@ class Mailbox(MappedClass):
             ('is_flash', 'user_id'),
             ('type', 'next_scheduled'),  # for q_digest
             ('type', 'queue_empty'),  # for q_direct
+            ('project_id', 'app_config_id', 'artifact_index_id', 'topic'), # for deliver()
         ]
 
     _id = FieldProperty(S.ObjectId)
