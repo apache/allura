@@ -576,7 +576,8 @@ class ProjectRegistrationProvider(object):
 
         # clear the RoleCache for the user so this project will
         # be picked up by user.my_projects()
-        g.credentials.clear_user(user._id, '*')
+        g.credentials.clear_user(user._id, None)  # unnamed roles for this user
+        g.credentials.clear_user(user._id, p._id)  # named roles for this project + user
         with h.push_config(c, project=p, user=user):
             ThreadLocalORMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
