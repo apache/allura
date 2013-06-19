@@ -20,6 +20,7 @@ import shutil
 from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
+from pylons import request
 from tg import expose, redirect, url
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
@@ -215,3 +216,14 @@ class RepoAdminController(DefaultAdminController):
     @require_post()
     def set_extensions(self, **post_data):
         self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
+
+    @without_trailing_slash
+    @expose('jinja:allura:templates/repo/default_branch.html')
+    def set_default_branch_name(self, branch_name=None, **kw):
+        if (request.method == 'POST') and branch_name:
+            self.repo.default_branch_name = branch_name
+            redirect(request.referer)
+        else:
+            return dict(app=self.app,
+                        default_branch_name=self.app.default_branch_name)
+

@@ -354,6 +354,22 @@ class TestRootController(_TestCase):
         download_link = [a for a in links if a.text == 'Download Snapshot'][0]
         assert_equal(download_link.get('href'), '/p/test/testgit-index/ci/master/tarball?path=/index')
 
+    def test_default_branch(self):
+        assert_equal(c.app.default_branch_name, 'master')
+        c.app.repo.default_branch_name = 'zz'
+        assert_equal(c.app.default_branch_name, 'zz')
+        r = self.app.get('/p/test/src-git/').follow().follow()
+        assert '<span class="scm-branch-label">zz</span>' in r
+
+    def test_set_default_branch(self):
+        r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
+        assert '<input type="text" name="branch_name" id="branch_name"  value="master"/>' in r
+        self.app.post('/p/test/admin/src-git/set_default_branch_name', params={'branch_name':'zz'})
+        r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
+        assert '<input type="text" name="branch_name" id="branch_name"  value="zz"/>' in r
+        r = self.app.get('/p/test/src-git/').follow().follow()
+        assert '<span class="scm-branch-label">zz</span>' in r
+
 
 class TestRestController(_TestCase):
 

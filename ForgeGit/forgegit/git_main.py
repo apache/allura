@@ -31,6 +31,7 @@ from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
 from allura.controllers.repository import MergeRequestsController, RepoRestController
 from allura.lib.repository import RepositoryApp
+from allura.app import SitemapEntry
 
 # Local imports
 from . import model as GM
@@ -50,7 +51,6 @@ class ForgeGitApp(RepositoryApp):
     """
     ordinal=2
     forkable=True
-    default_branch_name='master'
 
     def __init__(self, project, config):
         super(ForgeGitApp, self).__init__(project, config)
@@ -63,6 +63,22 @@ class ForgeGitApp(RepositoryApp):
     @LazyProperty
     def repo(self):
         return GM.Repository.query.get(app_config_id=self.config._id)
+
+    @property
+    def default_branch_name(self):
+        default_branch_name = getattr(self.repo, 'default_branch_name', 'master')
+        if not default_branch_name:
+            default_branch_name = 'master'
+        return default_branch_name
+
+    def admin_menu(self):
+        links = []
+        links.append(SitemapEntry(
+                'Set default branch',
+                c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'set_default_branch_name',
+                className='admin_modal'))
+        links += super(ForgeGitApp, self).admin_menu()
+        return links
 
     def install(self, project):
         '''Create repo object for this tool'''

@@ -262,6 +262,7 @@ class Repository(Artifact, ActivityObject):
     branches = FieldProperty(S.Deprecated)
     repo_tags = FieldProperty(S.Deprecated)
     upstream_repo = FieldProperty(dict(name=str,url=str))
+    default_branch_name = FieldProperty(str)
 
     def __init__(self, **kw):
         if 'name' in kw and 'tool' in kw:
