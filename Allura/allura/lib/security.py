@@ -72,15 +72,18 @@ class Credentials(object):
         if not project_ids: return
         if user_id is None:
             q = self.project_role.find({
+                'user_id': None,
                 'project_id': {'$in': project_ids},
                 'name': '*anonymous'})
         else:
             q0 = self.project_role.find({
+                'user_id': None,
                 'project_id': {'$in': project_ids},
                 'name': {'$in': ['*anonymous', '*authenticated']}})
             q1 = self.project_role.find({
+                'user_id': user_id,
                 'project_id': {'$in': project_ids},
-                'user_id': user_id})
+                'name': None})
             q = chain(q0, q1)
         roles_by_project = dict((pid, []) for pid in project_ids)
         for role in q:
