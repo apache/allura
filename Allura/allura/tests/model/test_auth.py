@@ -189,3 +189,21 @@ def test_email_address_claimed_by_user():
     c.user.disabled = True
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() is None
+
+
+@td.with_user_project('test-admin')
+@with_setup(setUp)
+def test_user_projects_by_role():
+    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    # Remove admin access from c.user to test2 project
+    project = M.Project.query.get(shortname='test2')
+    admin_role = M.ProjectRole.by_name('Admin', project)
+    developer_role = M.ProjectRole.by_name('Developer', project)
+    user_role = c.user.project_role(project)
+    user_role.roles.remove(admin_role._id)
+    user_role.roles.append(developer_role._id)
+    ThreadLocalORMSession.flush_all()
+    g.credentials.clear()
+    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
