@@ -21,7 +21,7 @@ httplib2==0.7.4
 iso8601==0.1.4
 Jinja2==2.6
 Markdown==2.2.0
-Ming==0.3.5dev-20130522
+Ming==0.3.6dev-20130620
 oauth2==1.5.170
 # tg2 dep PasteDeploy must specified before TurboGears2, to avoid a version/allow-hosts problem
 Paste==1.7.5.1
