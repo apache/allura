@@ -103,6 +103,11 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         name='blog_post'
         history_class = BlogPostSnapshot
         unique_indexes = [ ('app_config_id', 'slug') ]
+        indexes = [
+            ('app_config_id', 'state', 'timestamp'),  # for [[project_blog_posts]] macro
+            ('neighborhood_id', 'state', 'timestamp'),  # for [[neighborhood_blog_posts]] macro
+        ]
+
     type_s = 'Blog Post'
 
     title = FieldProperty(str, if_missing='Untitled')
