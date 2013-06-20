@@ -651,8 +651,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def my_projects(self):
         '''Find the projects for which this user has a named role.'''
-        reaching_role_ids = g.credentials.user_roles(user_id=self._id).reaching_ids_set
-        reaching_roles = [ ProjectRole.query.get(_id=i) for i in reaching_role_ids ]
+        reaching_role_ids = list(g.credentials.user_roles(user_id=self._id).reaching_ids_set)
+        reaching_roles = ProjectRole.query.find({'_id': {'$in': reaching_role_ids}}).all()
         named_roles = [ r for r in reaching_roles
                                 if r.name and r.project and not r.project.deleted ]
         seen_project_ids = set()
