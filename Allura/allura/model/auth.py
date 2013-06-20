@@ -364,7 +364,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             if self.stats_id:
                 return UserStats.query.get(_id=self.stats_id)
             return UserStats.create(self)
-        else: 
+        else:
             return None
 
     def get_pref(self, pref_name):
@@ -649,12 +649,19 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def script_name(self):
         return '/u/' + self.username + '/'
 
-    def my_projects(self):
-        '''Find the projects for which this user has a named role.'''
-        reaching_role_ids = list(g.credentials.user_roles(user_id=self._id).reaching_ids_set)
-        reaching_roles = ProjectRole.query.find({'_id': {'$in': reaching_role_ids}}).all()
-        named_roles = [ r for r in reaching_roles
-                                if r.name and r.project and not r.project.deleted ]
+    def my_projects(self, role_name=None):
+        '''Find the projects for which this user has a named role.
+
+        If role_name is given returns only projects for which user has a role with given name.
+        '''
+        reaching_role_ids = g.credentials.user_roles(user_id=self._id).reaching_ids_set
+        reaching_roles = [ProjectRole.query.get(_id=i) for i in reaching_role_ids]
+        if not role_name:
+            named_roles = [r for r in reaching_roles
+                           if r.name and r.project and not r.project.deleted]
+        else:
+            named_roles = [r for r in reaching_roles
+                           if r.name == role_name and not r.project.deleted]
         seen_project_ids = set()
         for r in named_roles:
             if r.project_id in seen_project_ids: continue

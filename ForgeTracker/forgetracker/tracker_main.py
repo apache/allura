@@ -147,8 +147,7 @@ def _my_trackers(user, current_tracker_app_config):
     Returns list of 3-tuples (<tracker_id>, '<project>/<mount_point>', <is current tracker?>)
     '''
     trackers = []
-    projects = user.my_projects()
-    projects = ifilter(lambda p: has_access(p, 'admin')(), projects)
+    projects = user.my_projects('Admin')
     for p in projects:
         for ac in p.app_configs:
             if ac.tool_name.lower() == 'tickets':
