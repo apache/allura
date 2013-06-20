@@ -19,8 +19,8 @@
 
 <form action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_default_branch_name" method="POST">
     <label class="grid-13">Default branch name:</label>
-        <div class="grid-13">
-            <input type="text" name="branch_name" id="branch_name" {% if default_branch_name %} value="{{default_branch_name}}"{% endif %}/>
+    <div class="grid-13">
+        <input type="text" name="branch_name" id="branch_name" {% if default_branch_name %} value="{{default_branch_name}}"{% endif %}/>
     </div>
     <div class="grid-13">&nbsp;</div>
     <hr>
