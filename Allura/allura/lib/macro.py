@@ -131,7 +131,10 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
     for conf in c.project.app_configs:
         if conf.tool_name.lower() == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
             app_config_ids.append(conf._id)
-    posts = BM.BlogPost.query.find({'state':'published','app_config_id':{'$in':app_config_ids}})
+    posts = BM.BlogPost.query.find({
+        'app_config_id': {'$in': app_config_ids},
+        'state':'published',
+    })
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
     output = ((dict(
                 href=post.url(),
