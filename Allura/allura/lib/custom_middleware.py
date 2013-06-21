@@ -228,15 +228,21 @@ class AlluraTimerMiddleware(TimerMiddleware):
                         'checkin', 'info2', 'log', 'cat', 'list'))
         with pass_on_exc(ImportError):
             import git
+            import forgegit
             timers.append(Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
+            timers.append(Timer('git_lib.{method_name}', forgegit.model.git_repo.GitLibCmdWrapper, 'log'))
         with pass_on_exc(ImportError):
             import mercurial.hg
             timers.append(Timer('hg_lib.{method_name}', mercurial.hg.localrepo.localrepository, 'heads',
                 'branchtags', 'tags'))
+            timers.append(Timer('hg_lib.{method_name}', mercurial.cmdutil, 'walkchangerevs'))
         return timers
 
     def repo_impl_timers(self):
         timers= []
+        from allura.model.repository import Repository, RepositoryImplementation
+        timers.append(Timer('base_tool.{method_name}', Repository, 'commitlog'))
+        timers.append(Timer('base_tool.{method_name}', RepositoryImplementation, 'last_commit_ids'))
         with pass_on_exc(ImportError):
             from forgegit.model.git_repo import GitImplementation
             timers.append(Timer('git_tool.{method_name}', GitImplementation, '*'))
