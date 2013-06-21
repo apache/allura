@@ -103,7 +103,7 @@ class RepositoryImplementation(object):
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw): # pragma no cover
         """
-        Returns a generator that returns information about commits reacable
+        Returns a generator that returns information about commits reachable
         by revs.
 
         revs can be None or a list or tuple of identifiers, each of which
@@ -398,7 +398,7 @@ class Repository(Artifact, ActivityObject):
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
-        Returns a generator that returns information about commits reacable
+        Returns a generator that returns information about commits reachable
         by revs which modify path.
 
         revs can either be a single revision identifier or a list or tuple
