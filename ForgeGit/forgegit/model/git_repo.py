@@ -49,6 +49,16 @@ log = logging.getLogger(__name__)
 gitdb.util.mman = gitdb.util.mman.__class__(
     max_open_handles=128)
 
+class GitLibCmdWrapper(object):
+    def __init__(self, client):
+        self.client = client
+
+    def __getattr__(self, name):
+        return getattr(self.client, name)
+
+    def log(self, *args, **kwargs):
+        return self.client.log(*args, **kwargs)
+
 class Repository(M.Repository):
     tool_name='Git'
     repo_id='git'
@@ -95,7 +105,9 @@ class GitImplementation(M.RepositoryImplementation):
     @LazyProperty
     def _git(self):
         try:
-            return git.Repo(self._repo.full_fs_path, odbt=git.GitCmdObjectDB)
+            _git = git.Repo(self._repo.full_fs_path, odbt=git.GitCmdObjectDB)
+            _git.git = GitLibCmdWrapper(_git.git)
+            return _git
         except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError), err:
             log.error('Problem looking up repo: %r', err)
             return None
