@@ -237,9 +237,10 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         entry = self.repo.log(2, limit=1)[0]
         self.assertEqual(entry.diffs, entry.paged_diffs())
         self.assertEqual(entry.diffs, entry.paged_diffs(start=0))
+        added_expected = entry.diffs.added[1:3]
         expected =  dict(
                 copied=[], changed=[], removed=[],
-                added=['/a/b', '/a/b/c'], total=4)
+                added=added_expected, total=4)
         actual = entry.paged_diffs(start=1, end=3)
         self.assertEqual(expected, actual)
 
@@ -255,12 +256,14 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_diff_create_path(self):
         entry = self.repo.log(2, limit=1)[0]
+        actual = entry.diffs
+        actual.added = sorted(actual.added)
         self.assertEqual(
             entry.diffs, dict(
                 copied=[], changed=[], removed=[],
-                added=[
+                added=sorted([
                     '/a', '/a/b', '/a/b/c',
-                    '/a/b/c/hello.txt'], total=4))
+                    '/a/b/c/hello.txt']), total=4))
 
     def test_diff_modify_file(self):
         entry = self.repo.log(3, limit=1)[0]
