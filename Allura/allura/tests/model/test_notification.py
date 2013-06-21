@@ -310,6 +310,48 @@ class TestSubscriptionTypes(unittest.TestCase):
         notifications[3].send_direct.assert_called_once_with(u0)
         notifications[4].send_direct.assert_called_once_with(u0)
 
+    def test_send_direct_disabled_user(self):
+        user = M.User.by_username('test-admin')
+        thd = M.Thread.query.get(ref_id=self.pg.index_id())
+        notification = M.Notification()
+        notification.ref_id = thd.index_id()
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        notification.send_direct(user._id)
+        count = M.MonQTask.query.find(dict(
+            task_name='allura.tasks.mail_tasks.sendmail',
+            state='ready')).count()
+        assert_equal(count, 0)
+        user.disabled = False
+        ThreadLocalORMSession.flush_all()
+        notification.send_direct(user._id)
+        count = M.MonQTask.query.find(dict(
+            task_name='allura.tasks.mail_tasks.sendmail',
+            state='ready')).count()
+        assert_equal(count, 1)
+
+    @mock.patch('allura.model.notification.Notification.ref')
+    def test_send_digest_disabled_user(self, ref):
+        thd = M.Thread.query.get(ref_id=self.pg.index_id())
+        notification = M.Notification()
+        notification.ref_id = thd.index_id()
+        ref.artifact = thd
+        user = M.User.by_username('test-admin')
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        M.Notification.send_digest(user._id, 'test@mail.com', 'subject', [notification])
+        count = M.MonQTask.query.find(dict(
+            task_name='allura.tasks.mail_tasks.sendmail',
+            state='ready')).count()
+        assert_equal(count, 0)
+        user.disabled = False
+        ThreadLocalORMSession.flush_all()
+        M.Notification.send_digest(user._id, 'test@mail.com', 'subject', [notification])
+        count = M.MonQTask.query.find(dict(
+            task_name='allura.tasks.mail_tasks.sendmail',
+            state='ready')).count()
+        assert_equal(count, 1)
+
 def _clear_subscriptions():
         M.Mailbox.query.remove({})
 

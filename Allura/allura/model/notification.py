@@ -234,9 +234,13 @@ class Notification(MappedClass):
             text=(self.text or '') + self.footer(toaddr))
 
     def send_direct(self, user_id):
-        user = User.query.get(_id=ObjectId(user_id))
+        user = User.query.get(_id=ObjectId(user_id), disabled=False)
         artifact = self.ref.artifact
         log.debug('Sending direct notification %s to user %s', self._id, user_id)
+        # Don't send if user disabled
+        if not user:
+            log.debug("Skipping notification - User %s isn't active " % user_id)
+            return
         # Don't send if user doesn't have read perms to the artifact
         if user and artifact and \
                 not security.has_access(artifact, 'read', user)():
@@ -260,9 +264,10 @@ class Notification(MappedClass):
     def send_digest(self, user_id, from_address, subject, notifications,
                     reply_to_address=None):
         if not notifications: return
+        user = User.query.get(_id=ObjectId(user_id), disabled=False)
+        if not user: return
         # Filter out notifications for which the user doesn't have read
         # permissions to the artifact.
-        user = User.query.get(_id=ObjectId(user_id))
         artifact = self.ref.artifact
         def perm_check(notification):
             return not (user and artifact) or \

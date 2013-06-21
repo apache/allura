@@ -90,6 +90,14 @@ class TestProjectHome(TestController):
         j = json.loads(r.body)
         assert j['users'][0]['id'].startswith('test')
 
+    def test_user_search_for_disabled_user(self):
+        user = M.User.by_username('test-admin')
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/p/test/user_search?term=test', status=200)
+        j = json.loads(r.body)
+        assert j == {'users': []}
+
     def test_user_search_noparam(self):
         r = self.app.get('/p/test/user_search', status=400)
 

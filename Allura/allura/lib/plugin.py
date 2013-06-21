@@ -315,7 +315,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def by_username(self, username):
         from allura import model as M
-        return M.User.query.get(username=username)
+        return M.User.query.get(username=username, disabled=False)
 
     def set_password(self, user, old_password, new_password):
         try:
@@ -329,7 +329,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
 
     def _login(self):
         from allura import model as M
-        user = M.User.query.get(username=self.request.params['username'])
+        user = M.User.query.get(username=self.request.params['username'], disabled=False)
         if user is None: raise exc.HTTPUnauthorized()
         try:
             dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])

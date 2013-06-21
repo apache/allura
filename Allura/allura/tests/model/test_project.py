@@ -124,3 +124,15 @@ def test_users_and_roles():
     assert p.users_with_role('Admin') == [u]
     assert p.users_with_role('Admin') == sub.users_with_role('Admin')
     assert p.users_with_role('Admin') == p.admins()
+
+def test_project_disabled_users():
+    p = M.Project.query.get(shortname='test')
+    users = p.users()
+    assert users[0].username == 'test-admin'
+    user = M.User.by_username('test-admin')
+    user.disabled = True
+    ThreadLocalORMSession.flush_all()
+    users = p.users()
+    assert users == []
+
+

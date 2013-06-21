@@ -705,7 +705,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             g.credentials,
             g.credentials.project_roles(project_id=self.root_project._id).named)
         uids = [uid for uid in named_roles.userids_that_reach if uid is not None]
-        return list(User.query.find({'_id': {'$in': uids}}))
+        return list(User.query.find({'_id': {'$in': uids}, 'disabled': False}))
 
     def users_with_role(self, *role_names):
         """Return all users in this project that have at least one of the roles

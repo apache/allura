@@ -27,6 +27,7 @@ from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
 from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper
+from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
@@ -195,6 +196,70 @@ class TestMailTasks(unittest.TestCase):
             assert_in('Content-Type: text/plain; charset="utf-8"', body)
             assert_in('Content-Transfer-Encoding: base64', body)
             assert_in(b64encode(u'Громады стройные теснятся'.encode('utf-8')), body)
+
+    def test_send_email_with_disabled_user(self):
+        c.user = M.User.by_username('test-admin')
+        c.user.disabled = True
+        destination_user = M.User.by_username('test-user-1')
+        destination_user.preferences['email_address'] = 'user1@mail.com'
+        ThreadLocalORMSession.flush_all()
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendmail(
+                fromaddr=str(c.user._id),
+                destinations=[ str(destination_user._id) ],
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert_in('From: noreply@in.sf.net', body)
+
+    def test_send_email_with_disabled_destination_user(self):
+        c.user = M.User.by_username('test-admin')
+        destination_user = M.User.by_username('test-user-1')
+        destination_user.preferences['email_address'] = 'user1@mail.com'
+        destination_user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendmail(
+                fromaddr=str(c.user._id),
+                destinations=[ str(destination_user._id) ],
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 0)
+
+    def test_sendsimplemail_with_disabled_user(self):
+        c.user = M.User.by_username('test-admin')
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendsimplemail(
+                fromaddr=str(c.user._id),
+                toaddr='test@mail.com',
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+
+            c.user.disabled = True
+            ThreadLocalORMSession.flush_all()
+            mail_tasks.sendsimplemail(
+                fromaddr=str(c.user._id),
+                toaddr='test@mail.com',
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 2)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert_in('From: noreply@in.sf.net', body)
 
     @td.with_wiki
     def test_receive_email_ok(self):

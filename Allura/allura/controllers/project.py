@@ -418,6 +418,7 @@ class ProjectController(FeedController):
         users = M.User.query.find({
                 '_id': {'$in': named_roles.userids_that_reach},
                 'display_name': re.compile(r'(?i)%s' % re.escape(term)),
+                'disabled': False,
             }).sort('username').limit(10).all()
         return dict(
             users=[

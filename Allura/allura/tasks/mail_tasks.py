@@ -84,7 +84,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
         fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
-        user = M.User.query.get(_id=ObjectId(fromaddr))
+        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = u'noreply@in.sf.net'
@@ -96,7 +96,7 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
             addrs_plain.append(addr)
         else:
             try:
-                user = M.User.query.get(_id=ObjectId(addr))
+                user = M.User.query.get(_id=ObjectId(addr), disabled=False)
                 if not user:
                     log.warning('Cannot find user with ID: %s', addr)
                     continue
@@ -146,7 +146,7 @@ def sendsimplemail(
         fromaddr = u'noreply@in.sf.net'
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
-        user = M.User.query.get(_id=ObjectId(fromaddr))
+        user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
             fromaddr = u'noreply@in.sf.net'
