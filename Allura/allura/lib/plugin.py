@@ -233,7 +233,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         un = un.replace(r'\_', '[-_]')
         un = un.replace(r'\-', '[-_]')
         rex = re.compile('^' + un + '$')
-        return M.User.query.get(username=rex)
+        return M.User.query.get(username=rex, disabled=False)
 
     def set_password(self, user, old_password, new_password):
         user.password = self._encode_password(new_password)
@@ -251,7 +251,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
 
     def user_by_project_shortname(self, shortname):
         from allura import model as M
-        return M.User.query.get(username=shortname)
+        return M.User.query.get(username=shortname, disabled=False)
 
     def update_notifications(self, user):
         return ''

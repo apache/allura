@@ -265,7 +265,9 @@ class Notification(MappedClass):
                     reply_to_address=None):
         if not notifications: return
         user = User.query.get(_id=ObjectId(user_id), disabled=False)
-        if not user: return
+        if not user:
+            log.debug("Skipping notification - User %s isn't active " % user_id)
+            return
         # Filter out notifications for which the user doesn't have read
         # permissions to the artifact.
         artifact = self.ref.artifact
