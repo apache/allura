@@ -270,7 +270,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
-        Returns a generator that returns information about commits reacable
+        Returns a generator that returns information about commits reachable
         by revs.
 
         revs can be None or a list or tuple of revisions, each of which

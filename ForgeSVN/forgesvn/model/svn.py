@@ -479,7 +479,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def log(self, revs=None, path=None, exclude=None, id_only=True, page_size=25, **kw):
         """
-        Returns a generator that returns information about commits reacable
+        Returns a generator that returns information about commits reachable
         by revs.
 
         revs can be None or a list or tuple of identifiers, each of which
