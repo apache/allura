@@ -85,24 +85,30 @@ class TestIndexTasks(unittest.TestCase):
 
     @td.with_wiki
     def test_add_artifacts(self):
-        old_shortlinks = M.Shortlink.query.find().count()
-        old_solr_size = len(g.solr.db)
-        artifacts = [ _TestArtifact() for x in range(5) ]
-        for i, a in enumerate(artifacts):
-            a._shorthand_id = 't%d' % i
-            a.text = 'This is a reference to [t3]'
-        arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
-        ref_ids = [ r._id for r in arefs ]
-        M.artifact_orm_session.flush()
-        index_tasks.add_artifacts(ref_ids)
-        new_shortlinks = M.Shortlink.query.find().count()
-        new_solr_size = len(g.solr.db)
-        assert old_shortlinks + 5 == new_shortlinks, 'Shortlinks not created'
-        assert old_solr_size + 5 == new_solr_size, "Solr additions didn't happen"
-        M.main_orm_session.flush()
-        M.main_orm_session.clear()
-        a = _TestArtifact.query.get(_shorthand_id='t3')
-        assert len(a.backrefs) == 5, a.backrefs
+        from allura.lib.search import find_shortlinks
+        with mock.patch('allura.lib.search.find_shortlinks') as find_slinks:
+            find_slinks.side_effect = lambda s: find_shortlinks(s)
+
+            old_shortlinks = M.Shortlink.query.find().count()
+            old_solr_size = len(g.solr.db)
+            artifacts = [ _TestArtifact() for x in range(5) ]
+            for i, a in enumerate(artifacts):
+                a._shorthand_id = 't%d' % i
+                a.text = 'This is a reference to [t3]'
+            arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
+            ref_ids = [ r._id for r in arefs ]
+            M.artifact_orm_session.flush()
+            index_tasks.add_artifacts(ref_ids)
+            new_shortlinks = M.Shortlink.query.find().count()
+            new_solr_size = len(g.solr.db)
+            assert old_shortlinks + 5 == new_shortlinks, 'Shortlinks not created'
+            assert old_solr_size + 5 == new_solr_size, "Solr additions didn't happen"
+            M.main_orm_session.flush()
+            M.main_orm_session.clear()
+            a = _TestArtifact.query.get(_shorthand_id='t3')
+            assert len(a.backrefs) == 5, a.backrefs
+            assert_equal(find_slinks.call_args_list,
+                    [mock.call(a.index().get('text')) for a in artifacts])
 
     @td.with_wiki
     @mock.patch('allura.tasks.index_tasks.g.solr')
