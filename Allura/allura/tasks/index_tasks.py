@@ -58,7 +58,7 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
                     # Find shortlinks in the raw text, not the escaped html
                     # created by the `solarize()`.
                     ref.references = [
-                        link.ref_id for link in find_shortlinks(artifact.index().get('text', ''))]
+                        link.ref_id for link in find_shortlinks(artifact.index().get('text') or '')]
             except Exception:
                 log.error('Error indexing artifact %s', ref._id)
                 exceptions.append(sys.exc_info())
