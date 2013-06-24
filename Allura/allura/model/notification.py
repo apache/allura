@@ -239,7 +239,7 @@ class Notification(MappedClass):
         log.debug('Sending direct notification %s to user %s', self._id, user_id)
         # Don't send if user disabled
         if not user:
-            log.debug("Skipping notification - User %s isn't active " % user_id)
+            log.debug("Skipping notification - enabled user %s not found" % user_id)
             return
         # Don't send if user doesn't have read perms to the artifact
         if user and artifact and \
@@ -266,7 +266,7 @@ class Notification(MappedClass):
         if not notifications: return
         user = User.query.get(_id=ObjectId(user_id), disabled=False)
         if not user:
-            log.debug("Skipping notification - User %s isn't active " % user_id)
+            log.debug("Skipping notification - enabled user %s not found " % user_id)
             return
         # Filter out notifications for which the user doesn't have read
         # permissions to the artifact.
