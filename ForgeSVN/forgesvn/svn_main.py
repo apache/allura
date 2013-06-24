@@ -139,6 +139,7 @@ class SVNImportController(BaseController):
     @with_trailing_slash
     @expose('jinja:forgesvn:templates/svn/import.html')
     def index(self, **kw):
+        c.is_empty = self.app.repo.is_empty()
         c.form = self.import_form
         return dict()
 
@@ -147,15 +148,16 @@ class SVNImportController(BaseController):
     @require_post()
     @validate(import_form, error_handler=index)
     def do_import(self, checkout_url=None, **kwargs):
-        with h.push_context(
-            self.app.config.project_id,
-            app_config_id=self.app.config._id):
-            allura.tasks.repo_tasks.reclone.post(
-                cloned_from_path=None,
-                cloned_from_name=None,
-                cloned_from_url=checkout_url)
-        M.Notification.post_user(
-            c.user, self.app.repo, 'importing',
-            text='''Repository import scheduled,
-                   an email notification will be sent when complete.''')
+        if self.app.repo.is_empty():
+            with h.push_context(
+                self.app.config.project_id,
+                app_config_id=self.app.config._id):
+                allura.tasks.repo_tasks.reclone.post(
+                    cloned_from_path=None,
+                    cloned_from_name=None,
+                    cloned_from_url=checkout_url)
+            M.Notification.post_user(
+                c.user, self.app.repo, 'importing',
+                text='''Repository import scheduled,
+                        an email notification will be sent when complete.''')
         redirect(c.project.url() + 'admin/tools')

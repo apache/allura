@@ -253,4 +253,16 @@ class TestRootController(SVNTestController):
 
 class TestImportController(SVNTestController):
     def test_index(self):
-        self.app.get('/p/test/admin/src/importer').follow(status=200)
+        r = self.app.get('/p/test/admin/src/importer').follow(status=200)
+        assert 'You cannot import into a repository that already has commits in it.' in r
+
+
+class TestImportControllerEmptyRepo(TestController):
+    def setUp(self):
+        TestController.setUp(self)
+
+    @with_svn
+    def test_index(self):
+        r = self.app.get('/p/test/admin/src/importer').follow(status=200)
+        assert 'Be careful! Importing will overwrite current repository contents.' in r
+

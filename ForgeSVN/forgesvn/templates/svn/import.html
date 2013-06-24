@@ -29,16 +29,25 @@
 {% block header %}{{c.app.config.options.mount_label}}{% endblock %}
 
 {% block content %}
-<div class="message error" style="width:90%">
-  <h1 class="header">Warning</h1>
-  <p class="content">Importing a repository will <strong>overwrite any and all data</strong>
-    in your existing repository.</p>
-</div>
-<br style="clear:both"/>
-<p><strong>Be careful! Importing will overwrite current repository contents.</strong></p>
-<p>We expect a URL to a publicly accessible repository (no password).<br />
-(Examples: http://repository.url/svn/name, https://repository.url/svn/name or svn://repository.url/svn/name)</p>
-<p>Notification email will be sent when import complete.</p>
-<p>If you really, <strong>really</strong> want to do this, enter the URL of the source repository below:</p>
-{{ c.form.display(action='do_import') }}
+{%if c.is_empty%}
+    <div class="message error" style="width:90%">
+        <h1 class="header">Warning</h1>
+        <p class="content">Importing a repository will <strong>overwrite any and all data</strong>
+            in your existing repository.</p>
+    </div>
+    <br style="clear:both"/>
+    <p><strong>Be careful! Importing will overwrite current repository contents.</strong></p>
+    <p>We expect a URL to a publicly accessible repository (no password).<br />
+    (Examples: http://repository.url/svn/name, https://repository.url/svn/name or svn://repository.url/svn/name)</p>
+    <p>Notification email will be sent when import complete.</p>
+    <p>If you really, <strong>really</strong> want to do this, enter the URL of the source repository below:</p>
+    {{ c.form.display(action='do_import') }}
+{% else%}
+    <div class="message error" style="width:90%">
+        <h1 class="header">Warning</h1>
+        <p class="content">You cannot import into a repository that already has commits in it.
+            Please delete this SVN tool if you really want to delete this whole repository.
+            Then install a new SVN tool and you will be able to import into it.</p>
+    </div>
+{%endif%}
 {% endblock %}
