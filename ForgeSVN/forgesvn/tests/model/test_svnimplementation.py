@@ -15,13 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from mock import Mock, MagicMock, patch
-import pysvn
+from mock import Mock, patch
 from nose.tools import assert_equal
 from pylons import app_globals as g
 
 from allura.model.repo import Commit
-from forgesvn.model.svn import Repository, SVNImplementation
+from forgesvn.model.svn import SVNImplementation
 
 
 class TestSVNImplementation(object):
@@ -106,3 +105,18 @@ class TestSVNImplementation(object):
         assert_equal(impl._path_to_root('/branches/'), 'trunk')
         assert_equal(impl._path_to_root('/tags/1.0'), 'tags/1.0')
         assert_equal(impl._path_to_root('/branches/branch'), 'branches/branch')
+
+    @patch('forgesvn.model.svn.svn_path_exists')
+    def test_update_checkout_url(self, svn_path_exists):
+        impl = SVNImplementation(Mock())
+        opts = impl._repo.app.config.options = {}
+
+        svn_path_exists.side_effect = lambda path: False
+        opts['checkout_url'] = 'invalid'
+        impl.update_checkout_url()
+        assert_equal(opts['checkout_url'], '')
+
+        svn_path_exists.side_effect = lambda path: path.endswith('trunk')
+        opts['checkout_url'] = 'invalid'
+        impl.update_checkout_url()
+        assert_equal(opts['checkout_url'], 'trunk')

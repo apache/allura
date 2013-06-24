@@ -271,12 +271,29 @@ class SVNImplementation(M.RepositoryImplementation):
             clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
-        if not svn_path_exists("file://%s%s/%s" %
-                         (self._repo.fs_path,
-                          self._repo.name,
-                          c.app.config.options['checkout_url'])):
-            c.app.config.options['checkout_url'] = ""
+        self.update_checkout_url()
         self._setup_special_files(source_url)
+
+    def update_checkout_url(self):
+        """Validate the current ``checkout_url`` against the on-disk repo,
+        and change it if necessary.
+
+        If ``checkout_url`` is valid, no changes are made.
+        If ``checkout_url`` is invalid:
+
+            - Set it to 'trunk' if repo has a top-level trunk directory
+            - Else, set it to ''
+
+        """
+        opts = self._repo.app.config.options
+        if not svn_path_exists('file://{0}{1}/{2}'.format(self._repo.fs_path,
+                self._repo.name, opts['checkout_url'])):
+            opts['checkout_url'] = ''
+
+        if (not opts['checkout_url'] and
+                svn_path_exists('file://{0}{1}/trunk'.format(self._repo.fs_path,
+                    self._repo.name))):
+            opts['checkout_url'] = 'trunk'
 
     def commit(self, rev):
         oid = self.rev_parse(rev)
