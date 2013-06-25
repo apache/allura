@@ -66,8 +66,7 @@ class ForgeConfig(AppConfig):
         config['pylons.strict_c'] = True
 
     def setup_routes(self):
-        map = Mapper(directory=config['pylons.paths']['controllers'],
-                     always_scan=config['debug'])
+        map = Mapper()
         # Setup a default route for the root of object dispatch
         map.connect('*url', controller=self.root_controller,
                     action='routes_placeholder')
