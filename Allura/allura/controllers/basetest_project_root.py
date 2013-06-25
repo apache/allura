@@ -123,8 +123,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
         auth = plugin.AuthenticationProvider.get(request)
         user = auth.by_username(environ.get('username', 'test-admin'))
-        if not user:
-            user = M.User.by_username('test-admin')
         environ['beaker.session']['userid'] = user._id
         c.user = auth.authenticate_request()
         return WsgiDispatchController.__call__(self, environ, start_response)
