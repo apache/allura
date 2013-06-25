@@ -160,4 +160,8 @@ class SVNImportController(BaseController):
                 c.user, self.app.repo, 'importing',
                 text='''Repository import scheduled,
                         an email notification will be sent when complete.''')
+        else:
+            M.Notification.post_user(
+                c.user, self.app.repo, 'error',
+                text="Can't import into non empty repository.")
         redirect(c.project.url() + 'admin/tools')

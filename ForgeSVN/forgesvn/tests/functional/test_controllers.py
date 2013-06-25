@@ -23,6 +23,7 @@ import tg
 import pkg_resources
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
+from mock import patch
 from nose.tools import assert_equal
 from IPython.testing.decorators import onlyif
 
@@ -252,17 +253,25 @@ class TestRootController(SVNTestController):
 
 
 class TestImportController(SVNTestController):
+
     def test_index(self):
         r = self.app.get('/p/test/admin/src/importer').follow(status=200)
         assert 'You cannot import into a repository that already has commits in it.' in r
 
+    @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
+    def test_do_import(self, tasks):
+        r = self.app.post('/p/test/admin/src/importer/do_import',
+                          {'checkout_url': 'http://fake.svn/'})
+        assert not tasks.reclone.post.called
 
-class TestImportControllerEmptyRepo(TestController):
-    def setUp(self):
-        TestController.setUp(self)
+    @with_tool('test', 'SVN', 'empty', 'empty SVN')
+    def test_index_empty_repo(self):
+        r = self.app.get('/p/test/admin/empty/importer').follow(status=200)
+        assert 'Enter the URL of the source repository below' in r
 
-    @with_svn
-    def test_index(self):
-        r = self.app.get('/p/test/admin/src/importer').follow(status=200)
-        assert 'Be careful! Importing will overwrite current repository contents.' in r
-
+    @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
+    @with_tool('test', 'SVN', 'empty', 'empty SVN')
+    def test_do_import_empty_repo(self, tasks):
+        r = self.app.post('/p/test/admin/empty/importer/do_import',
+                          {'checkout_url': 'http://fake.svn/'})
+        assert tasks.reclone.post.called
