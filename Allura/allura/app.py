@@ -176,9 +176,6 @@ class Application(object):
         Application. Default is True.
     :cvar list permissions: Named permissions used by instances of this
         Application. Default is [].
-    :cvar list sitemap: :class:`SitemapEntries <allura.app.SitemapEntry>`
-        used to create the Application's navigation in the main project nav.
-        Default is [].
     :cvar bool installable: Default is True, Application can be installed in
         projects.
     :cvar bool hidden: Default is False, Application is not hidden from the
@@ -211,7 +208,6 @@ class Application(object):
     root = None  # root controller
     api_root = None
     permissions = []
-    sitemap = []
     installable = True
     searchable = False
     DiscussionClass = model.Discussion
@@ -242,6 +238,17 @@ class Application(object):
         self.project = project
         self.config = app_config_object
         self.admin = DefaultAdminController(self)
+
+    @LazyProperty
+    def sitemap(self):
+        """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
+        describing the page hierarchy provided by this Application.
+
+        If the list is empty, the Application will not be displayed in the
+        main project nav bar.
+
+        """
+        return [SitemapEntry(self.config.options.mount_label, '.')]
 
     @LazyProperty
     def url(self):
