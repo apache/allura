@@ -115,6 +115,8 @@ class BasetestNeighborhoodRootController(WsgiDispatchController, NeighborhoodCon
         c.app = None
         c.user = plugin.AuthenticationProvider.get(request).by_username(
             environ.get('username', 'test-admin'))
+        if not c.user:
+            c.user = M.User.anonymous()
         return WsgiDispatchController.__call__(self, environ, start_response)
 
 class DispatchTest(object):
