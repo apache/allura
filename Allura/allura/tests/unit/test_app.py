@@ -80,6 +80,10 @@ class TestAppDefaults(WithDatabase):
     def test_that_it_denies_access_for_everything(self):
         assert not self.app.has_access(model.User.anonymous(), 'any.topic')
 
+    def test_default_sitemap(self):
+        assert self.app.sitemap[0].label == 'My Mounted App'
+        assert self.app.sitemap[0].url == '.'
+
 
 def install_app():
     project = create_project('myproject')

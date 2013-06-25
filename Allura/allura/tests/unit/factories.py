@@ -53,7 +53,10 @@ def create_app_config(project, mount_point):
     return AppConfig(
         project_id=project._id,
         tool_name='myapp',
-        options={'mount_point': 'my_mounted_app'},
+        options={
+            'mount_point': 'my_mounted_app',
+            'mount_label': 'My Mounted App',
+        },
         acl=[])
 
 
