@@ -324,11 +324,9 @@ class Globals(MappedClass):
         changed_tickets = {}
         for ticket in tickets:
             message = ''
-            new_user = None
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
-                    if not new_user:
-                        new_user = User.query.get(_id=v)
+                    new_user = User.query.get(_id=v)
                     old_user = User.query.get(_id=getattr(ticket, k))
                     if new_user:
                         message += get_change_text(
@@ -426,16 +424,15 @@ class Globals(MappedClass):
         ac_id = app_config_id if app_config_id else c.app.config._id
         ticket_ids = tickets.keys()
         tickets_index_id = {ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
-        users = Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
+        subscriptions = Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
         filtered = {}
-        for user in users:
-            if user.artifact_index_id is None:
-                filtered[user.user_id] = set(ticket_ids)  # subscribed to entire tool, will see all changes
-                continue
-            elif user.artifact_index_id in tickets_index_id.keys():
-                if filtered.get(user.user_id) is None:
-                    filtered[user.user_id] = set()
-                filtered[user.user_id].add(tickets_index_id[user.artifact_index_id])
+        for subscription in subscriptions:
+            if subscription.artifact_index_id is None:
+                filtered[subscription.user_id] = set(ticket_ids)  # subscribed to entire tool, will see all changes
+            elif subscription.artifact_index_id in tickets_index_id.keys():
+                if filtered.get(subscription.user_id) is None:
+                    filtered[subscription.user_id] = set()
+                filtered[subscription.user_id].add(tickets_index_id[subscription.artifact_index_id])
         return filtered
 
 
