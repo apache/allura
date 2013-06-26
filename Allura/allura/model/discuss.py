@@ -55,8 +55,8 @@ class Discussion(Artifact, ActivityObject):
     num_posts = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str: bool})
 
-    threads = RelationProperty('Thread')
-    posts = RelationProperty('Post')
+    threads = RelationProperty('Thread', via='discussion_id')
+    posts = RelationProperty('Post', via='discussion_id')
 
     def __json__(self):
         return dict(

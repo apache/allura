@@ -40,8 +40,8 @@ class Forum(M.Discussion):
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
-    threads = RelationProperty('ForumThread')
-    posts = RelationProperty('ForumPost')
+    threads = RelationProperty('ForumThread', via='discussion_id')
+    posts = RelationProperty('ForumPost', via='discussion_id')
     members_only = FieldProperty(bool, if_missing=False)
     anon_posts = FieldProperty(bool, if_missing=False)
     monitoring_email = FieldProperty(str, if_missing=None)
@@ -55,10 +55,9 @@ class Forum(M.Discussion):
         return ForumThread
 
     @LazyProperty
-    def all_threads(self):
+    def sorted_threads(self):
         threads = self.thread_class().query.find(dict(discussion_id=self._id))
-        threads = threads.sort([('flags', pymongo.DESCENDING),
-                                ('last_post_date', pymongo.DESCENDING)]).all()
+        threads = threads.sort([('last_post_date', pymongo.DESCENDING)]).all()
         sorted_threads = chain(
             (t for t in threads if 'Announcement' in t.flags),
             (t for t in threads if 'Sticky' in t.flags and 'Announcement' not in t.flags),
@@ -138,11 +137,6 @@ class Forum(M.Discussion):
                     self.project.url(),
                     self.app.config.options.mount_point)))
         return super(Forum, self).get_mail_footer(notification, toaddr)
-
-    def __json__(self):
-        json = super(Forum, self).__json__()
-        json.pop('threads')  # it's always empty and useless here
-        return json
 
 class ForumFile(M.File):
     forum_id=FieldProperty(schema.ObjectId)
