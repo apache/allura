@@ -32,7 +32,9 @@ class TestTrackerApiBase(TestRestApiBase):
         super(TestTrackerApiBase, self).setUp()
         self.setup_with_tools()
 
-    @td.with_tracker
+    @td.with_tool('test', 'Tickets', 'bugs',
+            TicketMonitoringEmail='test@localhost',
+            TicketMonitoringType='AllTicketChanges')
     def setup_with_tools(self):
         h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals

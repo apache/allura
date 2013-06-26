@@ -1582,10 +1582,7 @@ class RootRestController(BaseController):
         require_access(c.app, 'create')
         if c.app.globals.milestone_names is None:
             c.app.globals.milestone_names = ''
-        ticket = TM.Ticket(
-            app_config_id=c.app.config._id,
-            custom_fields=dict(),
-            ticket_num=c.app.globals.next_ticket_num())
+        ticket = TM.Ticket.new()
         ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
         redirect(str(ticket.ticket_num)+'/')
