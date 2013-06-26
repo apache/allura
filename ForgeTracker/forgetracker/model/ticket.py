@@ -424,15 +424,18 @@ class Globals(MappedClass):
         ac_id = app_config_id if app_config_id else c.app.config._id
         ticket_ids = tickets.keys()
         tickets_index_id = {ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
-        subscriptions = Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
+        subscriptions = Mailbox.query.find({
+            'project_id': p_id,
+            'app_config_id': ac_id,
+            'artifact_index_id': {'$in': tickets_index_id.keys() + [None]}})
         filtered = {}
         for subscription in subscriptions:
             if subscription.artifact_index_id is None:
-                filtered[subscription.user_id] = set(ticket_ids)  # subscribed to entire tool, will see all changes
+                # subscribed to entire tool, will see all changes
+                filtered[subscription.user_id] = set(ticket_ids)
             elif subscription.artifact_index_id in tickets_index_id.keys():
-                if filtered.get(subscription.user_id) is None:
-                    filtered[subscription.user_id] = set()
-                filtered[subscription.user_id].add(tickets_index_id[subscription.artifact_index_id])
+                user = filtered.setdefault(subscription.user_id, set())
+                user.add(tickets_index_id[subscription.artifact_index_id])
         return filtered
 
 
