@@ -324,9 +324,11 @@ class Globals(MappedClass):
         changed_tickets = {}
         for ticket in tickets:
             message = ''
+            new_user = None
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
-                    new_user = User.query.get(_id=v)
+                    if not new_user:
+                        new_user = User.query.get(_id=v)
                     old_user = User.query.get(_id=getattr(ticket, k))
                     if new_user:
                         message += get_change_text(
@@ -423,23 +425,17 @@ class Globals(MappedClass):
         p_id = project_id if project_id else c.project._id
         ac_id = app_config_id if app_config_id else c.app.config._id
         ticket_ids = tickets.keys()
+        tickets_index_id = {ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
         users = Mailbox.query.find(dict(project_id=p_id, app_config_id=ac_id))
-        users = [u.user_id for u in users]
         filtered = {}
-        for uid in users:
-            params = dict(
-                user_id=uid,
-                project_id=p_id,
-                app_config_id=ac_id)
-            if Mailbox.subscribed(**params):
-                filtered[uid] = set(ticket_ids)  # subscribed to entire tool, will see all changes
+        for user in users:
+            if user.artifact_index_id is None:
+                filtered[user.user_id] = set(ticket_ids)  # subscribed to entire tool, will see all changes
                 continue
-            for t_id, ticket in tickets.iteritems():
-                params.update({'artifact': ticket})
-                if Mailbox.subscribed(**params):
-                    if filtered.get(uid) is None:
-                        filtered[uid] = set()
-                    filtered[uid].add(t_id)
+            elif user.artifact_index_id in tickets_index_id.keys():
+                if filtered.get(user.user_id) is None:
+                    filtered[user.user_id] = set()
+                filtered[user.user_id].add(tickets_index_id[user.artifact_index_id])
         return filtered
 
 
