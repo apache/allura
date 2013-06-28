@@ -154,7 +154,8 @@ def sendsimplemail(
             fromaddr = u'noreply@in.sf.net'
         else:
             fromaddr = user.email_address_header()
-    plain_msg = mail_util.encode_email_part(text, 'plain')
+    htmlparser = HTMLParser.HTMLParser()
+    plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
     html_text = g.forge_markdown(email=True).convert(text)
     html_msg = mail_util.encode_email_part(html_text, 'html')
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
