@@ -44,6 +44,15 @@ class TestRootController(TestController):
         redirected = self.app.get('/url/test').follow()
         assert redirected.request.url == 'http://www.google.com/'
 
+    def test_shorturl_http_head(self):
+        response = self.app.get('/admin/url/add')
+        response.form['short_url'] = 'test'
+        response.form['full_url'] = 'http://www.google.com/'
+        response.form.submit()
+        r = self.app.head('/url/test')
+        assert r.status_int == 302
+        assert r.headers['Location'] == 'http://www.google.com/'
+
     def test_shorturl_update(self):
         response = self.app.get('/admin/url/add')
         response.form['short_url'] = 'g'
