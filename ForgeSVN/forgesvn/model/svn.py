@@ -278,8 +278,8 @@ class SVNImplementation(M.RepositoryImplementation):
         """Validate the current ``checkout_url`` against the on-disk repo,
         and change it if necessary.
 
-        If ``checkout_url`` is valid, no changes are made.
-        If ``checkout_url`` is invalid:
+        If ``checkout_url`` is valid and not '', no changes are made.
+        If ``checkout_url`` is invalid or '':
 
             - Set it to 'trunk' if repo has a top-level trunk directory
             - Else, set it to ''

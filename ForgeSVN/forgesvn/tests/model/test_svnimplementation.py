@@ -19,11 +19,15 @@ from mock import Mock, patch
 from nose.tools import assert_equal
 from pylons import app_globals as g
 
+from alluratest.controller import setup_unit_test
 from allura.model.repo import Commit
 from forgesvn.model.svn import SVNImplementation
 
 
 class TestSVNImplementation(object):
+
+    def setUp(self):
+        setup_unit_test()
 
     def test_compute_tree_new(self):
         self._test_compute_tree_new('/trunk/foo/')
@@ -118,5 +122,10 @@ class TestSVNImplementation(object):
 
         svn_path_exists.side_effect = lambda path: path.endswith('trunk')
         opts['checkout_url'] = 'invalid'
+        impl.update_checkout_url()
+        assert_equal(opts['checkout_url'], 'trunk')
+
+        svn_path_exists.side_effect = lambda path: path.endswith('trunk')
+        opts['checkout_url'] = ''
         impl.update_checkout_url()
         assert_equal(opts['checkout_url'], 'trunk')
