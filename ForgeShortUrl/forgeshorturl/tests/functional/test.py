@@ -97,6 +97,16 @@ class TestRootController(TestController):
         r = self.app.post('/admin/url/add', params=d)
         assert 'exists' in self.webflash(r)
 
+    def test_shorturl_chars_restrictions(self):
+        d = dict(short_url='', full_url='http://sf.net/')
+        r = self.app.post('/admin/url/add', params=d)
+        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
+        assert 'Please enter a value' in self.webflash(r)
+        d = dict(short_url='g*', full_url='http://sf.net/')
+        r = self.app.post('/admin/url/add', params=d)
+        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
+        assert 'Short url: must include only letters, numbers, dashes and underscores.' in self.webflash(r)
+
     def test_shorturl_remove(self):
         self.app.post('/admin/url/add',
                 params=dict(short_url='g', full_url='http://google.com/'))

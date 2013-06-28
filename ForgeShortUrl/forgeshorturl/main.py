@@ -196,6 +196,16 @@ class RootController(BaseController):
 
 
 class ShortURLAdminController(DefaultAdminController):
+
+    shorturl_validators = All(
+        validators.NotEmpty(),
+        validators.Regex(
+            r'^[-_a-zA-Z0-9]+$',
+            messages={'invalid': 'must include only letters, numbers, dashes and underscores.'}
+        )
+    )
+
+
     def __init__(self, app):
         self.app = app
 
@@ -215,7 +225,7 @@ class ShortURLAdminController(DefaultAdminController):
     @expose('jinja:forgeshorturl:templates/form.html')
     @validate(dict(full_url=All(validators.URL(add_http=True),
                                 validators.NotEmpty()),
-                   short_url=validators.NotEmpty()))
+                   short_url=shorturl_validators))
     def add(self, short_url='', full_url='', description='', private='off',
             update=False, **kw):
         if update:
