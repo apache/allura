@@ -23,6 +23,7 @@ import time
 import json
 import StringIO
 import allura
+import mock
 
 import PIL
 from mock import patch
@@ -40,6 +41,7 @@ from allura.lib.security import has_access
 from allura.lib import helpers as h
 from allura.lib.search import SearchError
 from allura.tests import decorators as td
+from allura.tasks import  mail_tasks
 from ming.orm.ormsession import ThreadLocalORMSession
 
 class TrackerTestController(TestController):
@@ -1878,6 +1880,29 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.body)
         assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost:80/p/test/bugs/1/attachment/test_root.py')
+
+    def test_html_escaping(self):
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            self.new_ticket(summary='test <h2> ticket', status='open', _milestone='2.0')
+            ThreadLocalORMSession.flush_all()
+            M.MonQTask.run_ready()
+            ThreadLocalORMSession.flush_all()
+            email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+            assert_equal(email.kwargs.subject, '[test:bugs] #1 test <h2> ticket')
+            text = email.kwargs.text
+            assert '** [bugs:#1] test &lt;h2&gt; ticket**' in text
+            mail_tasks.sendmail(
+                fromaddr=str(c.user._id),
+                destinations=[ str(c.user._id) ],
+                text=text,
+                reply_to=u'noreply@sf.net',
+                subject=email.kwargs.subject,
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
+            assert '<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>' in body
 
 
 

@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+import HTMLParser
 
 from pylons import tmpl_context as c, app_globals as g
 from bson import ObjectId
@@ -118,7 +119,8 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
                 addrs_html.append(addr)
             else:
                 addrs_multi.append(addr)
-    plain_msg = mail_util.encode_email_part(text, 'plain')
+    htmlparser = HTMLParser.HTMLParser()
+    plain_msg = mail_util.encode_email_part(htmlparser.unescape(text), 'plain')
     html_text = g.forge_markdown(email=True).convert(text)
     html_msg = mail_util.encode_email_part(html_text, 'html')
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)

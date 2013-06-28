@@ -403,6 +403,7 @@ class TestForum(TestController):
         n = M.Notification.query.get(subject='[test:discussion] Test Thread')
         post = FM.ForumPost.query.get(text='This is a *test thread*')
         assert post.url_paginated() in n.text
+        assert 'This is a *test thread*\n\n\n---\n\n[Test Thread]' in n.text
         assert '[Test Thread](' in n.text
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
