@@ -982,7 +982,7 @@ a.btn:active {
 .btn-bar, #top_nav {
   display: block;
   clear: both;
-  padding: 10px;
+  padding: 0px 10px 0 10px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   -o-border-radius: 4px;
@@ -2967,6 +2967,8 @@ ul.dropdown li {
     float: left;
     vertical-align: middle;
     zoom: 1;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 ul.dropdown li.hover,
@@ -2979,35 +2981,62 @@ ul.dropdown li:hover {
 ul.dropdown ul {
     visibility: hidden;
     position: absolute;
-    top:50px;
-    left: 0;
+    top:70px;
     z-index: 598;
     background-color: #ffffff;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -o-border-radius: 5px;
-    -ms-border-radius: 5px;
-    -khtml-border-radius: 5px;
-    border-radius: 5px;
     border-width: 1px;
     border-style: solid;
-    border-color: #E6EFC2;
+    border-color: #dddddd;
+    -moz-border-bottom-left-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+    -o-border-bottom-left-radius: 5px;
+    -ms-border-bottom-left-radius: 5px;
+    -khtml-border-bottom-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    -moz-border-bottom-right-radius: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+    -o-border-bottom-right-radius: 5px;
+    -ms-border-bottom-right-radius: 5px;
+    -khtml-border-bottom-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top: 0;
+    -moz-box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    -o-box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4)
 }
 
 ul.dropdown ul li {
     float: left;
-    margin: 5px;
-    min-width: 100px;
+    margin: 0;
+    padding: 0;
 }
 
 ul.dropdown li:hover > ul {
     visibility: visible;
 }
 ul.dropdown ul li a {
-    height: 20px !important;
+    white-space: nowrap;
+    height: auto !important;
     font-weight:normal;
+    padding: 5px;
+    border-top: 1px solid #eee;
+}
+ul.dropdown ul li:first-child a {
+    border-top: 0;
 }
 li.selected,
 ul.dropdown ul li.selected a{
     font-weight:bold;
+}
+ul.dropdown ul li a:hover {
+    background-color: #09c;
+    color: white !important;
+}
+#top_nav ul.dropdown ul li,
+#top_nav ul.dropdown ul li a {
+    float: none;
+    display: block;
+    text-align: left;
+    margin-right: 0;
 }
