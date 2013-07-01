@@ -548,8 +548,9 @@ class TreeBrowser(BaseController, DispatchIndex):
                         filename), rest
         elif rest == ('index', ):
             rest = (request.environ['PATH_INFO'].rsplit('/')[-1],)
-        tree = self._tree[next]
-        if tree is None:
+        try:
+            tree = self._tree[next]
+        except KeyError:
             raise exc.HTTPNotFound
         return self.__class__(
             self._commit,
