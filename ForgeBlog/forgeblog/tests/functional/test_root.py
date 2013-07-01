@@ -17,6 +17,7 @@
 
 import datetime
 
+from nose.tools import assert_equal
 from ming.orm.ormsession import ThreadLocalORMSession
 from mock import patch
 
@@ -203,7 +204,6 @@ class TestRootController(TestController):
         response = self.app.get('/blog/feed')
         assert '&lt;div class="markdown_content"&gt;&lt;p&gt;&lt;em&gt;sometext&lt;/em&gt;&lt;/p&gt;&lt;/div&gt;' in response
 
-
     def test_related_artifacts(self):
         self._post(title='one')
         d = self._blog_date()
@@ -213,3 +213,7 @@ class TestRootController(TestController):
         r= self.app.get('/blog/%s/one/' % d)
         assert 'Related' in r
         assert 'Blog Post: %s/two' % d in r
+
+    def test_invalid_lookup(self):
+        r = self.app.get('/blog/favicon.ico', status=404)
+        assert_equal(r.status_int, 404)
