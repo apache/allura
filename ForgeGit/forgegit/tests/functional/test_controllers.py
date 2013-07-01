@@ -21,7 +21,7 @@ import os
 import shutil
 import tempfile
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in, assert_not_in
 import tg
 import pkg_resources
 from pylons import tmpl_context as c
@@ -356,10 +356,10 @@ class TestRootController(_TestCase):
 
     def test_default_branch(self):
         assert_equal(c.app.default_branch_name, 'master')
-        c.app.repo.default_branch_name = 'zz'
+        c.app.repo.set_default_branch('zz')
         assert_equal(c.app.default_branch_name, 'zz')
-        r = self.app.get('/p/test/src-git/').follow().follow()
-        assert '<span class="scm-branch-label">zz</span>' in r
+        c.app.repo.set_default_branch('master')
+        assert_equal(c.app.default_branch_name, 'master')
 
     def test_set_default_branch(self):
         r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
@@ -369,6 +369,12 @@ class TestRootController(_TestCase):
         assert '<input type="text" name="branch_name" id="branch_name"  value="zz"/>' in r
         r = self.app.get('/p/test/src-git/').follow().follow()
         assert '<span class="scm-branch-label">zz</span>' in r
+        assert_in('<span>bad</span>', r)  # 'bad' is a file name which in zz, but not in master
+
+        self.app.post('/p/test/admin/src-git/set_default_branch_name', params={'branch_name':'master'})
+        r = self.app.get('/p/test/src-git/').follow().follow()
+        assert_not_in('<span>bad</span>', r)
+        assert_in('<span>README</span>', r)
 
 
 class TestRestController(_TestCase):

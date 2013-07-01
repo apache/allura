@@ -221,7 +221,7 @@ class RepoAdminController(DefaultAdminController):
     @expose('jinja:allura:templates/repo/default_branch.html')
     def set_default_branch_name(self, branch_name=None, **kw):
         if (request.method == 'POST') and branch_name:
-            self.repo.default_branch_name = branch_name
+            self.repo.set_default_branch(branch_name)
             redirect(request.referer)
         else:
             return dict(app=self.app,

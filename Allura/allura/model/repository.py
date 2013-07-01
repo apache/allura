@@ -386,6 +386,16 @@ class Repository(Artifact, ActivityObject):
     @property
     def head(self):
         return self._impl.head
+    def set_default_branch(self, name):
+        return self._impl.set_default_branch(name)
+
+    def _log(self, rev, skip, limit):
+        head = self.commit(rev)
+        if head is None: return
+        for _id in self.commitlog([head._id], skip, limit):
+            ci = head.query.get(_id=_id)
+            ci.set_context(self)
+            yield ci
 
     def init_as_clone(self, source_path, source_name, source_url):
         self.upstream_repo.name = source_name

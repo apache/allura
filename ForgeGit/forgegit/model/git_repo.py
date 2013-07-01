@@ -445,6 +445,13 @@ class GitImplementation(M.RepositoryImplementation):
     def tags(self):
         return [Object(name=t.name, object_id=t.commit.hexsha) for t in self._git.tags if t.is_valid()]
 
+    def set_default_branch(self, name):
+        if not name:
+            return
+        # HEAD should point to default branch
+        self._git.git.symbolic_ref('HEAD', 'refs/heads/%s' % name)
+        self._repo.default_branch_name = name
+        session(self._repo).flush(self._repo)
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096
