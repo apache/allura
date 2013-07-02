@@ -309,12 +309,13 @@ class AuthController(BaseController):
                      project_path, repo_path)
             response.status = 404
             return dict(disallow, error='unknown project')
-        mount_point = os.path.splitext(rest[0])[0]
         c.project = project
-        c.app = project.app_instance(mount_point)
+        c.app = project.app_instance(rest[0])
+        if not c.app:
+            c.app = project.app_instance(rest[0])[0]
         if c.app is None:
             log.info("Can't find repo at %s on repo_path %s",
-                     mount_point, repo_path)
+                     rest[0], repo_path)
             return disallow
         return dict(allow_read=has_access(c.app, 'read')(user=user),
                     allow_write=has_access(c.app, 'write')(user=user),

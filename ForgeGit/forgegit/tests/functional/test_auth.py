@@ -21,7 +21,9 @@ import json
 from datadiff.tools import assert_equal
 
 from allura.tests import TestController
+from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
+
 
 class TestGitUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
@@ -66,6 +68,11 @@ class TestGitUserPermissions(TestController):
             '/git/test.p/src-git.git',
             username='test-usera',
             status=404)
+
+    @with_tool('test', 'Git', 'src.c++.git', 'Git', type='git')
+    def test_dot_and_plus(self):
+        r = self._check_repo('/git/test.p/src.c++.git')
+        assert r == self.allow, r
 
     def _check_repo(self, path, username='test-admin', **kw):
         url = '/auth/repo_permissions'
