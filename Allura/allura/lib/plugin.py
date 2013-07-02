@@ -365,6 +365,10 @@ class ProjectRegistrationProvider(object):
         return app_globals.Globals().entry_points['registration'][method]()
 
     def name_taken(self, project_name, neighborhood):
+        """Return False if ``project_name`` is available in ``neighborhood``.
+        If unavailable, return an error message (str) explaining why.
+
+        """
         from allura import model as M
         p = M.Project.query.get(shortname=project_name, neighborhood_id=neighborhood._id)
         if p:
@@ -375,18 +379,28 @@ class ProjectRegistrationProvider(object):
         return False
 
     def extra_name_checks(self):
-        '''This should be a list or iterator containing tuples.
-        The first tiem in the tuple should be an error message and the
-        second should be a regex. If the user attempts to register a
-        project with a name that matches the regex, the field will
-        be marked invalid with the message displayed to the user.
-        '''
+        """Return an iterable of ``(error_message, regex)`` tuples.
+
+        If user attempts to register a project with a name that matches
+        ``regex``, the field will be marked invalid, and ``error_message``
+        displayed to the user.
+
+        """
         return []
 
+    def suggest_name(self, project_name, neighborhood):
+        """Return a suggested project shortname for the full ``project_name``.
+
+        Example: "My Great Project" -> "mygreatproject"
+
+        """
+        return re.sub("[^A-Za-z0-9]", "", project_name).lower()
+
     def rate_limit(self, user, neighborhood):
-        '''Check the various config-defined project registration rate
+        """Check the various config-defined project registration rate
         limits, and if any are exceeded, raise ProjectRatelimitError.
-        '''
+
+        """
         if security.has_access(neighborhood, 'admin', user=user)():
             return
         # have to have the replace because, despite being UTC,
@@ -468,12 +482,21 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname.replace('u/', '', 1)
         else:
             check_shortname = shortname
-        if not h.re_project_name.match(check_shortname):
+        err = self.validate_project_shortname(check_shortname, neighborhood)
+        if err:
             raise ValueError('Invalid project shortname: %s' % shortname)
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict('%s already exists in nbhd %s' % (shortname, neighborhood._id))
+
+    def validate_project_shortname(self, shortname, neighborhood):
+        """Return an error message if ``shortname`` is invalid for
+        ``neighborhood``, else return None.
+
+        """
+        if not h.re_project_name.match(shortname):
+            return 'Please use only letters, numbers, and dashes 3-15 characters long.'
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''

@@ -175,21 +175,23 @@ class NeighborhoodController(object):
 
     @expose('json:')
     def suggest_name(self, project_name=''):
-        result = dict()
-        result['suggested_name'] = re.sub("[^A-Za-z0-9]", "", project_name).lower()[:15]
-        return result
+        provider = plugin.ProjectRegistrationProvider.get()
+        return dict(suggested_name=provider.suggest_name(project_name,
+            self.neighborhood))
 
     @expose('json:')
     def check_names(self, project_name='', unix_name=''):
+        provider = plugin.ProjectRegistrationProvider.get()
         result = dict()
         try:
             W.add_project.fields['project_name'].validate(project_name, '')
         except Invalid as e:
             result['name_message'] = str(e)
-        if not h.re_project_name.match(unix_name) or not (3 <= len(unix_name) <= 15):
-            result['unixname_message'] = 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        else:
-            result['unixname_message'] = plugin.ProjectRegistrationProvider.get().name_taken(unix_name, self.neighborhood)
+
+        unixname_invalid_err = provider.validate_project_shortname(unix_name,
+                self.neighborhood)
+        result['unixname_message'] = (unixname_invalid_err or
+                provider.name_taken(unix_name, self.neighborhood))
         return result
 
     @h.vardec
