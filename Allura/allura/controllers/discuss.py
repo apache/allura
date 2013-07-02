@@ -256,11 +256,12 @@ class PostController(BaseController):
 
     @LazyProperty
     def post(self):
-        result = self.M.Post.query.find(dict(slug=self._post_slug)).all()
-        for p in result:
-            if p.thread_id == self.thread._id: return p
-        if result:
-            redirect(result[0].url())
+        post = self.M.Post.query.get(slug=self._post_slug, thread_id=self.thread._id)
+        if post:
+            return post
+        post = self.M.Post.query.get(slug=self._post_slug)
+        if post:
+            return post
         else:
             redirect('..')
 
