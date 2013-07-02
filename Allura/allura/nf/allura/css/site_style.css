@@ -3008,6 +3008,7 @@ ul.dropdown ul {
 
 ul.dropdown ul li {
     float: left;
+    min-width: 100px;
     margin: 0;
     padding: 0;
 }
