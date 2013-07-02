@@ -439,7 +439,7 @@ class PageController(BaseController, FeedController):
         if not version: return self.page
         try:
             return self.page.get_version(version)
-        except ValueError:
+        except (ValueError, IndexError):
             return None
 
     @expose()
