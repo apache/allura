@@ -15,5 +15,29 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-def bulk_export(project, tools):
-    pass
+import logging
+
+from allura import model as M
+from allura.lib.decorators import task
+
+
+log = logging.getLogger(__name__)
+
+
+@task
+def bulk_export(project_shortname, tools):
+    project = M.Project.query.get(shortname=project_shortname)
+    if not project:
+        log.error('Project %s not found' % project_shortname)
+        return
+    for tool in tools or []:
+        app = project.app_instance(tool)
+        if not app:
+            log.info('Can not load app for %s mount point. Skipping.' % tool)
+            continue
+        if not app.exportable:
+            log.info('Tool %s is not exportable. Skipping.' % tool)
+            continue
+        log.info('Exporting %s...' % tool)
+        # TODO: Create file handle for *.json and pass it to bulk_export
+        app.bulk_export()
