@@ -783,13 +783,12 @@ class LastCommit(RepoObject):
 
     @classmethod
     def _last_commit_id(cls, commit, path):
-        commit_id = list(commit.repo.commits(path, commit._id, limit=1))
-        if commit_id:
-            commit_id = commit_id[0]
-        else:
+        try:
+            rev = commit.repo.log(commit._id, path, id_only=True).next()
+            return commit.repo.rev_to_commit_id(rev)
+        except StopIteration:
             log.error('Tree node not recognized by SCM: %s @ %s', path, commit._id)
-            commit_id = commit._id
-        return commit_id
+            return commit._id
 
     @classmethod
     def _prev_commit_id(cls, commit, path):
@@ -798,10 +797,13 @@ class LastCommit(RepoObject):
         lcid_cache = getattr(c, 'lcid_cache', '')
         if lcid_cache != '' and path in lcid_cache:
             return lcid_cache[path]
-        commit_id = list(commit.repo.commits(path, commit._id, skip=1, limit=1))
-        if not commit_id:
+        try:
+            log_iter = commit.repo.log(commit._id, path, id_only=True)
+            log_iter.next()
+            rev = log_iter.next()
+            return commit.repo.rev_to_commit_id(rev)
+        except StopIteration:
             return None
-        return commit_id[0]
 
     @classmethod
     def get(cls, tree, create=True):

@@ -471,59 +471,35 @@ class TestGitCommit(unittest.TestCase):
         for d in diffs:
             print d
 
-    def test_commits(self):
+    def test_log(self):
         # path only
-        commits = list(self.repo.commits())
-        assert len(commits) == 4, 'Returned %s commits' % len(commits)
-        assert "9a7df788cf800241e3bb5a849c8870f2f8259d98" in commits, commits
-        commits = list(self.repo.commits('README'))
-        assert len(commits) == 2, 'Returned %s README commits' % len(commits)
-        assert "1e146e67985dcd71c74de79613719bef7bddca4a" in commits, commits
-        assert "df30427c488aeab84b2352bdf88a3b19223f9d7a" in commits, commits
-        assert list(self.repo.commits('does/not/exist')) == []
-        # with path and start rev
-        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
-        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
-        # skip and limit
-        commits = list(self.repo.commits(None, rev=None, skip=1, limit=2))
-        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a', '6a45885ae7347f1cac5103b0050cc1be6a1496c8'])
-        commits = list(self.repo.commits(None, '6a45885ae7347f1cac5103b0050cc1be6a1496c8', skip=1))
-        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
-        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a', skip=1))
-        assert commits == []
-        # path to dir
-        commits = list(self.repo.commits('a/b/c/'))
-        assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8', '9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = list(self.repo.commits('a/b/c/', skip=1))
-        assert commits == ['9a7df788cf800241e3bb5a849c8870f2f8259d98']
-        commits = list(self.repo.commits('a/b/c/', limit=1))
-        assert commits == ['6a45885ae7347f1cac5103b0050cc1be6a1496c8']
-        commits = list(self.repo.commits('not/exist/'))
-        assert commits == []
-        # with missing add record
-        commit = M.repo.Commit.query.get(_id='df30427c488aeab84b2352bdf88a3b19223f9d7a')
-        commit.changed_paths = []
-        commits = list(self.repo.commits('README', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'))
-        assert_equal(commits, ['df30427c488aeab84b2352bdf88a3b19223f9d7a'])
-        # with missing add record & no parent
-        commit = M.repo.Commit.query.get(_id='9a7df788cf800241e3bb5a849c8870f2f8259d98')
-        commit.changed_paths = ['a']
-        commits = list(self.repo.commits('a/b/c/hello.txt', '9a7df788cf800241e3bb5a849c8870f2f8259d98'))
-        assert_equal(commits, ['9a7df788cf800241e3bb5a849c8870f2f8259d98'])
-
-    def test_commits_count(self):
-        commits = self.repo.commits_count()
-        assert commits == 4, commits
-        commits = self.repo.commits_count('README')
-        assert commits == 2, commits
-        commits = self.repo.commits_count(None, 'df30427c488aeab84b2352bdf88a3b19223f9d7a')
-        assert commits == 3, commits
-        commits = self.repo.commits_count('a/b/c/hello.txt', '6a45885ae7347f1cac5103b0050cc1be6a1496c8')
-        assert commits == 2, commits
-        commits = self.repo.commits_count('a/b/c/')
-        assert commits == 2, commits
-        commits = self.repo.commits_count('not/exist/')
-        assert commits == 0, commits
+        commits = list(self.repo.log(id_only=True))
+        assert_equal(commits, [
+                "1e146e67985dcd71c74de79613719bef7bddca4a",
+                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+                "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
+                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+            ])
+        commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
+        assert_equal(commits, [
+                "1e146e67985dcd71c74de79613719bef7bddca4a",
+                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+            ])
+        commits = list(self.repo.log("df30427c488aeab84b2352bdf88a3b19223f9d7a", 'README', id_only=True))
+        assert_equal(commits, [
+                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+            ])
+        commits = list(self.repo.log(self.repo.head, '/a/b/c/', id_only=True))
+        assert_equal(commits, [
+                "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
+                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+            ])
+        commits = list(self.repo.log("9a7df788cf800241e3bb5a849c8870f2f8259d98", '/a/b/c/', id_only=True))
+        assert_equal(commits, [
+                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+            ])
+        commits = list(self.repo.log(self.repo.head, '/does/not/exist/', id_only=True))
+        assert_equal(commits, [])
 
 
 class TestGitHtmlView(unittest.TestCase):

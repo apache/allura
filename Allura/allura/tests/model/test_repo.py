@@ -98,7 +98,8 @@ class TestLastCommit(unittest.TestCase):
         setup_global_objects()
         self.repo = mock.Mock('repo', _commits=OrderedDict(), _last_commit=None)
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
-        self.repo.commits = self._commits
+        self.repo.rev_to_commit_id = lambda rev: rev
+        self.repo.log = self._log
         lcids = M.repository.RepositoryImplementation.last_commit_ids.__func__
         self.repo.last_commit_ids = lambda *a, **k: lcids(self.repo, *a, **k)
         c.lcid_cache = {}
@@ -155,8 +156,10 @@ class TestLastCommit(unittest.TestCase):
         self.repo._commits[commit._id] = commit
         return commit
 
-    def _commits(self, path, commit_id, skip=0, limit=-1):
-        return [c._id for c in reversed(self.repo._commits.values()) if path in c.changed_paths][skip:limit]
+    def _log(self, revs, path, id_only=True):
+        for commit_id, commit in reversed(self.repo._commits.items()):
+            if path in commit.changed_paths:
+                yield commit_id
 
     def test_single_commit(self):
         commit1 = self._add_commit('Commit 1', [
