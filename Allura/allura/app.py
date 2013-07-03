@@ -218,6 +218,7 @@ class Application(object):
     }
     installable = True
     searchable = False
+    exportable = False
     DiscussionClass = model.Discussion
     PostClass = model.Post
     AttachmentClass = model.DiscussionAttachment
@@ -541,6 +542,13 @@ class Application(object):
                 parent_id=parent_id,
                 text=text,
                 subject=message['headers'].get('Subject', 'no subject'))
+
+    def bulk_export(self):
+        """Export all artifacts in the tool into json file.
+
+        Set exportable to True for applications implementing this.
+        """
+        raise NotImplementedError, 'bulk_export'
 
 
 class DefaultAdminController(BaseController):
