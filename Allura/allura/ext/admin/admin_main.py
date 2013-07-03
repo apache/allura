@@ -73,6 +73,7 @@ class AdminApp(Application):
     __version__ = version.__version__
     installable=False
     _installable_tools = None
+    _exportable_tools = None
     tool_label = 'admin'
     icons={
         24:'images/admin_24.png',
@@ -101,6 +102,18 @@ class AdminApp(Application):
         return [ t for t in cls._installable_tools
             if t['app'].status in project.allowed_tool_status ]
 
+    @staticmethod
+    def exportable_tools_for(project):
+        cls = AdminApp
+        tools = []
+        if cls._exportable_tools is None:
+            for tool in project.ordered_mounts():
+                if not tool.get('ac'):
+                    continue
+                if project.app_instance(tool['ac']).exportable:
+                    tools.append(tool['ac'])
+        return tools
+
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
@@ -128,6 +141,7 @@ class AdminApp(Application):
                     SitemapEntry('Categorization', admin_url+'trove')
                 ]
         links.append(SitemapEntry('Tools', admin_url+'tools'))
+        links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
             links.append(SitemapEntry('User Permissions', admin_url+'groups/'))
         if not c.project.is_root and has_access(c.project, 'admin')():
@@ -617,6 +631,11 @@ class ProjectAdminController(BaseController):
                   'error')
         g.post_event('project_updated')
         redirect('tools')
+
+    @expose('jinja:allura.ext.admin:templates/export.html')
+    def export(self):
+        return {'tools': AdminApp.exportable_tools_for(c.project)}
+
 
 class PermissionsController(BaseController):
 

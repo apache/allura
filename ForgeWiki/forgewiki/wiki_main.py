@@ -89,6 +89,7 @@ class ForgeWikiApp(Application):
         'admin': 'Set permissions. Configure options. Set wiki home page.',
     }
     searchable=True
+    exportable=True
     tool_label='Wiki'
     tool_description="""
         Documentation is key to your project and the wiki tool
@@ -284,6 +285,7 @@ The wiki uses [Markdown](%s) syntax.
         WM.Page.query.remove(dict(app_config_id=self.config._id))
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
+
 
 class RootController(BaseController, DispatchIndex, FeedController):
 

@@ -22,7 +22,7 @@ import StringIO
 from contextlib import contextmanager
 
 import PIL
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from pylons import tmpl_context as c, app_globals as g
@@ -39,6 +39,7 @@ from allura.tests import decorators as td
 from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.plugin import AdminExtension
+from allura.ext.admin.admin_main import AdminApp
 
 @contextmanager
 def audits(*messages):
@@ -765,3 +766,28 @@ class TestProjectAdmin(TestController):
             url = foo_page.environ['PATH_INFO']
             assert url.endswith('/admin/ext/foo'), url
             assert_equals('here the foo settings go', foo_page.body)
+
+
+class TestExport(TestController):
+
+    def setUp(self):
+        super(TestExport, self).setUp()
+        self.setup_with_tools()
+
+    @td.with_wiki
+    @td.with_tool('test', 'Wiki', 'wiki2', 'Wiki 2')
+    @td.with_tool('test', 'Tickets', 'bugs', 'Bugs')
+    def setup_with_tools(self):
+        pass
+
+    def test_exportable_tools_for(self):
+        project = M.Project.query.get(shortname='test')
+        tools = [t.options.mount_point
+                 for t in AdminApp.exportable_tools_for(project)]
+        assert_equals(tools, [u'wiki', u'wiki2'])
+
+    def test_export_page_contains_exportable_tools(self):
+        r = self.app.get('/admin/export')
+        assert_in('Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>', r)
+        assert_in('Wiki 2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>', r)
+        assert_not_in('Bugs</label> <a href="/p/test/bugs/">/p/test/bugs/</a>', r)
