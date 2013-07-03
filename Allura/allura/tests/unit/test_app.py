@@ -96,6 +96,9 @@ class TestAppDefaults(WithDatabase):
         assert self.app.sitemap[0].label == 'My Mounted App'
         assert self.app.sitemap[0].url == '.'
 
+    def test_not_exportable_by_default(self):
+        assert not self.app.exportable
+
 
 def install_app():
     project = create_project('myproject')
