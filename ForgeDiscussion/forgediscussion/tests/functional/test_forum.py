@@ -26,7 +26,7 @@ from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 
 from allura import model as M
 from allura.tasks import mail_tasks
@@ -407,6 +407,21 @@ class TestForum(TestController):
         assert '[Test Thread](' in n.text
         assert 'noreply' not in n.reply_to_address, n
         assert 'testforum@discussion.test.p' in n.reply_to_address, n
+
+    def test_notifications_escaping(self):
+        r = self.app.get('/discussion/create_topic/')
+        f = r.html.find('form', {'action':'/p/test/discussion/save_new_topic'})
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = 'Post text'
+        params[f.find('select')['name']] = 'testforum'
+        params[f.find('input', {'style':'width: 90%'})['name']] = "this is <h2> o'clock"
+        r = self.app.post('/discussion/save_new_topic', params=params)
+        n = M.Notification.query.find(dict(subject="[test:discussion] this is <h2> o'clock")).first()
+        assert_in('---\n\n[this is &lt;h2&gt; o&#39;clock]', n.text)
 
     @mock.patch('allura.model.discuss.g.spam_checker')
     def test_anonymous_post(self, spam_checker):

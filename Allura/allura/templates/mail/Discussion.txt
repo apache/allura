@@ -20,4 +20,4 @@
 
 ---
 
-[{{post.thread.subject}}]({{h.absurl(post.url_paginated())}})
+[{{post.thread.subject|e}}]({{h.absurl(post.url_paginated())}})
