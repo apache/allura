@@ -45,12 +45,16 @@ class _HTMLExplanation(ew.InputField):
         ''',
         'jinja2')
 
-class NeighborhoodProjectTakenValidator(fev.FancyValidator):
+class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
         value = h.really_unicode(value or '').encode('utf-8').lower()
         neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
-        message = plugin.ProjectRegistrationProvider.get().name_taken(value, neighborhood)
+        provider = plugin.ProjectRegistrationProvider.get()
+        message = provider.validate_project_shortname(value, neighborhood)
+        if message:
+            raise formencode.Invalid(message, value, state)
+        message = provider.name_taken(value, neighborhood)
         if message:
             raise formencode.Invalid(message, value, state)
         return value
@@ -779,14 +783,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 V.MaxBytesValidator(max=40)))
         project_unixname = ew.InputField(
             label='Short Name', field_type='text',
-            validator=formencode.All(
-                fev.String(not_empty=True),
-                fev.MinLength(3),
-                fev.MaxLength(15),
-                fev.Regex(
-                    r'^[A-z][-A-z0-9]{2,}$',
-                    messages={'invalid':'Please use only letters, numbers, and dashes 3-15 characters long.'}),
-                NeighborhoodProjectTakenValidator()))
+            validator=NeighborhoodProjectShortNameValidator())
         tools = ew.CheckboxSet(name='tools', options=[
             ## Required for Neighborhood functional tests to pass
             ew.Option(label='Wiki', html_value='wiki', selected=True)
@@ -805,12 +802,14 @@ class NeighborhoodAddProjectForm(ForgeForm):
     def resources(self):
         for r in super(NeighborhoodAddProjectForm, self).resources(): yield r
         yield ew.CSSLink('css/add_project.css')
+        neighborhood = g.antispam.enc('neighborhood')
         project_name = g.antispam.enc('project_name')
         project_unixname = g.antispam.enc('project_unixname')
 
         yield ew.JSScript('''
             $(function(){
                 var $scms = $('input[type=checkbox].scm');
+                var $nbhd_input = $('input[name="%(neighborhood)s"]');
                 var $name_input = $('input[name="%(project_name)s"]');
                 var $unixname_input = $('input[name="%(project_unixname)s"]');
                 var $url_fragment = $('#url_fragment');
@@ -864,12 +863,13 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 });
                 var check_names = function() {
                     var data = {
-                        'project_name':$name_input.val(),
-                        'unix_name': $unixname_input.val()
+                        'neighborhood': $nbhd_input.val(),
+                        'project_name': $name_input.val(),
+                        'project_unixname': $unixname_input.val()
                     };
                     $.getJSON('check_names', data, function(result){
-                        handle_error($name_input, result.name_message);
-                        handle_error($unixname_input, result.unixname_message);
+                        handle_error($name_input, result.project_name);
+                        handle_error($unixname_input, result.project_unixname);
                     });
                 };
                 var manual = false;
@@ -897,7 +897,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     delay(check_names, 500);
                 });
             });
-        ''' % dict(project_name=project_name, project_unixname=project_unixname))
+        ''' % dict(neighborhood=neighborhood, project_name=project_name, project_unixname=project_unixname))
 
 
 class MoveTicketForm(ForgeForm):

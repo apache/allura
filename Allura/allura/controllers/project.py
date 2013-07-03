@@ -80,7 +80,8 @@ class NeighborhoodController(object):
     @expose()
     def _lookup(self, pname, *remainder):
         pname = unquote(pname)
-        if not h.re_project_name.match(pname):
+        provider = plugin.ProjectRegistrationProvider.get()
+        if provider.validate_project_shortname(pname, self.neighborhood):
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
@@ -180,19 +181,9 @@ class NeighborhoodController(object):
             self.neighborhood))
 
     @expose('json:')
-    def check_names(self, project_name='', unix_name=''):
-        provider = plugin.ProjectRegistrationProvider.get()
-        result = dict()
-        try:
-            W.add_project.fields['project_name'].validate(project_name, '')
-        except Invalid as e:
-            result['name_message'] = str(e)
-
-        unixname_invalid_err = provider.validate_project_shortname(unix_name,
-                self.neighborhood)
-        result['unixname_message'] = (unixname_invalid_err or
-                provider.name_taken(unix_name, self.neighborhood))
-        return result
+    @validate(W.add_project)
+    def check_names(self, **raw_data):
+        return c.form_errors
 
     @h.vardec
     @expose()

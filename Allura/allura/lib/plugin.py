@@ -373,20 +373,7 @@ class ProjectRegistrationProvider(object):
         p = M.Project.query.get(shortname=project_name, neighborhood_id=neighborhood._id)
         if p:
             return 'This project name is taken.'
-        for check in self.extra_name_checks():
-            if re.match(str(check[1]),project_name) is not None:
-                return check[0]
         return False
-
-    def extra_name_checks(self):
-        """Return an iterable of ``(error_message, regex)`` tuples.
-
-        If user attempts to register a project with a name that matches
-        ``regex``, the field will be marked invalid, and ``error_message``
-        displayed to the user.
-
-        """
-        return []
 
     def suggest_name(self, project_name, neighborhood):
         """Return a suggested project shortname for the full ``project_name``.
