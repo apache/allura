@@ -41,6 +41,7 @@ from allura.lib import exceptions as forge_exc
 from allura.lib import plugin
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
+from allura.tasks import export_tasks
 
 from . import widgets as aw
 from allura.lib.widgets.project_list import ProjectScreenshots
@@ -633,8 +634,22 @@ class ProjectAdminController(BaseController):
         redirect('tools')
 
     @expose('jinja:allura.ext.admin:templates/export.html')
-    def export(self):
-        return {'tools': AdminApp.exportable_tools_for(c.project)}
+    def export(self, tools=None):
+        exportable_tools = AdminApp.exportable_tools_for(c.project)
+        if request.method == 'POST':
+            if not tools:
+                flash('Select at least one tool to export', 'error')
+                redirect('export')
+            if isinstance(tools, basestring):
+                tools = [tools]
+            allowed = set(t.options.mount_point for t in exportable_tools)
+            if not set(tools).issubset(allowed):
+                flash('Wrong tools in input data', 'error')
+                redirect('export')
+            export_tasks.bulk_export.post(c.project.shortname, tools)
+            flash('Export scheduled', 'ok')
+            redirect('export')
+        return {'tools': exportable_tools}
 
 
 class PermissionsController(BaseController):

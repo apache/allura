@@ -25,14 +25,14 @@
 {% block content %}
 <div class="grid-19">
   {% if tools %}
-    <form method="POST" action=".">
+    <form method="POST" action="">
       {% for tool in tools %}
       <div class="grid-19">
-        <input type="checkbox" name="tools" id="tool-{{ loop.index }}">
+        <input type="checkbox" name="tools" id="tool-{{ loop.index }}" value="{{ tool.options.mount_point }}">
         <label for="tool-{{ loop.index }}">{{ tool.options.mount_label }}</label> <a href="{{ tool.url() }}">{{ tool.url() }}</a>
       </div>
       {% endfor %}
-      <p><div class="grid-19"><input type="submit" name="Export"></div></p>
+      <p><div class="grid-19"><input type="submit" value="Export"></div></p>
     </form>
   {% else %}
     There are no exportable tools in your project.
