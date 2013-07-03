@@ -559,46 +559,19 @@ class TestSVNRev(unittest.TestCase):
     def _oid(self, rev_id):
         return '%s:%s' % (self.repo._id, rev_id)
 
-    def test_commits(self):
+    def test_log(self):
         # path only
-        commits = self.repo.commits()
-        assert len(commits) == 5, 'Returned %s commits' % len(commits)
-        assert self._oid(5) in commits, commits
-        assert self._oid(1) in commits, commits
-        commits = self.repo.commits('README')
-        assert commits == [self._oid(3), self._oid(1)]
-        assert self.repo.commits('does/not/exist') == []
-        # with path and start rev
-        commits = self.repo.commits('README', self._oid(1))
-        assert commits == [self._oid(1)], commits
-        # skip and limit
-        commits = self.repo.commits(None, rev=None, skip=1, limit=2)
-        assert commits == [self._oid(4), self._oid(3)]
-        commits = self.repo.commits(None, self._oid(2), skip=1)
-        assert commits == [self._oid(1)], commits
-        commits = self.repo.commits('README', self._oid(1), skip=1)
-        assert commits == []
-        # path to dir
-        commits = self.repo.commits('a/b/c/')
-        assert commits == [self._oid(4), self._oid(2)]
-        commits = self.repo.commits('a/b/c/', skip=1)
-        assert commits == [self._oid(2)]
-        commits = self.repo.commits('a/b/c/', limit=1)
-        assert commits == [self._oid(4)]
-        commits = self.repo.commits('not/exist/')
-        assert commits == []
-
-    def test_commits_count(self):
-        commits = self.repo.commits_count()
-        assert commits == 5, commits
-        commits = self.repo.commits_count('a/b/c/')
-        assert commits == 2, commits
-        commits = self.repo.commits_count(None, self._oid(3))
-        assert commits == 3, commits
-        commits = self.repo.commits_count('README', self._oid(1))
-        assert commits == 1, commits
-        commits = self.repo.commits_count('not/exist/')
-        assert commits == 0, commits
+        commits = list(self.repo.log(self.repo.head, id_only=True))
+        assert_equal(commits, [5, 4, 3, 2, 1])
+        commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
+        assert_equal(commits, [3, 1])
+        commits = list(self.repo.log(1, 'README', id_only=True))
+        assert_equal(commits, [1])
+        commits = list(self.repo.log(self.repo.head, 'a/b/c/', id_only=True))
+        assert_equal(commits, [4, 2])
+        commits = list(self.repo.log(3, 'a/b/c/', id_only=True))
+        assert_equal(commits, [2])
+        assert_equal(list(self.repo.log(self.repo.head, 'does/not/exist', id_only=True)), [])
 
     def test_notification_email(self):
         setup_global_objects()
@@ -613,8 +586,7 @@ class TestSVNRev(unittest.TestCase):
             status = 'creating')
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
-        commits = self.repo.commits()
-        send_notifications(self.repo, [commits[4], ])
+        send_notifications(self.repo, [self.repo.rev_to_commit_id(1)])
         ThreadLocalORMSession.flush_all()
         n = M.Notification.query.find(
             dict(subject='[test:src] [r1] - rick446: Create readme')).first()

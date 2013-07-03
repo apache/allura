@@ -266,20 +266,6 @@ class GitImplementation(M.RepositoryImplementation):
         doc.m.save(safe=False)
         return doc
 
-    def commits(self, path=None, rev=None, skip=None, limit=None):
-        params = dict(paths=path)
-        if rev is not None:
-            params['rev'] = rev
-        if skip is not None:
-            params['skip'] = skip
-        if limit is not None:
-            params['max_count'] = limit
-        return (c.hexsha for c in self._git.iter_commits(**params))
-
-    def commits_count(self, path=None, rev=None):
-        commit = self._git.commit(rev)
-        return commit.count(path)
-
     def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
         Returns a generator that returns information about commits reachable

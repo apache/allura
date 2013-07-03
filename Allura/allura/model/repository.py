@@ -135,14 +135,6 @@ class RepositoryImplementation(object):
         '''Return a blob size in bytes'''
         raise NotImplementedError, 'blob_size'
 
-    def commits(self, path=None, rev=None, skip=None, limit=None):
-        '''Return a list of the commits related to path'''
-        raise NotImplementedError, 'commits'
-
-    def commits_count(self, path=None, rev=None):
-        '''Return count of the commits related to path'''
-        raise NotImplementedError, 'commits_count'
-
     def tarball(self, revision, path=None):
         '''Create a tarball for the revision'''
         raise NotImplementedError, 'tarball'
@@ -346,10 +338,6 @@ class Repository(Artifact, ActivityObject):
         return self._impl.url_for_commit(commit, url_type)
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
-    def commits(self, path=None, rev=None, skip=None, limit=None):
-        return self._impl.commits(path, rev, skip, limit)
-    def commits_count(self, path=None, rev=None):
-        return self._impl.commits_count(path, rev)
     def last_commit_ids(self, commit, paths):
         return self._impl.last_commit_ids(commit, paths)
     def is_empty(self):
@@ -432,16 +420,6 @@ class Repository(Artifact, ActivityObject):
         if exclude is not None and not isinstance(exclude, (list, tuple)):
             exclude = [exclude]
         return self._impl.log(revs, path, exclude=exclude, id_only=id_only, **kw)
-
-    def commitlog(self, revs):
-        """
-        Return a generator that returns Commit model instances reachable by
-        the commits specified by revs.
-        """
-        for ci_id in self.log(revs, id_only=True):
-            commit = self.commit(ci_id)
-            commit.set_context(self)
-            yield commit
 
     def latest(self, branch=None):
         if self._impl is None:

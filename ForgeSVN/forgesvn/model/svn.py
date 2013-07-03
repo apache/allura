@@ -620,45 +620,6 @@ class SVNImplementation(M.RepositoryImplementation):
     def _oid(self, revno):
         return '%s:%s' % (self._repo._id, revno)
 
-    def commits(self, path=None, rev=None, skip=None, limit=None):
-        if path is not None:
-            path = '%s/%s' % (self._url, path)
-        else:
-            path = self._url
-        opts = {}
-        if rev is not None:
-            opts['revision_start'] = pysvn.Revision(pysvn.opt_revision_kind.number, self._revno(rev))
-            opts['revision_end'] = pysvn.Revision(pysvn.opt_revision_kind.number, 0)
-        if skip is None: skip = 0
-        if limit:
-            # we need to expand limit to include skipped revs (pysvn doesn't support skip)
-            opts['limit'] = skip + limit
-        try:
-            revs = self._svn.log(path, **opts)
-        except pysvn.ClientError as e:
-            log.exception('ClientError processing commits for SVN: path %s, rev %s, skip=%s, limit=%s, treating as empty',
-                    path, rev, skip, limit)
-            return []
-        if skip:
-            # pysvn has already limited result for us, we just need to skip
-            revs = revs[skip:]
-        return [self._oid(r.revision.number) for r in revs]
-
-    def commits_count(self, path=None, rev=None):
-        if path is not None:
-            path = '%s/%s' % (self._url, path)
-        else:
-            path = self._url
-        opts = {}
-        if rev is not None:
-            opts['revision_start'] = pysvn.Revision(pysvn.opt_revision_kind.number, self._revno(rev))
-            opts['revision_end'] = pysvn.Revision(pysvn.opt_revision_kind.number, 0)
-        try:
-            return len(self._svn.log(path, **opts))
-        except pysvn.ClientError as e:
-            log.exception('ClientError processing commits for SVN: path %s, rev %s, treating as empty', path, rev)
-            return 0
-
     def last_commit_ids(self, commit, paths):
         '''
         Return a mapping {path: commit_id} of the _id of the last
