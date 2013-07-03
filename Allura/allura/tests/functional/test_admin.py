@@ -786,8 +786,44 @@ class TestExport(TestController):
                  for t in AdminApp.exportable_tools_for(project)]
         assert_equals(tools, [u'wiki', u'wiki2'])
 
+    def test_access(self):
+        r = self.app.get('/admin/export',
+                         extra_environ={'username': '*anonymous'}).follow()
+        assert_equals(r.request.url, 'http://localhost/auth/?return_to=%2Fadmin%2Fexport')
+        self.app.get('/admin/export',
+                     extra_environ={'username': 'test-user'},
+                     status=403)
+        r = self.app.post('/admin/export',
+                          extra_environ={'username': '*anonymous'}).follow()
+        assert_equals(r.request.url, 'http://localhost/auth/')
+        self.app.post('/admin/export',
+                      extra_environ={'username': 'test-user'},
+                      status=403)
+
     def test_export_page_contains_exportable_tools(self):
         r = self.app.get('/admin/export')
         assert_in('Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>', r)
         assert_in('Wiki 2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>', r)
         assert_not_in('Bugs</label> <a href="/p/test/bugs/">/p/test/bugs/</a>', r)
+
+    def test_tools_not_selected(self):
+        r = self.app.post('/admin/export')
+        assert_in('error', self.webflash(r))
+
+    def test_bad_tool(self):
+        r = self.app.post('/admin/export', {'tools': u'bugs'})
+        assert_in('error', self.webflash(r))
+
+    @mock.patch('allura.ext.admin.admin_main.export_tasks')
+    def test_selected_one_tool(self, export_tasks):
+        r = self.app.post('/admin/export', {'tools': u'wiki'})
+        assert_in('ok', self.webflash(r))
+        export_tasks.bulk_export.post.assert_called_once_with(
+            'test', [u'wiki'])
+
+    @mock.patch('allura.ext.admin.admin_main.export_tasks')
+    def test_selected_multiple_tools(self, export_tasks):
+        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
+        assert_in('ok', self.webflash(r))
+        export_tasks.bulk_export.post.assert_called_once_with(
+            'test', [u'wiki', u'wiki2'])
