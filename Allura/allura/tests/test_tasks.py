@@ -42,6 +42,7 @@ from allura.tasks import index_tasks
 from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
 from allura.tasks import repo_tasks
+from allura.tasks import export_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
 
@@ -321,5 +322,46 @@ class _TestArtifact(M.Artifact):
         return dict(
             super(_TestArtifact, self).index(),
             text=self.text)
+
+
+class TestExportTasks(unittest.TestCase):
+
+    def setUp(self):
+        setup_basic_test()
+        setup_global_objects()
+
+    @mock.patch('allura.tasks.export_tasks.log')
+    def test_bulk_export_invalid_project(self, log):
+        export_tasks.bulk_export('bad', [u'wiki'])
+        log.error.assert_called_once_with('Project bad not found')
+
+    @mock.patch('allura.tasks.export_tasks.log')
+    def test_bulk_export_invalid_tool(self, log):
+        export_tasks.bulk_export('test', [u'bugs', u'blog'])
+        assert_equal(log.info.call_count, 2)
+        assert_equal(log.info.call_args_list, [
+            mock.call('Can not load app for bugs mount point. Skipping.'),
+            mock.call('Can not load app for blog mount point. Skipping.')])
+
+    @mock.patch('allura.tasks.export_tasks.log')
+    @td.with_tool('test', 'Tickets', 'bugs')
+    @td.with_tool('test', 'Blog', 'blog')
+    def test_bulk_export_not_exportable_tool(self, log):
+        export_tasks.bulk_export('test', [u'bugs', u'blog'])
+        assert_equal(log.info.call_count, 2)
+        assert_equal(log.info.call_args_list, [
+            mock.call('Tool bugs is not exportable. Skipping.'),
+            mock.call('Tool blog is not exportable. Skipping.')])
+
+    @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
+    @mock.patch('allura.tasks.export_tasks.log')
+    @td.with_wiki
+    def test_bulk_export(self, log, wiki_bulk_export):
+        export_tasks.bulk_export('test', [u'wiki'])
+        assert_equal(log.info.call_count, 1)
+        assert_equal(log.info.call_args_list, [
+            mock.call('Exporting wiki...')])
+        wiki_bulk_export.assert_called_once()
+
 
 Mapper.compile_all()
