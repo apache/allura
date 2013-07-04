@@ -23,6 +23,16 @@
 {% block header %}Project Export{% endblock %}
 
 {% block content %}
+
+{% if status == 'ready' %}
+<div class="error">
+  <h2>Careful!</h2>
+  This project has been exported already.
+  Follow instructions in notification email to get the exported data.
+  If you run export again previous exported data will be lost.
+</div>
+{% endif %}
+
 <div class="grid-19">
   {% if tools %}
     <form method="POST" action="">
