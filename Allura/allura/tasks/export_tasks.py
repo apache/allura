@@ -33,6 +33,9 @@ def bulk_export(project_shortname, tools):
     if not project:
         log.error('Project %s not found' % project_shortname)
         return
+    if project.bulk_export_status() == 'busy':
+        log.info('Another export is running for project %s. Skipping.' % project_shortname)
+        return
     for tool in tools or []:
         app = project.app_instance(tool)
         if not app:

@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import logging
 from collections import Counter, OrderedDict
 from datetime import datetime
@@ -827,6 +828,14 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def bulk_export_filename(self):
         return '%s.zip' % self.shortname
+
+    def bulk_export_status(self):
+        fn = os.path.join(self.bulk_export_path(), self.bulk_export_filename())
+        tmpdir = os.path.join(self.bulk_export_path(), self.shortname)
+        if os.path.isfile(fn):
+            return 'ready'
+        elif os.path.exists(tmpdir):
+            return 'busy'
 
 
 class AppConfig(MappedClass):
