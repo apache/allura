@@ -820,6 +820,12 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 accounturl=accounturl
                 ))
 
+    def bulk_export_path(self):
+        return config['bulk_export_path'].format(
+                nbhd=self.neighborhood.url_prefix.strip('/'),
+                project=self.shortname)
+
+
 class AppConfig(MappedClass):
     """
     Configuration information for an instantiated :class:`Application <allura.app.Application>`
