@@ -820,26 +820,33 @@ class TestExport(TestController):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki'])
+            'test', [u'wiki'], u'test-admin')
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki', u'wiki2'])
+            'test', [u'wiki', u'wiki2'], u'test-admin')
 
     @patch('allura.ext.admin.admin_main.export_tasks')
     def test_export_in_progress(self, export_tasks):
         p = M.Project.query.get(shortname='test')
         tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
-        shutil.rmtree(tmpdir, ignore_errors=True)
+        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
         os.makedirs(tmpdir)
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('info', self.webflash(r))
         assert_equals(export_tasks.bulk_export.post.call_count, 0)
-        shutil.rmtree(tmpdir, ignore_errors=True)
+        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
 
     def test_export_done(self):
+        p = M.Project.query.get(shortname='test')
+        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
+        os.makedirs(p.bulk_export_path())
+        fn = os.path.join(p.bulk_export_path(), p.bulk_export_filename())
+        with open(fn, 'w') as f:
+            f.write('Pretending I am zip archive')
         r = self.app.get('/admin/export')
         assert_in('<h2>Careful!</h2>', r)
+        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)

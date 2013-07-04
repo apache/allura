@@ -19,8 +19,13 @@ import os
 import logging
 import shutil
 
+import tg
+from pylons import app_globals as g
+
 from allura import model as M
+from allura.tasks import mail_tasks
 from allura.lib.decorators import task
+from allura.lib import helpers as h
 from allura.model.repository import zipdir
 
 
@@ -28,7 +33,7 @@ log = logging.getLogger(__name__)
 
 
 @task
-def bulk_export(project_shortname, tools):
+def bulk_export(project_shortname, tools, username):
     project = M.Project.query.get(shortname=project_shortname)
     if not project:
         log.error('Project %s not found' % project_shortname)
@@ -57,6 +62,28 @@ def bulk_export(project_shortname, tools):
         zip_and_cleanup(project)
     except:
         log.error('Something went wrong during zipping exported data.', exc_info=True)
+
+    user = M.User.by_username(username)
+    if not user:
+        log.info('Can not find user %s. Skipping notification.' % username)
+        return
+    tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
+    instructions = tg.config.get('bulk_export_download_instructions', '')
+    instructions = instructions.format(project=project.shortname)
+    tmpl_context = {
+        'instructions': instructions,
+        'project': project,
+        'tools': tools,
+    }
+    email = {
+        'fromaddr': unicode(user.email_address_header()),
+        'reply_to': unicode(user.email_address_header()),
+        'message_id': h.gen_message_id(),
+        'destinations': [unicode(user._id)],
+        'subject': u'Bulk export for project %s completed' % project_shortname,
+        'text': tmpl.render(tmpl_context),
+    }
+    mail_tasks.sendmail.post(**email)
 
 
 def create_export_dir(project):
