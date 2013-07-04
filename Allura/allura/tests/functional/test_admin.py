@@ -17,6 +17,7 @@
 
 import re
 import os, allura
+import shutil
 import pkg_resources
 import StringIO
 from contextlib import contextmanager
@@ -827,3 +828,18 @@ class TestExport(TestController):
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
             'test', [u'wiki', u'wiki2'])
+
+    @patch('allura.ext.admin.admin_main.export_tasks')
+    def test_export_in_progress(self, export_tasks):
+        p = M.Project.query.get(shortname='test')
+        tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
+        shutil.rmtree(tmpdir, ignore_errors=True)
+        os.makedirs(tmpdir)
+        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
+        assert_in('info', self.webflash(r))
+        assert_equals(export_tasks.bulk_export.post.call_count, 0)
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+    def test_export_done(self):
+        r = self.app.get('/admin/export')
+        assert_in('<h2>Careful!</h2>', r)

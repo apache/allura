@@ -646,10 +646,16 @@ class ProjectAdminController(BaseController):
             if not set(tools).issubset(allowed):
                 flash('Wrong tools in input data', 'error')
                 redirect('export')
+            if c.project.bulk_export_status() == 'busy':
+                flash('Export for project %s already running' % c.project.shortname, 'info')
+                redirect('export')
             export_tasks.bulk_export.post(c.project.shortname, tools)
             flash('Export scheduled', 'ok')
             redirect('export')
-        return {'tools': exportable_tools}
+        return {
+            'tools': exportable_tools,
+            'status': c.project.bulk_export_status()
+        }
 
 
 class PermissionsController(BaseController):
