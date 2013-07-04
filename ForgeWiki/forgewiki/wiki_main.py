@@ -286,6 +286,10 @@ The wiki uses [Markdown](%s) syntax.
         WM.Globals.query.remove(dict(app_config_id=self.config._id))
         super(ForgeWikiApp, self).uninstall(project)
 
+    def bulk_export(self, f):
+        # TODO: implement this
+        f.write('{}\n')
+
 
 class RootController(BaseController, DispatchIndex, FeedController):
 
