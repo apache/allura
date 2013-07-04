@@ -17,12 +17,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import operator
+import shutil
 import sys
 import unittest
 from base64 import b64encode
 import logging
 
+import tg
 import mock
 from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
@@ -30,6 +33,7 @@ from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
+from IPython.testing.decorators import onlyif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
@@ -362,6 +366,26 @@ class TestExportTasks(unittest.TestCase):
         assert_equal(log.info.call_args_list, [
             mock.call('Exporting wiki...')])
         wiki_bulk_export.assert_called_once()
+
+    def test_create_export_dir(self):
+        project = M.Project.query.get(shortname='test')
+        export_path = project.bulk_export_path()
+        shutil.rmtree(export_path, ignore_errors=True)
+        path = export_tasks.create_export_dir(project)
+        assert_equal(path, '/tmp/bulk_export/p/test/test')
+        assert os.path.exists(os.path.join(export_path, project.shortname))
+        shutil.rmtree(export_path, ignore_errors=True)
+
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    def test_zip_and_cleanup(self):
+        project = M.Project.query.get(shortname='test')
+        export_path = project.bulk_export_path()
+        shutil.rmtree(export_path, ignore_errors=True)
+        path = export_tasks.create_export_dir(project)
+        export_tasks.zip_and_cleanup(project)
+        assert not os.path.exists(path)
+        assert os.path.exists(os.path.join(export_path, 'test.zip'))
+        shutil.rmtree(export_path, ignore_errors=True)
 
 
 Mapper.compile_all()

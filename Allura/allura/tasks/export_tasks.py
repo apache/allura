@@ -17,9 +17,11 @@
 
 import os
 import logging
+import shutil
 
 from allura import model as M
 from allura.lib.decorators import task
+from allura.model.repository import zipdir
 
 
 log = logging.getLogger(__name__)
@@ -49,19 +51,33 @@ def bulk_export(project_shortname, tools):
             continue
 
     try:
-        cleanup()
+        zip_and_cleanup(project)
     except:
-        log.error('Error on cleanup.', exc_info=True)
+        log.error('Something went wrong during zipping exported data.', exc_info=True)
 
 
 def create_export_dir(project):
     """Create temporary directory for export files"""
-    path = os.path.join(project.bulk_export_path(), 'tmp')
+    zip_fn = project.bulk_export_filename()
+    # Name temporary directory after project shortname,
+    # thus zipdir() will use proper prefix inside the archive.
+    tmp_dir_suffix = zip_fn.split('.')[0]
+    path = os.path.join(project.bulk_export_path(), tmp_dir_suffix)
     if not os.path.exists(path):
         os.makedirs(path)
     return path
 
 
-def cleanup():
-    """Copy zip with export data to proper location. Remove temporary files."""
-    pass
+def zip_and_cleanup(project):
+    """Zip exported data. Copy it to proper location. Remove temporary files."""
+    path = project.bulk_export_path()
+    zip_fn = project.bulk_export_filename()
+    temp = os.path.join(path, zip_fn.split('.')[0])
+    zip_path_temp = os.path.join(temp, zip_fn)
+    zip_path = os.path.join(path, zip_fn)
+
+    zipdir(temp, zip_path_temp)
+
+    # cleanup
+    shutil.move(zip_path_temp, zip_path)
+    shutil.rmtree(temp)

@@ -825,6 +825,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 nbhd=self.neighborhood.url_prefix.strip('/'),
                 project=self.shortname)
 
+    def bulk_export_filename(self):
+        return '%s.zip' % self.shortname
+
 
 class AppConfig(MappedClass):
     """
