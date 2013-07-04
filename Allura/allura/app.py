@@ -543,8 +543,10 @@ class Application(object):
                 text=text,
                 subject=message['headers'].get('Subject', 'no subject'))
 
-    def bulk_export(self):
+    def bulk_export(self, f):
         """Export all artifacts in the tool into json file.
+
+        :param f: File Object to write to
 
         Set exportable to True for applications implementing this.
         """
