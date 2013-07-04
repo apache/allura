@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import logging
 
 from allura import model as M
@@ -39,5 +40,28 @@ def bulk_export(project_shortname, tools):
             log.info('Tool %s is not exportable. Skipping.' % tool)
             continue
         log.info('Exporting %s...' % tool)
-        # TODO: Create file handle for *.json and pass it to bulk_export
-        app.bulk_export()
+        try:
+            path = create_export_dir(project)
+            with open(os.path.join(path, '%s.json' % tool), 'w') as f:
+                app.bulk_export(f)
+        except:
+            log.error('Something went wrong during export of %s' % tool, exc_info=True)
+            continue
+
+    try:
+        cleanup()
+    except:
+        log.error('Error on cleanup.', exc_info=True)
+
+
+def create_export_dir(project):
+    """Create temporary directory for export files"""
+    path = os.path.join(project.bulk_export_path(), 'tmp')
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
+
+def cleanup():
+    """Copy zip with export data to proper location. Remove temporary files."""
+    pass
