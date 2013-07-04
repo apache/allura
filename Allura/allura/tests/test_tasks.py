@@ -333,6 +333,12 @@ class TestExportTasks(unittest.TestCase):
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
+        project = M.Project.query.get(shortname='test')
+        shutil.rmtree(project.bulk_export_path(), ignore_errors=True)
+
+    def tearDown(self):
+        project = M.Project.query.get(shortname='test')
+        shutil.rmtree(project.bulk_export_path(), ignore_errors=True)
 
     @mock.patch('allura.tasks.export_tasks.log')
     def test_bulk_export_invalid_project(self, log):
@@ -357,35 +363,61 @@ class TestExportTasks(unittest.TestCase):
             mock.call('Tool bugs is not exportable. Skipping.'),
             mock.call('Tool blog is not exportable. Skipping.')])
 
+    @mock.patch('allura.tasks.export_tasks.shutil')
+    @mock.patch('allura.tasks.export_tasks.zipdir')
     @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
     @mock.patch('allura.tasks.export_tasks.log')
     @td.with_wiki
-    def test_bulk_export(self, log, wiki_bulk_export):
+    def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil):
         export_tasks.bulk_export('test', [u'wiki'])
         assert_equal(log.info.call_count, 1)
         assert_equal(log.info.call_args_list, [
             mock.call('Exporting wiki...')])
         wiki_bulk_export.assert_called_once()
+        temp = '/tmp/bulk_export/p/test/test'
+        zipfn = '/tmp/bulk_export/p/test/test.zip'
+        zipdir.assert_caled_once_with(temp, temp + '/test.zip')
+        shutil.move.assert_called_once_with(temp + '/test.zip',  zipfn)
+        shutil.rmtree.assert_called_once_with(temp)
+
+    @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
+    @mock.patch('allura.tasks.export_tasks.log')
+    @td.with_wiki
+    def test_bulk_export_quits_if_another_export_is_running(self, log, wiki_bulk_export):
+        project = M.Project.query.get(shortname='test')
+        export_tasks.create_export_dir(project)
+        assert_equal(project.bulk_export_status(), 'busy')
+        export_tasks.bulk_export('test', [u'wiki'])
+        log.info.assert_called_once_with('Another export is running for project test. Skipping.')
+        assert_equal(wiki_bulk_export.call_count, 0)
 
     def test_create_export_dir(self):
         project = M.Project.query.get(shortname='test')
         export_path = project.bulk_export_path()
-        shutil.rmtree(export_path, ignore_errors=True)
         path = export_tasks.create_export_dir(project)
         assert_equal(path, '/tmp/bulk_export/p/test/test')
         assert os.path.exists(os.path.join(export_path, project.shortname))
-        shutil.rmtree(export_path, ignore_errors=True)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_zip_and_cleanup(self):
         project = M.Project.query.get(shortname='test')
         export_path = project.bulk_export_path()
-        shutil.rmtree(export_path, ignore_errors=True)
         path = export_tasks.create_export_dir(project)
         export_tasks.zip_and_cleanup(project)
         assert not os.path.exists(path)
         assert os.path.exists(os.path.join(export_path, 'test.zip'))
-        shutil.rmtree(export_path, ignore_errors=True)
+
+    def test_bulk_export_status(self):
+        project = M.Project.query.get(shortname='test')
+        assert_equal(project.bulk_export_status(), None)
+
+        export_tasks.create_export_dir(project)
+        assert_equal(project.bulk_export_status(), 'busy')
+
+        with open(os.path.join(project.bulk_export_path(),
+                               project.bulk_export_filename()), 'w') as f:
+            f.write('just test')
+        assert_equal(project.bulk_export_status(), 'ready')
 
 
 Mapper.compile_all()
