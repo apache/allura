@@ -16,13 +16,14 @@
 #       under the License.
 
 #-*- python -*-
+import json
 import logging
 from pprint import pformat
 from urllib import unquote
 from datetime import datetime
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
@@ -287,8 +288,16 @@ The wiki uses [Markdown](%s) syntax.
         super(ForgeWikiApp, self).uninstall(project)
 
     def bulk_export(self, f):
-        # TODO: implement this
-        f.write('{}\n')
+        f.write('{"pages": [')
+        pages = WM.Page.query.find(dict(
+            app_config_id=self.config._id,
+            deleted=False)).all()
+        count = len(pages)
+        for i, page in enumerate(pages):
+            json.dump(page, f, cls=jsonify.GenericJSON)
+            if i < (count - 1):
+                f.write(',')
+        f.write(']}')
 
 
 class RootController(BaseController, DispatchIndex, FeedController):
