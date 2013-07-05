@@ -649,13 +649,7 @@ class PageController(BaseController, FeedController):
         if not self.page:
             raise exc.HTTPNotFound
         require_access(self.page, 'edit')
-        if isinstance(file_info, list):
-            for attach in file_info:
-                if hasattr(attach, 'file'):
-                    self.page.attach(attach.filename, attach.file, content_type=attach.type)
-        else:
-            if hasattr(file_info, 'file'):
-                self.page.attach(file_info.filename, file_info.file, content_type=file_info.type)
+        self.page.add_multiple_attach(file_info)
         redirect(request.referer)
 
     @expose()

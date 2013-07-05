@@ -348,7 +348,7 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/tést/')
         assert 'test_root.py' in response
 
-    def test_attach_two_fiels(self):
+    def test_attach_two_files(self):
         self.app.post(
             '/wiki/tést/update',
             params={

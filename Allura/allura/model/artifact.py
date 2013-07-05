@@ -386,6 +386,13 @@ class Artifact(MappedClass):
         """
         return self.get_discussion_thread()[0]
 
+    def add_multiple_attach(self, file_info):
+        if not isinstance(file_info, list):
+            file_info = [file_info]
+        for attach in file_info:
+            if hasattr(attach, 'file'):
+                self.attach(attach.filename, attach.file, content_type=attach.type)
+
     def attach(self, filename, fp, **kw):
         """Attach a file to this Artifact.
 

@@ -202,10 +202,7 @@ class ThreadController(BaseController, FeedController):
 
         file_info = kw.get('file_info', None)
         p = self.thread.add_post(**kw)
-        if isinstance(file_info, list):
-            map(p.add_attachment, file_info)
-        else:
-            p.add_attachment(file_info)
+        p.add_multiple_attach(file_info)
         if self.thread.artifact:
             self.thread.artifact.mod_date = datetime.utcnow()
         flash('Message posted')
@@ -278,10 +275,7 @@ class PostController(BaseController):
             require_access(self.post, 'moderate')
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
-            if isinstance(file_info, list):
-                map(self.post.add_attachment, file_info)
-            else:
-                self.post.add_attachment(file_info)
+            self.post.add_multiple_attach(file_info)
             for k,v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
@@ -326,10 +320,7 @@ class PostController(BaseController):
         require_access(self.thread, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(parent_id=self.post._id, **kw)
-        if isinstance(file_info, list):
-            map(p.add_attachment, file_info)
-        else:
-            p.add_attachment(file_info)
+        p.add_multiple_attach(file_info)
         redirect(request.referer)
 
     @h.vardec
@@ -364,10 +355,7 @@ class PostController(BaseController):
     @require_post()
     def attach(self, file_info=None):
         require_access(self.post, 'moderate')
-        if isinstance(file_info, list):
-            map(self.post.add_attachment, file_info)
-        else:
-            self.post.add_attachment(file_info)
+        self.post.add_multiple_attach(file_info)
         redirect(request.referer)
 
     @expose()

@@ -136,9 +136,9 @@ class TicketForm(GenericTicketForm):
         yield ew.JSScript('''
         $(function(){
             $('#show_attach').click(function(evt) {
-                evt.preventDefault();
                 $('#view_attach').show();
                 $('#show_attach').hide();
+                evt.preventDefault();
             });
             $('form').submit(function() {
                 var value = $('div.tagsinput div input').val();
