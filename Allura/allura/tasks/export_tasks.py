@@ -41,13 +41,16 @@ def bulk_export(project_shortname, tools, username):
     if project.bulk_export_status() == 'busy':
         log.info('Another export is running for project %s. Skipping.' % project_shortname)
         return
+    not_exported_tools = []
     for tool in tools or []:
         app = project.app_instance(tool)
         if not app:
             log.info('Can not load app for %s mount point. Skipping.' % tool)
+            not_exported_tools.append(tool)
             continue
         if not app.exportable:
             log.info('Tool %s is not exportable. Skipping.' % tool)
+            not_exported_tools.append(tool)
             continue
         log.info('Exporting %s...' % tool)
         try:
@@ -56,6 +59,7 @@ def bulk_export(project_shortname, tools, username):
                 app.bulk_export(f)
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
+            not_exported_tools.append(tool)
             continue
 
     try:
@@ -73,7 +77,8 @@ def bulk_export(project_shortname, tools, username):
     tmpl_context = {
         'instructions': instructions,
         'project': project,
-        'tools': tools,
+        'tools': list(set(tools) - set(not_exported_tools)),
+        'not_exported_tools': not_exported_tools,
     }
     email = {
         'fromaddr': unicode(user.email_address_header()),
