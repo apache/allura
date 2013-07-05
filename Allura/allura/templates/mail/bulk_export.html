@@ -24,6 +24,13 @@ Following tools was exported:
 - {{ tool }}
 {% endfor %}
 
+{% if not_exported_tools %}
+Following tools was not exported:
+{% for tool in not_exported_tools %}
+- {{ tool }}
+{% endfor %}
+{% endif %}
+
 Follow instructions below to get exported data.
 
 {{ instructions }}
