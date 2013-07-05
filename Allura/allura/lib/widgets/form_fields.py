@@ -191,9 +191,10 @@ class AttachmentAdd(ew_core.Widget):
     def resources(self):
         for r in super(AttachmentAdd, self).resources(): yield r
         yield onready('''
-            $("input.attachment_form_add_button").click(function () {
+            $(".attachment_form_add_button").click(function (evt) {
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
+                evt.preventDefault();
             });
          ''')
 

@@ -833,9 +833,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     self.custom_fields[k] = v
         self.commit()
         if attachment is not None:
-            self.attach(
-                attachment.filename, attachment.file,
-                content_type=attachment.type)
+            if isinstance(attachment, list):
+                for attach in attachment:
+                    self.attach(attach.filename, attach.file, content_type=attach.type)
+            else:
+                self.attach(
+                    attachment.filename, attachment.file,
+                    content_type=attachment.type)
 
     def _move_attach(self, attachments, attach_metadata, app_config):
         for attach in attachments:

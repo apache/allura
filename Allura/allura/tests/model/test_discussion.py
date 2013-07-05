@@ -223,6 +223,24 @@ def test_add_attachment():
     assert attach.filename == 'test.txt', attach.filename
     assert attach.content_type == 'text/plain', attach.content_type
 
+def test_notification_two_attaches():
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread.new(discussion_id=d._id, subject='Test comment notification')
+    fs1 = FieldStorage()
+    fs1.name = 'file_info'
+    fs1.filename = 'fake.txt'
+    fs1.type = 'text/plain'
+    fs1.file = StringIO('this is the content of the fake file\n')
+    fs2 = FieldStorage()
+    fs2.name = 'file_info'
+    fs2.filename = 'fake2.txt'
+    fs2.type = 'text/plain'
+    fs2.file = StringIO('this is the content of the fake file\n')
+    t.post(text=u'test message', forum=None, subject='', file_info=[fs1, fs2])
+    ThreadLocalORMSession.flush_all()
+    n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
+    assert '\nAttachment: fake.txt (37 Bytes; text/plain)  fake2.txt (37 Bytes; text/plain)' in n.text
+
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
     d = M.Discussion(shortname='test', name='test')

@@ -348,6 +348,20 @@ class TestRootController(TestController):
         response = self.app.get('/wiki/tést/')
         assert 'test_root.py' in response
 
+    def test_attach_two_fiels(self):
+        self.app.post(
+            '/wiki/tést/update',
+            params={
+                'title':'tést',
+                'text':'sometext',
+                'labels':'',
+                'viewable_by-0.id':'all'})
+        content = file(__file__).read()
+        self.app.post('/wiki/tést/attach', upload_files=[('file_info', 'test1.py', content),('file_info', 'test2.py', content)])
+        response = self.app.get('/wiki/tést/')
+        assert 'test1.py' in response
+        assert 'test2.py' in response
+
     def test_new_text_attachment_content(self):
         self.app.post(
             '/wiki/tést/update',

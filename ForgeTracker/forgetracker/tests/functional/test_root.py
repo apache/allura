@@ -537,6 +537,18 @@ class TestFunctionalController(TrackerTestController):
         download = self.app.get(str(ticket_editor.html.findAll('form')[1].findAll('a')[7]['href']))
         assert_equal(download.body, file_data)
 
+    def test_two_attachments(self):
+        file_name1 = 'test_root1.py'
+        file_name2 = 'test_root2.py'
+        file_data = file(__file__).read()
+        self.new_ticket(summary='test new attachment')
+        ticket_editor = self.app.post('/bugs/1/update_ticket',{
+            'summary':'zzz'
+        }, upload_files=[('attachment', file_name1, file_data), ('attachment', file_name2, file_data)]).follow()
+
+        assert 'test_root1.py' in ticket_editor
+        assert 'test_root2.py' in ticket_editor
+
     def test_new_image_attachment_content(self):
         h.set_context('test', 'bugs', neighborhood='Projects')
         file_name = 'neo-icon-set-454545-256x350.png'

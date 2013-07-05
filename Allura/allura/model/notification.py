@@ -147,10 +147,18 @@ class Notification(MappedClass):
             text = post.text
             file_info = kwargs.pop('file_info', None)
             if file_info is not None:
-                file_info.file.seek(0, 2)
-                bytecount = file_info.file.tell()
-                file_info.file.seek(0)
-                text = "%s\n\n\nAttachment: %s (%s; %s)" % (text, file_info.filename, h.do_filesizeformat(bytecount), file_info.type)
+                text = "%s\n\n\nAttachment:" % text
+                if isinstance(file_info, list):
+                    for attach in file_info:
+                        attach.file.seek(0, 2)
+                        bytecount = attach.file.tell()
+                        attach.file.seek(0)
+                        text = "%s %s (%s; %s) " % (text, attach.filename, h.do_filesizeformat(bytecount), attach.type)
+                else:
+                    file_info.file.seek(0, 2)
+                    bytecount = file_info.file.tell()
+                    file_info.file.seek(0)
+                    text = "%s %s (%s; %s) " % (text, file_info.filename, h.do_filesizeformat(bytecount), file_info.type)
 
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):

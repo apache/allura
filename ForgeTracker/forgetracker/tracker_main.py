@@ -1293,9 +1293,13 @@ class TicketController(BaseController, FeedController):
 
         if 'attachment' in post_data:
             attachment = post_data['attachment']
-            if hasattr(attachment, 'file'):
-                self.ticket.attach(
-                    attachment.filename, attachment.file, content_type=attachment.type)
+            if isinstance(attachment, list):
+                for attach in attachment:
+                    self.ticket.attach(attach.filename, attach.file, content_type=attach.type)
+            else:
+                if hasattr(attachment, 'file'):
+                    self.ticket.attach(
+                        attachment.filename, attachment.file, content_type=attachment.type)
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.' + cf.name in post_data:
                 value = post_data['custom_fields.' + cf.name]

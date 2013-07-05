@@ -160,9 +160,9 @@ class EditPost(ff.ForgeForm):
         for r in ffw.MarkdownEdit(name='text').resources(): yield r
         yield ew.JSScript('''$(document).ready(function () {
             $("a.attachment_form_add_button").click(function(evt){
+                evt.preventDefault();
                 $(this).hide();
                 $(".attachment_form_fields", this.parentNode).show();
-                evt.preventDefault();
             });
             $("a.cancel_edit_post").click(function(evt){
                 $("textarea", this.parentNode).val($("input.original_value", this.parentNode).val());

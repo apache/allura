@@ -106,7 +106,7 @@ class GenericTicketForm(ew.SimpleForm):
             ffw.ProjectUserCombo(name='assigned_to', label='Owner'),
             ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
             ew.Checkbox(name='private', label='Mark as Private', attrs={'class':'unlabeled'}),
-            ew.InputField(name='attachment', label='Attachment', field_type='file', validator=fev.FieldStorageUploadConverter(if_missing=None)),
+            ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ffw.MarkdownEdit(name='comment', label='Comment',
                         attrs={'style':'min-height:7em; width:97%'}),
             ew.SubmitButton(label=self.submit_text,name='submit',
@@ -135,7 +135,8 @@ class TicketForm(GenericTicketForm):
         for r in super(TicketForm, self).resources(): yield r
         yield ew.JSScript('''
         $(function(){
-            $('#show_attach input').click(function(){
+            $('#show_attach').click(function(evt) {
+                evt.preventDefault();
                 $('#view_attach').show();
                 $('#show_attach').hide();
             });
