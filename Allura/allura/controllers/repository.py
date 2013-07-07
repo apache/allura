@@ -86,7 +86,7 @@ class RepoRootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/forks.html')
-    def forks(self):
+    def forks(self, **kw):
 
         links = []
         if c.app.repo.forks:
@@ -99,7 +99,7 @@ class RepoRootController(BaseController, FeedController):
         return dict(links=links)
 
     @expose()
-    def refresh(self):
+    def refresh(self, **kw):
         allura.tasks.repo_tasks.refresh.post()
         if request.referer:
             flash('Repository is being refreshed')
@@ -109,7 +109,7 @@ class RepoRootController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:allura:templates/repo/fork.html')
-    def fork(self, project_id=None, mount_point=None, mount_label=None):
+    def fork(self, project_id=None, mount_point=None, mount_label=None, **kw):
         # this shows the form and handles the submission
         security.require_authenticated()
         if not c.app.forkable: raise exc.HTTPNotFound
@@ -159,7 +159,7 @@ class RepoRootController(BaseController, FeedController):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/request_merge.html')
-    def request_merge(self, branch=None):
+    def request_merge(self, branch=None, **kw):
         security.require(security.has_access(c.app.repo, 'admin'))
         c.form = self.mr_widget
         if branch is None:
@@ -193,7 +193,7 @@ class RepoRootController(BaseController, FeedController):
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/commit_browser.html')
-    def commit_browser(self):
+    def commit_browser(self, **kw):
         if not c.app.repo or c.app.repo.status != 'ready':
             return dict(status='not_ready')
         # if c.app.repo.count() > 2000:
@@ -205,7 +205,7 @@ class RepoRootController(BaseController, FeedController):
 
     @without_trailing_slash
     @expose('json:')
-    def commit_browser_data(self):
+    def commit_browser_data(self, **kw):
         head_ids = [ head.object_id for head in c.app.repo.get_heads() ]
         commit_ids = [c.app.repo.rev_to_commit_id(r) for r in c.app.repo.log(head_ids, id_only=True)]
         log.info('Grab %d commit objects by ID', len(commit_ids))
@@ -307,7 +307,7 @@ class MergeRequestsController(object):
 
     @expose('jinja:allura:templates/repo/merge_requests.html')
     @validate(mr_filter)
-    def index(self, status=None):
+    def index(self, status=None, **kw):
         status = status or ['open']
         requests = c.app.repo.merge_requests_by_statuses(*status)
         c.mr_filter = self.mr_filter
@@ -333,7 +333,7 @@ class MergeRequestController(object):
         if self.req is None: raise exc.HTTPNotFound
 
     @expose('jinja:allura:templates/repo/merge_request.html')
-    def index(self, page=0, limit=250):
+    def index(self, page=0, limit=250, **kw):
         c.thread = self.thread_widget
         c.log_widget = self.log_widget
         c.mr_dispose_form = self.mr_dispose_form
@@ -349,7 +349,7 @@ class MergeRequestController(object):
     @expose()
     @require_post()
     @validate(mr_dispose_form)
-    def save(self, status=None):
+    def save(self, status=None, **kw):
         security.require(
             security.has_access(self.req, 'write'), 'Write access required')
         self.req.status = status
@@ -423,7 +423,7 @@ class CommitBrowser(BaseController):
     @expose('jinja:allura:templates/repo/commit.html')
     @validate(dict(page=validators.Int(if_empty=0),
                    limit=validators.Int(if_empty=DEFAULT_PAGE_LIMIT)))
-    def index(self, page=0, limit=DEFAULT_PAGE_LIMIT):
+    def index(self, page=0, limit=DEFAULT_PAGE_LIMIT, **kw):
         c.revision_widget = self.revision_widget
         c.page_list = self.page_list
         result = dict(commit=self._commit)
@@ -442,7 +442,7 @@ class CommitBrowser(BaseController):
         return result
 
     @expose('jinja:allura:templates/repo/commit_basic.html')
-    def basic(self):
+    def basic(self, **kw):
         c.revision_widget = self.revision_widget
         result = dict(commit=self._commit)
         if self._commit:
@@ -548,8 +548,9 @@ class TreeBrowser(BaseController, DispatchIndex):
                         filename), rest
         elif rest == ('index', ):
             rest = (request.environ['PATH_INFO'].rsplit('/')[-1],)
-        tree = self._tree[next]
-        if tree is None:
+        try:
+            tree = self._tree[next]
+        except KeyError:
             raise exc.HTTPNotFound
         return self.__class__(
             self._commit,
@@ -559,7 +560,7 @@ class TreeBrowser(BaseController, DispatchIndex):
 
     @expose()
     @validate(subscribe_form)
-    def subscribe(self, subscribe=None, unsubscribe=None):
+    def subscribe(self, subscribe=None, unsubscribe=None, **kw):
         if subscribe:
             M.Mailbox.subscribe()
         elif unsubscribe:
@@ -598,7 +599,7 @@ class FileBrowser(BaseController):
                 )
 
     @expose()
-    def raw(self):
+    def raw(self, **kw):
         content_type = self._blob.content_type.encode('utf-8')
         filename = self._blob.name.encode('utf-8')
         response.headers['Content-Type'] = ''
@@ -611,7 +612,7 @@ class FileBrowser(BaseController):
             'Content-Disposition', 'attachment;filename=' + filename)
         return iter(self._blob)
 
-    def diff(self, commit, fmt=None):
+    def diff(self, commit, fmt=None, **kw):
         try:
             path, filename = os.path.split(self._blob.path())
             a_ci = c.app.repo.commit(commit)
