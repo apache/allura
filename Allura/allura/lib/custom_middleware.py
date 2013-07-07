@@ -241,7 +241,6 @@ class AlluraTimerMiddleware(TimerMiddleware):
     def repo_impl_timers(self):
         timers= []
         from allura.model.repository import Repository, RepositoryImplementation
-        timers.append(Timer('base_tool.{method_name}', Repository, 'commitlog'))
         timers.append(Timer('base_tool.{method_name}', RepositoryImplementation, 'last_commit_ids'))
         with pass_on_exc(ImportError):
             from forgegit.model.git_repo import GitImplementation
