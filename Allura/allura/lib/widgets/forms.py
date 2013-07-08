@@ -47,15 +47,12 @@ class _HTMLExplanation(ew.InputField):
 
 class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
 
-    def _to_python(self, value, state):
+    def to_python(self, value, state):
         value = h.really_unicode(value or '').encode('utf-8').lower()
         neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
         provider = plugin.ProjectRegistrationProvider.get()
-        message = provider.validate_project_shortname(value, neighborhood)
-        if message:
-            raise formencode.Invalid(message, value, state)
-        message = provider.name_taken(value, neighborhood)
-        if message:
+        allowed, message = provider.allowed_project_shortname(value, neighborhood)
+        if not allowed:
             raise formencode.Invalid(message, value, state)
         return value
 

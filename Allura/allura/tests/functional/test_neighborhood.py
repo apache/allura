@@ -449,7 +449,7 @@ class TestNeighborhood(TestController):
                           params=dict(project_unixname='', project_name='Nothing', project_description='', neighborhood='Adobe'),
                           antispam=True,
                           extra_environ=dict(username='root'))
-        assert r.html.find('div', {'class':'error'}).string == 'Please enter a value'
+        assert r.html.find('div', {'class':'error'}).string == 'Please use only letters, numbers, and dashes 3-15 characters long.'
         r = self.app.post('/adobe/register',
                           params=dict(project_unixname='mymoz', project_name='My Moz', project_description='', neighborhood='Adobe'),
                           antispam=True,
@@ -742,12 +742,12 @@ class TestNeighborhood(TestController):
 
     def test_name_check(self):
         for name in ('My+Moz', 'Te%st!', 'ab', 'a' * 16):
-            r = self.app.get('/p/check_names?unix_name=%s' % name)
-            assert r.json['unixname_message'] == 'Please use only letters, numbers, and dashes 3-15 characters long.'
-        r = self.app.get('/p/check_names?unix_name=mymoz')
-        assert_equal(r.json['unixname_message'], False)
-        r = self.app.get('/p/check_names?unix_name=test')
-        assert r.json['unixname_message'] == 'This project name is taken.'
+            r = self.app.get('/p/check_names?neighborhood=Projects&project_unixname=%s' % name)
+            assert_equal(r.json, {'project_unixname': 'Please use only letters, numbers, and dashes 3-15 characters long.'})
+        r = self.app.get('/p/check_names?neighborhood=Projects&project_unixname=mymoz')
+        assert_equal(r.json, {})
+        r = self.app.get('/p/check_names?neighborhood=Projects&project_unixname=test')
+        assert_equal(r.json, {'project_unixname': 'This project name is taken.'})
 
     @td.with_tool('test/sub1', 'Wiki', 'wiki')
     def test_neighborhood_project(self):

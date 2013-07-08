@@ -81,7 +81,8 @@ class NeighborhoodController(object):
     def _lookup(self, pname, *remainder):
         pname = unquote(pname)
         provider = plugin.ProjectRegistrationProvider.get()
-        if provider.validate_project_shortname(pname, self.neighborhood):
+        valid, reason = provider.valid_project_shortname(pname, self.neighborhood)
+        if not valid:
             raise exc.HTTPNotFound, pname
         project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':

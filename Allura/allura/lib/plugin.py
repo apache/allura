@@ -364,16 +364,14 @@ class ProjectRegistrationProvider(object):
         method = config.get('registration.method', 'local')
         return app_globals.Globals().entry_points['registration'][method]()
 
-    def name_taken(self, project_name, neighborhood):
+    def _name_taken(self, project_name, neighborhood):
         """Return False if ``project_name`` is available in ``neighborhood``.
         If unavailable, return an error message (str) explaining why.
 
         """
         from allura import model as M
         p = M.Project.query.get(shortname=project_name, neighborhood_id=neighborhood._id)
-        if p:
-            return 'This project name is taken.'
-        return False
+        return bool(p)
 
     def suggest_name(self, project_name, neighborhood):
         """Return a suggested project shortname for the full ``project_name``.
@@ -469,21 +467,45 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname.replace('u/', '', 1)
         else:
             check_shortname = shortname
-        err = self.validate_project_shortname(check_shortname, neighborhood)
-        if err:
+        allowed, err = self.allowed_project_shortname(check_shortname, neighborhood)
+        if not allowed:
             raise ValueError('Invalid project shortname: %s' % shortname)
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict('%s already exists in nbhd %s' % (shortname, neighborhood._id))
 
-    def validate_project_shortname(self, shortname, neighborhood):
-        """Return an error message if ``shortname`` is invalid for
-        ``neighborhood``, else return None.
+    def valid_project_shortname(self, shortname, neighborhood):
+        """Determine if the project shortname appears to be valid.
 
+        Returns a pair of values, the first being a bool indicating whether
+        the name appears to be valid, and the second being a message indicating
+        the reason, if any, why the name is invalid.
+
+        NB: Even if a project shortname is valid, it might still not be
+        allowed (it could already be taken, for example).  Use the method
+        ``allowed_project_shortname`` instead to check if the shortname can
+        actually be used.
         """
         if not h.re_project_name.match(shortname):
-            return 'Please use only letters, numbers, and dashes 3-15 characters long.'
+            return (False, 'Please use only letters, numbers, and dashes 3-15 characters long.')
+        return (True, None)
+
+    def allowed_project_shortname(self, shortname, neighborhood):
+        """Determine if a project shortname can be used.
+
+        A shortname can be used if it is valid and is not already taken.
+
+        Returns a pair of values, the first being a bool indicating whether
+        the name can be used, and the second being a message indicating the
+        reason, if any, why the name cannot be used.
+        """
+        valid, reason = self.valid_project_shortname(shortname, neighborhood)
+        if not valid:
+            return (False, reason)
+        if self._name_taken(shortname, neighborhood):
+            return (False, 'This project name is taken.')
+        return (True, None)
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''
