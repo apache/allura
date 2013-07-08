@@ -237,6 +237,10 @@ class TracExport(object):
 
     def next(self):
         while True:
+            # queue empty, try to fetch more
+            if len(self.ticket_queue) == 0:
+                self.ticket_queue = self.next_ticket_ids()
+            # there aren't any more, we're really done
             if len(self.ticket_queue) == 0:
                 raise StopIteration
             id, extra = self.ticket_queue.pop(0)
