@@ -206,6 +206,28 @@ def test_attachment_methods():
     n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
     assert '\nAttachment: fake.txt (37 Bytes; text/plain)' in n.text
 
+@with_setup(setUp, tearDown())
+def test_multiple_attach():
+    test_file1 = FieldStorage()
+    test_file1.name = 'file_info'
+    test_file1.filename = 'test1.txt'
+    test_file1.type = 'text/plain'
+    test_file1.file=StringIO('test file1\n')
+    test_file2 = FieldStorage()
+    test_file2.name = 'file_info'
+    test_file2.filename = 'test2.txt'
+    test_file2.type = 'text/plain'
+    test_file2.file=StringIO('test file2\n')
+    d = M.Discussion(shortname='test', name='test')
+    t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
+    test_post = t.post('test post')
+    test_post.add_multiple_attach([test_file1, test_file2])
+    ThreadLocalORMSession.flush_all()
+    assert test_post.attachments.count() == 2, test_post.attachments.count()
+    attaches = test_post.attachments.all()
+    assert 'test1.txt' in [attaches[0].filename, attaches[1].filename]
+    assert 'test2.txt' in [attaches[0].filename, attaches[1].filename]
+
 @with_setup(setUp, tearDown)
 def test_add_attachment():
     test_file = FieldStorage()
