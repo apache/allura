@@ -386,7 +386,7 @@ class Artifact(MappedClass):
         """
         return self.get_discussion_thread()[0]
 
-    def add_multiple_attach(self, file_info):
+    def add_multiple_attachments(self, file_info):
         if not isinstance(file_info, list):
             file_info = [file_info]
         for attach in file_info:

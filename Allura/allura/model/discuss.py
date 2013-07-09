@@ -527,7 +527,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         return self.attachment_class().query.find(dict(
             post_id=self._id, type='attachment'))
 
-    def add_multiple_attach(self, file_info):
+    def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):
             map(self.add_attachment, file_info)
         else:

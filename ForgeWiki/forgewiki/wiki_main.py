@@ -649,7 +649,7 @@ class PageController(BaseController, FeedController):
         if not self.page:
             raise exc.HTTPNotFound
         require_access(self.page, 'edit')
-        self.page.add_multiple_attach(file_info)
+        self.page.add_multiple_attachments(file_info)
         redirect(request.referer)
 
     @expose()

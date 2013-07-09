@@ -1293,7 +1293,7 @@ class TicketController(BaseController, FeedController):
 
         if 'attachment' in post_data:
             attachment = post_data['attachment']
-            self.ticket.add_multiple_attach(attachment)
+            self.ticket.add_multiple_attachments(attachment)
         for cf in c.app.globals.custom_fields or []:
             if 'custom_fields.' + cf.name in post_data:
                 value = post_data['custom_fields.' + cf.name]

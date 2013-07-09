@@ -207,7 +207,7 @@ def test_attachment_methods():
     assert '\nAttachment: fake.txt (37 Bytes; text/plain)' in n.text
 
 @with_setup(setUp, tearDown())
-def test_multiple_attach():
+def test_multiple_attachments():
     test_file1 = FieldStorage()
     test_file1.name = 'file_info'
     test_file1.filename = 'test1.txt'
@@ -221,7 +221,7 @@ def test_multiple_attach():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     test_post = t.post('test post')
-    test_post.add_multiple_attach([test_file1, test_file2])
+    test_post.add_multiple_attachments([test_file1, test_file2])
     ThreadLocalORMSession.flush_all()
     assert test_post.attachments.count() == 2, test_post.attachments.count()
     attaches = test_post.attachments.all()
