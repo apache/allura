@@ -43,6 +43,7 @@ from webhelpers.html import literal
 from webob import exc
 from pygments.formatters import HtmlFormatter
 from setproctitle import getproctitle
+from feedparser import _HTMLSanitizer
 
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
@@ -494,3 +495,13 @@ def serve_file(fp, filename, content_type, last_modified=None, cache_expires=Non
         return tg.request.environ['wsgi.file_wrapper'](fp, block_size)
     else:
         return iter(lambda: fp.read(block_size), '')
+
+
+class ForgeHTMLSanitizer(_HTMLSanitizer):
+
+    def unknown_starttag(self, tag, attrs):
+        if 'iframe' in self.acceptable_elements:
+            self.acceptable_elements.remove('iframe')
+        if (tag == 'iframe') and (dict(attrs).get('src', '').startswith('http://www.youtube.com/embed/')):
+            self.acceptable_elements.append('iframe')
+        _HTMLSanitizer.unknown_starttag(self, tag, attrs)

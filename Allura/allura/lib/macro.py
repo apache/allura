@@ -20,6 +20,8 @@ import random
 import shlex
 import logging
 import traceback
+import oembed
+import jinja2
 from operator import attrgetter
 
 import pymongo
@@ -374,3 +376,12 @@ def members(limit=20):
     response = users.display(users=output, over_limit=over_limit)
     return response
 
+@macro()
+def embed(url=None):
+    consumer = oembed.OEmbedConsumer()
+    endpoint = oembed.OEmbedEndpoint('http://www.youtube.com/oembed', ['http://*.youtube.com/*', 'https://*.youtube.com/*'])
+    consumer.addEndpoint(endpoint)
+    try:
+        return jinja2.Markup('<div class="grid-20">%s</div>' % consumer.embed(url)['html'])
+    except oembed.OEmbedNoEndpoint as e:
+        return '[[embed url=%s]]' % url

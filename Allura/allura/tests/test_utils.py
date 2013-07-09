@@ -229,3 +229,15 @@ class TestCodeStats(unittest.TestCase):
         assert stats['line_count'] == 8
         assert stats['data_line_count'] == 5
         assert stats['code_size'] == len(blob.text)
+
+class TestHTMLSanitizer(unittest.TestCase):
+
+    def test_html_sanitizer_iframe(self):
+        p = utils.ForgeHTMLSanitizer('utf-8', '')
+        p.feed('<div><iframe></iframe></div>')
+        assert_equal(p.output(), '<div></div>')
+
+    def test_html_sanitizer_youtube_iframe(self):
+        p = utils.ForgeHTMLSanitizer('utf-8', '')
+        p.feed('<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        assert_equal(p.output(),'<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')

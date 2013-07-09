@@ -256,6 +256,13 @@ def test_macro_include_extra_br():
     assert html.strip().replace('\n', '') == expected_html, html
 
 
+def test_macro_embed():
+    r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
+    assert '''<div class="grid-20"><iframe height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>''' in r
+    r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
+    assert_equal(r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')
+
+
 def test_markdown_toc():
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert("""[TOC]

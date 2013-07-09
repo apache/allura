@@ -24,11 +24,11 @@ from pylons import request
 from BeautifulSoup import BeautifulSoup
 
 import markdown
-import feedparser
 
 from . import macro
 from . import helpers as h
 from allura import model as M
+from allura.lib.utils import ForgeHTMLSanitizer
 
 log = logging.getLogger(__name__)
 
@@ -288,9 +288,9 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 
     def run(self, text):
         try:
-            p = feedparser._HTMLSanitizer('utf-8')
+            p = ForgeHTMLSanitizer('utf-8')
         except TypeError: # $@%## pre-released versions from SOG
-            p = feedparser._HTMLSanitizer('utf-8', '')
+            p = ForgeHTMLSanitizer('utf-8', '')
         p.feed(text.encode('utf-8'))
         return unicode(p.output(), 'utf-8')
 
