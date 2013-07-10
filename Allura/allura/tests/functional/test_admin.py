@@ -155,10 +155,13 @@ class TestProjectAdmin(TestController):
         assert "uninstall tool test-tool" in r.body, r.body
 
     def test_tool_permissions(self):
+        BUILTIN_APPS = ['activity', 'blog', 'discussion', 'git', 'link',
+                'shorturl', 'svn', 'tickets', 'userstats', 'wiki']
         self.app.get('/admin/')
         for i, ep in enumerate(pkg_resources.iter_entry_points('allura')):
             app = ep.load()
-            if not app.installable: continue
+            if not app.installable or ep.name.lower() not in BUILTIN_APPS:
+                continue
             tool = ep.name
             with audits('install tool test-%d' % i):
                 self.app.post('/admin/update_mounts', params={
