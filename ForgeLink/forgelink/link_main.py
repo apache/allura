@@ -60,6 +60,7 @@ class ForgeLinkApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = LinkAdminController(self)
+        self.api_root = RootRestController()
 
     @property
     @h.exceptionless([], log)
@@ -115,3 +116,15 @@ class LinkAdminController(DefaultAdminController):
     def index(self, **kw):
         flash('External link URL updated.')
         redirect(c.project.url()+'admin/tools')
+
+class RootRestController(BaseController):
+
+    def _check_security(self):
+        require_access(c.app, 'read')
+
+    @expose('json:')
+    def index(self, url='', **kw):
+        if request.method == 'POST':
+            require_access(c.app, 'edit')
+            c.app.config.options.url = url
+        return dict(url=c.app.config.options.get('url'))
