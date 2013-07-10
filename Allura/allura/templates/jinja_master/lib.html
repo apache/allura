@@ -153,6 +153,7 @@
     <li><a href="#md_ex_headers{{id}}">Headers</a></li>
     <li><a href="#md_ex_hr{{id}}">Horizontal Rules</a></li>
     <li><a href="#md_ex_img{{id}}">Images</a></li>
+    <li><a href="#md_ex_video{{id}}">Videos</a></li>
     <li><a href="#md_ex_escapes{{id}}">Escapes and HTML</a></li>
     <li><a href="#md_ex_moreheaders{{id}}">More Headers</a></li>
     <li><a href="#md_ex_toc1{{id}}">Table of Contents</a></li>
@@ -527,6 +528,18 @@ image.</p>
 </div>
 
 
+<div class="markdown_syntax_section hidden_in_modal md_ex_video{{id}}">
+<h2 id="md_ex_video{{id}}">Videos</h2>
+<p>To embed a YouTube video, use the `embed` macro (only YouTube is supported at this time):</p>
+<div class="codehilite"><pre>
+[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]
+</pre></div>
+
+<p>Output:</p>
+{{g.markdown.convert('''[[embed url=http://www.youtube.com/watch?v=6YbBmqUnoQM]]''')}}
+</div>
+
+
 <div class="markdown_syntax_section hidden_in_modal md_ex_escapes{{id}}">
 <h2 id="md_ex_escapes{{id}}">Escapes and HTML</h2>
 <p>What if you want to just show asterisks, not italics?</p>
@@ -685,7 +698,7 @@ allowed, permitting basic styling and layout: &lt;div markdown style="float:left
 </pre></div>
 </div>
 
-<div class="markdown_syntax_section hidden_in_modal md_ex_project_macros{{id}}">
+<div class="markdown_syntax_section hidden_in_modal md_ex_project_macros{{id}}" id="md_ex_project_macros{{id}}">
 
 <h2 id="md_ex_download_button{{id}}">Download Button</h2>
 <p>You can display a download button that links to the best download available for the active project. Please note that if you use this macro and there is no download associated with your project, the button will not appear.</p>
