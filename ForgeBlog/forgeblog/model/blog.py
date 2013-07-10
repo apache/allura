@@ -256,6 +256,15 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             M.Notification.post(
                 artifact=self, topic='metadata', text=description, subject=subject)
 
+    def __json__(self):
+        return dict(super(BlogPost, self).__json__(),
+                    title=self.title,
+                    url=h.absurl('/rest' + self.url()),
+                    text=self.text,
+                    labels=self.labels,
+                    state=self.state)
+
+
 class Attachment(M.BaseAttachment):
     ArtifactClass=BlogPost
     class __mongometa__:

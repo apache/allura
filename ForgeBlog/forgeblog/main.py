@@ -30,6 +30,7 @@ from paste.deploy.converters import asbool
 import formencode
 from formencode import validators
 from webob import exc
+from urllib import unquote
 
 from ming.orm import session
 
@@ -45,7 +46,7 @@ from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.search import SearchResults, SearchHelp
 from allura import model as M
-from allura.controllers import BaseController, AppDiscussionController
+from allura.controllers import BaseController, AppDiscussionController, AppDiscussionRestController
 from allura.controllers.feed import FeedArgs, FeedController
 
 # Local imports
@@ -101,6 +102,7 @@ class ForgeBlogApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = BlogAdminController(self)
+        self.api_root = RootRestController()
 
     @Property
     def external_feeds_list():
@@ -439,3 +441,86 @@ class BlogAdminController(DefaultAdminController):
             flash('Invalid link(s): %s' % ','.join(link for link in invalid_list), 'error')
 
         redirect(c.project.url()+'admin/tools')
+
+
+class RootRestController(BaseController):
+    def __init__(self):
+        self._discuss = AppDiscussionRestController()
+
+    def _check_security(self):
+        require_access(c.app, 'read')
+
+    @expose('json:')
+    def index(self, title='', text='', state='draft', labels='', **kw):
+        if request.method == 'POST':
+            require_access(c.app, 'write')
+            post = BM.BlogPost()
+            post.title = title
+            post.state = state
+            post.text = text
+            post.labels = labels.split(',')
+            post.neighborhood_id = c.project.neighborhood_id
+            post.make_slug()
+            M.Thread.new(discussion_id=post.app_config.discussion_id,
+                         ref_id=post.index_id(),
+                         subject='%s discussion' % post.title)
+
+            post.viewable_by = ['all']
+            post.commit()
+            return post.__json__()
+        else:
+            post_titles = []
+            query_filter = dict(app_config_id=c.app.config._id, deleted=False)
+            if not has_access(c.app, 'write')():
+                query_filter['state'] = 'published'
+            posts = BM.BlogPost.query.find(query_filter)
+            for post in posts:
+                if has_access(post, 'read')():
+                    post_titles.append({'title': post.title, 'url': h.absurl('/rest' + post.url())})
+            return dict(posts=post_titles)
+
+    @expose()
+    def _lookup(self, year=None, month=None, title=None, *rest):
+        if not (year and month and title):
+            raise exc.HTTPNotFound()
+        slug = '/'.join((year, month, urllib2.unquote(title).decode('utf-8')))
+        post = BM.BlogPost.query.get(slug=slug, app_config_id=c.app.config._id)
+        if not post:
+            raise exc.HTTPNotFound()
+        return PostRestController(post), rest
+
+
+class PostRestController(BaseController):
+
+    def __init__(self, post):
+        self.post = post
+
+    def _check_security(self):
+        if self.post:
+            require_access(self.post, 'read')
+
+    @h.vardec
+    @expose('json:')
+    def index(self, **kw):
+        if request.method == 'POST':
+            return self._update_post(**kw)
+        else:
+            if self.post.state == 'draft':
+                require_access(self.post, 'write')
+            return self.post.__json__()
+
+    def _update_post(self, **post_data):
+        require_access(self.post, 'write')
+        if 'delete' in post_data:
+            self.post.delete()
+            return {}
+        if 'title' in post_data:
+            self.post.title = post_data['title']
+        if 'text' in post_data:
+            self.post.text = post_data['text']
+        if 'state' in post_data:
+            self.post.state = post_data['state']
+        if 'labels' in post_data:
+            self.post.labels = post_data['labels'].split(',')
+        self.post.commit()
+        return self.post.__json__()
