@@ -25,22 +25,15 @@ from alluratest.controller import TestRestApiBase
 class TestLinkApi(TestRestApiBase):
 
     @td.with_link
-    def test_get_link(self):
-        data = {'url':'http://google.com'}
+    def test_rest_link(self):
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], None)
+
+        data = {'url': 'http://google.com'}
         r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
-        assert_equal(r.json['url'], 'http://google.com')
-        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://google.com')
 
-    @td.with_link
-    def test_update_link(self):
-        data = {'url':'http://google.com'}
-        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
-        assert_equal(r.json['url'], 'http://google.com')
-        data = {'url':'http://yahoo.com'}
-        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
-        assert_equal(r.json['url'], 'http://yahoo.com')
+        data = {'url': 'http://yahoo.com'}
+        self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')

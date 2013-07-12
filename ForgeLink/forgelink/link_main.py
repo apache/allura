@@ -110,12 +110,14 @@ class RootController(BaseController):
             permanent_redirect(url + h.really_unicode(path).encode('utf-8'))
         return dict()
 
+
 class LinkAdminController(DefaultAdminController):
 
     @expose()
     def index(self, **kw):
         flash('External link URL updated.')
         redirect(c.project.url()+'admin/tools')
+
 
 class RootRestController(BaseController):
 
@@ -125,6 +127,6 @@ class RootRestController(BaseController):
     @expose('json:')
     def index(self, url='', **kw):
         if request.method == 'POST':
-            require_access(c.app, 'edit')
+            require_access(c.app, 'configure')
             c.app.config.options.url = url
         return dict(url=c.app.config.options.get('url'))
