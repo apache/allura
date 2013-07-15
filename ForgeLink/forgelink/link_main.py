@@ -126,7 +126,7 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def index(self, url='', **kw):
-        if request.method == 'POST':
+        if (request.method == 'POST') and (url != ''):
             require_access(c.app, 'configure')
             c.app.config.options.url = url
         return dict(url=c.app.config.options.get('url'))

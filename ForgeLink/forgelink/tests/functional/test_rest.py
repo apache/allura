@@ -20,20 +20,61 @@
 from nose.tools import assert_equal
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
+from allura import model as M
+from allura.lib import helpers as h
 
 
 class TestLinkApi(TestRestApiBase):
 
+    def setUp(self):
+        super(TestLinkApi, self).setUp()
+        self.setup_with_tools()
+
     @td.with_link
+    def setup_with_tools(self):
+        h.set_context('test', 'link', neighborhood='Projects')
+
     def test_rest_link(self):
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], None)
 
-        data = {'url': 'http://google.com'}
-        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
+        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), url='http://google.com')
         assert_equal(r.json['url'], 'http://google.com')
 
-        data = {'url': 'http://yahoo.com'}
-        self.api_post(u'/rest/p/test/link'.encode('utf-8'), **data)
+        self.api_post(u'/rest/p/test/link'.encode('utf-8'), url='http://yahoo.com')
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
+
+        self.api_post(u'/rest/p/test/link'.encode('utf-8'))
+        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        assert_equal(r.json['url'], 'http://yahoo.com')
+
+    def test_rest_link_get_permissions(self):
+        self.app.get('/rest/p/test/link', extra_environ={'username': '*anonymous'}, status=200)
+        p = M.Project.query.get(shortname='test')
+        acl = p.app_instance('link').config.acl
+        anon = M.ProjectRole.by_name('*anonymous')._id
+        anon_read = M.ACE.allow(anon, 'read')
+        acl.remove(anon_read)
+        self.app.get('/rest/p/test/link', extra_environ={'username': '*anonymous'}, status=401)
+
+    def test_rest_link_post_permissions(self):
+        self.app.post('/rest/p/test/link',
+                      params={'url': 'http://yahoo.com'},
+                      extra_environ={'username': '*anonymous'},
+                      status=401)
+        p = M.Project.query.get(shortname='test')
+        acl = p.app_instance('link').config.acl
+        anon = M.ProjectRole.by_name('*anonymous')._id
+        anon_configure = M.ACE.allow(anon, 'configure')
+        acl.append(anon_configure)
+        self.app.post('/rest/p/test/link',
+                      params={'url': 'http://yahoo.com'},
+                      extra_environ={'username': '*anonymous'},
+                      status=200)
+        r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
+        assert_equal(r.json['url'], 'http://yahoo.com')
+
+
+
+
