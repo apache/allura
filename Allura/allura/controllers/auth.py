@@ -312,7 +312,7 @@ class AuthController(BaseController):
         c.project = project
         c.app = project.app_instance(rest[0])
         if not c.app:
-            c.app = project.app_instance(rest[0])[0]
+            c.app = project.app_instance(os.path.splitext(rest[0])[0])
         if c.app is None:
             log.info("Can't find repo at %s on repo_path %s",
                      rest[0], repo_path)
