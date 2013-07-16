@@ -408,6 +408,7 @@ class ProjectAdminController(BaseController):
                 current_troves.append(trove_obj._id)
                 M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
                 ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
+                c.project.last_updated = datetime.utcnow()
                 g.post_event('project_updated')
             else:
                 error_msg = 'This category has already been assigned to the project.'
@@ -439,6 +440,7 @@ class ProjectAdminController(BaseController):
             M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
             current_troves.remove(trove_obj._id)
             ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
+            c.project.last_updated = datetime.utcnow()
             g.post_event('project_updated')
         redirect('trove')
 
