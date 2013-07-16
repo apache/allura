@@ -76,7 +76,7 @@
   {% if label %}
   <label for="{{name}}">{{label}}</label><br/>
   {% endif %}
-  <textarea id="{{name}}" name="{{name}}">{{value}}</textarea><br/>
+  <textarea id="{{name}}" name="{{name}}">{{value|e}}</textarea><br/>
 {% endmacro %}
 
 {% macro text_field(name, label, value='') %}
