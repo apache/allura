@@ -23,7 +23,7 @@ from itertools import chain, islice
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response, config
-from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg.decorators import with_trailing_slash, without_trailing_slash, override_template
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
@@ -47,6 +47,7 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin, exceptions
+from forgeimporters.base import ProjectImporterDispatcher
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
@@ -73,6 +74,7 @@ class NeighborhoodController(object):
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
+        self.import_project = ProjectImporterDispatcher()
 
     def _check_security(self):
         require_access(self.neighborhood, 'read')

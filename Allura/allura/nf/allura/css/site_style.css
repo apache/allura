@@ -3041,3 +3041,69 @@ ul.dropdown ul li a:hover {
     text-align: left;
     margin-right: 0;
 }
+#project-import-form {
+    margin-left: 5px;
+}
+#project-import-form fieldset {
+    margin-top: 10px;
+}
+#project-import-form label {
+    display: block;
+}
+#project-import-form #project-fields label {
+    text-align: right;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 28px;
+}
+#project-import-form .error {
+    background: transparent;
+    color: red;
+    border: 0;
+}
+#project-import-form .tool {
+    float: left;
+    position: relative;
+    padding: 10px 20px 10px 70px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -o-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px solid #aaa;
+    width: 360px;
+    margin: 5px;
+    background-color: whiteSmoke;
+    height: 74px;
+}
+#project-import-form .tool img {
+    left: 10px;
+    position: absolute;
+    top: 26px;
+}
+#project-import-form .tool label {
+    line-height: 24px;
+    font-size: 18px;
+    font-weight: 600;
+}
+#project-import-form input[type="submit"] {
+    margin-top: 30px;
+    margin-left: 5px;
+    float: none;
+    display: inline-block;
+    position: relative;
+    top: -1em;
+    font-size: 18px;
+    font-weight: 600;
+    text-shadow: none;
+    color: white !important;
+    padding: 1em 2em 1em 2em;
+    text-decoration: none;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    background: rgb(0,0,0);
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, to(rgb(0,0,0)), from(rgb(90,90,90)));
+    background-image: -moz-linear-gradient(100% 100% 90deg, rgb(0,0,0), rgb(90,90,90) 100%);
+    border: 1px solid black;
+}

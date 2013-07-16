@@ -1,0 +1,54 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% set hide_left_bar = True %}
+{% extends g.theme.master %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
+{% block title %}{{importer.source}} Project Importer{% endblock %}
+{% block header %}{{importer.source}} Project Importer{% endblock %}
+
+{% block content %}
+
+<form id="project-import-form" method="POST" action="process">
+    <input type="hidden" name="source" value="{{request.params.source}}" />
+
+    <fieldset id="project-fields">
+        {% block project_fields %}{% endblock %}
+    </fieldset>
+
+    <fieldset id="tool-fields">
+        {% if c.form_errors['tools'] %}
+        <div class="error">{{c.form_errors['tools']}}</div>
+        {% endif %}
+        {% for name, tool_importer in importer.tool_importers.iteritems() %}
+        <div class="tool">
+            <img src="{{ g.theme.app_icon_url(tool_importer.target_app, 48) }}" alt="{{ tool_importer.tool_label }} icon">
+            <label>
+                <input name="tools" value="{{name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tools'] %} checked="checked"{% endif %}/>
+                {{tool_importer.tool_label}}
+            </label>
+            {{tool_importer.tool_description}}
+        </div>
+        {% endfor %}
+    </fieldset>
+
+    <input type="submit" value="Import"/>
+</form>
+
+{% endblock %}
