@@ -469,7 +469,7 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname
         allowed, err = self.allowed_project_shortname(check_shortname, neighborhood)
         if not allowed:
-            raise ValueError('Invalid project shortname: %s' % shortname)
+            raise ValueError('Invalid project shortname: %s error: %s' % (shortname, err))
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
