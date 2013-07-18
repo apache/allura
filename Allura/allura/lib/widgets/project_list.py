@@ -163,3 +163,7 @@ class ProjectScreenshots(ew_core.Widget):
         ew_core.Widget.defaults,
         project=None,
         edit=False)
+
+    def resources(self):
+        yield ew.JSLink('js/screenshots.js')
+        yield ew.CSSLink('css/screenshots.css')

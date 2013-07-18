@@ -263,6 +263,28 @@ class TestProjectAdmin(TestController):
         #r = self.app.get('/p/test/home/')
         #assert 'aaa' not in r
 
+    def test_sort_screenshots(self):
+        for file_name in ('admin_24.png', 'admin_32.png'):
+            file_path = os.path.join(allura.__path__[0], 'nf', 'allura',
+                    'images', file_name)
+            file_data = file(file_path).read()
+            upload = ('screenshot', file_name, file_data)
+            self.app.post('/admin/add_screenshot', params=dict(
+                    caption=file_name),
+                    upload_files=[upload])
+
+        p_nbhd = M.Neighborhood.query.get(name='Projects')
+        project = M.Project.query.get(shortname='test',
+                neighborhood_id=p_nbhd._id)
+        # first uploaded is first by default
+        screenshots = project.get_screenshots()
+        assert_equals(screenshots[0].filename, 'admin_24.png')
+        # reverse order
+        params = dict((str(ss._id), len(screenshots) - 1 - i)
+                for i, ss in enumerate(screenshots))
+        self.app.post('/admin/sort_screenshots', params)
+        assert_equals(project.get_screenshots()[0].filename, 'admin_32.png')
+
     def test_project_delete_undelete(self):
         # create a subproject
         with audits('create subproject sub-del-undel'):

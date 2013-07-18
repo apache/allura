@@ -449,18 +449,40 @@ class ProjectAdminController(BaseController):
     @validate(W.screenshot_admin)
     def add_screenshot(self, screenshot=None, caption=None, **kw):
         require_access(c.project, 'update')
-        if len(c.project.get_screenshots()) >= 6:
+        screenshots = c.project.get_screenshots()
+        if len(screenshots) >= 6:
             flash('You may not have more than 6 screenshots per project.','error')
         elif screenshot is not None and screenshot != '':
             M.AuditLog.log('add screenshot')
+            sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
             M.ProjectFile.save_image(
                 screenshot.filename, screenshot.file, content_type=screenshot.type,
                 save_original=True,
-                original_meta=dict(project_id=c.project._id,category='screenshot',caption=caption),
+                original_meta=dict(
+                    project_id=c.project._id,
+                    category='screenshot',
+                    caption=caption,
+                    sort=sort),
                 square=True, thumbnail_size=(150,150),
                 thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
             g.post_event('project_updated')
         redirect('screenshots')
+
+    @expose()
+    @require_post()
+    def sort_screenshots(self, **kw):
+        """Sort project screenshots.
+
+        Called via ajax when screenshots are reordered via drag/drop on
+        the Screenshots admin page.
+
+        ``kw`` is a mapping of (screenshot._id, sort_order) pairs.
+
+        """
+        for s in c.project.get_screenshots():
+            if str(s._id) in kw:
+                s.sort = int(kw[str(s._id)])
+        g.post_event('project_updated')
 
     @expose()
     @require_post()
