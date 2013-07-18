@@ -38,6 +38,7 @@
             index=i1,
             id=name,
             name=name,
+            desc=app.describe_permission(name),
             items=h.make_roles(ids)
         )}}
         {% endfor %}

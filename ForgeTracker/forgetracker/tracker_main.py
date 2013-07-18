@@ -188,6 +188,17 @@ class ForgeTrackerApp(Application):
     __version__ = version.__version__
     permissions = ['configure', 'read', 'update', 'create', 'save_searches',
                     'unmoderated_post', 'post', 'moderate', 'admin', 'delete']
+    permissions_desc = {
+        'configure': 'Edit milestones.',
+        'read': 'View tickets.',
+        'update': 'Edit tickets.',
+        'create': 'Create tickets.',
+        'save_searches': 'Not used.',
+        'admin': 'Set permissions. Configure options, saved searches, custom fields, '
+            'and default list view columns. Move tickets to or from this '
+            'tracker. Import tickets.',
+        'delete': 'Delete and undelete tickets. View deleted tickets.',
+    }
     config_options = Application.config_options + [
         ConfigOption('EnableVoting', bool, False),
         ConfigOption('TicketMonitoringEmail', str, ''),

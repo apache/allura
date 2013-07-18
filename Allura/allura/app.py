@@ -208,6 +208,13 @@ class Application(object):
     root = None  # root controller
     api_root = None
     permissions = []
+    permissions_desc = {
+        'unmoderated_post': 'Post comments without moderation.',
+        'post': 'Post comments, subject to moderation.',
+        'moderate': 'Moderate comments.',
+        'configure': 'Set label and options. Requires admin permission.',
+        'admin': 'Set permissions.',
+    }
     installable = True
     searchable = False
     DiscussionClass = model.Discussion
@@ -264,6 +271,23 @@ class Application(object):
 
         """
         return self.config.acl
+
+    @classmethod
+    def describe_permission(cls, permission):
+        """Return help text describing what features ``permission`` controls.
+
+        Subclasses should define :attr:`permissions_desc`,
+        a ``{permission: description}`` mapping.
+
+        Returns empty string if there is no description for ``permission``.
+
+        """
+        if not hasattr(cls, '_permissions_desc'):
+            d = {}
+            for t in reversed(cls.__mro__):
+                d = dict(d, **getattr(t, 'permissions_desc', {}))
+            cls._permissions_desc = d
+        return cls._permissions_desc.get(permission, '')
 
     def parent_security_context(self):
         """Return the parent of this object.

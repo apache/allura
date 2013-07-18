@@ -42,6 +42,9 @@ class ForgeLinkApp(Application):
     '''This is the Link app for PyForge'''
     __version__ = version.__version__
     permissions = [ 'configure', 'read' ]
+    permissions_desc = {
+        'read': 'View link.',
+    }
     config_options = Application.config_options + [
         ConfigOption('url', str, None)
     ]

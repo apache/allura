@@ -52,6 +52,10 @@ class ForgeChatApp(Application):
     ordinal=13
     installable = True
     permissions = ['configure', 'read' ]
+    permissions_desc = {
+        'configure': 'Set monitored IRC channel. Requires admin permission.',
+        'read': 'View chat logs.',
+    }
     config_options = Application.config_options + [
         ConfigOption('channel', str, ''),
         ]
