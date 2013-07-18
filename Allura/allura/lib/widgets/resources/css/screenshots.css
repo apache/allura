@@ -1,0 +1,21 @@
+.sortable {
+    float: left;
+}
+.sortable .screenshot {
+    margin: 0 0 10px 10px;
+    border: 1px solid #eee;
+    background: #fff;
+    float: left;
+}
+.sortable .screenshot .image {
+    margin-left: 0;
+    float: left;
+}
+.sortable .screenshot .image img {
+    display: block;
+}
+.sortable .screenshot .controls {
+    margin: 50px 15px 0 20px;
+    width: 190px;
+    float: left;
+}

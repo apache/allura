@@ -57,6 +57,7 @@ class ProjectFile(File):
     project_id=FieldProperty(S.ObjectId)
     category=FieldProperty(str)
     caption=FieldProperty(str)
+    sort=FieldProperty(int)
 
 class ProjectCategory(MappedClass):
     class __mongometa__:
@@ -287,7 +288,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def get_screenshots(self):
         return ProjectFile.query.find(dict(
                 project_id=self._id,
-                category='screenshot')).all()
+                category='screenshot')).sort('sort').all()
 
     @LazyProperty
     def icon(self):

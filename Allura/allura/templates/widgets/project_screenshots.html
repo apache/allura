@@ -16,26 +16,34 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% for ss in project.get_screenshots() %}
-  <div class="grid-6" style="text-align: center">
-    <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb" alt="Screenshot thumbnail"/></a>
-    {% if not edit %}
-    <br>
-    {{ss.caption}}
+{% set screenshots = project.get_screenshots() %}
+{% if screenshots.__len__() > 1 %}
+<p>Drag screenshots to sort.</p>
+{% endif %}
+<div class="sortable">
+  {% for ss in screenshots %}
+  <div data-ss-id="{{ ss._id }}" class="screenshot">
+    <div class="image">
+      <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb" alt="Screenshot thumbnail"/></a>
+      {% if not edit %}
+      <br>
+      {{ss.caption}}
+      {% endif %}
+    </div>
+    {% if edit %}
+    <div class="controls">
+      <form action="edit_screenshot" method="post">
+        <input type="hidden" value="{{ss._id}}" name="id">
+        <input type="text" value="{{ss.caption}}" name="caption"><br>
+        <input type="submit" value="Save Changes">
+      </form>
+      <form action="delete_screenshot" method="post">
+        <input type="hidden" value="{{ss._id}}" name="id">
+        <input type="submit" value="Delete">
+      </form>
+    </div>
     {% endif %}
   </div>
-  {% if edit %}
-  <div class="grid-12" style="margin-top:50px; min-height: 110px">
-    <form action="edit_screenshot" method="post">
-      <input type="hidden" value="{{ss._id}}" name="id">
-      <input type="text" value="{{ss.caption}}" name="caption"><br>
-      <input type="submit" value="Save Changes">
-    </form>
-    <form action="delete_screenshot" method="post">
-      <input type="hidden" value="{{ss._id}}" name="id">
-      <input type="submit" value="Delete">
-    </form>
-  </div>
-  {% endif %}
-{% endfor %}
+  {% endfor %}
+</div>
 <div style="clear:both">&nbsp;</div>
