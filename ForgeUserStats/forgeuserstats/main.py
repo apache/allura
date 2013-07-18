@@ -93,6 +93,10 @@ class ForgeUserStatsApp(Application):
     default_mount_point='stats'
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions_desc = {
+        'read': 'View user stats.',
+        'admin': 'Toggle stats visibility.',
+    }
     ordinal=15
     installable=False
     config_options = Application.config_options

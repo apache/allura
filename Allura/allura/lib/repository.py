@@ -46,6 +46,12 @@ class RepositoryApp(Application):
         'read', 'write', 'create',
         'unmoderated_post', 'post', 'moderate', 'admin',
         'configure']
+    permissions_desc = {
+        'read': 'Repo read access.',
+        'write': 'Repo push access.',
+        'create': 'Not used.',
+        'admin': 'Set permissions, default branch, and viewable files.',
+    }
     config_options = Application.config_options + [
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None),

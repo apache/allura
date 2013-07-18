@@ -82,6 +82,11 @@ class ForgeBlogApp(Application):
     default_mount_point='blog'
     permissions = ['configure', 'read', 'write',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions_desc = {
+        'read': 'View blog entries.',
+        'write': 'Create new blog entry.',
+        'admin': 'Set permissions. Enable/disable commenting.',
+    }
     ordinal=14
     installable=True
     config_options = Application.config_options

@@ -55,6 +55,11 @@ class ForgeDiscussionApp(Application):
     __version__ = version.__version__
     #installable=False
     permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions_desc = {
+        'configure': 'Create new forums.',
+        'read': 'View posts.',
+        'admin': 'Set permissions. Edit forum properties.',
+    }
     config_options = Application.config_options + [
         ConfigOption('PostingPolicy',
                      schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')

@@ -51,6 +51,10 @@ class ForgeSVNApp(RepositoryApp):
     config_options = RepositoryApp.config_options + [
         ConfigOption('checkout_url', str, '')
         ]
+    permissions_desc = dict(RepositoryApp.permissions_desc, **{
+        'write': 'Repo commit access.',
+        'admin': 'Set permissions, checkout url, and viewable files. Import a remote repo.',
+    })
     tool_label='SVN'
     tool_description="""
         Enterprise-class centralized version control for the masses.

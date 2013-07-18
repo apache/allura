@@ -52,6 +52,12 @@ class W:
 
 class ForgeShortUrlApp(Application):
     permissions = ['read', 'create', 'update', 'view_private']
+    permissions_desc = {
+        'read': 'View public short urls.',
+        'create': 'Create new short url. Requires admin permission.',
+        'update': 'Edit/remove existing short url. Requires admin permission.',
+        'view_private': 'View private short urls.',
+    }
     searchable = True
     tool_label = 'URL shortener'
     default_mount_label = 'URL shortener'

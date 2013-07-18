@@ -34,6 +34,18 @@ class TestApplication(TestCase):
         app.relaxed_mount_points = True
         self.assertIsNotNone(app.validate_mount_point(mount_point))
 
+    def test_describe_permission(self):
+        class DummyApp(Application):
+            permissions_desc = {
+                'foo': 'bar',
+                'post': 'overridden',
+            }
+        f = DummyApp.describe_permission
+        self.assertEqual(f('foo'), 'bar')
+        self.assertEqual(f('post'), 'overridden')
+        self.assertEqual(f('admin'), 'Set permissions.')
+        self.assertEqual(f('does_not_exist'), '')
+
 
 class TestInstall(WithDatabase):
     patches = [fake_app_patch]

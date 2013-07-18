@@ -81,6 +81,13 @@ class ForgeWikiApp(Application):
     __version__ = version.__version__
     permissions = [ 'configure', 'read', 'create', 'edit', 'delete',
                     'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions_desc = {
+        'read': 'View wiki pages.',
+        'create': 'Create wiki pages.',
+        'edit': 'Edit wiki pages.',
+        'delete': 'Delete wiki pages.',
+        'admin': 'Set permissions. Configure options. Set wiki home page.',
+    }
     searchable=True
     tool_label='Wiki'
     tool_description="""
