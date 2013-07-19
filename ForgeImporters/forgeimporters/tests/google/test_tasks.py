@@ -15,26 +15,19 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from setuptools import setup, find_packages
+import mock
+
+from ...google import tasks
 
 
-setup(name='ForgeImporters',
-      description="",
-      long_description="",
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=['Allura', ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura.project_importers]
-      google-code = forgeimporters.google.project:GoogleCodeProjectImporter
-
-      [allura.importers]
-      """,)
+@mock.patch.object(tasks, 'GoogleCodeProjectExtractor')
+@mock.patch.object(tasks, 'ThreadLocalORMSession')
+@mock.patch.object(tasks, 'c')
+def test_import_project_info(c, session, gpe):
+    c.project = mock.Mock(name='project')
+    tasks.import_project_info()
+    gpe.assert_called_once_with(c.project, 'project_info')
+    gpe.return_value.get_short_description.assert_called_once_with()
+    gpe.return_value.get_icon.assert_called_once_with()
+    gpe.return_value.get_license.assert_called_once_with()
+    session.flush_all.assert_called_once_with()

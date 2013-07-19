@@ -15,26 +15,19 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from setuptools import setup, find_packages
+from pylons import tmpl_context as c
+
+from ming.orm import ThreadLocalORMSession
+
+from allura.lib.decorators import task
+
+from . import GoogleCodeProjectExtractor
 
 
-setup(name='ForgeImporters',
-      description="",
-      long_description="",
-      classifiers=[],
-      keywords='',
-      author='',
-      author_email='',
-      url='',
-      license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      zip_safe=False,
-      install_requires=['Allura', ],
-      entry_points="""
-      # -*- Entry points: -*-
-      [allura.project_importers]
-      google-code = forgeimporters.google.project:GoogleCodeProjectImporter
-
-      [allura.importers]
-      """,)
+@task
+def import_project_info():
+    extractor = GoogleCodeProjectExtractor(c.project, 'project_info')
+    extractor.get_short_description()
+    extractor.get_icon()
+    extractor.get_license()
+    ThreadLocalORMSession.flush_all()

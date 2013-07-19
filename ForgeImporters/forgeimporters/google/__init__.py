@@ -19,6 +19,10 @@ import urllib
 import urllib2
 from urlparse import urlparse
 from collections import defaultdict
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from BeautifulSoup import BeautifulSoup
 
@@ -50,19 +54,20 @@ class GoogleCodeProjectExtractor(object):
         self.page = BeautifulSoup(page)
 
     def get_short_description(self):
-        self.project.short_description = str(self.page.find(itemprop='description')).strip()
+        self.project.short_description = self.page.find(itemprop='description').string.strip()
 
     def get_icon(self):
-        icon_url = self.page.find(itemprop='image').src
+        icon_url = self.page.find(itemprop='image').attrMap['src']
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
-        fp = urllib2.urlopen(icon_url)
+        fp_ish = urllib2.urlopen(icon_url)
+        fp = StringIO(fp_ish.read())
         M.ProjectFile.save_image(
-            icon_name, fp, fp.info()['content-type'], square=True,
+            icon_name, fp, fp_ish.info()['content-type'], square=True,
             thumbnail_size=(48,48),
-            thumbnail_meta=dict(project_id=self.project._id, category='icon'))
+            thumbnail_meta={'project_id': self.project._id, 'category': 'icon'})
 
     def get_license(self):
-        license = str(self.page.find(text='Code license:').findNext('td')).strip()
+        license = self.page.find(text='Code license').findNext().find('a').string.strip()
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         self.project.trove_license.append(trove._id)
 
