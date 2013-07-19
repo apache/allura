@@ -288,15 +288,40 @@ class TestCommit(unittest.TestCase):
         commit.get_tree.assert_called_with(create=True)
 
 
-@patch('allura.model.repository.Popen')
-@patch('allura.model.repository.tg')
-def test_zipdir(tg, popen):
-    tg.config = {'scm.repos.tarball.zip_binary': '/bin/zip'}
-    src = '/fake/path/to/repo'
-    zipfile = '/fake/zip/file.tmp'
-    zipdir(src, zipfile)
-    popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo'], cwd='/fake/path/to')
-    popen.reset_mock()
-    src = '/fake/path/to/repo/'
-    zipdir(src, zipfile, exclude='file.txt')
-    popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo', '-x', 'file.txt'], cwd='/fake/path/to')
+class TestZipDir(unittest.TestCase):
+    @patch('allura.model.repository.Popen')
+    @patch('allura.model.repository.tg')
+    def test_popen_called(self, tg, popen):
+        from subprocess import PIPE
+        popen.return_value.communicate.return_value = 1, 2
+        popen.return_value.returncode = 0
+        tg.config = {'scm.repos.tarball.zip_binary': '/bin/zip'}
+        src = '/fake/path/to/repo'
+        zipfile = '/fake/zip/file.tmp'
+        zipdir(src, zipfile)
+        popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo'],
+                cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
+        popen.reset_mock()
+        src = '/fake/path/to/repo/'
+        zipdir(src, zipfile, exclude='file.txt')
+        popen.assert_called_once_with(
+                ['/bin/zip', '-r', zipfile, 'repo', '-x', 'file.txt'],
+                cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
+
+    @patch('allura.model.repository.Popen')
+    @patch('allura.model.repository.tg')
+    def test_exception_logged(self, tg, popen):
+        tg.config = {'scm.repos.tarball.zip_binary': '/bin/zip'}
+        popen.return_value.communicate.return_value = 1, 2
+        popen.return_value.returncode = 1
+        src = '/fake/path/to/repo'
+        zipfile = '/fake/zip/file.tmp'
+        with self.assertRaises(Exception) as cm:
+            zipdir(src, zipfile)
+        emsg = str(cm.exception)
+        self.assertTrue(
+                "Command: "
+                "['/bin/zip', '-r', '/fake/zip/file.tmp', 'repo'] "
+                "returned non-zero exit code 1" in emsg)
+        self.assertTrue("STDOUT: 1" in emsg)
+        self.assertTrue("STDERR: 2" in emsg)
