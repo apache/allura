@@ -18,6 +18,7 @@
 #-*- python -*-
 import logging
 import json
+import re
 from datetime import datetime
 from cStringIO import StringIO
 
@@ -211,9 +212,43 @@ class ImportSupport(object):
         ticket.update(remapped)
         return ticket
 
+    def ticket_link(self, m):
+        return '(%s)' % m.groups()[0]
+
+    def get_slug_by_id(self, ticket, comment):
+        comment = int(comment)
+        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
+                                     ticket_num=int(ticket))
+        if not ticket:
+            return ''
+        comments = ticket.discussion_thread.post_class().query.find(dict(
+            discussion_id=ticket.discussion_thread.discussion_id,
+            thread_id=ticket.discussion_thread._id,
+            status={'$in': ['ok', 'pending']})).sort('timestamp')
+
+        if comment <= comments.count():
+            return comments.all()[comment-1].slug
+
+    def comment_link(self, m):
+        ticket, comment = m.groups()
+        return '(%s#%s)' % (ticket, self.get_slug_by_id(ticket, comment))
+
+    def brackets_escaping(self, m):
+        return '[%s]' % m.groups()[0]
+
+    def link_processing(self, text):
+        comment_pattern = re.compile('\(\S*/(\d+)#comment:(\d+)\)')
+        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
+        brackets_pattern = re.compile('\[\[(.*)\]\]')
+
+        text = comment_pattern.sub(self.comment_link, text.replace('\n', ''))
+        text = ticket_pattern.sub(self.ticket_link, text)
+        text = brackets_pattern.sub(self.brackets_escaping, text)
+        return text
+
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
-        comment = thread.post(text=comment_dict['comment'], timestamp=ts)
+        comment = thread.post(text=self.link_processing(comment_dict['comment']), timestamp=ts)
         comment.author_id = self.get_user_id(comment_dict['submitter'])
         comment.import_id = c.api_token.api_key
 

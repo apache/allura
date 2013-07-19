@@ -41,6 +41,12 @@
               "comment": "  * **status** changed from _accepted_ to _closed_\n\n  * **resolution** set to _fixed_\n\nHello,\n\nThis issue is should be resolved with the site redesign.\n\nRegards, Chris Tsai, SourceForge.net Support\n\n", 
               "date": "2009-07-20T15:44:32Z", 
               "submitter": "ctsai"
+            },
+            {
+              "class": "COMMENT",
+              "comment": "test link [[2496]](http://testlink.com)  test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201)) \n [test comment](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)",
+              "date": "2009-07-21T15:44:32Z",
+              "submitter": "ctsai"
             }
           ], 
           "date": "2009-04-13T08:49:13Z", 
