@@ -43,7 +43,7 @@ class GoogleCodeProjectExtractor(object):
             'Other Open Source': 'Other/Proprietary License',
         })
 
-    def __init__(self, project):
+    def __init__(self, project, page='project_info'):
         gc_project_name = project.get_tool_data('google-code', 'project_name')
         page = urllib2.urlopen(PAGE_MAP[page] % urllib.quote(gc_project_name))
         self.project = project
