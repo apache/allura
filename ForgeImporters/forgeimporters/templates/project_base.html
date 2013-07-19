@@ -26,7 +26,7 @@
 {% block content %}
 
 <form id="project-import-form" method="POST" action="process">
-    <input type="hidden" name="source" value="{{request.params.source}}" />
+    <input type="hidden" id="neighborhood" name="neighborhood" value="Projects"/>
 
     <fieldset id="project-fields">
         {% block project_fields %}{% endblock %}

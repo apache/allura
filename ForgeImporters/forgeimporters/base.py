@@ -72,7 +72,7 @@ class ToolImporter(object):
     source = None
     controller = None
 
-    def import_tool(self, project, mount_point):
+    def import_tool(self, project=None, mount_point=None):
         """
         Override this method to perform the tool import.
         """

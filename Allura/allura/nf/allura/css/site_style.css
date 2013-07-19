@@ -3060,6 +3060,15 @@ ul.dropdown ul li a:hover {
     background: transparent;
     color: red;
     border: 0;
+    padding: 0;
+    font-weight: 300;
+}
+#project-import-form #project-url {
+    font-size: 12px;
+    font-weight: 300;
+}
+#project-import-form #url-fragment {
+    font-weight: 600;
 }
 #project-import-form .tool {
     float: left;
