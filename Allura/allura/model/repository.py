@@ -23,7 +23,7 @@ import mimetypes
 import logging
 import string
 import re
-from subprocess import Popen
+from subprocess import Popen, PIPE
 from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
@@ -741,7 +741,13 @@ def zipdir(source, zipfile, exclude=None):
     command = [zipbin, '-r', zipfile, source_fn]
     if exclude:
         command += ['-x', exclude]
-    Popen(command, cwd=working_dir).communicate()
+    p = Popen(command, cwd=working_dir, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        raise Exception(
+            "Command: {0} returned non-zero exit code {1}\n"
+            "STDOUT: {2}\n"
+            "STDERR: {3}".format(command, p.returncode, stdout, stderr))
 
 
 Mapper.compile_all()
