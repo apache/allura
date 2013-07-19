@@ -45,7 +45,7 @@ class GoogleCodeProjectExtractor(object):
 
     def __init__(self, project, page='project_info'):
         gc_project_name = project.get_tool_data('google-code', 'project_name')
-        page = urllib2.urlopen(PAGE_MAP[page] % urllib.quote(gc_project_name))
+        page = urllib2.urlopen(self.PAGE_MAP[page] % urllib.quote(gc_project_name))
         self.project = project
         self.page = BeautifulSoup(page)
 
@@ -63,6 +63,6 @@ class GoogleCodeProjectExtractor(object):
 
     def get_license(self):
         license = str(self.page.find(text='Code license:').findNext('td')).strip()
-        trove = M.TroveCategory.query.get(fullname=LICENSE_MAP[license])
+        trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         self.project.trove_license.append(trove._id)
 
