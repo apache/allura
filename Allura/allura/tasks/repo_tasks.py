@@ -126,12 +126,12 @@ def tarball(revision=None, path=None):
         repo = c.app.repo
         status = repo.get_tarball_status(revision, path)
         if status:
-            log.info('Skipping tarball for repository %s:%s rev %s because it is already %s' %
+            log.info('Skipping snapshot for repository: %s:%s rev %s because it is already %s' %
                      (c.project.shortname, c.app.config.options.mount_point, revision, status))
         else:
             try:
                 repo.tarball(revision, path)
             except:
-                log.error('Could not create tarball for repository %s:%s revision %s path %s' % (c.project.shortname, c.app.config.options.mount_point, revision, path), exc_info=True)
+                log.error('Could not create snapshot for repository: %s:%s revision %s path %s' % (c.project.shortname, c.app.config.options.mount_point, revision, path), exc_info=True)
     else:
-        log.warn('Creation of tarball for %s:%s skipped because revision is not specified' % (c.project.shortname, c.app.config.options.mount_point))
+        log.warn('Skipped creation of snapshot: %s:%s because revision is not specified' % (c.project.shortname, c.app.config.options.mount_point))
