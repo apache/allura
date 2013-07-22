@@ -98,7 +98,7 @@
             {{c.form_errors['project_shortname']}}
         </div>
         <div id="project-url">
-            http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
+            http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
         </div>
     </div>
 {% endblock %}

@@ -23,6 +23,7 @@ from formencode import validators as fev, schema
 from allura import model as M
 from allura.lib.decorators import require_post
 from allura.lib.widgets.forms import NeighborhoodProjectShortNameValidator
+from allura.lib.security import require_access
 from allura.lib import helpers as h
 from allura.lib import exceptions
 
@@ -41,22 +42,27 @@ class GoogleCodeProjectForm(schema.Schema):
 class GoogleCodeProjectImporter(base.ProjectImporter):
     source = 'Google Code'
 
+    def __init__(self, neighborhood, *a, **kw):
+        super(GoogleCodeProjectImporter, self).__init__(*a, **kw)
+        self.neighborhood = neighborhood
+
+    def _check_security(self):
+        require_access(self.neighborhood, 'register')
+
     @with_trailing_slash
     @expose('jinja:forgeimporters.google:templates/project.html')
     def index(self, **kw):
-        neighborhood = M.Neighborhood.query.get(url_prefix='/p/')
-        return {'importer': self, 'neighborhood': neighborhood}
+        return {'importer': self}
 
     @require_post()
     @expose()
     @validate(GoogleCodeProjectForm(), error_handler=index)
     def process(self, project_name=None, project_shortname=None, tools=None, **kw):
-        neighborhood = M.Neighborhood.query.get(url_prefix='/p/')
         project_name = h.really_unicode(project_name).encode('utf-8')
         project_shortname = h.really_unicode(project_shortname).encode('utf-8').lower()
 
         try:
-            c.project = neighborhood.register_project(project_shortname,
+            c.project = self.neighborhood.register_project(project_shortname,
                     project_name=project_name)
         except exceptions.ProjectOverlimitError:
             flash("You have exceeded the maximum number of projects you are allowed to create", 'error')

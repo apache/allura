@@ -74,7 +74,7 @@ class NeighborhoodController(object):
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
-        self.import_project = ProjectImporterDispatcher()
+        self.import_project = ProjectImporterDispatcher(self.neighborhood)
 
     def _check_security(self):
         require_access(self.neighborhood, 'read')

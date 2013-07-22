@@ -26,10 +26,14 @@ from allura.controllers import BaseController
 
 
 class ProjectImporterDispatcher(BaseController):
+    def __init__(self, neighborhood, *a, **kw):
+        super(ProjectImporterDispatcher, self).__init__(*a, **kw)
+        self.neighborhood = neighborhood
+
     @expose()
     def _lookup(self, source, *rest):
         for ep in iter_entry_points('allura.project_importers', source):
-            return ep.load()(), rest
+            return ep.load()(self.neighborhood), rest
 
 
 class ProjectImporter(BaseController):
