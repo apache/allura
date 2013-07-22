@@ -24,6 +24,7 @@ from allura.tests import decorators as td
 from allura import model as M
 from alluratest.controller import TestRestApiBase
 from forgediscussion.model import ForumThread
+from ming.orm import ThreadLocalORMSession
 
 
 class TestDiscussionApiBase(TestRestApiBase):
@@ -186,9 +187,6 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(resp.json['limit'], 1)
 
     def test_topic_show_ok_only(self):
-        # import logging
-        # log = logging.getLogger(__name__)
-
         thread = ForumThread.query.find({'subject': 'Hi guys'}).first()        
         url = '/rest/p/test/discussion/general/thread/%s/' % thread._id
         resp = self.app.get(url)
@@ -198,12 +196,9 @@ class TestRootRestController(TestDiscussionApiBase):
         last_post = thread.last_post
         last_post.status = 'pending'
         last_post.commit()
-
+        ThreadLocalORMSession.flush_all()
         resp = self.app.get(url)
         posts = resp.json['topic']['posts']        
-
-        # log.info('ready to debug')
-        # log.info(posts)
         assert_equal(len(posts), 1)
 
     def test_security(self):
