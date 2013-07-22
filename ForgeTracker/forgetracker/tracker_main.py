@@ -28,7 +28,7 @@ import jinja2
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash, url, config
+from tg import expose, validate, redirect, flash, url, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import aslist
 from pylons import tmpl_context as c, app_globals as g
@@ -406,6 +406,18 @@ class ForgeTrackerApp(Application):
         TM.Bin.query.remove(app_config_id)
         TM.Globals.query.remove(app_config_id)
         super(ForgeTrackerApp, self).uninstall(project)
+
+    def bulk_export(self, f):
+        f.write('{"tickets": [')
+        tickets = TM.Ticket.query.find(dict(
+            app_config_id=self.config._id,
+            deleted=False)).all()
+        count = len(tickets)
+        for i, ticket in enumerate(tickets):
+            json.dump(ticket, f, cls=jsonify.GenericJSON)
+            if i < (count - 1):
+                f.write(',')
+        f.write(']}')
 
     @property
     def bins(self):
