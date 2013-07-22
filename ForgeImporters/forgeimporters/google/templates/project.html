@@ -41,19 +41,19 @@
         var manual = false;
         function suggest_name() {
             if (!manual) {
-                $('#project_unixname').val($('#gc_project_name').val()).trigger('change');
+                $('#project_shortname').val($('#project_name').val()).trigger('change');
             }
         }
 
         function check_names() {
             var data = {
                 'neighborhood': $('#neighborhood').val(),
-                'gc_project_name': $('#gc_project_name').val(),
-                'project_unixname': $('#project_unixname').val()
+                'project_name': $('#project_name').val(),
+                'project_shortname': $('#project_shortname').val()
             };
             $.getJSON('check_names', data, function(result) {
-                $('#gc_project_name_error').addClass('hidden');
-                $('#project_unixname_error').addClass('hidden');
+                $('#project_name_error').addClass('hidden');
+                $('#project_shortname_error').addClass('hidden');
                 for(var field in result) {
                     $('#'+field+'_error').text(result[field]).removeClass('hidden');
                 }
@@ -61,13 +61,13 @@
         }
 
         function update_url() {
-            $('#url-fragment').text($('#project_unixname').val());
+            $('#url-fragment').text($('#project_shortname').val());
         }
 
         $(function() {
-            $('#gc_project_name').focus().bind('change keyup', suggest_name);
+            $('#project_name').focus().bind('change keyup', suggest_name);
 
-            $('#project_unixname').bind('change keyup', function(event) {
+            $('#project_shortname').bind('change keyup', function(event) {
                 if (event.type == 'keyup') {
                     manual = true;
                 }
@@ -83,9 +83,9 @@
         <label>Google Project Name</label>
     </div>
     <div class="grid-10">
-        <input id="gc_project_name" name="gc_project_name" value="{{c.form_values['gc_project_name']}}"/>
-        <div id="gc_project_name_error" class="error{% if not c.form_errors['gc_project_name'] %} hidden{% endif %}">
-            {{c.form_errors['gc_project_name']}}
+        <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}"/>
+        <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
+            {{c.form_errors['project_name']}}
         </div>
     </div>
 
@@ -93,12 +93,12 @@
         <label>URL Name</label>
     </div>
     <div class="grid-10">
-        <input id="project_unixname" name="project_unixname" value="{{c.form_values['project_unixname']}}"/>
-        <div id="project_unixname_error" class="error{% if not c.form_errors['project_unixname'] %} hidden{% endif %}">
-            {{c.form_errors['project_unixname']}}
+        <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
+        <div id="project_shortname_error" class="error{% if not c.form_errors['project_shortname'] %} hidden{% endif %}">
+            {{c.form_errors['project_shortname']}}
         </div>
         <div id="project-url">
-            http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_unixname']}}</span>
+            http://{{request.environ['HTTP_HOST']}}{{neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
         </div>
     </div>
 {% endblock %}

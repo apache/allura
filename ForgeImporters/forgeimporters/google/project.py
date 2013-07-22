@@ -24,6 +24,7 @@ from allura import model as M
 from allura.lib.decorators import require_post
 from allura.lib.widgets.forms import NeighborhoodProjectShortNameValidator
 from allura.lib import helpers as h
+from allura.lib import exceptions
 
 from .. import base
 from . import tasks
@@ -32,8 +33,8 @@ from . import tasks
 
 class GoogleCodeProjectForm(schema.Schema):
     neighborhood = fev.PlainText(not_empty=True)
-    gc_project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$', not_empty=True)
-    project_unixname = NeighborhoodProjectShortNameValidator()
+    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$', not_empty=True)
+    project_shortname = NeighborhoodProjectShortNameValidator()
     tools = base.ToolsValidator('Google Code')
 
 
@@ -49,13 +50,13 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
     @require_post()
     @expose()
     @validate(GoogleCodeProjectForm(), error_handler=index)
-    def process(self, gc_project_name=None, project_unixname=None, tools=None, **kw):
+    def process(self, project_name=None, project_shortname=None, tools=None, **kw):
         neighborhood = M.Neighborhood.query.get(url_prefix='/p/')
-        project_name = h.really_unicode(gc_project_name).encode('utf-8')
-        project_unixname = h.really_unicode(project_unixname).encode('utf-8').lower()
+        project_name = h.really_unicode(project_name).encode('utf-8')
+        project_shortname = h.really_unicode(project_shortname).encode('utf-8').lower()
 
         try:
-            c.project = neighborhood.register_project(project_unixname,
+            c.project = neighborhood.register_project(project_shortname,
                     project_name=project_name)
         except exceptions.ProjectOverlimitError:
             flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
@@ -64,11 +65,11 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
             flash("Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('.')
         except Exception as e:
-            log.error('error registering project: %s', project_unixname, exc_info=True)
+            log.error('error registering project: %s', project_shortname, exc_info=True)
             flash('Internal Error. Please try again later.', 'error')
             redirect('.')
 
-        c.project.set_tool_data('google-code', project_name=gc_project_name)
+        c.project.set_tool_data('google-code', project_name=project_name)
         tasks.import_project_info.post()
         for tool in tools:
             tool.import_tool(c.project)
@@ -79,5 +80,5 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
 
     @expose('json:')
     @validate(GoogleCodeProjectForm())
-    def check_names(self, gc_project_name=None, project_unixname=None, tools=None, **kw):
+    def check_names(self, project_name=None, project_shortname=None, tools=None, **kw):
         return c.form_errors

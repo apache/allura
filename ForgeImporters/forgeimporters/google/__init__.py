@@ -48,8 +48,8 @@ class GoogleCodeProjectExtractor(object):
         })
 
     def __init__(self, project, page='project_info'):
-        gc_project_name = project.get_tool_data('google-code', 'project_name')
-        page = urllib2.urlopen(self.PAGE_MAP[page] % urllib.quote(gc_project_name))
+        project_name = project.get_tool_data('google-code', 'project_name')
+        page = urllib2.urlopen(self.PAGE_MAP[page] % urllib.quote(project_name))
         self.project = project
         self.page = BeautifulSoup(page)
 
