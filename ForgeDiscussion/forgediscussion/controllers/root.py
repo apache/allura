@@ -305,7 +305,7 @@ class ForumRestController(BaseController):
                                         num_views=t.num_views,
                                         url=h.absurl('/rest' + t.url()),
                                         last_post=t.last_post)
-                                   for t in topics]
+                                   for t in topics if t.status == 'ok']
         json['count'] = count
         json['page'] = page
         json['limit'] = limit

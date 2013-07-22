@@ -104,6 +104,23 @@ class TestRootRestController(TestDiscussionApiBase):
         url = 'http://localhost:80/rest/p/test/discussion/general/thread/%s/' % t._id
         assert_equal(topics[1]['url'], url)
 
+    def test_forum_show_ok_topics(self):
+        forum = self.api_get('/rest/p/test/discussion/general/')
+        forum = forum.json['forum']
+        assert_equal(forum['name'], 'General Discussion')
+        topics = forum['topics']
+        assert_equal(len(topics), 2)
+        self.create_topic('general', 'Hi again', 'It should not be shown')
+        t = ForumThread.query.find({'subject': 'Hi again'}).first()
+        first_post = t.first_post
+        first_post.status = u'pending'
+        first_post.commit()
+        forum = self.api_get('/rest/p/test/discussion/general/')
+        forum = forum.json['forum']
+        assert_equal(forum['name'], 'General Discussion')
+        topics = forum['topics']
+        assert_equal(len(topics), 2)
+
     def test_topic(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
