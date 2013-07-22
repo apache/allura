@@ -34,7 +34,11 @@ from . import tasks
 
 class GoogleCodeProjectForm(schema.Schema):
     neighborhood = fev.PlainText(not_empty=True)
-    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$', not_empty=True)
+    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$',
+            not_empty=True,
+            messages={
+                'invalid': 'Please use only letters, numbers, and dashes.',
+            })
     project_shortname = NeighborhoodProjectShortNameValidator()
     tools = base.ToolsValidator('Google Code')
 

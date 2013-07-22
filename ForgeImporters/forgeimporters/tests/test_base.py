@@ -39,9 +39,11 @@ class TestProjectImporterDispatcher(TestCase):
     @mock.patch.object(base, 'iter_entry_points')
     def test_lookup(self, iep):
         eps = iep.return_value = [ep('ep1', 'first'), ep('ep2', 'second')]
-        result = base.ProjectImporterDispatcher()._lookup('source', 'rest1', 'rest2')
+        nbhd = mock.Mock(name='neighborhood')
+        result = base.ProjectImporterDispatcher(nbhd)._lookup('source', 'rest1', 'rest2')
         self.assertEqual(result, (eps[0].lv, ('rest1', 'rest2')))
         iep.assert_called_once_with('allura.project_importers', 'source')
+        eps[0].load.return_value.assert_called_once_with(nbhd)
 
 
 class TestProjectImporter(TestCase):

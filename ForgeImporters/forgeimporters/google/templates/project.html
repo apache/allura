@@ -40,9 +40,11 @@
 
         var manual = false;
         function suggest_name() {
+            var $project_shortname = $('#project_shortname');
             if (!manual) {
-                $('#project_shortname').val($('#project_name').val()).trigger('change');
+                $project_shortname.val($('#project_name').val());
             }
+            $project_shortname.trigger('change');
         }
 
         function check_names() {
