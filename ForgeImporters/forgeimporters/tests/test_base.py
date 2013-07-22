@@ -23,17 +23,20 @@ import mock
 from .. import base
 
 
-def ep(name, source=None):
-    mep = mock.Mock(name='mock_ep')
+def ep(name, source=None, importer=None, **kw):
+    mep = mock.Mock(name='mock_ep', **kw)
     mep.name = name
-    mep.load.return_value.source = source
-    mep.lv = mep.load.return_value.return_value
-    mep.lv.source = source
+    if importer is not None:
+        mep.load.return_value = importer
+    else:
+        mep.load.return_value.source = source
+        mep.lv = mep.load.return_value.return_value
+        mep.lv.source = source
     return mep
 
 
 class TestProjectImporterDispatcher(TestCase):
-    @mock.patch('forgeimporters.base.iter_entry_points')
+    @mock.patch.object(base, 'iter_entry_points')
     def test_lookup(self, iep):
         eps = iep.return_value = [ep('ep1', 'first'), ep('ep2', 'second')]
         result = base.ProjectImporterDispatcher()._lookup('source', 'rest1', 'rest2')
@@ -42,7 +45,7 @@ class TestProjectImporterDispatcher(TestCase):
 
 
 class TestProjectImporter(TestCase):
-    @mock.patch('forgeimporters.base.iter_entry_points')
+    @mock.patch.object(base, 'iter_entry_points')
     def test_tool_importers(self, iep):
         eps = iep.return_value = [ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
         pi = base.ProjectImporter()
@@ -51,16 +54,24 @@ class TestProjectImporter(TestCase):
         iep.assert_called_once_with('allura.importers')
 
 
+
+TA1 = mock.Mock(tool_label='foo', tool_description='foo_desc')
+TA2 = mock.Mock(tool_label='qux', tool_description='qux_desc')
+TA3 = mock.Mock(tool_label='baz', tool_description='baz_desc')
+
 class TestToolImporter(TestCase):
     class TI1(base.ToolImporter):
-        target_app = mock.Mock(tool_label='foo', tool_description='foo_desc')
+        target_app = TA1
 
     class TI2(base.ToolImporter):
-        target_app = mock.Mock(tool_label='foo', tool_description='foo_desc')
+        target_app = TA2
         tool_label = 'bar'
         tool_description = 'bar_desc'
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
+    class TI3(base.ToolImporter):
+        target_app = [TA2, TA2]
+
+    @mock.patch.object(base, 'iter_entry_points')
     def test_by_name(self, iep):
         eps = iep.return_value = [ep('my-name', 'my-source')]
         importer = base.ToolImporter.by_name('my-name')
@@ -73,13 +84,30 @@ class TestToolImporter(TestCase):
         iep.assert_called_once_with('allura.importers', 'other-name')
         self.assertEqual(importer, None)
 
+    @mock.patch.object(base, 'iter_entry_points')
+    def test_by_app(self, iep):
+        eps = iep.return_value = [
+                ep('importer1', importer=self.TI1),
+                ep('importer2', importer=self.TI2),
+                ep('importer3', importer=self.TI3),
+            ]
+        importers = base.ToolImporter.by_app(TA2)
+        self.assertEqual(set(importers.keys()), set([
+                'importer2',
+                'importer3',
+            ]))
+        self.assertIsInstance(importers['importer2'], self.TI2)
+        self.assertIsInstance(importers['importer3'], self.TI3)
+
     def test_tool_label(self):
         self.assertEqual(self.TI1().tool_label, 'foo')
         self.assertEqual(self.TI2().tool_label, 'bar')
+        self.assertEqual(self.TI3().tool_label, 'qux')
 
     def test_tool_description(self):
         self.assertEqual(self.TI1().tool_description, 'foo_desc')
         self.assertEqual(self.TI2().tool_description, 'bar_desc')
+        self.assertEqual(self.TI3().tool_description, 'qux_desc')
 
 
 class TestToolsValidator(TestCase):

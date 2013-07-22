@@ -18,6 +18,7 @@
 from pkg_resources import iter_entry_points
 
 from tg import expose
+from paste.deploy.converters import aslist
 from formencode import validators as fev
 
 from ming.utils import LazyProperty
@@ -77,6 +78,15 @@ class ToolImporter(object):
         for ep in iter_entry_points('allura.importers', name):
             return ep.load()()
 
+    @classmethod
+    def by_app(self, app):
+        importers = {}
+        for ep in iter_entry_points('allura.importers'):
+            importer = ep.load()
+            if app in aslist(importer.target_app):
+                importers[ep.name] = importer()
+        return importers
+
     def import_tool(self, project=None, mount_point=None):
         """
         Override this method to perform the tool import.
@@ -85,11 +95,11 @@ class ToolImporter(object):
 
     @property
     def tool_label(self):
-        return getattr(self.target_app, 'tool_label', None)
+        return getattr(aslist(self.target_app)[0], 'tool_label', None)
 
     @property
     def tool_description(self):
-        return getattr(self.target_app, 'tool_description', None)
+        return getattr(aslist(self.target_app)[0], 'tool_description', None)
 
 
 class ToolsValidator(fev.Set):
