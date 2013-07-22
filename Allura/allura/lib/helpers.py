@@ -363,7 +363,14 @@ class DateTimeConverter(FancyValidator):
 def absurl(url):
     if url is None: return None
     if '://' in url: return url
-    return request.scheme + '://' + request.host + url
+    # some __json__ methods call absurl
+    # and in tests request is not set so exception raises
+    # this check prevents it
+    try:
+        host = request.scheme + '://' + request.host
+    except TypeError:
+        host = ''
+    return host + url
 
 def diff_text(t1, t2, differ=None):
     t1_lines = t1.replace('\r', '').split('\n')
