@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import expose, validate, flash, redirect
+from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
 from formencode import validators as fev, schema
@@ -74,8 +74,8 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
         for importer_name in tools:
             tasks.import_tool.post(importer_name)
 
-        flash('Welcome to the SourceForge Project System! '
-              'Your project data will be imported and should show up here shortly.')
+        flash('Welcome to the %s Project System! '
+              'Your project data will be imported and should show up here shortly.' % config['site_name'])
         redirect(c.project.script_name + 'admin/overview')
 
     @expose('json:')

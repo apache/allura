@@ -225,8 +225,8 @@ class NeighborhoodController(object):
             for i, tool in enumerate(tools):
                 if (tool.lower() not in anchored_tools.keys()) and (c.project.app_instance(tool) is None):
                     c.project.install_app(tool, ordinal=i + offset)
-        flash('Welcome to the SourceForge Project System! '
-              'To get started, fill out some information about your project.')
+        flash('Welcome to the %s Project System! '
+              'To get started, fill out some information about your project.' % config['site_name'])
         redirect(c.project.script_name + 'admin/overview')
 
     @expose()
