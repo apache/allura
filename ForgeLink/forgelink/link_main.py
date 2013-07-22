@@ -49,6 +49,7 @@ class ForgeLinkApp(Application):
         ConfigOption('url', str, None)
     ]
     searchable=True
+    exportable=True
     tool_label='External Link'
     default_mount_label='Link name'
     default_mount_point='link'
@@ -92,6 +93,10 @@ class ForgeLinkApp(Application):
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
         super(ForgeLinkApp, self).uninstall(project)
+
+    def bulk_export(self, f):
+        f.write('{"url": "%s"}' % self.config.options.get('url', 'test'))
+
 
 class RootController(BaseController):
 
