@@ -3106,7 +3106,7 @@ ul.dropdown ul li a:hover {
     font-size: 18px;
     font-weight: 600;
     text-shadow: none;
-    color: white !important;
+    color: white;
     padding: 1em 2em 1em 2em;
     text-decoration: none;
     -webkit-border-radius: 5px;
