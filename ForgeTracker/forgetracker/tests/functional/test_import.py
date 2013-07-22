@@ -173,12 +173,14 @@ class TestImportController(TestRestApiBase):
         import_support = ImportSupport()
         result = import_support.link_processing('''test link [[2496]](http://testlink.com)
                                        test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201))
-                                       [test comment](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)''')
+                                       [test comment](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
+                                       #200''')
 
-        assert "test link [2496](http://testlink.com)" in result
-        assert '[test comment](204#)' in result
-        assert 'test link [2496](http://testlink.com)' in result
+        assert "test link [\[2496\]](http://testlink.com)" in result
+        assert '[test comment]\(204#comment:1\)' in result
+        assert 'test link [\[2496\]](http://testlink.com)' in result
         assert 'test ticket ([#201](201))' in result
+        assert '[#200]' in result
 
     @td.with_tracker
     def test_links(self):
@@ -200,7 +202,7 @@ class TestImportController(TestRestApiBase):
             status={'$in': ['ok', 'pending']})).sort('timestamp').all()[0].slug
 
         assert '[test comment](204#%s)' % slug in r
-        assert 'test link [2496](http://testlink.com)' in r
+        assert 'test link [\[2496\]](http://testlink.com)' in r
         assert 'test ticket ([#201](201))' in r
 
     @td.with_tracker

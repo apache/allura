@@ -193,6 +193,7 @@ class ImportSupport(object):
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
 
+        remapped['description'] = self.link_processing(remapped['description'])
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                           ticket_num=ticket_num)
@@ -215,6 +216,9 @@ class ImportSupport(object):
     def ticket_link(self, m):
         return '(%s)' % m.groups()[0]
 
+    def ticket_bracket_link(self, m):
+        return '[#%s]' % m.groups()[0]
+
     def get_slug_by_id(self, ticket, comment):
         comment = int(comment)
         ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
@@ -231,17 +235,23 @@ class ImportSupport(object):
 
     def comment_link(self, m):
         ticket, comment = m.groups()
-        return '(%s#%s)' % (ticket, self.get_slug_by_id(ticket, comment))
+        slug = self.get_slug_by_id(ticket, comment)
+        if slug:
+            return '(%s#%s)' % (ticket, self.get_slug_by_id(ticket, comment))
+        else:
+            return '\(%s#comment:%s\)' % (ticket, comment)
 
     def brackets_escaping(self, m):
-        return '[%s]' % m.groups()[0]
+        return '[\[%s\]]' % m.groups()[0]
 
     def link_processing(self, text):
+        short_link_ticket_pattern = re.compile('(?<!\[)#(\d+)(?!\])')
         comment_pattern = re.compile('\(\S*/(\d+)#comment:(\d+)\)')
         ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
         brackets_pattern = re.compile('\[\[(.*)\]\]')
 
-        text = comment_pattern.sub(self.comment_link, text.replace('\n', ''))
+        text = short_link_ticket_pattern.sub(self.ticket_bracket_link, text)
+        text = comment_pattern.sub(self.comment_link, text)
         text = ticket_pattern.sub(self.ticket_link, text)
         text = brackets_pattern.sub(self.brackets_escaping, text)
         return text
