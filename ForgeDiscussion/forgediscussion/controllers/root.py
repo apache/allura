@@ -334,7 +334,7 @@ class ForumTopicRestController(BaseController):
     @expose('json:')
     def index(self, limit=100, page=0, **kw):
         limit, page, start = g.handle_paging(int(limit), int(page))
-        posts = self.topic.query_posts(page=page, limit=limit, style='')
+        posts = self.topic.query_posts(page=page, limit=limit, style='', status='ok')
         json = {}
         json['topic'] = self.topic.__json__()
         json['count'] = posts.count()

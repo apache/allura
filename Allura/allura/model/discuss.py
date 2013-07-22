@@ -328,13 +328,15 @@ class Thread(Artifact, ActivityObject):
         return result
 
     def query_posts(self, page=None, limit=None,
-                    timestamp=None, style='threaded'):
+                    timestamp=None, style='threaded', status=None):
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
                     status={'$in': ['ok', 'pending']}, timestamp=timestamp)
         else:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
                     status={'$in': ['ok', 'pending']})
+        if status:
+            terms['status'] = status       
         q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')

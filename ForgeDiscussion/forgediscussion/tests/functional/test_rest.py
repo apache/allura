@@ -168,6 +168,27 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(resp.json['page'], 1)
         assert_equal(resp.json['limit'], 1)
 
+    def test_topic_show_ok_only(self):
+        # import logging
+        # log = logging.getLogger(__name__)
+
+        thread = ForumThread.query.find({'subject': 'Hi guys'}).first()        
+        url = '/rest/p/test/discussion/general/thread/%s/' % thread._id
+        resp = self.app.get(url)
+        posts = resp.json['topic']['posts']
+        assert_equal(len(posts), 1)
+        thread.post('Hello', 'I am not ok post')
+        last_post = thread.last_post
+        last_post.status = 'pending'
+        last_post.commit()
+
+        resp = self.app.get(url)
+        posts = resp.json['topic']['posts']        
+
+        # log.info('ready to debug')
+        # log.info(posts)
+        assert_equal(len(posts), 1)
+
     def test_security(self):
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('discussion').config.acl
