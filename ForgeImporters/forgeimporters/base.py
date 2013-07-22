@@ -68,9 +68,14 @@ class ProjectImporter(BaseController):
 
 
 class ToolImporter(object):
-    target_app = None
-    source = None
+    target_app = None  # app or list of apps
+    source = None  # string description of source, must match project importer
     controller = None
+
+    @classmethod
+    def by_name(self, name):
+        for ep in iter_entry_points('allura.importers', name):
+            return ep.load()()
 
     def import_tool(self, project=None, mount_point=None):
         """
@@ -96,15 +101,12 @@ class ToolsValidator(fev.Set):
         value = super(ToolsValidator, self).to_python(value, state)
         valid = []
         invalid = []
-        for i, v in enumerate(value):
-            try:
-                ep = iter_entry_points('allura.importers', v).next().load()
-            except StopIteration:
-                ep = None
-            if getattr(ep, 'source', None) != self.source:
-                invalid.append(v)
+        for name in value:
+            importer = ToolImporter.by_name(name)
+            if importer is not None and importer.source == self.source:
+                valid.append(name)
             else:
-                valid.append(ep())
+                invalid.append(name)
         if invalid:
             pl = 's' if len(invalid) > 1 else ''
             raise fev.Invalid('Invalid tool%s selected: %s' % (pl, ', '.join(invalid)), value, state)

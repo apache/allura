@@ -28,6 +28,7 @@ def ep(name, source=None):
     mep.name = name
     mep.load.return_value.source = source
     mep.lv = mep.load.return_value.return_value
+    mep.lv.source = source
     return mep
 
 
@@ -50,7 +51,7 @@ class TestProjectImporter(TestCase):
         iep.assert_called_once_with('allura.importers')
 
 
-class TestImporter(TestCase):
+class TestToolImporter(TestCase):
     class TI1(base.ToolImporter):
         target_app = mock.Mock(tool_label='foo', tool_description='foo_desc')
 
@@ -58,6 +59,19 @@ class TestImporter(TestCase):
         target_app = mock.Mock(tool_label='foo', tool_description='foo_desc')
         tool_label = 'bar'
         tool_description = 'bar_desc'
+
+    @mock.patch('forgeimporters.base.iter_entry_points')
+    def test_by_name(self, iep):
+        eps = iep.return_value = [ep('my-name', 'my-source')]
+        importer = base.ToolImporter.by_name('my-name')
+        iep.assert_called_once_with('allura.importers', 'my-name')
+        self.assertEqual(importer, eps[0].lv)
+
+        iep.reset_mock()
+        iep.return_value = []
+        importer = base.ToolImporter.by_name('other-name')
+        iep.assert_called_once_with('allura.importers', 'other-name')
+        self.assertEqual(importer, None)
 
     def test_tool_label(self):
         self.assertEqual(self.TI1().tool_label, 'foo')
@@ -72,44 +86,44 @@ class TestToolsValidator(TestCase):
     def setUp(self):
         self.tv = base.ToolsValidator('good-source')
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
-    def test_empty(self, iep):
+    @mock.patch.object(base.ToolImporter, 'by_name')
+    def test_empty(self, by_name):
         self.assertEqual(self.tv.to_python(''), [])
-        self.assertEqual(iep.call_count, 0)
+        self.assertEqual(by_name.call_count, 0)
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
-    def test_no_ep(self, iep):
-        eps = iep.return_value.next.side_effect = StopIteration
+    @mock.patch.object(base.ToolImporter, 'by_name')
+    def test_no_ep(self, by_name):
+        eps = by_name.return_value = None
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python('my-value')
         self.assertEqual(cm.exception.msg, 'Invalid tool selected: my-value')
-        iep.assert_called_once_with('allura.importers', 'my-value')
+        by_name.assert_called_once_with('my-value')
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
-    def test_bad_source(self, iep):
-        eps = iep.return_value.next.side_effect = [ep('ep1', 'bad-source'), ep('ep2', 'good-source')]
+    @mock.patch.object(base.ToolImporter, 'by_name')
+    def test_bad_source(self, by_name):
+        eps = by_name.return_value = ep('ep1', 'bad-source').lv
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python('my-value')
         self.assertEqual(cm.exception.msg, 'Invalid tool selected: my-value')
-        iep.assert_called_once_with('allura.importers', 'my-value')
+        by_name.assert_called_once_with('my-value')
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
-    def test_multiple(self, iep):
-        eps = iep.return_value.next.side_effect = [ep('ep1', 'bad-source'), ep('ep2', 'good-source'), ep('ep3', 'bad-source')]
+    @mock.patch.object(base.ToolImporter, 'by_name')
+    def test_multiple(self, by_name):
+        eps = by_name.side_effect = [ep('ep1', 'bad-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python(['value1', 'value2', 'value3'])
         self.assertEqual(cm.exception.msg, 'Invalid tools selected: value1, value3')
-        self.assertEqual(iep.call_args_list, [
-                mock.call('allura.importers', 'value1'),
-                mock.call('allura.importers', 'value2'),
-                mock.call('allura.importers', 'value3'),
+        self.assertEqual(by_name.call_args_list, [
+                mock.call('value1'),
+                mock.call('value2'),
+                mock.call('value3'),
             ])
 
-    @mock.patch('forgeimporters.base.iter_entry_points')
-    def test_valid(self, iep):
-        eps = iep.return_value.next.side_effect = [ep('ep1', 'good-source'), ep('ep2', 'good-source'), ep('ep3', 'bad-source')]
-        self.assertEqual(self.tv.to_python(['value1', 'value2']), [eps[0].lv, eps[1].lv])
-        self.assertEqual(iep.call_args_list, [
-                mock.call('allura.importers', 'value1'),
-                mock.call('allura.importers', 'value2'),
+    @mock.patch.object(base.ToolImporter, 'by_name')
+    def test_valid(self, by_name):
+        eps = by_name.side_effect = [ep('ep1', 'good-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
+        self.assertEqual(self.tv.to_python(['value1', 'value2']), ['value1', 'value2'])
+        self.assertEqual(by_name.call_args_list, [
+                mock.call('value1'),
+                mock.call('value2'),
             ])

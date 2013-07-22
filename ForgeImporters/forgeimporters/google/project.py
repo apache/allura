@@ -71,8 +71,8 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
 
         c.project.set_tool_data('google-code', project_name=project_name)
         tasks.import_project_info.post()
-        for tool in tools:
-            tool.import_tool(c.project)
+        for importer_name in tools:
+            tasks.import_tool.post(importer_name)
 
         flash('Welcome to the SourceForge Project System! '
               'Your project data will be imported and should show up here shortly.')

@@ -22,6 +22,7 @@ from ming.orm import ThreadLocalORMSession
 from allura.lib.decorators import task
 
 from . import GoogleCodeProjectExtractor
+from ..base import ToolImporter
 
 
 @task
@@ -31,3 +32,8 @@ def import_project_info():
     extractor.get_icon()
     extractor.get_license()
     ThreadLocalORMSession.flush_all()
+
+@task
+def import_tool(importer_name, mount_point=None, mount_label=None):
+    importer = ToolImporter.by_name(importer_name)
+    importer.import_tool(c.project, mount_point, mount_label)
