@@ -20,6 +20,7 @@ import logging
 from datetime import datetime, timedelta
 from urllib import unquote
 from itertools import chain, islice
+from pkg_resources import iter_entry_points
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response, config
@@ -47,7 +48,6 @@ from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import project_list as plw
 from allura.lib import plugin, exceptions
-from forgeimporters.base import ProjectImporterDispatcher
 from .auth import AuthController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
@@ -74,7 +74,7 @@ class NeighborhoodController(object):
         self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
-        self.import_project = ProjectImporterDispatcher(self.neighborhood)
+        self.import_project = ProjectImporterController(self.neighborhood)
 
     def _check_security(self):
         require_access(self.neighborhood, 'read')
@@ -919,3 +919,13 @@ class GrantController(object):
         with h.push_context(self.project._id):
             g.post_event('project_updated')
         redirect(request.referer)
+
+class ProjectImporterController(object):
+    def __init__(self, neighborhood, *a, **kw):
+        super(ProjectImporterController, self).__init__(*a, **kw)
+        self.neighborhood = neighborhood
+
+    @expose()
+    def _lookup(self, source, *rest):
+        for ep in iter_entry_points('allura.project_importers', source):
+            return ep.load()(self.neighborhood), rest

@@ -25,18 +25,9 @@ from ming.utils import LazyProperty
 from allura.controllers import BaseController
 
 
-class ProjectImporterDispatcher(BaseController):
-    def __init__(self, neighborhood, *a, **kw):
-        super(ProjectImporterDispatcher, self).__init__(*a, **kw)
-        self.neighborhood = neighborhood
-
-    @expose()
-    def _lookup(self, source, *rest):
-        for ep in iter_entry_points('allura.project_importers', source):
-            return ep.load()(self.neighborhood), rest
-
-
 class ProjectImporter(BaseController):
+    """
+    """
     source = None
 
     @LazyProperty
@@ -73,6 +64,8 @@ class ProjectImporter(BaseController):
 
 
 class ToolImporter(object):
+    """
+    """
     target_app = None  # app or list of apps
     source = None  # string description of source, must match project importer
     controller = None
