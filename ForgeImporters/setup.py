@@ -37,4 +37,5 @@ setup(name='ForgeImporters',
       google-code = forgeimporters.google.project:GoogleCodeProjectImporter
 
       [allura.importers]
+      google-code-repo = forgeimporters.google.code:GoogleRepoImporter
       """,)
