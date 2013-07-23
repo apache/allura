@@ -105,6 +105,9 @@ class ToolImporter(object):
     def tool_description(self):
         return getattr(aslist(self.target_app)[0], 'tool_description', None)
 
+    def tool_icon(self, theme, size):
+        return theme.app_icon_url(aslist(self.target_app)[0], size)
+
 
 class ToolsValidator(fev.Set):
     def __init__(self, source, *a, **kw):

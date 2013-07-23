@@ -38,7 +38,7 @@
         {% endif %}
         {% for name, tool_importer in importer.tool_importers.iteritems() %}
         <div class="tool">
-            <img src="{{ g.theme.app_icon_url(tool_importer.target_app, 48) }}" alt="{{ tool_importer.tool_label }} icon">
+            <img src="{{ tool_importer.tool_icon(g.theme, 48) }}" alt="{{ tool_importer.tool_label }} icon">
             <label>
                 <input name="tools" value="{{name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tools'] %} checked="checked"{% endif %}/>
                 {{tool_importer.tool_label}}
