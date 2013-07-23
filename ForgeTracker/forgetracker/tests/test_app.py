@@ -35,7 +35,7 @@ class TestBulkExport(TrackerTestController):
         self.project = M.Project.query.get(shortname='test')
         self.tracker = self.project.app_instance('bugs')
         self.new_ticket(summary='foo', _milestone='1.0')
-        self.new_ticket(summary='bar', _milestone='1.0')
+        self.new_ticket(summary='bar', _milestone='2.0')
         ticket = TM.Ticket.query.find(dict(summary='foo')).first()
         ticket.discussion_thread.add_post(text='silly comment')
 
@@ -59,3 +59,7 @@ class TestBulkExport(TrackerTestController):
         assert_true('options' in tracker_config.keys())
         assert_true('acl' in tracker_config.keys())
         assert_equal(tracker_config['options']['mount_point'], 'bugs')
+
+        milestones = sorted(tracker['milestones'], key=operator.itemgetter('name'))
+        assert_equal(milestones[0]['name'], '1.0')
+        assert_equal(milestones[1]['name'], '2.0')

@@ -420,12 +420,30 @@ class ForgeTrackerApp(Application):
                 f.write(',')
         f.write('], "tracker_config":')
         json.dump(self.config, f, cls=jsonify.GenericJSON)
+        f.write(', "milestones":')
+        milestones = self.milestones
+        json.dump(milestones, f, cls=jsonify.GenericJSON)
         f.write('}')
 
     @property
     def bins(self):
         return TM.Bin.query.find(dict(app_config_id=self.config._id)).sort('summary').all()
 
+    @property
+    def milestones(self):
+        milestones = []
+        for fld in self.globals.milestone_fields:
+            if fld.name == '_milestone':
+                for m in fld.milestones:
+                    d =  self.globals.milestone_count('%s:%s' % (fld.name, m.name))
+                    milestones.append(dict(
+                        name=m.name,
+                        due_date=m.get('due_date'),
+                        description=m.get('description'),
+                        complete=m.get('complete'),
+                        total=d['hits'],
+                        closed=d['closed']))
+        return milestones
 
 
 ### Controllers ###
@@ -614,19 +632,8 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/milestones.html')
     def milestones(self, **kw):
         require_access(c.app, 'configure')
-        milestones = []
         c.date_field = W.date_field
-        for fld in c.app.globals.milestone_fields:
-            if fld.name == '_milestone':
-                for m in fld.milestones:
-                    d =  c.app.globals.milestone_count('%s:%s' % (fld.name, m.name))
-                    milestones.append(dict(
-                        name=m.name,
-                        due_date=m.get('due_date'),
-                        description=m.get('description'),
-                        complete=m.get('complete'),
-                        total=d['hits'],
-                        closed=d['closed']))
+        milestones = c.app.milestones
         return dict(milestones=milestones)
 
     @without_trailing_slash
