@@ -65,7 +65,6 @@ class GoogleCodeProjectExtractor(object):
 
     def get_icon(self):
         icon_url = urljoin(self.url, self.page.find(itemprop='image').attrMap['src'])
-        log.info(icon_url)
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
         fp_ish = urllib2.urlopen(icon_url)
         fp = StringIO(fp_ish.read())
