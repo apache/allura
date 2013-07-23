@@ -32,6 +32,7 @@ from allura import model as M
 class GoogleCodeProjectExtractor(object):
     PAGE_MAP = {
             'project_info': 'http://code.google.com/p/%s/',
+            'source_browse': 'http://code.google.com/p/%s/source/browse/',
         }
 
     LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
@@ -48,10 +49,10 @@ class GoogleCodeProjectExtractor(object):
         })
 
     def __init__(self, project, page='project_info'):
-        project_name = project.get_tool_data('google-code', 'project_name')
-        page = urllib2.urlopen(self.PAGE_MAP[page] % urllib.quote(project_name))
+        gc_project_name = project.get_tool_data('google-code', 'project_name')
+        self.url = self.PAGE_MAP[page] % urllib.quote(gc_project_name)
         self.project = project
-        self.page = BeautifulSoup(page)
+        self.page = BeautifulSoup(urllib2.urlopen(self.url))
 
     def get_short_description(self):
         self.project.short_description = self.page.find(itemprop='description').string.strip()
