@@ -63,3 +63,6 @@ class TestBulkExport(TrackerTestController):
         milestones = sorted(tracker['milestones'], key=operator.itemgetter('name'))
         assert_equal(milestones[0]['name'], '1.0')
         assert_equal(milestones[1]['name'], '2.0')
+
+        saved_bins_summaries = [bin['summary'] for bin in tracker['saved_bins']]
+        assert_true('Closed Tickets' in saved_bins_summaries)

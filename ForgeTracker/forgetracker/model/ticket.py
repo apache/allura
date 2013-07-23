@@ -512,6 +512,14 @@ class Bin(Artifact, ActivityObject):
             terms_s=self.terms)
         return result
 
+    def __json__(self):
+        return dict(super(Bin,self).__json__(),
+            _id=self._id,
+            summary=self.summary,
+            terms=self.terms,
+            sort=self.sort,
+        )
+
 class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     class __mongometa__:
         name = 'ticket'
