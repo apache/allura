@@ -15,12 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
+
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
 from formencode import validators as fev, schema
 
-from allura import model as M
 from allura.lib.decorators import require_post
 from allura.lib.widgets.forms import NeighborhoodProjectShortNameValidator
 from allura.lib.security import require_access
@@ -30,6 +31,8 @@ from allura.lib import exceptions
 from .. import base
 from . import tasks
 
+
+log = logging.getLogger(__name__)
 
 
 class GoogleCodeProjectForm(schema.Schema):
