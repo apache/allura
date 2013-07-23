@@ -176,6 +176,7 @@ class Application(object):
         Application. Default is True.
     :cvar list permissions: Named permissions used by instances of this
         Application. Default is [].
+    :cvar dict permissions_desc: Descriptions of the named permissions.
     :cvar bool installable: Default is True, Application can be installed in
         projects.
     :cvar bool hidden: Default is False, Application is not hidden from the
@@ -282,12 +283,10 @@ class Application(object):
         Returns empty string if there is no description for ``permission``.
 
         """
-        if not hasattr(cls, '_permissions_desc'):
-            d = {}
-            for t in reversed(cls.__mro__):
-                d = dict(d, **getattr(t, 'permissions_desc', {}))
-            cls._permissions_desc = d
-        return cls._permissions_desc.get(permission, '')
+        d = {}
+        for t in reversed(cls.__mro__):
+            d = dict(d, **getattr(t, 'permissions_desc', {}))
+        return d.get(permission, '')
 
     def parent_security_context(self):
         """Return the parent of this object.
