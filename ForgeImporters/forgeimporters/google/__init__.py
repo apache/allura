@@ -54,6 +54,8 @@ class GoogleCodeProjectExtractor(object):
             'Other Open Source': 'Other/Proprietary License',
         })
 
+    DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
+
     def __init__(self, project, page='project_info'):
         gc_project_name = project.get_tool_data('google-code', 'project_name')
         self.url = self.PAGE_MAP[page] % urllib.quote(gc_project_name)
@@ -65,6 +67,8 @@ class GoogleCodeProjectExtractor(object):
 
     def get_icon(self):
         icon_url = urljoin(self.url, self.page.find(itemprop='image').attrMap['src'])
+        if icon_url == self.DEFAULT_ICON:
+            return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
         fp_ish = urllib2.urlopen(icon_url)
         fp = StringIO(fp_ish.read())
