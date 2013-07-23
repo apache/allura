@@ -354,10 +354,13 @@ class TestExportTasks(unittest.TestCase):
             mock.call('Can not load app for blog mount point. Skipping.')])
 
     @mock.patch('allura.tasks.export_tasks.log')
-    @td.with_tool('test', 'ShortUrl', 'urls')
+    @mock.patch('allura.tasks.export_tasks.M.Project.app_instance')
+    @mock.patch('allura.tasks.export_tasks.mail_tasks')
+    @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Blog', 'blog')
-    def test_bulk_export_not_exportable_tool(self, log):
-        export_tasks.bulk_export('test', [u'urls', u'blog'], 'test-admin')
+    def test_bulk_export_not_exportable_tool(self, mail_tasks, app, log):
+        app.return_value.exportable = False
+        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin')
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
             mock.call('Tool urls is not exportable. Skipping.'),

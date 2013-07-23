@@ -19,10 +19,11 @@
 import logging
 from datetime import datetime
 import urllib2
+import json
 
 # Non-stdlib imports
 import pymongo
-from tg import config, expose, validate, redirect, flash
+from tg import config, expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -90,6 +91,7 @@ class ForgeBlogApp(Application):
     }
     ordinal=14
     installable=True
+    exportable = True
     config_options = Application.config_options
     default_external_feeds = []
     icons={
@@ -187,6 +189,16 @@ class ForgeBlogApp(Application):
         BM.BlogPost.query.remove(dict(app_config_id=c.app.config._id))
         BM.BlogPostSnapshot.query.remove(dict(app_config_id=c.app.config._id))
         super(ForgeBlogApp, self).uninstall(project)
+
+    def bulk_export(self, f):
+        f.write('{"posts": [')
+        posts = BM.BlogPost.query.find(dict(app_config_id=self.config._id)).sort('timestamp', pymongo.DESCENDING)
+        count = len(posts)
+        for i, post in enumerate(posts):
+            json.dump(post, f, cls=jsonify.GenericJSON)
+            if i < (count - 1):
+                f.write(',')
+        f.write(']}')
 
 class RootController(BaseController, FeedController):
 
