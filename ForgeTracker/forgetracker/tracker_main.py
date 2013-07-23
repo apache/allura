@@ -418,7 +418,9 @@ class ForgeTrackerApp(Application):
             json.dump(ticket, f, cls=jsonify.GenericJSON)
             if i < (count - 1):
                 f.write(',')
-        f.write(']}')
+        f.write('], "tracker_config":')
+        json.dump(self.config, f, cls=jsonify.GenericJSON)
+        f.write('}')
 
     @property
     def bins(self):

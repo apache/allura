@@ -20,7 +20,7 @@ import tempfile
 import json
 import operator
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -44,6 +44,7 @@ class TestBulkExport(TrackerTestController):
         self.tracker.bulk_export(f)
         f.seek(0)
         tracker = json.loads(f.read())
+
         tickets = sorted(tracker['tickets'], key=operator.itemgetter('summary'))
         assert_equal(len(tickets), 2)
         ticket_foo = tickets[1]
@@ -51,4 +52,10 @@ class TestBulkExport(TrackerTestController):
         assert_equal(ticket_foo['custom_fields']['_milestone'], '1.0')
         posts_foo = ticket_foo['discussion_thread']['posts']
         assert_equal(len(posts_foo), 1)
-        assert_equal(posts_foo[0]['text'], 'silly comment')                
+        assert_equal(posts_foo[0]['text'], 'silly comment')         
+
+        tracker_config = tracker['tracker_config']
+        assert_equal(tracker_config['project_id'], unicode(self.project._id))
+        assert_true('options' in tracker_config.keys())
+        assert_true('acl' in tracker_config.keys())
+        assert_equal(tracker_config['options']['mount_point'], 'bugs')
