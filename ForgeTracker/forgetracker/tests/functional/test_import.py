@@ -177,10 +177,10 @@ class TestImportController(TestRestApiBase):
                                        #200''')
 
         assert "test link [\[2496\]](http://testlink.com)" in result
-        assert '[test comment]\(204#comment:1\)' in result
+        assert 'test comment' in result
         assert 'test link [\[2496\]](http://testlink.com)' in result
         assert 'test ticket ([#201](201))' in result
-        assert '[#200]' in result
+        assert '[\[200\]](bugs:#200)' in result, result
 
     @td.with_tracker
     def test_links(self):
