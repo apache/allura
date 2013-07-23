@@ -56,7 +56,8 @@ def bulk_export(project_shortname, tools, username):
         try:
             path = create_export_dir(project)
             with open(os.path.join(path, '%s.json' % tool), 'w') as f:
-                app.bulk_export(f)
+                with h.push_context(project._id, app_config_id=app.config._id):
+                    app.bulk_export(f)
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
             not_exported_tools.append(tool)

@@ -17,10 +17,11 @@
 
 #-*- python -*-
 import logging
+import json
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, response, flash
+from tg import expose, validate, redirect, response, flash, jsonify
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 
@@ -95,7 +96,7 @@ class ForgeLinkApp(Application):
         super(ForgeLinkApp, self).uninstall(project)
 
     def bulk_export(self, f):
-        f.write('{"url": "%s"}' % self.config.options.get('url', 'test'))
+        json.dump(RootRestController().link_json(), f, cls=jsonify.GenericJSON)
 
 
 class RootController(BaseController):
@@ -132,9 +133,12 @@ class RootRestController(BaseController):
     def _check_security(self):
         require_access(c.app, 'read')
 
+    def link_json(self):
+        return dict(url=c.app.config.options.get('url'))
+
     @expose('json:')
     def index(self, url='', **kw):
         if (request.method == 'POST') and (url != ''):
             require_access(c.app, 'configure')
             c.app.config.options.url = url
-        return dict(url=c.app.config.options.get('url'))
+        return self.link_json()
