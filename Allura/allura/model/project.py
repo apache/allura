@@ -902,3 +902,17 @@ class AppConfig(MappedClass):
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
             (self.options.mount_point, self.url()) ]
+
+    def __json__(self):
+        return dict(
+            _id=self._id,
+            project_id=self.project_id,
+            discussion_id=self.discussion_id,
+            tool_name=self.tool_name,
+            version=self.version,
+            options=self.options,
+            # project=self.project,
+            # discussion=self.discussion
+            tool_data=self.tool_data,
+            acl=self.acl,
+        )
