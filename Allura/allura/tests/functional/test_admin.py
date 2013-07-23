@@ -776,8 +776,8 @@ class TestExport(TestController):
         self.setup_with_tools()
 
     @td.with_wiki
-    @td.with_tool('test', 'Wiki', 'wiki2', 'Wiki 2')
     @td.with_tool('test', 'Tickets', 'bugs', 'Bugs')
+    @td.with_tool('test', 'ShortUrl', 'urls', 'Urls')
     def setup_with_tools(self):
         pass
 
@@ -785,7 +785,7 @@ class TestExport(TestController):
         project = M.Project.query.get(shortname='test')
         tools = [t.options.mount_point
                  for t in AdminApp.exportable_tools_for(project)]
-        assert_equals(tools, [u'wiki', u'wiki2'])
+        assert_equals(tools, [u'wiki', u'bugs'])
 
     def test_access(self):
         r = self.app.get('/admin/export',
@@ -804,15 +804,15 @@ class TestExport(TestController):
     def test_export_page_contains_exportable_tools(self):
         r = self.app.get('/admin/export')
         assert_in('Wiki</label> <a href="/p/test/wiki/">/p/test/wiki/</a>', r)
-        assert_in('Wiki 2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>', r)
-        assert_not_in('Bugs</label> <a href="/p/test/bugs/">/p/test/bugs/</a>', r)
+        assert_in('Bugs</label> <a href="/p/test/bugs/">/p/test/bugs/</a>', r)
+        assert_not_in('Urls</label> <a href="/p/test/urls/">/p/test/urls/</a>', r)
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
         assert_in('error', self.webflash(r))
 
     def test_bad_tool(self):
-        r = self.app.post('/admin/export', {'tools': u'bugs'})
+        r = self.app.post('/admin/export', {'tools': u'urls'})
         assert_in('error', self.webflash(r))
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
@@ -824,10 +824,10 @@ class TestExport(TestController):
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
-        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
+        r = self.app.post('/admin/export', {'tools': [u'wiki', u'bugs']})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki', u'wiki2'], u'test-admin')
+            'test', [u'wiki', u'bugs'], u'test-admin')
 
     @patch('allura.ext.admin.admin_main.export_tasks')
     def test_export_in_progress(self, export_tasks):
@@ -835,7 +835,7 @@ class TestExport(TestController):
         tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
         shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
         os.makedirs(tmpdir)
-        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
+        r = self.app.post('/admin/export', {'tools': [u'wiki', u'bugs']})
         assert_in('info', self.webflash(r))
         assert_equals(export_tasks.bulk_export.post.call_count, 0)
         shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
