@@ -19,11 +19,19 @@
 {% extends g.theme.master %}
 
 {% do g.register_forge_css('css/forge/deck.css') %}
-          
+
 {% block title %}{{c.project.name}} / {{app.config.options.mount_label}} / Permissions{% endblock %}
 
 {% block header %}{{app.config.options.mount_point}} Permissions{% endblock %}
-  
+
+{% block extra_css %}
+<style>
+  ul.deck {
+    cursor: auto;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
   {% if not (app.permissions and allow_config) %}
     You are not allowed to edit permissions for {{app.config.options.mount_point}}.
