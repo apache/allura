@@ -35,13 +35,20 @@ class TestBulkExport(TrackerTestController):
         self.project = M.Project.query.get(shortname='test')
         self.tracker = self.project.app_instance('bugs')
         self.new_ticket(summary='foo', _milestone='1.0')
+        self.new_ticket(summary='bar', _milestone='1.0')
+        ticket = TM.Ticket.query.find(dict(summary='foo')).first()
+        ticket.discussion_thread.add_post(text='silly comment')
 
     def test_bulk_export(self):
         f = tempfile.TemporaryFile()
         self.tracker.bulk_export(f)
         f.seek(0)
         tracker = json.loads(f.read())
-        #tickets = sorted(tracker['tickets'], key=operator.itemgetter('title'))
-        tickets = tracker['tickets']
-        print tickets
-        assert_equal(len(tickets), 1)
+        tickets = sorted(tracker['tickets'], key=operator.itemgetter('summary'))
+        assert_equal(len(tickets), 2)
+        ticket_foo = tickets[1]
+        assert_equal(ticket_foo['summary'], 'foo')                
+        assert_equal(ticket_foo['custom_fields']['_milestone'], '1.0')
+        posts_foo = ticket_foo['discussion_thread']['posts']
+        assert_equal(len(posts_foo), 1)
+        assert_equal(posts_foo[0]['text'], 'silly comment')                

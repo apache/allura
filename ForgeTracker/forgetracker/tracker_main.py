@@ -206,6 +206,7 @@ class ForgeTrackerApp(Application):
             schema.OneOf('NewTicketsOnly', 'AllTicketChanges',
                 'NewPublicTicketsOnly', 'AllPublicTicketChanges'), None)
         ]
+    exportable = True
     searchable=True
     tool_label='Tickets'
     tool_description="""
