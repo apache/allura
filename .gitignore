@@ -12,7 +12,7 @@ tags
 *~
 *.swp
 .dbshell
-Allura/docs/_build/*
+*/docs/_build/*
 mail/logs/*
 sandbox-env/*
 download/*

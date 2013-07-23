@@ -47,6 +47,13 @@ class GoogleCodeProjectForm(schema.Schema):
 
 
 class GoogleCodeProjectImporter(base.ProjectImporter):
+    """
+    Project importer for Google Code.
+
+    This imports project metadata, including summary, icon, and license,
+    as well as providing the UI for importing individual tools during project
+    import.
+    """
     source = 'Google Code'
 
     def __init__(self, neighborhood, *a, **kw):
