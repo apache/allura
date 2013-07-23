@@ -69,8 +69,9 @@ class GoogleCodeProjectExtractor(object):
         fp_ish = urllib2.urlopen(icon_url)
         fp = StringIO(fp_ish.read())
         M.ProjectFile.save_image(
-            icon_name, fp, fp_ish.info()['content-type'], square=True,
-            thumbnail_size=(48,48),
+            icon_name, fp,
+            fp_ish.info()['content-type'].split(';')[0],  # strip off charset=x extra param,
+            square=True, thumbnail_size=(48,48),
             thumbnail_meta={'project_id': self.project._id, 'category': 'icon'})
 
     def get_license(self):
