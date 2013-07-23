@@ -18,17 +18,20 @@
 import re
 import urllib
 import urllib2
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 from collections import defaultdict
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
+import logging
 
 from BeautifulSoup import BeautifulSoup
 
 from allura import model as M
 
+
+log = logging.getLogger(__name__)
 
 class GoogleCodeProjectExtractor(object):
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
@@ -61,7 +64,8 @@ class GoogleCodeProjectExtractor(object):
         self.project.short_description = self.page.find(itemprop='description').string.strip()
 
     def get_icon(self):
-        icon_url = self.page.find(itemprop='image').attrMap['src']
+        icon_url = urljoin(self.url, self.page.find(itemprop='image').attrMap['src'])
+        log.info(icon_url)
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
         fp_ish = urllib2.urlopen(icon_url)
         fp = StringIO(fp_ish.read())
