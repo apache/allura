@@ -47,7 +47,7 @@ class RepositoryApp(Application):
         'unmoderated_post', 'post', 'moderate', 'admin',
         'configure']
     permissions_desc = {
-        'read': 'Repo read access.',
+        'read': 'Browse repo via web UI. Removing read does not prevent direct repo read access.',
         'write': 'Repo push access.',
         'create': 'Not used.',
         'admin': 'Set permissions, default branch, and viewable files.',
