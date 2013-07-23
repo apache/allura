@@ -18,8 +18,11 @@
 import tempfile
 import json
 
+from nose.tools import assert_equal
+
 from allura.tests import decorators as td
 from allura import model as M
+from allura.lib import helpers as h
 from alluratest.controller import setup_basic_test
 
 
@@ -32,8 +35,9 @@ class TestBulkExport(object):
     def test_bulk_export(self):
         self.project = M.Project.query.get(shortname='test')
         self.link = self.project.app_instance('link')
+        h.set_context(self.project._id, app_config_id=self.link.config._id)
         self.link.config.options['url'] = 'http://sf.net'
         f = tempfile.TemporaryFile()
         self.link.bulk_export(f)
         f.seek(0)
-        assert json.loads(f.read())['url']=='http://sf.net'
+        assert_equal(json.loads(f.read())['url'], 'http://sf.net')
