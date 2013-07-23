@@ -53,7 +53,7 @@ except ImportError:
     pass
 
 REPO_URLS = {
-    'svn': 'http://{0}.googlecode.com/svn/trunk/',
+    'svn': 'http://{0}.googlecode.com/svn/',
     'git': 'https://code.google.com/p/{0}/',
     'hg': 'https://code.google.com/p/{0}/',
 }
@@ -113,7 +113,7 @@ class GoogleRepoImporter(ToolImporter):
             'project_name'), repo_type)
         return project.install_app(
                 REPO_ENTRY_POINTS[repo_type],
-                mount_point=mount_point or 'source',
-                mount_label=mount_label or 'Source',
+                mount_point=mount_point or 'code',
+                mount_label=mount_label or 'Code',
                 init_from_url=repo_url,
                 )

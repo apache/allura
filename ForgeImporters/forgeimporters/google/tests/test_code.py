@@ -15,7 +15,7 @@ class TestGetRepoUrl(TestCase):
 
     def test_svn(self):
         r = get_repo_url('projname', 'svn')
-        self.assertEqual(r, 'http://projname.googlecode.com/svn/trunk/')
+        self.assertEqual(r, 'http://projname.googlecode.com/svn/')
 
     def test_git(self):
         r = get_repo_url('projname', 'git')
@@ -41,8 +41,8 @@ class TestGoogleRepoImporter(TestCase):
         p = self._make_project(gc_proj_name='myproject')
         GoogleRepoImporter().import_tool(p)
         p.install_app.assert_called_once_with('Git',
-                mount_point='source',
-                mount_label='Source',
+                mount_point='code',
+                mount_label='Code',
                 init_from_url='http://remote/clone/url/',
                 )
 
