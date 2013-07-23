@@ -6,7 +6,6 @@ from forgesvn.tests import with_svn
 
 from forgeimporters.google.code import (
         get_repo_url,
-        get_repo_type,
         GoogleRepoImporter,
         GoogleRepoImportController,
         )
@@ -27,34 +26,6 @@ class TestGetRepoUrl(TestCase):
         self.assertEqual(r, 'https://code.google.com/p/projname/')
 
 
-class TestRepoType(TestCase):
-
-    def _make_extractor(self, html):
-        from BeautifulSoup import BeautifulSoup
-        return Mock(page=BeautifulSoup(html),
-                url="http://test/source/browse")
-
-    def test_happy_path(self):
-        extractor = self._make_extractor(
-                '<span id="crumb_root">\nsvn/&nbsp;</span>')
-        self.assertEqual('svn', get_repo_type(extractor))
-
-    def test_no_crumb_root(self):
-        extractor = self._make_extractor('')
-        with self.assertRaises(Exception) as cm:
-            get_repo_type(extractor)
-        self.assertEqual(str(cm.exception),
-                "Couldn't detect repo type: no #crumb_root in "
-                "http://test/source/browse")
-
-    def test_unknown_repo_type(self):
-        extractor = self._make_extractor(
-                '<span id="crumb_root">cvs</span>')
-        with self.assertRaises(Exception) as cm:
-            get_repo_type(extractor)
-        self.assertEqual(str(cm.exception), "Unknown repo type: cvs")
-
-
 class TestGoogleRepoImporter(TestCase):
 
     def _make_project(self, gc_proj_name=None):
@@ -62,7 +33,7 @@ class TestGoogleRepoImporter(TestCase):
         project.get_tool_data.side_effect = lambda *args: gc_proj_name
         return project
 
-    @patch('forgeimporters.google.code.get_repo_type')
+    @patch('forgeimporters.google.code.GoogleCodeProjectExtractor.get_repo_type')
     @patch('forgeimporters.google.code.get_repo_url')
     def test_import_tool_happy_path(self, get_repo_url, get_repo_type):
         get_repo_type.return_value = 'git'

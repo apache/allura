@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
-
 import formencode as fe
 from formencode import validators as fev
 
@@ -34,15 +32,26 @@ from tg.decorators import (
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 
-from forgehg.hg_main import ForgeHgApp
-from forgegit.git_main import ForgeGitApp
-from forgesvn.svn_main import ForgeSVNApp
-
 from forgeimporters.base import ToolImporter
 from forgeimporters.google import GoogleCodeProjectExtractor
 
+TARGET_APPS = []
+try:
+    from forgehg.hg_main import ForgeHgApp
+    TARGET_APPS.append(ForgeHgApp)
+except ImportError:
+    pass
+try:
+    from forgegit.git_main import ForgeGitApp
+    TARGET_APPS.append(ForgeGitApp)
+except ImportError:
+    pass
+try:
+    from forgesvn.svn_main import ForgeSVNApp
+    TARGET_APPS.append(ForgeSVNApp)
+except ImportError:
+    pass
 
-RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 REPO_URLS = {
     'svn': 'http://{0}.googlecode.com/svn/trunk/',
     'git': 'https://code.google.com/p/{0}/',
@@ -57,18 +66,6 @@ REPO_ENTRY_POINTS = {
 
 def get_repo_url(project_name, type_):
     return REPO_URLS[type_].format(project_name)
-
-
-def get_repo_type(extractor):
-    repo_type = extractor.page.find(id="crumb_root")
-    if not repo_type:
-        raise Exception("Couldn't detect repo type: no #crumb_root in "
-                "{0}".format(extractor.url))
-    re_match = RE_REPO_TYPE.match(repo_type.text.lower())
-    if re_match:
-        return re_match.group(0)
-    else:
-        raise Exception("Unknown repo type: {0}".format(repo_type.text))
 
 
 class GoogleRepoImportSchema(fe.Schema):
@@ -96,7 +93,7 @@ class GoogleRepoImportController(BaseController):
 
 
 class GoogleRepoImporter(ToolImporter):
-    target_app = (ForgeHgApp, ForgeGitApp, ForgeSVNApp)
+    target_app = TARGET_APPS
     source = 'Google Code'
     controller = GoogleRepoImportController
     tool_label = 'Google Code Source Importer'
@@ -111,7 +108,7 @@ class GoogleRepoImporter(ToolImporter):
         if not project.get_tool_data('google-code', 'project_name'):
             raise Exception("Missing Google Code project name")
         extractor = GoogleCodeProjectExtractor(project, page='source_browse')
-        repo_type = get_repo_type(extractor)
+        repo_type = extractor.get_repo_type()
         repo_url = get_repo_url(project.get_tool_data('google-code',
             'project_name'), repo_type)
         return project.install_app(

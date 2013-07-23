@@ -91,3 +91,30 @@ class TestGoogleCodeProjectExtractor(TestCase):
         extractor.page.find.return_value.findNext.return_value.find.return_value.string = 'non-existant license'
         extractor.get_license()
         M.TroveCategory.query.get.assert_called_once_with(fullname='Other/Proprietary License')
+
+    def _make_extractor(self, html):
+        from BeautifulSoup import BeautifulSoup
+        extractor = google.GoogleCodeProjectExtractor(self.project)
+        extractor.page = BeautifulSoup(html)
+        extractor.url="http://test/source/browse"
+        return extractor
+
+    def test_get_repo_type_happy_path(self):
+        extractor = self._make_extractor(
+                '<span id="crumb_root">\nsvn/&nbsp;</span>')
+        self.assertEqual('svn', extractor.get_repo_type())
+
+    def test_get_repo_type_no_crumb_root(self):
+        extractor = self._make_extractor('')
+        with self.assertRaises(Exception) as cm:
+            extractor.get_repo_type()
+        self.assertEqual(str(cm.exception),
+                "Couldn't detect repo type: no #crumb_root in "
+                "http://test/source/browse")
+
+    def test_get_repo_type_unknown_repo_type(self):
+        extractor = self._make_extractor(
+                '<span id="crumb_root">cvs</span>')
+        with self.assertRaises(Exception) as cm:
+            extractor.get_repo_type()
+        self.assertEqual(str(cm.exception), "Unknown repo type: cvs")

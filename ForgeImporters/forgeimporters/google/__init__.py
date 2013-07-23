@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
 import urllib
 import urllib2
 from urlparse import urlparse
@@ -30,6 +31,8 @@ from allura import model as M
 
 
 class GoogleCodeProjectExtractor(object):
+    RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
+
     PAGE_MAP = {
             'project_info': 'http://code.google.com/p/%s/',
             'source_browse': 'http://code.google.com/p/%s/source/browse/',
@@ -72,3 +75,13 @@ class GoogleCodeProjectExtractor(object):
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         self.project.trove_license.append(trove._id)
 
+    def get_repo_type(self):
+        repo_type = self.page.find(id="crumb_root")
+        if not repo_type:
+            raise Exception("Couldn't detect repo type: no #crumb_root in "
+                    "{0}".format(self.url))
+        re_match = self.RE_REPO_TYPE.match(repo_type.text.lower())
+        if re_match:
+            return re_match.group(0)
+        else:
+            raise Exception("Unknown repo type: {0}".format(repo_type.text))
