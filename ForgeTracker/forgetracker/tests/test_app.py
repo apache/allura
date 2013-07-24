@@ -48,11 +48,11 @@ class TestBulkExport(TrackerTestController):
         tickets = sorted(tracker['tickets'], key=operator.itemgetter('summary'))
         assert_equal(len(tickets), 2)
         ticket_foo = tickets[1]
-        assert_equal(ticket_foo['summary'], 'foo')                
+        assert_equal(ticket_foo['summary'], 'foo')
         assert_equal(ticket_foo['custom_fields']['_milestone'], '1.0')
         posts_foo = ticket_foo['discussion_thread']['posts']
         assert_equal(len(posts_foo), 1)
-        assert_equal(posts_foo[0]['text'], 'silly comment')         
+        assert_equal(posts_foo[0]['text'], 'silly comment')
 
         tracker_config = tracker['tracker_config']
         assert_equal(tracker_config['project_id'], unicode(self.project._id))

@@ -911,8 +911,6 @@ class AppConfig(MappedClass):
             tool_name=self.tool_name,
             version=self.version,
             options=self.options,
-            # project=self.project,
-            # discussion=self.discussion
             tool_data=self.tool_data,
             acl=self.acl,
         )
