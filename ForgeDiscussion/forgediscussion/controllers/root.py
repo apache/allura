@@ -299,6 +299,8 @@ class ForumRestController(BaseController):
         count = topics.count()
         json = {}
         json['forum'] = self.forum.__json__()
+        # it appears that topics replace threads here
+        del json['forum']['threads']
         json['forum']['topics'] = [dict(_id=t._id,
                                         subject=t.subject,
                                         num_replies=t.num_replies,
