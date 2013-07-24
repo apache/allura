@@ -2,7 +2,13 @@ from unittest import TestCase
 from mock import Mock, patch
 
 from allura.tests import TestController
-from forgesvn.tests import with_svn
+from allura.tests.decorators import with_tool
+
+
+# important to be distinct from 'test' which ForgeSVN uses, so that the tests can run in parallel and not clobber each other
+test_project_with_repo = 'test2'
+with_svn = with_tool(test_project_with_repo, 'SVN', 'src', 'SVN')
+
 
 from forgeimporters.google.code import (
         get_repo_url,
@@ -67,7 +73,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
 
     @with_svn
     def test_index(self):
-        r = self.app.get('/p/test/admin/src/_importer/')
+        r = self.app.get('/p/{}/admin/src/_importer/'.format(test_project_with_repo))
         self.assertIsNotNone(r.html.find(attrs=dict(name="gc_project_name")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
@@ -77,15 +83,16 @@ class TestGoogleRepoImportController(TestController, TestCase):
     def test_create(self, gri):
         from allura import model as M
         gri.import_tool.return_value = Mock()
-        gri.import_tool.return_value.url.return_value = '/p/test/mymount'
+        gri.import_tool.return_value.url.return_value = '/p/{}/mymount'.format(test_project_with_repo)
         params = dict(gc_project_name='poop',
                 mount_label='mylabel',
                 mount_point='mymount',
                 )
-        r = self.app.post('/p/test/admin/src/_importer/create', params,
+        r = self.app.post('/p/{}/admin/src/_importer/create'.format(test_project_with_repo),
+                params,
                 status=302)
-        project = M.Project.query.get(shortname='test')
-        self.assertEqual(r.location, 'http://localhost/p/test/mymount')
+        project = M.Project.query.get(shortname=test_project_with_repo)
+        self.assertEqual(r.location, 'http://localhost/p/{}/mymount'.format(test_project_with_repo))
         self.assertEqual(project.get_tool_data('google-code', 'project_name'),
                 'poop')
         self.assertEqual(project._id, gri.import_tool.call_args[0][0]._id)
