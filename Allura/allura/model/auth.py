@@ -698,6 +698,13 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def withskill(cls, skill):
         return cls.query.find({"skills.category_id" : skill._id})
 
+    def __json__(self):
+        return dict(
+            username=self.username,
+            name=self.display_name,
+            url=self.url(),
+        )
+
 class OldProjectRole(MappedClass):
     class __mongometa__:
         session = project_orm_session
