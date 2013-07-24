@@ -840,6 +840,14 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def __json__(self):
         return dict(
             name=self.shortname,
+            title=self.name,
+            _id=self._id,
+            private=self.private,
+            short_description=self.short_description,
+            description=self.description,
+            download_page=self.best_download_url(),
+            preferred_support=self.support_page_url,
+            developers=self.users_with_role('Developer'),
             tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
                    for t in self.app_configs if h.has_access(t, 'read')]
         )
