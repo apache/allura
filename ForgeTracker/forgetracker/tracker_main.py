@@ -424,7 +424,7 @@ class ForgeTrackerApp(Application):
         milestones = self.milestones
         json.dump(milestones, f, cls=jsonify.GenericJSON)
         f.write(', "saved_bins":')
-        bins = self.bins        
+        bins = self.bins
         json.dump(bins, f, cls=jsonify.GenericJSON)
         f.write('}')
 
