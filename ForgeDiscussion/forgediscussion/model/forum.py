@@ -161,8 +161,8 @@ class ForumThread(M.Thread):
 
     @property
     def status(self):
-        if self.first_post:
-            return self.first_post.status
+        if len(self.posts) == 1:
+            return self.posts[0].status
         else:
             return 'ok'
 
