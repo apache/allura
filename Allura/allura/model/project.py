@@ -837,6 +837,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         elif os.path.exists(tmpdir):
             return 'busy'
 
+    def __json__(self):
+        return dict(
+            name=self.shortname,
+            tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
+                   for t in self.app_configs if h.has_access(t, 'read')]
+        )
+
 
 class AppConfig(MappedClass):
     """
