@@ -363,7 +363,7 @@ class TestExportTasks(unittest.TestCase):
         export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin')
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
-            mock.call('Tool urls is not exportable. Skipping.'),
+            mock.call('Tool bugs is not exportable. Skipping.'),
             mock.call('Tool blog is not exportable. Skipping.')])
 
     @mock.patch('allura.tasks.export_tasks.shutil')
