@@ -169,7 +169,7 @@ class Thread(Artifact, ActivityObject):
                         subject=p.subject,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
-                   for p in self.posts])
+                   for p in self.posts if p.status == 'ok'])
 
     @property
     def activity_name(self):
