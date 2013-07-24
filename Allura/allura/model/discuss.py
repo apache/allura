@@ -336,7 +336,7 @@ class Thread(Artifact, ActivityObject):
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
                     status={'$in': ['ok', 'pending']})
         if status:
-            terms['status'] = status       
+            terms['status'] = status
         q = self.post_class().query.find(terms)
         if style == 'threaded':
             q = q.sort('full_slug')

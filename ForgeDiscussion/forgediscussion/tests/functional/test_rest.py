@@ -187,7 +187,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(resp.json['limit'], 1)
 
     def test_topic_show_ok_only(self):
-        thread = ForumThread.query.find({'subject': 'Hi guys'}).first()        
+        thread = ForumThread.query.find({'subject': 'Hi guys'}).first()
         url = '/rest/p/test/discussion/general/thread/%s/' % thread._id
         resp = self.app.get(url)
         posts = resp.json['topic']['posts']
@@ -198,7 +198,7 @@ class TestRootRestController(TestDiscussionApiBase):
         last_post.commit()
         ThreadLocalORMSession.flush_all()
         resp = self.app.get(url)
-        posts = resp.json['topic']['posts']        
+        posts = resp.json['topic']['posts']
         assert_equal(len(posts), 1)
 
     def test_security(self):
