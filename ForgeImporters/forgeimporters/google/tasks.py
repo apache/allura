@@ -16,6 +16,7 @@
 #       under the License.
 
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 
 from ming.orm import ThreadLocalORMSession
 
@@ -32,6 +33,7 @@ def import_project_info():
     extractor.get_icon()
     extractor.get_license()
     ThreadLocalORMSession.flush_all()
+    g.post_event('project_updated')
 
 @task
 def import_tool(importer_name, mount_point=None, mount_label=None):
