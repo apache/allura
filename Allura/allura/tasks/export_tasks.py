@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import json
 import os
 import logging
 import shutil
@@ -62,6 +63,13 @@ def bulk_export(project_shortname, tools, username):
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
             not_exported_tools.append(tool)
             continue
+
+    try:
+        path = create_export_dir(project)
+        with open(os.path.join(path, 'project.json'), 'w') as f:
+            json.dump(project, f, cls=tg.jsonify.GenericJSON)
+    except:
+        log.error('Something went wrong during export of project metadata', exc_info=True)
 
     try:
         zip_and_cleanup(project)
