@@ -72,9 +72,20 @@ class TestRestHome(TestRestApiBase):
         r = self.api_get('/rest/p/test/')
         assert r.status_int == 200
 
+    def test_project_data(self):
+        r = self.api_get('/rest/p/test/')
+        assert_equal(r.json['name'], 'test')
+        assert_equal(r.json['title'], 'Test Project')
+        assert_equal(r.json['description'], 'You can edit this description in the admin page')
+        assert_equal(len(r.json['developers']), 1)
+        admin_dev = r.json['developers'][0]
+        assert_equal(admin_dev['username'], 'test-admin')
+        assert_equal(admin_dev['name'], 'Test Admin')
+        assert_equal(admin_dev['url'], '/u/test-admin/')
+
     @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Tickets', 'private-bugs')
-    def test_project_data(self):
+    def test_project_data_tools(self):
         # Deny anonymous to see 'private-bugs' tool
         role = M.ProjectRole.by_name('*anonymous')._id
         read_permission = M.ACE.allow(role, 'read')
