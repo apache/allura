@@ -366,21 +366,23 @@ class TestExportTasks(unittest.TestCase):
             mock.call('Tool bugs is not exportable. Skipping.'),
             mock.call('Tool blog is not exportable. Skipping.')])
 
+    @mock.patch('allura.model.project.Project.__json__')
     @mock.patch('allura.tasks.export_tasks.shutil')
     @mock.patch('allura.tasks.export_tasks.zipdir')
     @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
     @mock.patch('allura.tasks.export_tasks.log')
     @td.with_wiki
-    def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil):
+    def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil, project_json):
         M.MonQTask.query.remove()
         export_tasks.bulk_export('test', [u'wiki'], 'test-admin')
         assert_equal(log.info.call_count, 1)
         assert_equal(log.info.call_args_list, [
             mock.call('Exporting wiki...')])
         wiki_bulk_export.assert_called_once()
+        project_json.assert_called_once()
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'
-        zipdir.assert_caled_once_with(temp, temp + '/test.zip')
+        zipdir.assert_caled_with(temp, temp + '/test.zip')
         shutil.move.assert_called_once_with(temp + '/test.zip',  zipfn)
         shutil.rmtree.assert_called_once_with(temp)
         # check notification
