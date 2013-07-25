@@ -19,6 +19,7 @@ import formencode as fe
 from formencode import validators as fev
 
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from tg import (
         expose,
         redirect,
@@ -111,9 +112,11 @@ class GoogleRepoImporter(ToolImporter):
         repo_type = extractor.get_repo_type()
         repo_url = get_repo_url(project.get_tool_data('google-code',
             'project_name'), repo_type)
-        return project.install_app(
+        app = project.install_app(
                 REPO_ENTRY_POINTS[repo_type],
                 mount_point=mount_point or 'code',
                 mount_label=mount_label or 'Code',
                 init_from_url=repo_url,
                 )
+        g.post_event('project_updated')
+        return app
