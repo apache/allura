@@ -20,8 +20,8 @@ import logging
 from tempfile import NamedTemporaryFile
 from tg.decorators import cached_property
 
-from extractors import WikiExporter
-from loaders import load_data
+from forgewiki.scripts.wiki_from_trac.extractors import WikiExporter
+from forgewiki.scripts.wiki_from_trac.loaders import load_data
 
 from allura.scripts import ScriptTask
 
