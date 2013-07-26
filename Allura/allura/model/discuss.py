@@ -64,8 +64,9 @@ class Discussion(Artifact, ActivityObject):
             shortname=self.shortname,
             name=self.name,
             description=self.description,
-            threads=[dict(_id=t._id, subject=t.subject)
-                     for t in self.threads])
+            threads=[t.__json__() for t in self.thread_class().query.find(
+                dict(discussion_id=self._id)).sort(
+                    'last_post_date', pymongo.DESCENDING)])
 
     @property
     def activity_name(self):
@@ -169,7 +170,9 @@ class Thread(Artifact, ActivityObject):
                         subject=p.subject,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
-                   for p in self.posts if p.status == 'ok'])
+                   for p in self.post_class().query.find(
+                   dict(discussion_id=self.discussion_id, thread_id=self._id, status='ok')
+                   ).sort('timestamp', pymongo.DESCENDING)])
 
     @property
     def activity_name(self):
