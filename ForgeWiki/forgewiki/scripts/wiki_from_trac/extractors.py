@@ -18,6 +18,7 @@
 import re
 import sys
 import json
+import traceback
 from urllib import quote, unquote
 from urlparse import urljoin, urlsplit
 
@@ -101,7 +102,14 @@ class WikiExporter(object):
         self.options = options
 
     def export(self, out):
-        pages = [self.get_page(title) for title in self.page_list()]
+        pages = []
+        for title in self.page_list():
+            try:
+                pages.append(self.get_page(title))
+            except:
+                self.log('Cannot fetch page %s. Skipping' % title)
+                self.log(traceback.format_exc())
+                continue
         out.write(json.dumps(pages, indent=2, sort_keys=True))
         out.write('\n')
 
