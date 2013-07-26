@@ -249,15 +249,7 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def save(self, **kw):
         require_access(c.app, 'write')
-        post = BM.BlogPost()
-        for k,v in kw.iteritems():
-            setattr(post, k, v)
-        post.neighborhood_id=c.project.neighborhood_id
-        post.make_slug()
-        post.commit()
-        M.Thread.new(discussion_id=post.app_config.discussion_id,
-               ref_id=post.index_id(),
-               subject='%s discussion' % post.title)
+        post = BM.BlogPost.new(**kw)
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
 
@@ -451,33 +443,25 @@ class RootRestController(BaseController):
         require_access(c.app, 'read')
 
     @expose('json:')
-    def index(self, title='', text='', state='draft', labels='', **kw):
+    def index(self, title='', text='', state='draft', labels='', limit=10, page=0, **kw):
         if request.method == 'POST':
             require_access(c.app, 'write')
-            post = BM.BlogPost()
-            post.title = title
-            post.state = state
-            post.text = text
-            post.labels = labels.split(',')
-            post.neighborhood_id = c.project.neighborhood_id
-            post.make_slug()
-            M.Thread.new(discussion_id=post.app_config.discussion_id,
-                         ref_id=post.index_id(),
-                         subject='%s discussion' % post.title)
+            post = BM.BlogPost.new(
+                title=title,
+                state=state,
+                text=text,
+                labels=labels.split(','),
+                **kw)
+            return exc.HTTPCreated(headers=dict(Location=h.absurl('/rest' + post.url())))
 
-            post.viewable_by = ['all']
-            post.commit()
-            return post.__json__()
         else:
+            result = RootController().index(limit=limit, page=page)
+            posts = result['posts']
             post_titles = []
-            query_filter = dict(app_config_id=c.app.config._id, deleted=False)
-            if not has_access(c.app, 'write')():
-                query_filter['state'] = 'published'
-            posts = BM.BlogPost.query.find(query_filter)
             for post in posts:
                 if has_access(post, 'read')():
                     post_titles.append({'title': post.title, 'url': h.absurl('/rest' + post.url())})
-            return dict(posts=post_titles)
+            return dict(posts=post_titles, count=result['count'], limit=result['limit'], page=result['page'])
 
     @expose()
     def _lookup(self, year=None, month=None, title=None, *rest):

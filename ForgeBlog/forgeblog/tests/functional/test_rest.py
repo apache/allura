@@ -43,15 +43,16 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.status_int, 200)
+        assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
         assert_equal(r.json['posts'][0]['title'], 'test')
         assert_equal(r.json['posts'][0]['url'], h.absurl(url))
 
         r = self.api_get(url)
-        assert_equal(r.json['title'], 'test')
+        assert_equal(r.json['title'], data['title'])
         assert_equal(r.json['text'], data['text'])
+        assert_equal(r.json['author'], 'test-admin')
         assert_equal(r.json['state'], data['state'])
         assert_equal(r.json['labels'], data['labels'].split(','))
 
@@ -63,7 +64,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.status_int, 200)
+        assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         data = {
             'text': 'test text2',
@@ -84,7 +85,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.status_int, 200)
+        assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, delete='')
         r = self.api_get(url)
@@ -119,7 +120,7 @@ class TestBlogApi(TestRestApiBase):
         self.app.post('/rest/p/test/blog/',
                       params=dict(title='test', text='test text', state='published'),
                       extra_environ={'username': '*anonymous'},
-                      status=200)
+                      status=201)
 
     def test_update_post_permissons(self):
         self.api_post('/rest/p/test/blog/', title='test', text='test text', state='published')
@@ -145,7 +146,7 @@ class TestBlogApi(TestRestApiBase):
     def test_permission_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test', text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
-        assert_equal(r.json, {'posts': []})
+        assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.app.post(url.encode('utf-8'),
                       params=dict(title='test2', text='test text2', state='published'),
@@ -162,8 +163,29 @@ class TestBlogApi(TestRestApiBase):
     def test_draft_post(self):
         self.api_post('/rest/p/test/blog/', title='test', text='test text', state='draft')
         r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
-        assert_equal(r.json, {'posts': []})
+        assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, state='published')
         r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'][0]['title'], 'test')
+
+    def test_pagination(self):
+        self.api_post('/rest/p/test/blog/', title='test1', text='test text1', state='published')
+        self.api_post('/rest/p/test/blog/', title='test2', text='test text2', state='published')
+        self.api_post('/rest/p/test/blog/', title='test3', text='test text3', state='published')
+        r = self.api_get('/rest/p/test/blog/', limit='1', page='0')
+        assert_equal(r.json['posts'][0]['title'], 'test3')
+        assert_equal(r.json['count'], 3)
+        assert_equal(r.json['limit'], 1)
+        assert_equal(r.json['page'], 0)
+        r = self.api_get('/rest/p/test/blog/', limit='2', page='0')
+        assert_equal(r.json['posts'][0]['title'], 'test3')
+        assert_equal(r.json['posts'][1]['title'], 'test2')
+        assert_equal(r.json['count'], 3)
+        assert_equal(r.json['limit'], 2)
+        assert_equal(r.json['page'], 0)
+        r = self.api_get('/rest/p/test/blog/', limit='1', page='2')
+        assert_equal(r.json['posts'][0]['title'], 'test1')
+        assert_equal(r.json['count'], 3)
+        assert_equal(r.json['limit'], 1)
+        assert_equal(r.json['page'], 2)

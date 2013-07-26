@@ -26,6 +26,15 @@ from allura.model import Feed
 def wrapped(s):
     return '<div class="markdown_content"><p>%s</p></div>' % s
 
+
+class TestBlogPost(BlogTestWithModel):
+    def test_new(self):
+        post = M.BlogPost.new(title='test', text='test message', state='published')
+        assert_equal(post.title, 'test')
+        assert_equal(post.text, 'test message')
+        assert_equal(post.state, 'published')
+
+
 class TestFeed(BlogTestWithModel):
     def testd(self):
         post = M.BlogPost()

@@ -256,8 +256,23 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             M.Notification.post(
                 artifact=self, topic='metadata', text=description, subject=subject)
 
+    @classmethod
+    def new(cls, **kw):
+        post = cls()
+        for k, v in kw.iteritems():
+            setattr(post, k, v)
+        post.neighborhood_id = c.project.neighborhood_id
+        post.make_slug()
+        post.commit()
+        M.Thread.new(
+            discussion_id=post.app_config.discussion_id,
+            ref_id=post.index_id(),
+            subject='%s discussion' % post.title)
+        return post
+
     def __json__(self):
         return dict(super(BlogPost, self).__json__(),
+                    author=self.author().username,
                     title=self.title,
                     url=h.absurl('/rest' + self.url()),
                     text=self.text,

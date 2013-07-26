@@ -168,7 +168,7 @@ class TestRestApiBase(TestController):
         response = fn(
             str(path),
             params=params,
-            status=[200, 302, 400, 403, 404])
+            status=[200, 201, 302, 400, 403, 404])
         if response.status_int == 302:
             return response.follow()
         else:
