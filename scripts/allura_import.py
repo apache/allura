@@ -17,10 +17,10 @@
 
 import json
 from optparse import OptionParser
-from datetime import datetime
 
 from allura.lib.import_api import AlluraImportApiClient
 from forgetracker.scripts.import_tracker import import_tracker
+from forgewiki.scripts.wiki_from_trac.loaders import import_wiki
 
 
 def main():
@@ -61,6 +61,8 @@ def main():
                        verbose=options.verbose)
     elif options.forum:
         import_forum(cli, options.project, options.forum, user_map, doc_txt, validate=options.validate)
+    elif options.wiki:
+        import_wiki(cli, options.project, options.wiki, options, doc_txt)
 
 
 def import_forum(cli, project, tool, user_map, doc_txt, validate=True):
@@ -82,6 +84,7 @@ Import project data dump in JSON format into an Allura project.''')
     optparser.add_option('-p', '--project', dest='project', help='Project to import to')
     optparser.add_option('-t', '--tracker', dest='tracker', help='Tracker to import to')
     optparser.add_option('-f', '--forum', dest='forum', help='Forum tool to import to')
+    optparser.add_option('-w', '--wiki', dest='wiki', help='Wiki tool to import to')
     optparser.add_option('-u', '--base-url', dest='base_url', default='https://sourceforge.net', help='Base Allura URL (%default)')
     optparser.add_option('-o', dest='import_opts', default=[], action='append', help='Specify import option(s)', metavar='opt=val')
     optparser.add_option('--user-map', dest='user_map_file', help='Map original users to SF.net users', metavar='JSON_FILE')
@@ -100,4 +103,3 @@ Import project data dump in JSON format into an Allura project.''')
 
 if __name__ == '__main__':
     main()
-
