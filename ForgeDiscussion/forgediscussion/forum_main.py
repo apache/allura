@@ -19,12 +19,13 @@
 import logging
 import urllib
 from itertools import islice
+import json
 
 # Non-stdlib imports
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect, flash, url, validate
+from tg import expose, redirect, flash, url, validate, jsonify
 from tg.decorators import with_trailing_slash
 from bson import ObjectId
 from ming import schema
@@ -67,6 +68,7 @@ class ForgeDiscussionApp(Application):
     PostClass=DM.ForumPost
     AttachmentClass=DM.ForumAttachment
     searchable=True
+    exportable=True
     tool_label='Discussion'
     tool_description="""
         Collaborate with your community in your forum.
@@ -214,6 +216,16 @@ class ForgeDiscussionApp(Application):
         DM.ForumThread.query.remove(dict(app_config_id=self.config._id))
         DM.ForumPost.query.remove(dict(app_config_id=self.config._id))
         super(ForgeDiscussionApp, self).uninstall(project)
+
+    def bulk_export(self, f):
+        f.write('{"forums": [')
+        forums = DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).all()
+        count = len(forums)
+        for i, forum in enumerate(forums):
+            json.dump(forum, f, cls=jsonify.GenericJSON)
+            if i < (count - 1):
+                f.write(',')
+        f.write(']}')
 
 class ForumAdminController(DefaultAdminController):
 

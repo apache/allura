@@ -194,12 +194,6 @@ class ForumThread(M.Thread):
             {'$set':dict(discussion_id=new_forum._id)})
         self.discussion_id = new_forum._id
 
-    def __json__(self):
-        return dict(
-            _id=self._id,
-            discussion_id=str(self.discussion_id),
-            subject=self.subject)
-
 
 class ForumPostHistory(M.PostHistory):
     class __mongometa__:
