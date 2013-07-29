@@ -16,6 +16,7 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+from datetime import date
 
 from nose.tools import assert_equal
 from allura.lib import helpers as h
@@ -43,6 +44,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
+        assert_equal(r.location, 'http://localhost:80/rest/p/test/blog/%s/%s/test/' % (date.today().strftime("%Y"), date.today().strftime("%m")))
         assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
@@ -55,6 +57,8 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.json['author'], 'test-admin')
         assert_equal(r.json['state'], data['state'])
         assert_equal(r.json['labels'], data['labels'].split(','))
+
+
 
     def test_update_post(self):
         data = {
@@ -175,12 +179,14 @@ class TestBlogApi(TestRestApiBase):
         self.api_post('/rest/p/test/blog/', title='test3', text='test text3', state='published')
         r = self.api_get('/rest/p/test/blog/', limit='1', page='0')
         assert_equal(r.json['posts'][0]['title'], 'test3')
+        assert_equal(len(r.json['posts']), 1)
         assert_equal(r.json['count'], 3)
         assert_equal(r.json['limit'], 1)
         assert_equal(r.json['page'], 0)
         r = self.api_get('/rest/p/test/blog/', limit='2', page='0')
         assert_equal(r.json['posts'][0]['title'], 'test3')
         assert_equal(r.json['posts'][1]['title'], 'test2')
+        assert_equal(len(r.json['posts']), 2)
         assert_equal(r.json['count'], 3)
         assert_equal(r.json['limit'], 2)
         assert_equal(r.json['page'], 0)
