@@ -90,9 +90,9 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
             redirect('.')
 
         c.project.set_tool_data('google-code', project_name=project_name)
-        tasks.import_project_info.post()
+        tasks.import_project_info.post(project_name)
         for importer_name in tools:
-            tasks.import_tool.post(importer_name)
+            tasks.import_tool.post(importer_name, project_name)
 
         flash('Welcome to the %s Project System! '
               'Your project data will be imported and should show up here shortly.' % config['site_name'])

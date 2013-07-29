@@ -86,8 +86,8 @@ class GoogleRepoImportController(BaseController):
     @require_post()
     @validate(GoogleRepoImportSchema(), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
-        c.project.set_tool_data('google-code', project_name=gc_project_name)
         app = GoogleRepoImporter.import_tool(c.project,
+                project_name=gc_project_name,
                 mount_point=mount_point,
                 mount_label=mount_label)
         redirect(app.url())
@@ -100,18 +100,13 @@ class GoogleRepoImporter(ToolImporter):
     tool_label = 'Google Code Source Importer'
     tool_description = 'Import your SVN, Git, or Hg repo from Google Code'
 
-    def import_tool(self, project=None, mount_point=None, mount_label=None):
+    def import_tool(self, project, project_name, mount_point=None, mount_label=None):
         """ Import a Google Code repo into a new SVN, Git, or Hg Allura tool.
 
         """
-        if not project:
-            raise Exception("You must supply a project")
-        if not project.get_tool_data('google-code', 'project_name'):
-            raise Exception("Missing Google Code project name")
-        extractor = GoogleCodeProjectExtractor(project, page='source_browse')
+        extractor = GoogleCodeProjectExtractor(project, project_name, 'source_browse')
         repo_type = extractor.get_repo_type()
-        repo_url = get_repo_url(project.get_tool_data('google-code',
-            'project_name'), repo_type)
+        repo_url = get_repo_url(project_name, repo_type)
         app = project.install_app(
                 REPO_ENTRY_POINTS[repo_type],
                 mount_point=mount_point or 'code',

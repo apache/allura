@@ -56,29 +56,19 @@ class TestGoogleRepoImporter(TestCase):
         project.get_tool_data.side_effect = lambda *args: gc_proj_name
         return project
 
-    @patch('forgeimporters.google.code.GoogleCodeProjectExtractor.get_repo_type')
+    @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.google.code.get_repo_url')
-    def test_import_tool_happy_path(self, get_repo_url, get_repo_type):
-        get_repo_type.return_value = 'git'
+    def test_import_tool_happy_path(self, get_repo_url, gcpe):
+        gcpe.return_value.get_repo_type.return_value = 'git'
         get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gc_proj_name='myproject')
-        GoogleRepoImporter().import_tool(p)
+        GoogleRepoImporter().import_tool(p, 'project_name')
+        get_repo_url.assert_called_once_with('project_name', 'git')
         p.install_app.assert_called_once_with('Git',
                 mount_point='code',
                 mount_label='Code',
                 init_from_url='http://remote/clone/url/',
                 )
-
-    def test_no_project(self):
-        with self.assertRaises(Exception) as cm:
-            GoogleRepoImporter().import_tool()
-        self.assertEqual(str(cm.exception), "You must supply a project")
-
-    def test_no_google_code_project_name(self):
-        p = self._make_project()
-        with self.assertRaises(Exception) as cm:
-            GoogleRepoImporter().import_tool(p)
-        self.assertEqual(str(cm.exception), "Missing Google Code project name")
 
 
 class TestGoogleRepoImportController(TestController, TestCase):
@@ -110,8 +100,6 @@ class TestGoogleRepoImportController(TestController, TestCase):
                 status=302)
         project = M.Project.query.get(shortname=test_project_with_repo)
         self.assertEqual(r.location, 'http://localhost/p/{}/mymount'.format(test_project_with_repo))
-        self.assertEqual(project.get_tool_data('google-code', 'project_name'),
-                'poop')
         self.assertEqual(project._id, gri.import_tool.call_args[0][0]._id)
         self.assertEqual(u'mymount', gri.import_tool.call_args[1]['mount_point'])
         self.assertEqual(u'mylabel', gri.import_tool.call_args[1]['mount_label'])
