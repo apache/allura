@@ -136,3 +136,24 @@ class TestSecurity(TestController):
         assert has_access(wiki, 'post', test_user)()
         assert has_access(wiki, 'unmoderated_post', test_user)()
         assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))
+
+    @td.with_wiki
+    def test_implicit_project(self):
+        '''
+        Test that relying on implicit project context does the Right Thing.
+
+        If you call has_access(artifact, perm), it should use the roles from
+        the project to which artifact belongs, even in c.project is something
+        else.  If you really want to use the roles from an unrelated project,
+        you should have to be very explicit about it, not just set c.project.
+        '''
+        project1 = c.project
+        project2 = M.Project.query.get(shortname='test2')
+        wiki = project1.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        test_user = M.User.by_username('test-user')
+
+        assert_equal(project1.shortname, 'test')
+        assert has_access(page, 'read', test_user)()
+        c.project = project2
+        assert has_access(page, 'read', test_user)()

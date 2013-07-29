@@ -68,6 +68,92 @@ class TestNotification(unittest.TestCase):
         assert len(subscriptions) == 0
         assert M.Mailbox.query.find().count() == 0
 
+    @mock.patch('allura.tasks.mail_tasks.sendmail')
+    def test_send_direct(self, sendmail):
+        c.user = M.User.query.get(username='test-user')
+        wiki = c.project.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        notification = M.Notification(
+                _id='_id',
+                ref=page.ref,
+                from_address='from_address',
+                reply_to_address='reply_to_address',
+                in_reply_to='in_reply_to',
+                subject='subject',
+                text='text',
+            )
+        notification.footer = lambda: ' footer'
+        notification.send_direct(c.user._id)
+        sendmail.post.assert_called_once_with(
+                destinations=[str(c.user._id)],
+                fromaddr='from_address',
+                reply_to='reply_to_address',
+                subject='subject',
+                message_id='_id',
+                in_reply_to='in_reply_to',
+                text='text footer',
+            )
+
+    @mock.patch('allura.tasks.mail_tasks.sendmail')
+    def test_send_direct_no_access(self, sendmail):
+        c.user = M.User.query.get(username='test-user')
+        wiki = c.project.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        page.parent_security_context().acl = []
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        notification = M.Notification(
+                _id='_id',
+                ref=page.ref,
+                from_address='from_address',
+                reply_to_address='reply_to_address',
+                in_reply_to='in_reply_to',
+                subject='subject',
+                text='text',
+            )
+        notification.footer = lambda: ' footer'
+        notification.send_direct(c.user._id)
+        assert_equal(sendmail.post.call_count, 0)
+
+    @mock.patch('allura.tasks.mail_tasks.sendmail')
+    def test_send_direct_wrong_project_context(self, sendmail):
+        """
+        Test that Notification.send_direct() works as expected even
+        if c.project is wrong.
+
+        This can happen when a notify task is triggered on project A (thus
+        setting c.project to A) and then calls Mailbox.fire_ready() which fires
+        pending Notifications on any waiting Mailbox, regardless of project,
+        but doesn't update c.project.
+        """
+        project1 = c.project
+        project2 = M.Project.query.get(shortname='test2')
+        assert_equal(project1.shortname, 'test')
+        c.user = M.User.query.get(username='test-user')
+        wiki = project1.app_instance('wiki')
+        page = WM.Page.query.get(app_config_id=wiki.config._id)
+        notification = M.Notification(
+                _id='_id',
+                ref=page.ref,
+                from_address='from_address',
+                reply_to_address='reply_to_address',
+                in_reply_to='in_reply_to',
+                subject='subject',
+                text='text',
+            )
+        notification.footer = lambda: ' footer'
+        c.project = project2
+        notification.send_direct(c.user._id)
+        sendmail.post.assert_called_once_with(
+                destinations=[str(c.user._id)],
+                fromaddr='from_address',
+                reply_to='reply_to_address',
+                subject='subject',
+                message_id='_id',
+                in_reply_to='in_reply_to',
+                text='text footer',
+            )
+
 class TestPostNotifications(unittest.TestCase):
 
     def setUp(self):

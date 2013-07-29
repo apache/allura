@@ -250,10 +250,10 @@ class Notification(MappedClass):
                 not security.has_access(artifact, 'read', user)():
             log.debug("Skipping notification - User %s doesn't have read "
                       "access to artifact %s" % (user_id, str(self.ref_id)))
-            log.debug("User roles [%s]; artifact ACL [%s]; project ACL [%s]",
-                    ', '.join([str(r) for r in security.Credentials.get().user_roles(user_id=user_id, project_id=c.project._id).reaching_ids]),
+            log.debug("User roles [%s]; artifact ACL [%s]; PSC ACL [%s]",
+                    ', '.join([str(r) for r in security.Credentials.get().user_roles(user_id=user_id, project_id=artifact.project._id).reaching_ids]),
                     ', '.join([str(a) for a in artifact.acl]),
-                    ', '.join([str(a) for a in c.project.acl]))
+                    ', '.join([str(a) for a in artifact.parent_security_context().acl]))
             return
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
