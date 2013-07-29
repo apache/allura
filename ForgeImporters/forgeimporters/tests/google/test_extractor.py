@@ -36,16 +36,15 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self._p_soup.stop()
 
     def test_init(self):
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
 
-        self.project.get_tool_data.assert_called_once_with('google-code', 'project_name')
         self.urlopen.assert_called_once_with('http://code.google.com/p/my-project/')
         self.assertEqual(extractor.project, self.project)
         self.soup.assert_called_once_with(self.urlopen.return_value)
         self.assertEqual(extractor.page, self.soup.return_value)
 
     def test_get_short_description(self):
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
         extractor.page.find.return_value.string = 'My Super Project'
 
         extractor.get_short_description()
@@ -57,7 +56,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     @mock.patch.object(google, 'M')
     def test_get_icon(self, M, StringIO):
         self.urlopen.return_value.info.return_value = {'content-type': 'image/png'}
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
         extractor.page.find.return_value.attrMap = {'src': 'http://example.com/foo/bar/my-logo.png'}
         self.urlopen.reset_mock()
 
@@ -75,7 +74,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     @mock.patch.object(google, 'M')
     def test_get_license(self, M):
         self.project.trove_license = []
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
         extractor.page.find.return_value.findNext.return_value.find.return_value.string = '  New BSD License  '
         trove = M.TroveCategory.query.get.return_value
 
@@ -94,7 +93,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def _make_extractor(self, html):
         from BeautifulSoup import BeautifulSoup
-        extractor = google.GoogleCodeProjectExtractor(self.project)
+        with mock.patch.object(google, 'urllib2') as urllib2:
+            extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
         extractor.page = BeautifulSoup(html)
         extractor.url="http://test/source/browse"
         return extractor

@@ -25,8 +25,8 @@ from ...google import tasks
 @mock.patch.object(tasks, 'c')
 def test_import_project_info(c, session, gpe):
     c.project = mock.Mock(name='project')
-    tasks.import_project_info()
-    gpe.assert_called_once_with(c.project, 'project_info')
+    tasks.import_project_info('my-project')
+    gpe.assert_called_once_with(c.project, 'my-project', 'project_info')
     gpe.return_value.get_short_description.assert_called_once_with()
     gpe.return_value.get_icon.assert_called_once_with()
     gpe.return_value.get_license.assert_called_once_with()
@@ -37,6 +37,6 @@ def test_import_project_info(c, session, gpe):
 @mock.patch.object(tasks, 'c')
 def test_import_tool(c, by_name):
     c.project = mock.Mock(name='project')
-    tasks.import_tool('importer_name', 'mount_point', 'mount_label')
+    tasks.import_tool('importer_name', 'project_name', 'mount_point', 'mount_label')
     by_name.assert_called_once_with('importer_name')
-    by_name.return_value.import_tool.assert_called_once_with(c.project, 'mount_point', 'mount_label')
+    by_name.return_value.import_tool.assert_called_once_with(c.project, 'project_name', 'mount_point', 'mount_label')

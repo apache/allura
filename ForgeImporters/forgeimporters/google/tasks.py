@@ -27,8 +27,8 @@ from ..base import ToolImporter
 
 
 @task
-def import_project_info():
-    extractor = GoogleCodeProjectExtractor(c.project, 'project_info')
+def import_project_info(project_name):
+    extractor = GoogleCodeProjectExtractor(c.project, project_name, 'project_info')
     extractor.get_short_description()
     extractor.get_icon()
     extractor.get_license()
@@ -36,6 +36,6 @@ def import_project_info():
     g.post_event('project_updated')
 
 @task
-def import_tool(importer_name, mount_point=None, mount_label=None):
+def import_tool(importer_name, project_name, mount_point=None, mount_label=None):
     importer = ToolImporter.by_name(importer_name)
-    importer.import_tool(c.project, mount_point, mount_label)
+    importer.import_tool(c.project, project_name, mount_point, mount_label)

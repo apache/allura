@@ -56,10 +56,9 @@ class GoogleCodeProjectExtractor(object):
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
-    def __init__(self, project, page='project_info'):
-        gc_project_name = project.get_tool_data('google-code', 'project_name')
+    def __init__(self, allura_project, gc_project_name, page):
+        self.project = allura_project
         self.url = self.PAGE_MAP[page] % urllib.quote(gc_project_name)
-        self.project = project
         self.page = BeautifulSoup(urllib2.urlopen(self.url))
 
     def get_short_description(self):
