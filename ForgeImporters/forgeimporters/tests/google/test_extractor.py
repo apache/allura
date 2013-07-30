@@ -118,3 +118,12 @@ class TestGoogleCodeProjectExtractor(TestCase):
         with self.assertRaises(Exception) as cm:
             extractor.get_repo_type()
         self.assertEqual(str(cm.exception), "Unknown repo type: cvs")
+
+    def test_get_wiki_pages(self):
+        extractor = self._make_extractor('''
+        <div id="resultstable">
+            <a href="#">Link that's not a wiki page</a>
+            <a href="/p/my-project/wiki/PageOne">PageOne</a>
+        </div>''')
+        self.assertEqual(list(extractor.get_wiki_pages()), [
+            ('PageOne', 'http://code.google.com/p/my-project/wiki/PageOne')])
