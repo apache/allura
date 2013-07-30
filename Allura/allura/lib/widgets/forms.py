@@ -22,6 +22,7 @@ from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
+from allura.lib import exceptions as forge_exc
 from allura import model as M
 from datetime import datetime
 
@@ -46,14 +47,33 @@ class _HTMLExplanation(ew.InputField):
         'jinja2')
 
 class NeighborhoodProjectShortNameValidator(fev.FancyValidator):
+    def _validate_shortname(self, shortname, neighborhood, state):
+        if not h.re_project_name.match(shortname):
+            raise forge_exc.ProjectShortnameInvalid(
+                    'Please use only letters, numbers, and dashes 3-15 characters long.',
+                    shortname, state)
 
-    def to_python(self, value, state):
+    def _validate_allowed(self, shortname, neighborhood, state):
+        p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
+        if p:
+            raise forge_exc.ProjectConflict(
+                    'This project name is taken.',
+                    shortname, state)
+
+    def to_python(self, value, state=None, check_allowed=True, neighborhood=None):
+        """
+        Validate a project shortname.
+
+        If check_allowed is False, the shortname will only be checked for
+        correctness.  Otherwise, it will be rejected if already in use or
+        otherwise disallowed.
+        """
+        if neighborhood is None:
+            neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
         value = h.really_unicode(value or '').encode('utf-8').lower()
-        neighborhood = M.Neighborhood.query.get(name=state.full_dict['neighborhood'])
-        provider = plugin.ProjectRegistrationProvider.get()
-        allowed, message = provider.allowed_project_shortname(value, neighborhood)
-        if not allowed:
-            raise formencode.Invalid(message, value, state)
+        self._validate_shortname(value, neighborhood, state)
+        if check_allowed:
+            self._validate_allowed(value, neighborhood, state)
         return value
 
 class ForgeForm(ew.SimpleForm):
@@ -780,7 +800,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                 V.MaxBytesValidator(max=40)))
         project_unixname = ew.InputField(
             label='Short Name', field_type='text',
-            validator=NeighborhoodProjectShortNameValidator())
+            validator=None)  # will be set in __init__
         tools = ew.CheckboxSet(name='tools', options=[
             ## Required for Neighborhood functional tests to pass
             ew.Option(label='Wiki', html_value='wiki', selected=True)
@@ -788,6 +808,9 @@ class NeighborhoodAddProjectForm(ForgeForm):
 
     def __init__(self, *args, **kwargs):
         super(NeighborhoodAddProjectForm, self).__init__(*args, **kwargs)
+        # get the shortname validator from the provider
+        provider = plugin.ProjectRegistrationProvider.get()
+        self.fields.project_unixname.validator = provider.shortname_validator
         ## Dynamically generating CheckboxSet of installable tools
         from allura.lib.widgets import forms
         self.fields.tools.options = [

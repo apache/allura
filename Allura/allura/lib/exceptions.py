@@ -15,8 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from formencode import Invalid
+
 class ForgeError(Exception): pass
-class ProjectConflict(ForgeError): pass
+class ProjectConflict(ForgeError, Invalid): pass
+class ProjectShortnameInvalid(ForgeError, Invalid): pass
 class ProjectOverlimitError(ForgeError): pass
 class ProjectRatelimitError(ForgeError): pass
 class ToolError(ForgeError): pass
