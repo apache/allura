@@ -15,12 +15,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equals
+from functools import partial
+from nose.tools import assert_equals, assert_raises
 from mock import Mock, MagicMock, patch
+from formencode import Invalid
 
 from allura import model as M
 from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
+from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 
 
 class TestProjectRegistrationProvider(object):
@@ -46,32 +49,15 @@ class TestProjectRegistrationProvider(object):
         assert_equals(f('A More Than Fifteen Character Name', Mock()),
                 'amorethanfifteencharactername')
 
-    def test_valid_project_shortname(self):
-        f = self.provider.valid_project_shortname
-        p = Mock()
-        valid = (True, None)
-        invalid = (False,
-                'Please use only letters, numbers, and dashes '
-                '3-15 characters long.')
-        assert_equals(f('thisislegit', p), valid)
-        assert_equals(f('not valid', p), invalid)
-        assert_equals(f('this-is-valid-but-too-long', p), invalid)
-        assert_equals(f('this is invalid and too long', p), invalid)
+    @patch('allura.model.Project')
+    def test_shortname_validator(self, Project):
+        Project.query.get.return_value = None
+        nbhd = Mock()
+        v = self.provider.shortname_validator.to_python
 
-    def test_allowed_project_shortname(self):
-        allowed = valid = (True, None)
-        invalid = (False, 'invalid')
-        taken = (False, 'This project name is taken.')
-        cases = [
-                (valid, False, allowed),
-                (invalid, False, invalid),
-                (valid, True, taken),
-            ]
-        p = Mock()
-        vps = self.provider.valid_project_shortname = Mock()
-        nt = self.provider._name_taken = Mock()
-        f = self.provider.allowed_project_shortname
-        for vps_v, nt_v, result in cases:
-            vps.return_value = vps_v
-            nt.return_value = nt_v
-            assert_equals(f('project', p), result)
+        v('thisislegit', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v, 'not valid', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v, 'this-is-valid-but-too-long', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v, 'this is invalid and too long', neighborhood=nbhd)
+        Project.query.get.return_value = Mock()
+        assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)

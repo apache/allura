@@ -352,26 +352,24 @@ class ProjectRegistrationProvider(object):
         myprovider = foo.bar:MyAuthProvider
 
     Then in your .ini file, set registration.method=myprovider
+
+    The provider should expose an attribute, `shortname_validator` which is
+    an instance of a FormEncode validator that validates project shortnames.
+    The `to_python()` method of the validator should accept a `check_allowed`
+    argument to indicate whether additional checks beyond correctness of the
+    name should be done, such as whether the name is already in use.
     '''
 
     def __init__(self):
         from allura.lib.widgets import forms
         self.add_project_widget = forms.NeighborhoodAddProjectForm
+        self.shortname_validator = forms.NeighborhoodProjectShortNameValidator()
 
     @classmethod
     def get(cls):
         from allura.lib import app_globals
         method = config.get('registration.method', 'local')
         return app_globals.Globals().entry_points['registration'][method]()
-
-    def _name_taken(self, project_name, neighborhood):
-        """Return False if ``project_name`` is available in ``neighborhood``.
-        If unavailable, return an error message (str) explaining why.
-
-        """
-        from allura import model as M
-        p = M.Project.query.get(shortname=project_name, neighborhood_id=neighborhood._id)
-        return bool(p)
 
     def suggest_name(self, project_name, neighborhood):
         """Return a suggested project shortname for the full ``project_name``.
@@ -467,45 +465,11 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname.replace('u/', '', 1)
         else:
             check_shortname = shortname
-        allowed, err = self.allowed_project_shortname(check_shortname, neighborhood)
-        if not allowed:
-            raise ValueError('Invalid project shortname: %s error: %s' % (shortname, err))
+        self.shortname_validator.to_python(check_shortname, neighborhood=neighborhood)
 
         p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
             raise forge_exc.ProjectConflict('%s already exists in nbhd %s' % (shortname, neighborhood._id))
-
-    def valid_project_shortname(self, shortname, neighborhood):
-        """Determine if the project shortname appears to be valid.
-
-        Returns a pair of values, the first being a bool indicating whether
-        the name appears to be valid, and the second being a message indicating
-        the reason, if any, why the name is invalid.
-
-        NB: Even if a project shortname is valid, it might still not be
-        allowed (it could already be taken, for example).  Use the method
-        ``allowed_project_shortname`` instead to check if the shortname can
-        actually be used.
-        """
-        if not h.re_project_name.match(shortname):
-            return (False, 'Please use only letters, numbers, and dashes 3-15 characters long.')
-        return (True, None)
-
-    def allowed_project_shortname(self, shortname, neighborhood):
-        """Determine if a project shortname can be used.
-
-        A shortname can be used if it is valid and is not already taken.
-
-        Returns a pair of values, the first being a bool indicating whether
-        the name can be used, and the second being a message indicating the
-        reason, if any, why the name cannot be used.
-        """
-        valid, reason = self.valid_project_shortname(shortname, neighborhood)
-        if not valid:
-            return (False, reason)
-        if self._name_taken(shortname, neighborhood):
-            return (False, 'This project name is taken.')
-        return (True, None)
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''
