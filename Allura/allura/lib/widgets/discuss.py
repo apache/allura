@@ -289,6 +289,9 @@ class Post(HierWidget):
                 $('.moderate_post', post).click(function(e){
                     e.preventDefault();
                     var mod = $(this).text();
+                    if (mod === 'Delete' && !confirm('Really delete this post?')) {
+                        return;
+                    }
                     var id_post = $(post).attr('id');
                     $.ajax({
                         type: 'POST',
