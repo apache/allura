@@ -80,6 +80,7 @@
   {% endif %}
 
   {% if blob.has_image_view %}
+    <p><a href="?format=raw">Download this file</a></p>
     <img src="?format=raw" alt=""/>
   {% elif blob.has_html_view or blob.has_pypeline_view or force_display %}
     <p><a href="?format=raw">Download this file</a></p>
