@@ -34,11 +34,13 @@ from allura import model as M
 log = logging.getLogger(__name__)
 
 class GoogleCodeProjectExtractor(object):
+    BASE_URL = 'http://code.google.com'
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 
     PAGE_MAP = {
-            'project_info': 'http://code.google.com/p/%s/',
-            'source_browse': 'http://code.google.com/p/%s/source/browse/',
+            'project_info': BASE_URL + '/p/%s/',
+            'source_browse': BASE_URL + '/p/%s/source/browse/',
+            'wiki_index': BASE_URL + '/p/%s/w/list',
         }
 
     LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
@@ -58,7 +60,8 @@ class GoogleCodeProjectExtractor(object):
 
     def __init__(self, allura_project, gc_project_name, page):
         self.project = allura_project
-        self.url = self.PAGE_MAP[page] % urllib.quote(gc_project_name)
+        self.gc_project_name = gc_project_name
+        self.url = self.PAGE_MAP[page] % urllib.quote(self.gc_project_name)
         self.page = BeautifulSoup(urllib2.urlopen(self.url))
 
     def get_short_description(self):
@@ -92,3 +95,11 @@ class GoogleCodeProjectExtractor(object):
             return re_match.group(0)
         else:
             raise Exception("Unknown repo type: {0}".format(repo_type.text))
+
+    def get_wiki_pages(self):
+        RE_WIKI_PAGE_URL = r'^/p/{0}/wiki/.*$'.format(self.gc_project_name)
+        seen = set()
+        for a in self.page.find(id="resultstable").findAll("a"):
+            if re.match(RE_WIKI_PAGE_URL, a['href']) and a['href'] not in seen:
+                yield (a.text, self.BASE_URL + a['href'])
+                seen.add(a['href'])
