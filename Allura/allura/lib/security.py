@@ -287,9 +287,8 @@ def has_access(obj, permission, user=None, project=None):
                 elif isinstance(obj, M.Project):
                     project = obj.root_project
                 else:
-                    project = getattr(obj, 'project', None)
-                    if project is None:
-                        project = c.project.root_project
+                    project = getattr(obj, 'project', None) or c.project
+                    project = project.root_project
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
         chainable_roles = []
         for rid in roles:
