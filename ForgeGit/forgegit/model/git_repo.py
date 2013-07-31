@@ -78,9 +78,20 @@ class Repository(M.Repository):
 
     def merge_command(self, merge_request):
         '''Return the command to merge a given commit to a given target branch'''
-        return 'git checkout %s\ngit fetch %s\ngit merge %s' % (
+        if merge_request.source_branch:
+            fetch_command = 'git fetch {} {}'.format(
+                merge_request.downstream_repo_url,
+                merge_request.source_branch,
+            )
+        else:
+            fetch_command = 'git fetch {} {} # warning: '\
+            'no source branch specified'.format(
+                merge_request.downstream_repo_url,
+                '<source_branch>',
+            )
+        return 'git checkout %s\n%s\ngit merge %s' % (
             merge_request.target_branch,
-            merge_request.downstream_repo_url,
+            fetch_command,
             merge_request.downstream.commit_id,
         )
 

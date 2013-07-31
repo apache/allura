@@ -178,6 +178,7 @@ class RepoRootController(BaseController, FeedController):
             mr = M.MergeRequest.upsert(
                 downstream=downstream,
                 target_branch=kw['target_branch'],
+                source_branch=kw['source_branch'],
                 summary=kw['summary'],
                 description=kw['description'])
             M.Notification.post(

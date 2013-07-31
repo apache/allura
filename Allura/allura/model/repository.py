@@ -557,6 +557,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             project_id=S.ObjectId,
             mount_point=str,
             commit_id=str))
+    source_branch=FieldProperty(str,if_missing='')
     target_branch=FieldProperty(str)
     creator_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
     created=FieldProperty(datetime, if_missing=datetime.utcnow)
