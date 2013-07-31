@@ -106,7 +106,7 @@ class ImportTracker(ScriptTask):
         parser.add_argument('-s', '--secret-key', action='store', dest='secret_key', help='Secret key')
         parser.add_argument('-p', '--project', action='store', dest='project', help='Project to import to')
         parser.add_argument('-t', '--tracker', action='store', dest='tracker', help='Tracker to import to')
-        parser.add_argument('-u', '--base-url', dest='base_url', default='https://sourceforge.net', help='Base Allura URL (%default)')
+        parser.add_argument('-u', '--base-url', dest='base_url', default='https://sourceforge.net', help='Base Allura URL (https://sourceforge.net)')
         parser.add_argument('-o', dest='import_opts', default=[], action='store',  help='Specify import option(s)', metavar='opt=val')
         parser.add_argument('--user-map', dest='user_map_file', help='Map original users to SF.net users', metavar='JSON_FILE')
         parser.add_argument('--file_data', dest='file_data', help='json file', metavar='JSON_FILE')
