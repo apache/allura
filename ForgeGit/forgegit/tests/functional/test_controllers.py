@@ -501,6 +501,10 @@ class TestFork(_TestCase):
         assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
         assert_equal(browse_links[0].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
         assert_equal(browse_links[0].getText(), 'Tree')
+        merge_instructions = r.html.findAll('textarea')[0].getText()
+        assert 'git checkout master' in merge_instructions
+        assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
+        assert 'git merge {}'.format(c_id) in merge_instructions
 
     def test_merge_request_list_view(self):
         r, mr_num = self._request_merge()
