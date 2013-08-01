@@ -54,6 +54,14 @@
                 pushed by {{ user_link(commit.committed.email, commit.committed.name) }}
                 {% endif %}
                 {{g.markdown.convert(commit.message)}}
+                {% if commit.renamed_from %}
+                    <div>
+                      <b>renamed from</b>&nbsp
+                      <a href={{commit.renamed_from['commit_url']}}log/?path={{ commit.renamed_from['path'] }}>
+                        {{ commit.renamed_from['path'] }}
+                      </a>
+                    </div>
+                {% endif %}
             </div>
           </td>
           <td style="vertical-align: text-top">

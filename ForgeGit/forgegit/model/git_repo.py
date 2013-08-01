@@ -302,12 +302,40 @@ class GitImplementation(M.RepositoryImplementation):
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
 
-        for ci, refs in self._iter_commits_with_refs(revs, '--', path):
+        for ci, refs in self._iter_commits_with_refs(revs, '--follow', '--', path):
             if id_only:
                 yield ci.hexsha
             else:
                 size = None
+                renamed_from = {}
                 if path:
+                    # checking for renaming in this commit
+                    # log is called with follow, so there should be all commits
+                    # even before renaming
+                    diffs_with_parent = ci.diff(ci.parents[0])
+                    deleted_file_diffs = []
+                    renamed = False
+                    for diff in diffs_with_parent:
+                        if not diff.b_mode and not diff.b_blob:
+                            #new file was created
+                            if diff.a_blob.name == os.path.basename(path):
+                                renamed = True
+                        if not diff.a_mode and not diff.a_blob:
+                            #file was deleted
+                            deleted_file_diffs.append(diff)
+                    if renamed:
+                        if len(deleted_file_diffs) > 1:
+                            log.info('Couldn\'t find if file was renamed: too many deletions')
+                        elif len(deleted_file_diffs) == 1:
+                            deleted_diff = deleted_file_diffs[0]
+                            renamed_from['path'] = '{}/{}'.format(
+                                os.path.dirname(path),
+                                deleted_diff.b_blob.name,
+                            )
+                            renamed_from['commit_id'] = ci.hexsha
+                            renamed_from['commit_url'] = self._repo.url_for_commit(
+                                ci.hexsha
+                            )
                     try:
                         node = ci.tree/path
                         size = node.size if node.type == 'blob' else None
@@ -329,7 +357,12 @@ class GitImplementation(M.RepositoryImplementation):
                         'refs': refs,
                         'parents': [pci.hexsha for pci in ci.parents],
                         'size': size,
+                        'renamed_from': renamed_from,
                     }
+                if renamed_from:
+                    # if file was renamed, do not yield commits
+                    # before renaming
+                    break
 
     def _iter_commits_with_refs(self, *args, **kwargs):
         """
