@@ -44,11 +44,13 @@ class TestBulkExport(object):
         post.text = 'test post'
         post.labels = ['the firstlabel', 'the second label']
         post.make_slug()
+        post.commit()
         post.discussion_thread.add_post(text='test comment')
         post2 = BM.BlogPost()
         post2.title = 'Test2 title'
         post2.text = 'test2 post'
         post2.make_slug()
+        post2.commit()
 
         f = tempfile.TemporaryFile()
         blog.bulk_export(f)
