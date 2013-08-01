@@ -392,8 +392,8 @@ class TestExportTasks(unittest.TestCase):
         assert_equal(len(tasks), 1)
         assert_equal(tasks[0].kwargs['subject'], 'Bulk export for project test completed')
         text = tasks[0].kwargs['text']
-        assert_in('Bulk export for project test is completed.', text)
-        assert_in('Following tools was exported:\n\n- wiki', text)
+        assert_in('The bulk export for project test is completed.', text)
+        assert_in('The following tools were exported:\n- wiki', text)
         assert_in('Sample instructions for test', text)
 
     @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')

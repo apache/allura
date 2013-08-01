@@ -17,20 +17,22 @@
        under the License.
 #}
 
-Bulk export for project {{ project.shortname }} is completed.
+The bulk export for project {{ project.shortname }} is completed.
 
-Following tools was exported:
-{% for tool in tools %}
-- {{ tool }}
-{% endfor %}
-
-{% if not_exported_tools %}
-Following tools was not exported:
-{% for tool in not_exported_tools %}
+{% if tools %}
+The following tools were exported:
+{% for tool in tools -%}
 - {{ tool }}
 {% endfor %}
 {% endif %}
 
-Follow instructions below to get exported data.
+{% if not_exported_tools %}
+The following tools were not exported:
+{% for tool in not_exported_tools -%}
+- {{ tool }}
+{% endfor %}
+{% endif %}
+
+Follow the instructions below to get your exported data.
 
 {{ instructions }}
