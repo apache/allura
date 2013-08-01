@@ -961,11 +961,5 @@ class AppConfig(MappedClass):
     def __json__(self):
         return dict(
             _id=self._id,
-            project_id=self.project_id,
-            discussion_id=self.discussion_id,
-            tool_name=self.tool_name,
-            version=self.version,
             options=self.options,
-            tool_data=self.tool_data,
-            acl=self.acl,
         )

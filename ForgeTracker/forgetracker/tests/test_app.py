@@ -55,9 +55,7 @@ class TestBulkExport(TrackerTestController):
         assert_equal(posts_foo[0]['text'], 'silly comment')
 
         tracker_config = tracker['tracker_config']
-        assert_equal(tracker_config['project_id'], unicode(self.project._id))
         assert_true('options' in tracker_config.keys())
-        assert_true('acl' in tracker_config.keys())
         assert_equal(tracker_config['options']['mount_point'], 'bugs')
 
         milestones = sorted(tracker['milestones'], key=operator.itemgetter('name'))
