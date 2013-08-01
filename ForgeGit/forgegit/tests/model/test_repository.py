@@ -565,7 +565,7 @@ class TestGitRename(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 
-    def test_file_commits(self):
+    def test_renamed_file(self):
         # There was a file f.txt, then it was renamed to f2.txt.
         commits = list(self.repo.log(id_only=False, path='/f2.txt'))
         self.assertEqual(len(commits), 2)
