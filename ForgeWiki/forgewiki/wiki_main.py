@@ -294,7 +294,7 @@ The wiki uses [Markdown](%s) syntax.
             deleted=False)).all()
         count = len(pages)
         for i, page in enumerate(pages):
-            json.dump(page, f, cls=jsonify.GenericJSON)
+            json.dump(page, f, cls=jsonify.GenericJSON, indent=2)
             if i < (count - 1):
                 f.write(',')
         f.write(']}')

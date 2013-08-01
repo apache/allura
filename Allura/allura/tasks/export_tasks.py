@@ -67,7 +67,7 @@ def bulk_export(project_shortname, tools, username):
     try:
         path = create_export_dir(project)
         with open(os.path.join(path, 'project.json'), 'w') as f:
-            json.dump(project, f, cls=tg.jsonify.GenericJSON)
+            json.dump(project, f, cls=tg.jsonify.GenericJSON, indent=2)
     except:
         log.error('Something went wrong during export of project metadata', exc_info=True)
 
