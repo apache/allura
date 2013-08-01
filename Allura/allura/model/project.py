@@ -20,6 +20,7 @@ import logging
 from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
+import urllib
 
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
@@ -137,6 +138,14 @@ class TroveCategory(MappedClass):
             crumbs.append((trove.fullname, url))
         return crumbs
 
+    def __json__(self):
+        return dict(
+            id=self.trove_cat_id,
+            shortname=self.shortname,
+            fullname=self.fullname,
+            fullpath=self.fullpath,
+        )
+
 class ProjectMapperExtension(MapperExtension):
     def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)
@@ -249,6 +258,21 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def troves_by_type(self, trove_type):
         return TroveCategory.query.find({'_id':{'$in':getattr(self,'trove_%s' % trove_type)}}).all()
+
+    def all_troves(self):
+        '''
+        Returns a dict of human-readable root troves => [categories]
+        '''
+        troves = {}
+        for attr in dir(self):
+            if attr.startswith('trove_'):
+                trove_type = attr.replace('trove_','')
+                nice_name = dict(
+                    natlanguage='translation',
+                    root_database='database',
+                ).get(trove_type, trove_type)
+                troves[nice_name] = self.troves_by_type(trove_type)
+        return troves
 
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, default)
@@ -839,17 +863,33 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def __json__(self):
         return dict(
-            name=self.shortname,
-            title=self.name,
+            shortname=self.shortname,
+            name=self.name,
             _id=self._id,
+            url=h.absurl(self.url()),
             private=self.private,
             short_description=self.short_description,
-            description=self.description,
-            download_page=self.best_download_url(),
-            preferred_support=self.support_page_url,
+            summary=self.summary,
+            external_homepage=self.external_homepage,
+            socialnetworks=self.socialnetworks,
+            status=self.removal or 'active',
+            moved_to_url=self.moved_to_url,
+            preferred_support_tool=self.support_page,
+            preferred_support_url=self.support_page_url,
             developers=self.users_with_role('Developer'),
             tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
-                   for t in self.app_configs if h.has_access(t, 'read')]
+                   for t in self.app_configs if h.has_access(t, 'read')],
+            labels=self.labels,
+            categories=self.all_troves(),
+            icon_url=h.absurl(self.url() + 'icon') if self.icon else None,
+            screenshots = [
+                dict(
+                    url = h.absurl(self.url() + 'screenshot/' + urllib.quote(ss.filename)),
+                    thumbnail_url = h.absurl(self.url() + 'screenshot/' + urllib.quote(ss.filename) + '/thumb'),
+                    caption = ss.caption,
+                )
+                for ss in self.get_screenshots()
+            ]
         )
 
 

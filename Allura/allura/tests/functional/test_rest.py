@@ -74,14 +74,13 @@ class TestRestHome(TestRestApiBase):
 
     def test_project_data(self):
         r = self.api_get('/rest/p/test/')
-        assert_equal(r.json['name'], 'test')
-        assert_equal(r.json['title'], 'Test Project')
-        assert_equal(r.json['description'], 'You can edit this description in the admin page')
+        assert_equal(r.json['shortname'], 'test')
+        assert_equal(r.json['name'], 'Test Project')
         assert_equal(len(r.json['developers']), 1)
         admin_dev = r.json['developers'][0]
         assert_equal(admin_dev['username'], 'test-admin')
         assert_equal(admin_dev['name'], 'Test Admin')
-        assert_equal(admin_dev['url'], '/u/test-admin/')
+        assert_equal(admin_dev['url'], 'http://localhost:80/u/test-admin/')
 
     @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Tickets', 'private-bugs')
@@ -95,14 +94,14 @@ class TestRestHome(TestRestApiBase):
 
         # admin sees both 'Tickets' tools
         r = self.api_get('/rest/p/test/')
-        assert_equal(r.json['name'], 'test')
+        assert_equal(r.json['shortname'], 'test')
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
         assert_in('bugs', tool_mounts)
         assert_in('private-bugs', tool_mounts)
 
         # anonymous sees only non-private tool
         r = self.app.get('/rest/p/test/', extra_environ={'username': '*anonymous'})
-        assert_equal(r.json['name'], 'test')
+        assert_equal(r.json['shortname'], 'test')
         tool_mounts = [t['mount_point'] for t in r.json['tools']]
         assert_in('bugs', tool_mounts)
         assert_not_in('private-bugs', tool_mounts)
