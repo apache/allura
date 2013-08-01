@@ -335,7 +335,6 @@ class GitImplementation(M.RepositoryImplementation):
                                     os.path.dirname(path),
                                     deleted_diff.b_blob.name,
                                 )
-                                renamed_from['commit_id'] = ci.hexsha
                                 renamed_from['commit_url'] = self._repo.url_for_commit(
                                     ci.hexsha
                                 )

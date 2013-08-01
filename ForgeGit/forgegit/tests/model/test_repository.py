@@ -540,3 +540,38 @@ class TestGitHtmlView(unittest.TestCase):
         assert b.has_html_view
         b = self.rev.tree.get_blob_by_path('test.spec.in')
         assert b.has_html_view
+
+
+class TestGitRename(unittest.TestCase):
+
+    def setUp(self):
+        setup_basic_test()
+        self.setup_with_tools()
+
+    @with_git
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src-git', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data')
+        self.repo = GM.Repository(
+            name='testrename.git',
+            fs_path=repo_dir,
+            url_path='/test/',
+            tool='git',
+            status='creating')
+        self.repo.refresh()
+        self.rev = self.repo.commit('HEAD')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_file_commits(self):
+        # There was a file f.txt, then it was renamed to f2.txt.
+        commits = list(self.repo.log(id_only=False, path='/f2.txt'))
+        self.assertEqual(len(commits), 2)
+        rename_commit = commits[1]
+        self.assertEqual(rename_commit['renamed_from']['path'], '/f.txt')
+        self.assertEqual(
+            rename_commit['renamed_from']['commit_url'],
+            self.repo.url_for_commit(rename_commit['id'])
+        )

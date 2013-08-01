@@ -56,7 +56,7 @@
                 {{g.markdown.convert(commit.message)}}
                 {% if commit.renamed_from %}
                     <div>
-                      <b>renamed from</b>&nbsp
+                      <b>renamed from</b>
                       <a href={{commit.renamed_from['commit_url']}}log/?path={{ commit.renamed_from['path'] }}>
                         {{ commit.renamed_from['path'] }}
                       </a>
