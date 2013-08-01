@@ -415,17 +415,17 @@ class ForgeTrackerApp(Application):
             deleted=False)).all()
         count = len(tickets)
         for i, ticket in enumerate(tickets):
-            json.dump(ticket, f, cls=jsonify.GenericJSON)
+            json.dump(ticket, f, cls=jsonify.GenericJSON, indent=2)
             if i < (count - 1):
                 f.write(',')
-        f.write('], "tracker_config":')
-        json.dump(self.config, f, cls=jsonify.GenericJSON)
-        f.write(', "milestones":')
+        f.write('],\n"tracker_config":')
+        json.dump(self.config, f, cls=jsonify.GenericJSON, indent=2)
+        f.write(',\n"milestones":')
         milestones = self.milestones
-        json.dump(milestones, f, cls=jsonify.GenericJSON)
-        f.write(', "saved_bins":')
+        json.dump(milestones, f, cls=jsonify.GenericJSON, indent=2)
+        f.write(',\n"saved_bins":')
         bins = self.bins
-        json.dump(bins, f, cls=jsonify.GenericJSON)
+        json.dump(bins, f, cls=jsonify.GenericJSON, indent=2)
         f.write('}')
 
     @property

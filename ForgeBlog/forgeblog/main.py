@@ -195,7 +195,7 @@ class ForgeBlogApp(Application):
         posts = BM.BlogPost.query.find(dict(app_config_id=self.config._id)).sort('timestamp', pymongo.DESCENDING)
         count = len(posts)
         for i, post in enumerate(posts):
-            json.dump(post, f, cls=jsonify.GenericJSON)
+            json.dump(post, f, cls=jsonify.GenericJSON, indent=2)
             if i < (count - 1):
                 f.write(',')
         f.write(']}')

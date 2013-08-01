@@ -222,7 +222,7 @@ class ForgeDiscussionApp(Application):
         forums = DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).all()
         count = len(forums)
         for i, forum in enumerate(forums):
-            json.dump(forum, f, cls=jsonify.GenericJSON)
+            json.dump(forum, f, cls=jsonify.GenericJSON, indent=2)
             if i < (count - 1):
                 f.write(',')
         f.write(']}')
