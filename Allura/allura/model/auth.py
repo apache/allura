@@ -702,7 +702,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return dict(
             username=self.username,
             name=self.display_name,
-            url=self.url(),
+            url=h.absurl(self.url()),
         )
 
 class OldProjectRole(MappedClass):

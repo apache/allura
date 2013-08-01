@@ -24,7 +24,7 @@
   {% for ss in screenshots %}
   <div data-ss-id="{{ ss._id }}" class="screenshot">
     <div class="image">
-      <a href="{{project.url()}}screenshot/{{ss.filename}}"><img src="{{project.url()}}screenshot/{{ss.filename}}/thumb" alt="Screenshot thumbnail"/></a>
+      <a href="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}"><img src="{{project.url()}}screenshot/{{h.urlquote(ss.filename)}}/thumb" alt="Screenshot thumbnail"/></a>
       {% if not edit %}
       <br>
       {{ss.caption}}
