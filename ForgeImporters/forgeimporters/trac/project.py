@@ -25,35 +25,26 @@ from tg.decorators import with_trailing_slash
 from allura.lib.decorators import require_post
 
 from .. import base
-from . import tasks
 
 
 log = logging.getLogger(__name__)
 
 
-class GoogleCodeProjectForm(base.ProjectImportForm):
-    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$',
-            not_empty=True,
-            messages={
-                'invalid': 'Please use only letters, numbers, and dashes.',
-            })
+class TracProjectForm(base.ProjectImportForm):
+    trac_url = fev.URL(not_empty=True)
 
 
-class GoogleCodeProjectImporter(base.ProjectImporter):
+class TracProjectImporter(base.ProjectImporter):
     """
-    Project importer for Google Code.
+    Project importer for Trac.
 
-    This imports project metadata, including summary, icon, and license,
-    as well as providing the UI for importing individual tools during project
-    import.
     """
-    source = 'Google Code'
-    process_validator = GoogleCodeProjectForm(source)
-    index_template = 'jinja:forgeimporters.google:templates/project.html'
+    source = 'Trac'
+    process_validator = TracProjectForm(source)
+    index_template = 'jinja:forgeimporters.trac:templates/project.html'
 
     def after_project_create(self, project, **kw):
-        project.set_tool_data('google-code', project_name=project.name)
-        tasks.import_project_info.post()
+        project.set_tool_data('trac', url=kw['trac_url'])
 
     @with_trailing_slash
     @expose(index_template)

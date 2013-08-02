@@ -35,8 +35,11 @@ setup(name='ForgeImporters',
       # -*- Entry points: -*-
       [allura.project_importers]
       google-code = forgeimporters.google.project:GoogleCodeProjectImporter
+      trac = forgeimporters.trac.project:TracProjectImporter
 
       [allura.importers]
       google-code-tracker = forgeimporters.google.tracker:GoogleCodeTrackerImporter
       google-code-repo = forgeimporters.google.code:GoogleRepoImporter
+      trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
+      trac-wiki = forgeimporters.trac.wiki:TracWikiImporter
       """,)

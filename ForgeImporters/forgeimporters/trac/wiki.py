@@ -15,11 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import argparse
 from datetime import (
         datetime,
         timedelta,
         )
-import json
+import tempfile
 
 import formencode as fe
 from formencode import validators as fev
@@ -39,36 +40,34 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
-from allura.lib.import_api import AlluraImportApiClient
 from allura.model import ApiTicket
-from allura.scripts.trac_export import (
-        TracExport,
-        DateJSONEncoder,
-        )
 
 from forgeimporters.base import ToolImporter
-from forgetracker.tracker_main import ForgeTrackerApp
-from forgetracker.scripts.import_tracker import import_tracker
+
+from forgewiki.scripts.wiki_from_trac.extractors import WikiExporter
+from forgewiki.scripts.wiki_from_trac.loaders import load_data
+from forgewiki.scripts.wiki_from_trac.wiki_from_trac import WikiFromTrac
+from forgewiki.wiki_main import ForgeWikiApp
 
 
-class TracTicketImportSchema(fe.Schema):
+class TracWikiImportSchema(fe.Schema):
     trac_url = fev.URL(not_empty=True)
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
 
 
-class TracTicketImportController(BaseController):
+class TracWikiImportController(BaseController):
     @with_trailing_slash
-    @expose('jinja:forgeimporters.trac:templates/tickets/index.html')
+    @expose('jinja:forgeimporters.trac:templates/wiki/index.html')
     def index(self, **kw):
         return {}
 
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(TracTicketImportSchema(), error_handler=index)
+    @validate(TracWikiImportSchema(), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, **kw):
-        app = TracTicketImporter.import_tool(c.project,
+        app = TracWikiImporter.import_tool(c.project,
                 mount_point=mount_point,
                 mount_label=mount_label,
                 trac_url=trac_url,
@@ -76,32 +75,36 @@ class TracTicketImportController(BaseController):
         redirect(app.url())
 
 
-class TracTicketImporter(ToolImporter):
-    target_app = ForgeTrackerApp
+class TracWikiImporter(ToolImporter):
+    target_app = ForgeWikiApp
     source = 'Trac'
-    controller = TracTicketImportController
-    tool_label = 'Trac Ticket Importer'
-    tool_description = 'Import your tickets from Trac'
+    controller = TracWikiImportController
+    tool_label = 'Trac Wiki Importer'
+    tool_description = 'Import your wiki from Trac'
 
     def import_tool(self, project=None, mount_point=None, mount_label=None,
             trac_url=None, user=None):
-        """ Import Trac tickets into a new Allura Tracker tool.
+        """ Import Trac wiki into a new Allura Wiki tool.
 
         """
-        mount_point = mount_point or 'tickets'
+        mount_point = mount_point or 'wiki'
         app = project.install_app(
-                'Tickets',
+                'Wiki',
                 mount_point=mount_point,
-                mount_label=mount_label or 'Tickets',
+                mount_label=mount_label or 'Wiki',
                 )
-        export = TracExport(trac_url)
-        export_string = json.dumps(export, cls=DateJSONEncoder)
         api_ticket = ApiTicket(user_id=user._id,
                 capabilities={"import": ["Projects", project.shortname]},
                 expires=datetime.utcnow() + timedelta(minutes=60))
-        cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
-                api_ticket.secret_key, False)
-        import_tracker(cli, project.shortname, mount_point, {},
-                export_string, validate=False)
+        options = argparse.Namespace()
+        options.api_key = api_ticket.api_key
+        options.secret_key = api_ticket.secret_key
+        options.project = project.shortname
+        options.wiki = mount_point
+        options.base_url = config['base_url']
+        with tempfile.NamedTemporaryFile() as f:
+            WikiExporter(trac_url, options).export(f)
+            f.flush()
+            load_data(f.name, WikiFromTrac.parser(), options)
         g.post_event('project_updated')
         return app

@@ -15,14 +15,44 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
+
 from pkg_resources import iter_entry_points
 
-from tg import expose
+from tg import expose, validate, flash, redirect, config
+from tg.decorators import with_trailing_slash
+from pylons import tmpl_context as c
+from formencode import validators as fev, schema
+
+from allura.lib.decorators import require_post
+from allura.lib.decorators import task
+from allura.lib.security import require_access
+from allura.lib.widgets.forms import NeighborhoodProjectShortNameValidator
+from allura.lib import exceptions
+
 from paste.deploy.converters import aslist
-from formencode import validators as fev
 
 from ming.utils import LazyProperty
 from allura.controllers import BaseController
+
+
+log = logging.getLogger(__name__)
+
+
+class ProjectImportForm(schema.Schema):
+    def __init__(self, source):
+        super(ProjectImportForm, self).__init__()
+        self.add_field('tools', ToolsValidator(source))
+
+    neighborhood = fev.PlainText(not_empty=True)
+    project_name = fev.UnicodeString(not_empty=True, max=40)
+    project_shortname = NeighborhoodProjectShortNameValidator()
+
+
+@task
+def import_tool(importer_name, project_name, mount_point=None, mount_label=None, **kw):
+    importer = ToolImporter.by_name(importer_name)
+    importer.import_tool(c.project, mount_point, mount_label, **kw)
 
 
 class ProjectImporter(BaseController):
@@ -33,6 +63,14 @@ class ProjectImporter(BaseController):
     :meth:`process()` views described below.
     """
     source = None
+    process_validator = None
+    index_template = None
+
+    def __init__(self, neighborhood, *a, **kw):
+        self.neighborhood = neighborhood
+
+    def _check_security(self):
+        require_access(self.neighborhood, 'register')
 
     @LazyProperty
     def tool_importers(self):
@@ -47,6 +85,8 @@ class ProjectImporter(BaseController):
                 tools[ep.name] = epv()
         return tools
 
+    @with_trailing_slash
+    @expose()
     def index(self, **kw):
         """
         Override and expose this view to present the project import form.
@@ -58,9 +98,12 @@ class ProjectImporter(BaseController):
         This will list the available tool importers.  Other project fields
         (e.g., project_name) should go in the project_fields block.
         """
-        raise NotImplemented
+        return {'importer': self, 'tg_template': self.index_template}
 
-    def process(self, tools=None, **kw):
+    @require_post()
+    @expose()
+    @validate(process_validator, error_handler=index)
+    def process(self, **kw):
         """
         Override and expose this to handle a project import.
 
@@ -68,7 +111,50 @@ class ProjectImporter(BaseController):
         tools installed and redirect to the new project, presumably with a
         message indicating that some data will not be available immediately.
         """
-        raise NotImplemented
+        try:
+            c.project = self.neighborhood.register_project(kw['project_shortname'],
+                    project_name=kw['project_name'])
+        except exceptions.ProjectOverlimitError:
+            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
+            redirect('.')
+        except exceptions.ProjectRatelimitError:
+            flash("Project creation rate limit exceeded.  Please try again later.", 'error')
+            redirect('.')
+        except Exception:
+            log.error('error registering project: %s', kw['project_shortname'], exc_info=True)
+            flash('Internal Error. Please try again later.', 'error')
+            redirect('.')
+
+        self.after_project_create(c.project, **kw)
+        for importer_name in kw['tools']:
+            import_tool.post(importer_name, **kw)
+
+        flash('Welcome to the %s Project System! '
+              'Your project data will be imported and should show up here shortly.' % config['site_name'])
+        redirect(c.project.script_name + 'admin/overview')
+
+    @expose('json:')
+    @validate(process_validator)
+    def check_names(self, **kw):
+        """
+        Ajax form validation.
+
+        """
+        return c.form_errors
+
+    def after_project_create(self, project, **kw):
+        """
+        Called after project is created.
+
+        Useful for doing extra processing on the project before individual
+        tool imports happen.
+
+        :param project: The newly created project.
+        :param \*\*kw: The keyword arguments that were posted to the controller
+            method that created the project.
+
+        """
+        pass
 
 
 class ToolImporter(object):
