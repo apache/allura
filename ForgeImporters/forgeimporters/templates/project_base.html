@@ -23,13 +23,97 @@
 {% block title %}{{importer.source}} Project Importer{% endblock %}
 {% block header %}{{importer.source}} Project Importer{% endblock %}
 
-{% block content %}
+{% block extra_css %}
+    {{ super() }}
+    <style type="text/css">
+        #project-import-form #project-fields input {
+            width: 88%;
+        }
 
+        .hidden { display: none; }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    {{ super() }}
+    <script type="text/javascript">
+        var timers = {};
+        function delay(callback, ms) {
+            clearTimeout(timers[callback]);
+            timers[callback] = setTimeout(callback, ms);
+        }
+
+        var manual = false;
+        function suggest_name() {
+            var $project_shortname = $('#project_shortname');
+            if (!manual) {
+                $project_shortname.val($('#project_name').val());
+            }
+            $project_shortname.trigger('change');
+        }
+
+        function check_names() {
+            var data = {
+                'neighborhood': $('#neighborhood').val(),
+                'project_name': $('#project_name').val(),
+                'project_shortname': $('#project_shortname').val()
+            };
+            $.getJSON('check_names', data, function(result) {
+                $('#project_name_error').addClass('hidden');
+                $('#project_shortname_error').addClass('hidden');
+                for(var field in result) {
+                    $('#'+field+'_error').text(result[field]).removeClass('hidden');
+                }
+            });
+        }
+
+        function update_url() {
+            $('#url-fragment').text($('#project_shortname').val());
+        }
+
+        $(function() {
+            $('#project_name').focus().bind('change keyup', suggest_name);
+
+            $('#project_shortname').bind('change keyup', function(event) {
+                if (event.type == 'keyup') {
+                    manual = true;
+                }
+                update_url();
+                delay(check_names, 500);
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
 <form id="project-import-form" method="POST" action="process">
     <input type="hidden" id="neighborhood" name="neighborhood" value="{{importer.neighborhood.name}}"/>
 
     <fieldset id="project-fields">
-        {% block project_fields %}{% endblock %}
+      {% block project_fields %}
+      <div class="grid-6" style="clear:left">
+          <label>Project Name</label>
+      </div>
+      <div class="grid-10">
+          <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}"/>
+          <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
+              {{c.form_errors['project_name']}}
+          </div>
+      </div>
+
+      <div class="grid-6" style="clear:left">
+          <label>URL Name</label>
+      </div>
+      <div class="grid-10">
+          <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
+          <div id="project_shortname_error" class="error{% if not c.form_errors['project_shortname'] %} hidden{% endif %}">
+              {{c.form_errors['project_shortname']}}
+          </div>
+          <div id="project-url">
+              http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
+          </div>
+      </div>
+      {% endblock %}
     </fieldset>
 
     <fieldset id="tool-fields">
@@ -50,5 +134,4 @@
 
     <input type="submit" value="Import"/>
 </form>
-
 {% endblock %}

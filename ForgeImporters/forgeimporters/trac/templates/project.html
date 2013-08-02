@@ -20,25 +20,13 @@
 
 {% block project_fields %}
     <div class="grid-6">
-        <label>Google Project Name</label>
+        <label>Trac URL</label>
     </div>
     <div class="grid-10">
-        <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}"/>
-        <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
-            {{c.form_errors['project_name']}}
+        <input id="trac_url" name="trac_url" value="{{c.form_values['trac_url']}}"/>
+        <div id="trac_ur_errorl" class="error{% if not c.form_errors['trac_url'] %} hidden{% endif %}">
+            {{c.form_errors['trac_url']}}
         </div>
     </div>
-
-    <div class="grid-6" style="clear:left">
-        <label>URL Name</label>
-    </div>
-    <div class="grid-10">
-        <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
-        <div id="project_shortname_error" class="error{% if not c.form_errors['project_shortname'] %} hidden{% endif %}">
-            {{c.form_errors['project_shortname']}}
-        </div>
-        <div id="project-url">
-            http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
-        </div>
-    </div>
+    {{ super() }}
 {% endblock %}
