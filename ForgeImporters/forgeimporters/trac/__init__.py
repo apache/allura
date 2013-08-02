@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -17,6 +15,3 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-if __name__ == '__main__':
-    from allura.scripts.trac_export import main
-    main()
