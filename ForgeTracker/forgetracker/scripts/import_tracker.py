@@ -25,7 +25,8 @@ from allura.lib.import_api import AlluraImportApiClient
 
 log = logging.getLogger(__name__)
 
-def import_tracker(cli, project, tool, import_options, options, doc_txt, validate=True, verbose=False):
+def import_tracker(cli, project, tool, import_options, doc_txt,
+        validate=True, verbose=False, cont=False):
     url = '/rest/p/' + project + '/' + tool
     if validate:
         url += '/validate_import'
@@ -33,8 +34,8 @@ def import_tracker(cli, project, tool, import_options, options, doc_txt, validat
         url += '/perform_import'
 
     existing_map = {}
-    if options.cont:
-        existing_tickets = cli.call('/rest/p/' + options.project + '/' + options.tracker + '/')['tickets']
+    if cont:
+        existing_tickets = cli.call('/rest/p/' + project + '/' + tool + '/')['tickets']
         for t in existing_tickets:
             existing_map[t['ticket_num']] = t['summary']
 
@@ -46,12 +47,12 @@ def import_tracker(cli, project, tool, import_options, options, doc_txt, validat
     else:
         tickets_in = doc
 
-    if options.verbose:
+    if verbose:
         print "Processing %d tickets" % len(tickets_in)
 
     for cnt, ticket_in in enumerate(tickets_in):
         if ticket_in['id'] in existing_map:
-            if options.verbose:
+            if verbose:
                 print 'Ticket id %d already exists, skipping' % ticket_in['id']
             continue
         doc_import={}
@@ -60,7 +61,7 @@ def import_tracker(cli, project, tool, import_options, options, doc_txt, validat
         doc_import['trackers']['default']['artifacts'] = [ticket_in]
         res = cli.call(url, doc=json.dumps(doc_import), options=json.dumps(import_options))
         assert res['status'] and not res['errors']
-        if options.validate:
+        if validate:
             if res['warnings']:
                 print "Ticket id %s warnings: %s" % (ticket_in['id'], res['warnings'])
         else:
@@ -93,9 +94,10 @@ class ImportTracker(ScriptTask):
         import_options['user_map'] = user_map
         cli = AlluraImportApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
         doc_txt = open(options.file_data).read()
-        import_tracker(cli, options.project, options.tracker, import_options, options, doc_txt,
+        import_tracker(cli, options.project, options.tracker, import_options, doc_txt,
                        validate=options.validate,
-                       verbose=options.verbose)
+                       verbose=options.verbose,
+                       cont=options.cont)
 
     @classmethod
     def parser(cls):
