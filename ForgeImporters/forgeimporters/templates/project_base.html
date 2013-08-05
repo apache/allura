@@ -47,7 +47,7 @@
         function suggest_name() {
             var $project_shortname = $('#project_shortname');
             if (!manual) {
-                $project_shortname.val($('#project_name').val());
+                $project_shortname.val($('#project_name').val().replace(/\s/g, '').toLowerCase());
             }
             $project_shortname.trigger('change');
         }
@@ -72,7 +72,7 @@
         }
 
         $(function() {
-            $('#project_name').focus().bind('change keyup', suggest_name);
+            $('#project_name').bind('change keyup', suggest_name);
 
             $('#project_shortname').bind('change keyup', function(event) {
                 if (event.type == 'keyup') {

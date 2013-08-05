@@ -23,7 +23,7 @@
         <label>Trac URL</label>
     </div>
     <div class="grid-10">
-        <input id="trac_url" name="trac_url" value="{{c.form_values['trac_url']}}"/>
+        <input id="trac_url" name="trac_url" value="{{c.form_values['trac_url']}}" autofocus/>
         <div id="trac_ur_errorl" class="error{% if not c.form_errors['trac_url'] %} hidden{% endif %}">
             {{c.form_errors['trac_url']}}
         </div>
