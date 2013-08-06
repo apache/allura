@@ -19,7 +19,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from pylons import tmpl_context as c
-import gdata
+#import gdata
 from ming.orm import session
 
 from allura.lib import helpers as h
