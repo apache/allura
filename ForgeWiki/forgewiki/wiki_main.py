@@ -291,12 +291,11 @@ The wiki uses [Markdown](%s) syntax.
         f.write('{"pages": [')
         pages = WM.Page.query.find(dict(
             app_config_id=self.config._id,
-            deleted=False)).all()
-        count = len(pages)
+            deleted=False))
         for i, page in enumerate(pages):
-            json.dump(page, f, cls=jsonify.GenericJSON, indent=2)
-            if i < (count - 1):
+            if i > 0:
                 f.write(',')
+            json.dump(page, f, cls=jsonify.GenericJSON, indent=2)
         f.write(']}')
 
 
