@@ -23,6 +23,18 @@ import mock
 from .. import base
 
 
+@mock.patch.object(base.ToolImporter, 'by_name')
+@mock.patch.object(base, 'c')
+def test_import_tool(c, by_name):
+    c.project = mock.Mock(name='project')
+    c.user = mock.Mock(name='user')
+    base.import_tool('importer_name', 'project_name', 'mount_point', 'mount_label')
+    by_name.assert_called_once_with('importer_name')
+    by_name.return_value.import_tool.assert_called_once_with(c.project,
+            'project_name', user=c.user, mount_point='mount_point',
+            mount_label='mount_label')
+
+
 def ep(name, source=None, importer=None, **kw):
     mep = mock.Mock(name='mock_ep', **kw)
     mep.name = name
@@ -39,7 +51,7 @@ class TestProjectImporter(TestCase):
     @mock.patch.object(base, 'iter_entry_points')
     def test_tool_importers(self, iep):
         eps = iep.return_value = [ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
-        pi = base.ProjectImporter()
+        pi = base.ProjectImporter(mock.Mock(name='neighborhood'))
         pi.source = 'foo'
         self.assertEqual(pi.tool_importers, {'ep1': eps[0].lv, 'ep3': eps[2].lv})
         iep.assert_called_once_with('allura.importers')
