@@ -54,11 +54,11 @@
                 pushed by {{ user_link(commit.committed.email, commit.committed.name) }}
                 {% endif %}
                 {{g.markdown.convert(commit.message)}}
-                {% if commit.renamed_from %}
+                {% if commit.rename_details %}
                     <div>
                       <b>renamed from</b>
-                      <a href={{commit.renamed_from['commit_url']}}log/?path={{ commit.renamed_from['path'] }}>
-                        {{ commit.renamed_from['path'] }}
+                      <a href={{commit.rename_details['commit_url']}}log/?path={{ commit.rename_details['path'] }}>
+                        {{ commit.rename_details['path'] }}
                       </a>
                     </div>
                 {% endif %}

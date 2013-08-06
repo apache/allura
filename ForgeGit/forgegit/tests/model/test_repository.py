@@ -241,7 +241,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
              'refs': ['HEAD', 'foo', 'master'],
              'size': None,
-             'renamed_from': {}},
+             'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
                           'email': u'rcopeland@geek.net',
                           'name': u'Rick Copeland'},
@@ -253,7 +253,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              'refs': [],
              'size': None,
-             'renamed_from': {}},
+             'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 43, 26),
                           'email': u'rcopeland@geek.net',
                           'name': u'Rick Copeland'},
@@ -265,7 +265,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': ['9a7df788cf800241e3bb5a849c8870f2f8259d98'],
              'refs': [],
              'size': None,
-             'renamed_from': {}},
+             'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 42, 54),
                           'email': u'rcopeland@geek.net',
                           'name': u'Rick Copeland'},
@@ -277,7 +277,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': [],
              'refs': [],
              'size': None,
-             'renamed_from': {}},
+             'rename_details': {}},
             ])
 
     def test_log_file(self):
@@ -294,7 +294,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': ['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
              'refs': ['HEAD', 'foo', 'master'],
              'size': 28,
-             'renamed_from': {}},
+             'rename_details': {}},
             {'authored': {'date': datetime.datetime(2010, 10, 7, 18, 44, 1),
                           'email': u'rcopeland@geek.net',
                           'name': u'Rick Copeland'},
@@ -306,7 +306,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'parents': ['6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
              'refs': [],
              'size': 15,
-             'renamed_from': {}},
+             'rename_details': {}},
             ])
 
     def test_commit(self):
@@ -570,8 +570,8 @@ class TestGitRename(unittest.TestCase):
         commits = list(self.repo.log(id_only=False, path='/f2.txt'))
         self.assertEqual(len(commits), 2)
         rename_commit = commits[1]
-        self.assertEqual(rename_commit['renamed_from']['path'], '/f.txt')
+        self.assertEqual(rename_commit['rename_details']['path'], '/f.txt')
         self.assertEqual(
-            rename_commit['renamed_from']['commit_url'],
+            rename_commit['rename_details']['commit_url'],
             self.repo.url_for_commit(rename_commit['id'])
         )

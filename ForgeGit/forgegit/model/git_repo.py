@@ -338,7 +338,7 @@ class GitImplementation(M.RepositoryImplementation):
                         'refs': refs,
                         'parents': [pci.hexsha for pci in ci.parents],
                         'size': size,
-                        'renamed_from': rename_details,
+                        'rename_details': rename_details,
                     }
                 if rename_details:
                     # we do not need to show commits before rename
@@ -362,24 +362,46 @@ class GitImplementation(M.RepositoryImplementation):
         of lazy-loading the commit data is probably fine.  But if this
         ends up being a bottleneck, that would be one possibile
         optimization.
+
+        Renaming
+        Detection of renaming can be implemented using diff with parent
+        with create_path=True. But taking diffs is slow. That's why
+        --name-status is added to log.
+        Then log returns something like this:
+            <commit hash>x00 <refs>
+            \n # empty line
+            R100 <renamed from path> <renamed to path> # when rename happens
+            A\t<some path> # other cases
+            D\t<some path> # other cases
+            etc
         """
         proc = self._git.git.log(*args, format='%H%x00%d', as_process=True, **kwargs)
         stream = proc.stdout
+        commit_lines = []
         while True:
-            commit_lines = [stream.readline() for _ in xrange(3)]
-            commit_line = '\x00'.join(
-                [line.strip('\n ').replace('\t', ' ') for line in commit_lines if line.strip('\n\t ')]
-            )
-            if not commit_line:
-                break
-            hexsha, decoration, name_stat = commit_line.strip().split('\x00')
-            refs = decoration.strip(' ()').split(', ') if decoration else []
-            name_stat_parts = name_stat.split(' ')
-            renamed = {}
-            if name_stat_parts[0] == 'R100':
-                renamed['from'] = name_stat_parts[1]
-                renamed['to'] = name_stat_parts[2]
-            yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
+            line = stream.readline()
+            if '\x00' in line or not(len(line)):
+                # hash line read, need to yield previous commit
+                # first, cleaning lines a bit
+                commit_lines = [
+                    ln.strip('\n\ ').replace('\t', ' ')
+                    for ln in commit_lines if ln.strip('\n ')
+                ]
+                if commit_lines:
+                    hexsha, decoration = commit_lines[0].split('\x00')
+                    refs = decoration.strip(' ()').split(', ') if decoration else []
+                    name_stat_parts = commit_lines[1].split(' ')
+                    renamed = {}
+                    if name_stat_parts[0] == 'R100':
+                        renamed['from'] = name_stat_parts[1]
+                        renamed['to'] = name_stat_parts[2]
+                    yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
+                if not(len(line)):
+                    # if all lines have been read
+                    break
+                commit_lines = [line]
+            else:
+                commit_lines.append(line)
 
     def open_blob(self, blob):
         return _OpenedGitBlob(
