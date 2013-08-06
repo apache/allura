@@ -52,7 +52,9 @@ class ProjectImportForm(schema.Schema):
 @task
 def import_tool(importer_name, project_name, mount_point=None, mount_label=None, **kw):
     importer = ToolImporter.by_name(importer_name)
-    importer.import_tool(c.project, mount_point, mount_label, **kw)
+    importer.import_tool(project=c.project, user=c.user,
+            mount_point=mount_point,
+            mount_label=mount_label, **kw)
 
 
 class ProjectImporter(BaseController):
