@@ -301,28 +301,22 @@ class GitImplementation(M.RepositoryImplementation):
         path = path.strip('/') if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
-        for ci, refs in self._iter_commits_with_refs([revs, '--', path]):
+        args = ['--name-status', revs, '--', path]
+        if path:
+            args = ['--follow'] + args
+        for ci, refs, renamed in self._iter_commits_with_refs(*args):
             if id_only:
                 yield ci.hexsha
             else:
                 size = None
-                renamed_from = {}
+                rename_details = {}
                 if path:
-                    # checking for renaming in this commit
-                    if ci.parents:
-                        # without create_path=True, renames are not detected
-                        # see diff() doc from git/diff.py
-                        diff_with_parent = ci.diff(
-                            ci.parents[0],
-                            create_patch=True
-                        )[0]
-                        # since we do diff with previous commit (not next)
-                        # rename_from and rename_to are interchanged
-                        if diff_with_parent.renamed and diff_with_parent.rename_from == path:
-                                renamed_from['path'] = '/' + diff_with_parent.rename_to
-                                renamed_from['commit_url'] = self._repo.url_for_commit(
-                                    ci.hexsha
-                                )
+                    if renamed and renamed['to'] == path:
+                        rename_details['path'] = '/' + renamed['from']
+                        rename_details['commit_url'] = self._repo.url_for_commit(
+                            ci.hexsha
+                        )
+
                     try:
                         node = ci.tree/path
                         size = node.size if node.type == 'blob' else None
@@ -344,8 +338,11 @@ class GitImplementation(M.RepositoryImplementation):
                         'refs': refs,
                         'parents': [pci.hexsha for pci in ci.parents],
                         'size': size,
-                        'renamed_from': renamed_from,
+                        'renamed_from': rename_details,
                     }
+                if rename_details:
+                    # we do not need to show commits before rename
+                    break
 
     def _iter_commits_with_refs(self, *args, **kwargs):
         """
@@ -369,12 +366,20 @@ class GitImplementation(M.RepositoryImplementation):
         proc = self._git.git.log(*args, format='%H%x00%d', as_process=True, **kwargs)
         stream = proc.stdout
         while True:
-            line = stream.readline()
-            if not line:
+            commit_lines = [stream.readline() for _ in xrange(3)]
+            commit_line = '\x00'.join(
+                [line.strip('\n ').replace('\t', ' ') for line in commit_lines if line.strip('\n\t ')]
+            )
+            if not commit_line:
                 break
-            hexsha, decoration = line.strip().split('\x00')
+            hexsha, decoration, name_stat = commit_line.strip().split('\x00')
             refs = decoration.strip(' ()').split(', ') if decoration else []
-            yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs)
+            name_stat_parts = name_stat.split(' ')
+            renamed = {}
+            if name_stat_parts[0] == 'R100':
+                renamed['from'] = name_stat_parts[1]
+                renamed['to'] = name_stat_parts[2]
+            yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
 
     def open_blob(self, blob):
         return _OpenedGitBlob(
