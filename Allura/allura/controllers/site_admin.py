@@ -30,6 +30,7 @@ import tg
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from formencode import validators, Invalid
+from webob.exc import HTTPNotFound
 
 from allura.lib import helpers as h
 from allura.lib import validators as v
@@ -321,7 +322,19 @@ class TaskManagerController(object):
             config_dict['user'] = user
         with h.push_config(c, **config_dict):
             task = task.post(*args, **kw)
-        redirect('view/%s' % task._id)
+        redirect('../view/%s' % task._id)
+
+    @expose()
+    @require_post()
+    def resubmit(self, task_id):
+        try:
+            task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
+        except bson.errors.InvalidId as e:
+            task = None
+        if task is None:
+            raise HTTPNotFound()
+        task.state = 'ready'
+        redirect('../view/%s' % task._id)
 
     @expose('json:')
     def task_doc(self, task_name):

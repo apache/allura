@@ -66,6 +66,9 @@
     #task_details td.second-column {
         border: 0;
     }
+    #resubmit-task-form {
+        float: right;
+    }
 </style>
 {% endblock %}
 
@@ -73,6 +76,11 @@
 {% if not task %}
     Task not found
 {% else %}
+    {% if task.state in ['error', 'complete'] %}
+    <form id="resubmit-task-form" action="../resubmit/{{task._id}}" method="POST">
+        <input type="submit" value="Re-Submit Task" />
+    </form>
+    {% endif %}
     <h2>Task Details</h2>
     <table id="task_details">
         <tr>

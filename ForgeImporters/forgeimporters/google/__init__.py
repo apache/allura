@@ -19,6 +19,7 @@ import re
 import urllib
 from urlparse import urlparse, urljoin
 from collections import defaultdict
+from contextlib import closing
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -33,13 +34,32 @@ from forgeimporters.base import ProjectExtractor
 
 log = logging.getLogger(__name__)
 
+def _as_text(node, chunks=None):
+    """
+    Similar to node.text, but preserves whitespace around tags,
+    and converts <br/>s to \n.
+    """
+    if chunks is None:
+        chunks = []
+    for n in node:
+        if isinstance(n, basestring):
+            chunks.append(n)
+        elif n.name == 'br':
+            chunks.append('\n')
+        else:
+            _as_text(n, chunks)
+    return ''.join(chunks)
+
+
 class GoogleCodeProjectExtractor(ProjectExtractor):
     BASE_URL = 'http://code.google.com'
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 
     PAGE_MAP = {
-            'project_info': BASE_URL + '/p/%s/',
-            'source_browse': BASE_URL + '/p/%s/source/browse/',
+            'project_info': BASE_URL + '/p/{project_name}/',
+            'source_browse': BASE_URL + '/p/{project_name}/source/browse/',
+            'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&start={start}',
+            'issue': BASE_URL + '/p/{project_name}/issues/detail?id={issue_id}',
         }
 
     LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
@@ -57,16 +77,16 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
-    def __init__(self, allura_project, gc_project_name, page=None):
-        self.project = allura_project
-        self.gc_project_name = gc_project_name
+    def __init__(self, project_name, page_name=None, **kw):
+        self.url = self.PAGE_MAP[page_name].format(
+        self.project_name = project_name
         self._page_cache = {}
         self.url = None
         self.page = None
-        if page:
-            self.get_page(page)
+        if page_name:
+            self.get_page(page_name, **kw)
 
-    def get_page(self, page_name_or_url):
+    def get_page(self, page_name_or_url, **kw):
         """Return a Beautiful soup object for the given page name or url.
 
         If a page name is provided, the associated url is looked up in
@@ -77,27 +97,33 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         request.
 
         """
-        if page_name_or_url in self._page_cache:
-            return self._page_cache[page_name_or_url]
-        self.url = (self.get_page_url(page_name_or_url) if page_name_or_url in
-                self.PAGE_MAP else page_name_or_url)
-        self.page = self._page_cache[page_name_or_url] = \
-                BeautifulSoup(self.urlopen(self.url))
+        if page_name_or_url in self.PAGE_MAP:
+            self.url = self.get_page_url(page_name_or_url, **kw)
+        else:
+            self.url = page_name_or_url
+        if self.url in self._page_cache:
+            self.page = self._page_cache[self.url]
+        else:
+            self.page = self._page_cache[page_name_or_url] = \
+                    BeautifulSoup(self.urlopen(self.url))
         return self.page
 
-    def get_page_url(self, page_name):
+    def get_page_url(self, page_name, **kw):
         """Return the url associated with ``page_name``.
 
         Raises KeyError if ``page_name`` is not in :attr:`PAGE_MAP`.
 
         """
-        return self.PAGE_MAP[page_name] % urllib.quote(self.gc_project_name)
+        return self.PAGE_MAP[page_name].format(
+            project_name = urllib.quote(self.project_name),
+            **kw,
+        )
 
-    def get_short_description(self):
+    def get_short_description(self, project):
         page = self.get_page('project_info')
-        self.project.short_description = page.find(itemprop='description').string.strip()
+        project.short_description = page.find(itemprop='description').string.strip()
 
-    def get_icon(self):
+    def get_icon(self, project):
         page = self.get_page('project_info')
         icon_url = urljoin(self.url, page.find(itemprop='image').attrMap['src'])
         if icon_url == self.DEFAULT_ICON:
@@ -109,13 +135,13 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             icon_name, fp,
             fp_ish.info()['content-type'].split(';')[0],  # strip off charset=x extra param,
             square=True, thumbnail_size=(48,48),
-            thumbnail_meta={'project_id': self.project._id, 'category': 'icon'})
+            thumbnail_meta={'project_id': project._id, 'category': 'icon'})
 
-    def get_license(self):
+    def get_license(self, project):
         page = self.get_page('project_info')
         license = page.find(text='Code license').findNext().find('a').string.strip()
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
-        self.project.trove_license.append(trove._id)
+        project.trove_license.append(trove._id)
 
     def get_repo_type(self):
         page = self.get_page('source_browse')
@@ -128,3 +154,109 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             return re_match.group(0)
         else:
             raise Exception("Unknown repo type: {0}".format(repo_type.text))
+
+    @classmethod
+    def _get_issue_ids_page(cls, project_name, start):
+        url = cls.PAGE_MAP['issues_csv'].format(project_name=project_name, start=start)
+        with closing(urllib2.urlopen(url)) as fp:
+            lines = fp.readlines()[1:]  # skip CSV header
+            if not lines[-1].startswith('"'):
+                lines.pop()  # skip "next page here" info footer
+        issue_ids = [line.strip('",\n') for line in lines]
+        return issue_ids
+
+    @classmethod
+    def iter_issues(cls, project_name):
+        """
+        Iterate over all issues for a project,
+        using paging to keep the responses reasonable.
+        """
+        start = 0
+        limit = 100
+
+        while True:
+            issue_ids = cls._get_issue_ids_page(project_name, start)
+            if len(issue_ids) <= 0:
+                return
+            for issue_id in issue_ids:
+                yield cls(project_name, 'issue', issue_id=issue_id)
+            start += limit
+
+    def get_issue_summary(self):
+        return self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
+
+    def get_issue_description(self):
+        return _as_text(self.page.find(id='hc0').pre)
+
+    def get_issue_created_date(self):
+        return self.page.find(id='hc0').find('span', 'date').get('title')
+
+    def get_issue_mod_date(self):
+        last_update = Comment(self.page.findAll('div', 'issuecomment')[-1])
+        return last_update.created_date
+
+    def get_issue_creator(self):
+        a = self.page.find(id='hc0').find('a', 'userlink')
+        return UserLink(a)
+
+    def get_issue_status(self):
+        return self.page.find(id='issuemeta').find('th', text=re.compile('Status:')).findNext().span.string.strip()
+
+    def get_issue_owner(self):
+        return UserLink(self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().a)
+
+    def get_issue_labels(self):
+        label_nodes = self.page.find(id='issuemeta').findAll('a', 'label')
+        return [_as_text(l) for l in label_nodes]
+
+    def get_issue_attachments(self):
+        attachments = self.page.find(id='hc0').find('div', 'attachments')
+        if attachments:
+            return map(Attachment, attachments.findAll('tr'))
+        else:
+            return []
+
+    def iter_comments(self):
+        for comment in self.page.findAll('div', 'issuecomment'):
+            yield Comment(comment)
+
+class UserLink(object):
+    def __init__(self, tag):
+        self.name = tag.string.strip()
+        self.link = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+
+class Comment(object):
+    def __init__(self, tag):
+        self.author = UserLink(tag.find('span', 'author').find('a', 'userlink'))
+        self.created_date = tag.find('span', 'date').get('title')
+        self.body = _as_text(tag.find('pre'))
+        self._get_updates(tag)
+        self._get_attachments(tag)
+
+    def _get_updates(self, tag):
+        _updates = tag.find('div', 'updates')
+        if _updates:
+            _strings = _updates.findAll(text=True)
+            updates = (s.strip() for s in _strings if s.strip())
+            self.updates = {field: updates.next() for field in updates}
+        else:
+            self.updates = {}
+
+    def _get_attachments(self, tag):
+        attachments = tag.find('div', 'attachments')
+        if attachments:
+            self.attachments = map(Attachment, attachments.findAll('tr'))
+        else:
+            self.attachments = []
+
+class Attachment(object):
+    def __init__(self, tag):
+        self.filename = _as_text(tag).strip().split()[0]
+        self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.a.get('href'))
+        self.type = None
+
+    @property
+    def file(self):
+        fp_ish = urllib2.urlopen(self.url)
+        fp = StringIO(fp_ish.read())
+        return fp

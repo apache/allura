@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from datetime import datetime
 from operator import itemgetter
 from unittest import TestCase
 import mock
@@ -24,10 +25,11 @@ from ...google import tracker
 
 class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker, 'c')
+    @mock.patch.object(tracker, 'ThreadLocalORMSession')
     @mock.patch.object(tracker, 'session')
     @mock.patch.object(tracker, 'TM')
-    @mock.patch.object(tracker, 'GDataAPIExtractor')
-    def test_import_tool(self, gdata, TM, session, c):
+    @mock.patch.object(tracker, 'GoogleCodeProjectExtractor')
+    def test_import_tool(self, gpe, TM, session, tlos, c):
         importer = tracker.GoogleCodeTrackerImporter()
         importer.process_fields = mock.Mock()
         importer.process_labels = mock.Mock()
@@ -35,16 +37,14 @@ class TestTrackerImporter(TestCase):
         importer.postprocess_custom_fields = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
-        extractor = gdata.return_value
-        issues = extractor.iter_issues.return_value = [mock.Mock(), mock.Mock()]
+        issues = gpe.iter_issues.return_value = [mock.Mock(), mock.Mock()]
         tickets = TM.Ticket.new.side_effect = [mock.Mock(), mock.Mock()]
-        comments = extractor.iter_comments.side_effect = [mock.Mock(), mock.Mock()]
 
         importer.import_tool(project, user, project_name='project_name',
                 mount_point='mount_point', mount_label='mount_label')
 
-        project.install_app.assert_called_once_with('tracker', 'mount_point', 'mount_label')
-        gdata.assert_called_once_with('project_name')
+        project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label')
+        gpe.iter_issues.assert_called_once_with('project_name')
         self.assertEqual(importer.process_fields.call_args_list, [
                 mock.call(tickets[0], issues[0]),
                 mock.call(tickets[1], issues[1]),
@@ -54,26 +54,16 @@ class TestTrackerImporter(TestCase):
                 mock.call(tickets[1], issues[1]),
             ])
         self.assertEqual(importer.process_comments.call_args_list, [
-                mock.call(tickets[0], comments[0]),
-                mock.call(tickets[1], comments[1]),
+                mock.call(tickets[0], issues[0]),
+                mock.call(tickets[1], issues[1]),
             ])
-        self.assertEqual(extractor.iter_comments.call_args_list, [
-                mock.call(issues[0]),
-                mock.call(issues[1]),
-            ])
-        self.assertEqual(session.call_args_list, [
-                mock.call(tickets[0]),
-                mock.call(tickets[0]),
-                mock.call(tickets[1]),
-                mock.call(tickets[1]),
-                mock.call(app),
-                mock.call(app.globals),
+        self.assertEqual(tlos.flush_all.call_args_list, [
+                mock.call(),
+                mock.call(),
             ])
         self.assertEqual(session.return_value.flush.call_args_list, [
                 mock.call(tickets[0]),
                 mock.call(tickets[1]),
-                mock.call(app),
-                mock.call(app.globals),
             ])
         self.assertEqual(session.return_value.expunge.call_args_list, [
                 mock.call(tickets[0]),
@@ -119,30 +109,37 @@ class TestTrackerImporter(TestCase):
 
     def test_process_fields(self):
         ticket = mock.Mock()
+        def _user(l):
+            u = mock.Mock()
+            u.name = '%sname' % l
+            u.link = '%slink' % l
+            return u
         issue = mock.Mock(
-                summary='summary',
-                description='description',
-                status='status',
-                created_date='created_date',
-                mod_date='mod_date',
+                get_issue_summary=lambda:'summary',
+                get_issue_description=lambda:'description',
+                get_issue_status=lambda:'status',
+                get_issue_created_date=lambda:'created_date',
+                get_issue_mod_date=lambda:'mod_date',
+                get_issue_creator=lambda:_user('c'),
+                get_issue_owner=lambda:_user('o'),
             )
         importer = tracker.GoogleCodeTrackerImporter()
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'summary')
-            self.assertEqual(ticket.description, 'description')
+            self.assertEqual(ticket.description, '*Originally created by:* [cname](clink)\n*Originally owned by:* [oname](olink)\n\ndescription')
             self.assertEqual(ticket.status, 'status')
             self.assertEqual(ticket.created_date, 'created_date')
             self.assertEqual(ticket.mod_date, 'mod_date')
             self.assertEqual(dt.strptime.call_args_list, [
-                    mock.call('created_date', ''),
-                    mock.call('mod_date', ''),
+                    mock.call('created_date', '%c'),
+                    mock.call('mod_date', '%c'),
                 ])
 
     def test_process_labels(self):
         ticket = mock.Mock(custom_fields={}, labels=[])
-        issue = mock.Mock(labels=['Foo-Bar', 'Baz', 'Foo-Qux'])
+        issue = mock.Mock(get_issue_labels=lambda:['Foo-Bar', 'Baz', 'Foo-Qux'])
         importer = tracker.GoogleCodeTrackerImporter()
         importer.custom_field = mock.Mock(side_effect=lambda n: {'name': '_%s' % n.lower(), 'options': set()})
         importer.process_labels(ticket, issue)
@@ -156,40 +153,49 @@ class TestTrackerImporter(TestCase):
             a.link = 'author%s_link' % n
             return a
         ticket = mock.Mock()
-        comments = [
+        issue = mock.Mock()
+        comments = issue.iter_comments.return_value = [
                 mock.Mock(
                     author=_author(1),
-                    text='text1',
+                    body='text1',
                     attachments='attachments1',
+                    created_date='Mon Jul 15 00:00:00 2013',
                 ),
                 mock.Mock(
                     author=_author(2),
-                    text='text2',
+                    body='text2',
                     attachments='attachments2',
+                    created_date='Mon Jul 16 00:00:00 2013',
                 ),
             ]
-        comments[0].updates.items.return_value = [('Foo', 'Bar'), ('Baz', 'Qux')]
+        comments[0].updates.items.return_value = [('Foo:', 'Bar'), ('Baz:', 'Qux')]
         comments[1].updates.items.return_value = []
+        posts = ticket.discussion_thread.add_post.side_effect = [
+                mock.Mock(),
+                mock.Mock(),
+            ]
         importer = tracker.GoogleCodeTrackerImporter()
-        importer.process_comments(ticket, comments)
-        self.assertEqual(ticket.thread.add_post.call_args_list[0], mock.call(
-                text='Originally posted by: [author1](author1_link)\n'
+        importer.process_comments(ticket, issue)
+        self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
+                text='*Originally posted by:* [author1](author1_link)\n'
                 '\n'
                 'text1\n'
                 '\n'
-                '*Foo*: Bar\n'
-                '*Baz*: Qux'
+                '**Foo:** Bar\n'
+                '**Baz:** Qux'
             ))
-        self.assertEqual(ticket.thread.add_post.call_args_list[1], mock.call(
-                text='Originally posted by: [author2](author2_link)\n'
+        self.assertEqual(posts[0].created_date, datetime(2013, 7, 15))
+        self.assertEqual(posts[0].timestamp, datetime(2013, 7, 15))
+        posts[0].add_multiple_attachments.assert_called_once_with('attachments1')
+        self.assertEqual(ticket.discussion_thread.add_post.call_args_list[1], mock.call(
+                text='*Originally posted by:* [author2](author2_link)\n'
                 '\n'
                 'text2\n'
                 '\n'
             ))
-        self.assertEqual(ticket.thread.add_post.return_value.add_multiple_attachments.call_args_list, [
-                mock.call('attachments1'),
-                mock.call('attachments2'),
-            ])
+        self.assertEqual(posts[1].created_date, datetime(2013, 7, 16))
+        self.assertEqual(posts[1].timestamp, datetime(2013, 7, 16))
+        posts[1].add_multiple_attachments.assert_called_once_with('attachments2')
 
     @mock.patch.object(tracker, 'c')
     def test_postprocess_custom_fields(self, c):

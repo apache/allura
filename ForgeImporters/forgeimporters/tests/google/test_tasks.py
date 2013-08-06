@@ -26,8 +26,8 @@ from ...google import tasks
 def test_import_project_info(c, session, gpe):
     c.project = mock.Mock(name='project')
     tasks.import_project_info('my-project')
-    gpe.assert_called_once_with(c.project, 'my-project', 'project_info')
-    gpe.return_value.get_short_description.assert_called_once_with()
-    gpe.return_value.get_icon.assert_called_once_with()
-    gpe.return_value.get_license.assert_called_once_with()
+    gpe.assert_called_once_with('my-project', 'project_info')
+    gpe.return_value.get_short_description.assert_called_once_with(c.project)
+    gpe.return_value.get_icon.assert_called_once_with(c.project)
+    gpe.return_value.get_license.assert_called_once_with(c.project)
     session.flush_all.assert_called_once_with()

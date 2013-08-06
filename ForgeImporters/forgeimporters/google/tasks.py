@@ -27,9 +27,9 @@ from . import GoogleCodeProjectExtractor
 
 @task
 def import_project_info(project_name):
-    extractor = GoogleCodeProjectExtractor(c.project, project_name, 'project_info')
-    extractor.get_short_description()
-    extractor.get_icon()
-    extractor.get_license()
+    extractor = GoogleCodeProjectExtractor(project_name, 'project_info')
+    extractor.get_short_description(c.project)
+    extractor.get_icon(c.project)
+    extractor.get_license(c.project)
     ThreadLocalORMSession.flush_all()
     g.post_event('project_updated')
