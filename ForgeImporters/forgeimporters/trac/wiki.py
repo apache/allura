@@ -68,7 +68,7 @@ class TracWikiImportController(BaseController):
     @require_post()
     @validate(TracWikiImportSchema(), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, **kw):
-        app = TracWikiImporter.import_tool(c.project,
+        app = TracWikiImporter().import_tool(c.project,
                 mount_point=mount_point,
                 mount_label=mount_label,
                 trac_url=trac_url,

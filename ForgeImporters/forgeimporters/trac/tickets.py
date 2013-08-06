@@ -69,7 +69,7 @@ class TracTicketImportController(BaseController):
     @require_post()
     @validate(TracTicketImportSchema(), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, **kw):
-        app = TracTicketImporter.import_tool(c.project,
+        app = TracTicketImporter().import_tool(c.project,
                 mount_point=mount_point,
                 mount_label=mount_label,
                 trac_url=trac_url,

@@ -84,6 +84,7 @@ class TestTracTicketImportController(TestController, TestCase):
     @patch('forgeimporters.trac.tickets.TracTicketImporter')
     def test_create(self, importer):
         from allura import model as M
+        importer = importer.return_value
         importer.import_tool.return_value = Mock()
         importer.import_tool.return_value.url.return_value = '/p/test/mymount'
         params = dict(trac_url='http://example.com/trac/url',
