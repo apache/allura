@@ -17,7 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-
+import logging
 import sys
 import csv
 import urlparse
@@ -34,6 +34,8 @@ from html2text import html2text
 from BeautifulSoup import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
+
+log = logging.getLogger(__name__)
 
 
 def parse_options():
@@ -66,7 +68,7 @@ class TracExport(object):
         'owner': 'assigned_to',
     }
 
-    def __init__(self, base_url, start_id=1):
+    def __init__(self, base_url, start_id=1, verbose=False, do_attachments=True):
         """start_id - start with at least that ticket number (actual returned
                       ticket may have higher id if we don't have access to exact
                       one).
@@ -78,6 +80,9 @@ class TracExport(object):
         self.ticket_map = {}
         self.start_id = start_id
         self.page = (start_id - 1) / self.PAGE_SIZE + 1
+        self.verbose = verbose
+        self.do_attachments = do_attachments
+        self.exhausted = False
         self.ticket_queue = self.next_ticket_ids()
 
     def remap_fields(self, dict):
@@ -98,9 +103,9 @@ class TracExport(object):
         glue = '&' if '?' in suburl else '?'
         return  url + glue + 'format=' + type
 
-    @staticmethod
-    def log_url(url):
-        if options.verbose:
+    def log_url(self, url):
+        log.info(url)
+        if self.verbose:
             print >>sys.stderr, url
 
     @classmethod
@@ -198,7 +203,7 @@ class TracExport(object):
         '''
         t = self.parse_ticket_body(id)
         t['comments'] = self.parse_ticket_comments(id)
-        if options.do_attachments:
+        if self.do_attachments:
             atts = self.parse_ticket_attachments(id)
             if atts:
                 t['attachments'] = atts
@@ -230,6 +235,9 @@ class TracExport(object):
                 res.append((id, extra))
         self.page += 1
 
+        if len(res) < self.PAGE_SIZE:
+            self.exhausted = True
+
         return res
 
     def __iter__(self):
@@ -238,7 +246,7 @@ class TracExport(object):
     def next(self):
         while True:
             # queue empty, try to fetch more
-            if len(self.ticket_queue) == 0:
+            if len(self.ticket_queue) == 0 and not self.exhausted:
                 self.ticket_queue = self.next_ticket_ids()
             # there aren't any more, we're really done
             if len(self.ticket_queue) == 0:
@@ -258,7 +266,8 @@ class DateJSONEncoder(json.JSONEncoder):
 
 def main():
     options, args = parse_options()
-    ex = TracExport(args[0], start_id=options.start_id)
+    ex = TracExport(args[0], start_id=options.start_id,
+            verbose=options.verbose, do_attachments=options.do_attachments)
     # Implement iterator sequence limiting using islice()
     doc = [t for t in islice(ex, options.limit)]
 
