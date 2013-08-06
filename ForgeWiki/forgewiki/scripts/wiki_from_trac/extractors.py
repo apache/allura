@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import logging
 import re
 import sys
 import json
@@ -35,6 +36,8 @@ except:
     pass
 
 from BeautifulSoup import BeautifulSoup
+
+log = logging.getLogger(__name__)
 
 
 class WikiExporter(object):
@@ -114,6 +117,7 @@ class WikiExporter(object):
         out.write('\n')
 
     def log(self, msg):
+        log.info(msg)
         if self.options.verbose:
             print >>sys.stderr, msg
 

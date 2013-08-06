@@ -101,6 +101,7 @@ class GoogleRepoImporter(ToolImporter):
     tool_description = 'Import your SVN, Git, or Hg repo from Google Code'
 
     def import_tool(self, project, project_name, mount_point=None, mount_label=None):
+    def import_tool(self, project, project_name, mount_point=None, mount_label=None, **kw):
         """ Import a Google Code repo into a new SVN, Git, or Hg Allura tool.
 
         """

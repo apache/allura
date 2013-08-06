@@ -25,6 +25,7 @@ import tempfile
 import formencode as fe
 from formencode import validators as fev
 
+from ming.orm import session
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from tg import (
@@ -83,25 +84,32 @@ class TracWikiImporter(ToolImporter):
     tool_description = 'Import your wiki from Trac'
 
     def import_tool(self, project=None, mount_point=None, mount_label=None,
-            trac_url=None, user=None):
+            trac_url=None, user=None, **kw):
         """ Import Trac wiki into a new Allura Wiki tool.
 
         """
+        trac_url = trac_url.rstrip('/') + '/'
         mount_point = mount_point or 'wiki'
         app = project.install_app(
                 'Wiki',
                 mount_point=mount_point,
                 mount_label=mount_label or 'Wiki',
                 )
+        session(app.config).flush(app.config)
         api_ticket = ApiTicket(user_id=user._id,
                 capabilities={"import": ["Projects", project.shortname]},
                 expires=datetime.utcnow() + timedelta(minutes=60))
+        session(api_ticket).flush(api_ticket)
         options = argparse.Namespace()
         options.api_key = api_ticket.api_key
         options.secret_key = api_ticket.secret_key
         options.project = project.shortname
         options.wiki = mount_point
         options.base_url = config['base_url']
+        options.verbose = False
+        options.converter = 'html2text'
+        options.import_opts = []
+        options.user_map_file = None
         with tempfile.NamedTemporaryFile() as f:
             WikiExporter(trac_url, options).export(f)
             f.flush()
