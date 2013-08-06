@@ -193,11 +193,10 @@ class ForgeBlogApp(Application):
     def bulk_export(self, f):
         f.write('{"posts": [')
         posts = BM.BlogPost.query.find(dict(app_config_id=self.config._id)).sort('timestamp', pymongo.DESCENDING)
-        count = len(posts)
         for i, post in enumerate(posts):
-            json.dump(post, f, cls=jsonify.GenericJSON, indent=2)
-            if i < (count - 1):
+            if i > 0:
                 f.write(',')
+            json.dump(post, f, cls=jsonify.GenericJSON, indent=2)
         f.write(']}')
 
 class RootController(BaseController, FeedController):

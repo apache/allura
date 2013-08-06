@@ -412,12 +412,11 @@ class ForgeTrackerApp(Application):
         f.write('{"tickets": [')
         tickets = TM.Ticket.query.find(dict(
             app_config_id=self.config._id,
-            deleted=False)).all()
-        count = len(tickets)
+            deleted=False))
         for i, ticket in enumerate(tickets):
-            json.dump(ticket, f, cls=jsonify.GenericJSON, indent=2)
-            if i < (count - 1):
+            if i > 0:
                 f.write(',')
+            json.dump(ticket, f, cls=jsonify.GenericJSON, indent=2)
         f.write('],\n"tracker_config":')
         json.dump(self.config, f, cls=jsonify.GenericJSON, indent=2)
         f.write(',\n"milestones":')

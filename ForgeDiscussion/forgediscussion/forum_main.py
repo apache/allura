@@ -219,12 +219,11 @@ class ForgeDiscussionApp(Application):
 
     def bulk_export(self, f):
         f.write('{"forums": [')
-        forums = DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING).all()
-        count = len(forums)
+        forums = DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING)
         for i, forum in enumerate(forums):
-            json.dump(forum, f, cls=jsonify.GenericJSON, indent=2)
-            if i < (count - 1):
+            if i > 0:
                 f.write(',')
+            json.dump(forum, f, cls=jsonify.GenericJSON, indent=2)
         f.write(']}')
 
 class ForumAdminController(DefaultAdminController):
