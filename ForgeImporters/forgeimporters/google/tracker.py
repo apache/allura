@@ -20,6 +20,7 @@ from datetime import datetime
 
 from pylons import tmpl_context as c
 #import gdata
+gdata = None
 from ming.orm import session
 
 from allura.lib import helpers as h
@@ -156,8 +157,8 @@ class GDataAPIExtractor(object):
         client = gdata.projecthosting.client.ProjectHostingClient()
         while True:
             query = gdata.projecthosting.client.Query(start_index=start, max_results=limit)
-            issues = client.get_comments(self.project_name, query=query).entry
-            if len(issues) <= 0:
+            comments = client.get_comments(self.project_name, query=query).entry
+            if len(comments) <= 0:
                 return
             for comment in comments:
                 yield GDataAPIComment(comment)
