@@ -301,10 +301,7 @@ class GitImplementation(M.RepositoryImplementation):
         path = path.strip('/') if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
-        args = [revs, '--', path]
-        if path:
-            args.append('--follow')
-        for ci, refs in self._iter_commits_with_refs(*args):
+        for ci, refs in self._iter_commits_with_refs([revs, '--', path]):
             if id_only:
                 yield ci.hexsha
             else:
@@ -312,29 +309,17 @@ class GitImplementation(M.RepositoryImplementation):
                 renamed_from = {}
                 if path:
                     # checking for renaming in this commit
-                    # log is called with follow, so there should be all commits
-                    # even before renaming
                     if ci.parents:
-                        diffs_with_parent = ci.diff(ci.parents[0])
-                        deleted_file_diffs = []
-                        renamed = False
-                        for diff in diffs_with_parent:
-                            if not diff.b_mode and not diff.b_blob:
-                                #new file was created
-                                if diff.a_blob.name == os.path.basename(path):
-                                    renamed = True
-                            if not diff.a_mode and not diff.a_blob:
-                                #file was deleted
-                                deleted_file_diffs.append(diff)
-                        if renamed:
-                            if len(deleted_file_diffs) > 1:
-                                log.info('Couldn\'t find if file was renamed: too many deletions')
-                            elif len(deleted_file_diffs) == 1:
-                                deleted_diff = deleted_file_diffs[0]
-                                renamed_from['path'] = '{}/{}'.format(
-                                    os.path.dirname(path),
-                                    deleted_diff.b_blob.name,
-                                )
+                        # without create_path=True, renames are not detected
+                        # see diff() doc from git/diff.py
+                        diff_with_parent = ci.diff(
+                            ci.parents[0],
+                            create_patch=True
+                        )[0]
+                        # since we do diff with previous commit (not next)
+                        # rename_from and rename_to are interchanged
+                        if diff_with_parent.renamed and diff_with_parent.rename_from == path:
+                                renamed_from['path'] = '/' + diff_with_parent.rename_to
                                 renamed_from['commit_url'] = self._repo.url_for_commit(
                                     ci.hexsha
                                 )
@@ -361,10 +346,6 @@ class GitImplementation(M.RepositoryImplementation):
                         'size': size,
                         'renamed_from': renamed_from,
                     }
-                if renamed_from:
-                    # if file was renamed, do not yield commits
-                    # before renaming
-                    break
 
     def _iter_commits_with_refs(self, *args, **kwargs):
         """
