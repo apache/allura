@@ -99,6 +99,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
         except IndexError:
             title = None
 
+        classes = ''
         if href:
             if href == 'TOC':
                 return '[TOC]'  # skip TOC
