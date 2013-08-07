@@ -105,7 +105,7 @@ class GoogleRepoImporter(ToolImporter):
         """ Import a Google Code repo into a new SVN, Git, or Hg Allura tool.
 
         """
-        extractor = GoogleCodeProjectExtractor(project, project_name, 'source_browse')
+        extractor = GoogleCodeProjectExtractor(project_name, 'source_browse')
         repo_type = extractor.get_repo_type()
         repo_url = get_repo_url(project_name, repo_type)
         app = project.install_app(
