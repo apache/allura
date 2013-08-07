@@ -50,11 +50,10 @@ class TestWikiTicketImporter(TestCase):
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        res = importer.import_tool(project=project,
+        res = importer.import_tool(project, user,
                 mount_point='pages',
                 mount_label='Pages',
-                trac_url='http://example.com/trac/url',
-                user=user)
+                trac_url='http://example.com/trac/url')
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
                 'Wiki', mount_point='pages', mount_label='Pages')

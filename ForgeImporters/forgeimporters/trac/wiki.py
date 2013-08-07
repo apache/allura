@@ -68,11 +68,10 @@ class TracWikiImportController(BaseController):
     @require_post()
     @validate(TracWikiImportSchema(), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, **kw):
-        app = TracWikiImporter().import_tool(c.project,
+        app = TracWikiImporter().import_tool(c.project, c.user,
                 mount_point=mount_point,
                 mount_label=mount_label,
-                trac_url=trac_url,
-                user=c.user)
+                trac_url=trac_url)
         redirect(app.url())
 
 
@@ -83,8 +82,8 @@ class TracWikiImporter(ToolImporter):
     tool_label = 'Trac Wiki Importer'
     tool_description = 'Import your wiki from Trac'
 
-    def import_tool(self, project=None, mount_point=None, mount_label=None,
-            trac_url=None, user=None, **kw):
+    def import_tool(self, project, user, project_name=None, mount_point=None,
+            mount_label=None, trac_url=None, **kw):
         """ Import Trac wiki into a new Allura Wiki tool.
 
         """
