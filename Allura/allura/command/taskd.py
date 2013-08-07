@@ -98,11 +98,6 @@ class TaskdCommand(base.Command):
         if only:
             only = only.split(',')
 
-        # errors get logged via regular logging and also recorded into the mongo task record
-        # so this is generally not needed, and only present to avoid errors within
-        # weberror's ErrorMiddleware if the default error stream (stderr?) doesn't work
-        wsgi_error_log = open(pylons.config.get('taskd.wsgi_log', '/dev/null'), 'a')
-
         def start_response(status, headers, exc_info=None):
             pass
 
@@ -143,7 +138,6 @@ class TaskdCommand(base.Command):
                             # Build the (fake) request
                             r = Request.blank('/--%s--/%s/' % (self.task.task_name, self.task._id),
                                               {'task': self.task,
-                                               'wsgi.errors': wsgi_error_log,  # ErrorMiddleware records error details here
                                                })
                             list(wsgi_app(r.environ, start_response))
                             self.task = None
@@ -153,8 +147,6 @@ class TaskdCommand(base.Command):
                     time.sleep(10)
                 else:
                     base.log.exception('taskd error %s' % e)
-            finally:
-                wsgi_error_log.flush()
         base.log.info('taskd pid %s stopping gracefully.' % os.getpid())
 
         if self.restart_when_done:
