@@ -582,15 +582,43 @@ class DefaultAdminController(BaseController):
         """
         permanent_redirect('permissions')
 
+    @expose()
+    def edit_block_user(self, user_id='', perm=''):
+        log.error(self.app.config.block_user[perm])
+        self.app.config.block_user[perm].remove(ObjectId(user_id))
+        return redirect(request.referer)
+
+    @expose()
+    def block_user(self, user_name, perm):
+        user = model.User.by_username(user_name)
+        if not user:
+            flash('User "%s" not found' % user_name, 'error')
+            return redirect(request.referer)
+
+        if perm not in self.app.config.block_user:
+            self.app.config.block_user[perm] = []
+        if user._id not in self.app.config.block_user[perm]:
+            self.app.config.block_user[perm].append(user._id)
+        return redirect(request.referer)
+
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash
     def permissions(self):
         """Render the permissions management web page.
 
         """
-        from ext.admin.widgets import PermissionCard
+        from ext.admin.widgets import PermissionCard, BlockUser, BlockList
         c.card = PermissionCard()
+        c.block_user = BlockUser()
+        c.block_list = BlockList()
         permissions = dict((p, []) for p in self.app.permissions)
+        block_list = {}
+
+        for perm, users in self.app.config.block_user.items():
+            block_list[perm] = [[user._id, user.username] for user in model.User.query.find(dict(_id={'$in': users}))]
+
+
+
         for ace in self.app.config.acl:
             if ace.access == model.ACE.ALLOW:
                 try:
@@ -601,7 +629,8 @@ class DefaultAdminController(BaseController):
         return dict(
             app=self.app,
             allow_config=has_access(c.project, 'admin')(),
-            permissions=permissions)
+            permissions=permissions,
+            block_list=block_list)
 
     @expose('jinja:allura:templates/app_admin_edit_label.html')
     def edit_label(self):

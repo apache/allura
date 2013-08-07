@@ -203,3 +203,18 @@ class AuditLog(ew_core.Widget):
         for f in self.fields:
             for r in f.resources():
                 yield r
+
+
+class BlockUser(ffw.Lightbox):
+    defaults = dict(
+            ffw.Lightbox.defaults,
+            name='block-user-modal',
+            trigger='a.block-user',
+            content_template='allura.ext.admin:templates/widgets/block_user.html')
+
+class BlockList(ffw.Lightbox):
+    defaults = dict(
+            ffw.Lightbox.defaults,
+            name='block-list-modal',
+            trigger='a.block-list',
+            content_template='allura.ext.admin:templates/widgets/block_list.html')

@@ -47,7 +47,8 @@
             id=name,
             name=name,
             desc=app.describe_permission(name),
-            items=h.make_roles(ids)
+            items=h.make_roles(ids),
+            block_list = block_list
         )}}
         {% endfor %}
         <br style="clear:both"/>
@@ -61,3 +62,23 @@
     </form>
   {%endif%}
 {% endblock %}
+{% block extra_js %}
+  {{c.block_user.display()}}
+  {{c.block_list.display()}}
+<script type="text/javascript">
+  $('a.block-user').click(function(){
+      var block_user = $('#block_user');
+      var deck =  $(this).closest('ul.deck');
+      var role = deck.find('li.tcenter h3').text();
+      $('input.block_user_role').val(role);
+  });
+  $('a.block-list').click(function(){
+      var userlist = $(this).find('div.block-list').clone();
+      var deck =  $(this).closest('ul.deck');
+      var role = deck.find('li.tcenter h3').text();
+      $('input.block_user_role').val(role);
+      $('div.model-block-list').html(userlist.html());
+  });
+</script>
+{% endblock %}
+

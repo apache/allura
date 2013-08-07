@@ -942,6 +942,7 @@ class AppConfig(MappedClass):
     tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
 
     acl = FieldProperty(ACL())
+    block_user = FieldProperty({str: [None]})
 
     def get_tool_data(self, tool, key, default=None):
         return self.tool_data.get(tool, {}).get(key, default)
