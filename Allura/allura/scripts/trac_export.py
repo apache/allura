@@ -30,7 +30,6 @@ from itertools import islice
 from datetime import datetime
 
 import feedparser
-from html2text import html2text
 from BeautifulSoup import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
@@ -141,6 +140,7 @@ class TracExport(object):
 
     def parse_ticket_comments(self, id):
         # Use RSS export to get ticket comments
+        from html2text import html2text
         url = self.full_url(self.TICKET_URL % id, 'rss')
         self.log_url(url)
         d = feedparser.parse(url)
