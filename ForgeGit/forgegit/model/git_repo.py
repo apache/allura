@@ -84,11 +84,12 @@ class Repository(M.Repository):
                 merge_request.source_branch,
             )
         else:
-            fetch_command = 'git fetch {} {} # warning: '\
-            'no source branch specified'.format(
-                merge_request.downstream_repo_url,
-                '<source_branch>',
-            )
+            fetch_command = (
+                    'git remote add merge_request {}\n'
+                    'git fetch merge_request'
+                ).format(
+                    merge_request.downstream_repo_url,
+                )
         return 'git checkout %s\n%s\ngit merge %s' % (
             merge_request.target_branch,
             fetch_command,
