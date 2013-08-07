@@ -33,14 +33,15 @@ class TestTrackerImporter(TestCase):
         importer.process_labels = mock.Mock()
         importer.process_comments = mock.Mock()
         importer.postprocess_custom_fields = mock.Mock()
-        project = mock.Mock()
+        project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
         extractor = gdata.return_value
         issues = extractor.iter_issues.return_value = [mock.Mock(), mock.Mock()]
         tickets = TM.Ticket.new.side_effect = [mock.Mock(), mock.Mock()]
         comments = extractor.iter_comments.side_effect = [mock.Mock(), mock.Mock()]
 
-        importer.import_tool(project, 'project_name', 'mount_point', 'mount_label')
+        importer.import_tool(project, user, project_name='project_name',
+                mount_point='mount_point', mount_label='mount_label')
 
         project.install_app.assert_called_once_with('tracker', 'mount_point', 'mount_label')
         gdata.assert_called_once_with('project_name')

@@ -42,7 +42,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
             type='select',
         )
 
-    def import_tool(self, project, project_name, mount_point=None, mount_label=None):
+    def import_tool(self, project, user, project_name=None, mount_point=None,
+            mount_label=None, **kw):
         c.app = project.install_app('tracker', mount_point, mount_label)
         c.app.globals.open_status_names = ['New', 'Accepted', 'Started']
         c.app.globals.closed_status_names = ['Fixed', 'Verified', 'Invalid', 'Duplicate', 'WontFix', 'Done']

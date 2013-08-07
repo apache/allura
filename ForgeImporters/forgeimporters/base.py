@@ -50,11 +50,10 @@ class ProjectImportForm(schema.Schema):
 
 
 @task
-def import_tool(importer_name, project_name, mount_point=None, mount_label=None, **kw):
+def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = ToolImporter.by_name(importer_name)
-    importer.import_tool(project=c.project, user=c.user,
-            mount_point=mount_point,
-            mount_label=mount_label, **kw)
+    importer.import_tool(c.project, c.user, project_name=project_name,
+            mount_point=mount_point, mount_label=mount_label, **kw)
 
 
 class ProjectImporter(BaseController):
@@ -209,7 +208,8 @@ class ToolImporter(object):
                 importers[ep.name] = importer()
         return importers
 
-    def import_tool(self, project, project_name, mount_point=None, mount_label=None):
+    def import_tool(self, project, user, project_name=None,
+            mount_point=None, mount_label=None, **kw):
         """
         Override this method to perform the tool import.
 

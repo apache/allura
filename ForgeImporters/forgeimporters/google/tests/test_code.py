@@ -62,7 +62,8 @@ class TestGoogleRepoImporter(TestCase):
         gcpe.return_value.get_repo_type.return_value = 'git'
         get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gc_proj_name='myproject')
-        GoogleRepoImporter().import_tool(p, 'project_name')
+        GoogleRepoImporter().import_tool(p, Mock(name='c.user'),
+                project_name='project_name')
         get_repo_url.assert_called_once_with('project_name', 'git')
         p.install_app.assert_called_once_with('Git',
                 mount_point='code',
@@ -89,6 +90,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
     @patch('forgeimporters.google.code.GoogleRepoImporter')
     def test_create(self, gri):
         from allura import model as M
+        gri = gri.return_value
         gri.import_tool.return_value = Mock()
         gri.import_tool.return_value.url.return_value = '/p/{}/mymount'.format(test_project_with_repo)
         params = dict(gc_project_name='poop',

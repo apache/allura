@@ -28,10 +28,11 @@ from .. import base
 def test_import_tool(c, by_name):
     c.project = mock.Mock(name='project')
     c.user = mock.Mock(name='user')
-    base.import_tool('importer_name', 'project_name', 'mount_point', 'mount_label')
+    base.import_tool('importer_name', project_name='project_name',
+            mount_point='mount_point', mount_label='mount_label')
     by_name.assert_called_once_with('importer_name')
     by_name.return_value.import_tool.assert_called_once_with(c.project,
-            'project_name', user=c.user, mount_point='mount_point',
+            c.user, project_name='project_name', mount_point='mount_point',
             mount_label='mount_label')
 
 
