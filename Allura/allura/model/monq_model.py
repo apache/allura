@@ -257,7 +257,7 @@ class MonQTask(MappedClass):
             self.state = 'complete'
             return self.result
         except Exception, exc:
-            log.info('Error on job %r, re-raising it', self)
+            log.exception('Error "%s" on job %s', exc, self)
             self.state = 'error'
             if hasattr(exc, 'format_error'):
                 self.result = exc.format_error()
