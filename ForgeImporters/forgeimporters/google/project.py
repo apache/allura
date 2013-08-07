@@ -53,7 +53,7 @@ class GoogleCodeProjectImporter(base.ProjectImporter):
 
     def after_project_create(self, project, **kw):
         project.set_tool_data('google-code', project_name=project.name)
-        tasks.import_project_info.post()
+        tasks.import_project_info.post(project.name)
 
     @with_trailing_slash
     @expose(index_template)
