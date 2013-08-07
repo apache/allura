@@ -27,7 +27,7 @@ from formencode import validators as fev, schema
 from allura.lib.decorators import require_post
 from allura.lib.decorators import task
 from allura.lib.security import require_access
-from allura.lib.widgets.forms import NeighborhoodProjectShortNameValidator
+from allura.lib.plugin import ProjectRegistrationProvider
 from allura.lib import exceptions
 
 from paste.deploy.converters import aslist
@@ -42,11 +42,12 @@ log = logging.getLogger(__name__)
 class ProjectImportForm(schema.Schema):
     def __init__(self, source):
         super(ProjectImportForm, self).__init__()
+        provider = ProjectRegistrationProvider.get()
         self.add_field('tools', ToolsValidator(source))
+        self.add_field('project_shortname', provider.shortname_validator)
 
     neighborhood = fev.PlainText(not_empty=True)
     project_name = fev.UnicodeString(not_empty=True, max=40)
-    project_shortname = NeighborhoodProjectShortNameValidator()
 
 
 @task
