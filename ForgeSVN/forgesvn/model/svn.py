@@ -533,28 +533,39 @@ class SVNImplementation(M.RepositoryImplementation):
         while revno > exclude:
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
-                logs = self._svn.log(url, revision_start=rev, limit=page_size)
+                logs = self._svn.log(url, revision_start=rev, limit=page_size,
+                    discover_changed_paths=True)
             except pysvn.ClientError as e:
                 if 'Unable to connect' in e.message:
                     raise  # repo error
                 return  # no (more) history for this path
             for ci in logs:
+
                 if ci.revision.number <= exclude:
                     return
                 if id_only:
                     yield ci.revision.number
                 else:
-                    yield self._map_log(ci, url)
+                    yield self._map_log(ci, url, path)
             if len(logs) < page_size:
                 return  # we didn't get a full page, don't bother calling SVN again
             revno = ci.revision.number - 1
 
-    def _map_log(self, ci, url):
+    def _map_log(self, ci, url, path=None):
         revno = ci.revision.number
         try:
             size = int(self._svn.list(url)[0][0].size)
-        except pysvn.ClientError as e:
+        except pysvn.ClientError:
             size = None
+        rename_details = {}
+        changed_paths = ci.get('changed_paths', [])
+        for changed_path in changed_paths:
+            if changed_path['copyfrom_path'] and changed_path['path'] == path and changed_path['action'] == 'A':
+                rename_details['path'] = changed_path['copyfrom_path']
+                rename_details['commit_url'] = self._repo.url_for_commit(
+                    changed_path['copyfrom_revision'].number
+                )
+                break
         return {
                 'id': revno,
                 'message': h.really_unicode(ci.get('message', '--none--')),
@@ -571,6 +582,7 @@ class SVNImplementation(M.RepositoryImplementation):
                 'refs': ['HEAD'] if revno == self.head else [],
                 'parents': [revno-1] if revno > 1 else [],
                 'size': size,
+                'rename_details': rename_details,
             }
 
     def open_blob(self, blob):
