@@ -43,6 +43,18 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.soup.assert_called_once_with(self.urlopen.return_value)
         self.assertEqual(extractor.page, self.soup.return_value)
 
+    def test_get_page(self):
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
+        self.assertEqual(1, self.urlopen.call_count)
+        page = extractor.get_page('project_info')
+        self.assertEqual(1, self.urlopen.call_count)
+        self.assertEqual(page, extractor._page_cache['project_info'])
+
+    def test_get_page_url(self):
+        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project')
+        self.assertEqual(extractor.get_page_url('project_info'),
+                'http://code.google.com/p/my-project/')
+
     def test_get_short_description(self):
         extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
         extractor.page.find.return_value.string = 'My Super Project'
@@ -93,9 +105,10 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def _make_extractor(self, html):
         from BeautifulSoup import BeautifulSoup
-        with mock.patch.object(google, 'urllib2') as urllib2:
-            extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
+        with mock.patch.object(google, 'urllib2'):
+            extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project')
         extractor.page = BeautifulSoup(html)
+        extractor.get_page = lambda pagename: extractor.page
         extractor.url="http://test/source/browse"
         return extractor
 
@@ -118,12 +131,3 @@ class TestGoogleCodeProjectExtractor(TestCase):
         with self.assertRaises(Exception) as cm:
             extractor.get_repo_type()
         self.assertEqual(str(cm.exception), "Unknown repo type: cvs")
-
-    def test_get_wiki_pages(self):
-        extractor = self._make_extractor('''
-        <div id="resultstable">
-            <a href="#">Link that's not a wiki page</a>
-            <a href="/p/my-project/wiki/PageOne">PageOne</a>
-        </div>''')
-        self.assertEqual(list(extractor.get_wiki_pages()), [
-            ('PageOne', 'http://code.google.com/p/my-project/wiki/PageOne')])

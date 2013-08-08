@@ -139,7 +139,7 @@ class ForgeWikiApp(Application):
             elif new_root_page_name != self.default_root_page_name:
                 globals = WM.Globals(app_config_id=self.config._id, root=new_root_page_name)
             if globals is not None:
-                session(globals).flush()
+                session(globals).flush(globals)
 
     @Property
     def show_discussion():
