@@ -162,9 +162,16 @@ class RepoRootController(BaseController, FeedController):
     def request_merge(self, branch=None, **kw):
         security.require(security.has_access(c.app.repo, 'admin'))
         c.form = self.mr_widget
-        if branch is None:
-            source_branch=c.app.default_branch_name
-        return dict(source_branch=source_branch)
+        if branch in c.form.source_branches:
+            source_branch = branch
+        else:
+            source_branch = c.app.default_branch_name
+        with c.app.repo.push_upstream_context():
+            target_branch = c.app.default_branch_name
+        return {
+                'source_branch': source_branch,
+                'target_branch': target_branch,
+            }
 
     @expose()
     @require_post()
@@ -417,6 +424,7 @@ class CommitBrowser(BaseController):
     def __init__(self, revision):
         self._revision = revision
         self._commit = c.app.repo.commit(revision)
+        c.revision = revision
         if self._commit is None:
             raise exc.HTTPNotFound
         self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
