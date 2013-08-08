@@ -274,3 +274,30 @@ class TestImportController(SVNTestController):
         r = self.app.post('/p/test/admin/empty/importer/do_import',
                           {'checkout_url': 'http://fake.svn/'})
         assert tasks.reclone.post.called
+
+
+class SVNTestRenames(TestController):
+    def setUp(self):
+        TestController.setUp(self)
+        self.setup_with_tools()
+
+    @with_svn
+    def setup_with_tools(self):
+        h.set_context('test', 'src', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/')
+        c.app.repo.fs_path = repo_dir
+        c.app.repo.status = 'ready'
+        c.app.repo.name = 'testsvn'
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src', neighborhood='Projects')
+        c.app.repo.refresh()
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+        h.set_context('test', 'src', neighborhood='Projects')
+
+    def test_log(self):
+        r = self.app.get('/src/3/log/?path=/dir/b.txt')
+        assert '<b>renamed from</b>' in r
+        assert '/dir/a.txt' in r

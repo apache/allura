@@ -1,0 +1,56 @@
+id: 2-2.0-3.r3/0
+type: file
+pred: 2-2.0.r2/31
+count: 1
+text: 2 0 18 6 58e3b26452d39a3b59fb382c0ba03bac 415b4467aab97d19ad3fd7beb8eeaa42c8330abc 1-1/_4
+cpath: /dir/b.txt
+copyfrom: 2 /dir/a.txt
+
+PLAIN
+K 5
+b.txt
+V 17
+file 2-2.0-3.r3/0
+END
+ENDREP
+id: 0-2.0.r3/243
+type: dir
+pred: 0-2.0.r2/245
+count: 1
+text: 3 193 37 37 1f4ffb88b2b1a84f68f687f7c6234093
+cpath: /dir
+copyroot: 0 /
+
+PLAIN
+K 8
+branches
+V 16
+dir 0-1.0.r1/126
+K 3
+dir
+V 16
+dir 0-2.0.r3/243
+K 4
+tags
+V 14
+dir 2-1.0.r1/0
+K 5
+trunk
+V 15
+dir 3-1.0.r1/62
+END
+ENDREP
+id: 0.0.r3/518
+type: dir
+pred: 0.0.r2/501
+count: 3
+text: 3 376 129 129 a5fed55ce83e9aefbeb6199207438b16
+cpath: /
+copyroot: 0 /
+
+2-2.0.r2/31 delete-file false false /dir/a.txt
+
+2-2._0.t2-2 add-file false false /dir/b.txt
+2 /dir/a.txt
+
+518 646

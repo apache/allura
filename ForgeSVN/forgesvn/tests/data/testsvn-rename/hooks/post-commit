@@ -1,0 +1,8 @@
+#!/bin/bash
+# The following is required for site integration, do not remove/modify.
+# Place user hook code in post-commit-user and it will be called from here.
+curl -s http://localhost:8080/auth/refresh_repo/p/test2/code/
+
+DIR="$(dirname "${BASH_SOURCE[0]}")"
+if [ -x $DIR/post-commit-user ]; then  exec $DIR/post-commit-user "$@"
+fi

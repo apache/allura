@@ -237,7 +237,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Copied a => b',
              'parents': [4],
              'refs': ['HEAD'],
-             'size': 0},
+             'size': 0,
+             'rename_details':{}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
                           'email': '',
                           'name': u'rick446'},
@@ -248,7 +249,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Remove hello.txt',
              'parents': [3],
              'refs': [],
-             'size': 0},
+             'size': 0,
+             'rename_details':{}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
                           'email': '',
                           'name': u'rick446'},
@@ -259,7 +261,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Modify readme',
              'parents': [2],
              'refs': [],
-             'size': 0},
+             'size': 0,
+             'rename_details':{}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
                           'email': '',
                           'name': u'rick446'},
@@ -270,7 +273,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Add path',
              'parents': [1],
              'refs': [],
-             'size': 0},
+             'size': 0,
+             'rename_details':{}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
                           'email': '',
                           'name': u'rick446'},
@@ -281,7 +285,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Create readme',
              'parents': [],
              'refs': [],
-             'size': 0},
+             'size': 0,
+             'rename_details':{}},
             ])
 
     def test_log_file(self):
@@ -297,7 +302,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Modify readme',
              'parents': [2],
              'refs': [],
-             'size': 28},
+             'size': 28,
+             'rename_details': {}},
             {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
                           'email': '',
                           'name': u'rick446'},
@@ -308,7 +314,8 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Create readme',
              'parents': [],
              'refs': [],
-             'size': 28},
+             'size': 28,
+             'rename_details': {}},
             ])
 
     def test_is_file(self):
@@ -846,7 +853,7 @@ class TestMergeRequest(_TestWithRepoAndCommit):
             assert_equal(_svn().log.call_args[0], ('file:///tmp/svn/p/test/test2',))
             assert_equal(_svn().log.call_args[1]['revision_start'].number, 2)
             assert_equal(_svn().log.call_args[1]['limit'], 25)
-            _map_log.assert_called_once_with(_svn().log.return_value[0], 'file:///tmp/svn/p/test/test2')
+            _map_log.assert_called_once_with(_svn().log.return_value[0], 'file:///tmp/svn/p/test/test2', None)
 
 class TestRepoObject(_TestWithRepoAndCommit):
 
@@ -1010,3 +1017,36 @@ class TestCommit(_TestWithRepo):
 
     def test_context(self):
         self.ci.context()
+
+
+class TestRename(unittest.TestCase):
+
+    def setUp(self):
+        setup_basic_test()
+        self.setup_with_tools()
+
+    @with_svn
+    def setup_with_tools(self):
+        setup_global_objects()
+        h.set_context('test', 'src', neighborhood='Projects')
+        repo_dir = pkg_resources.resource_filename(
+            'forgesvn', 'tests/data/')
+        self.repo = SM.Repository(
+            name='testsvn-rename',
+            fs_path=repo_dir,
+            url_path = '/test/',
+            tool = 'svn',
+            status = 'creating')
+        self.repo.refresh()
+        self.rev = self.repo.commit('HEAD')
+        ThreadLocalORMSession.flush_all()
+        ThreadLocalORMSession.close_all()
+
+    def test_log_file_with_rename(self):
+        entry = list(self.repo.log(path='/dir/b.txt', id_only=False))[0]
+        assert_equal(entry['id'], 3)
+        assert_equal(entry['rename_details']['path'], '/dir/a.txt')
+        assert_equal(
+            entry['rename_details']['commit_url'],
+            self.repo.url_for_commit(2)  # previous revision
+        )
