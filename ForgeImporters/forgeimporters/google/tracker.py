@@ -80,7 +80,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 '{body}').format(
                     creator=issue.get_issue_creator(),
                     owner=issue.get_issue_owner(),
-                    body=issue.get_issue_description(),
+                    body=h.plain2markdown(issue.get_issue_description(), True),
                 )
         ticket.add_multiple_attachments(issue.get_issue_attachments())
 
@@ -108,7 +108,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                         '\n'
                         '{updates}').format(
                             author=comment.author,
-                            body=comment.body,
+                            body=h.plain2markdown(comment.body, True),
                             updates='\n'.join(
                                 '**%s** %s' % (k,v)
                                 for k,v in comment.updates.items()
