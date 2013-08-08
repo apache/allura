@@ -34,6 +34,7 @@ from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 from allura.lib.helpers import exceptionless
+from allura.lib.helpers import plain2markdown
 
 ## Everything in this file depends on html2text,
 ## so import attempt is placed in global scope.
@@ -44,41 +45,6 @@ except ImportError:
     https://github.com/brondsem/html2text""")
 
 html2text.BODY_WIDTH = 0
-
-re_amp = re.compile(r'''
-    [&]          # amp
-    (?=          # look ahead for:
-      ([a-zA-Z0-9]+;)  # named HTML entity
-      |
-      (\#[0-9]+;)      # decimal entity
-      |
-      (\#x[0-9A-F]+;)  # hex entity
-    )
-    ''', re.VERBOSE)
-re_leading_spaces = re.compile(r'^[\t ]+', re.MULTILINE)
-re_preserve_spaces = re.compile(r'''
-    [ ]           # space
-    (?=[ ])       # lookahead for a space
-    ''', re.VERBOSE)
-re_angle_bracket_open = re.compile('<')
-re_angle_bracket_close = re.compile('>')
-def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False):
-    if not has_html_entities:
-        # prevent &foo; and &#123; from becoming HTML entities
-        text = re_amp.sub('&amp;', text)
-    # avoid accidental 4-space indentations creating code blocks
-    if preserve_multiple_spaces:
-        text = text.replace('\t', ' ' * 4)
-        text = re_preserve_spaces.sub('&nbsp;', text)
-    else:
-        text = re_leading_spaces.sub('', text)
-    # use html2text for most of the escaping
-    text = html2text.escape_md_section(text, snob=True)
-    # prevent < and > from becoming tags
-    text = re_angle_bracket_open.sub('&lt;', text)
-    text = re_angle_bracket_close.sub('&gt;', text)
-    return text
-
 
 class RssFeedsCommand(base.BlogCommand):
     summary = 'Rss feed client'

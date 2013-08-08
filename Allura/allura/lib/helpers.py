@@ -80,6 +80,26 @@ re_clean_vardec_key = re.compile(r'''\A
 )+
 \Z''', re.VERBOSE)
 
+# markdown escaping regexps
+re_amp = re.compile(r'''
+    [&]          # amp
+    (?=          # look ahead for:
+      ([a-zA-Z0-9]+;)  # named HTML entity
+      |
+      (\#[0-9]+;)      # decimal entity
+      |
+      (\#x[0-9A-F]+;)  # hex entity
+    )
+    ''', re.VERBOSE)
+re_leading_spaces = re.compile(r'^[\t ]+', re.MULTILINE)
+re_preserve_spaces = re.compile(r'''
+    [ ]           # space
+    (?=[ ])       # lookahead for a space
+    ''', re.VERBOSE)
+re_angle_bracket_open = re.compile('<')
+re_angle_bracket_close = re.compile('>')
+md_chars_matcher_all = re.compile(r"([`\*_{}\[\]\(\)#!\\.+-])")
+
 def make_safe_path_portion(ustr, relaxed=True):
     """Return an ascii representation of ``ustr`` that conforms to mount point
     naming :attr:`rules <re_tool_mount_point_fragment>`.
@@ -926,3 +946,24 @@ def urlopen(url, retries=3, codes=(408,)):
             else:
                 log.exception('Failed after %s retries: %s', retries, e)
                 raise
+
+
+def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False):
+    if not has_html_entities:
+        # prevent &foo; and &#123; from becoming HTML entities
+        text = re_amp.sub('&amp;', text)
+    # avoid accidental 4-space indentations creating code blocks
+    if preserve_multiple_spaces:
+        text = text.replace('\t', ' ' * 4)
+        text = re_preserve_spaces.sub('&nbsp;', text)
+        # try to use html2text for most of the escaping
+        import html2text
+        html2text.BODY_WIDTH = 0
+        text = html2text.escape_md_section(text, snob=True)
+    except ImportError:
+        # fall back to just escaping any MD-special chars
+        text = md_chars_matcher.sub(r"\\\\1", text)
+    # prevent < and > from becoming tags
+    text = re_angle_bracket_open.sub('&lt;', text)
+    text = re_angle_bracket_close.sub('&gt;', text)
+    return text
