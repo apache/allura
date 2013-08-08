@@ -40,7 +40,6 @@ class GoogleCodeProjectExtractor(object):
     PAGE_MAP = {
             'project_info': BASE_URL + '/p/%s/',
             'source_browse': BASE_URL + '/p/%s/source/browse/',
-            'wiki_index': BASE_URL + '/p/%s/w/list',
         }
 
     LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
@@ -58,17 +57,49 @@ class GoogleCodeProjectExtractor(object):
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
-    def __init__(self, allura_project, gc_project_name, page):
+    def __init__(self, allura_project, gc_project_name, page=None):
         self.project = allura_project
         self.gc_project_name = gc_project_name
-        self.url = self.PAGE_MAP[page] % urllib.quote(self.gc_project_name)
-        self.page = BeautifulSoup(urllib2.urlopen(self.url))
+        self._page_cache = {}
+        self.url = None
+        self.page = None
+        if page:
+            self.get_page(page)
+
+    def get_page(self, page_name_or_url):
+        """Return a Beautiful soup object for the given page name or url.
+
+        If a page name is provided, the associated url is looked up in
+        :attr:`PAGE_MAP`.
+
+        Results are cached so that subsequent calls for the same page name or
+        url will return the cached result rather than making another HTTP
+        request.
+
+        """
+        if page_name_or_url in self._page_cache:
+            return self._page_cache[page_name_or_url]
+        self.url = (self.get_page_url(page_name_or_url) if page_name_or_url in
+                self.PAGE_MAP else page_name_or_url)
+        self.page = self._page_cache[page_name_or_url] = \
+                BeautifulSoup(urllib2.urlopen(self.url))
+        return self.page
+
+    def get_page_url(self, page_name):
+        """Return the url associated with ``page_name``.
+
+        Raises KeyError if ``page_name`` is not in :attr:`PAGE_MAP`.
+
+        """
+        return self.PAGE_MAP[page_name] % urllib.quote(self.gc_project_name)
 
     def get_short_description(self):
-        self.project.short_description = self.page.find(itemprop='description').string.strip()
+        page = self.get_page('project_info')
+        self.project.short_description = page.find(itemprop='description').string.strip()
 
     def get_icon(self):
-        icon_url = urljoin(self.url, self.page.find(itemprop='image').attrMap['src'])
+        page = self.get_page('project_info')
+        icon_url = urljoin(self.url, page.find(itemprop='image').attrMap['src'])
         if icon_url == self.DEFAULT_ICON:
             return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
@@ -81,12 +112,14 @@ class GoogleCodeProjectExtractor(object):
             thumbnail_meta={'project_id': self.project._id, 'category': 'icon'})
 
     def get_license(self):
-        license = self.page.find(text='Code license').findNext().find('a').string.strip()
+        page = self.get_page('project_info')
+        license = page.find(text='Code license').findNext().find('a').string.strip()
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         self.project.trove_license.append(trove._id)
 
     def get_repo_type(self):
-        repo_type = self.page.find(id="crumb_root")
+        page = self.get_page('source_browse')
+        repo_type = page.find(id="crumb_root")
         if not repo_type:
             raise Exception("Couldn't detect repo type: no #crumb_root in "
                     "{0}".format(self.url))
@@ -95,11 +128,3 @@ class GoogleCodeProjectExtractor(object):
             return re_match.group(0)
         else:
             raise Exception("Unknown repo type: {0}".format(repo_type.text))
-
-    def get_wiki_pages(self):
-        RE_WIKI_PAGE_URL = r'^/p/{0}/wiki/.*$'.format(self.gc_project_name)
-        seen = set()
-        for a in self.page.find(id="resultstable").findAll("a"):
-            if re.match(RE_WIKI_PAGE_URL, a['href']) and a['href'] not in seen:
-                yield (a.text, self.BASE_URL + a['href'])
-                seen.add(a['href'])
