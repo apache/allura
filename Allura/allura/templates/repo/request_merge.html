@@ -29,5 +29,5 @@
 {% block header %}Request merge of {{c.app.config.options.mount_label}} {% endblock %}
 
 {% block content %}
-  {{ c.form.display(action='do_request_merge', value=dict(source_branch=source_branch))}}
+  {{ c.form.display(action='do_request_merge', value=dict(source_branch=source_branch, target_branch=target_branch))}}
 {% endblock %}

@@ -127,7 +127,10 @@ class RepositoryApp(Application):
                     self.repo.upstream_repo.name)
                 ]
             if not c.app.repo.is_empty() and has_access(c.app.repo, 'admin'):
-                links.append(SitemapEntry('Request Merge', c.app.url + 'request_merge',
+                merge_url = c.app.url + 'request_merge'
+                if getattr(c, 'revision', None):
+                    merge_url = merge_url + '?branch=' + h.urlquote(c.revision)
+                links.append(SitemapEntry('Request Merge', merge_url,
                              ui_icon=g.icons['merge'],
                              ))
             pending_upstream_merges = self.repo.pending_upstream_merges()
