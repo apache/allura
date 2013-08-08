@@ -97,7 +97,7 @@ class GoogleRepoImporter(ToolImporter):
     target_app = TARGET_APPS
     source = 'Google Code'
     controller = GoogleRepoImportController
-    tool_label = 'Google Code Source Importer'
+    tool_label = 'Source Code'
     tool_description = 'Import your SVN, Git, or Hg repo from Google Code'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
