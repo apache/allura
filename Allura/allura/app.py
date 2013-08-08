@@ -584,21 +584,20 @@ class DefaultAdminController(BaseController):
 
     @expose()
     def edit_block_user(self, user_id='', perm=''):
-        log.error(self.app.config.block_user[perm])
-        self.app.config.block_user[perm].remove(ObjectId(user_id))
+        del self.app.config.block_user[perm][user_id]
         return redirect(request.referer)
 
     @expose()
-    def block_user(self, user_name, perm):
+    def block_user(self, user_name, perm, reason=''):
         user = model.User.by_username(user_name)
         if not user:
             flash('User "%s" not found' % user_name, 'error')
             return redirect(request.referer)
 
         if perm not in self.app.config.block_user:
-            self.app.config.block_user[perm] = []
+            self.app.config.block_user[perm] = dict()
         if user._id not in self.app.config.block_user[perm]:
-            self.app.config.block_user[perm].append(user._id)
+            self.app.config.block_user[perm][str(user._id)] = reason
         return redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
@@ -615,8 +614,10 @@ class DefaultAdminController(BaseController):
         block_list = {}
 
         for perm, users in self.app.config.block_user.items():
-            block_list[perm] = [[user._id, user.username] for user in model.User.query.find(dict(_id={'$in': users}))]
-
+            users_id = [ObjectId(id) for id in users.keys()]
+            block_list[perm] = dict()
+            for user in model.User.query.find(dict(_id={'$in': users_id})):
+                block_list[perm][str(user._id)] = [user.username, users[str(user._id)]]
 
 
         for ace in self.app.config.acl:

@@ -292,7 +292,7 @@ def has_access(obj, permission, user=None, project=None):
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
         chainable_roles = []
         block_user = getattr(obj, 'block_user', dict())
-        if (permission in block_user) and (user._id in block_user[permission]):
+        if (permission in block_user) and (str(user._id) in block_user[permission]):
             return False
         for rid in roles:
             for ace in obj.acl:

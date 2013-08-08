@@ -76,10 +76,13 @@
         <li>
         <a href="#" class="block-list">
             Block list
-        <div class="block-list" style="display: none">
+        <div class="block-list grid-13" style="display: none">
           <ul>
-          {%for user in block_list[name]%}
-            <li><input type="checkbox" name="user_id" value="{{user[0]}}">{{user[1]}}</li>
+          {%for user_id in block_list[name].keys()%}
+            <li>
+                <input type="checkbox" name="user_id" value="{{user_id}}">{{block_list[name][user_id][0]}} ({{block_list[name][user_id][1]}})
+
+            </li>
           {%endfor%}
           </ul>
         </div>

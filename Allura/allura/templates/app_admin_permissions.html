@@ -67,7 +67,6 @@
   {{c.block_list.display()}}
 <script type="text/javascript">
   $('a.block-user').click(function(){
-      var block_user = $('#block_user');
       var deck =  $(this).closest('ul.deck');
       var role = deck.find('li.tcenter h3').text();
       $('input.block_user_role').val(role);
