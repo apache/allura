@@ -21,6 +21,7 @@ from datetime import datetime
 from pylons import tmpl_context as c
 from ming.orm import session, ThreadLocalORMSession
 
+from allura import model as M
 from allura.lib import helpers as h
 
 from forgetracker.tracker_main import ForgeTrackerApp
@@ -48,15 +49,19 @@ class GoogleCodeTrackerImporter(ToolImporter):
         c.app.globals.open_status_names = 'New Accepted Started'
         c.app.globals.closed_status_names = 'Fixed Verified Invalid Duplicate WontFix Done'
         self.custom_fields = {}
-        for issue in GoogleCodeProjectExtractor.iter_issues(project_name):
-            ticket = TM.Ticket.new()
-            self.process_fields(ticket, issue)
-            self.process_labels(ticket, issue)
-            self.process_comments(ticket, issue)
-            session(ticket).flush(ticket)
-            session(ticket).expunge(ticket)
-        self.postprocess_custom_fields()
-        ThreadLocalORMSession.flush_all()
+        try:
+            M.session.artifact_orm_session._get().skip_mod_date = True
+            for issue in GoogleCodeProjectExtractor.iter_issues(project_name):
+                ticket = TM.Ticket.new()
+                self.process_fields(ticket, issue)
+                self.process_labels(ticket, issue)
+                self.process_comments(ticket, issue)
+                session(ticket).flush(ticket)
+                session(ticket).expunge(ticket)
+            self.postprocess_custom_fields()
+            ThreadLocalORMSession.flush_all()
+        finally:
+            M.session.artifact_orm_session._get().skip_mod_date = False
 
     def custom_field(self, name):
         if name not in self.custom_fields:
