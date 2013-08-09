@@ -16,6 +16,7 @@
 #       under the License.
 
 from unittest import TestCase
+import pkg_resources
 
 import mock
 
@@ -131,3 +132,60 @@ class TestGoogleCodeProjectExtractor(TestCase):
         with self.assertRaises(Exception) as cm:
             extractor.get_repo_type()
         self.assertEqual(str(cm.exception), "Unknown repo type: cvs")
+
+    def test_empty_issue(self):
+        empty_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/empty-issue.html')).read()
+        gpe = self._make_extractor(empty_issue)
+        self.assertIsNone(gpe.get_issue_owner())
+        self.assertEqual(gpe.get_issue_status(), '')
+        self.assertEqual(gpe.get_issue_attachments(), [])
+        self.assertEqual(list(gpe.iter_comments()), [])
+
+    def test_get_issue_basic_fields(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
+        self.assertEqual(gpe.get_issue_creator().link, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
+        self.assertEqual(gpe.get_issue_owner().link, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_status(), 'Started')
+        self.assertEqual(gpe.get_issue_summary(), 'Test Issue')
+        self.assertEqual(gpe.get_issue_description(),
+                'Test *Issue* for testing\n'
+                '\n'
+                '  1. Test List\n'
+                '  2. Item\n'
+                '\n'
+                '**Testing**\n'
+                '\n'
+                ' * Test list 2\n'
+                ' * Item\n'
+                '\n'
+                '# Test Section\n'
+                '\n'
+                '    p = source.test_issue.post()\n'
+                '    p.count = p.count *5 #* 6\n'
+                '\n'
+                'That\'s all'
+            )
+        self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
+
+    def test_get_issue_mod_date(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 15:36:57 2013')
+
+    def test_get_issue_labels(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        self.assertEqual(gpe.get_issue_labels(), [
+                'Type-Defect',
+                'Priority-Medium',
+                'Milestone-Release1.0',
+                'OpSys-All',
+                'Component-Logic',
+                'Performance',
+                'Security',
+                'OpSys-Windows',
+                'OpSys-OSX',
+            ])

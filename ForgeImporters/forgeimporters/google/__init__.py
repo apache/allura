@@ -186,7 +186,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
 
     def get_issue_description(self):
-        return _as_text(self.page.find(id='hc0').pre)
+        return _as_text(self.page.find(id='hc0').pre).strip()
 
     def get_issue_created_date(self):
         return self.page.find(id='hc0').find('span', 'date').get('title')
@@ -200,10 +200,18 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return UserLink(a)
 
     def get_issue_status(self):
-        return self.page.find(id='issuemeta').find('th', text=re.compile('Status:')).findNext().span.string.strip()
+        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Status:')).findNext().span
+        if tag:
+            return tag.string.strip()
+        else:
+            return ''
 
     def get_issue_owner(self):
-        return UserLink(self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().a)
+        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().a
+        if tag:
+            return UserLink(tag)
+        else:
+            return None
 
     def get_issue_labels(self):
         label_nodes = self.page.find(id='issuemeta').findAll('a', 'label')
