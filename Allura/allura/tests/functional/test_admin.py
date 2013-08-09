@@ -179,7 +179,6 @@ class TestProjectAdmin(TestController):
         assert_equals(app.config.block_user['read'], {str(user_id): 'Comment'})
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-list">' in r
-        r.showbrowser()
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user_id in r
 
     @td.with_wiki
@@ -188,7 +187,7 @@ class TestProjectAdmin(TestController):
         app = M.Project.query.get(shortname='test').app_instance('wiki')
         user_id = M.User.by_username('test-admin')._id
         assert_equals(app.config.block_user['read'], {str(user_id): ''})
-        self.app.post('/admin/wiki/edit_block_user', params={'user_id': str(user_id), 'perm': 'read'})
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user_id), 'perm': 'read'})
         assert_equals(app.config.block_user['read'], dict())
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-list">' not in r

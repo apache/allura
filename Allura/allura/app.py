@@ -583,11 +583,6 @@ class DefaultAdminController(BaseController):
         permanent_redirect('permissions')
 
     @expose()
-    def edit_block_user(self, user_id='', perm=''):
-        del self.app.config.block_user[perm][user_id]
-        return redirect(request.referer)
-
-    @expose()
     def block_user(self, user_name, perm, reason=''):
         user = model.User.by_username(user_name)
         if not user:
@@ -598,6 +593,11 @@ class DefaultAdminController(BaseController):
             self.app.config.block_user[perm] = dict()
         if user._id not in self.app.config.block_user[perm]:
             self.app.config.block_user[perm][str(user._id)] = reason
+        return redirect(request.referer)
+
+    @expose()
+    def unblock_user(self, user_id='', perm=''):
+        del self.app.config.block_user[perm][user_id]
         return redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
@@ -614,7 +614,7 @@ class DefaultAdminController(BaseController):
         block_list = {}
 
         for perm, users in self.app.config.block_user.items():
-            users_id = [ObjectId(id) for id in users.keys()]
+            users_id = [ObjectId(_id) for _id in users.keys()]
             block_list[perm] = dict()
             for user in model.User.query.find(dict(_id={'$in': users_id})):
                 block_list[perm][str(user._id)] = [user.username, users[str(user._id)]]
