@@ -24,15 +24,17 @@ from pkg_resources import iter_entry_points
 from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from formencode import validators as fev, schema
+from webob import exc
 
 from allura.lib.decorators import require_post
 from allura.lib.decorators import task
 from allura.lib.security import require_access
-from allura.lib.plugin import ProjectRegistrationProvider
+from allura.lib.plugin import ProjectRegistrationProvider, AdminExtension
 from allura.lib import helpers as h
 from allura.lib import exceptions
+from allura.app import SitemapEntry
 
 from paste.deploy.converters import aslist
 
@@ -273,16 +275,16 @@ class ToolImporter(object):
     source = None  # string description of source, must match project importer
     controller = None
 
-    @classmethod
-    def by_name(self, name):
+    @staticmethod
+    def by_name(name):
         """
         Return a ToolImporter subclass instance given its entry-point name.
         """
         for ep in iter_entry_points('allura.importers', name):
             return ep.load()()
 
-    @classmethod
-    def by_app(self, app):
+    @staticmethod
+    def by_app(app):
         """
         Return a ToolImporter subclass instance given its target_app class.
         """
@@ -350,3 +352,34 @@ class ToolsValidator(fev.Set):
             pl = 's' if len(invalid) > 1 else ''
             raise fev.Invalid('Invalid tool%s selected: %s' % (pl, ', '.join(invalid)), value, state)
         return valid
+
+class ProjectToolsImportController(object):
+    '''List all importers available'''
+
+    @with_trailing_slash
+    @expose('jinja:forgeimporters:templates/list_all.html')
+    def index(self, *a, **kw):
+        importers = {}
+        for app_name, app in g.entry_points['tool'].iteritems():
+            importers[app] = ToolImporter.by_app(app)
+        return {
+            'importers': importers
+        }
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        import_tool = ToolImporter.by_name(name)
+        if import_tool:
+            return import_tool.controller(), remainder
+        else:
+            raise exc.HTTPNotFound
+
+class ImportAdminExtension(AdminExtension):
+    '''Add import link to project admin sidebar'''
+
+    project_admin_controllers = {'import': ProjectToolsImportController}
+
+    def update_project_sidebar_menu(self, sidebar_links):
+        base_url = c.project.url() + 'admin/ext/'
+        link = SitemapEntry('Import', base_url+'import')
+        sidebar_links.append(link)
