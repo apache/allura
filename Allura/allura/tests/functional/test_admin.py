@@ -24,6 +24,10 @@ from contextlib import contextmanager
 import PIL
 from nose.tools import assert_equals
 from ming.orm.ormsession import ThreadLocalORMSession
+from tg import expose
+from pylons import tmpl_context as c, app_globals as g
+import mock
+from BeautifulSoup import BeautifulSoup
 
 try:
     import sfx
@@ -33,6 +37,8 @@ except ImportError:
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
+from allura.app import SitemapEntry
+from allura.lib.plugin import AdminExtension
 
 @contextmanager
 def audits(*messages):
@@ -726,3 +732,36 @@ class TestProjectAdmin(TestController):
         assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[admin_id]
         assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[mem_id]
         assert {u'text': u'Does not have permission create', u'has': u'no', u'name': u'create'} in r.json[anon_id]
+
+
+    def test_admin_extension_sidebar(self):
+
+        class FooSettingsController(object):
+            @expose()
+            def index(self, *a, **kw):
+                return 'here the foo settings go'
+
+
+        class FooSettingsExtension(AdminExtension):
+            def update_project_sidebar_menu(self, sidebar_links):
+                base_url = c.project.url()+'admin/ext/'
+                sidebar_links.append(SitemapEntry('Foo Settings', base_url+'foo'))
+
+            @property
+            def project_admin_controllers(self):
+                return {
+                    'foo': FooSettingsController,
+                }
+
+        eps = {
+            'admin': {
+                'foo-settings': FooSettingsExtension,
+            }
+        }
+
+        with mock.patch.dict(g.entry_points, eps):
+            main_page = self.app.get('/admin/')
+            foo_page = main_page.click(description='Foo Settings')
+            url = foo_page.environ['PATH_INFO']
+            assert url.endswith('/admin/ext/foo'), url
+            assert_equals('here the foo settings go', foo_page.body)

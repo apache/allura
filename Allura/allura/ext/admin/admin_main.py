@@ -139,6 +139,10 @@ class AdminApp(Application):
             links.append(SitemapEntry('Statistics', nbhd_admin_url+ 'stats/'))
             links.append(None)
             links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
+
+        for name, admin_extension in g.entry_points['admin'].iteritems():
+            admin_extension().update_project_sidebar_menu(links)
+
         return links
 
     def admin_menu(self):
@@ -146,6 +150,18 @@ class AdminApp(Application):
 
     def install(self, project):
         pass
+
+
+class AdminExtensionLookup(object):
+    
+    @expose()
+    def _lookup(self, name, *remainder):
+        for ext_name, admin_extension in g.entry_points['admin'].iteritems():
+            controller = admin_extension().project_admin_controllers.get(name)
+            if controller:
+                return controller(), remainder
+        raise exc.HTTPNotFound, name
+
 
 class ProjectAdminController(BaseController):
 
@@ -156,6 +172,7 @@ class ProjectAdminController(BaseController):
         self.permissions = PermissionsController()
         self.groups = GroupsController()
         self.audit = AuditController()
+        self.ext = AdminExtensionLookup()
 
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')

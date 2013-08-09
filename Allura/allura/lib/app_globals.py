@@ -197,6 +197,7 @@ class Globals(object):
             spam=_cache_eps('allura.spam'),
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
+            admin=_cache_eps('allura.admin'),
             )
 
         # Zarkov logger
