@@ -153,7 +153,7 @@ class AdminApp(Application):
 
 
 class AdminExtensionLookup(object):
-    
+
     @expose()
     def _lookup(self, name, *remainder):
         for ext_name, admin_extension in g.entry_points['admin'].iteritems():
@@ -177,8 +177,11 @@ class ProjectAdminController(BaseController):
     @with_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_admin.html')
     def index(self, **kw):
-        scm_tools = [tool for tool in c.project.app_configs if issubclass(
-                g.entry_points["tool"][tool.tool_name], RepositoryApp)]
+        scm_tools = []
+        for tool in c.project.app_configs:
+            app = g.entry_points["tool"].get(tool.tool_name)
+            if app and issubclass(app, RepositoryApp):
+                scm_tools.append(tool)
         return dict(scm_tools=scm_tools)
 
     @without_trailing_slash
