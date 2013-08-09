@@ -15,11 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
-.. _app_module:
+.. _spam_module:
 
-:mod:`allura.app`
---------------------------------
+:mod:`allura.lib.spam`
+-------------------------------------
 
-.. automodule:: allura.app
-
+.. automodule:: allura.lib.spam
     :members:

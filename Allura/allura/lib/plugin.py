@@ -56,12 +56,12 @@ class AuthenticationProvider(object):
     '''
     An interface to provide authentication services for Allura.
 
-    To use a new provider, expose an entry point in setup.py:
+    To use a new provider, expose an entry point in setup.py::
 
         [allura.auth]
         myprovider = foo.bar:MyAuthProvider
 
-    Then in your .ini file, set auth.method=myprovider
+    Then in your .ini file, set ``auth.method=myprovider``
     '''
 
     def __init__(self, request):
@@ -346,7 +346,7 @@ class ProjectRegistrationProvider(object):
     and the default.  Extend this class with your own if you need to add more
     functionality.
 
-    To use a new provider, expose an entry point in setup.py:
+    To use a new provider, expose an entry point in setup.py::
 
         [allura.project_registration]
         myprovider = foo.bar:MyAuthProvider
@@ -625,7 +625,7 @@ class ThemeProvider(object):
     and the default.  Extend this class with your own if you need to add more
     functionality.
 
-    To use a new provider, expose an entry point in setup.py:
+    To use a new provider, expose an entry point in setup.py::
 
         [allura.theme]
         myprovider = foo.bar:MyThemeProvider
@@ -855,7 +855,7 @@ class UserPreferencesProvider(object):
     '''
     An interface for user preferences, like display_name and email_address
 
-    To use a new provider, expose an entry point in setup.py:
+    To use a new provider, expose an entry point in setup.py::
 
         [allura.user_prefs]
         myprefs = foo.bar:MyUserPrefProvider

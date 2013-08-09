@@ -57,12 +57,13 @@ Inside the Platform Components
    guides/message_bus
    guides/email
    guides/permissions
+   extending
 
 API Documentation
 ==================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :glob:
 
    api/*

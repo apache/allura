@@ -15,11 +15,10 @@
        specific language governing permissions and limitations
        under the License.
 
-.. _app_module:
+.. _plugin_module:
 
-:mod:`allura.app`
---------------------------------
+:mod:`allura.lib.plugin`
+-------------------------------------
 
-.. automodule:: allura.app
-
+.. automodule:: allura.lib.plugin
     :members:
