@@ -140,7 +140,8 @@ class AdminApp(Application):
             links.append(None)
             links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
 
-        for name, admin_extension in g.entry_points['admin'].iteritems():
+        for ep_name in sorted(g.entry_points['admin'].keys()):
+            admin_extension = g.entry_points['admin'][ep_name]
             admin_extension().update_project_sidebar_menu(links)
 
         return links
@@ -156,7 +157,8 @@ class AdminExtensionLookup(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        for ext_name, admin_extension in g.entry_points['admin'].iteritems():
+        for ep_name in sorted(g.entry_points['admin'].keys()):
+            admin_extension = g.entry_points['admin'][ep_name]
             controller = admin_extension().project_admin_controllers.get(name)
             if controller:
                 return controller(), remainder
