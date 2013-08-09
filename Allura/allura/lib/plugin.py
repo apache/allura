@@ -915,3 +915,35 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
         users = M.User.query.find(dict(
                 display_name=name_regex)).sort('username').all()
         return users
+
+
+class AdminExtension(object):
+    """
+    A base class for extending the admin areas in Allura.
+
+    After extending this, expose the app by adding an entry point in your
+    setup.py::
+
+        [allura.admin]
+        myadmin = foo.bar.baz:MyCustomAdmin
+
+    :ivar dict project_admin_controllers: Mapping of str (url component) to
+        Controllers.  Can be implemented as a ``@property`` function.  The str
+        url components will be mounted at /p/someproject/admin/ext/STR/ and will
+        invoke the Controller.
+    """
+
+    project_admin_controllers = {}
+
+    def update_project_sidebar_menu(self, sidebar_links):
+        """
+        Implement this function to modify the project sidebar.
+        Check `c.project` if you want to limit when this displays
+        (e.g. nbhd project, subproject, etc)
+
+        :param sidebar_links: project admin side bar links
+        :type sidebar_links: list of :class:`allura.app.SitemapEntry`
+
+        :rtype: ``None``
+        """
+        pass
