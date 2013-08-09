@@ -41,4 +41,7 @@ setup(name='ForgeImporters',
       google-code-tracker = forgeimporters.google.tracker:GoogleCodeTrackerImporter
       google-code-repo = forgeimporters.google.code:GoogleRepoImporter
       trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
+
+      [allura.admin]
+      importers = forgeimporters.base:ImportAdminExtension
       """,)
