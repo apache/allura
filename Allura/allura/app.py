@@ -164,7 +164,7 @@ class Application(object):
     The base Allura pluggable application
 
     After extending this, expose the app by adding an entry point in your
-    setup.py:
+    setup.py::
 
         [allura]
         myapp = foo.bar.baz:MyAppClass

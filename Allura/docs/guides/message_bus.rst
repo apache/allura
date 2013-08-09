@@ -61,6 +61,8 @@ well::
 
     commit()
 
+.. _events:
+
 Events
 -------------------
 
@@ -82,7 +84,7 @@ Under the covers, this is scheduling an `event` task that calls all the handlers
 for a particular named event.  Note that you can pass arguments (\*args, and
 \*\*kwargs) to event handlers just like you do to tasks, with the exception that
 the topic name (above, this would be 'project_updated') is always the first
-parameter passed to the event handler.  
+parameter passed to the event handler.
 
 Running the Task Daemon
 ----------------------------------------------------------------
