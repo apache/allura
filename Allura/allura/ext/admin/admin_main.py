@@ -108,7 +108,7 @@ class AdminApp(Application):
         cls = AdminApp
         tools = []
         if cls._exportable_tools is None:
-            for tool in project.ordered_mounts():
+            for tool in project.ordered_mounts(include_hidden=True):
                 if not tool.get('ac'):
                     continue
                 if project.app_instance(tool['ac']).exportable:
