@@ -116,7 +116,7 @@ class TestTrackerImporter(TestCase):
             return u
         issue = mock.Mock(
                 get_issue_summary=lambda:'summary',
-                get_issue_description=lambda:'description',
+                get_issue_description=lambda:'my *description* fool',
                 get_issue_status=lambda:'status',
                 get_issue_created_date=lambda:'created_date',
                 get_issue_mod_date=lambda:'mod_date',
@@ -128,7 +128,7 @@ class TestTrackerImporter(TestCase):
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'summary')
-            self.assertEqual(ticket.description, '*Originally created by:* [cname](clink)\n*Originally owned by:* [oname](olink)\n\ndescription')
+            self.assertEqual(ticket.description, '*Originally created by:* [cname](clink)\n*Originally owned by:* [oname](olink)\n\nmy \*description\* fool')
             self.assertEqual(ticket.status, 'status')
             self.assertEqual(ticket.created_date, 'created_date')
             self.assertEqual(ticket.mod_date, 'mod_date')

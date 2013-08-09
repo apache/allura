@@ -192,8 +192,12 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return self.page.find(id='hc0').find('span', 'date').get('title')
 
     def get_issue_mod_date(self):
-        last_update = Comment(self.page.findAll('div', 'issuecomment')[-1])
-        return last_update.created_date
+        comments = self.page.findAll('div', 'issuecomment')
+        if comments:
+            last_update = Comment(comments[-1])
+            return last_update.created_date
+        else:
+            return self.get_issue_created_date()
 
     def get_issue_creator(self):
         a = self.page.find(id='hc0').find('a', 'userlink')
@@ -237,7 +241,7 @@ class Comment(object):
     def __init__(self, tag):
         self.author = UserLink(tag.find('span', 'author').find('a', 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
-        self.body = _as_text(tag.find('pre'))
+        self.body = _as_text(tag.find('pre')).strip()
         self._get_updates(tag)
         self._get_attachments(tag)
 

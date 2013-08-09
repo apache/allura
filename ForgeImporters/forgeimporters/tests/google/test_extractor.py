@@ -140,6 +140,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(gpe.get_issue_status(), '')
         self.assertEqual(gpe.get_issue_attachments(), [])
         self.assertEqual(list(gpe.iter_comments()), [])
+        self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 14:56:23 2013')
 
     def test_get_issue_basic_fields(self):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
@@ -189,3 +190,62 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 'OpSys-Windows',
                 'OpSys-OSX',
             ])
+
+    def test_get_issue_attachments(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        attachments = gpe.get_issue_attachments()
+        self.assertEqual(len(attachments), 2)
+        self.assertEqual(attachments[0].filename, 'at1.txt')
+        self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
+        self.assertIsNone(attachments[0].type)
+        self.assertEqual(attachments[1].filename, 'at2.txt')
+        self.assertEqual(attachments[1].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000001&name=at2.txt&token=C9Hn4s1-g38hlSggRGo65VZM1ys%3A1376059941255')
+        self.assertIsNone(attachments[1].type)
+
+    def test_iter_comments(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        comments = list(gpe.iter_comments())
+        self.assertEqual(len(comments), 4)
+        expected = [
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:35:15 2013',
+                    'body': 'Test *comment* is a comment',
+                    'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                    'attachments': ['at2.txt'],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:35:34 2013',
+                    'body': 'Another comment',
+                    'updates': {},
+                    'attachments': [],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:36:39 2013',
+                    'body': 'Last comment',
+                    'updates': {},
+                    'attachments': ['at4.txt', 'at1.txt'],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:36:57 2013',
+                    'body': 'Oh, I forgot one',
+                    'updates': {'Labels:': 'OpSys-OSX'},
+                    'attachments': [],
+                },
+            ]
+        for actual, expected in zip(comments, expected):
+            self.assertEqual(actual.author.name, expected['author.name'])
+            self.assertEqual(actual.author.link, expected['author.link'])
+            self.assertEqual(actual.created_date, expected['created_date'])
+            self.assertEqual(actual.body, expected['body'])
+            self.assertEqual(actual.updates, expected['updates'])
+            self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
