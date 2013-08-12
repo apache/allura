@@ -44,6 +44,42 @@ class TestJsonConverter(unittest.TestCase):
             self.val.to_python('{')
 
 
+class TestJsonFile(unittest.TestCase):
+    val = v.JsonFile
+
+    class FieldStorage(object):
+        def __init__(self, content):
+            self.value = content
+
+    def test_valid(self):
+        self.assertEqual({}, self.val.to_python(self.FieldStorage('{}')))
+
+    def test_invalid(self):
+        with self.assertRaises(fe.Invalid):
+            self.val.to_python(self.FieldStorage('{'))
+
+
+class TestUserMapFile(unittest.TestCase):
+    val = v.UserMapJsonFile()
+
+    class FieldStorage(object):
+        def __init__(self, content):
+            self.value = content
+
+    def test_valid(self):
+        self.assertEqual({"user_old": "user_new"}, self.val.to_python(
+            self.FieldStorage('{"user_old": "user_new"}')))
+
+    def test_invalid(self):
+        with self.assertRaises(fe.Invalid):
+            self.val.to_python(self.FieldStorage('{"user_old": 1}'))
+
+    def test_as_string(self):
+        val = v.UserMapJsonFile(as_string=True)
+        self.assertEqual('{"user_old": "user_new"}', val.to_python(
+            self.FieldStorage('{"user_old": "user_new"}')))
+
+
 class TestUserValidator(unittest.TestCase):
     val = v.UserValidator
 

@@ -254,3 +254,45 @@ def test_datetimeformat():
 def test_split_select_field_options():
     assert_equals(h.split_select_field_options('"test message" test2'), ['test message', 'test2'])
     assert_equals(h.split_select_field_options('"test message test2'), ['test', 'message', 'test2'])
+
+
+def test_notifications_disabled():
+    project = Mock(notifications_disabled=False)
+    with h.notifications_disabled(project):
+        assert_equals(project.notifications_disabled, True)
+    assert_equals(project.notifications_disabled, False)
+
+
+class TestUrlOpen(TestCase):
+    @patch('allura.lib.helpers.urllib2')
+    def test_no_error(self, urllib2):
+        r = h.urlopen('myurl')
+        self.assertEqual(r, urllib2.urlopen.return_value)
+        urllib2.urlopen.assert_called_once_with('myurl')
+
+    @patch('allura.lib.helpers.urllib2.urlopen')
+    def test_socket_timeout(self, urlopen):
+        import socket
+        def side_effect(url):
+            raise socket.timeout()
+        urlopen.side_effect = side_effect
+        self.assertRaises(socket.timeout, h.urlopen, 'myurl')
+        self.assertEqual(urlopen.call_count, 4)
+
+    @patch('allura.lib.helpers.urllib2.urlopen')
+    def test_handled_http_error(self, urlopen):
+        from urllib2 import HTTPError
+        def side_effect(url):
+            raise HTTPError('url', 408, 'timeout', None, None)
+        urlopen.side_effect = side_effect
+        self.assertRaises(HTTPError, h.urlopen, 'myurl')
+        self.assertEqual(urlopen.call_count, 4)
+
+    @patch('allura.lib.helpers.urllib2.urlopen')
+    def test_unhandled_http_error(self, urlopen):
+        from urllib2 import HTTPError
+        def side_effect(url):
+            raise HTTPError('url', 404, 'timeout', None, None)
+        urlopen.side_effect = side_effect
+        self.assertRaises(HTTPError, h.urlopen, 'myurl')
+        self.assertEqual(urlopen.call_count, 1)

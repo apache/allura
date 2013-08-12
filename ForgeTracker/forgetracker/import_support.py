@@ -136,11 +136,11 @@ class ImportSupport(object):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
     def get_user_id(self, username):
-        username = self.options['user_map'].get(username, username)
+        username = self.options['user_map'].get(username)
+        if not username:
+            return None
         u = M.User.by_username(username)
-        if u:
-            return u._id
-        return None
+        return u._id if u else None
 
     def check_custom_field(self, field, value):
         field = c.app.globals.get_custom_field(field)
@@ -193,7 +193,12 @@ class ImportSupport(object):
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
 
-        remapped['description'] = self.link_processing(remapped['description'])
+        description = self.link_processing(remapped['description'])
+        if ticket_dict['submitter'] and not remapped['reported_by_id']:
+            description = 'Originally created by: {0}\n\n{1}'.format(
+                    ticket_dict['submitter'], description)
+        remapped['description'] = description
+
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                           ticket_num=ticket_num)
@@ -261,8 +266,13 @@ class ImportSupport(object):
 
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
-        comment = thread.post(text=self.link_processing(comment_dict['comment']), timestamp=ts)
-        comment.author_id = self.get_user_id(comment_dict['submitter'])
+        author_id = self.get_user_id(comment_dict['submitter'])
+        text = self.link_processing(comment_dict['comment'])
+        if not author_id and comment_dict['submitter']:
+            text = 'Originally posted by: {0}\n\n{1}'.format(
+                    comment_dict['submitter'], text)
+        comment = thread.post(text=text, timestamp=ts)
+        comment.author_id = author_id
         comment.import_id = c.api_token.api_key
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):

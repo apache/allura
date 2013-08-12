@@ -24,9 +24,21 @@
     </div>
     <div class="grid-10">
         <input id="trac_url" name="trac_url" value="{{c.form_values['trac_url']}}" autofocus/>
-        <div id="trac_ur_errorl" class="error{% if not c.form_errors['trac_url'] %} hidden{% endif %}">
+        <div id="trac_url_error" class="error{% if not c.form_errors['trac_url'] %} hidden{% endif %}">
             {{c.form_errors['trac_url']}}
         </div>
     </div>
+
+    <div class="grid-6" style="clear:left">
+        <label>User Map (optional)</label>
+    </div>
+    <div class="grid-10">
+        <input id="user_map" name="user_map" value="{{c.form_values['user_map']}}" type="file"/>
+        <br><small>JSON file mapping Trac usernames to Allura usernames</small>
+        <div id="user_map_error" class="error{% if not c.form_errors['user_map'] %} hidden{% endif %}">
+            {{c.form_errors['user_map']}}
+        </div>
+    </div>
+
     {{ super() }}
 {% endblock %}

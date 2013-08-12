@@ -50,7 +50,7 @@ class ProjectImportForm(schema.Schema):
     project_name = fev.UnicodeString(not_empty=True, max=40)
 
 
-@task
+@task(notifications_disabled=True)
 def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = ToolImporter.by_name(importer_name)
     importer.import_tool(c.project, c.user, project_name=project_name,
@@ -61,8 +61,9 @@ class ProjectImporter(BaseController):
     """
     Base class for project importers.
 
-    Subclases are required to implement the :meth:`index()` and
+    Subclasses are required to implement the :meth:`index()` and
     :meth:`process()` views described below.
+
     """
     source = None
     process_validator = None

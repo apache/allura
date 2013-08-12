@@ -49,7 +49,7 @@ class AlluraImportApiClient(object):
         url = urlparse.urljoin(self.base_url, url)
         if self.verbose:
             print "Using URL '%s'" % (url)
-        
+
         params = self.sign(urlparse.urlparse(url).path, params.items())
 
         while True:

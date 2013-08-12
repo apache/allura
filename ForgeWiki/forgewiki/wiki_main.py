@@ -730,17 +730,18 @@ class PageRestController(BaseController):
         return self.page.__json__()
 
     def _update_page(self, title, **post_data):
-        if not self.page:
-            require_access(c.app, 'create')
-            self.page = WM.Page.upsert(title)
-            self.page.viewable_by = ['all']
-        else:
-            require_access(self.page, 'edit')
-        self.page.text = post_data['text']
-        if 'labels' in post_data:
-            self.page.labels = post_data['labels'].split(',')
-        self.page.commit()
-        return {}
+        with h.notifications_disabled(c.project):
+            if not self.page:
+                require_access(c.app, 'create')
+                self.page = WM.Page.upsert(title)
+                self.page.viewable_by = ['all']
+            else:
+                require_access(self.page, 'edit')
+            self.page.text = post_data['text']
+            if 'labels' in post_data:
+                self.page.labels = post_data['labels'].split(',')
+            self.page.commit()
+            return {}
 
 
 class WikiAdminController(DefaultAdminController):
