@@ -28,16 +28,49 @@ from tg import request, redirect
 
 from webob import exc
 
-def task(func):
-    '''Decorator to add some methods to task functions'''
-    def post(*args, **kwargs):
-        from allura import model as M
-        delay = kwargs.pop('delay', 0)
-        return M.MonQTask.post(func, args, kwargs, delay=delay)
-    # if decorating a class, have to make it a staticmethod
-    # or it gets a spurious cls argument
-    func.post = staticmethod(post) if inspect.isclass(func) else post
-    return func
+from pylons import tmpl_context as c
+from allura.lib import helpers as h
+
+
+def _get_model():
+    from allura import model as M
+    return M
+
+def task(*args, **kw):
+    """Decorator that adds a ``.post()`` function to the decorated callable.
+
+    Calling <original_callable>.post(*args, **kw) queues the callable for
+    execution by a background worker process. All parameters must be
+    BSON-serializable.
+
+    Example usage:
+
+    @task
+    def myfunc():
+        pass
+
+    @task(notifications_disabled=True)
+    def myotherfunc():
+        # No email notifications will be sent for c.project during this task
+        pass
+
+    """
+    def task_(func):
+        def post(*args, **kwargs):
+            delay = kwargs.pop('delay', 0)
+            project = getattr(c, 'project', None)
+            cm = (h.notifications_disabled if project and
+                    kw.get('notifications_disabled') else h.null_contextmanager)
+            with cm(project):
+                M = _get_model()
+                return M.MonQTask.post(func, args, kwargs, delay=delay)
+        # if decorating a class, have to make it a staticmethod
+        # or it gets a spurious cls argument
+        func.post = staticmethod(post) if inspect.isclass(func) else post
+        return func
+    if len(args) == 1 and callable(args[0]):
+        return task_(args[0])
+    return task_
 
 class event_handler(object):
     '''Decorator to register event handlers'''
@@ -154,28 +187,6 @@ class log_action(object): # pragma no cover
                 pass
         extra['referer_link'] = referer_link
         return extra
-
-class exceptionless(object):
-    '''Decorator making the decorated function return 'error_result' on any
-    exceptions rather than propagating exceptions up the stack
-    '''
-
-    def __init__(self, error_result, log=None):
-        self.error_result = error_result
-        self.log = log
-
-    def __call__(self, fun):
-        fname = 'exceptionless(%s)' % fun.__name__
-        def inner(*args, **kwargs):
-            try:
-                return fun(*args, **kwargs)
-            except Exception as e:
-                if self.log:
-                    self.log.exception('Error calling %s(args=%s, kwargs=%s): %s',
-                            fname, args, kwargs, str(e))
-                return self.error_result
-        inner.__name__ = fname
-        return inner
 
 def Property(function):
     '''Decorator to easily assign descriptors based on sub-function names

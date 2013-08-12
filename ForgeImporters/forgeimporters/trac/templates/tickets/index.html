@@ -27,9 +27,12 @@ Import tickets from Trac
 {% endblock %}
 
 {% block content %}
-<form action="create" method="post" class="pad">
+<form action="create" method="post" enctype="multipart/form-data" class="pad">
   <label for="trac_url">URL of the Trac instance</label>
   <input name="trac_url" />
+
+  <label for="user_map">JSON file mapping Trac usernames to Allura usernames (optional)</label>
+  <input name="user_map" type="file" />
 
   <label for="mount_label">Label</label>
   <input name="mount_label" value="Source" />

@@ -17,7 +17,7 @@
 
 import logging
 
-from allura.lib.decorators import exceptionless
+from allura.lib.helpers import exceptionless
 
 log = logging.getLogger(__name__)
 

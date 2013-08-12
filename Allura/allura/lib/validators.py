@@ -151,6 +151,36 @@ class JsonConverter(fev.FancyValidator):
             raise fe.Invalid('Invalid JSON: ' + str(e), value, state)
         return obj
 
+class JsonFile(fev.FieldStorageUploadConverter):
+    """Validates that a file is JSON and returns the deserialized Python object
+
+    """
+    def _to_python(self, value, state):
+        return JsonConverter.to_python(value.value)
+
+class UserMapJsonFile(JsonFile):
+    """Validates that a JSON file conforms to this format:
+
+    {str:str, ...}
+
+    and returns a deserialized or stringified copy of it.
+
+    """
+    def __init__(self, as_string=False):
+        self.as_string = as_string
+
+    def _to_python(self, value, state):
+        value = super(self.__class__, self)._to_python(value, state)
+        try:
+            for k, v in value.iteritems():
+                if not(isinstance(k, basestring) and isinstance(v, basestring)):
+                    raise
+            return json.dumps(value) if self.as_string else value
+        except:
+            raise fe.Invalid(
+                    'User map file must contain mapping of {str:str, ...}',
+                    value, state)
+
 class CreateTaskSchema(fe.Schema):
     task = TaskValidator(not_empty=True, strip=True)
     task_args = JsonConverter(if_missing=dict(args=[], kwargs={}))

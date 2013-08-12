@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import json
 from unittest import TestCase
 from mock import Mock, patch
 
@@ -39,7 +40,7 @@ class TestTracTicketImporter(TestCase):
         from datetime import datetime, timedelta
         now = datetime.utcnow()
         dt.utcnow.return_value = now
-
+        user_map = {"orig_user":"new_user"}
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
         project = Mock(name='Project', shortname='myproject')
@@ -48,7 +49,9 @@ class TestTracTicketImporter(TestCase):
         res = importer.import_tool(project, user,
                 mount_point='bugs',
                 mount_label='Bugs',
-                trac_url='http://example.com/trac/url')
+                trac_url='http://example.com/trac/url',
+                user_map=json.dumps(user_map),
+                )
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
                 'Tickets', mount_point='bugs', mount_label='Bugs')
@@ -60,7 +63,8 @@ class TestTracTicketImporter(TestCase):
                 expires=now + timedelta(minutes=60))
         api_client = ApiClient.return_value
         import_tracker.assert_called_once_with(
-                api_client, 'myproject', 'bugs', {}, '[]',
+                api_client, 'myproject', 'bugs',
+                {"user_map": user_map}, '[]',
                 validate=False)
         g.post_event.assert_called_once_with('project_updated')
 
@@ -91,10 +95,12 @@ class TestTracTicketImportController(TestController, TestCase):
                 mount_point='mymount',
                 )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
+                upload_files=[('user_map', 'myfile', '{"orig_user": "new_user"}')],
                 status=302)
         project = M.Project.query.get(shortname='test')
         self.assertEqual(r.location, 'http://localhost/p/test/mymount')
         self.assertEqual(project._id, importer.import_tool.call_args[0][0]._id)
         self.assertEqual(u'mymount', importer.import_tool.call_args[1]['mount_point'])
         self.assertEqual(u'mylabel', importer.import_tool.call_args[1]['mount_label'])
+        self.assertEqual('{"orig_user": "new_user"}', importer.import_tool.call_args[1]['user_map'])
         self.assertEqual(u'http://example.com/trac/url', importer.import_tool.call_args[1]['trac_url'])

@@ -22,6 +22,7 @@ import os
 import os.path
 import difflib
 import urllib
+import urllib2
 import re
 import json
 import logging
@@ -30,6 +31,7 @@ from hashlib import sha1
 from datetime import datetime, timedelta
 from collections import defaultdict
 import shlex
+import socket
 
 import tg
 import genshi.template
@@ -53,10 +55,10 @@ from webhelpers import date, feedgenerator, html, number, misc, text
 
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
-from allura.lib.decorators import exceptionless
 from allura.lib import AsciiDammit
 from .security import has_access
 
+log = logging.getLogger(__name__)
 
 # validates project, subproject, and user names
 re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,14}$')
@@ -857,3 +859,70 @@ def split_select_field_options(field_options):
         # so we're getting rid of those.
         field_options = [o.replace('"', '') for o in field_options]
     return field_options
+
+
+@contextmanager
+def notifications_disabled(project):
+    """Temporarily disable email notifications on a project.
+
+    """
+    orig = project.notifications_disabled
+    try:
+        project.notifications_disabled = True
+        yield
+    finally:
+        project.notifications_disabled = orig
+
+
+@contextmanager
+def null_contextmanager(*args, **kw):
+    """A no-op contextmanager.
+
+    """
+    yield
+
+
+class exceptionless(object):
+    '''Decorator making the decorated function return 'error_result' on any
+    exceptions rather than propagating exceptions up the stack
+    '''
+
+    def __init__(self, error_result, log=None):
+        self.error_result = error_result
+        self.log = log
+
+    def __call__(self, fun):
+        fname = 'exceptionless(%s)' % fun.__name__
+        def inner(*args, **kwargs):
+            try:
+                return fun(*args, **kwargs)
+            except Exception as e:
+                if self.log:
+                    self.log.exception('Error calling %s(args=%s, kwargs=%s): %s',
+                            fname, args, kwargs, str(e))
+                return self.error_result
+        inner.__name__ = fname
+        return inner
+
+
+def urlopen(url, retries=3, codes=(408,)):
+    """Open url, optionally retrying if an error is encountered.
+
+    Socket timeouts will always be retried if retries > 0.
+    HTTP errors are retried if the error code is passed in ``codes``.
+
+    :param retries: Number of time to retry.
+    :param codes: HTTP error codes that should be retried.
+
+    """
+    while True:
+        try:
+            return urllib2.urlopen(url)
+        except (urllib2.HTTPError, socket.timeout) as e:
+            if retries and (isinstance(e, socket.timeout) or
+                    e.code in codes):
+                retries -= 1
+                continue
+            else:
+                log.exception('Failed after %s retries: %s', retries, e)
+                raise

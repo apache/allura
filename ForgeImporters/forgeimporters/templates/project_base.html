@@ -53,11 +53,10 @@
         }
 
         function check_names() {
-            var data = {
-                'neighborhood': $('#neighborhood').val(),
-                'project_name': $('#project_name').val(),
-                'project_shortname': $('#project_shortname').val()
-            };
+            var data = {};
+            $('#project-import-form input').each(function() {
+              data[$(this).attr('name')] = $(this).val();
+            });
             $.getJSON('check_names', data, function(result) {
                 $('#project_name_error').addClass('hidden');
                 $('#project_shortname_error').addClass('hidden');
@@ -86,7 +85,7 @@
 {% endblock %}
 
 {% block content %}
-<form id="project-import-form" method="POST" action="process">
+<form id="project-import-form" method="POST" action="process" enctype="multipart/form-data">
     <input type="hidden" id="neighborhood" name="neighborhood" value="{{importer.neighborhood.name}}"/>
 
     <fieldset id="project-fields">

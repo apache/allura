@@ -1608,18 +1608,19 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def perform_import(self, doc=None, options=None, **post_data):
-        require_access(c.project, 'admin')
-        if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
-            log.error('Import capability is not enabled for %s', c.project.shortname)
-            raise exc.HTTPForbidden(detail='Import is not allowed')
+        with h.notifications_disabled(c.project):
+            require_access(c.project, 'admin')
+            if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
+                log.error('Import capability is not enabled for %s', c.project.shortname)
+                raise exc.HTTPForbidden(detail='Import is not allowed')
 
-        migrator = ImportSupport()
-        try:
-            status = migrator.perform_import(doc, options, **post_data)
-            return status
-        except Exception, e:
-            log.exception(e)
-            return dict(status=False, errors=[str(e)])
+            migrator = ImportSupport()
+            try:
+                status = migrator.perform_import(doc, options, **post_data)
+                return status
+            except Exception, e:
+                log.exception(e)
+                return dict(status=False, errors=[str(e)])
 
     @expose('json:')
     def search(self, q=None, limit=100, page=0, sort=None, **kw):

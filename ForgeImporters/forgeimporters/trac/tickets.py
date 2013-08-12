@@ -41,6 +41,7 @@ from tg.decorators import (
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.lib.import_api import AlluraImportApiClient
+from allura.lib.validators import UserMapJsonFile
 from allura.model import ApiTicket
 from allura.scripts.trac_export import (
         TracExport,
@@ -54,6 +55,7 @@ from forgetracker.scripts.import_tracker import import_tracker
 
 class TracTicketImportSchema(fe.Schema):
     trac_url = fev.URL(not_empty=True)
+    user_map = UserMapJsonFile(as_string=True)
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
 
@@ -68,11 +70,12 @@ class TracTicketImportController(BaseController):
     @expose()
     @require_post()
     @validate(TracTicketImportSchema(), error_handler=index)
-    def create(self, trac_url, mount_point, mount_label, **kw):
+    def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
         app = TracTicketImporter().import_tool(c.project, c.user,
                 mount_point=mount_point,
                 mount_label=mount_label,
-                trac_url=trac_url)
+                trac_url=trac_url,
+                user_map=user_map)
         redirect(app.url())
 
 
@@ -84,7 +87,7 @@ class TracTicketImporter(ToolImporter):
     tool_description = 'Import your tickets from Trac'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
-            mount_label=None, trac_url=None, **kw):
+            mount_label=None, trac_url=None, user_map=None, **kw):
         """ Import Trac tickets into a new Allura Tracker tool.
 
         """
@@ -105,7 +108,8 @@ class TracTicketImporter(ToolImporter):
         session(api_ticket).flush(api_ticket)
         cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
                 api_ticket.secret_key, False)
-        import_tracker(cli, project.shortname, mount_point, {},
+        import_tracker(cli, project.shortname, mount_point,
+                {'user_map': json.loads(user_map) if user_map else {}},
                 export_string, validate=False)
         g.post_event('project_updated')
         return app

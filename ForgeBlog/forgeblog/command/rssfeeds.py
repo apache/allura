@@ -33,7 +33,7 @@ from forgeblog import model as BM
 from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
-from allura.lib.decorators import exceptionless
+from allura.lib.helpers import exceptionless
 
 ## Everything in this file depends on html2text,
 ## so import attempt is placed in global scope.

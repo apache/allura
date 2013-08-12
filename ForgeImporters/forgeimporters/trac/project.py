@@ -23,6 +23,7 @@ from tg import expose, validate
 from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
+from allura.lib.validators import UserMapJsonFile
 
 from .. import base
 
@@ -32,6 +33,7 @@ log = logging.getLogger(__name__)
 
 class TracProjectForm(base.ProjectImportForm):
     trac_url = fev.URL(not_empty=True)
+    user_map = UserMapJsonFile(as_string=True)
 
 
 class TracProjectImporter(base.ProjectImporter):
