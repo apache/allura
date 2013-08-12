@@ -32,6 +32,8 @@ from ming.utils import LazyProperty
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib import security
+from allura.lib import plugin
+from allura.lib.exceptions import Invalid
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
@@ -243,7 +245,10 @@ class NeighborhoodRestController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        if not h.re_project_name.match(name):
+        provider = plugin.ProjectRegistrationProvider.get()
+        try:
+            provider.shortname_validator.to_python(name, check_allowed=False, neighborhood=self._neighborhood)
+        except Invalid as e:
             raise exc.HTTPNotFound, name
         name = self._neighborhood.shortname_prefix + name
         project = M.Project.query.get(shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)

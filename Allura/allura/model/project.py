@@ -638,9 +638,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 return ac
 
     def new_subproject(self, name, install_apps=True, user=None, project_name=None):
-        if not h.re_project_name.match(name):
-            raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         provider = plugin.ProjectRegistrationProvider.get()
+        try:
+            provider.shortname_validator.to_python(name, check_allowed=False, neighborhood=self.neighborhood)
+        except exceptions.Invalid as e:
+            raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 
     def ordered_mounts(self, include_hidden=False):

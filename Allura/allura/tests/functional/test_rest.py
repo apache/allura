@@ -27,6 +27,7 @@ from nose.tools import assert_equal, assert_in, assert_not_in
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
+from allura.lib.exceptions import Invalid
 from allura import model as M
 
 class TestRestHome(TestRestApiBase):
@@ -141,3 +142,11 @@ class TestRestHome(TestRestApiBase):
                         'qux_24hr': 0,
                     },
                 })
+
+    def test_name_validation(self):
+        r = self.api_get('/rest/p/test/')
+        assert r.status_int == 200
+        with mock.patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
+            Provider.get().shortname_validator.to_python.side_effect = Invalid('name', 'value', {})
+            r = self.api_get('/rest/p/test/')
+            assert r.status_int == 404

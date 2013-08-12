@@ -28,8 +28,8 @@ from allura import model as M
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.lib.exceptions import ToolError
-from mock import MagicMock
+from allura.lib.exceptions import ToolError, Invalid
+from mock import MagicMock, patch
 
 
 def setUp():
@@ -93,8 +93,10 @@ def test_project():
 def test_subproject():
     project = M.Project.query.get(shortname='test')
     with td.raises(ToolError):
-        # name exceeds 15 chars
-        sp = project.new_subproject('test-project-nose')
+        with patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
+            Provider.get().shortname_validator.to_python.side_effect = Invalid('name', 'value', {})
+            # name doesn't validate
+            sp = project.new_subproject('test-proj-nose')
     sp = project.new_subproject('test-proj-nose')
     spp = sp.new_subproject('spp')
     ThreadLocalORMSession.flush_all()
