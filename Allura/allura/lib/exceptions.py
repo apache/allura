@@ -18,7 +18,14 @@
 from formencode import Invalid
 
 class ForgeError(Exception): pass
-class ProjectConflict(ForgeError, Invalid): pass
+
+class ProjectConflict(ForgeError, Invalid):
+
+    # support the single string constructor in addition to full set of params that Invalid.__init__ requires
+    def __init__(self, msg, value=None, state=None, error_list=None, error_dict=None):
+        super(ProjectConflict, self).__init__(msg, value, state, error_list, error_dict)
+
+
 class ProjectShortnameInvalid(ForgeError, Invalid): pass
 class ProjectOverlimitError(ForgeError): pass
 class ProjectRatelimitError(ForgeError): pass
@@ -45,4 +52,3 @@ class CompoundError(ForgeError):
                 parts.append('    ' + line)
         parts.append('</%s>\n' % self.__class__.__name__ )
         return ''.join(parts)
-                
