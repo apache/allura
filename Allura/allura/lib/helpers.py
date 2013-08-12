@@ -98,7 +98,7 @@ re_preserve_spaces = re.compile(r'''
     ''', re.VERBOSE)
 re_angle_bracket_open = re.compile('<')
 re_angle_bracket_close = re.compile('>')
-md_chars_matcher_all = re.compile(r"([`\*_{}\[\]\(\)#!\\.+-])")
+md_chars_matcher_all = re.compile(r"([`\*_{}\[\]\(\)#!\\\.+-])")
 
 def make_safe_path_portion(ustr, relaxed=True):
     """Return an ascii representation of ``ustr`` that conforms to mount point
@@ -962,7 +962,7 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
         text = html2text.escape_md_section(text, snob=True)
     except ImportError:
         # fall back to just escaping any MD-special chars
-        text = md_chars_matcher.sub(r"\\\\1", text)
+        text = md_chars_matcher_all.sub(r"\\\1", text)
     # prevent < and > from becoming tags
     text = re_angle_bracket_open.sub('&lt;', text)
     text = re_angle_bracket_close.sub('&gt;', text)

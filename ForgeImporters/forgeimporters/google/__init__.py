@@ -28,6 +28,7 @@ import logging
 
 from BeautifulSoup import BeautifulSoup
 
+from allura.lib import helpers as h
 from allura import model as M
 from forgeimporters.base import ProjectExtractor
 
@@ -260,6 +261,24 @@ class Comment(object):
             self.attachments = map(Attachment, attachments.findAll('tr'))
         else:
             self.attachments = []
+
+    @property
+    def annotated_text(self):
+        text = (
+                u'*Originally posted by:* [{author.name}]({author.link})\n'
+                u'\n'
+                u'{body}\n'
+                u'\n'
+                u'{updates}'
+            ).format(
+                author=self.author,
+                body=h.plain2markdown(self.body, True),
+                updates='\n'.join(
+                        '**%s** %s' % (k,v)
+                        for k,v in self.updates.items()
+                    ),
+            )
+        return text
 
 class Attachment(object):
     def __init__(self, tag):

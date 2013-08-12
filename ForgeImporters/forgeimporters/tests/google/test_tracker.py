@@ -27,9 +27,10 @@ class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker, 'c')
     @mock.patch.object(tracker, 'ThreadLocalORMSession')
     @mock.patch.object(tracker, 'session')
+    @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'TM')
     @mock.patch.object(tracker, 'GoogleCodeProjectExtractor')
-    def test_import_tool(self, gpe, TM, session, tlos, c):
+    def test_import_tool(self, gpe, TM, M, session, tlos, c):
         importer = tracker.GoogleCodeTrackerImporter()
         importer.process_fields = mock.Mock()
         importer.process_labels = mock.Mock()
@@ -158,12 +159,14 @@ class TestTrackerImporter(TestCase):
                 mock.Mock(
                     author=_author(1),
                     body='text1',
+                    annotated_text='annotated1',
                     attachments='attachments1',
                     created_date='Mon Jul 15 00:00:00 2013',
                 ),
                 mock.Mock(
                     author=_author(2),
                     body='text2',
+                    annotated_text='annotated2',
                     attachments='attachments2',
                     created_date='Mon Jul 16 00:00:00 2013',
                 ),
@@ -177,24 +180,16 @@ class TestTrackerImporter(TestCase):
         importer = tracker.GoogleCodeTrackerImporter()
         importer.process_comments(ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text='*Originally posted by:* [author1](author1_link)\n'
-                '\n'
-                'text1\n'
-                '\n'
-                '**Foo:** Bar\n'
-                '**Baz:** Qux'
+                text='annotated1',
+                timestamp=datetime(2013, 7, 15),
+                ignore_security=True,
             ))
-        self.assertEqual(posts[0].created_date, datetime(2013, 7, 15))
-        self.assertEqual(posts[0].timestamp, datetime(2013, 7, 15))
         posts[0].add_multiple_attachments.assert_called_once_with('attachments1')
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[1], mock.call(
-                text='*Originally posted by:* [author2](author2_link)\n'
-                '\n'
-                'text2\n'
-                '\n'
+                text='annotated2',
+                timestamp=datetime(2013, 7, 16),
+                ignore_security=True,
             ))
-        self.assertEqual(posts[1].created_date, datetime(2013, 7, 16))
-        self.assertEqual(posts[1].timestamp, datetime(2013, 7, 16))
         posts[1].add_multiple_attachments.assert_called_once_with('attachments2')
 
     @mock.patch.object(tracker, 'c')

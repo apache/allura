@@ -19,6 +19,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
 
 from allura import model as M
@@ -44,22 +45,27 @@ class GoogleCodeTrackerImporter(ToolImporter):
 
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
-        c.app = project.install_app('tickets', mount_point, mount_label)
+        app = project.install_app('tickets', mount_point, mount_label)
+        app.globals.open_status_names = 'New Accepted Started'
+        app.globals.closed_status_names = 'Fixed Verified Invalid Duplicate WontFix Done'
         ThreadLocalORMSession.flush_all()
-        c.app.globals.open_status_names = 'New Accepted Started'
-        c.app.globals.closed_status_names = 'Fixed Verified Invalid Duplicate WontFix Done'
         self.custom_fields = {}
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
-            for issue in GoogleCodeProjectExtractor.iter_issues(project_name):
-                ticket = TM.Ticket.new()
-                self.process_fields(ticket, issue)
-                self.process_labels(ticket, issue)
-                self.process_comments(ticket, issue)
-                session(ticket).flush(ticket)
-                session(ticket).expunge(ticket)
-            self.postprocess_custom_fields()
-            ThreadLocalORMSession.flush_all()
+            with h.push_config(c, user=M.User.anonymous(), app=app):
+                for issue in GoogleCodeProjectExtractor.iter_issues(project_name):
+                    ticket = TM.Ticket.new()
+                    self.process_fields(ticket, issue)
+                    self.process_labels(ticket, issue)
+                    self.process_comments(ticket, issue)
+                    session(ticket).flush(ticket)
+                    session(ticket).expunge(ticket)
+                # app.globals gets expunged every time Ticket.new() is called :-(
+                app.globals = TM.Globals.query.get(app_config_id=app.config._id)
+                app.globals.custom_fields = self.postprocess_custom_fields()
+                ThreadLocalORMSession.flush_all()
+            g.post_event('project_updated')
+            return app
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
 
@@ -78,13 +84,18 @@ class GoogleCodeTrackerImporter(ToolImporter):
         ticket.status = issue.get_issue_status()
         ticket.created_date = datetime.strptime(issue.get_issue_created_date(), '%c')
         ticket.mod_date = datetime.strptime(issue.get_issue_mod_date(), '%c')
+        owner = issue.get_issue_owner()
+        if owner:
+            owner_line = '*Originally owned by:* [{owner.name}]({owner.link})\n'.format(owner=owner)
+        else:
+            owner_line = ''
         ticket.description = (
                 u'*Originally created by:* [{creator.name}]({creator.link})\n'
-                '*Originally owned by:* [{owner.name}]({owner.link})\n'
-                '\n'
-                '{body}').format(
+                u'{owner}'
+                u'\n'
+                u'{body}').format(
                     creator=issue.get_issue_creator(),
-                    owner=issue.get_issue_owner(),
+                    owner=owner_line,
                     body=h.plain2markdown(issue.get_issue_description(), True),
                 )
         ticket.add_multiple_attachments(issue.get_issue_attachments())
@@ -106,25 +117,14 @@ class GoogleCodeTrackerImporter(ToolImporter):
     def process_comments(self, ticket, issue):
         for comment in issue.iter_comments():
             p = ticket.discussion_thread.add_post(
-                    text = (
-                        u'*Originally posted by:* [{author.name}]({author.link})\n'
-                        '\n'
-                        '{body}\n'
-                        '\n'
-                        '{updates}').format(
-                            author=comment.author,
-                            body=h.plain2markdown(comment.body, True),
-                            updates='\n'.join(
-                                '**%s** %s' % (k,v)
-                                for k,v in comment.updates.items()
-                            ),
-                    )
+                    text = comment.annotated_text,
+                    ignore_security = True,
+                    timestamp = datetime.strptime(comment.created_date, '%c'),
                 )
-            p.created_date = p.timestamp = datetime.strptime(comment.created_date, '%c')
             p.add_multiple_attachments(comment.attachments)
 
     def postprocess_custom_fields(self):
-        c.app.globals.custom_fields = []
+        custom_fields = []
         for name, field in self.custom_fields.iteritems():
             if field['name'] == '_milestone':
                 field['milestones'] = [{
@@ -137,4 +137,5 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 field['options'] = ' '.join(field['options'])
             else:
                 field['options'] = ''
-            c.app.globals.custom_fields.append(field)
+            custom_fields.append(field)
+        return custom_fields
