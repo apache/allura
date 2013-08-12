@@ -806,12 +806,11 @@ class TestExport(TestController):
         assert_in('Wiki2</label> <a href="/p/test/wiki2/">/p/test/wiki2/</a>', r)
         assert_not_in('Search</label> <a href="/p/test/search/">/p/test/search/</a>', r)
 
-    @patch('allura.ext.search.search_main.SearchApp.exportable')
-    def test_export_page_contains_hidden_tools(self, search_app):
-        project = M.Project.query.get(shortname='test')
-        tools = [t.options.mount_point
-                 for t in AdminApp.exportable_tools_for(project)]
-        assert_equals(tools, [u'search', u'wiki', u'wiki2'])
+    def test_export_page_contains_hidden_tools(self):
+        with patch('allura.ext.search.search_main.SearchApp.exportable'):
+            project = M.Project.query.get(shortname='test')
+            tools = [t.options.mount_point for t in AdminApp.exportable_tools_for(project)]
+            assert_equals(tools, [u'search', u'wiki', u'wiki2'])
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
@@ -841,7 +840,6 @@ class TestExport(TestController):
         tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
         shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
         os.makedirs(tmpdir)
-        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('info', self.webflash(r))
         assert_equals(export_tasks.bulk_export.post.call_count, 0)
