@@ -100,7 +100,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
 
     # Configure EW variable provider
     ew.render.TemplateEngine.register_variable_provider(get_tg_vars)
-    
+
     # Set FormEncode language to english, as we don't support any other locales
     formencode.api.set_stdtranslation(domain='FormEncode', languages=['en'])
 
@@ -161,16 +161,16 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     #    streaming=true ensures they won't be cleaned up till
     #    the WSGI application's iterator is exhausted
     app = RegistryManager(app, streaming=True)
-    # Converts exceptions to HTTP errors, shows traceback in debug mode
-    tg.error.footer_html = '<!-- %s %s -->'  # don't use TG footer with extra CSS & images that take time to load
-    app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
     # Make sure that the wsgi.scheme is set appropriately when we
     # have the funky HTTP_X_SFINC_SSL  environ var
     if asbool(app_conf.get('auth.method', 'local')=='sfx'):
         app = set_scheme_middleware(app)
-    # Redirect some status codes to /error/document
+    # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') != 'task':
-        # "task" wsgi would get a 2nd request to /error/document if we used this middleware
+        # Converts exceptions to HTTP errors, shows traceback in debug mode
+        tg.error.footer_html = '<!-- %s %s -->'  # don't use TG footer with extra CSS & images that take time to load
+        app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+        # Redirect some status codes to /error/document
         if asbool(config['debug']):
             app = StatusCodeRedirect(app, base_config.handle_status_codes)
         else:
