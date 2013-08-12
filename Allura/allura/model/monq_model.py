@@ -264,7 +264,6 @@ class MonQTask(MappedClass):
                 log.error(self.result)
             else:
                 self.result = traceback.format_exc()
-            raise
         finally:
             self.time_stop = datetime.utcnow()
             session(self).flush(self)
