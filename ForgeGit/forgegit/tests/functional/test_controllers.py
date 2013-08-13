@@ -33,6 +33,7 @@ from allura.lib import helpers as h
 from alluratest.controller import TestController
 from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
+from forgegit import model as GM
 
 class _TestCase(TestController):
 
@@ -516,6 +517,23 @@ class TestFork(_TestCase):
         r = self.app.post('/p/test/src-git/merge-requests/%s/save' % mr_num,
                           params=dict(status='rejected')).follow()
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
+
+    def test_merge_request_default_branches(self):
+        _select_val = lambda r, n: r.html.find('select', {'name': n}).find(selected=True).string
+        r = self.app.get('/p/test2/code/request_merge')
+        assert_equal(_select_val(r, 'source_branch'), 'master')
+        assert_equal(_select_val(r, 'target_branch'), 'master')
+        r = self.app.get('/p/test2/code/ci/zz/tree/').click('Request Merge')
+        assert_equal(_select_val(r, 'source_branch'), 'zz')
+        assert_equal(_select_val(r, 'target_branch'), 'master')
+        GM.Repository.query.get(_id=c.app.repo._id).default_branch_name = 'zz'
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/p/test2/code/request_merge')
+        assert_equal(_select_val(r, 'source_branch'), 'master')
+        assert_equal(_select_val(r, 'target_branch'), 'zz')
+        r = self.app.get('/p/test2/code/ci/zz/tree/').click('Request Merge')
+        assert_equal(_select_val(r, 'source_branch'), 'zz')
+        assert_equal(_select_val(r, 'target_branch'), 'zz')
 
 class TestDiff(TestController):
 
