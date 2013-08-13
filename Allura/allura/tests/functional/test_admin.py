@@ -825,14 +825,14 @@ class TestExport(TestController):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki'], u'test-admin')
+            'test', [u'wiki'], u'test-admin', u'Projects')
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
         export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki', u'wiki2'], u'test-admin')
+            'test', [u'wiki', u'wiki2'], u'test-admin', u'Projects')
 
     @patch('allura.ext.admin.admin_main.export_tasks')
     def test_export_in_progress(self, export_tasks):
@@ -855,3 +855,22 @@ class TestExport(TestController):
         r = self.app.get('/admin/export')
         assert_in('<h2>Careful!</h2>', r)
         shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
+
+    @td.with_user_project('test-user')
+    def test_bulk_export_path_for_user_project(self):
+        project = M.Project.query.get(shortname='u/test-user')
+        assert_equals(project.bulk_export_path(), '/tmp/bulk_export/u/test-user')
+
+    @td.with_user_project('test-user')
+    def test_bulk_export_filename_for_user_project(self):
+        project = M.Project.query.get(shortname='u/test-user')
+        assert_equals(project.bulk_export_filename(), 'test-user.zip')
+
+    def test_bulk_export_filename_for_nbhd(self):
+        project = M.Project.query.get(name='Home Project for Projects')
+        assert_equals(project.bulk_export_filename(), 'p.zip')
+
+    def test_bulk_export_path_for_nbhd(self):
+        project = M.Project.query.get(name='Home Project for Projects')
+        assert_equals(project.bulk_export_path(), '/tmp/bulk_export/p/p')
+

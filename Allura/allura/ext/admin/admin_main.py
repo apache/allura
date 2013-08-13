@@ -649,7 +649,7 @@ class ProjectAdminController(BaseController):
             if c.project.bulk_export_status() == 'busy':
                 flash('Export for project %s already running' % c.project.shortname, 'info')
                 redirect('export')
-            export_tasks.bulk_export.post(c.project.shortname, tools, c.user.username)
+            export_tasks.bulk_export.post(c.project.shortname, tools, c.user.username, c.project.neighborhood.name)
             flash('Export scheduled', 'ok')
             redirect('export')
         return {
