@@ -24,15 +24,18 @@ from urllib import quote, unquote
 from urlparse import urljoin, urlsplit
 
 try:
-    import requests
-except:
-    # Ignore this import if the requests package is not installed
-    pass
+    from forgeimporters.base import ProjectExtractor
+    urlopen = ProjectExtractor.urlopen
+except ImportError:
+    try:
+        from allura.lib.helpers import urlopen
+    except ImportError:
+        from urllib2 import urlopen
 
 try:
     # Ignore this import if the html2text package is not installed
     import html2text
-except:
+except ImportError:
     pass
 
 from BeautifulSoup import BeautifulSoup
@@ -128,8 +131,8 @@ class WikiExporter(object):
         glue = '&' if '?' in suburl else '?'
         return  url + glue + 'format=' + type
 
-    def fetch(self, url, **kwargs):
-        return requests.get(url, **kwargs)
+    def fetch(self, url):
+        return urlopen(url)
 
     def page_list(self):
         url = urljoin(self.base_url, self.PAGE_LIST_URL)

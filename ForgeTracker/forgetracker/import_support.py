@@ -34,6 +34,12 @@ from allura import model as M
 # Local imports
 from forgetracker import model as TM
 
+try:
+    from forgeimporters.base import ProjectExtractor
+    urlopen = ProjectExtractor.urlopen
+except ImportError:
+    urlopen = h.urlopen
+
 log = logging.getLogger(__name__)
 
 class ImportException(Exception):
@@ -276,15 +282,13 @@ class ImportSupport(object):
         comment.import_id = c.api_token.api_key
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):
-        import urllib2
         if att_dict['size'] > self.ATTACHMENT_SIZE_LIMIT:
             self.errors.append('Ticket #%s: Attachment %s (@ %s) is too large, skipping' %
                                (org_ticket_id, att_dict['filename'], att_dict['url']))
             return
-        f = urllib2.urlopen(att_dict['url'])
+        f = urlopen(att_dict['url'])
         TM.TicketAttachment.save_attachment(att_dict['filename'], ResettableStream(f),
                                             artifact_id=ticket_id)
-        f.close()
 
 
     #

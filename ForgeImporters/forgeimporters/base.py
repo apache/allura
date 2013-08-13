@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+import urllib2
 
 from pkg_resources import iter_entry_points
 
@@ -28,6 +29,7 @@ from allura.lib.decorators import require_post
 from allura.lib.decorators import task
 from allura.lib.security import require_access
 from allura.lib.plugin import ProjectRegistrationProvider
+from allura.lib import helpers as h
 from allura.lib import exceptions
 
 from paste.deploy.converters import aslist
@@ -55,6 +57,20 @@ def import_tool(importer_name, project_name=None, mount_point=None, mount_label=
     importer = ToolImporter.by_name(importer_name)
     importer.import_tool(c.project, c.user, project_name=project_name,
             mount_point=mount_point, mount_label=mount_label, **kw)
+
+
+class ProjectExtractor(object):
+    """Base class for project extractors.
+
+    Subclasses should use :meth:`urlopen` to make HTTP requests, as it provides
+    a custom User-Agent and automatically retries timed-out requests.
+
+    """
+    @staticmethod
+    def urlopen(url, retries=3, codes=(408,), **kw):
+        req = urllib2.Request(url, **kw)
+        req.add_header('User-Agent', 'Allura Data Importer (http://sf.net/p/allura)')
+        return h.urlopen(req, retries=retries, codes=codes)
 
 
 class ProjectImporter(BaseController):

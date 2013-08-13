@@ -18,7 +18,6 @@
 #       under the License.
 
 import logging
-import socket
 import sys
 import csv
 import urlparse
@@ -28,14 +27,20 @@ import time
 import re
 from optparse import OptionParser
 from itertools import islice
-from datetime import datetime
 
 import feedparser
 from BeautifulSoup import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz
 
-from allura.lib import helpers as h
+try:
+    from forgeimporters.base import ProjectExtractor
+    urlopen = ProjectExtractor.urlopen
+except ImportError:
+    try:
+        from allura.lib.helpers import urlopen
+    except ImportError:
+        from urllib2 import urlopen
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +129,7 @@ class TracExport(object):
 
     def csvopen(self, url):
         self.log_url(url)
-        f = h.urlopen(url)
+        f = urlopen(url)
         # Trac doesn't throw 403 error, just shows normal 200 HTML page
         # telling that access denied. So, we'll emulate 403 ourselves.
         # TODO: currently, any non-csv result treated as 403.
@@ -146,7 +151,7 @@ class TracExport(object):
         from html2text import html2text
         url = self.full_url(self.TICKET_URL % id, 'rss')
         self.log_url(url)
-        d = feedparser.parse(h.urlopen(url))
+        d = feedparser.parse(urlopen(url))
         res = []
         for comment in d['entries']:
             c = {}
@@ -163,7 +168,7 @@ class TracExport(object):
         # Scrape HTML to get ticket attachments
         url = self.full_url(self.ATTACHMENT_LIST_URL % id)
         self.log_url(url)
-        f = h.urlopen(url)
+        f = urlopen(url)
         soup = BeautifulSoup(f)
         attach = soup.find('div', id='attachments')
         list = []
