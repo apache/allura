@@ -293,33 +293,16 @@ class ProjectToolsImportController(object):
     @with_trailing_slash
     @expose('jinja:forgeimporters:templates/list_all.html')
     def index(self, *a, **kw):
-        # make dictionaries of both axis
-        importers_by_source = defaultdict(dict)
-        importers_by_tool = defaultdict(dict)
+        importer_matrix = defaultdict(dict)
+        tools_with_importers = set()
         for ep in iter_entry_points('allura.importers'):
             importer = ep.load()
-            importers_by_source[importer.source][ep.name] = importer
             for tool in aslist(importer.target_app):
-                importers_by_tool[tool][ep.name] = importer
-
-        relevant_tools = sorted(importers_by_tool.keys(), key=lambda t: t.tool_label)
-
-        # build a full matrix including empty spots
-        importer_matrix = dict() # source -> [importer names]
-        for source, src_importers in importers_by_source.iteritems():
-            row = list()
-            for tool in relevant_tools:
-                for ep_name, importer in src_importers.iteritems():
-                    if tool in aslist(importer.target_app):
-                        row.append(ep_name)
-                        break
-                else:
-                    row.append(None)
-            importer_matrix[source] = row
-
+                tools_with_importers.add(tool.tool_label)
+                importer_matrix[importer.source][tool.tool_label] = ep.name
         return {
-            'tools': relevant_tools,
             'importer_matrix': importer_matrix,
+            'tools': tools_with_importers,
         }
 
     @expose()
