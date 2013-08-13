@@ -174,6 +174,7 @@ class Application(object):
         is 'production'.
     :cvar bool searchable: If True, show search box in the left menu of this
         Application. Default is True.
+    :cvar bool exportable: Default is False, Application can't be exported to json.
     :cvar list permissions: Named permissions used by instances of this
         Application. Default is [].
     :cvar dict permissions_desc: Descriptions of the named permissions.
