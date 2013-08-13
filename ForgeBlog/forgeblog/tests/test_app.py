@@ -56,6 +56,7 @@ class TestBulkExport(object):
         blog.bulk_export(f)
         f.seek(0)
         blog = json.loads(f.read())
+        blog['posts'] = sorted(blog['posts'], key=lambda x: x['title'], reverse=True)
         assert_equal(blog['posts'][0]['title'], 'Test2 title')
         assert_equal(blog['posts'][0]['text'], 'test2 post')
         assert_equal(blog['posts'][1]['title'], 'Test title')

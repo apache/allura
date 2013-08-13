@@ -36,7 +36,7 @@ class TestBulkExport(TestDiscussionApiBase):
         discussion.bulk_export(f)
         f.seek(0)
         discussion = json.loads(f.read())
-        forums = discussion['forums']
+        forums = sorted(discussion['forums'], key=lambda x: x['name'])
 
         assert_equal(forums[0]['shortname'], u'general')
         assert_equal(forums[0]['description'], u'Forum about anything you want to talk about.')
