@@ -17,7 +17,6 @@
 
 import re
 import urllib
-import urllib2
 from urlparse import urlparse, urljoin
 from collections import defaultdict
 try:
@@ -29,11 +28,12 @@ import logging
 from BeautifulSoup import BeautifulSoup
 
 from allura import model as M
+from forgeimporters.base import ProjectExtractor
 
 
 log = logging.getLogger(__name__)
 
-class GoogleCodeProjectExtractor(object):
+class GoogleCodeProjectExtractor(ProjectExtractor):
     BASE_URL = 'http://code.google.com'
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 
@@ -82,7 +82,7 @@ class GoogleCodeProjectExtractor(object):
         self.url = (self.get_page_url(page_name_or_url) if page_name_or_url in
                 self.PAGE_MAP else page_name_or_url)
         self.page = self._page_cache[page_name_or_url] = \
-                BeautifulSoup(urllib2.urlopen(self.url))
+                BeautifulSoup(self.urlopen(self.url))
         return self.page
 
     def get_page_url(self, page_name):
@@ -103,7 +103,7 @@ class GoogleCodeProjectExtractor(object):
         if icon_url == self.DEFAULT_ICON:
             return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
-        fp_ish = urllib2.urlopen(icon_url)
+        fp_ish = self.urlopen(icon_url)
         fp = StringIO(fp_ish.read())
         M.ProjectFile.save_image(
             icon_name, fp,

@@ -19,12 +19,13 @@ from unittest import TestCase
 
 import mock
 
-from ... import google
+from forgeimporters import google
+from forgeimporters import base
 
 
 class TestGoogleCodeProjectExtractor(TestCase):
     def setUp(self):
-        self._p_urlopen = mock.patch.object(google.urllib2, 'urlopen')
+        self._p_urlopen = mock.patch.object(base.ProjectExtractor, 'urlopen')
         self._p_soup = mock.patch.object(google, 'BeautifulSoup')
         self.urlopen = self._p_urlopen.start()
         self.soup = self._p_soup.start()
@@ -105,7 +106,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def _make_extractor(self, html):
         from BeautifulSoup import BeautifulSoup
-        with mock.patch.object(google, 'urllib2'):
+        with mock.patch.object(base.ProjectExtractor, 'urlopen'):
             extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project')
         extractor.page = BeautifulSoup(html)
         extractor.get_page = lambda pagename: extractor.page
