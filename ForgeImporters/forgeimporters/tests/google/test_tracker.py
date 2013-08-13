@@ -212,8 +212,8 @@ class TestTrackerImporter(TestCase):
                     'options': set(['foo', 'bar']),
                 },
             }
-        importer.postprocess_custom_fields()
-        self.assertEqual(sorted(c.app.globals.custom_fields, key=itemgetter('name')), [
+        custom_fields = importer.postprocess_custom_fields()
+        self.assertItemsEqual(custom_fields, [
                 {
                     'name': '_foo',
                     'type': 'string',
