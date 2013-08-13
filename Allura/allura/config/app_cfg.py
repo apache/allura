@@ -38,6 +38,7 @@ import pylons
 from tg.configuration import AppConfig, config
 from routes import Mapper
 from webhelpers.html import literal
+from paste.deploy.converters import asbool
 
 import ew
 
@@ -96,7 +97,9 @@ class ForgeConfig(AppConfig):
             auto_reload=config.auto_reload_templates,
             autoescape=True,
             bytecode_cache=bcc,
-            extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
+            extensions=['jinja2.ext.do', 'jinja2.ext.i18n'],
+            undefined=jinja2.StrictUndefined if asbool(config.get('jinja_strict_undefined')) else jinja2.Undefined,
+            )
         jinja2_env.install_gettext_translations(pylons.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
