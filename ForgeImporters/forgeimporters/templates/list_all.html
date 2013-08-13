@@ -31,18 +31,18 @@
     <thead>
     <tr>
         <th></th>
-        {% for tool in tools %}
-            <th>{{tool.tool_label}}</th>
+        {% for tool in tools|sort %}
+            <th>{{tool}}</th>
         {% endfor %}
     </tr>
     </thead>
-    {% for source, importers in importer_matrix|dictsort %}
+    {% for source in importer_matrix.keys()|sort  %}
         <tr>
         <td><strong>{{ source }}</strong></td>
-        {% for importer_name in importers %}
+        {% for tool in tools|sort %}
             <td>
-                {% if importer_name %}
-                <a href="{{importer_name}}">Import</a>
+                {% if importer_matrix[source].get(tool) %}
+                <a href="{{ importer_matrix[source][tool] }}">Import</a>
                 {% endif %}
             </td>
         {% endfor %}
