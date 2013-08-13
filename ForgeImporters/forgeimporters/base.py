@@ -404,5 +404,5 @@ class ImportAdminExtension(AdminExtension):
 
     def update_project_sidebar_menu(self, sidebar_links):
         base_url = c.project.url() + 'admin/ext/'
-        link = SitemapEntry('Import', base_url+'import')
+        link = SitemapEntry('Import', base_url+'import/')
         sidebar_links.append(link)
