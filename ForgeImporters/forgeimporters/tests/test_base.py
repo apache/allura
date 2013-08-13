@@ -19,6 +19,10 @@ from unittest import TestCase
 
 from formencode import Invalid
 import mock
+from tg import expose
+from nose.tools import assert_equal
+
+from alluratest.controller import TestController
 
 from .. import base
 
@@ -76,17 +80,25 @@ TA1 = mock.Mock(tool_label='foo', tool_description='foo_desc')
 TA2 = mock.Mock(tool_label='qux', tool_description='qux_desc')
 TA3 = mock.Mock(tool_label='baz', tool_description='baz_desc')
 
+class TI1Controller(object):
+    @expose()
+    def index(self, *a, **kw):
+        return 'test importer 1 controller webpage'
+
+class TI1(base.ToolImporter):
+    target_app = TA1
+    controller = TI1Controller
+
+class TI2(base.ToolImporter):
+    target_app = TA2
+    tool_label = 'bar'
+    tool_description = 'bar_desc'
+
+class TI3(base.ToolImporter):
+    target_app = [TA2, TA2]
+
 class TestToolImporter(TestCase):
-    class TI1(base.ToolImporter):
-        target_app = TA1
 
-    class TI2(base.ToolImporter):
-        target_app = TA2
-        tool_label = 'bar'
-        tool_description = 'bar_desc'
-
-    class TI3(base.ToolImporter):
-        target_app = [TA2, TA2]
 
     @mock.patch.object(base, 'iter_entry_points')
     def test_by_name(self, iep):
@@ -104,27 +116,27 @@ class TestToolImporter(TestCase):
     @mock.patch.object(base, 'iter_entry_points')
     def test_by_app(self, iep):
         eps = iep.return_value = [
-                ep('importer1', importer=self.TI1),
-                ep('importer2', importer=self.TI2),
-                ep('importer3', importer=self.TI3),
+                ep('importer1', importer=TI1),
+                ep('importer2', importer=TI2),
+                ep('importer3', importer=TI3),
             ]
         importers = base.ToolImporter.by_app(TA2)
         self.assertEqual(set(importers.keys()), set([
                 'importer2',
                 'importer3',
             ]))
-        self.assertIsInstance(importers['importer2'], self.TI2)
-        self.assertIsInstance(importers['importer3'], self.TI3)
+        self.assertIsInstance(importers['importer2'], TI2)
+        self.assertIsInstance(importers['importer3'], TI3)
 
     def test_tool_label(self):
-        self.assertEqual(self.TI1().tool_label, 'foo')
-        self.assertEqual(self.TI2().tool_label, 'bar')
-        self.assertEqual(self.TI3().tool_label, 'qux')
+        self.assertEqual(TI1().tool_label, 'foo')
+        self.assertEqual(TI2().tool_label, 'bar')
+        self.assertEqual(TI3().tool_label, 'qux')
 
     def test_tool_description(self):
-        self.assertEqual(self.TI1().tool_description, 'foo_desc')
-        self.assertEqual(self.TI2().tool_description, 'bar_desc')
-        self.assertEqual(self.TI3().tool_description, 'qux_desc')
+        self.assertEqual(TI1().tool_description, 'foo_desc')
+        self.assertEqual(TI2().tool_description, 'bar_desc')
+        self.assertEqual(TI3().tool_description, 'qux_desc')
 
 
 class TestToolsValidator(TestCase):
@@ -172,3 +184,25 @@ class TestToolsValidator(TestCase):
                 mock.call('value1'),
                 mock.call('value2'),
             ])
+
+
+class TestProjectToolsImportController(TestController):
+
+    def test_pages(self):
+        admin_page = self.app.get('/admin/')
+        with mock.patch.object(base, 'iter_entry_points') as iep:
+            iep.return_value = [
+                ep('importer1', importer=TI1),
+                ep('importer2', importer=TI2),
+                ep('importer3', importer=TI3),
+            ]
+            import_main_page = admin_page.click('Import')
+        url = import_main_page.environ['PATH_INFO']
+        assert url.endswith('/admin/ext/import/'), url
+
+        with mock.patch.object(base.ToolImporter, 'by_name') as by_name:
+            by_name.return_value = TI1
+            import1_page = import_main_page.click('Import', href=r'importer1$')
+        url = import1_page.environ['PATH_INFO']
+        assert url.endswith('/admin/ext/import/importer1'), url
+        assert_equal(import1_page.body, 'test importer 1 controller webpage')
