@@ -19,7 +19,7 @@
 {% set ul_active = [] %}
 {% macro sidebar_item(s) -%}
   {% if s.url %}
-    {% if not ul_active[-1] %}
+    {% if not ul_active or not ul_active[-1] %}
       <ul class="sidebarmenu">
       {% do ul_active.append(True) %}
     {% endif %}
@@ -45,7 +45,7 @@
   {% else %}
     <div>&nbsp;</div>
   {% endif %}
-    {% if c.custom_sidebar_menu %}
+    {% if c.custom_sidebar_menu|default %}
       {% for s in c.custom_sidebar_menu %}
         {{sidebar_item(s)}}
       {% endfor %}

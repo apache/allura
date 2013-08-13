@@ -28,7 +28,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro gravatar(user, size, className) -%}
+{% macro gravatar(user, size, className=None) -%}
   {% set display_name = h.really_unicode(user.display_name) %}
   {% if user.icon_url() %}
     <img src="{{user.icon_url()}}"

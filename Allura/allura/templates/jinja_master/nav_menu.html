@@ -47,7 +47,7 @@
             {% if loop.last and admins|length > 5 -%}
                 and <a href="{{ c.project.url() }}_members/">{{ admins|length - 4 }} others</a>
             {% else %}
-                <a href="{{ admin.url() }}">{{ admin.username }}</a>{{ ',' if not loop.last }}
+                <a href="{{ admin.url() }}">{{ admin.username }}</a>{{ ',' if not loop.last else '' }}
             {% endif %}
         {%- endfor -%}
     </div>
