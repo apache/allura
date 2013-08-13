@@ -72,9 +72,12 @@ def bulk_export(project_shortname, tools, username, neighborhood):
     except:
         log.error('Something went wrong during export of project metadata', exc_info=True)
 
-    # If that fails, we need to let it fail
-    # there won't be a valid zip file for the user to get.
-    zip_and_cleanup(project)
+    if tools and len(not_exported_tools) < len(tools):
+        # If that fails, we need to let it fail
+        # there won't be a valid zip file for the user to get.
+        zip_and_cleanup(project)
+    else:
+        log.error('Nothing to export')
 
     user = M.User.by_username(username)
     if not user:
