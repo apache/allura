@@ -846,12 +846,26 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 ))
 
     def bulk_export_path(self):
+        shortname = self.shortname
+        if self.is_nbhd_project:
+            shortname = self.url().strip('/')
+        elif self.is_user_project:
+            shortname = self.shortname.split('/')[1]
+        elif not self.is_root:
+            shortname = self.shortname.split('/')[0]
         return config['bulk_export_path'].format(
                 nbhd=self.neighborhood.url_prefix.strip('/'),
-                project=self.shortname)
+                project=shortname)
 
     def bulk_export_filename(self):
-        return '%s.zip' % self.shortname
+        shortname = self.shortname
+        if self.is_nbhd_project:
+            shortname = self.url().strip('/')
+        elif self.is_user_project:
+            shortname = self.shortname.split('/')[1]
+        elif not self.is_root:
+            shortname = self.shortname.split('/')[1]
+        return '%s.zip' % shortname
 
     def bulk_export_status(self):
         fn = os.path.join(self.bulk_export_path(), self.bulk_export_filename())

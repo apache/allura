@@ -342,12 +342,12 @@ class TestExportTasks(unittest.TestCase):
 
     @mock.patch('allura.tasks.export_tasks.log')
     def test_bulk_export_invalid_project(self, log):
-        export_tasks.bulk_export('bad', [u'wiki'], 'test-admin')
+        export_tasks.bulk_export('bad', [u'wiki'], 'test-admin', 'Projects')
         log.error.assert_called_once_with('Project bad not found')
 
     @mock.patch('allura.tasks.export_tasks.log')
     def test_bulk_export_invalid_tool(self, log):
-        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin')
+        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin', 'Projects')
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
             mock.call('Can not load app for bugs mount point. Skipping.'),
@@ -360,7 +360,7 @@ class TestExportTasks(unittest.TestCase):
     @td.with_tool('test', 'Blog', 'blog')
     def test_bulk_export_not_exportable_tool(self, mail_tasks, app, log):
         app.return_value.exportable = False
-        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin')
+        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin', 'Projects')
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
             mock.call('Tool bugs is not exportable. Skipping.'),
@@ -374,7 +374,7 @@ class TestExportTasks(unittest.TestCase):
     @td.with_wiki
     def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil, project_json):
         M.MonQTask.query.remove()
-        export_tasks.bulk_export('test', [u'wiki'], 'test-admin')
+        export_tasks.bulk_export('test', [u'wiki'], 'test-admin', 'Projects')
         assert_equal(log.info.call_count, 1)
         assert_equal(log.info.call_args_list, [
             mock.call('Exporting wiki...')])
@@ -403,7 +403,7 @@ class TestExportTasks(unittest.TestCase):
         project = M.Project.query.get(shortname='test')
         export_tasks.create_export_dir(project)
         assert_equal(project.bulk_export_status(), 'busy')
-        export_tasks.bulk_export('test', [u'wiki'], 'test-admin')
+        export_tasks.bulk_export('test', [u'wiki'], 'test-admin', 'Projects')
         log.info.assert_called_once_with('Another export is running for project test. Skipping.')
         assert_equal(wiki_bulk_export.call_count, 0)
 

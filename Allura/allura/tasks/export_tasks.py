@@ -34,8 +34,9 @@ log = logging.getLogger(__name__)
 
 
 @task
-def bulk_export(project_shortname, tools, username):
-    project = M.Project.query.get(shortname=project_shortname)
+def bulk_export(project_shortname, tools, username, neighborhood):
+    neighborhood = M.Neighborhood.query.get(name=neighborhood)
+    project = M.Project.query.get(shortname=project_shortname, neighborhood_id=neighborhood._id)
     if not project:
         log.error('Project %s not found' % project_shortname)
         return
