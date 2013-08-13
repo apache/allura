@@ -219,7 +219,7 @@ class ForgeDiscussionApp(Application):
 
     def bulk_export(self, f):
         f.write('{"forums": [')
-        forums = DM.Forum.query.find(dict(app_config_id=self.config._id)).sort('mod_date', pymongo.DESCENDING)
+        forums = DM.Forum.query.find(dict(app_config_id=self.config._id))
         for i, forum in enumerate(forums):
             if i > 0:
                 f.write(',')
