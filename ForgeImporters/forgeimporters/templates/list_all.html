@@ -21,42 +21,32 @@
 
 {% block title %}{{c.project.name}} / Import{% endblock %}
 
-{% block header %}Import from external sources{% endblock %}
-
-{% block extra_css %}
-<style type="text/css">
-    .tool {
-        margin-bottom: 3em;
-    }
-    .tool img {
-        float: left;
-        margin: 0 1em;
-    }
-    .importer .descr {
-        margin: 0 2em 1em 2em;
-    }
-</style>
-{% endblock %}
+{% block header %}Import{% endblock %}
 
 {% block content %}
-    {% for tool, tool_importers in importers.iteritems() %}
-        <div class="tool">
-        {% for importer_name, importer in tool_importers.iteritems() %}
-            {% if loop.first %}
-                <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ tool.tool_label }} icon">
-                <h2>{{ tool.tool_label }}</h2>
-            {% endif %}
-            <div class="importer">
-                <a href="{{importer_name}}"><h3>
-                {{importer.source}}:
-                {{importer.tool_label}}
-                </h3>
-                </a>
-                <div class="descr">
-                {{importer.tool_description}}
-                </div>
-            </div>
+<p>
+    To import from one of these external sources into your project, just click on "Import" and fill out the form.
+</p>
+<table>
+    <thead>
+    <tr>
+        <th></th>
+        {% for tool in tools %}
+            <th>{{tool.tool_label}}</th>
         {% endfor %}
-        </div>
+    </tr>
+    </thead>
+    {% for source, importers in importer_matrix|dictsort %}
+        <tr>
+        <td><strong>{{ source }}</strong></td>
+        {% for importer_name in importers %}
+            <td>
+                {% if importer_name %}
+                <a href="{{importer_name}}">Import</a>
+                {% endif %}
+            </td>
+        {% endfor %}
+        </tr>
     {% endfor %}
+</table>
 {% endblock %}
