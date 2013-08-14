@@ -19,6 +19,7 @@ import json
 import os
 import logging
 import shutil
+from tempfile import mkstemp
 
 import tg
 from pylons import app_globals as g
@@ -61,9 +62,11 @@ def bulk_export(project_shortname, tools, username, neighborhood):
         log.info('Exporting %s...' % tool)
         try:
             path = create_export_dir(project)
-            with open(os.path.join(path, '%s.json' % tool), 'w') as f:
+            temp_name = mkstemp(dir=path)[1]
+            with open(temp_name, 'w') as f:
                 with h.push_context(project._id):
                     entry_to_export.bulk_export(f)
+            os.rename(temp_name, os.path.join(path, '%s.json' % tool))
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
             not_exported_tools.append(tool)
