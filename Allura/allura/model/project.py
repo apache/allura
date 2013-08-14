@@ -866,7 +866,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             shortname = self.shortname.split('/')[1]
         elif not self.is_root:
             shortname = self.shortname.split('/')[1]
-        return '%s.zip' % shortname
+
+        return config['bulk_export_filename'].format(project=shortname, date=datetime.utcnow())
 
     def bulk_export_status(self):
         fn = os.path.join(self.bulk_export_path(), self.bulk_export_filename())
