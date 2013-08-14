@@ -22,6 +22,7 @@ import pkg_resources
 import StringIO
 from contextlib import contextmanager
 
+import tg
 import PIL
 from nose.tools import assert_equals, assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -799,6 +800,16 @@ class TestExport(TestController):
         self.app.post('/admin/export',
                       extra_environ={'username': 'test-user'},
                       status=403)
+
+    def test_ini_option(self):
+        tg.config['bulk_export_enabled'] = 'false'
+        r = self.app.get('/admin/')
+        assert_not_in('Export', r)
+        r = self.app.get('/admin/export').follow()
+        assert_equals(r.request.url, 'http://localhost/admin/')
+        tg.config['bulk_export_enabled'] = 'true'
+        r = self.app.get('/admin/')
+        assert_in('Export', r)
 
     def test_export_page_contains_exportable_tools(self):
         r = self.app.get('/admin/export')
