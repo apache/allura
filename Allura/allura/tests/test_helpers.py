@@ -23,6 +23,8 @@ from mock import Mock, patch
 
 from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
+from IPython.testing.decorators import skipif, module_not_available
+from datadiff import tools as dd
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -261,6 +263,89 @@ def test_notifications_disabled():
     with h.notifications_disabled(project):
         assert_equals(project.notifications_disabled, True)
     assert_equals(project.notifications_disabled, False)
+
+
+@skipif(module_not_available('html2text'))
+def test_plain2markdown_with_html2text():
+    """Test plain2markdown using html2text to escape markdown, if available."""
+    text = '''paragraph
+
+    4 spaces before this
+
+    *blah*
+
+here's a <tag> that should be <b>preserved</b>
+Literal &gt; &Ograve; &frac14; &amp; &#38; &#x123F;
+M & Ms - doesn't get escaped
+http://blah.com/?x=y&a=b - not escaped either
+'''
+
+    expected = '''paragraph
+
+4 spaces before this
+
+\*blah\*
+
+here's a &lt;tag&gt; that should be &lt;b&gt;preserved&lt;/b&gt;
+Literal &amp;gt; &amp;Ograve; &amp;frac14; &amp;amp; &amp;\#38; &amp;\#x123F;
+M & Ms - doesn't get escaped
+http://blah.com/?x=y&a=b - not escaped either
+'''
+
+    assert_equals(h.plain2markdown(text), expected)
+
+    assert_equals(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
+                'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+
+    assert_equals(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
+                 '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+
+    assert_equals(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
+                 'tab before \(stuff\)')
+
+@td.without_module('html2text')
+def test_plain2markdown():
+    """Test plain2markdown using fallback regexp to escape markdown.
+
+    Potentially MD-special characters are aggresively escaped, as without
+    knowledge of the MD parsing rules it's better to be excessive but safe.
+    """
+    text = '''paragraph
+
+    4 spaces before this
+
+    *blah*
+
+here's a <tag> that should be <b>preserved</b>
+Literal &gt; &Ograve; &frac14; &amp; &#38; &#x123F;
+M & Ms - amp doesn't get escaped
+http://blah.com/?x=y&a=b - not escaped either
+back\\-slash escaped
+'''
+
+    expected = '''paragraph
+
+4 spaces before this
+
+\*blah\*
+
+here's a &lt;tag&gt; that should be &lt;b&gt;preserved&lt;/b&gt;
+Literal &amp;gt; &amp;Ograve; &amp;frac14; &amp;amp; &amp;\#38; &amp;\#x123F;
+M & Ms \- amp doesn't get escaped
+http://blah\.com/?x=y&a=b \- not escaped either
+back\\\\\-slash escaped
+'''
+
+    dd.assert_equal(h.plain2markdown(text), expected)
+
+    dd.assert_equal(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
+                'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+
+    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
+                 '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+
+    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
+                 'tab before \(stuff\)')
 
 
 class TestUrlOpen(TestCase):

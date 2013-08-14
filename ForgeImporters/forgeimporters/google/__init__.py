@@ -269,7 +269,7 @@ class Comment(object):
                 u'{updates}'
             ).format(
                 author=self.author,
-                body=h.plain2markdown(self.body, True),
+                body=h.plain2markdown(self.body, preserve_multiple_spaces=True),
                 updates='\n'.join(
                         '**%s** %s' % (k,v)
                         for k,v in self.updates.items()

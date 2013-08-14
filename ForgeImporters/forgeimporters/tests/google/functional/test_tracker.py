@@ -27,24 +27,12 @@ from pylons import tmpl_context as c
 from IPython.testing.decorators import module_not_available, skipif
 
 from alluratest.controller import setup_basic_test
+from allura.tests.decorators import without_module
 from allura import model as M
 from forgetracker import model as TM
 from .... import google
 from ....google import tracker
 
-
-def without_html2text(func):
-    @wraps(func)
-    def wrapped(*args, **kw):
-        try:
-            import html2text
-        except ImportError:
-            return func(*args, **kw)
-        else:
-            with mock.patch.object(html2text, 'escape_md_section') as ems:
-                ems.side_effect = ImportError
-                return func(*args, **kw)
-    return wrapped
 
 class TestGCTrackerImporter(TestCase):
     def _make_extractor(self, html):
@@ -85,7 +73,7 @@ class TestGCTrackerImporter(TestCase):
         self.assertEqual(ticket.milestone, '')
         self.assertEqual(ticket.custom_fields, {})
 
-    @without_html2text
+    @without_module('html2text')
     def test_issue_basic_fields(self):
         anon = M.User.anonymous()
         ticket = self._make_ticket(self.test_issue)
@@ -162,7 +150,7 @@ class TestGCTrackerImporter(TestCase):
                 ('at2.txt', 'text/plain', 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000001&name=at2.txt&token=C9Hn4s1-g38hlSggRGo65VZM1ys%3A1376059941255'),
             )
 
-    @without_html2text
+    @without_module('html2text')
     def test_comments(self):
         anon = M.User.anonymous()
         ticket = self._make_ticket(self.test_issue)

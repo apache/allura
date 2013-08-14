@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import sys
 from functools import wraps
 import contextlib
 
@@ -104,3 +105,13 @@ class raises(object):
                 return False
         else:
             raise AssertionError('Did not raise %s' % self.ExcType)
+
+
+def without_module(*module_names):
+    def _without_module(func):
+        @wraps(func)
+        def wrapped(*a, **kw):
+            with patch.dict(sys.modules, {m: None for m in module_names}):
+                return func(*a, **kw)
+        return wrapped
+    return _without_module
