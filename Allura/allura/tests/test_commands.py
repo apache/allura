@@ -344,8 +344,7 @@ class TestBackgroundCommand(object):
     def test_invalid_args(self):
         M.MonQTask.query.remove()
         show_models.ReindexCommand.post('--invalid-option')
-        with td.raises(Exception):
-            M.MonQTask.run_ready()
+        M.MonQTask.run_ready()
         task = M.MonQTask.query.get(task_name=self.task_name)
         assert_equal(task.state, 'error')
         assert_in('Error parsing args', task.result)

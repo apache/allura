@@ -21,6 +21,7 @@ import operator
 import sys
 import unittest
 from base64 import b64encode
+import logging
 
 import mock
 from pylons import tmpl_context as c, app_globals as g
@@ -28,6 +29,7 @@ from datadiff.tools import assert_equal
 from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
+from testfixtures import LogCapture
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 
@@ -74,7 +76,15 @@ class TestEventTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
         t = raise_exc.post()
-        self.assertRaises(CompoundError, t)
+        with LogCapture(level=logging.ERROR) as l:
+            t()
+        # l.check() would be nice, but string is too detailed to check
+        assert_equal(l.records[0].name, 'allura.model.monq_model')
+        msg = l.records[0].getMessage()
+        assert_in("AssertionError('assert 0',)", msg)
+        assert_in("AssertionError('assert 5',)", msg)
+        assert_in(' on job <MonQTask ', msg)
+        assert_in(' (error) P:10 allura.tests.test_tasks.raise_exc ', msg)
         for x in range(10):
             assert ('assert %d' % x) in t.result
 
