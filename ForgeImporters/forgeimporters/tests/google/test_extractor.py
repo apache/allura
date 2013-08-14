@@ -45,14 +45,20 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(extractor.page, self.soup.return_value)
 
     def test_get_page(self):
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
         self.assertEqual(1, self.urlopen.call_count)
         page = extractor.get_page('project_info')
         self.assertEqual(1, self.urlopen.call_count)
-        self.assertEqual(page, extractor._page_cache['project_info'])
+        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/'])
+        page = extractor.get_page('project_info')
+        self.assertEqual(1, self.urlopen.call_count)
+        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/'])
+        page = extractor.get_page('source_browse')
+        self.assertEqual(2, self.urlopen.call_count)
+        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/source/browse/'])
 
     def test_get_page_url(self):
-        extractor = google.GoogleCodeProjectExtractor(self.project, 'my-project')
+        extractor = google.GoogleCodeProjectExtractor('my-project')
         self.assertEqual(extractor.get_page_url('project_info'),
                 'http://code.google.com/p/my-project/')
 

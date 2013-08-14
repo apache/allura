@@ -56,9 +56,10 @@ class TestGoogleRepoImporter(TestCase):
         project.get_tool_data.side_effect = lambda *args: gc_proj_name
         return project
 
+    @patch('forgeimporters.google.code.g')
     @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.google.code.get_repo_url')
-    def test_import_tool_happy_path(self, get_repo_url, gcpe):
+    def test_import_tool_happy_path(self, get_repo_url, gcpe, g):
         gcpe.return_value.get_repo_type.return_value = 'git'
         get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gc_proj_name='myproject')
@@ -70,6 +71,7 @@ class TestGoogleRepoImporter(TestCase):
                 mount_label='Code',
                 init_from_url='http://remote/clone/url/',
                 )
+        g.post_event.assert_called_once_with('project_updated')
 
 
 class TestGoogleRepoImportController(TestController, TestCase):

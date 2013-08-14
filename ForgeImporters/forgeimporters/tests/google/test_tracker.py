@@ -24,13 +24,14 @@ from ...google import tracker
 
 
 class TestTrackerImporter(TestCase):
+    @mock.patch.object(tracker, 'g')
     @mock.patch.object(tracker, 'c')
     @mock.patch.object(tracker, 'ThreadLocalORMSession')
     @mock.patch.object(tracker, 'session')
     @mock.patch.object(tracker, 'M')
     @mock.patch.object(tracker, 'TM')
     @mock.patch.object(tracker, 'GoogleCodeProjectExtractor')
-    def test_import_tool(self, gpe, TM, M, session, tlos, c):
+    def test_import_tool(self, gpe, TM, M, session, tlos, c, g):
         importer = tracker.GoogleCodeTrackerImporter()
         importer.process_fields = mock.Mock()
         importer.process_labels = mock.Mock()
@@ -70,6 +71,7 @@ class TestTrackerImporter(TestCase):
                 mock.call(tickets[0]),
                 mock.call(tickets[1]),
             ])
+        g.post_event.assert_called_once_with('project_updated')
 
     def test_custom_fields(self):
         importer = tracker.GoogleCodeTrackerImporter()

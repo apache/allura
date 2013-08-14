@@ -79,7 +79,6 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
     def __init__(self, project_name, page_name=None, **kw):
-        self.url = self.PAGE_MAP[page_name].format(
         self.project_name = project_name
         self._page_cache = {}
         self.url = None
@@ -105,7 +104,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         if self.url in self._page_cache:
             self.page = self._page_cache[self.url]
         else:
-            self.page = self._page_cache[page_name_or_url] = \
+            self.page = self._page_cache[self.url] = \
                     BeautifulSoup(self.urlopen(self.url))
         return self.page
 
@@ -116,9 +115,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
         """
         return self.PAGE_MAP[page_name].format(
-            project_name = urllib.quote(self.project_name),
-            **kw,
-        )
+            project_name = urllib.quote(self.project_name), **kw)
 
     def get_short_description(self, project):
         page = self.get_page('project_info')
