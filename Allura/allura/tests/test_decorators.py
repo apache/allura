@@ -20,8 +20,8 @@ class TestTask(TestCase):
         self.assertTrue(hasattr(func, 'post'))
 
     @patch('allura.lib.decorators.c')
-    @patch('allura.lib.decorators._get_model')
-    def test_post(self, c, _get_model):
+    @patch('allura.model.MonQTask')
+    def test_post(self, c, MonQTask):
         @task(disable_notifications=True)
         def func(s, foo=None, **kw):
             pass
@@ -34,6 +34,5 @@ class TestTask(TestCase):
             self.assertEqual(f, func)
 
         c.project.notifications_disabled = False
-        M = _get_model.return_value
-        M.MonQTask.post.side_effect = mock_post
+        MonQTask.post.side_effect = mock_post
         func.post('test', foo=2, delay=1)

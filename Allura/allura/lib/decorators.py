@@ -32,10 +32,6 @@ from pylons import tmpl_context as c
 from allura.lib import helpers as h
 
 
-def _get_model():
-    from allura import model as M
-    return M
-
 def task(*args, **kw):
     """Decorator that adds a ``.post()`` function to the decorated callable.
 
@@ -62,7 +58,7 @@ def task(*args, **kw):
             cm = (h.notifications_disabled if project and
                     kw.get('notifications_disabled') else h.null_contextmanager)
             with cm(project):
-                M = _get_model()
+                from allura import model as M
                 return M.MonQTask.post(func, args, kwargs, delay=delay)
         # if decorating a class, have to make it a staticmethod
         # or it gets a spurious cls argument
