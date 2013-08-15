@@ -25,6 +25,12 @@ class Include(ew.Widget):
         'style':'width:270px;float:right;background-color:#ccc'
         }
 
+class GittipButton(ew.Widget):
+    template='jinja:allura:templates/widgets/gittip_button.html'
+    params=['username']
+    project=None
+
+
 class DownloadButton(ew.Widget):
     template='jinja:allura:templates/widgets/download_button.html'
     params=['project']

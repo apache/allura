@@ -148,6 +148,12 @@ def test_macro_download_button():
         r = g.markdown_wiki.convert('[[download_button]]')
     assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
 
+def test_macro_gittip_button():
+    p_nbhd = M.Neighborhood.query.get(name='Projects')
+    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
+    with h.push_config(c, project=p_test):
+        r = g.markdown_wiki.convert('[[gittip_button username=test]]')
+    assert_equal(r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
 
 def test_macro_neighborhood_feeds():
     p_nbhd = M.Neighborhood.query.get(name='Projects')

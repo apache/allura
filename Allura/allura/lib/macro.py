@@ -294,6 +294,13 @@ def project_screenshots():
     response = ps.display(project=c.project)
     return response
 
+@macro()
+def gittip_button(username):
+    from allura.lib.widgets.macros import GittipButton
+    button = GittipButton(username=username)
+    g.resource_manager.register(button)
+    response = button.display(username=username)
+    return response
 
 # FIXME: this is SourceForge specific - need to provide a way for macros to come from other packages
 @macro()

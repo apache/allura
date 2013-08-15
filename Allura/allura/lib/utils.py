@@ -502,6 +502,7 @@ class ForgeHTMLSanitizer(_HTMLSanitizer):
     def unknown_starttag(self, tag, attrs):
         if 'iframe' in self.acceptable_elements:
             self.acceptable_elements.remove('iframe')
-        if (tag == 'iframe') and (dict(attrs).get('src', '').startswith('http://www.youtube.com/embed/')):
+        if (tag == 'iframe') and (dict(attrs).get('src', '').startswith('http://www.youtube.com/embed/') or
+				  dict(attrs).get('src', '').startswith('https://www.gittip.com/')):
             self.acceptable_elements.append('iframe')
         _HTMLSanitizer.unknown_starttag(self, tag, attrs)
