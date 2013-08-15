@@ -106,7 +106,7 @@ class AdminApp(Application):
     @staticmethod
     def exportable_tools_for(project):
         cls = AdminApp
-        tools = []
+        tools = [project]
         if cls._exportable_tools is None:
             for tool in project.ordered_mounts(include_hidden=True):
                 if not tool.get('ac'):
@@ -142,7 +142,7 @@ class AdminApp(Application):
                     SitemapEntry('Categorization', admin_url+'trove')
                 ]
         links.append(SitemapEntry('Tools', admin_url+'tools'))
-        if config.get('bulk_export_enabled', 'false') == 'true':
+        if config.get('bulk_export_enabled', 'true') == 'true':
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
             links.append(SitemapEntry('User Permissions', admin_url+'groups/'))
@@ -645,7 +645,8 @@ class ProjectAdminController(BaseController):
                 redirect('export')
             if isinstance(tools, basestring):
                 tools = [tools]
-            allowed = set(t.options.mount_point for t in exportable_tools)
+            allowed = set(t.options.mount_point for t in exportable_tools if hasattr(t, 'options'))
+            allowed.add('project')
             if not set(tools).issubset(allowed):
                 flash('Wrong tools in input data', 'error')
                 redirect('export')
