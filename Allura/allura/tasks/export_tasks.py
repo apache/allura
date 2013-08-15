@@ -45,32 +45,29 @@ def bulk_export(project_shortname, tools, username, neighborhood):
         return
     not_exported_tools = []
     for tool in tools or []:
-        app = project.app_instance(tool)
-        if not app:
-            log.info('Can not load app for %s mount point. Skipping.' % tool)
-            not_exported_tools.append(tool)
-            continue
-        if not app.exportable:
-            log.info('Tool %s is not exportable. Skipping.' % tool)
-            not_exported_tools.append(tool)
-            continue
+        entry_to_export = None
+        if tool == 'project':
+            entry_to_export = project
+        else:
+            entry_to_export = project.app_instance(tool)
+            if not entry_to_export:
+                log.info('Can not load app for %s mount point. Skipping.' % tool)
+                not_exported_tools.append(tool)
+                continue
+            if not entry_to_export.exportable:
+                log.info('Tool %s is not exportable. Skipping.' % tool)
+                not_exported_tools.append(tool)
+                continue
         log.info('Exporting %s...' % tool)
         try:
             path = create_export_dir(project)
             with open(os.path.join(path, '%s.json' % tool), 'w') as f:
-                with h.push_context(project._id, app_config_id=app.config._id):
-                    app.bulk_export(f)
+                with h.push_context(project._id):
+                    entry_to_export.bulk_export(f)
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
             not_exported_tools.append(tool)
             continue
-
-    try:
-        path = create_export_dir(project)
-        with open(os.path.join(path, 'project.json'), 'w') as f:
-            json.dump(project, f, cls=tg.jsonify.GenericJSON, indent=2)
-    except:
-        log.error('Something went wrong during export of project metadata', exc_info=True)
 
     if tools and len(not_exported_tools) < len(tools):
         # If that fails, we need to let it fail
