@@ -83,7 +83,7 @@ class TracTicketImporter(ToolImporter):
     target_app = ForgeTrackerApp
     source = 'Trac'
     controller = TracTicketImportController
-    tool_label = 'Trac Ticket Importer'
+    tool_label = 'Tickets'
     tool_description = 'Import your tickets from Trac'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
