@@ -60,7 +60,7 @@ def import_tracker(cli, project, tool, import_options, doc_txt,
         doc_import['trackers']['default'] = {}
         doc_import['trackers']['default']['artifacts'] = [ticket_in]
         res = cli.call(url, doc=json.dumps(doc_import), options=json.dumps(import_options))
-        assert res['status'] and not res['errors']
+        assert res['status'] and not res['errors'], res['errors']
         if validate:
             if res['warnings']:
                 print "Ticket id %s warnings: %s" % (ticket_in['id'], res['warnings'])

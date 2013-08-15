@@ -138,7 +138,7 @@ class WikiExporter(object):
         url = urljoin(self.base_url, self.PAGE_LIST_URL)
         self.log('Fetching list of pages from %s' % url)
         r = self.fetch(url)
-        html = BeautifulSoup(r.content)
+        html = BeautifulSoup(r)
         pages = html.find('div', attrs=self.CONTENT_DIV_ATTRS) \
                     .find('ul').findAll('li')
         pages = [page.find('a').text
@@ -165,14 +165,14 @@ class WikiExporter(object):
         url = self.url(self.PAGE_URL % title)
         self.log('Fetching page %s' % url)
         r = self.fetch(url)
-        html = BeautifulSoup(r.content)
+        html = BeautifulSoup(r)
         return html.find('div', attrs=self.CONTENT_DIV_ATTRS)
 
     def _get_page_regex(self, title):
         url = self.url(self.PAGE_URL % title, 'txt')
         self.log('Fetching page %s' % url)
         r = self.fetch(url)
-        return r.content
+        return r
 
     def convert_title(self, title):
         title = self.RENAME_PAGES.get(title, title)

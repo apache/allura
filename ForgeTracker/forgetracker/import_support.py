@@ -199,10 +199,10 @@ class ImportSupport(object):
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
 
-        description = self.link_processing(remapped['description'])
+        description = h.really_unicode(self.link_processing(remapped['description']))
         if ticket_dict['submitter'] and not remapped['reported_by_id']:
-            description = 'Originally created by: {0}\n\n{1}'.format(
-                    ticket_dict['submitter'], description)
+            description = u'Originally created by: {0}\n\n{1}'.format(
+                    h.really_unicode(ticket_dict['submitter']), description)
         remapped['description'] = description
 
         ticket_num = ticket_dict['id']
@@ -273,10 +273,10 @@ class ImportSupport(object):
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
         author_id = self.get_user_id(comment_dict['submitter'])
-        text = self.link_processing(comment_dict['comment'])
+        text = h.really_unicode(self.link_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
-            text = 'Originally posted by: {0}\n\n{1}'.format(
-                    comment_dict['submitter'], text)
+            text = u'Originally posted by: {0}\n\n{1}'.format(
+                    h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
         comment.import_id = c.api_token.api_key
