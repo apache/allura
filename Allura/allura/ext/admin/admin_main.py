@@ -142,7 +142,7 @@ class AdminApp(Application):
                     SitemapEntry('Categorization', admin_url+'trove')
                 ]
         links.append(SitemapEntry('Tools', admin_url+'tools'))
-        if config.get('bulk_export_enabled', 'true') == 'true':
+        if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
             links.append(SitemapEntry('User Permissions', admin_url+'groups/'))
@@ -636,7 +636,7 @@ class ProjectAdminController(BaseController):
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):
-        if config.get('bulk_export_enabled', 'true') != 'true':
+        if not asbool(config.get('bulk_export_enabled', True)):
             redirect('.')
         exportable_tools = AdminApp.exportable_tools_for(c.project)
         if request.method == 'POST':
