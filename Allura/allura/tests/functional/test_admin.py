@@ -821,7 +821,7 @@ class TestExport(TestController):
         assert_not_in('Search</label> <a href="/p/test/search/">/p/test/search/</a>', r)
 
     def test_export_page_contains_hidden_tools(self):
-        with patch('allura.ext.search.search_main.SearchApp.exportable'):
+        with mock.patch('allura.ext.search.search_main.SearchApp.exportable'):
             project = M.Project.query.get(shortname='test')
             exportable_tools = AdminApp.exportable_tools_for(project)
             tools = [t.options.mount_point for t in exportable_tools
@@ -851,7 +851,7 @@ class TestExport(TestController):
         export_tasks.bulk_export.post.assert_called_once_with(
             'test', [u'wiki', u'wiki2'], u'test-admin', u'Projects')
 
-    @patch('allura.ext.admin.admin_main.export_tasks')
+    @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_export_in_progress(self, export_tasks):
         p = M.Project.query.get(shortname='test')
         tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
@@ -890,4 +890,3 @@ class TestExport(TestController):
     def test_bulk_export_path_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
         assert_equals(project.bulk_export_path(), '/tmp/bulk_export/p/p')
-
