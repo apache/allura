@@ -292,16 +292,17 @@ M & Ms - doesn't get escaped
 http://blah.com/?x=y&a=b - not escaped either
 '''
 
-    assert_equals(h.plain2markdown(text), expected)
+    dd.assert_equal(h.plain2markdown(text), expected)
 
-    assert_equals(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
+    dd.assert_equal(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
                 'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
 
-    assert_equals(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
+    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
                  '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
 
-    assert_equals(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
+    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
                  'tab before \(stuff\)')
+
 
 @td.without_module('html2text')
 def test_plain2markdown():

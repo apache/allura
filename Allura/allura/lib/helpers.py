@@ -956,6 +956,9 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
     if preserve_multiple_spaces:
         text = text.replace('\t', ' ' * 4)
         text = re_preserve_spaces.sub('&nbsp;', text)
+    else:
+        text = re_leading_spaces.sub('', text)
+    try:
         # try to use html2text for most of the escaping
         import html2text
         html2text.BODY_WIDTH = 0

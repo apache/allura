@@ -29,15 +29,17 @@ from IPython.testing.decorators import module_not_available, skipif
 from alluratest.controller import setup_basic_test
 from allura.tests.decorators import without_module
 from allura import model as M
+from allura.lib import helpers as h
 from forgetracker import model as TM
-from .... import google
-from ....google import tracker
+from forgeimporters import base
+from forgeimporters import google
+from forgeimporters.google import tracker
 
 
 class TestGCTrackerImporter(TestCase):
     def _make_extractor(self, html):
-        with mock.patch.object(google, 'urllib2') as urllib2:
-            urllib2.urlopen.return_value = ''
+        with mock.patch.object(base.h, 'urlopen') as urlopen:
+            urlopen.return_value = ''
             extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
         extractor.page = BeautifulSoup(html)
         extractor.url = "http://test/issue/?id=1"
@@ -45,9 +47,9 @@ class TestGCTrackerImporter(TestCase):
 
     def _make_ticket(self, issue):
         self.assertIsNone(self.project.app_instance('test-issue'))
-        with mock.patch.object(google, 'urllib2') as urllib2,\
+        with mock.patch.object(base.h, 'urlopen') as urlopen,\
              mock.patch.object(google.tracker, 'GoogleCodeProjectExtractor') as GPE:
-            urllib2.urlopen = lambda url: mock.Mock(read=lambda: url)
+            urlopen.side_effect = lambda req, **kw: mock.Mock(read=req.get_full_url)
             GPE.iter_issues.return_value = [issue]
             gti = google.tracker.GoogleCodeTrackerImporter()
             gti.import_tool(self.project, self.user, 'test-issue-project', mount_point='test-issue')

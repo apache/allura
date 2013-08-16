@@ -156,7 +156,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     @classmethod
     def _get_issue_ids_page(cls, project_name, start):
         url = cls.PAGE_MAP['issues_csv'].format(project_name=project_name, start=start)
-        with closing(urllib2.urlopen(url)) as fp:
+        with closing(cls.urlopen(url)) as fp:
             lines = fp.readlines()[1:]  # skip CSV header
             if not lines[-1].startswith('"'):
                 lines.pop()  # skip "next page here" info footer
@@ -285,6 +285,6 @@ class Attachment(object):
 
     @property
     def file(self):
-        fp_ish = urllib2.urlopen(self.url)
+        fp_ish = GoogleCodeProjectExtractor(None).urlopen(self.url)
         fp = StringIO(fp_ish.read())
         return fp
