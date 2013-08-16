@@ -17,7 +17,7 @@
 
 import re
 import urllib
-from urlparse import urlparse, urljoin
+from urlparse import urlparse, urljoin, parse_qs
 from collections import defaultdict
 from contextlib import closing
 try:
@@ -123,7 +123,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     def get_icon(self, project):
         page = self.get_page('project_info')
-        icon_url = urljoin(self.url, page.find(itemprop='image').attrMap['src'])
+        icon_url = urljoin(self.url, page.find(itemprop='image').get('src'))
         if icon_url == self.DEFAULT_ICON:
             return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
@@ -222,7 +222,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     def get_issue_attachments(self):
         attachments = self.page.find(id='hc0').find('div', 'attachments')
         if attachments:
-            return map(Attachment, attachments.findAll('tr'))
+            return [Attachment(a.parent) for a in attachments.findAll('a', text='Download')]
         else:
             return []
 
@@ -233,8 +233,8 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 class UserLink(object):
     def __init__(self, tag):
         self.name = tag.string.strip()
-        if 'href' in tag.attrMap:
-            self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.attrMap['href'])
+        if tag.get('href'):
+            self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
         else:
             self.url = None
 
@@ -264,7 +264,7 @@ class Comment(object):
     def _get_attachments(self, tag):
         attachments = tag.find('div', 'attachments')
         if attachments:
-            self.attachments = map(Attachment, attachments.findAll('tr'))
+            self.attachments = [Attachment(a.parent) for a in attachments.findAll('a', text='Download')]
         else:
             self.attachments = []
 
@@ -288,8 +288,8 @@ class Comment(object):
 
 class Attachment(object):
     def __init__(self, tag):
-        self.filename = _as_text(tag).strip().split()[0]
-        self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.a.get('href'))
+        self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+        self.filename = parse_qs(urlparse(self.url).query)['name'][0]
         self.type = None
 
     @property

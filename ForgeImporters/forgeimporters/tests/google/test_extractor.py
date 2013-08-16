@@ -76,7 +76,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_get_icon(self, M, StringIO):
         self.urlopen.return_value.info.return_value = {'content-type': 'image/png'}
         extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
-        extractor.page.find.return_value.attrMap = {'src': 'http://example.com/foo/bar/my-logo.png'}
+        extractor.page.find.return_value.get.return_value = 'http://example.com/foo/bar/my-logo.png'
         self.urlopen.reset_mock()
 
         extractor.get_icon(self.project)
@@ -260,13 +260,13 @@ class TestUserLink(TestCase):
     def test_plain(self):
         tag = mock.Mock()
         tag.string.strip.return_value = 'name'
-        tag.attrMap = {}
+        tag.get.return_value = None
         link = google.UserLink(tag)
         self.assertEqual(str(link), 'name')
 
     def test_linked(self):
         tag = mock.Mock()
         tag.string.strip.return_value = 'name'
-        tag.attrMap = {'href': '/p/project'}
+        tag.get.return_value = '/p/project'
         link = google.UserLink(tag)
         self.assertEqual(str(link), '[name](http://code.google.com/p/project)')
