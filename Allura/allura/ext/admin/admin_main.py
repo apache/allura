@@ -19,12 +19,13 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 from urlparse import urlparse
+import json
 
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
-from tg import expose, redirect, flash, validate, config
+from tg import expose, redirect, flash, validate, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
@@ -74,13 +75,13 @@ class AdminApp(Application):
     __version__ = version.__version__
     installable=False
     _installable_tools = None
-    _exportable_tools = None
     tool_label = 'admin'
     icons={
         24:'images/admin_24.png',
         32:'images/admin_32.png',
         48:'images/admin_48.png'
     }
+    exportable = True
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
@@ -105,15 +106,11 @@ class AdminApp(Application):
 
     @staticmethod
     def exportable_tools_for(project):
-        cls = AdminApp
-        tools = [project]
-        if cls._exportable_tools is None:
-            for tool in project.ordered_mounts(include_hidden=True):
-                if not tool.get('ac'):
-                    continue
-                if project.app_instance(tool['ac']).exportable:
-                    tools.append(tool['ac'])
-        return tools
+        tools = []
+        for tool in project.app_configs:
+            if project.app_instance(tool).exportable:
+                tools.append(tool)
+        return sorted(tools, key=lambda t: t.options.mount_point)
 
     def main_menu(self):
         '''Apps should provide their entries to be added to the main nav
@@ -167,6 +164,9 @@ class AdminApp(Application):
 
     def install(self, project):
         pass
+
+    def bulk_export(self, f):
+        json.dump(self.project, f, cls=jsonify.GenericJSON, indent=2)
 
 
 class AdminExtensionLookup(object):
@@ -645,8 +645,7 @@ class ProjectAdminController(BaseController):
                 redirect('export')
             if isinstance(tools, basestring):
                 tools = [tools]
-            allowed = set(t.options.mount_point for t in exportable_tools if hasattr(t, 'options'))
-            allowed.add('project')
+            allowed = set(t.options.mount_point for t in exportable_tools)
             if not set(tools).issubset(allowed):
                 flash('Wrong tools in input data', 'error')
                 redirect('export')

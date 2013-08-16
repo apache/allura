@@ -46,26 +46,22 @@ def bulk_export(project_shortname, tools, username, neighborhood):
         return
     not_exported_tools = []
     for tool in tools or []:
-        entry_to_export = None
-        if tool == 'project':
-            entry_to_export = project
-        else:
-            entry_to_export = project.app_instance(tool)
-            if not entry_to_export:
-                log.info('Can not load app for %s mount point. Skipping.' % tool)
-                not_exported_tools.append(tool)
-                continue
-            if not entry_to_export.exportable:
-                log.info('Tool %s is not exportable. Skipping.' % tool)
-                not_exported_tools.append(tool)
-                continue
+        app = project.app_instance(tool)
+        if not app:
+            log.info('Can not load app for %s mount point. Skipping.' % tool)
+            not_exported_tools.append(tool)
+            continue
+        if not app.exportable:
+            log.info('Tool %s is not exportable. Skipping.' % tool)
+            not_exported_tools.append(tool)
+            continue
         log.info('Exporting %s...' % tool)
         try:
             path = create_export_dir(project)
             temp_name = mkstemp(dir=path)[1]
             with open(temp_name, 'w') as f:
                 with h.push_context(project._id):
-                    entry_to_export.bulk_export(f)
+                    app.bulk_export(f)
             os.rename(temp_name, os.path.join(path, '%s.json' % tool))
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)

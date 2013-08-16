@@ -17,13 +17,12 @@
 
 import os
 import logging
-import json
 from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
 import urllib
 
-from tg import config, jsonify
+from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
@@ -876,9 +875,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             return 'ready'
         elif os.path.exists(tmpdir):
             return 'busy'
-
-    def bulk_export(self, f):
-        json.dump(self, f, cls=jsonify.GenericJSON, indent=2)
 
     def __json__(self):
         return dict(
