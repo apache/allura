@@ -112,26 +112,21 @@ class TestTrackerImporter(TestCase):
 
     def test_process_fields(self):
         ticket = mock.Mock()
-        def _user(l):
-            u = mock.Mock()
-            u.name = '%sname' % l
-            u.link = '%slink' % l
-            return u
         issue = mock.Mock(
                 get_issue_summary=lambda:'summary',
                 get_issue_description=lambda:'my *description* fool',
                 get_issue_status=lambda:'status',
                 get_issue_created_date=lambda:'created_date',
                 get_issue_mod_date=lambda:'mod_date',
-                get_issue_creator=lambda:_user('c'),
-                get_issue_owner=lambda:_user('o'),
+                get_issue_creator=lambda:'creator',
+                get_issue_owner=lambda:'owner',
             )
         importer = tracker.GoogleCodeTrackerImporter()
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'summary')
-            self.assertEqual(ticket.description, '*Originally created by:* [cname](clink)\n*Originally owned by:* [oname](olink)\n\nmy \*description\* fool')
+            self.assertEqual(ticket.description, '*Originally created by:* creator\n*Originally owned by:* owner\n\nmy \*description\* fool')
             self.assertEqual(ticket.status, 'status')
             self.assertEqual(ticket.created_date, 'created_date')
             self.assertEqual(ticket.mod_date, 'mod_date')

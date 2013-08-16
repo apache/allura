@@ -70,7 +70,7 @@ class TestGCTrackerImporter(TestCase):
     def test_empty_issue(self):
         ticket = self._make_ticket(self.empty_issue)
         self.assertEqual(ticket.summary, 'Empty Issue')
-        self.assertEqual(ticket.description, '*Originally created by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n\nEmpty')
+        self.assertEqual(ticket.description, '*Originally created by:* john...@gmail.com\n\nEmpty')
         self.assertEqual(ticket.status, '')
         self.assertEqual(ticket.milestone, '')
         self.assertEqual(ticket.custom_fields, {})

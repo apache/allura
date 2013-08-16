@@ -152,9 +152,9 @@ class TestGoogleCodeProjectExtractor(TestCase):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_creator().link, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_creator().url, 'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_owner().link, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_status(), 'Started')
         self.assertEqual(gpe.get_issue_summary(), 'Test Issue')
         self.assertEqual(gpe.get_issue_description(),
@@ -217,7 +217,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         expected = [
                 {
                     'author.name': 'john...@gmail.com',
-                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:35:15 2013',
                     'body': 'Test *comment* is a comment',
                     'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
@@ -225,7 +225,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 },
                 {
                     'author.name': 'john...@gmail.com',
-                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:35:34 2013',
                     'body': 'Another comment',
                     'updates': {},
@@ -233,7 +233,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 },
                 {
                     'author.name': 'john...@gmail.com',
-                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:36:39 2013',
                     'body': 'Last comment',
                     'updates': {},
@@ -241,7 +241,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 },
                 {
                     'author.name': 'john...@gmail.com',
-                    'author.link': 'http://code.google.com/u/101557263855536553789/',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:36:57 2013',
                     'body': 'Oh, I forgot one',
                     'updates': {'Labels:': 'OpSys-OSX'},
@@ -250,8 +250,23 @@ class TestGoogleCodeProjectExtractor(TestCase):
             ]
         for actual, expected in zip(comments, expected):
             self.assertEqual(actual.author.name, expected['author.name'])
-            self.assertEqual(actual.author.link, expected['author.link'])
+            self.assertEqual(actual.author.url, expected['author.url'])
             self.assertEqual(actual.created_date, expected['created_date'])
             self.assertEqual(actual.body, expected['body'])
             self.assertEqual(actual.updates, expected['updates'])
             self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
+
+class TestUserLink(TestCase):
+    def test_plain(self):
+        tag = mock.Mock()
+        tag.string.strip.return_value = 'name'
+        tag.attrMap = {}
+        link = google.UserLink(tag)
+        self.assertEqual(str(link), 'name')
+
+    def test_linked(self):
+        tag = mock.Mock()
+        tag.string.strip.return_value = 'name'
+        tag.attrMap = {'href': '/p/project'}
+        link = google.UserLink(tag)
+        self.assertEqual(str(link), '[name](http://code.google.com/p/project)')

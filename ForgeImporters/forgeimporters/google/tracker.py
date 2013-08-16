@@ -86,11 +86,11 @@ class GoogleCodeTrackerImporter(ToolImporter):
         ticket.mod_date = datetime.strptime(issue.get_issue_mod_date(), '%c')
         owner = issue.get_issue_owner()
         if owner:
-            owner_line = '*Originally owned by:* [{owner.name}]({owner.link})\n'.format(owner=owner)
+            owner_line = '*Originally owned by:* {owner}\n'.format(owner=owner)
         else:
             owner_line = ''
         ticket.description = (
-                u'*Originally created by:* [{creator.name}]({creator.link})\n'
+                u'*Originally created by:* {creator}\n'
                 u'{owner}'
                 u'\n'
                 u'{body}').format(

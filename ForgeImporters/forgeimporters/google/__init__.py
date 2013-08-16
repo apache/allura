@@ -198,7 +198,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             return self.get_issue_created_date()
 
     def get_issue_creator(self):
-        a = self.page.find(id='hc0').find('a', 'userlink')
+        a = self.page.find(id='hc0').find(True, 'userlink')
         return UserLink(a)
 
     def get_issue_status(self):
@@ -209,7 +209,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             return ''
 
     def get_issue_owner(self):
-        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().a
+        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().find(True, 'userlink')
         if tag:
             return UserLink(tag)
         else:
@@ -233,11 +233,20 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 class UserLink(object):
     def __init__(self, tag):
         self.name = tag.string.strip()
-        self.link = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+        if 'href' in tag.attrMap:
+            self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.attrMap['href'])
+        else:
+            self.url = None
+
+    def __str__(self):
+        if self.url:
+            return '[{name}]({url})'.format(name = self.name, url = self.url)
+        else:
+            return self.name
 
 class Comment(object):
     def __init__(self, tag):
-        self.author = UserLink(tag.find('span', 'author').find('a', 'userlink'))
+        self.author = UserLink(tag.find('span', 'author').find(True, 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
         self.body = _as_text(tag.find('pre')).strip()
         self._get_updates(tag)
@@ -262,7 +271,7 @@ class Comment(object):
     @property
     def annotated_text(self):
         text = (
-                u'*Originally posted by:* [{author.name}]({author.link})\n'
+                u'*Originally posted by:* {author}\n'
                 u'\n'
                 u'{body}\n'
                 u'\n'
