@@ -784,11 +784,8 @@ class TestExport(TestController):
     def test_exportable_tools_for(self):
         project = M.Project.query.get(shortname='test')
         exportable_tools = AdminApp.exportable_tools_for(project)
-        tools = [t.options.mount_point
-                 for t in AdminApp.exportable_tools_for(project)
-                 if hasattr(t, 'options')]
-        assert_equals(tools, [u'wiki', u'wiki2'])
-        assert_in(project, exportable_tools)
+        exportable_mount_points = [t.options.mount_point for t in exportable_tools]
+        assert_equals(exportable_mount_points, [u'admin', u'wiki', u'wiki2'])
 
     def test_access(self):
         r = self.app.get('/admin/export',
@@ -824,10 +821,8 @@ class TestExport(TestController):
         with mock.patch('allura.ext.search.search_main.SearchApp.exportable'):
             project = M.Project.query.get(shortname='test')
             exportable_tools = AdminApp.exportable_tools_for(project)
-            tools = [t.options.mount_point for t in exportable_tools
-                                           if hasattr(t, 'options')]
-            assert_equals(tools, [u'search', u'wiki', u'wiki2'])
-            assert_in(project, exportable_tools)
+            exportable_mount_points = [t.options.mount_point for t in exportable_tools]
+            assert_equals(exportable_mount_points, [u'admin', u'search', u'wiki', u'wiki2'])
 
     def test_tools_not_selected(self):
         r = self.app.post('/admin/export')
