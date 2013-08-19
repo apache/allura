@@ -533,7 +533,8 @@ class Repository(Artifact, ActivityObject):
 
     @property
     def forks(self):
-        return self.query.find({'upstream_repo.name': self.url()}).all()
+        all_forks = self.query.find({'upstream_repo.name': self.url()}).all()
+        return filter(lambda fork: fork.app_config is not None, all_forks)
 
     def tarball(self, revision, path=None):
         if path:
