@@ -226,6 +226,13 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         else:
             return []
 
+    def get_issue_stars(self):
+        stars_re = re.compile(r'(\d+) (person|people) starred this issue')
+        stars = self.page.find(id='issueheader').find(text=stars_re)
+        if stars:
+            return int(stars_re.search(stars).group(1))
+        return 0
+
     def iter_comments(self):
         for comment in self.page.findAll('div', 'issuecomment'):
             yield Comment(comment)

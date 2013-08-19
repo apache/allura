@@ -114,6 +114,7 @@ class TestGCTrackerImporter(TestCase):
                 '_milestone': 'Release1.0'
             })
         self.assertEqual(ticket.labels, ['Performance', 'Security'])
+        self.assertEqual(ticket.votes_up, 1)
 
     @skipif(module_not_available('html2text'))
     def test_html2text_escaping(self):

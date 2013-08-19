@@ -176,6 +176,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 'That\'s all'
             )
         self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
+        self.assertEqual(gpe.get_issue_stars(), 1)
 
     def test_get_issue_mod_date(self):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
