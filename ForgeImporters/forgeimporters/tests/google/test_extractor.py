@@ -19,6 +19,7 @@ from unittest import TestCase
 import pkg_resources
 
 import mock
+from datadiff.tools import assert_equal
 
 from forgeimporters import google
 from forgeimporters import base
@@ -157,7 +158,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_status(), 'Started')
         self.assertEqual(gpe.get_issue_summary(), 'Test Issue')
-        self.assertEqual(gpe.get_issue_description(),
+        assert_equal(gpe.get_issue_description(),
                 'Test *Issue* for testing\n'
                 '\n'
                 '  1. Test List\n'
@@ -172,6 +173,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 '\n'
                 '    p = source.test_issue.post()\n'
                 '    p.count = p.count *5 #* 6\n'
+                '    if p.count &gt; 5:\n'
+                '        print "Not &lt; 5 &amp; != 5"\n'
                 '\n'
                 'That\'s all'
             )

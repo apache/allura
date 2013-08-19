@@ -277,6 +277,8 @@ Test *Issue* for testing
 
     p = source.test_issue.post()
     p.count = p.count *5 #* 6
+    if p.count &gt; 5:
+        print "Not &lt; 5 &amp; != 5"
 
 That's all
 

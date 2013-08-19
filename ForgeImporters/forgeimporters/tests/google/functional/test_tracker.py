@@ -25,6 +25,7 @@ import mock
 from ming.orm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from IPython.testing.decorators import module_not_available, skipif
+from datadiff.tools import assert_equal
 
 from alluratest.controller import setup_basic_test
 from allura.tests.decorators import without_module
@@ -82,7 +83,7 @@ class TestGCTrackerImporter(TestCase):
         self.assertEqual(ticket.reported_by, anon)
         self.assertIsNone(ticket.assigned_to_id)
         self.assertEqual(ticket.summary, 'Test Issue')
-        self.assertEqual(ticket.description,
+        assert_equal(ticket.description,
                 '*Originally created by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                 '*Originally owned by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                 '\n'
@@ -100,6 +101,8 @@ class TestGCTrackerImporter(TestCase):
                 '\n'
                 '&nbsp;&nbsp;&nbsp; p = source\\.test\\_issue\\.post\\(\\)\n'
                 '&nbsp;&nbsp;&nbsp; p\\.count = p\\.count \\*5 \\#\\* 6\n'
+                '&nbsp;&nbsp;&nbsp; if p\\.count &gt; 5:\n'
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
                 '\n'
                 'That\'s all'
             )
@@ -119,7 +122,7 @@ class TestGCTrackerImporter(TestCase):
     @skipif(module_not_available('html2text'))
     def test_html2text_escaping(self):
         ticket = self._make_ticket(self.test_issue)
-        self.assertEqual(ticket.description,
+        assert_equal(ticket.description,
                 '*Originally created by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                 '*Originally owned by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                 '\n'
@@ -137,6 +140,8 @@ class TestGCTrackerImporter(TestCase):
                 '\n'
                 '&nbsp;&nbsp;&nbsp; p = source.test\\_issue.post\\(\\)\n'
                 '&nbsp;&nbsp;&nbsp; p.count = p.count \\*5 \\#\\* 6\n'
+                '&nbsp;&nbsp;&nbsp; if p.count &gt; 5:\n'
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
                 '\n'
                 'That\'s all'
             )
