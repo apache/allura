@@ -15,14 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import json
 import os
 import logging
 import shutil
 from tempfile import mkstemp
 
 import tg
-from pylons import app_globals as g
+from pylons import app_globals as g, tmpl_context as c
 
 from allura import model as M
 from allura.tasks import mail_tasks
@@ -35,15 +34,19 @@ log = logging.getLogger(__name__)
 
 
 @task
-def bulk_export(project_shortname, tools, username, neighborhood):
-    neighborhood = M.Neighborhood.query.get(name=neighborhood)
-    project = M.Project.query.get(shortname=project_shortname, neighborhood_id=neighborhood._id)
-    if not project:
-        log.error('Project %s not found' % project_shortname)
-        return
-    if project.bulk_export_status() == 'busy':
-        log.info('Another export is running for project %s. Skipping.' % project_shortname)
-        return
+def bulk_export(tools):
+    '''
+    Export the current project data.  Send notification to current user
+
+    :param list tools: list of mount_points to export
+    '''
+    # it's very handy to use c.* within a @task,
+    # but let's be explicit and keep it separate from the main code
+    return _bulk_export(c.project, tools, c.user)
+
+
+def _bulk_export(project, tools, user):
+    export_filename = project.bulk_export_filename()
     not_exported_tools = []
     for tool in tools or []:
         app = project.app_instance(tool)
@@ -57,7 +60,7 @@ def bulk_export(project_shortname, tools, username, neighborhood):
             continue
         log.info('Exporting %s...' % tool)
         try:
-            path = create_export_dir(project)
+            path = create_export_dir(project, export_filename)
             temp_name = mkstemp(dir=path)[1]
             with open(temp_name, 'w') as f:
                 with h.push_context(project._id):
@@ -71,17 +74,17 @@ def bulk_export(project_shortname, tools, username, neighborhood):
     if tools and len(not_exported_tools) < len(tools):
         # If that fails, we need to let it fail
         # there won't be a valid zip file for the user to get.
-        zip_and_cleanup(project)
+        zip_and_cleanup(project, export_filename)
     else:
         log.error('Nothing to export')
+        None
 
-    user = M.User.by_username(username)
     if not user:
-        log.info('Can not find user %s. Skipping notification.' % username)
+        log.info('No user. Skipping notification.')
         return
     tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
     instructions = tg.config.get('bulk_export_download_instructions', '')
-    instructions = instructions.format(project=project.shortname)
+    instructions = instructions.format(project=project.shortname, filename=export_filename, c=c)
     tmpl_context = {
         'instructions': instructions,
         'project': project,
@@ -93,31 +96,32 @@ def bulk_export(project_shortname, tools, username, neighborhood):
         'reply_to': unicode(user.email_address_header()),
         'message_id': h.gen_message_id(),
         'destinations': [unicode(user._id)],
-        'subject': u'Bulk export for project %s completed' % project_shortname,
+        'subject': u'Bulk export for project %s completed' % project.shortname,
         'text': tmpl.render(tmpl_context),
     }
     mail_tasks.sendmail.post(**email)
 
 
-def create_export_dir(project):
+def create_export_dir(project, export_filename):
     """Create temporary directory for export files"""
-    zip_fn = project.bulk_export_filename()
     # Name temporary directory after project shortname,
     # thus zipdir() will use proper prefix inside the archive.
-    tmp_dir_suffix = zip_fn.split('.')[0]
+    tmp_dir_suffix = export_filename.split('.')[0]
     path = os.path.join(project.bulk_export_path(), tmp_dir_suffix)
     if not os.path.exists(path):
         os.makedirs(path)
     return path
 
 
-def zip_and_cleanup(project):
-    """Zip exported data. Copy it to proper location. Remove temporary files."""
+def zip_and_cleanup(project, export_filename):
+    """
+    Zip exported data. Copy it to proper location. Remove temporary files.
+    Returns base filename of zip file
+    """
     path = project.bulk_export_path()
-    zip_fn = project.bulk_export_filename()
-    temp = os.path.join(path, zip_fn.split('.')[0])
-    zip_path_temp = os.path.join(temp, zip_fn)
-    zip_path = os.path.join(path, zip_fn)
+    temp = os.path.join(path, export_filename.split('.')[0])
+    zip_path_temp = os.path.join(temp, export_filename)
+    zip_path = os.path.join(path, export_filename)
 
     zipdir(temp, zip_path_temp)
 
