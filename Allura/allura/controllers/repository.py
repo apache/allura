@@ -240,6 +240,7 @@ class RepoRootController(BaseController, FeedController):
                 msg = "No commit message."
             result.append(dict(
                     oid=oid,
+                    short_id=c.app.repo.shorthand_for_commit(oid),
                     row=row,
                     parents=ci.parent_ids,
                     message=msg,

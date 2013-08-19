@@ -100,6 +100,7 @@ class TestRootController(SVNTestController):
         assert data['next_column'] == 1
         for val in data['built_tree'].values():
             if val['url'] == '/p/test/src/1/':
+                assert val['short_id'] == '[r1]'
                 assert val['column'] == 0
                 assert val['row'] == 4
                 assert val['message'] == 'Create readme'
