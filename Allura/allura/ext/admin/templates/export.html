@@ -24,12 +24,10 @@
 
 {% block content %}
 
-{% if status == 'ready' %}
-<div class="error">
-  <h2>Careful!</h2>
-  This project has been exported already.
-  Follow instructions in notification email to get the exported data.
-  If you run export again previous exported data will be lost.
+{% if status == 'busy' %}
+<div class="info">
+  <h2>Busy</h2>
+  This project is queued for export.  You can't start another export yet.
 </div>
 {% endif %}
 
@@ -42,7 +40,7 @@
         <label for="tool-{{ loop.index }}">{{ tool.options.mount_label }}</label> <a href="{{ tool.url() }}">{{ tool.url() }}</a>
       </div>
       {% endfor %}
-      <p><div class="grid-19"><input type="submit" value="Export"></div></p>
+      <p><div class="grid-19"><input type="submit" value="Export" {% if status == 'busy' %}disabled{% endif %}></div></p>
     </form>
   {% else %}
     There are no exportable tools in your project.

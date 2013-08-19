@@ -836,37 +836,19 @@ class TestExport(TestController):
     def test_selected_one_tool(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki'], u'test-admin', u'Projects')
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki'])
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with(
-            'test', [u'wiki', u'wiki2'], u'test-admin', u'Projects')
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki', u'wiki2'])
 
-    @mock.patch('allura.ext.admin.admin_main.export_tasks')
-    def test_export_in_progress(self, export_tasks):
-        p = M.Project.query.get(shortname='test')
-        tmpdir = os.path.join(p.bulk_export_path(), p.shortname)
-        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
-        os.makedirs(tmpdir)
-        r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
-        assert_in('info', self.webflash(r))
-        assert_equals(export_tasks.bulk_export.post.call_count, 0)
-        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
-
-    def test_export_done(self):
-        p = M.Project.query.get(shortname='test')
-        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
-        os.makedirs(p.bulk_export_path())
-        fn = os.path.join(p.bulk_export_path(), p.bulk_export_filename())
-        with open(fn, 'w') as f:
-            f.write('Pretending I am zip archive')
+    def test_export_in_progress(self):
+        from allura.tasks import export_tasks
+        export_tasks.bulk_export.post(['wiki'])
         r = self.app.get('/admin/export')
-        assert_in('<h2>Careful!</h2>', r)
-        shutil.rmtree(p.bulk_export_path(), ignore_errors=True)
+        assert_in('<h2>Busy</h2>', r.body)
 
     @td.with_user_project('test-user')
     def test_bulk_export_path_for_user_project(self):

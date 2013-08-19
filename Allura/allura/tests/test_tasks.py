@@ -341,13 +341,8 @@ class TestExportTasks(unittest.TestCase):
         shutil.rmtree(project.bulk_export_path(), ignore_errors=True)
 
     @mock.patch('allura.tasks.export_tasks.log')
-    def test_bulk_export_invalid_project(self, log):
-        export_tasks.bulk_export('bad', [u'wiki'], 'test-admin', 'Projects')
-        log.error.assert_called_once_with('Project bad not found')
-
-    @mock.patch('allura.tasks.export_tasks.log')
     def test_bulk_export_invalid_tool(self, log):
-        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin', 'Projects')
+        export_tasks.bulk_export([u'bugs', u'blog'])
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
             mock.call('Can not load app for bugs mount point. Skipping.'),
@@ -360,7 +355,7 @@ class TestExportTasks(unittest.TestCase):
     @td.with_tool('test', 'Blog', 'blog')
     def test_bulk_export_not_exportable_tool(self, mail_tasks, app, log):
         app.return_value.exportable = False
-        export_tasks.bulk_export('test', [u'bugs', u'blog'], 'test-admin', 'Projects')
+        export_tasks.bulk_export([u'bugs', u'blog'])
         assert_equal(log.info.call_count, 2)
         assert_equal(log.info.call_args_list, [
             mock.call('Tool bugs is not exportable. Skipping.'),
@@ -374,7 +369,7 @@ class TestExportTasks(unittest.TestCase):
     @td.with_wiki
     def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil, project_json):
         M.MonQTask.query.remove()
-        export_tasks.bulk_export('test', [u'wiki'], 'test-admin', 'Projects')
+        export_tasks.bulk_export([u'wiki'])
         assert_equal(log.info.call_count, 1)
         assert_equal(log.info.call_args_list, [
             mock.call('Exporting wiki...')])
@@ -396,21 +391,11 @@ class TestExportTasks(unittest.TestCase):
         assert_in('The following tools were exported:\n- wiki', text)
         assert_in('Sample instructions for test', text)
 
-    @mock.patch('forgewiki.wiki_main.ForgeWikiApp.bulk_export')
-    @mock.patch('allura.tasks.export_tasks.log')
-    @td.with_wiki
-    def test_bulk_export_quits_if_another_export_is_running(self, log, wiki_bulk_export):
-        project = M.Project.query.get(shortname='test')
-        export_tasks.create_export_dir(project)
-        assert_equal(project.bulk_export_status(), 'busy')
-        export_tasks.bulk_export('test', [u'wiki'], 'test-admin', 'Projects')
-        log.info.assert_called_once_with('Another export is running for project test. Skipping.')
-        assert_equal(wiki_bulk_export.call_count, 0)
-
     def test_create_export_dir(self):
         project = M.Project.query.get(shortname='test')
         export_path = project.bulk_export_path()
-        path = export_tasks.create_export_dir(project)
+        export_filename = project.bulk_export_filename()
+        path = export_tasks.create_export_dir(project, export_filename)
         assert_equal(path, '/tmp/bulk_export/p/test/test')
         assert os.path.exists(os.path.join(export_path, project.shortname))
 
@@ -418,22 +403,16 @@ class TestExportTasks(unittest.TestCase):
     def test_zip_and_cleanup(self):
         project = M.Project.query.get(shortname='test')
         export_path = project.bulk_export_path()
-        path = export_tasks.create_export_dir(project)
-        export_tasks.zip_and_cleanup(project)
+        export_filename = project.bulk_export_filename()
+        path = export_tasks.create_export_dir(project, export_filename)
+        export_tasks.zip_and_cleanup(project, export_filename)
         assert not os.path.exists(path)
         assert os.path.exists(os.path.join(export_path, 'test.zip'))
 
     def test_bulk_export_status(self):
-        project = M.Project.query.get(shortname='test')
-        assert_equal(project.bulk_export_status(), None)
-
-        export_tasks.create_export_dir(project)
-        assert_equal(project.bulk_export_status(), 'busy')
-
-        with open(os.path.join(project.bulk_export_path(),
-                               project.bulk_export_filename()), 'w') as f:
-            f.write('just test')
-        assert_equal(project.bulk_export_status(), 'ready')
+        assert_equal(c.project.bulk_export_status(), None)
+        export_tasks.bulk_export.post(['wiki'])
+        assert_equal(c.project.bulk_export_status(), 'busy')
 
 
 Mapper.compile_all()

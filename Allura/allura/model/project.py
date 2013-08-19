@@ -46,6 +46,7 @@ from .neighborhood import Neighborhood
 from .auth import ProjectRole, User
 from .timeline import ActivityNode, ActivityObject
 from .types import ACL, ACE
+from .monq_model import MonQTask
 
 from filesystem import File
 
@@ -855,9 +856,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             shortname = self.shortname.split('/')[0]
         return config['bulk_export_path'].format(
                 nbhd=self.neighborhood.url_prefix.strip('/'),
-                project=shortname)
+                project=shortname,
+                c=c,
+        )
 
     def bulk_export_filename(self):
+        '''
+        Return a filename (configurable) for this project export.  The current timestamp
+        may be included, so only run this method once per export.
+        '''
         shortname = self.shortname
         if self.is_nbhd_project:
             shortname = self.url().strip('/')
@@ -869,12 +876,20 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         return config['bulk_export_filename'].format(project=shortname, date=datetime.utcnow())
 
     def bulk_export_status(self):
-        fn = os.path.join(self.bulk_export_path(), self.bulk_export_filename())
-        tmpdir = os.path.join(self.bulk_export_path(), self.shortname)
-        if os.path.isfile(fn):
-            return 'ready'
-        elif os.path.exists(tmpdir):
+        '''
+        Returns 'busy' if an export is queued or in-progress.  Returns None otherwise
+        '''
+        q = {
+            'task_name': 'allura.tasks.export_tasks.bulk_export',
+            'state': {'$in': ['busy', 'ready']},
+            'context.project_id': self._id,
+        }
+        export_task = MonQTask.query.get(**q)
+        if not export_task:
+            return
+        if export_task.state in ('busy', 'ready'):
             return 'busy'
+
 
     def __json__(self):
         return dict(
