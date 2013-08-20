@@ -379,8 +379,8 @@ class ForgeTrackerApp(Application):
             ]
         self.globals = TM.Globals(app_config_id=c.app.config._id,
             last_ticket_num=0,
-            open_status_names='open unread accepted pending',
-            closed_status_names='closed wont-fix',
+            open_status_names=self.config.options.get('open_status_names', 'open unread accepted pending'),
+            closed_status_names=self.config.options.get('closed_status_names', 'closed wont-fix'),
             custom_fields=[dict(
                     name='_milestone',
                     label='Milestone',

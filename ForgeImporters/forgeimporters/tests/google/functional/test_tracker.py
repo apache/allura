@@ -76,6 +76,24 @@ class TestGCTrackerImporter(TestCase):
         self.assertEqual(ticket.milestone, '')
         self.assertEqual(ticket.custom_fields, {})
         assert c.app.config.options.get('EnableVoting')
+        open_bin = TM.Bin.query.get(summary='Open Tickets', app_config_id=c.app.config._id)
+        self.assertItemsEqual(open_bin.terms.split(' && '), [
+                '!status:Fixed',
+                '!status:Verified',
+                '!status:Invalid',
+                '!status:Duplicate',
+                '!status:WontFix',
+                '!status:Done',
+            ])
+        closed_bin = TM.Bin.query.get(summary='Closed Tickets', app_config_id=c.app.config._id)
+        self.assertItemsEqual(closed_bin.terms.split(' or '), [
+                'status:Fixed',
+                'status:Verified',
+                'status:Invalid',
+                'status:Duplicate',
+                'status:WontFix',
+                'status:Done',
+            ])
 
     @without_module('html2text')
     def test_issue_basic_fields(self):
@@ -220,6 +238,8 @@ class TestGCTrackerImporter(TestCase):
 
     def test_globals(self):
         globals = self._make_ticket(self.test_issue).globals
+        self.assertEqual(globals.open_status_names, 'New Accepted Started')
+        self.assertEqual(globals.closed_status_names, 'Fixed Verified Invalid Duplicate WontFix Done')
         self.assertItemsEqual(globals.custom_fields, [
                 {
                     'label': 'Milestone',

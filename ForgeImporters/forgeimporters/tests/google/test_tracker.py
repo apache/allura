@@ -45,7 +45,11 @@ class TestTrackerImporter(TestCase):
         importer.import_tool(project, user, project_name='project_name',
                 mount_point='mount_point', mount_label='mount_label')
 
-        project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label', EnableVoting=True)
+        project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label',
+                EnableVoting=True,
+                open_status_names='New Accepted Started',
+                closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+            )
         gpe.iter_issues.assert_called_once_with('project_name')
         self.assertEqual(importer.process_fields.call_args_list, [
                 mock.call(tickets[0], issues[0]),
