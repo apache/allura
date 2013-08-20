@@ -177,7 +177,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             if len(issue_ids) <= 0:
                 return
             for issue_id in issue_ids:
-                yield cls(project_name, 'issue', issue_id=issue_id)
+                yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
             start += limit
 
     def get_issue_summary(self):

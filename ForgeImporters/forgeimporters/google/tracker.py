@@ -43,6 +43,12 @@ class GoogleCodeTrackerImporter(ToolImporter):
             type='select',
         )
 
+    def __init__(self, *args, **kwargs):
+        super(GoogleCodeTrackerImporter, self).__init__(*args, **kwargs)
+        self.open_milestones = set()
+        self.custom_fields = {}
+        self.max_ticket_num = 0
+
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
         app = project.install_app('tickets', mount_point, mount_label,
@@ -51,21 +57,22 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
             )
         ThreadLocalORMSession.flush_all()
-        self.open_milestones = set()
-        self.custom_fields = {}
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, user=M.User.anonymous(), app=app):
-                for issue in GoogleCodeProjectExtractor.iter_issues(project_name):
-                    ticket = TM.Ticket.new()
+                for ticket_num, issue in GoogleCodeProjectExtractor.iter_issues(project_name):
+                    self.max_ticket_num = max(ticket_num, self.max_ticket_num)
+                    ticket = TM.Ticket(
+                        app_config_id=app.config._id,
+                        custom_fields=dict(),
+                        ticket_num=ticket_num)
                     self.process_fields(ticket, issue)
                     self.process_labels(ticket, issue)
                     self.process_comments(ticket, issue)
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
-                # app.globals gets expunged every time Ticket.new() is called :-(
-                app.globals = TM.Globals.query.get(app_config_id=app.config._id)
                 app.globals.custom_fields = self.postprocess_custom_fields()
+                app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
             return app

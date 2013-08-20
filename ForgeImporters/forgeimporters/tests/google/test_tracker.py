@@ -39,8 +39,8 @@ class TestTrackerImporter(TestCase):
         importer.postprocess_custom_fields = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
-        issues = gpe.iter_issues.return_value = [mock.Mock(), mock.Mock()]
-        tickets = TM.Ticket.new.side_effect = [mock.Mock(), mock.Mock()]
+        issues = gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
+        tickets = TM.Ticket.side_effect = [mock.Mock(), mock.Mock()]
 
         importer.import_tool(project, user, project_name='project_name',
                 mount_point='mount_point', mount_label='mount_label')
@@ -52,16 +52,16 @@ class TestTrackerImporter(TestCase):
             )
         gpe.iter_issues.assert_called_once_with('project_name')
         self.assertEqual(importer.process_fields.call_args_list, [
-                mock.call(tickets[0], issues[0]),
-                mock.call(tickets[1], issues[1]),
+                mock.call(tickets[0], issues[0][1]),
+                mock.call(tickets[1], issues[1][1]),
             ])
         self.assertEqual(importer.process_labels.call_args_list, [
-                mock.call(tickets[0], issues[0]),
-                mock.call(tickets[1], issues[1]),
+                mock.call(tickets[0], issues[0][1]),
+                mock.call(tickets[1], issues[1][1]),
             ])
         self.assertEqual(importer.process_comments.call_args_list, [
-                mock.call(tickets[0], issues[0]),
-                mock.call(tickets[1], issues[1]),
+                mock.call(tickets[0], issues[0][1]),
+                mock.call(tickets[1], issues[1][1]),
             ])
         self.assertEqual(tlos.flush_all.call_args_list, [
                 mock.call(),
@@ -75,6 +75,7 @@ class TestTrackerImporter(TestCase):
                 mock.call(tickets[0]),
                 mock.call(tickets[1]),
             ])
+        self.assertEqual(app.globals.last_ticket_num, 100)
         g.post_event.assert_called_once_with('project_updated')
 
     def test_custom_fields(self):

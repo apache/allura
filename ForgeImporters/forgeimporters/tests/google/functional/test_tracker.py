@@ -46,12 +46,12 @@ class TestGCTrackerImporter(TestCase):
         extractor.url = "http://test/issue/?id=1"
         return extractor
 
-    def _make_ticket(self, issue):
+    def _make_ticket(self, issue, issue_id=1):
         self.assertIsNone(self.project.app_instance('test-issue'))
         with mock.patch.object(base.h, 'urlopen') as urlopen,\
              mock.patch.object(google.tracker, 'GoogleCodeProjectExtractor') as GPE:
             urlopen.side_effect = lambda req, **kw: mock.Mock(read=req.get_full_url)
-            GPE.iter_issues.return_value = [issue]
+            GPE.iter_issues.return_value = [(issue_id, issue)]
             gti = google.tracker.GoogleCodeTrackerImporter()
             gti.import_tool(self.project, self.user, 'test-issue-project', mount_point='test-issue')
         c.app = self.project.app_instance('test-issue')
@@ -237,9 +237,10 @@ class TestGCTrackerImporter(TestCase):
                 self._assert_attachments(actual.attachments, *expected['attachments'])
 
     def test_globals(self):
-        globals = self._make_ticket(self.test_issue).globals
+        globals = self._make_ticket(self.test_issue, issue_id=6).globals
         self.assertEqual(globals.open_status_names, 'New Accepted Started')
         self.assertEqual(globals.closed_status_names, 'Fixed Verified Invalid Duplicate WontFix Done')
+        self.assertEqual(globals.last_ticket_num, 6)
         self.assertItemsEqual(globals.custom_fields, [
                 {
                     'label': 'Milestone',
