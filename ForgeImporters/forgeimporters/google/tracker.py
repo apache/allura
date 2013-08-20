@@ -75,6 +75,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
+            app.globals.invalidate_bin_counts()
             return app
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False

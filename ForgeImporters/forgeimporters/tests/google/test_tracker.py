@@ -77,6 +77,7 @@ class TestTrackerImporter(TestCase):
             ])
         self.assertEqual(app.globals.last_ticket_num, 100)
         g.post_event.assert_called_once_with('project_updated')
+        app.globals.invalidate_bin_counts.assert_called_once_with()
 
     def test_custom_fields(self):
         importer = tracker.GoogleCodeTrackerImporter()
