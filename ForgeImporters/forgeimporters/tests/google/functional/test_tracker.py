@@ -75,6 +75,7 @@ class TestGCTrackerImporter(TestCase):
         self.assertEqual(ticket.status, '')
         self.assertEqual(ticket.milestone, '')
         self.assertEqual(ticket.custom_fields, {})
+        assert c.app.config.options.get('EnableVoting')
 
     @without_module('html2text')
     def test_issue_basic_fields(self):

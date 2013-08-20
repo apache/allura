@@ -45,7 +45,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
 
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
-        app = project.install_app('tickets', mount_point, mount_label)
+        app = project.install_app('tickets', mount_point, mount_label, EnableVoting=True)
         app.globals.open_status_names = 'New Accepted Started'
         app.globals.closed_status_names = 'Fixed Verified Invalid Duplicate WontFix Done'
         ThreadLocalORMSession.flush_all()
