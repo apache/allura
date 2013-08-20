@@ -49,6 +49,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
         app.globals.open_status_names = 'New Accepted Started'
         app.globals.closed_status_names = 'Fixed Verified Invalid Duplicate WontFix Done'
         ThreadLocalORMSession.flush_all()
+        self.open_milestones = set()
         self.custom_fields = {}
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
@@ -110,6 +111,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 cf = self.custom_field(name)
                 cf['options'].add(value)
                 custom_fields[cf['name']].add(value)
+                if cf['name'] == '_milestone' and ticket.status in c.app.globals.open_status_names:
+                    self.open_milestones.add(value)
             else:
                 labels.add(label)
         ticket.labels = list(labels)
@@ -131,8 +134,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 field['milestones'] = [{
                         'name': milestone,
                         'due_date': None,
-                        'complete': False,
-                    } for milestone in field['options']]
+                        'complete': milestone not in self.open_milestones,
+                    } for milestone in sorted(field['options'])]
                 field['options'] = ''
             elif field['type'] == 'select':
                 field['options'] = ' '.join(field['options'])

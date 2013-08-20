@@ -192,6 +192,7 @@ class TestTrackerImporter(TestCase):
     @mock.patch.object(tracker, 'c')
     def test_postprocess_custom_fields(self, c):
         importer = tracker.GoogleCodeTrackerImporter()
+        importer.open_milestones = set(['m2', 'm3'])
         importer.custom_fields = {
                 'Foo': {
                     'name': '_foo',
@@ -201,7 +202,7 @@ class TestTrackerImporter(TestCase):
                 'Milestone': {
                     'name': '_milestone',
                     'type': 'milestone',
-                    'options': set(['foo', 'bar']),
+                    'options': set(['m3', 'm1', 'm2']),
                 },
                 'Priority': {
                     'name': '_priority',
@@ -221,8 +222,9 @@ class TestTrackerImporter(TestCase):
                     'type': 'milestone',
                     'options': '',
                     'milestones': [
-                        {'name': 'foo', 'due_date': None, 'complete': False},
-                        {'name': 'bar', 'due_date': None, 'complete': False},
+                        {'name': 'm1', 'due_date': None, 'complete': True},
+                        {'name': 'm2', 'due_date': None, 'complete': False},
+                        {'name': 'm3', 'due_date': None, 'complete': False},
                     ],
                 },
                 {
