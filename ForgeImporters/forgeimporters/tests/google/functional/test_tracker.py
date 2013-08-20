@@ -82,7 +82,7 @@ class TestGCTrackerImporter(TestCase):
         ticket = self._make_ticket(self.test_issue)
         self.assertEqual(ticket.reported_by, anon)
         self.assertIsNone(ticket.assigned_to_id)
-        self.assertEqual(ticket.summary, 'Test Issue')
+        self.assertEqual(ticket.summary, 'Test "Issue"')
         assert_equal(ticket.description,
                 '*Originally created by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                 '*Originally owned by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'

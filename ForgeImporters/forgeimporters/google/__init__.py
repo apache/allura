@@ -181,7 +181,9 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             start += limit
 
     def get_issue_summary(self):
-        return self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
+        text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
+        bs = BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
+        return bs.string
 
     def get_issue_description(self):
         return _as_text(self.page.find(id='hc0').pre).strip()

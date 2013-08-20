@@ -35,8 +35,14 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.project.get_tool_data.return_value = 'my-project'
 
     def tearDown(self):
-        self._p_urlopen.stop()
-        self._p_soup.stop()
+        for patcher in ('_p_urlopen', '_p_soup'):
+            try:
+                getattr(self, patcher).stop()
+            except RuntimeError as e:
+                if 'unstarted patcher' in str(e):
+                    pass  # test case might stop them early
+                else:
+                    raise
 
     def test_init(self):
         extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
@@ -157,7 +163,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
         self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_status(), 'Started')
-        self.assertEqual(gpe.get_issue_summary(), 'Test Issue')
+        self._p_soup.stop()
+        self.assertEqual(gpe.get_issue_summary(), 'Test "Issue"')
         assert_equal(gpe.get_issue_description(),
                 'Test *Issue* for testing\n'
                 '\n'
