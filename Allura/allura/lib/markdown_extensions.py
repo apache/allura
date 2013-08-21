@@ -56,7 +56,7 @@ class ForgeExtension(markdown.Extension):
         md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
         md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
         # this has to be before the 'escape' processor, otherwise weird placeholders are inserted for escaped chars within urls, and then the autolink can't match the whole url
-        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:]+)', md), '<escape')
+        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
         # replace the link pattern with our extended version
         md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
         md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
