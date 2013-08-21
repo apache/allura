@@ -16,9 +16,12 @@
 #       under the License.
 
 from datetime import datetime
-from operator import itemgetter
 from unittest import TestCase
 import mock
+from mock import patch
+
+from allura.tests import TestController
+from allura.tests.decorators import with_tracker
 
 from ...google import tracker
 
@@ -239,3 +242,32 @@ class TestTrackerImporter(TestCase):
                     'options': 'foo bar',
                 },
             ])
+
+
+class TestGoogleCodeTrackerImportController(TestController, TestCase):
+    def setUp(self):
+        """Mount Google Code importer on the Tracker admin controller"""
+        super(TestGoogleCodeTrackerImportController, self).setUp()
+        from forgetracker.tracker_main import TrackerAdminController
+        TrackerAdminController._importer = tracker.GoogleCodeTrackerImportController()
+
+    @with_tracker
+    def test_index(self):
+        r = self.app.get('/p/test/admin/bugs/_importer/')
+        self.assertIsNotNone(r.html.find(attrs=dict(name="gc_project_name")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+
+    @with_tracker
+    @patch('forgeimporters.google.tracker.import_tool')
+    def test_create(self, import_tool):
+        params = dict(gc_project_name='test',
+                mount_label='mylabel',
+                mount_point='mymount',
+                )
+        r = self.app.post('/p/test/admin/bugs/_importer/create', params,
+                status=302)
+        self.assertEqual(r.location, 'http://localhost/p/test/admin/')
+        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual(u'test', import_tool.post.call_args[1]['project_name'])

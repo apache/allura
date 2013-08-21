@@ -72,6 +72,35 @@ class MaxBytesValidator(fev.FancyValidator):
     def from_python(self, value, state):
         return h.really_unicode(value or '')
 
+class MountPointValidator(fev.UnicodeString):
+    def __init__(self, app_class,
+            reserved_mount_points=('feed', 'index', 'icon', '_nav.json')):
+        super(self.__class__, self).__init__()
+        self.app_class = app_class
+        self.reserved_mount_points = reserved_mount_points
+
+    def _to_python(self, value, state):
+        from pylons import tmpl_context as c
+        project = state.project if hasattr(state, 'project') else c.project
+        mount_point, App = value, self.app_class
+        if not mount_point:
+            base_mount_point = mount_point = App.default_mount_point
+            for x in range(10):
+                if project.app_instance(mount_point) is None: break
+                mount_point = base_mount_point + '-%d' % x
+        if not App.relaxed_mount_points:
+            mount_point = mount_point.lower()
+        if not App.validate_mount_point(mount_point):
+            raise fe.Invalid('Mount point "%s" is invalid' % mount_point,
+                    value, state)
+        if mount_point in self.reserved_mount_points:
+            raise fe.Invalid('Mount point "%s" is reserved' % mount_point,
+                    value, state)
+        if project.app_instance(mount_point) is not None:
+            raise fe.Invalid('Mount point "%s" is already in use' % mount_point,
+                    value, state)
+        return mount_point
+
 class TaskValidator(fev.FancyValidator):
     def _to_python(self, value, state):
         try:

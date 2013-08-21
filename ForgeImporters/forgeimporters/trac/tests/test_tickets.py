@@ -84,12 +84,8 @@ class TestTracTicketImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_tracker
-    @patch('forgeimporters.trac.tickets.TracTicketImporter')
-    def test_create(self, importer):
-        from allura import model as M
-        importer = importer.return_value
-        importer.import_tool.return_value = Mock()
-        importer.import_tool.return_value.url.return_value = '/p/test/mymount'
+    @patch('forgeimporters.trac.tickets.import_tool')
+    def test_create(self, import_tool):
         params = dict(trac_url='http://example.com/trac/url',
                 mount_label='mylabel',
                 mount_point='mymount',
@@ -97,10 +93,8 @@ class TestTracTicketImportController(TestController, TestCase):
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
                 upload_files=[('user_map', 'myfile', '{"orig_user": "new_user"}')],
                 status=302)
-        project = M.Project.query.get(shortname='test')
-        self.assertEqual(r.location, 'http://localhost/p/test/mymount')
-        self.assertEqual(project._id, importer.import_tool.call_args[0][0]._id)
-        self.assertEqual(u'mymount', importer.import_tool.call_args[1]['mount_point'])
-        self.assertEqual(u'mylabel', importer.import_tool.call_args[1]['mount_label'])
-        self.assertEqual('{"orig_user": "new_user"}', importer.import_tool.call_args[1]['user_map'])
-        self.assertEqual(u'http://example.com/trac/url', importer.import_tool.call_args[1]['trac_url'])
+        self.assertEqual(r.location, 'http://localhost/p/test/admin/')
+        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual('{"orig_user": "new_user"}', import_tool.post.call_args[1]['user_map'])
+        self.assertEqual(u'http://example.com/trac/url', import_tool.post.call_args[1]['trac_url'])

@@ -18,23 +18,81 @@
 from collections import defaultdict
 from datetime import datetime
 
+from formencode import validators as fev
+
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
 
 from allura import model as M
+#import gdata
+gdata = None
+from tg import (
+        expose,
+        flash,
+        redirect,
+        validate,
+        )
+from tg.decorators import (
+        with_trailing_slash,
+        without_trailing_slash,
+        )
+
+from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post, task
 
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
-from ..base import ToolImporter
 from . import GoogleCodeProjectExtractor
+from forgeimporters.base import (
+        ToolImporter,
+        ToolImportForm,
+        )
+
+
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    GoogleCodeTrackerImporter().import_tool(c.project, c.user, **kw)
+
+
+class GoogleCodeTrackerImportForm(ToolImportForm):
+    gc_project_name = fev.UnicodeString(not_empty=True)
+
+
+class GoogleCodeTrackerImportController(BaseController):
+    def __init__(self):
+        self.importer = GoogleCodeTrackerImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app
+
+    @with_trailing_slash
+    @expose('jinja:forgeimporters.google:templates/tracker/index.html')
+    def index(self, **kw):
+        return dict(importer=self.importer,
+                target_app=self.target_app)
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    @validate(GoogleCodeTrackerImportForm(ForgeTrackerApp), error_handler=index)
+    def create(self, gc_project_name, mount_point, mount_label, **kw):
+        import_tool.post(
+                project_name=gc_project_name,
+                mount_point=mount_point,
+                mount_label=mount_label,
+                )
+        flash('Ticket import has begun. Your new tracker will be available '
+                'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
 
 
 class GoogleCodeTrackerImporter(ToolImporter):
     source = 'Google Code'
     target_app = ForgeTrackerApp
-    controller = None
+    controller = GoogleCodeTrackerImportController
     tool_label = 'Issues'
 
     field_types = defaultdict(lambda: 'string',

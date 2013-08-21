@@ -35,6 +35,7 @@ from allura.lib.security import require_access
 from allura.lib.plugin import ProjectRegistrationProvider, AdminExtension
 from allura.lib import helpers as h
 from allura.lib import exceptions
+from allura.lib import validators as v
 from allura.app import SitemapEntry
 
 from paste.deploy.converters import aslist
@@ -56,6 +57,13 @@ class ProjectImportForm(schema.Schema):
 
     neighborhood = fev.PlainText(not_empty=True)
     project_name = fev.UnicodeString(not_empty=True, max=40)
+
+
+class ToolImportForm(schema.Schema):
+    def __init__(self, tool_class):
+        super(ToolImportForm, self).__init__()
+        self.add_field('mount_point', v.MountPointValidator(tool_class))
+    mount_label = fev.UnicodeString()
 
 
 @task(notifications_disabled=True)

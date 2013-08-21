@@ -1,0 +1,80 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% extends g.theme.master %}
+
+{% block title %}
+{{c.project.name}} / {{ importer.tool_description }}
+{% endblock %}
+
+{% block header %}
+{{ importer.tool_description }}
+{% endblock %}
+
+{% block extra_css %}
+  <style type="text/css">
+    form {
+      padding: 0 20px 20px 20px;
+    }
+    form label {
+      display: inline-block;
+      width: 30%;
+      vertical-align: top;
+    }
+    form > div {
+      margin-bottom: 10px;
+    }
+    form > div input {
+      width: 30%;
+      vertical-align: top;
+    }
+    form .error {
+      display: inline-block;
+      color: #f00;
+      background: none;
+      border: none;
+      margin: 0;
+      width: 30%;
+    }
+  </style>
+{% endblock %}
+
+{%- macro error(field_name) %}
+  {% if c.form_errors[field_name] %}
+  <div class="error">{{c.form_errors[field_name]}}</div>
+  {% endif %}
+{%- endmacro %}
+
+{% block content %}
+<form action="create" method="post" enctype="multipart/form-data">
+  {% block importer_fields %}
+  {% endblock %}
+  <div>
+    <label for="mount_label">Label</label>
+    <input name="mount_label" value="{{ c.form_values['mount_label'] or target_app.default_mount_label }}" />
+      {{ error('mount_label') }}
+  </div>
+  <div>
+    <label for="mount_point">Mount Point</label>
+    <input name="mount_point" value="{{ c.form_values['mount_point'] or target_app.default_mount_point }}" />
+      {{ error('mount_point') }}
+  </div>
+
+  <input type="submit" />
+</form>
+{% endblock %}

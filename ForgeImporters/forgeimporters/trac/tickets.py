@@ -21,7 +21,6 @@ from datetime import (
         )
 import json
 
-import formencode as fe
 from formencode import validators as fev
 
 from ming.orm import session
@@ -30,6 +29,7 @@ from pylons import app_globals as g
 from tg import (
         config,
         expose,
+        flash,
         redirect,
         validate,
         )
@@ -39,44 +39,60 @@ from tg.decorators import (
         )
 
 from allura.controllers import BaseController
-from allura.lib.decorators import require_post
+from allura.lib.decorators import require_post, task
 from allura.lib.import_api import AlluraImportApiClient
-from allura.lib.validators import UserMapJsonFile
+from allura.lib import validators as v
 from allura.model import ApiTicket
 from allura.scripts.trac_export import (
         TracExport,
         DateJSONEncoder,
         )
 
-from forgeimporters.base import ToolImporter
+from forgeimporters.base import (
+        ToolImporter,
+        ToolImportForm,
+        )
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.scripts.import_tracker import import_tracker
 
 
-class TracTicketImportSchema(fe.Schema):
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    TracTicketImporter().import_tool(c.project, c.user, **kw)
+
+
+class TracTicketImportForm(ToolImportForm):
     trac_url = fev.URL(not_empty=True)
-    user_map = UserMapJsonFile(as_string=True)
-    mount_point = fev.UnicodeString()
-    mount_label = fev.UnicodeString()
+    user_map = v.UserMapJsonFile(as_string=True)
 
 
 class TracTicketImportController(BaseController):
+    def __init__(self):
+        self.importer = TracTicketImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app
+
     @with_trailing_slash
     @expose('jinja:forgeimporters.trac:templates/tickets/index.html')
     def index(self, **kw):
-        return {}
+        return dict(importer=self.importer,
+                target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(TracTicketImportSchema(), error_handler=index)
+    @validate(TracTicketImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
-        app = TracTicketImporter().import_tool(c.project, c.user,
+        import_tool.post(
                 mount_point=mount_point,
                 mount_label=mount_label,
                 trac_url=trac_url,
                 user_map=user_map)
-        redirect(app.url())
+        flash('Ticket import has begun. Your new tracker will be available '
+                'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
 
 
 class TracTicketImporter(ToolImporter):

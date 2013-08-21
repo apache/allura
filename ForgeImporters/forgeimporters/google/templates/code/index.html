@@ -16,27 +16,16 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% extends g.theme.master %}
+{% extends 'forgeimporters:templates/importer_base.html' %}
 
 {% block title %}
-{{c.project.name}} / Import Google Code Repo
+{{c.project.name}} / Import your repo from Google Code
 {% endblock %}
 
-{% block header %}
-Import a Repo from a Google Code project
-{% endblock %}
-
-{% block content %}
-<form action="create" method="post" class="pad">
+{% block importer_fields %}
+<div>
   <label for="gc_project_name">Google Code project name (as it appears in a URL)</label>
-  <input name="gc_project_name" />
-
-  <label for="mount_label">Label</label>
-  <input name="mount_label" value="Source" />
-
-  <label for="mount_point">Mount Point</label>
-  <input name="mount_point" value="source" />
-
-  <input type="submit" />
-</form>
+  <input name="gc_project_name" value="{{ c.form_values['gc_project_name'] }}" />
+  {{ error('gc_project_name') }}
+</div>
 {% endblock %}

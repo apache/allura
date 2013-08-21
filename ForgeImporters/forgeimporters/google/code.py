@@ -15,6 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import urllib2
+
 import formencode as fe
 from formencode import validators as fev
 
@@ -22,6 +24,7 @@ from pylons import tmpl_context as c
 from pylons import app_globals as g
 from tg import (
         expose,
+        flash,
         redirect,
         validate,
         )
@@ -31,25 +34,30 @@ from tg.decorators import (
         )
 
 from allura.controllers import BaseController
-from allura.lib.decorators import require_post
+from allura.lib import validators as v
+from allura.lib.decorators import require_post, task
 
 from forgeimporters.base import ToolImporter
 from forgeimporters.google import GoogleCodeProjectExtractor
 
+REPO_APPS = {}
 TARGET_APPS = []
 try:
     from forgehg.hg_main import ForgeHgApp
     TARGET_APPS.append(ForgeHgApp)
+    REPO_APPS['hg'] = ForgeHgApp
 except ImportError:
     pass
 try:
     from forgegit.git_main import ForgeGitApp
     TARGET_APPS.append(ForgeGitApp)
+    REPO_APPS['git'] = ForgeGitApp
 except ImportError:
     pass
 try:
     from forgesvn.svn_main import ForgeSVNApp
     TARGET_APPS.append(ForgeSVNApp)
+    REPO_APPS['svn'] = ForgeSVNApp
 except ImportError:
     pass
 
@@ -69,28 +77,70 @@ def get_repo_url(project_name, type_):
     return REPO_URLS[type_].format(project_name)
 
 
-class GoogleRepoImportSchema(fe.Schema):
+def get_repo_class(type_):
+    return REPO_APPS[type_]
+
+
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    GoogleRepoImporter().import_tool(c.project, c.user, **kw)
+
+
+class GoogleRepoImportForm(fe.schema.Schema):
     gc_project_name = fev.UnicodeString(not_empty=True)
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
 
+    def _to_python(self, value, state):
+        value = super(self.__class__, self)._to_python(value, state)
+
+        gc_project_name = value['gc_project_name']
+        mount_point = value['mount_point']
+        try:
+            repo_type = GoogleCodeProjectExtractor(gc_project_name).get_repo_type()
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                msg = 'No such project'
+            else:
+                msg = str(e)
+            msg = 'gc_project_name:' + msg
+            raise fe.Invalid(msg, value, state)
+        except Exception:
+            raise
+        tool_class = REPO_APPS[repo_type]
+        try:
+            v.MountPointValidator(tool_class).to_python(mount_point)
+        except fe.Invalid as e:
+            raise fe.Invalid('mount_point:' + str(e), value, state)
+        return value
+
 
 class GoogleRepoImportController(BaseController):
+    def __init__(self):
+        self.importer = GoogleRepoImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app[0]
+
     @with_trailing_slash
     @expose('jinja:forgeimporters.google:templates/code/index.html')
     def index(self, **kw):
-        return {}
+        return dict(importer=self.importer,
+                target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GoogleRepoImportSchema(), error_handler=index)
+    @validate(GoogleRepoImportForm(), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
-        app = GoogleRepoImporter().import_tool(c.project, c.user,
+        import_tool.post(
                 project_name=gc_project_name,
                 mount_point=mount_point,
                 mount_label=mount_label)
-        redirect(app.url())
+        flash('Repo import has begun. Your new repo will be available '
+                'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
 
 
 class GoogleRepoImporter(ToolImporter):

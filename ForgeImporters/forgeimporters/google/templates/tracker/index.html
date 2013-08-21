@@ -19,16 +19,9 @@
 {% extends 'forgeimporters:templates/importer_base.html' %}
 
 {% block importer_fields %}
-  <div>
-    <label for="trac_url">URL of the Trac instance</label>
-    <input name="trac_url" value="{{ c.form_values['trac_url'] }}" />
-    {{ error('trac_url') }}
-  </div>
-  <div>
-    <label for="user_map">User Map (optional)
-      <br><small>JSON file mapping Trac usernames to Allura usernames</small>
-    </label>
-    <input name="user_map" type="file" />
-    {{ error('user_map') }}
-  </div>
+<div>
+  <label for="gc_project_name">Google Code project name (as it appears in a URL)</label>
+  <input name="gc_project_name" value="{{ c.form_values['gc_project_name'] }}" />
+  {{ error('gc_project_name') }}
+</div>
 {% endblock %}

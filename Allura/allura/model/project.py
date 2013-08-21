@@ -26,6 +26,7 @@ from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from paste.deploy.converters import asbool
+import formencode as fe
 
 from ming import schema as S
 from ming.utils import LazyProperty
@@ -38,6 +39,7 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib import exceptions
 from allura.lib import security
+from allura.lib import validators as v
 from allura.lib.security import has_access
 
 from .session import main_orm_session
@@ -598,23 +600,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
         App = g.entry_points['tool'][ep_name]
-        if not mount_point:
-            base_mount_point = mount_point = App.default_mount_point
-            for x in range(10):
-                if self.app_instance(mount_point) is None: break
-                mount_point = base_mount_point + '-%d' % x
-        if not App.relaxed_mount_points:
-            mount_point = mount_point.lower()
-        if not App.validate_mount_point(mount_point):
-            raise exceptions.ToolError, 'Mount point "%s" is invalid' % mount_point
-        # HACK: reserved url components
-        if mount_point in ('feed', 'index', 'icon', '_nav.json'):
-            raise exceptions.ToolError, (
-                'Mount point "%s" is reserved' % mount_point)
-        if self.app_instance(mount_point) is not None:
-            raise exceptions.ToolError, (
-                'Mount point "%s" is already in use' % mount_point)
-        assert self.app_instance(mount_point) is None
+        try:
+            mount_point = v.MountPointValidator(App).to_python(mount_point)
+        except fe.Invalid as e:
+            raise exceptions.ToolError(str(e))
         if ordinal is None:
             ordinal = int(self.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
         options = App.default_options()

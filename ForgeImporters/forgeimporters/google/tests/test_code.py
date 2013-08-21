@@ -89,12 +89,8 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_svn
-    @patch('forgeimporters.google.code.GoogleRepoImporter')
-    def test_create(self, gri):
-        from allura import model as M
-        gri = gri.return_value
-        gri.import_tool.return_value = Mock()
-        gri.import_tool.return_value.url.return_value = '/p/{}/mymount'.format(test_project_with_repo)
+    @patch('forgeimporters.google.code.import_tool')
+    def test_create(self, import_tool):
         params = dict(gc_project_name='poop',
                 mount_label='mylabel',
                 mount_point='mymount',
@@ -102,8 +98,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
         r = self.app.post('/p/{}/admin/src/_importer/create'.format(test_project_with_repo),
                 params,
                 status=302)
-        project = M.Project.query.get(shortname=test_project_with_repo)
-        self.assertEqual(r.location, 'http://localhost/p/{}/mymount'.format(test_project_with_repo))
-        self.assertEqual(project._id, gri.import_tool.call_args[0][0]._id)
-        self.assertEqual(u'mymount', gri.import_tool.call_args[1]['mount_point'])
-        self.assertEqual(u'mylabel', gri.import_tool.call_args[1]['mount_label'])
+        self.assertEqual(r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
+        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
