@@ -740,7 +740,7 @@ def zipdir(source, zipfile, exclude=None):
     # this is needed to get proper prefixes inside zip-file
     working_dir = os.path.dirname(source)
     source_fn = os.path.basename(source)
-    command = [zipbin, '-r', zipfile, source_fn]
+    command = [zipbin, '-y', '-q', '-r', zipfile, source_fn]
     if exclude:
         command += ['-x', exclude]
     p = Popen(command, cwd=working_dir, stdout=PIPE, stderr=PIPE)

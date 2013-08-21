@@ -299,13 +299,13 @@ class TestZipDir(unittest.TestCase):
         src = '/fake/path/to/repo'
         zipfile = '/fake/zip/file.tmp'
         zipdir(src, zipfile)
-        popen.assert_called_once_with(['/bin/zip', '-r', zipfile, 'repo'],
+        popen.assert_called_once_with(['/bin/zip', '-y', '-q', '-r', zipfile, 'repo'],
                 cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
         popen.reset_mock()
         src = '/fake/path/to/repo/'
         zipdir(src, zipfile, exclude='file.txt')
         popen.assert_called_once_with(
-                ['/bin/zip', '-r', zipfile, 'repo', '-x', 'file.txt'],
+                ['/bin/zip', '-y', '-q', '-r', zipfile, 'repo', '-x', 'file.txt'],
                 cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
 
     @patch('allura.model.repository.Popen')
@@ -321,7 +321,7 @@ class TestZipDir(unittest.TestCase):
         emsg = str(cm.exception)
         self.assertTrue(
                 "Command: "
-                "['/bin/zip', '-r', '/fake/zip/file.tmp', 'repo'] "
+                "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', 'repo'] "
                 "returned non-zero exit code 1" in emsg)
         self.assertTrue("STDOUT: 1" in emsg)
         self.assertTrue("STDERR: 2" in emsg)
