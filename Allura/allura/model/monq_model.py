@@ -23,6 +23,8 @@ from datetime import datetime, timedelta
 
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
+from tg import config
+from paste.deploy.converters import asbool
 
 import ming
 from ming.utils import LazyProperty
@@ -257,13 +259,16 @@ class MonQTask(MappedClass):
             self.state = 'complete'
             return self.result
         except Exception, exc:
-            log.exception('Error "%s" on job %s', exc, self)
-            self.state = 'error'
-            if hasattr(exc, 'format_error'):
-                self.result = exc.format_error()
-                log.error(self.result)
+            if asbool(config.get('monq.raise_errors')):
+                raise
             else:
-                self.result = traceback.format_exc()
+                log.exception('Error "%s" on job %s', exc, self)
+                self.state = 'error'
+                if hasattr(exc, 'format_error'):
+                    self.result = exc.format_error()
+                    log.error(self.result)
+                else:
+                    self.result = traceback.format_exc()
         finally:
             self.time_stop = datetime.utcnow()
             session(self).flush(self)

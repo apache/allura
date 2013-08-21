@@ -81,7 +81,8 @@ class TestEventTasks(unittest.TestCase):
         setup_basic_test()
         setup_global_objects()
         t = raise_exc.post()
-        with LogCapture(level=logging.ERROR) as l:
+        with LogCapture(level=logging.ERROR) as l, \
+             mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
             t()
         # l.check() would be nice, but string is too detailed to check
         assert_equal(l.records[0].name, 'allura.model.monq_model')
