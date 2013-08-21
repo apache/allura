@@ -778,9 +778,8 @@ class NeighborhoodAwardsController(object):
     def create(self, icon=None, short=None, full=None):
         require_access(self.neighborhood, 'admin')
         app_config_id = ObjectId()
-        tool_version = {'neighborhood': '0'}
         if short:
-            award = M.Award(app_config_id=app_config_id, tool_version=tool_version)
+            award = M.Award(app_config_id=app_config_id)
             award.short = short
             award.full = full
             award.created_by_neighborhood_id = self.neighborhood._id
@@ -802,9 +801,7 @@ class NeighborhoodAwardsController(object):
             deleted=False)).first()
         if grant_q and recipient_q:
             app_config_id = ObjectId()
-            tool_version = {'neighborhood': '0'}
-            award = M.AwardGrant(app_config_id=app_config_id,
-                                 tool_version=tool_version)
+            award = M.AwardGrant(app_config_id=app_config_id)
             award.award_id = grant_q._id
             award.granted_to_project_id = recipient_q._id
             award.granted_by_neighborhood_id = self.neighborhood._id

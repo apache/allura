@@ -240,7 +240,7 @@ def create_project(p, nbhd, user, options):
 
     for a in p.awards:
         M.AwardGrant(app_config_id=bson.ObjectId(),
-                tool_version=dict(neighborhood='0'), award_id=a._id,
+                award_id=a._id,
                 granted_to_project_id=project._id,
                 granted_by_neighborhood_id=nbhd._id)
     project.notifications_disabled = False

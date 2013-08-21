@@ -15,12 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import datetime
 import tempfile
 import json
 import operator
 
 from nose.tools import assert_equal, assert_true
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -40,6 +40,10 @@ class TestBulkExport(TrackerTestController):
         ticket.discussion_thread.add_post(text='silly comment')
 
     def test_bulk_export(self):
+        # Clear out some context vars, to properly simulate how this is run from the export task
+        # Besides, core functionality shouldn't need the c context vars
+        c.app = c.project = None
+
         f = tempfile.TemporaryFile()
         self.tracker.bulk_export(f)
         f.seek(0)

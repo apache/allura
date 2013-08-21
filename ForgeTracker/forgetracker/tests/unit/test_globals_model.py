@@ -15,17 +15,18 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from datetime import datetime, timedelta
+
 import mock
 from nose.tools import assert_equal
-from datetime import datetime, timedelta
+from pylons import tmpl_context as c
+from ming.orm.ormsession import ThreadLocalORMSession
+from bson import ObjectId
 
 import forgetracker
 from forgetracker.model import Globals
 from forgetracker.tests.unit import TrackerTestWithModel
-from pylons import tmpl_context as c
 from allura.lib import helpers as h
-
-from ming.orm.ormsession import ThreadLocalORMSession
 
 
 class TestGlobalsModel(TrackerTestWithModel):
@@ -41,13 +42,15 @@ class TestGlobalsModel(TrackerTestWithModel):
         assert c.app.globals != bugs_globals
 
     def test_next_ticket_number_increments(self):
-        assert Globals.next_ticket_num() == 1
-        assert Globals.next_ticket_num() == 2
+        gl = Globals()
+        assert_equal(gl.next_ticket_num(), 1)
+        assert_equal(gl.next_ticket_num(), 2)
 
     def test_ticket_numbers_are_independent(self):
-        assert Globals.next_ticket_num() == 1
-        h.set_context('test', 'doc-bugs', neighborhood='Projects')
-        assert Globals.next_ticket_num() == 1
+        with h.push_context('test', 'doc-bugs', neighborhood='Projects'):
+            assert_equal(c.app.globals.next_ticket_num(), 1)
+        with h.push_context('test', 'bugs', neighborhood='Projects'):
+            assert_equal(c.app.globals.next_ticket_num(), 1)
 
     @mock.patch('forgetracker.model.ticket.datetime')
     def test_bin_count(self, mock_dt):
@@ -133,4 +136,3 @@ def globals_with_custom_fields(custom_fields):
     c.app.globals.custom_fields = custom_fields
     ThreadLocalORMSession.flush_all()
     return c.app.globals
-
