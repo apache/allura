@@ -21,6 +21,7 @@ import json
 import operator
 
 from nose.tools import assert_equal
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.tests import decorators as td
@@ -57,6 +58,10 @@ class TestBulkExport(object):
         page.commit()
 
     def test_bulk_export(self):
+        # Clear out some context vars, to properly simulate how this is run from the export task
+        # Besides, it's better not to need c context vars
+        c.app = c.project = None
+
         f = tempfile.TemporaryFile()
         self.wiki.bulk_export(f)
         f.seek(0)

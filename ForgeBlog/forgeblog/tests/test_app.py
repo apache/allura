@@ -19,7 +19,9 @@
 
 import tempfile
 import json
+
 from nose.tools import assert_equal
+from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -36,21 +38,25 @@ class TestBulkExport(object):
 
     @td.with_tool('test', 'Blog', 'blog')
     def test_bulk_export(self):
+        # Clear out some context vars, to properly simulate how this is run from the export task
+        # Besides, it's better not to need c context vars
+        c.app = c.project = None
+
         project = M.Project.query.get(shortname='test')
         blog = project.app_instance('blog')
-        h.set_context('test', 'blog', neighborhood='Projects')
-        post = BM.BlogPost()
-        post.title = 'Test title'
-        post.text = 'test post'
-        post.labels = ['the firstlabel', 'the second label']
-        post.make_slug()
-        post.commit()
-        post.discussion_thread.add_post(text='test comment')
-        post2 = BM.BlogPost()
-        post2.title = 'Test2 title'
-        post2.text = 'test2 post'
-        post2.make_slug()
-        post2.commit()
+        with h.push_context('test', 'blog', neighborhood='Projects'):
+            post = BM.BlogPost()
+            post.title = 'Test title'
+            post.text = 'test post'
+            post.labels = ['the firstlabel', 'the second label']
+            post.make_slug()
+            post.commit()
+            post.discussion_thread.add_post(text='test comment')
+            post2 = BM.BlogPost()
+            post2.title = 'Test2 title'
+            post2.text = 'test2 post'
+            post2.make_slug()
+            post2.commit()
 
         f = tempfile.TemporaryFile()
         blog.bulk_export(f)

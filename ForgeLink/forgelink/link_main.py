@@ -65,7 +65,7 @@ class ForgeLinkApp(Application):
         Application.__init__(self, project, config)
         self.root = RootController()
         self.admin = LinkAdminController(self)
-        self.api_root = RootRestController()
+        self.api_root = RootRestController(self)
 
     @property
     @h.exceptionless([], log)
@@ -96,7 +96,7 @@ class ForgeLinkApp(Application):
         super(ForgeLinkApp, self).uninstall(project)
 
     def bulk_export(self, f):
-        json.dump(RootRestController().link_json(), f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(RootRestController(self).link_json(), f, cls=jsonify.GenericJSON, indent=2)
 
 
 class RootController(BaseController):
@@ -130,15 +130,18 @@ class LinkAdminController(DefaultAdminController):
 
 class RootRestController(BaseController):
 
+    def __init__(self, app):
+        self.app = app
+
     def _check_security(self):
-        require_access(c.app, 'read')
+        require_access(self.app, 'read')
 
     def link_json(self):
-        return dict(url=c.app.config.options.get('url'))
+        return dict(url=self.app.config.options.get('url'))
 
     @expose('json:')
     def index(self, url='', **kw):
         if (request.method == 'POST') and (url != ''):
-            require_access(c.app, 'configure')
-            c.app.config.options.url = url
+            require_access(self.app, 'configure')
+            self.app.config.options.url = url
         return self.link_json()

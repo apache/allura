@@ -21,7 +21,9 @@
 
 import tempfile
 import json
+
 from nose.tools import assert_equal
+from pylons import tmpl_context as c
 
 from allura import model as M
 from forgediscussion.tests.functional.test_rest import TestDiscussionApiBase
@@ -30,6 +32,10 @@ from forgediscussion.tests.functional.test_rest import TestDiscussionApiBase
 class TestBulkExport(TestDiscussionApiBase):
 
     def test_bulk_export(self):
+        # Clear out some context vars, to properly simulate how this is run from the export task
+        # Besides, it's better not to need c context vars
+        c.app = c.project = None
+
         project = M.Project.query.get(shortname='test')
         discussion = project.app_instance('discussion')
         f = tempfile.TemporaryFile()
