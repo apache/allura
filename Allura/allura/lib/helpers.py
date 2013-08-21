@@ -944,8 +944,12 @@ def urlopen(url, retries=3, codes=(408,)):
                 retries -= 1
                 continue
             else:
-                log.exception('Failed after %s retries: %s', retries, e)
-                raise
+                try:
+                    url_string = url.get_full_url()  # if url is Request obj
+                except Exception:
+                    url_string = url
+                log.exception('Failed after %s retries on url: %s: %s', retries, url_string, e)
+                raise e
 
 
 def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False):
