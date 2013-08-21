@@ -887,7 +887,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         export_task = MonQTask.query.get(**q)
         if not export_task:
             return
-        if export_task.state in ('busy', 'ready'):
+        else:
             return 'busy'
 
 

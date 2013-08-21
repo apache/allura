@@ -77,7 +77,7 @@ def _bulk_export(project, tools, user):
         zip_and_cleanup(project, export_filename)
     else:
         log.error('Nothing to export')
-        None
+        return None
 
     if not user:
         log.info('No user. Skipping notification.')
@@ -115,8 +115,8 @@ def create_export_dir(project, export_filename):
 
 def zip_and_cleanup(project, export_filename):
     """
-    Zip exported data. Copy it to proper location. Remove temporary files.
-    Returns base filename of zip file
+    Zip exported data for a given project and filename (no path).
+    Copy it to proper location. Remove temporary files.
     """
     path = project.bulk_export_path()
     temp = os.path.join(path, export_filename.split('.')[0])
