@@ -504,8 +504,7 @@ def test_hideawards_macro():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
 
     app_config_id = ObjectId()
-    tool_version = {'neighborhood': '0'}
-    award = M.Award(app_config_id=app_config_id, tool_version=tool_version)
+    award = M.Award(app_config_id=app_config_id)
     award.short = u'Award short'
     award.full = u'Award full'
     award.created_by_neighborhood_id = p_nbhd._id

@@ -54,7 +54,6 @@ class Artifact(MappedClass):
     - Has a discussion thread that can have files attached to it
 
     :var mod_date: last-modified :class:`datetime`
-    :var tool_version: defaults to the parent Application's version
     :var acl: dict of permission name => [roles]
     :var labels: list of plain old strings
 
@@ -77,9 +76,7 @@ class Artifact(MappedClass):
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
     app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
     plugin_verson = FieldProperty(S.Deprecated)
-    tool_version = FieldProperty(
-        { str: str },
-        if_missing=lambda:{c.app.config.tool_name:c.app.__version__})
+    tool_version = FieldProperty(S.Deprecated)
     acl = FieldProperty(ACL)
     tags = FieldProperty(S.Deprecated)
     labels = FieldProperty([str])
@@ -368,6 +365,7 @@ class Artifact(MappedClass):
         if t is None:
             idx = self.index()
             t = Thread.new(
+                app_config_id=self.app_config_id,
                 discussion_id=self.app_config.discussion_id,
                 ref_id=idx['id'],
                 subject='%s discussion' % h.get_first(idx, 'title'))

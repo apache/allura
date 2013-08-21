@@ -73,7 +73,8 @@ class Globals(MappedClass):
 
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    app_config_id = ForeignIdProperty(AppConfig, if_missing=lambda:c.app.config._id)
+    app_config = RelationProperty(AppConfig, via='app_config_id')
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
     open_status_names = FieldProperty(str)
@@ -97,13 +98,12 @@ class Globals(MappedClass):
                                                             'labels': False,
                                                             })
 
-    @classmethod
-    def next_ticket_num(cls):
-        gbl = cls.query.find_and_modify(
-            query=dict(app_config_id=c.app.config._id),
+    def next_ticket_num(self):
+        gbl = Globals.query.find_and_modify(
+            query=dict(app_config_id=self.app_config_id),
             update={'$inc': { 'last_ticket_num': 1}},
             new=True)
-        session(cls).expunge(gbl)
+        session(gbl).expunge(gbl)
         return gbl.last_ticket_num
 
     @property
@@ -189,11 +189,11 @@ class Globals(MappedClass):
             return d
         mongo_query = {'custom_fields.%s' % fld_name: m_name}
         r = Ticket.query.find(dict(
-            mongo_query, app_config_id=c.app.config._id, deleted=False))
+            mongo_query, app_config_id=self.app_config_id, deleted=False))
         tickets = [t for t in r if security.has_access(t, 'read')]
         d['hits'] = len(tickets)
         d['closed'] = sum(1 for t in tickets
-                          if t.status in c.app.globals.set_of_closed_status_names)
+                          if t.status in self.set_of_closed_status_names)
         return d
 
     def invalidate_bin_counts(self):
@@ -229,13 +229,13 @@ class Globals(MappedClass):
 
     def has_deleted_tickets(self):
         return Ticket.query.find(dict(
-            app_config_id=c.app.config._id, deleted=True)).count() > 0
+            app_config_id=self.app_config_id, deleted=True)).count() > 0
 
     def move_tickets(self, ticket_ids, destination_tracker_id):
         tracker = AppConfig.query.get(_id=destination_tracker_id)
         tickets = Ticket.query.find(dict(
             _id={'$in': [ObjectId(id) for id in ticket_ids]},
-            app_config_id=c.app.config._id)).sort('ticket_num').all()
+            app_config_id=self.app_config_id)).sort('ticket_num').all()
         filtered = self.filtered_by_subscription({t._id: t for t in tickets})
         original_ticket_nums = {t._id: t.ticket_num for t in tickets}
         users = User.query.find({'_id': {'$in': filtered.keys()}}).all()
@@ -247,13 +247,13 @@ class Globals(MappedClass):
             fromaddr = str(c.user.email_address_header()),
             reply_to = str(c.user.email_address_header()),
             subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
-                                                          c.app.config.options.mount_point,
+                                                          self.app_config.options.mount_point,
                                                           c.user.display_name))
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_move_report.html')
 
         tmpl_context = {
             'original_tracker': '%s:%s' % (c.project.shortname,
-                                           c.app.config.options.mount_point),
+                                           self.app_config.options.mount_point),
             'destination_tracker': '%s:%s' % (tracker.project.shortname,
                                               tracker.options.mount_point),
             'tickets': [],
@@ -270,16 +270,16 @@ class Globals(MappedClass):
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
-        if c.app.config.options.get('TicketMonitoringType') in (
+        if self.app_config.options.get('TicketMonitoringType') in (
                 'AllTicketChanges', 'AllPublicTicketChanges'):
-            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            monitoring_email = self.app_config.options.get('TicketMonitoringEmail')
             tmpl_context['tickets'] = [{
                     'original_num': original_ticket_nums[_id],
                     'destination_num': moved_tickets[_id].ticket_num,
                     'summary': moved_tickets[_id].summary
                 } for _id, t in moved_tickets.iteritems()
                   if (not t.private or
-                      c.app.config.options.get('TicketMonitoringType') ==
+                      self.app_config.options.get('TicketMonitoringType') ==
                       'AllTicketChanges')]
             if len(tmpl_context['tickets']) > 0:
                 mail.update(dict(
@@ -288,7 +288,7 @@ class Globals(MappedClass):
                     destinations = [monitoring_email]))
                 mail_tasks.sendmail.post(**mail)
 
-        moved_from = '%s/%s' % (c.project.shortname, c.app.config.options.mount_point)
+        moved_from = '%s/%s' % (c.project.shortname, self.app_config.options.mount_point)
         moved_to = '%s/%s' % (tracker.project.shortname, tracker.options.mount_point)
         text = 'Tickets moved from %s to %s' % (moved_from, moved_to)
         Notification.post_user(c.user, None, 'flash', text=text)
@@ -297,7 +297,7 @@ class Globals(MappedClass):
         from forgetracker.tracker_main import get_change_text, get_label
         tickets = Ticket.query.find(dict(
                 _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
-                app_config_id=c.app.config._id)).all()
+                app_config_id=self.app_config_id)).all()
 
         fields = set(['status'])
         values = {}
@@ -314,7 +314,7 @@ class Globals(MappedClass):
 
         custom_values = {}
         custom_fields = {}
-        for cf in c.app.globals.custom_fields or []:
+        for cf in self.custom_fields or []:
             v = post_data.get(cf.name)
             if v:
                 custom_values[cf.name] = v
@@ -369,7 +369,7 @@ class Globals(MappedClass):
             fromaddr = str(c.user._id),
             reply_to = str(c.user._id),
             subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
-                                                           c.app.config.options.mount_point,
+                                                           self.app_config.options.mount_point,
                                                            c.user.display_name),
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
@@ -394,13 +394,13 @@ class Globals(MappedClass):
                 destinations = [str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
-        if c.app.config.options.get('TicketMonitoringType') in (
+        if self.app_config.options.get('TicketMonitoringType') in (
                 'AllTicketChanges', 'AllPublicTicketChanges'):
-            monitoring_email = c.app.config.options.get('TicketMonitoringEmail')
+            monitoring_email = self.app_config.options.get('TicketMonitoringEmail')
             visible_changes = []
             for t_id, t in changed_tickets.items():
                 if (not t.private or
-                        c.app.config.options.get('TicketMonitoringType') ==
+                        self.app_config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
                     visible_changes.append(
                             (changed_tickets[t_id], jinja2.Markup(changes[t_id])))
@@ -412,16 +412,16 @@ class Globals(MappedClass):
                     destinations = [monitoring_email]))
                 mail_tasks.sendmail.post(**mail)
 
-        c.app.globals.invalidate_bin_counts()
+        self.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-        app = '%s/%s' % (c.project.shortname, c.app.config.options.mount_point)
+        app = '%s/%s' % (c.project.shortname, self.app_config.options.mount_point)
         count = len(tickets)
         text = 'Updated {} ticket{} in {}'.format(count, 's' if count != 1 else '', app)
         Notification.post_user(c.user, None, 'flash', text=text)
 
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
-        ac_id = app_config_id if app_config_id else c.app.config._id
+        ac_id = app_config_id if app_config_id else self.app_config_id
         ticket_ids = tickets.keys()
         tickets_index_id = {ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
         subscriptions = Mailbox.query.find({
@@ -678,11 +678,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def monitoring_email(self):
-        return c.app.config.options.get('TicketMonitoringEmail')
+        return self.app_config.options.get('TicketMonitoringEmail')
 
     @property
     def notify_post(self):
-        monitoring_type = c.app.config.options.get('TicketMonitoringType')
+        monitoring_type = self.app_config.options.get('TicketMonitoringType')
         return monitoring_type == 'AllTicketChanges' or (
                 monitoring_type == 'AllPublicTicketChanges' and
                 not self.private)

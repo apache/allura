@@ -135,7 +135,6 @@ class RssFeedsCommand(base.BlogCommand):
         if b_count == 0:
             post = BM.BlogPost(title=title, text=content, timestamp=updated,
                             app_config_id=appid,
-                            tool_version={'blog': version.__version__},
                             state='published')
             post.neighborhood_id=c.project.neighborhood_id
             post.make_slug()
