@@ -689,7 +689,8 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             self._svn.export(path,
                              dest,
-                             revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit))
+                             revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit),
+                             ignore_externals=True)
             zipdir(dest, tmpfilename)
             os.rename(tmpfilename, filename)
         finally:
