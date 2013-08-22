@@ -82,6 +82,20 @@ class TestTrackerImporter(TestCase):
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
 
+    @mock.patch.object(tracker, 'ThreadLocalORMSession')
+    @mock.patch.object(tracker, 'M')
+    @mock.patch.object(tracker, 'h')
+    def test_import_tool_failure(self, h, M, ThreadLocalORMSession):
+        h.push_config.side_effect = ValueError
+        project = mock.Mock()
+        user = mock.Mock()
+
+        importer = tracker.GoogleCodeTrackerImporter()
+        self.assertRaises(ValueError, importer.import_tool, project, user, project_name='project_name',
+                mount_point='mount_point', mount_label='mount_label')
+
+        h.make_app_admin_only.assert_called_once_with(project.install_app.return_value)
+
     def test_custom_fields(self):
         importer = tracker.GoogleCodeTrackerImporter()
         importer.custom_fields = {}

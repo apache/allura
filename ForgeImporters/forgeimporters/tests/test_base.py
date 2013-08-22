@@ -42,7 +42,8 @@ class TestProjectExtractor(TestCase):
 
 @mock.patch.object(base.ToolImporter, 'by_name')
 @mock.patch.object(base, 'c')
-def test_import_tool(c, by_name):
+@mock.patch.object(base, 'g')
+def test_import_tool(g, c, by_name):
     c.project = mock.Mock(name='project')
     c.user = mock.Mock(name='user')
     base.import_tool('importer_name', project_name='project_name',
@@ -51,6 +52,23 @@ def test_import_tool(c, by_name):
     by_name.return_value.import_tool.assert_called_once_with(c.project,
             c.user, project_name='project_name', mount_point='mount_point',
             mount_label='mount_label')
+    assert not g.post_event.called
+
+@mock.patch.object(base.ToolImporter, 'by_name')
+@mock.patch.object(base, 'g')
+def test_import_tool_failed(g, by_name):
+    by_name.side_effect = RuntimeError('my error')
+    base.import_tool('importer_name', project_name='project_name',
+            mount_point='mount_point', mount_label='mount_label', other='other')
+    g.post_event.assert_called_once_with(
+            'import_tool_task_failed',
+            error=by_name.side_effect,
+            importer_name='importer_name',
+            project_name='project_name',
+            mount_point='mount_point',
+            mount_label='mount_label',
+            other='other',
+        )
 
 
 def ep(name, source=None, importer=None, **kw):

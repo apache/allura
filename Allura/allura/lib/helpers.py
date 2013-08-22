@@ -214,6 +214,12 @@ def _make_xs(X, ids):
     result = (results.get(i) for i in ids)
     return (r for r in result if r is not None)
 
+def make_app_admin_only(app):
+    from allura.model.auth import ProjectRole
+    admin_role = ProjectRole.by_name('Admin', app.project)
+    for ace in [ace for ace in app.acl if ace.role_id != admin_role._id]:
+        app.acl.remove(ace)
+
 @contextmanager
 def push_config(obj, **kw):
     saved_attrs = {}
