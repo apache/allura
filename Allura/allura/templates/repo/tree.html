@@ -29,11 +29,37 @@ Tree <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(co
 {{lib.path_links(path.split('/')[1:])}}
 {% endblock %}
 
+{% block extra_css %}
+<style>
+form.tarball {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+form.tarball button {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    text-shadow: none;
+    color:  #fff;
+    font-family: "Ubuntu", sans-serif;
+    font-weight: normal;;
+    padding: 0;
+    font-size: 12px;
+    line-height: 36px;
+}
+form.tarball button:hover {
+  border: 0 !important;
+}
+</style>
+{% endblock %}
+
 {% block actions %}
 {% if tarball_url %}
-<a href="{{ tarball_url + ('?path=' + path if path else '') }}" rel="nofollow">
-    <b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"> </b> Download Snapshot
-</a>
+<form class="tarball" action="{{ tarball_url }}" method="post">
+  <input type="hidden" name="path" value="{{ path or '' }}" />
+  <button><b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"></b> Download Snapshot</button>
+</form>
 {% endif %}
 
 <a href="{{commit.url()}}log/?path={{ path }}">

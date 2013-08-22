@@ -193,7 +193,7 @@ class TestRootController(SVNTestController):
     def test_tarball(self):
         r = self.app.get('/src/3/tree/')
         assert 'Download Snapshot' in r
-        r = self.app.get('/src/3/tarball')
+        r = self.app.post('/src/3/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -205,20 +205,19 @@ class TestRootController(SVNTestController):
         h.set_context('test', 'svn-tags', neighborhood='Projects')
         shutil.rmtree(c.app.repo.tarball_path, ignore_errors=True)
         r = self.app.get('/p/test/svn-tags/19/tree/')
-        link = r.html.find('h2', attrs={'class': 'dark title'})
-        link = link.find('small').findAll('a')[0]
-        assert_equal(link.text, 'Download Snapshot')
-        assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball')
+        form = r.html.find('form', 'tarball')
+        assert_equal(form.button.text, 'Download Snapshot')
+        assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
 
         r = self.app.get('/p/test/svn-tags/19/tree/tags/tag-1.0/')
-        link = r.html.find('h2', attrs={'class': 'dark title'})
-        link = link.find('small').findAll('a')[0]
-        assert_equal(link.text, 'Download Snapshot')
-        assert_equal(link.get('href'), '/p/test/svn-tags/19/tarball?path=/tags/tag-1.0')
+        form = r.html.find('form', 'tarball')
+        assert_equal(form.button.text, 'Download Snapshot')
+        assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
+        assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], None)
-        r = self.app.get(link.get('href'))
+        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/tags/tag-1.0'))
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
@@ -226,7 +225,7 @@ class TestRootController(SVNTestController):
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], None)
-        r = self.app.get('/p/test/svn-tags/19/tarball?path=/trunk/')
+        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/trunk/'))
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')

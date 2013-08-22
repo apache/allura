@@ -294,8 +294,7 @@ class TestRootController(_TestCase):
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
-        header = r.html.find('h2', {'class': 'dark title'})
-        link = header.find('a', {'class': 'artifact_subscribe'})
+        link = r.html.find('a', 'artifact_subscribe')
         assert link is not None, header
 
         # subscribe
@@ -305,8 +304,7 @@ class TestRootController(_TestCase):
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
-        header = r.html.find('h2', {'class': 'dark title'})
-        link = header.find('a', {'class': 'artifact_unsubscribe active'})
+        link = r.html.find('a', 'artifact_unsubscribe active')
         assert link is not None, header
 
         # unsubscribe
@@ -316,8 +314,7 @@ class TestRootController(_TestCase):
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
-        header = r.html.find('h2', {'class': 'dark title'})
-        link = header.find('a', {'class': 'artifact_subscribe'})
+        link = r.html.find('a', 'artifact_subscribe')
         assert link is not None, header
 
     def test_timezone(self):
@@ -345,7 +342,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/')
         assert '/p/test/src-git/ci/master/tarball' in r
         assert 'Download Snapshot' in r
-        r = self.app.get('/p/test/src-git/ci/master/tarball')
+        r = self.app.post('/p/test/src-git/ci/master/tarball')
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -358,9 +355,9 @@ class TestRootController(_TestCase):
         '''Go to repo subdir and check 'Download Snapshot' link'''
         self.setup_testgit_index_repo()
         r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
-        links = r.html.findAll('a')
-        download_link = [a for a in links if a.text == 'Download Snapshot'][0]
-        assert_equal(download_link.get('href'), '/p/test/testgit-index/ci/master/tarball?path=/index')
+        form = r.html.find('form', 'tarball')
+        assert_equal(form.get('action'), '/p/test/testgit-index/ci/master/tarball')
+        assert_equal(form.input.get('value'), '/index')
 
     def test_default_branch(self):
         assert_equal(c.app.default_branch_name, 'master')

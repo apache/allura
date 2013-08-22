@@ -458,6 +458,7 @@ class CommitBrowser(BaseController):
             result.update(self._commit.context())
         return result
 
+    @require_post()
     @expose('jinja:allura:templates/repo/tarball.html')
     def tarball(self, **kw):
         path = kw.pop('path', None)
