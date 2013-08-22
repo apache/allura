@@ -25,10 +25,13 @@ from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
 from datadiff import tools as dd
+from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.lib import helpers as h
 from allura.lib.search import inject_user
+from allura.lib.security import has_access
+from allura.lib.security import Credentials
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
 
@@ -101,6 +104,37 @@ def test_make_roles():
     u = M.User.anonymous()
     pr = u.project_role()
     assert h.make_roles([pr._id]).next() == pr
+
+@td.with_wiki
+def test_make_app_admin_only():
+    h.set_context('test', 'wiki', neighborhood='Projects')
+    anon = M.User.anonymous()
+    dev = M.User.query.get(username='test-user')
+    admin = M.User.query.get(username='test-admin')
+    c.project.add_user(dev, ['Developer'])
+    ThreadLocalORMSession.flush_all()
+    Credentials.get().clear()
+    assert has_access(c.app, 'read', user=anon)()
+    assert has_access(c.app, 'read', user=dev)()
+    assert has_access(c.app, 'read', user=admin)()
+    assert not has_access(c.app, 'create', user=anon)()
+    assert has_access(c.app, 'create', user=dev)()
+    assert has_access(c.app, 'create', user=admin)()
+    assert c.app.is_visible_to(anon)
+    assert c.app.is_visible_to(dev)
+    assert c.app.is_visible_to(admin)
+    h.make_app_admin_only(c.app)
+    ThreadLocalORMSession.flush_all()
+    Credentials.get().clear()
+    assert not has_access(c.app, 'read', user=anon)()
+    assert not has_access(c.app, 'read', user=dev)()
+    assert has_access(c.app, 'read', user=admin)()
+    assert not has_access(c.app, 'create', user=anon)()
+    assert not has_access(c.app, 'create', user=dev)()
+    assert has_access(c.app, 'create', user=admin)()
+    assert not c.app.is_visible_to(anon)
+    assert not c.app.is_visible_to(dev)
+    assert c.app.is_visible_to(admin)
 
 @td.with_wiki
 def test_context_setters():

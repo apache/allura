@@ -42,6 +42,7 @@ from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.lib.import_api import AlluraImportApiClient
 from allura.lib.validators import UserMapJsonFile
+from allura.lib import helpers as h
 from allura.model import ApiTicket
 from allura.scripts.trac_export import (
         TracExport,
@@ -100,16 +101,20 @@ class TracTicketImporter(ToolImporter):
                 )
         session(app.config).flush(app.config)
         session(app.globals).flush(app.globals)
-        export = [ticket for ticket in TracExport(trac_url)]
-        export_string = json.dumps(export, cls=DateJSONEncoder)
-        api_ticket = ApiTicket(user_id=user._id,
-                capabilities={"import": ["Projects", project.shortname]},
-                expires=datetime.utcnow() + timedelta(minutes=60))
-        session(api_ticket).flush(api_ticket)
-        cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
-                api_ticket.secret_key, verbose=True)
-        import_tracker(cli, project.shortname, mount_point,
-                {'user_map': json.loads(user_map) if user_map else {}},
-                export_string, validate=False)
-        g.post_event('project_updated')
-        return app
+        try:
+            export = [ticket for ticket in TracExport(trac_url)]
+            export_string = json.dumps(export, cls=DateJSONEncoder)
+            api_ticket = ApiTicket(user_id=user._id,
+                    capabilities={"import": ["Projects", project.shortname]},
+                    expires=datetime.utcnow() + timedelta(minutes=60))
+            session(api_ticket).flush(api_ticket)
+            cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
+                    api_ticket.secret_key, verbose=True)
+            import_tracker(cli, project.shortname, mount_point,
+                    {'user_map': json.loads(user_map) if user_map else {}},
+                    export_string, validate=False)
+            g.post_event('project_updated')
+            return app
+        except Exception as e:
+            h.make_app_admin_only(app)
+            raise

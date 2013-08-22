@@ -46,12 +46,13 @@ class TestTracTicketImporter(TestCase):
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        res = importer.import_tool(project, user,
-                mount_point='bugs',
-                mount_label='Bugs',
-                trac_url='http://example.com/trac/url',
-                user_map=json.dumps(user_map),
-                )
+        with patch.dict('forgeimporters.trac.tickets.config', {'base_url': 'foo'}):
+            res = importer.import_tool(project, user,
+                    mount_point='bugs',
+                    mount_label='Bugs',
+                    trac_url='http://example.com/trac/url',
+                    user_map=json.dumps(user_map),
+                    )
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
                 'Tickets', mount_point='bugs', mount_label='Bugs')
@@ -67,6 +68,26 @@ class TestTracTicketImporter(TestCase):
                 {"user_map": user_map}, '[]',
                 validate=False)
         g.post_event.assert_called_once_with('project_updated')
+
+    @patch('forgeimporters.trac.tickets.session')
+    @patch('forgeimporters.trac.tickets.h')
+    @patch('forgeimporters.trac.tickets.TracExport')
+    def test_import_tool_failure(self, TracExport, h, session):
+        importer = TracTicketImporter()
+        app = Mock(name='ForgeTrackerApp')
+        project = Mock(name='Project', shortname='myproject')
+        project.install_app.return_value = app
+        user = Mock(name='User', _id='id')
+        TracExport.side_effect = ValueError
+
+        self.assertRaises(ValueError, importer.import_tool, project, user,
+                mount_point='bugs',
+                mount_label='Bugs',
+                trac_url='http://example.com/trac/url',
+                user_map=None,
+                )
+
+        h.make_app_admin_only.assert_called_once_with(app)
 
 
 class TestTracTicketImportController(TestController, TestCase):

@@ -77,6 +77,9 @@ class GoogleCodeTrackerImporter(ToolImporter):
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app
+        except Exception as e:
+            h.make_app_admin_only(app)
+            raise
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
 

@@ -17,11 +17,13 @@
 
 import logging
 import urllib2
+import traceback
 
 from pkg_resources import iter_entry_points
 
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
+from pylons import app_globals as g
 from pylons import tmpl_context as c
 from formencode import validators as fev, schema
 
@@ -55,9 +57,19 @@ class ProjectImportForm(schema.Schema):
 
 @task(notifications_disabled=True)
 def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
-    importer = ToolImporter.by_name(importer_name)
-    importer.import_tool(c.project, c.user, project_name=project_name,
-            mount_point=mount_point, mount_label=mount_label, **kw)
+    try:
+        importer = ToolImporter.by_name(importer_name)
+        importer.import_tool(c.project, c.user, project_name=project_name,
+                mount_point=mount_point, mount_label=mount_label, **kw)
+    except Exception as e:
+        g.post_event('import_tool_task_failed',
+                error=str(e),
+                traceback=traceback.format_exc(),
+                importer_name=importer_name,
+                project_name=project_name,
+                mount_point=mount_point,
+                mount_label=mount_label,
+                **kw)
 
 
 class ProjectExtractor(object):
