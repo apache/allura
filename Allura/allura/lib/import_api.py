@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import urllib
 import urllib2
 import urlparse
@@ -25,8 +24,8 @@ import json
 import logging
 from datetime import datetime
 
+log = logging.getLogger(__name__)
 
-log = logging.getLogger('import')
 
 class AlluraImportApiClient(object):
 
@@ -48,7 +47,7 @@ class AlluraImportApiClient(object):
     def call(self, url, **params):
         url = urlparse.urljoin(self.base_url, url)
         if self.verbose:
-            print "Using URL '%s'" % (url)
+            log.info("Import API URL: %s", url)
 
         params = self.sign(urlparse.urlparse(url).path, params.items())
 

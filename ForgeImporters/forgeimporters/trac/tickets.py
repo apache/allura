@@ -107,7 +107,7 @@ class TracTicketImporter(ToolImporter):
                 expires=datetime.utcnow() + timedelta(minutes=60))
         session(api_ticket).flush(api_ticket)
         cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
-                api_ticket.secret_key, False)
+                api_ticket.secret_key, verbose=True)
         import_tracker(cli, project.shortname, mount_point,
                 {'user_map': json.loads(user_map) if user_map else {}},
                 export_string, validate=False)
