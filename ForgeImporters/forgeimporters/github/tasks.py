@@ -28,4 +28,5 @@ from . import GitHubProjectExtractor
 def import_project_info(project_name):
     extractor = GitHubProjectExtractor(c.project, project_name, 'project_info')
     extractor.get_summmary()
+    extractor.get_homepage()
     ThreadLocalORMSession.flush_all()
