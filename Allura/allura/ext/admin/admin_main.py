@@ -653,7 +653,7 @@ class ProjectAdminController(BaseController):
                 flash('Export for project %s already running' % c.project.shortname, 'info')
                 redirect('export')
             export_tasks.bulk_export.post(tools)
-            flash('Export scheduled', 'ok')
+            flash('Export scheduled.  You will recieve an email with download instructions when complete.', 'ok')
             redirect('export')
 
         return {

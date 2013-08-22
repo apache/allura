@@ -16,6 +16,7 @@
 #       under the License.
 
 import os
+import os.path
 import logging
 import shutil
 from tempfile import mkstemp
@@ -47,6 +48,7 @@ def bulk_export(tools):
 
 def _bulk_export(project, tools, user):
     export_filename = project.bulk_export_filename()
+    export_path = create_export_dir(project, export_filename)
     not_exported_tools = []
     for tool in tools or []:
         app = project.app_instance(tool)
@@ -60,12 +62,9 @@ def _bulk_export(project, tools, user):
             continue
         log.info('Exporting %s...' % tool)
         try:
-            path = create_export_dir(project, export_filename)
-            temp_name = mkstemp(dir=path)[1]
-            with open(temp_name, 'w') as f:
-                with h.push_context(project._id):
-                    app.bulk_export(f)
-            os.rename(temp_name, os.path.join(path, '%s.json' % tool))
+            json_file = os.path.join(export_path, '%s.json' % tool)
+            with open(json_file, 'w') as f:
+                app.bulk_export(f)
         except:
             log.error('Something went wrong during export of %s' % tool, exc_info=True)
             not_exported_tools.append(tool)
@@ -74,7 +73,7 @@ def _bulk_export(project, tools, user):
     if tools and len(not_exported_tools) < len(tools):
         # If that fails, we need to let it fail
         # there won't be a valid zip file for the user to get.
-        zip_and_cleanup(project, export_filename)
+        zip_and_cleanup(export_path, export_filename)
     else:
         log.error('Nothing to export')
         return None
@@ -106,25 +105,19 @@ def create_export_dir(project, export_filename):
     """Create temporary directory for export files"""
     # Name temporary directory after project shortname,
     # thus zipdir() will use proper prefix inside the archive.
-    tmp_dir_suffix = export_filename.split('.')[0]
+    tmp_dir_suffix = os.path.splitext(export_filename)[0]
     path = os.path.join(project.bulk_export_path(), tmp_dir_suffix)
     if not os.path.exists(path):
         os.makedirs(path)
     return path
 
 
-def zip_and_cleanup(project, export_filename):
+def zip_and_cleanup(export_path, export_filename):
     """
-    Zip exported data for a given project and filename (no path).
+    Zip exported data for a given path and filename.
     Copy it to proper location. Remove temporary files.
     """
-    path = project.bulk_export_path()
-    temp = os.path.join(path, export_filename.split('.')[0])
-    zip_path_temp = os.path.join(temp, export_filename)
-    zip_path = os.path.join(path, export_filename)
-
-    zipdir(temp, zip_path_temp)
+    zipdir(export_path, os.path.join(os.path.dirname(export_path), export_filename))
 
     # cleanup
-    shutil.move(zip_path_temp, zip_path)
-    shutil.rmtree(temp)
+    shutil.rmtree(export_path)

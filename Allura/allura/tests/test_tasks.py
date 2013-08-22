@@ -344,10 +344,8 @@ class TestExportTasks(unittest.TestCase):
     @mock.patch('allura.tasks.export_tasks.log')
     def test_bulk_export_invalid_tool(self, log):
         export_tasks.bulk_export([u'bugs', u'blog'])
-        assert_equal(log.info.call_count, 2)
-        assert_equal(log.info.call_args_list, [
-            mock.call('Can not load app for bugs mount point. Skipping.'),
-            mock.call('Can not load app for blog mount point. Skipping.')])
+        log.info.assert_any_call('Can not load app for bugs mount point. Skipping.')
+        log.info.assert_any_call('Can not load app for blog mount point. Skipping.')
 
     @mock.patch('allura.tasks.export_tasks.log')
     @mock.patch('allura.tasks.export_tasks.M.Project.app_instance')
@@ -357,10 +355,8 @@ class TestExportTasks(unittest.TestCase):
     def test_bulk_export_not_exportable_tool(self, mail_tasks, app, log):
         app.return_value.exportable = False
         export_tasks.bulk_export([u'bugs', u'blog'])
-        assert_equal(log.info.call_count, 2)
-        assert_equal(log.info.call_args_list, [
-            mock.call('Tool bugs is not exportable. Skipping.'),
-            mock.call('Tool blog is not exportable. Skipping.')])
+        log.info.assert_any_call('Tool bugs is not exportable. Skipping.')
+        log.info.assert_any_call('Tool blog is not exportable. Skipping.')
 
     @mock.patch('allura.model.project.Project.__json__')
     @mock.patch('allura.tasks.export_tasks.shutil')
@@ -371,15 +367,12 @@ class TestExportTasks(unittest.TestCase):
     def test_bulk_export(self, log, wiki_bulk_export, zipdir, shutil, project_json):
         M.MonQTask.query.remove()
         export_tasks.bulk_export([u'wiki'])
-        assert_equal(log.info.call_count, 1)
-        assert_equal(log.info.call_args_list, [
-            mock.call('Exporting wiki...')])
+        log.info.assert_any_call('Exporting wiki...')
         wiki_bulk_export.assert_called_once()
         project_json.assert_called_once()
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'
         zipdir.assert_caled_with(temp, temp + '/test.zip')
-        shutil.move.assert_called_once_with(temp + '/test.zip',  zipfn)
         shutil.rmtree.assert_called_once_with(temp)
         # check notification
         M.MonQTask.run_ready()
@@ -403,12 +396,11 @@ class TestExportTasks(unittest.TestCase):
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_zip_and_cleanup(self):
         project = M.Project.query.get(shortname='test')
-        export_path = project.bulk_export_path()
         export_filename = project.bulk_export_filename()
         path = export_tasks.create_export_dir(project, export_filename)
-        export_tasks.zip_and_cleanup(project, export_filename)
+        export_tasks.zip_and_cleanup(path, export_filename)
         assert not os.path.exists(path)
-        assert os.path.exists(os.path.join(export_path, 'test.zip'))
+        assert os.path.exists(os.path.join(project.bulk_export_path(), 'test.zip'))
 
     def test_bulk_export_status(self):
         assert_equal(c.project.bulk_export_status(), None)
