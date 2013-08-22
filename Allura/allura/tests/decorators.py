@@ -87,16 +87,21 @@ with_wiki = with_tool('test', 'Wiki', 'wiki')
 with_url = with_tool('test', 'ShortUrl', 'url')
 
 class raises(object):
-    'test helper in the form of a context manager, to assert that something raises an exception'
+    '''
+    Test helper in the form of a context manager, to assert that something raises an exception.
+    After completion, the 'exc' attribute can be used to do further inspection of the exception
+    '''
 
     def __init__(self, ExcType):
         self.ExcType = ExcType
+        self.exc = None
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_t):
         if exc_type:
+            self.exc = exc_val
             if issubclass(exc_type, self.ExcType):
                 # ok
                 return True
