@@ -45,7 +45,8 @@ class GitHubProjectImporter(base.ProjectImporter):
 
     def after_project_create(self, project, **kw):
         project.set_tool_data('github', project_name=project.name)
-        tasks.import_project_info.post(project.name)
+        project_name = '%s/%s' % (kw['user_name'], kw['project_name'])
+        tasks.import_project_info.post(project_name)
 
     @with_trailing_slash
     @expose(index_template)
@@ -56,7 +57,6 @@ class GitHubProjectImporter(base.ProjectImporter):
     @expose()
     @validate(process_validator)
     def process(self, **kw):
-        kw['project_name'] = '%s/%s' % (kw['user_name'], kw['project_name'])
         kw['tools'] = ''
         return super(self.__class__, self).process(**kw)
 
