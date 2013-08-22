@@ -41,3 +41,6 @@ class GitHubProjectExtractor(object):
 
     def get_summmary(self):
         self.project.summary = self.page['description']
+
+    def get_homepage(self):
+        self.project.external_homepage = self.page['homepage']
