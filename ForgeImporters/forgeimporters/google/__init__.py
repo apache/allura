@@ -78,45 +78,6 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
-    def __init__(self, project_name, page_name=None, **kw):
-        self.project_name = project_name
-        self._page_cache = {}
-        self.url = None
-        self.page = None
-        if page_name:
-            self.get_page(page_name, **kw)
-
-    def get_page(self, page_name_or_url, **kw):
-        """Return a Beautiful soup object for the given page name or url.
-
-        If a page name is provided, the associated url is looked up in
-        :attr:`PAGE_MAP`.
-
-        Results are cached so that subsequent calls for the same page name or
-        url will return the cached result rather than making another HTTP
-        request.
-
-        """
-        if page_name_or_url in self.PAGE_MAP:
-            self.url = self.get_page_url(page_name_or_url, **kw)
-        else:
-            self.url = page_name_or_url
-        if self.url in self._page_cache:
-            self.page = self._page_cache[self.url]
-        else:
-            self.page = self._page_cache[self.url] = \
-                    BeautifulSoup(self.urlopen(self.url))
-        return self.page
-
-    def get_page_url(self, page_name, **kw):
-        """Return the url associated with ``page_name``.
-
-        Raises KeyError if ``page_name`` is not in :attr:`PAGE_MAP`.
-
-        """
-        return self.PAGE_MAP[page_name].format(
-            project_name = urllib.quote(self.project_name), **kw)
-
     def get_short_description(self, project):
         page = self.get_page('project_info')
         project.short_description = page.find(itemprop='description').string.strip()

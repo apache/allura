@@ -16,10 +16,12 @@
 #       under the License.
 
 import logging
+import urllib
 import urllib2
 
 from pkg_resources import iter_entry_points
 
+from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c
@@ -67,11 +69,68 @@ class ProjectExtractor(object):
     a custom User-Agent and automatically retries timed-out requests.
 
     """
+
+    PAGE_MAP = {}
+
+    def __init__(self, project_name, page_name=None, **kw):
+        self.project_name = project_name
+        self._page_cache = {}
+        self.url = None
+        self.page = None
+        if page_name:
+            self.get_page(page_name, **kw)
+
     @staticmethod
     def urlopen(url, retries=3, codes=(408,), **kw):
         req = urllib2.Request(url, **kw)
         req.add_header('User-Agent', 'Allura Data Importer (http://sf.net/p/allura)')
         return h.urlopen(req, retries=retries, codes=codes)
+
+    def get_page(self, page_name_or_url, **kw):
+        """Return a Beautiful soup object for the given page name or url.
+
+        If a page name is provided, the associated url is looked up in
+        :attr:`PAGE_MAP`.
+
+        Results are cached so that subsequent calls for the same page name or
+        url will return the cached result rather than making another HTTP
+        request.
+
+        """
+        if page_name_or_url in self.PAGE_MAP:
+            self.url = self.get_page_url(page_name_or_url, **kw)
+        else:
+            self.url = page_name_or_url
+        if self.url in self._page_cache:
+            self.page = self._page_cache[self.url]
+        else:
+            self.page = self._page_cache[self.url] = \
+                    self.parse_page(self.urlopen(self.url))
+        return self.page
+
+    def get_page_url(self, page_name, **kw):
+        """Return the url associated with ``page_name``.
+
+        Raises KeyError if ``page_name`` is not in :attr:`PAGE_MAP`.
+
+        """
+        return self.PAGE_MAP[page_name].format(
+            project_name = urllib.quote(self.project_name), **kw)
+
+    def parse_page(self, page):
+        """Transforms the result of a `urlopen` call before returning it from
+        :meth:`get_page`.
+
+        The default implementation create a :class:`BeautifulSoup` object from
+        the html.
+
+        Subclasses can override to change the behavior or handle other types
+        of content (like JSON).
+
+        :param page: A file-like object return from :meth:`urlopen`
+
+        """
+        return BeautifulSoup(page)
 
 
 class ProjectImporter(BaseController):

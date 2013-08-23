@@ -29,12 +29,11 @@
         </div>
     </div>
 
-
     <div class="grid-6" style="clear:left">
         <label>GitHub Project Name</label>
     </div>
      <div class="grid-10">
-        <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}" autofocus/>
+        <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}" />
         <div id="project_name_error" class="error{% if not c.form_errors['project_name'] %} hidden{% endif %}">
             {{c.form_errors['project_name']}}
         </div>

@@ -17,32 +17,20 @@
 
 from unittest import TestCase
 
-import mock
-
 from ... import github
 
 
 class TestGitHubProjectExtractor(TestCase):
     def setUp(self):
-        self._p_urlopen = mock.patch.object(github.urllib2, 'urlopen')
-        self._p_json = mock.patch.object(github.json, 'loads')
-        self.urlopen = self._p_urlopen.start()
-        self.json = self._p_json.start()
-        self.project = mock.Mock(name='project')
-        self.project.get_tool_data.return_value = 'testproject'
-
-    def tearDown(self):
-        self._p_urlopen.stop()
-        self._p_json.stop()
-
-
-    def test_init(self):
-        extractor = github.GitHubProjectExtractor(self.project, 'testproject', 'project_info')
-        self.urlopen.assert_called_once_with('https://api.github.com/repos/testproject')
-        self.assertEqual(extractor.project, self.project)
+        import json
+        from StringIO import StringIO
+        self.extractor = github.GitHubProjectExtractor('testproject')
+        d = dict(description='project description',
+                homepage='http://example.com')
+        self.extractor.urlopen = lambda url: StringIO(json.dumps(d))
 
     def test_get_summary(self):
-        extractor = github.GitHubProjectExtractor(self.project, 'testproject', 'project_info')
-        extractor.page = {'description': 'test summary'}
-        extractor.get_summmary()
-        self.assertEqual(self.project.summary, 'test summary')
+        self.assertEqual(self.extractor.get_summary(), 'project description')
+
+    def test_get_homepage(self):
+        self.assertEqual(self.extractor.get_homepage(), 'http://example.com')
