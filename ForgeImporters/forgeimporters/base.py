@@ -86,11 +86,15 @@ class ProjectExtractor(object):
         req.add_header('User-Agent', 'Allura Data Importer (http://sf.net/p/allura)')
         return h.urlopen(req, retries=retries, codes=codes)
 
-    def get_page(self, page_name_or_url, **kw):
+    def get_page(self, page_name_or_url, parser=None, **kw):
         """Return a Beautiful soup object for the given page name or url.
 
         If a page name is provided, the associated url is looked up in
         :attr:`PAGE_MAP`.
+
+        If provided, the class or callable passed in :param:`parser` will be
+        used to transform the result of the `urlopen` before returning it.
+        Otherwise, the class's :meth:`parse_page` will be used.
 
         Results are cached so that subsequent calls for the same page name or
         url will return the cached result rather than making another HTTP
@@ -104,8 +108,10 @@ class ProjectExtractor(object):
         if self.url in self._page_cache:
             self.page = self._page_cache[self.url]
         else:
+            if parser is None:
+                parser = self.parse_page
             self.page = self._page_cache[self.url] = \
-                    self.parse_page(self.urlopen(self.url))
+                    parser(self.urlopen(self.url))
         return self.page
 
     def get_page_url(self, page_name, **kw):
@@ -125,7 +131,8 @@ class ProjectExtractor(object):
         the html.
 
         Subclasses can override to change the behavior or handle other types
-        of content (like JSON).
+        of content (like JSON).  The parser can also be overridden via the
+        `parser` parameter to :meth:`get_page`
 
         :param page: A file-like object return from :meth:`urlopen`
 

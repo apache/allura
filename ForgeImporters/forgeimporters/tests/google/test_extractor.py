@@ -64,6 +64,10 @@ class TestGoogleCodeProjectExtractor(TestCase):
         page = extractor.get_page('source_browse')
         self.assertEqual(2, self.urlopen.call_count)
         self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/source/browse/'])
+        parser = mock.Mock(return_value='parsed')
+        page = extractor.get_page('url', parser=parser)
+        self.assertEqual(page, 'parsed')
+        self.assertEqual(page, extractor._page_cache['url'])
 
     def test_get_page_url(self):
         extractor = google.GoogleCodeProjectExtractor('my-project')
@@ -79,22 +83,20 @@ class TestGoogleCodeProjectExtractor(TestCase):
         extractor.page.find.assert_called_once_with(itemprop='description')
         self.assertEqual(self.project.short_description, 'My Super Project')
 
-    @mock.patch.object(google, 'StringIO')
+    @mock.patch.object(google, 'File')
     @mock.patch.object(google, 'M')
-    def test_get_icon(self, M, StringIO):
-        self.urlopen.return_value.info.return_value = {'content-type': 'image/png'}
+    def test_get_icon(self, M, File):
+        File.return_value.type = 'image/png'
+        File.return_value.file = 'data'
         extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
         extractor.page.find.return_value.get.return_value = 'http://example.com/foo/bar/my-logo.png'
-        self.urlopen.reset_mock()
 
         extractor.get_icon(self.project)
 
         extractor.page.find.assert_called_once_with(itemprop='image')
-        self.urlopen.assert_called_once_with('http://example.com/foo/bar/my-logo.png')
-        self.urlopen.return_value.info.assert_called_once_with()
-        StringIO.assert_called_once_with(self.urlopen.return_value.read.return_value)
+        File.assert_called_once_with('http://example.com/foo/bar/my-logo.png', 'my-logo.png')
         M.ProjectFile.save_image.assert_called_once_with(
-            'my-logo.png', StringIO.return_value, 'image/png', square=True,
+            'my-logo.png', 'data', 'image/png', square=True,
             thumbnail_size=(48,48), thumbnail_meta={
                 'project_id': self.project._id, 'category': 'icon'})
 
@@ -209,19 +211,22 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 'OpSys-OSX',
             ])
 
-    def test_get_issue_attachments(self):
+    @mock.patch.object(google, 'StringIO')
+    def test_get_issue_attachments(self, StringIO):
+        self.urlopen.return_value.info.return_value = {'content-type': 'text/plain; foo'}
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         attachments = gpe.get_issue_attachments()
         self.assertEqual(len(attachments), 2)
         self.assertEqual(attachments[0].filename, 'at1.txt')
         self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
-        self.assertIsNone(attachments[0].type)
+        self.assertEqual(attachments[0].type, 'text/plain')
         self.assertEqual(attachments[1].filename, 'at2.txt')
         self.assertEqual(attachments[1].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000001&name=at2.txt&token=C9Hn4s1-g38hlSggRGo65VZM1ys%3A1376059941255')
-        self.assertIsNone(attachments[1].type)
+        self.assertEqual(attachments[1].type, 'text/plain')
 
-    def test_iter_comments(self):
+    @mock.patch.object(google, 'StringIO')
+    def test_iter_comments(self, StringIO):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         comments = list(gpe.iter_comments())
