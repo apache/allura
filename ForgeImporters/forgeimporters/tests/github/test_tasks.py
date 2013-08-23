@@ -26,6 +26,7 @@ from ...github import tasks
 def test_import_project_info(c, session, ghpe):
     c.project = mock.Mock(name='project')
     tasks.import_project_info('my-project')
-    ghpe.assert_called_once_with(c.project, 'my-project', 'project_info')
-    ghpe.return_value.get_summmary.assert_called_once_with()
+    ghpe.assert_called_once_with('my-project')
+    ghpe.return_value.get_summary.assert_called_once_with()
+    ghpe.return_value.get_homepage.assert_called_once_with()
     session.flush_all.assert_called_once_with()

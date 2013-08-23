@@ -28,7 +28,8 @@ from forgeimporters import base
 class TestGoogleCodeProjectExtractor(TestCase):
     def setUp(self):
         self._p_urlopen = mock.patch.object(base.ProjectExtractor, 'urlopen')
-        self._p_soup = mock.patch.object(google, 'BeautifulSoup')
+        # self._p_soup = mock.patch.object(google, 'BeautifulSoup')
+        self._p_soup = mock.patch.object(base, 'BeautifulSoup')
         self.urlopen = self._p_urlopen.start()
         self.soup = self._p_soup.start()
         self.project = mock.Mock(name='project')

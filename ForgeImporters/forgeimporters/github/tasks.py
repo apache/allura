@@ -16,6 +16,7 @@
 #       under the License.
 
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 
 from ming.orm import ThreadLocalORMSession
 
@@ -26,7 +27,8 @@ from . import GitHubProjectExtractor
 
 @task
 def import_project_info(project_name):
-    extractor = GitHubProjectExtractor(c.project, project_name, 'project_info')
-    extractor.get_summmary()
-    extractor.get_homepage()
+    extractor = GitHubProjectExtractor(project_name)
+    c.project.summary = extractor.get_summary()
+    c.project.external_homepage = extractor.get_homepage()
     ThreadLocalORMSession.flush_all()
+    g.post_event('project_updated')

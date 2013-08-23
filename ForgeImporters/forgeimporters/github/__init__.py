@@ -15,32 +15,24 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
-import urllib
-import urllib2
-import json
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 import logging
+import json
+
+from forgeimporters import base
 
 log = logging.getLogger(__name__)
 
-class GitHubProjectExtractor(object):
-    RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
+
+class GitHubProjectExtractor(base.ProjectExtractor):
     PAGE_MAP = {
-            'project_info': 'https://api.github.com/repos/%s',
+            'project_info': 'https://api.github.com/repos/{project_name}',
         }
 
+    def parse_page(self, page):
+        return json.loads(page.read().decode('utf8'))
 
-    def __init__(self, allura_project, gh_project_name, page):
-        self.project = allura_project
-        self.url = self.PAGE_MAP[page] % urllib.quote(gh_project_name)
-        self.page = json.loads(urllib2.urlopen(self.url).read().decode('utf8'))
-
-    def get_summmary(self):
-        self.project.summary = self.page['description']
+    def get_summary(self):
+        return self.get_page('project_info').get('description')
 
     def get_homepage(self):
-        self.project.external_homepage = self.page['homepage']
+        return self.get_page('project_info').get('homepage')

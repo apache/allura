@@ -24,5 +24,5 @@ class TestGitHubImportController(TestController, TestCase):
         r = self.app.get('/p/import_project/github/')
         assert 'GitHub Project Importer' in r
         assert '<input id="user_name" name="user_name" value="" autofocus/>' in r
-        assert '<input id="project_name" name="project_name" value="" autofocus/>' in r
+        assert '<input id="project_name" name="project_name" value="" />' in r
         assert '<input id="project_shortname" name="project_shortname" value=""/>' in r
