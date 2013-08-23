@@ -51,6 +51,24 @@ def _as_text(node, chunks=None):
             _as_text(n, chunks)
     return ''.join(chunks)
 
+def csv_parser(page):
+    lines = page.readlines()
+    if not lines:
+        return []
+    # skip CSV header
+    lines = lines[1:]
+    # skip "next page here" info footer
+    if not lines[-1].startswith('"'):
+        lines.pop()
+    # remove CSV wrapping (quotes, commas, newlines)
+    return [line.strip('",\n') for line in lines]
+
+def stringio_parser(page):
+    return {
+            'content-type': page.info()['content-type'],
+            'data': StringIO(page.read()),
+        }
+
 
 class GoogleCodeProjectExtractor(ProjectExtractor):
     BASE_URL = 'http://code.google.com'
@@ -88,11 +106,9 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         if icon_url == self.DEFAULT_ICON:
             return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
-        fp_ish = self.urlopen(icon_url)
-        fp = StringIO(fp_ish.read())
+        icon = File(icon_url, icon_name)
         M.ProjectFile.save_image(
-            icon_name, fp,
-            fp_ish.info()['content-type'].split(';')[0],  # strip off charset=x extra param,
+            icon_name, icon.file, icon.type,
             square=True, thumbnail_size=(48,48),
             thumbnail_meta={'project_id': project._id, 'category': 'icon'})
 
@@ -115,16 +131,6 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             raise Exception("Unknown repo type: {0}".format(repo_type.text))
 
     @classmethod
-    def _get_issue_ids_page(cls, project_name, start):
-        url = cls.PAGE_MAP['issues_csv'].format(project_name=project_name, start=start)
-        with closing(cls.urlopen(url)) as fp:
-            lines = fp.readlines()[1:]  # skip CSV header
-            if not lines[-1].startswith('"'):
-                lines.pop()  # skip "next page here" info footer
-        issue_ids = [line.strip('",\n') for line in lines]
-        return issue_ids
-
-    @classmethod
     def iter_issues(cls, project_name):
         """
         Iterate over all issues for a project,
@@ -133,13 +139,14 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         start = 0
         limit = 100
 
-        while True:
-            issue_ids = cls._get_issue_ids_page(project_name, start)
-            if len(issue_ids) <= 0:
+        extractor = cls(project_name, 'issues_csv', parser=csv_parser, start=start)
+        while extractor.page:
+            if len(extractor.page) <= 0:
                 return
-            for issue_id in issue_ids:
+            for issue_id in extractor.page:
                 yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
             start += limit
+            extractor.get_page('issues_csv', parser=csv_parser, start=start)
 
     def get_issue_summary(self):
         text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
@@ -256,14 +263,16 @@ class Comment(object):
             )
         return text
 
-class Attachment(object):
-    def __init__(self, tag):
-        self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
-        self.filename = parse_qs(urlparse(self.url).query)['name'][0]
-        self.type = None
+class File(object):
+    def __init__(self, url, filename):
+        extractor = GoogleCodeProjectExtractor(None, url, parser=stringio_parser)
+        self.url = url
+        self.filename = filename
+        self.type = extractor.page['content-type'].split(';')[0]
+        self.file = extractor.page['data']
 
-    @property
-    def file(self):
-        fp_ish = GoogleCodeProjectExtractor(None).urlopen(self.url)
-        fp = StringIO(fp_ish.read())
-        return fp
+class Attachment(File):
+    def __init__(self, tag):
+        url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+        filename = parse_qs(urlparse(url).query)['name'][0]
+        super(Attachment, self).__init__(url, filename)
