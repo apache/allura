@@ -295,7 +295,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_subscribe')
-        assert link is not None, header
+        assert link is not None, r.html
 
         # subscribe
         self.app.get(ci + 'tree/subscribe?subscribe=True',
@@ -305,7 +305,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_unsubscribe active')
-        assert link is not None, header
+        assert link is not None, r.html
 
         # unsubscribe
         self.app.get(ci + 'tree/subscribe?unsubscribe=True',
@@ -315,7 +315,7 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/',
                 extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_subscribe')
-        assert link is not None, header
+        assert link is not None, r.html
 
     def test_timezone(self):
         ci = self._get_ci()
