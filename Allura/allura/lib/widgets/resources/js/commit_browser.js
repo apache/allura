@@ -210,7 +210,7 @@ if($('#commit_graph')){
             canvas_ctx.fill();
             canvas_ctx.stroke();
             canvas_ctx.fillStyle = "#000";
-            canvas_ctx.fillText(commit.message + " " + commit.short_id, (1+next_column) * x_space, y_pos);
+            canvas_ctx.fillText(commit.short_id + " " + commit.message, (1+next_column) * x_space, y_pos);
         }
     }
 
