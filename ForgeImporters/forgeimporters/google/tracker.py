@@ -116,6 +116,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 EnableVoting=True,
                 open_status_names='New Accepted Started',
                 closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+                import_id='%s/%s/issues' % (self.source, project_name),
             )
         ThreadLocalORMSession.flush_all()
         try:
@@ -126,7 +127,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
                     ticket = TM.Ticket(
                         app_config_id=app.config._id,
                         custom_fields=dict(),
-                        ticket_num=ticket_num)
+                        ticket_num=ticket_num,
+                        import_id='%s/%s' % (app.config.options.import_id, ticket_num))
                     self.process_fields(ticket, issue)
                     self.process_labels(ticket, issue)
                     self.process_comments(ticket, issue)
