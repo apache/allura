@@ -57,7 +57,6 @@ class GitHubProjectImporter(base.ProjectImporter):
     @expose()
     @validate(process_validator)
     def process(self, **kw):
-        kw['tools'] = ''
         return super(self.__class__, self).process(**kw)
 
     @expose('json:')

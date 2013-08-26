@@ -14,28 +14,3 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
-
-import logging
-import json
-
-from forgeimporters import base
-
-log = logging.getLogger(__name__)
-
-
-class GitHubProjectExtractor(base.ProjectExtractor):
-    PAGE_MAP = {
-            'project_info': 'https://api.github.com/repos/{project_name}',
-        }
-
-    def parse_page(self, page):
-        return json.loads(page.read().decode('utf8'))
-
-    def get_summary(self):
-        return self.get_page('project_info').get('description')
-
-    def get_homepage(self):
-        return self.get_page('project_info').get('homepage')
-
-    def get_repo_url(self):
-        return self.get_page('project_info').get('clone_url')
