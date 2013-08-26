@@ -1,4 +1,10 @@
+import re
 from datetime import datetime
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -43,11 +49,10 @@ class GitHubTrackerImporter(ToolImporter):
                         custom_fields=dict(),
                         ticket_num=ticket_num)
                     self.process_fields(ticket, issue)
-                    #self.process_labels(ticket, issue)
                     #self.process_comments(ticket, issue)
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
-                #app.globals.custom_fields = self.postprocess_custom_fields()
+                #app.globals.custom_fields = self.get_milestones()
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
@@ -65,6 +70,9 @@ class GitHubTrackerImporter(ToolImporter):
             owner_line = '*Originally owned by:* {}\n'.format(issue['assignee']['login'])
         else:
             owner_line = ''
+        # body processing happens here
+        body, attachments = self._get_attachments(issue['body'])
+        ticket.add_multiple_attachments(attachments)
         ticket.description = (
                 u'*Originally created by:* {creator}\n'
                 u'{owner}'
@@ -72,24 +80,9 @@ class GitHubTrackerImporter(ToolImporter):
                 u'{body}').format(
                     creator=issue['user']['login'],
                     owner=owner_line,
-                    body=issue['body'],
+                    body=body,
                 )
-
-    def process_labels(self, ticket, issue):
-        labels = set()
-        custom_fields = defaultdict(set)
-        for label in issue.get_issue_labels():
-            if u'-' in label:
-                name, value = label.split(u'-', 1)
-                cf = self.custom_field(name)
-                cf['options'].add(value)
-                custom_fields[cf['name']].add(value)
-                if cf['name'] == '_milestone' and ticket.status in c.app.globals.open_status_names:
-                    self.open_milestones.add(value)
-            else:
-                labels.add(label)
-        ticket.labels = list(labels)
-        ticket.custom_fields = {n: u', '.join(sorted(v)) for n,v in custom_fields.iteritems()}
+        ticket.labels = [label['name'] for label in issue['labels']]
 
     def process_comments(self, ticket, issue):
         for comment in issue.iter_comments():
@@ -100,8 +93,9 @@ class GitHubTrackerImporter(ToolImporter):
                 )
             p.add_multiple_attachments(comment.attachments)
 
-    def postprocess_custom_fields(self):
+    def get_milestones(self):
         custom_fields = []
+        milestones = []
         for name, field in self.custom_fields.iteritems():
             if field['name'] == '_milestone':
                 field['milestones'] = [{
@@ -116,3 +110,33 @@ class GitHubTrackerImporter(ToolImporter):
                 field['options'] = ''
             custom_fields.append(field)
         return custom_fields
+
+    def _get_attachments(self, body):
+        # at github, attachments are images only and are included into comment's body
+        # usual syntax is
+        # ![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n
+        REGEXP = r'!\[[\w0-9]+?\]\(((?:https?:\/\/)?[\da-z\.-]+\.[a-z\.]{2,6}'\
+            '(?:[\/\w\.-]+)*.(jpg|jpeg|png|gif))\)\r\n'
+        attachments = []
+        found_matches = re.finditer(REGEXP, body, re.IGNORECASE)
+        for i, match in enumerate(found_matches):
+            # removing attach text from comment
+            body = body.replace(match.group(0), '')
+            # stripping url and extension
+            attachments.append(Attachment(
+                match.group(1),  # url
+                'attach{}.{}'.format(i + 1, match.group(2)) # extension
+            ))
+        return (body, attachments)
+
+class Attachment(object):
+    def __init__(self, url, filename):
+        self.url = url
+        self.filename = filename
+        self.type = None
+
+    @property
+    def file(self):
+        fp_ish = GitHubProjectExtractor.urlopen(self.url)
+        fp = StringIO(fp_ish.read())
+        return fp

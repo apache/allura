@@ -17,6 +17,8 @@
 
 import logging
 import json
+import urllib
+import urllib2
 
 from forgeimporters import base
 
@@ -39,7 +41,6 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         self.url = self.PAGE_MAP[page].format(
             project=urllib.quote(gh_project_name),
         )
-        self.page = json.loads(urllib2.urlopen(self.url).read().decode('utf8'))
 
     def get_summary(self):
         return self.get_page('project_info').get('description')
