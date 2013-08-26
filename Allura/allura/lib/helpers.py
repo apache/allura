@@ -947,9 +947,9 @@ def urlopen(url, retries=3, codes=(408,), timeout=None):
         try:
             return urllib2.urlopen(url, timeout=timeout)
         except (urllib2.HTTPError, socket.timeout) as e:
-            attempts += 1
             if attempts < retries and (isinstance(e, socket.timeout) or
                     e.code in codes):
+                attempts += 1
                 continue
             else:
                 try:
