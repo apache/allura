@@ -52,6 +52,7 @@ class TestTrackerImporter(TestCase):
                 EnableVoting=True,
                 open_status_names='New Accepted Started',
                 closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+                import_id='Google Code/project_name/issues',
             )
         gpe.iter_issues.assert_called_once_with('project_name')
         self.assertEqual(importer.process_fields.call_args_list, [
