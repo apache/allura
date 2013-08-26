@@ -53,6 +53,8 @@ class _TestCase(TestController):
         # ThreadLocalORMSession.close_all()
         h.set_context('test', 'src-git', neighborhood='Projects')
         c.app.repo.refresh()
+        if os.path.isdir(c.app.repo.tarball_path):
+            shutil.rmtree(c.app.repo.tarball_path)
         ThreadLocalORMSession.flush_all()
         # ThreadLocalORMSession.close_all()
 
@@ -342,14 +344,18 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/')
         assert '/p/test/src-git/ci/master/tarball' in r
         assert 'Download Snapshot' in r
-        r = self.app.post('/p/test/src-git/ci/master/tarball')
-        assert 'Generating snapshot...' in r
+        r = self.app.post('/p/test/src-git/ci/master/tarball').follow()
+        assert 'Checking snapshot status...' in r
+        r = self.app.get('/p/test/src-git/ci/master/tarball')
+        assert 'Checking snapshot status...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')
         assert '{"status": "ready"}' in r
         r = self.app.get('/p/test/src-git/ci/master/tarball_status')
         assert '{"status": "ready"}' in r
+        r = self.app.get('/p/test/src-git/ci/master/tarball')
+        assert 'Your download will begin shortly' in r
 
     def test_tarball_link_in_subdirs(self):
         '''Go to repo subdir and check 'Download Snapshot' link'''

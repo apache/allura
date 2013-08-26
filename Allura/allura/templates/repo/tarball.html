@@ -53,13 +53,14 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             left: 10 // Left position relative to parent in px
         };
         var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
-        var delay = 5000;
+        var delay = 500;
         // Check tarball status every 5 seconds
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
-                if (data.status === 'ready') {
+                if (data.status !== 'na') {
                     spinner.stop();
-                    $('#snapshot_status h2').toggle();
+                    $('#snapshot_status h2').hide();
+                    $('#snapshot_status h2.' + data.status).show();
                     {% if 'no-redirect' not in request.params %}
                         window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
                     {% endif %}
@@ -82,6 +83,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 <div id='snapshot_status'>
     <h2 class="busy">Generating snapshot...</h2>
     <h2 class="ready">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
+    <h2 class="na">Checking snapshot status...</h2>
 </div>
 {% endblock %}
 
@@ -89,9 +91,10 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 <style type="text/css">
     #snapshot_status h2 {
         padding-left: 33px;
-    }
-    #snapshot_status .{{ 'busy' if status == 'ready' else 'ready' }} {
         display: none;
+    }
+    #snapshot_status .{{ status }} {
+        display: block;
     }
 </style>
 {% endblock %}
