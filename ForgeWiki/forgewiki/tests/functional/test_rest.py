@@ -19,7 +19,9 @@
 
 import json
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
+import simplejson
+import tg
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -76,3 +78,20 @@ class TestWikiApi(TestRestApiBase):
         r = self.api_get(u'/rest/p/test/wiki/tést/'.encode('utf-8'))
         assert_equal(r.json['text'], data['text'])
         assert_equal(r.json['labels'], data['labels'].split(','))
+
+    # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
+    def test_json_encoding_security(self):
+        self.api_post('/rest/p/test/wiki/foo.html',
+                      text='foo <img src=x onerror=alert(1)> bar')
+        r = self.api_get('/rest/p/test/wiki/foo.html')
+        # raw text is not an HTML tag
+        assert_in(r'foo \u003Cimg src=x onerror=alert(1)> bar', r.body)
+        # and json still is parsed into correct content
+        assert_equal(r.json['text'], 'foo <img src=x onerror=alert(1)> bar')
+
+    def test_json_encoding_directly(self):
+        # used in @expose('json')
+        assert_equal(tg.jsonify.encode('<'), '"\u003C"')
+        # make sure these are unchanged
+        assert_equal(json.dumps('<'), '"<"')
+        assert_equal(simplejson.dumps('<'), '"<"')

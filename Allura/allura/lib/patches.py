@@ -15,10 +15,14 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
+
 import webob
 import tg.decorators
 from decorator import decorator
 from pylons import request
+import mock
+import simplejson
 
 from allura.lib import helpers as h
 
@@ -76,6 +80,25 @@ def apply():
                 and not response_type and len(request.params)==0):
             raise webob.exc.HTTPMovedPermanently(location=request.url+'/')
         return func(*args, **kwargs)
+
+
+    # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
+    # change < to its unicode escape when rendering JSON out of turbogears
+    # This is to avoid IE9 and earlier, which don't know the json content type
+    # and may attempt to render JSON data as HTML if the URL ends in .html
+    
+    original_tg_jsonify_GenericJSON_encode = tg.jsonify.GenericJSON.encode
+    escape_pattern_with_lt = re.compile(simplejson.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
+
+    @h.monkeypatch(tg.jsonify.GenericJSON)
+    def encode(self, o):
+        # ensure_ascii=False forces encode_basestring() to be called instead of
+        # encode_basestring_ascii() and encode_basestring_ascii may likely be c-compiled
+        # and thus not monkeypatchable
+        with h.push_config(self, ensure_ascii=False), \
+             h.push_config(simplejson.encoder, ESCAPE=escape_pattern_with_lt), \
+             mock.patch.dict(simplejson.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
+            return original_tg_jsonify_GenericJSON_encode(self, o)
 
 
 # must be saved outside the newrelic() method so that multiple newrelic()
