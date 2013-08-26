@@ -155,7 +155,7 @@ class TracExport(object):
         res = []
         for comment in d['entries']:
             c = {}
-            c['submitter'] = comment.author
+            c['submitter'] = getattr(comment, 'author', None)
             c['date'] = comment.updated_parsed
             c['comment'] = html2text(comment.summary)
             c['class'] = 'COMMENT'
