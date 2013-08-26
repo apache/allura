@@ -39,6 +39,7 @@ setup(name='ForgeImporters',
       github = forgeimporters.github.project:GitHubProjectImporter
 
       [allura.importers]
+      github-tracker = forgeimporters.github.tracker:GitHubTrackerImporter
       google-code-tracker = forgeimporters.google.tracker:GoogleCodeTrackerImporter
       google-code-repo = forgeimporters.google.code:GoogleRepoImporter
       github-repo = forgeimporters.github.code:GitHubRepoImporter
