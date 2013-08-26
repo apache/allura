@@ -210,7 +210,6 @@ class ProjectImporter(BaseController):
         tools = {}
         for ep in h.iter_entry_points('allura.importers'):
             epv = ep.load()
-            print epv, epv.source, self.source
             if epv.source == self.source:
                 tools[ep.name] = epv()
         return tools
