@@ -932,7 +932,7 @@ class exceptionless(object):
         return inner
 
 
-def urlopen(url, retries=3, codes=(408,)):
+def urlopen(url, retries=3, codes=(408,), timeout=None):
     """Open url, optionally retrying if an error is encountered.
 
     Socket timeouts will always be retried if retries > 0.
@@ -942,20 +942,23 @@ def urlopen(url, retries=3, codes=(408,)):
     :param codes: HTTP error codes that should be retried.
 
     """
+    attempts = 0
     while True:
         try:
-            return urllib2.urlopen(url)
+            return urllib2.urlopen(url, timeout=timeout)
         except (urllib2.HTTPError, socket.timeout) as e:
-            if retries and (isinstance(e, socket.timeout) or
+            attempts += 1
+            if attempts < retries and (isinstance(e, socket.timeout) or
                     e.code in codes):
-                retries -= 1
                 continue
             else:
                 try:
                     url_string = url.get_full_url()  # if url is Request obj
                 except Exception:
                     url_string = url
-                log.exception('Failed after %s retries on url: %s: %s', retries, url_string, e)
+                if timeout is None:
+                    timeout = socket.getdefaulttimeout()
+                log.exception('Failed after %s retries on url with a timeout of %s: %s: %s', attempts, timeout, url_string, e)
                 raise e
 
 
