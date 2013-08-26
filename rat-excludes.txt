@@ -23,6 +23,7 @@ Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/css/forge/accordion.css
 Allura/allura/public/nf/css/smoothness/jquery-ui-1.8.4.custom.css
+Allura/allura/public/nf/images/beta_sf.psd
 Allura/allura/public/nf/js/jquery-base.js
 Allura/allura/public/nf/js/jquery.daterangepicker.js
 Allura/allura/public/nf/js/jquery.flot.js
@@ -33,8 +34,11 @@ Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
 Allura/run/dummy.txt
 AlluraTest/jslint/
+CHANGES
 ForgeGit/forgegit/data/post-receive_tmpl
 ForgeSVN/forgesvn/tests/data/
+ForgeImporters/forgeimporters/tests/data/google/empty-issue.html
+ForgeImporters/forgeimporters/tests/data/google/test-issue.html
 solr_config/core0/conf/spellings.txt
 solr_config/core1/conf/spellings.txt
 solr_config/solr.xml
