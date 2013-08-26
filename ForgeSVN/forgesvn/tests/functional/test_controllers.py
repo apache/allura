@@ -38,29 +38,24 @@ class SVNTestController(TestController):
         TestController.setUp(self)
         self.setup_with_tools()
 
-    @with_svn
-    @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
-    def setup_with_tools(self):
-        h.set_context('test', 'src', neighborhood='Projects')
+    def _make_app(self, mount_point, name):
+        h.set_context('test', mount_point, neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgesvn', 'tests/data/')
         c.app.repo.fs_path = repo_dir
         c.app.repo.status = 'ready'
-        c.app.repo.name = 'testsvn'
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
-        h.set_context('test', 'src', neighborhood='Projects')
+        c.app.repo.name = name
         c.app.repo.refresh()
+        if os.path.isdir(c.app.repo.tarball_path):
+            shutil.rmtree(c.app.repo.tarball_path)
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        h.set_context('test', 'svn-tags', neighborhood='Projects')
-        c.app.repo.fs_path = repo_dir
-        c.app.repo.status = 'ready'
-        c.app.repo.name = 'testsvn-trunk-tags-branches'
-        c.app.repo.refresh()
-        ThreadLocalORMSession.flush_all()
-        ThreadLocalORMSession.close_all()
-        h.set_context('test', 'src', neighborhood='Projects')
+
+    @with_svn
+    @with_tool('test', 'SVN', 'svn-tags', 'SVN with tags')
+    def setup_with_tools(self):
+        self._make_app('svn-tags', 'testsvn-trunk-tags-branches')
+        self._make_app('src', 'testsvn')
 
 
 class TestRootController(SVNTestController):
@@ -194,12 +189,16 @@ class TestRootController(SVNTestController):
     def test_tarball(self):
         r = self.app.get('/src/3/tree/')
         assert 'Download Snapshot' in r
-        r = self.app.post('/src/3/tarball')
-        assert 'Generating snapshot...' in r
+        r = self.app.post('/src/3/tarball').follow()
+        assert 'Checking snapshot status...' in r
+        r = self.app.get('/src/3/tarball')
+        assert 'Checking snapshot status...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/src/3/tarball_status')
         assert '{"status": "ready"}' in r
+        r = self.app.get('/src/3/tarball')
+        assert 'Your download will begin shortly' in r
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_tags_aware(self):
@@ -217,23 +216,23 @@ class TestRootController(SVNTestController):
         assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert_equal(r.json['status'], None)
-        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/tags/tag-1.0'))
-        assert 'Generating snapshot...' in r
+        assert_equal(r.json['status'], 'na')
+        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/tags/tag-1.0')).follow()
+        assert 'Checking snapshot status...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], 'ready')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert_equal(r.json['status'], None)
-        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/trunk/'))
-        assert 'Generating snapshot...' in r
+        assert_equal(r.json['status'], 'na')
+        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/trunk/')).follow()
+        assert 'Checking snapshot status...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], 'ready')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
-        assert_equal(r.json['status'], None)
+        assert_equal(r.json['status'], 'na')
 
         # All of the following also should be ready because...
         # ...this is essentially the same as trunk snapshot
