@@ -18,8 +18,6 @@
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
 <div class="commit-details">
-    <a href="{{value.url()}}">{{value.shorthand_id()}}</a>
-    Commit message:
     <div class="commit-message">
         <div class="first-line">{{g.markdown.convert(h.really_unicode(value.message.split('\n')[0]))}}</div>
         {{g.markdown.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])))}}
