@@ -35,9 +35,7 @@ class GitHubTrackerImporter(ToolImporter):
             )
         ThreadLocalORMSession.flush_all()
         extractor = GitHubProjectExtractor(
-            project,
             '{}/{}'.format(kw['user_name'],project_name),
-            'issues',
         )
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
