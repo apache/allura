@@ -56,3 +56,9 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         issues.sort(key=lambda x: x['number'])
         for issue in issues:
             yield (issue['number'], issue)
+
+    def iter_comments(self, issue):
+        comments_url = issue['comments_url']
+        comments = self.get_page(comments_url)
+        for comment in comments:
+            yield comment

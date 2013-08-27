@@ -47,7 +47,7 @@ class GitHubTrackerImporter(ToolImporter):
                         custom_fields=dict(),
                         ticket_num=ticket_num)
                     self.process_fields(ticket, issue)
-                    #self.process_comments(ticket, issue)
+                    self.process_comments(extractor, ticket, issue)
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
                 #app.globals.custom_fields = self.get_milestones()
@@ -82,14 +82,17 @@ class GitHubTrackerImporter(ToolImporter):
                 )
         ticket.labels = [label['name'] for label in issue['labels']]
 
-    def process_comments(self, ticket, issue):
-        for comment in issue.iter_comments():
+    def process_comments(self, extractor, ticket, issue):
+        for comment in extractor.iter_comments(issue):
+            body, attachments = self._get_attachments(comment['body'])
+            if comment['user']:
+                body += u'\n*Originally posted by: {}*'.format(comment['user']['login'])
             p = ticket.discussion_thread.add_post(
-                    text = comment.annotated_text,
+                    text = body,
                     ignore_security = True,
-                    timestamp = datetime.strptime(comment.created_date, '%c'),
+                    timestamp = datetime.strptime(comment['created_at'], '%Y-%m-%dT%H:%M:%SZ'),
                 )
-            p.add_multiple_attachments(comment.attachments)
+            p.add_multiple_attachments(attachments)
 
     def get_milestones(self):
         custom_fields = []
