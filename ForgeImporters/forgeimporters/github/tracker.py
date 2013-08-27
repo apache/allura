@@ -25,6 +25,7 @@ class GitHubTrackerImporter(ToolImporter):
     controller = None
     tool_label = 'Issues'
     max_ticket_num = 0
+    open_milestones = set()
 
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
@@ -48,9 +49,10 @@ class GitHubTrackerImporter(ToolImporter):
                         ticket_num=ticket_num)
                     self.process_fields(ticket, issue)
                     self.process_comments(extractor, ticket, issue)
+                    self.process_milestones(ticket, issue)
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
-                #app.globals.custom_fields = self.get_milestones()
+                app.globals.custom_fields = self.postprocess_milestones()
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
@@ -94,23 +96,31 @@ class GitHubTrackerImporter(ToolImporter):
                 )
             p.add_multiple_attachments(attachments)
 
-    def get_milestones(self):
-        custom_fields = []
-        milestones = []
-        for name, field in self.custom_fields.iteritems():
-            if field['name'] == '_milestone':
-                field['milestones'] = [{
-                        'name': milestone,
-                        'due_date': None,
-                        'complete': milestone not in self.open_milestones,
-                    } for milestone in sorted(field['options'])]
-                field['options'] = ''
-            elif field['type'] == 'select':
-                field['options'] = ' '.join(field['options'])
-            else:
-                field['options'] = ''
-            custom_fields.append(field)
-        return custom_fields
+    def process_milestones(self, ticket, issue):
+        if issue['milestone']:
+            title = issue['milestone']['title']
+            due = None
+            if issue['milestone']['due_on']:
+                due = datetime.strptime(issue['milestone']['due_on'], '%Y-%m-%dT%H:%M:%SZ')
+            ticket.custom_fields = {
+                '_milestone': title,
+            }
+            self.open_milestones.add((title, due,))
+
+    def postprocess_milestones(self):
+        global_milestones = {
+            'milestones': [],
+            'type': 'milestone',
+            'name': '_milestone',
+            'label': 'Milestone'
+        }
+        for milestone in self.open_milestones:
+            global_milestones['milestones'].append({
+                'name': milestone[0],
+                'due_date': unicode(milestone[1].date()),
+                'complete': False,
+            })
+        return [global_milestones]
 
     def _get_attachments(self, body):
         # at github, attachments are images only and are included into comment's body
