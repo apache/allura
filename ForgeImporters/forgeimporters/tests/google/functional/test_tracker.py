@@ -142,9 +142,16 @@ class TestGCTrackerImporter(TestCase):
 
     def test_import_id(self):
         ticket = self._make_ticket(self.test_issue, issue_id=6)
-        self.assertEqual(ticket.app.config.options.import_id, 'Google Code/test-issue-project/issues')
+        self.assertEqual(ticket.app.config.options.import_id, {
+                'source': 'Google Code',
+                'project_name': 'test-issue-project',
+            })
         self.assertEqual(ticket.ticket_num, 6)
-        self.assertEqual(ticket.import_id, 'Google Code/test-issue-project/issues/6')
+        self.assertEqual(ticket.import_id, {
+                'source': 'Google Code',
+                'project_name': 'test-issue-project',
+                'source_id': 6,
+            })
 
     @skipif(module_not_available('html2text'))
     def test_html2text_escaping(self):

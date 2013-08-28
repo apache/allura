@@ -58,6 +58,7 @@ from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
 from allura.lib.zarkov_helpers import zero_fill_zarkov_result
+from allura.lib.plugin import ImportIdConverter
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
@@ -75,7 +76,6 @@ from forgetracker.widgets.bin_form import BinForm
 from forgetracker.widgets.ticket_search import TicketSearchResults, MassEdit, MassEditForm, MassMoveForm, SearchHelp
 from forgetracker.widgets.admin_custom_fields import TrackerFieldAdmin, TrackerFieldDisplay
 from forgetracker.import_support import ImportSupport
-from forgetracker.plugins import ImportIdConverter
 
 log = logging.getLogger(__name__)
 
@@ -1196,11 +1196,15 @@ class TicketController(BaseController, FeedController):
             self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
             if self.ticket is None:
-                self.ticket = TM.Ticket.query.get(
-                        app_config_id=c.app.config._id,
-                        import_id=str(ImportIdConverter.get().expand(ticket_num, c.app)))
+                query = {'app_config_id': c.app.config._id}
+                import_id = ImportIdConverter.get().expand(ticket_num, c.app)
+                if import_id:
+                    query.update({'import_id.%s' % k: v for k,v in import_id.iteritems()})
+                self.ticket = TM.Ticket.query.get(**query)
                 if self.ticket is not None:
                     utils.permanent_redirect(self.ticket.url())
+                else:
+                    raise exc.HTTPNotFound('Ticket #%s does not exist.' % ticket_num)
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
 

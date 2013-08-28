@@ -947,3 +947,35 @@ class AdminExtension(object):
         :rtype: ``None``
         """
         pass
+
+class ImportIdConverter(object):
+    '''
+    An interface to convert to and from import_id values for indexing,
+    searching, or displaying.
+
+    To provide a new converter, expose an entry point in setup.py:
+
+        [allura.tickets.import_id_converter]
+        mysource = foo.bar:SourceIdConverter
+
+    Then in your .ini file, set tickets.import_id_converter=mysource
+    '''
+
+    @classmethod
+    def get(cls):
+        converter = config.get('import_id_converter')
+        if converter:
+            return g.entry_points['allura.import_id_converter'][converter]()
+        return cls()
+
+    def simplify(self, import_id):
+        if hasattr(import_id, 'get'):
+            return import_id.get('source_id')
+        return None
+
+    def expand(self, source_id, app_instance):
+        import_id = {
+                'source_id': source_id,
+            }
+        import_id.update(app_instance.config.options.get('import_id', {}))
+        return import_id

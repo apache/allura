@@ -83,8 +83,11 @@ class Artifact(MappedClass):
     references = FieldProperty(S.Deprecated)
     backreferences = FieldProperty(S.Deprecated)
     app_config = RelationProperty('AppConfig')
-    # Not null if artifact originated from external import, then API ticket id
-    import_id = FieldProperty(str, if_missing=None)
+    # Not null if artifact originated from external import.  The import ID is
+    # implementation specific, but should probably be an object indicating
+    # the source, original ID, and any other info needed to identify where
+    # the artifact came from.  But if you only have one source, a str might do.
+    import_id = FieldProperty(None, if_missing=None)
     deleted=FieldProperty(bool, if_missing=False)
 
     def __json__(self):

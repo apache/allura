@@ -47,9 +47,9 @@ from allura.lib import security
 from allura.lib.search import search_artifact, SearchError
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 from allura.tasks import mail_tasks
 
-from forgetracker.plugins import ImportIdConverter
 
 log = logging.getLogger(__name__)
 
