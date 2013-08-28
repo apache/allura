@@ -42,12 +42,12 @@ class TestTrackerImporter(TestCase):
         importer.postprocess_custom_fields = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
-        app.config.options = {
-                'import_id': {
-                        'source': 'Google Code',
-                        'project_name': 'project_name',
-                    },
+        app.config.options.mount_point = 'mount_point'
+        app.config.options.import_id = {
+                'source': 'Google Code',
+                'project_name': 'project_name',
             }
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
         issues = gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
         tickets = TM.Ticket.side_effect = [mock.Mock(), mock.Mock()]
 
@@ -89,6 +89,9 @@ class TestTrackerImporter(TestCase):
                 mock.call(tickets[1]),
             ])
         self.assertEqual(app.globals.last_ticket_num, 100)
+        M.AuditLog.log.assert_called_once_with(
+                'import tool mount_point from project_name on Google Code',
+                project=project, user=user)
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
 
