@@ -109,7 +109,7 @@ class GoogleRepoImportForm(fe.schema.Schema):
             raise
         tool_class = REPO_APPS[repo_type]
         try:
-            v.MountPointValidator(tool_class).to_python(mount_point)
+            value['mount_point'] = v.MountPointValidator(tool_class).to_python(mount_point)
         except fe.Invalid as e:
             raise fe.Invalid('mount_point:' + str(e), value, state)
         return value
