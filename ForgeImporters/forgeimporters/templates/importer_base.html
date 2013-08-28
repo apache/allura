@@ -64,6 +64,7 @@
 <form action="create" method="post" enctype="multipart/form-data">
   {% block importer_fields %}
   {% endblock %}
+  {% if not show_mount_fields is defined or show_mount_fields %}
   <div>
     <label for="mount_label">Label</label>
     <input name="mount_label" value="{{ c.form_values['mount_label'] or target_app.default_mount_label }}" />
@@ -74,7 +75,7 @@
     <input name="mount_point" value="{{ c.form_values['mount_point'] or target_app.default_mount_point }}" />
       {{ error('mount_point') }}
   </div>
-
+  {% endif %}
   <input type="submit" value="Import"/>
 </form>
 {% endblock %}
