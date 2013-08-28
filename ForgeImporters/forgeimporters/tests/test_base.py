@@ -99,6 +99,30 @@ class TestProjectImporter(TestCase):
         self.assertEqual(pi.tool_importers, {'ep1': eps[0].lv, 'ep3': eps[2].lv})
         iep.assert_called_once_with('allura.importers')
 
+    @mock.patch.object(base, 'redirect')
+    @mock.patch.object(base, 'flash')
+    @mock.patch.object(base, 'import_tool')
+    @mock.patch.object(base, 'M')
+    @mock.patch.object(base, 'c')
+    def test_process(self, c, M, import_tool, flash, redirect):
+        pi = base.ProjectImporter(mock.Mock())
+        pi.source = 'Source'
+        pi.after_project_create = mock.Mock()
+        pi.neighborhood.register_project.return_value.script_name = 'script_name/'
+        kw = {
+                'project_name': 'project_name',
+                'project_shortname': 'shortname',
+                'tools': ['tool'],
+            }
+        with mock.patch.dict(base.config, {'site_name': 'foo'}):
+            pi.process(**kw)
+        pi.neighborhood.register_project.assert_called_once_with('shortname', project_name='project_name')
+        pi.after_project_create.assert_called_once_with(c.project, **kw)
+        import_tool.post.assert_called_once_with('tool', **kw)
+        M.AuditLog.log.assert_called_once_with('import project from Source')
+        self.assertEqual(flash.call_count, 1)
+        redirect.assert_called_once_with('script_name/admin/overview')
+
 
 
 TA1 = mock.Mock(tool_label='foo', tool_description='foo_desc')

@@ -37,6 +37,7 @@ from allura.lib import helpers as h
 from allura.lib import exceptions
 from allura.lib import validators as v
 from allura.app import SitemapEntry
+from allura import model as M
 
 from paste.deploy.converters import aslist
 
@@ -245,6 +246,7 @@ class ProjectImporter(BaseController):
         self.after_project_create(c.project, **kw)
         for importer_name in kw['tools']:
             import_tool.post(importer_name, **kw)
+        M.AuditLog.log('import project from %s' % self.source)
 
         flash('Welcome to the %s Project System! '
               'Your project data will be imported and should show up here shortly.' % config['site_name'])
