@@ -54,7 +54,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         };
         var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
         var delay = 500;
-        // Check tarball status every 5 seconds
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
                 if (data.status !== 'na') {
@@ -65,8 +64,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                         window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
                     {% endif %}
                 } else {
-                    if (delay < 600000){
-                        delay = delay * 2
+                    if (delay < 60000){
+                        delay = delay * 2;
+                    }
+                    if (delay >= 16000) {
+                      // we've been waiting at least 15 seconds
+                      $('#snapshot_status form').show();
                     }
                     window.setTimeout(check_status, delay);
                 }
@@ -84,6 +87,11 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     <h2 class="busy">Generating snapshot...</h2>
     <h2 class="ready">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
     <h2 class="na">Checking snapshot status...</h2>
+    <form action="tarball" method="post">
+      <p>We're having trouble finding that snapshot. Would you like to resubmit?</p>
+      <input type="hidden" name="path" value="{{path}}" />
+      <input type="submit" value="Resubmit Snapshot Request" />
+    </form>
 </div>
 {% endblock %}
 
@@ -95,6 +103,13 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
     }
     #snapshot_status .{{ status }} {
         display: block;
+    }
+    #snapshot_status form {
+      display: none;
+      margin-left: 20px;
+    }
+    #snapshot_status form p {
+      padding-left: 0;
     }
 </style>
 {% endblock %}
