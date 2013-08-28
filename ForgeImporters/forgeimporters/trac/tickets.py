@@ -43,7 +43,7 @@ from allura.lib.decorators import require_post, task
 from allura.lib.import_api import AlluraImportApiClient
 from allura.lib import validators as v
 from allura.lib import helpers as h
-from allura.model import ApiTicket
+from allura.model import ApiTicket, AuditLog
 from allura.scripts.trac_export import (
         TracExport,
         DateJSONEncoder,
@@ -117,7 +117,11 @@ class TracTicketImporter(ToolImporter):
                 'Tickets',
                 mount_point=mount_point,
                 mount_label=mount_label or 'Tickets',
-                )
+                import_id={
+                        'source': self.source,
+                        'trac_url': trac_url,
+                    },
+            )
         session(app.config).flush(app.config)
         session(app.globals).flush(app.globals)
         try:
@@ -132,6 +136,13 @@ class TracTicketImporter(ToolImporter):
             import_tracker(cli, project.shortname, mount_point,
                     {'user_map': json.loads(user_map) if user_map else {}},
                     export_string, validate=False)
+            AuditLog.log(
+                'import tool %s from %s' % (
+                        app.config.options.mount_point, 
+                        trac_url, 
+                    ), 
+                project=project, user=user, 
+            ) 
             g.post_event('project_updated')
             return app
         except Exception as e:
