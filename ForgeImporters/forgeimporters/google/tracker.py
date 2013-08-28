@@ -24,9 +24,6 @@ from pylons import tmpl_context as c
 from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
 
-from allura import model as M
-#import gdata
-gdata = None
 from tg import (
         expose,
         flash,
@@ -42,6 +39,7 @@ from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post, task
+from allura import model as M
 
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
@@ -142,6 +140,14 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 app.globals.custom_fields = self.postprocess_custom_fields()
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
+            M.AuditLog.log(
+                    'import tool %s from %s on %s' % (
+                            app.config.options.mount_point,
+                            project_name, self.source,
+                        ),
+                    project=project,
+                    user=user,
+                )
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app

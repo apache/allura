@@ -50,6 +50,7 @@ class TestGCTrackerImporter(TestCase):
         self.assertIsNone(self.project.app_instance('test-issue'))
         with mock.patch.object(base.h, 'urlopen') as urlopen,\
              mock.patch.object(google.tracker, 'GoogleCodeProjectExtractor') as GPE,\
+             mock.patch.object(google.tracker.M, 'AuditLog') as AL,\
              mock.patch('forgetracker.tasks.update_bin_counts') as ubc:
             urlopen.side_effect = lambda req, **kw: mock.Mock(read=req.get_full_url, info=lambda:{'content-type': 'text/plain'})
             GPE.iter_issues.return_value = [(issue_id, issue)]
