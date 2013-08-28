@@ -19,6 +19,8 @@ import json
 from unittest import TestCase
 from mock import Mock, patch
 
+from tg import config
+
 from allura.tests import TestController
 from allura.tests.decorators import with_tracker
 
@@ -31,18 +33,21 @@ from forgeimporters.trac.tickets import (
 class TestTracTicketImporter(TestCase):
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.g')
+    @patch('forgeimporters.trac.tickets.AuditLog')
     @patch('forgeimporters.trac.tickets.import_tracker')
     @patch('forgeimporters.trac.tickets.AlluraImportApiClient')
     @patch('forgeimporters.trac.tickets.datetime')
     @patch('forgeimporters.trac.tickets.ApiTicket')
     @patch('forgeimporters.trac.tickets.TracExport')
-    def test_import_tool(self, TracExport, ApiTicket, dt, ApiClient, import_tracker, g, session):
+    def test_import_tool(self, TracExport, ApiTicket, dt, ApiClient, import_tracker, AuditLog, g, session):
         from datetime import datetime, timedelta
         now = datetime.utcnow()
         dt.utcnow.return_value = now
         user_map = {"orig_user":"new_user"}
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
+        app.config.options.mount_point = 'bugs'
+        app.config.options.get = lambda *a: getattr(app.config.options, *a)
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
@@ -55,7 +60,11 @@ class TestTracTicketImporter(TestCase):
                     )
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
-                'Tickets', mount_point='bugs', mount_label='Bugs')
+                'Tickets', mount_point='bugs', mount_label='Bugs',
+                import_id={
+                        'source': 'Trac',
+                        'trac_url': 'http://example.com/trac/url/',
+                    })
         TracExport.return_value = []
         TracExport.assert_called_once_with('http://example.com/trac/url/')
         ApiTicket.assert_called_once_with(
@@ -67,6 +76,9 @@ class TestTracTicketImporter(TestCase):
                 api_client, 'myproject', 'bugs',
                 {"user_map": user_map}, '[]',
                 validate=False)
+        AuditLog.log.assert_called_once_with(
+                'import tool bugs from http://example.com/trac/url/',
+                project=project, user=user)
         g.post_event.assert_called_once_with('project_updated')
 
     @patch('forgeimporters.trac.tickets.session')
