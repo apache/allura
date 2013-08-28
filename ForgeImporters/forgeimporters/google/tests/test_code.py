@@ -57,20 +57,30 @@ class TestGoogleRepoImporter(TestCase):
         return project
 
     @patch('forgeimporters.google.code.g')
+    @patch('forgeimporters.google.code.M')
     @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.google.code.get_repo_url')
-    def test_import_tool_happy_path(self, get_repo_url, gcpe, g):
+    def test_import_tool_happy_path(self, get_repo_url, gcpe, M, g):
         gcpe.return_value.get_repo_type.return_value = 'git'
         get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gc_proj_name='myproject')
-        GoogleRepoImporter().import_tool(p, Mock(name='c.user'),
-                project_name='project_name')
+        u = Mock(name='c.user')
+        app = p.install_app.return_value
+        app.config.options.mount_point = 'code'
+        GoogleRepoImporter().import_tool(p, u, project_name='project_name')
         get_repo_url.assert_called_once_with('project_name', 'git')
         p.install_app.assert_called_once_with('Git',
                 mount_point='code',
                 mount_label='Code',
                 init_from_url='http://remote/clone/url/',
-                )
+                import_id={
+                        'source': 'Google Code',
+                        'project_name': 'project_name',
+                    },
+            )
+        M.AuditLog.log.assert_called_once_with(
+                'import tool code from project_name on Google Code',
+                project=p, user=u)
         g.post_event.assert_called_once_with('project_updated')
 
 
