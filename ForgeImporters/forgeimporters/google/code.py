@@ -36,6 +36,7 @@ from tg.decorators import (
 from allura.controllers import BaseController
 from allura.lib import validators as v
 from allura.lib.decorators import require_post, task
+from allura import model as M
 
 from forgeimporters.base import (
         ToolImporter,
@@ -168,6 +169,15 @@ class GoogleRepoImporter(ToolImporter):
                 mount_point=mount_point or 'code',
                 mount_label=mount_label or 'Code',
                 init_from_url=repo_url,
-                )
+                import_id={
+                        'source': self.source,
+                        'project_name': project_name,
+                    }
+            )
+        M.AuditLog.log(
+                'import tool %s from %s on %s' % (
+                    app.config.options.mount_point,
+                    project_name, self.source,
+                ), project=project, user=user)
         g.post_event('project_updated')
         return app
