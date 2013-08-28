@@ -17,6 +17,7 @@
 
 import unittest
 import formencode as fe
+from mock import Mock, patch
 
 from allura import model as M
 from allura.lib import validators as v
@@ -90,6 +91,66 @@ class TestUserValidator(unittest.TestCase):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('fakeuser')
         self.assertEqual(str(cm.exception), "Invalid username")
+
+
+class TestMountPointValidator(unittest.TestCase):
+
+    @patch('allura.lib.validators.c')
+    def test_valid(self, c):
+        App = Mock()
+        App.relaxed_mount_points = False
+        App.validate_mount_point.return_value = True
+        c.project.app_instance.return_value = None
+        val = v.MountPointValidator(App)
+        self.assertEqual('mymount', val.to_python('Mymount'))
+
+    @patch('allura.lib.validators.c')
+    def test_invalid(self, c):
+        App = Mock()
+        App.relaxed_mount_points = False
+        App.validate_mount_point.return_value = False
+        c.project.app_instance.return_value = False
+        val = v.MountPointValidator(App)
+        with self.assertRaises(fe.Invalid):
+            val.to_python('mymount')
+
+    @patch('allura.lib.validators.c')
+    def test_relaxed_mount_points(self, c):
+        App = Mock()
+        App.relaxed_mount_points = True
+        App.validate_mount_point.return_value = True
+        c.project.app_instance.return_value = None
+        val = v.MountPointValidator(App)
+        self.assertEqual('Mymount', val.to_python('Mymount'))
+
+    @patch('allura.lib.validators.c')
+    def test_in_use(self, c):
+        App = Mock()
+        App.relaxed_mount_points = False
+        App.validate_mount_point.return_value = True
+        c.project.app_instance.return_value = True
+        val = v.MountPointValidator(App)
+        with self.assertRaises(fe.Invalid):
+            val.to_python('mymount')
+
+    @patch('allura.lib.validators.c')
+    def test_reserved(self, c):
+        App = Mock()
+        App.relaxed_mount_points = False
+        App.validate_mount_point.return_value = True
+        c.project.app_instance.return_value = False
+        val = v.MountPointValidator(App)
+        with self.assertRaises(fe.Invalid):
+            val.to_python('feed')
+
+    @patch('allura.lib.validators.c')
+    def test_empty(self, c):
+        App = Mock()
+        App.default_mount_point = 'wiki'
+        c.project.app_instance.side_effect = lambda mp: None if mp != 'wiki' else True
+        val = v.MountPointValidator(App)
+        self.assertEqual('wiki-0', val.to_python(''))
+        self.assertEqual('wiki-0', val.to_python(None))
 
 
 class TestTaskValidator(unittest.TestCase):
