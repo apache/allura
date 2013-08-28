@@ -28,7 +28,6 @@ from hashlib import sha256
 import uuid
 from pytz import timezone
 from datetime import timedelta, date, datetime, time
-from pkg_resources import iter_entry_points
 
 import iso8601
 import pymongo

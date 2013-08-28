@@ -20,7 +20,6 @@ import logging
 from datetime import datetime, timedelta
 from urllib import unquote
 from itertools import chain, islice
-from pkg_resources import iter_entry_points
 
 from bson import ObjectId
 from tg import expose, flash, redirect, validate, request, response, config
@@ -38,6 +37,7 @@ from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
 from allura.lib import helpers as h
+from allura.lib.helpers import iter_entry_points
 from allura.lib import utils
 from allura.lib.decorators import require_post
 from allura.controllers.error import ErrorController
@@ -310,7 +310,7 @@ class ProjectController(FeedController):
         for s in c.project.grouped_navbar_entries():
             entry = dict(name=s.label, url=s.url, icon=s.ui_icon, tool_name=s.tool_name)
             if s.children:
-                entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon, tool_name=child.tool_name) 
+                entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon, tool_name=child.tool_name)
                                     for child in s.children]
             menu.append(entry)
         return dict(menu=menu)

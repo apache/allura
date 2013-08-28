@@ -20,6 +20,8 @@ import logging
 
 import pkg_resources
 
+from allura.lib.helpers import iter_entry_points
+
 log = logging.getLogger(__name__)
 
 def register_ew_resources(manager):
@@ -29,7 +31,7 @@ def register_ew_resources(manager):
         'css', pkg_resources.resource_filename('allura', 'lib/widgets/resources/css'))
     manager.register_directory(
         'allura', pkg_resources.resource_filename('allura', 'public/nf'))
-    for ep in pkg_resources.iter_entry_points('allura'):
+    for ep in iter_entry_points('allura'):
         try:
             manager.register_directory(
                 'tool/%s' % ep.name.lower(),
@@ -39,7 +41,7 @@ def register_ew_resources(manager):
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise
-    for ep in pkg_resources.iter_entry_points('allura.theme'):
+    for ep in iter_entry_points('allura.theme'):
         try:
             theme = ep.load()
             theme.register_ew_resources(manager, ep.name)

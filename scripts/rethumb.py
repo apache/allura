@@ -18,14 +18,16 @@
 import sys
 import time
 
-import pkg_resources
 import PIL
 import tg
 from pylons import tmpl_context as c
 from paste.deploy.converters import asint
 
 from ming.orm import mapper, ThreadLocalORMSession, session, state, Mapper
+
 from allura.command import base
+from allura.lib.helpers import iter_entry_points
+
 import forgetracker.model
 
 
@@ -109,7 +111,7 @@ class RethumbCommand(base.Command):
                 self.process_att_of_type(M.DiscussionAttachment, {'app_config_id': app._id, 'discussion_id': {'$ne': None}})
 
                 # Otherwise, we'll take attachment classes belonging to app's package
-                ep = pkg_resources.iter_entry_points('allura', app.tool_name).next()
+                ep = iter_entry_points('allura', app.tool_name).next()
                 app_package = ep.module_name.split('.', 1)[0]
                 if app_package == 'allura':
                     # Apps in allura known to not define own attachment types

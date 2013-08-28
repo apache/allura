@@ -20,7 +20,6 @@ import sys
 import logging
 import shlex
 from multiprocessing import Process
-from pkg_resources import iter_entry_points
 
 import pylons
 from paste.script import command
@@ -31,6 +30,7 @@ import activitystream
 import ming
 from allura.config.environment import load_environment
 from allura.lib.decorators import task
+from allura.lib.helpers import iter_entry_points
 
 log = None
 
@@ -117,4 +117,3 @@ class Command(command.Command):
 
     def teardown_globals(self):
         self.registry.cleanup()
-

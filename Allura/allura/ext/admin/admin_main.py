@@ -292,7 +292,7 @@ class ProjectAdminController(BaseController):
                 '<input name="source_url">'
                 '<input type="submit">'
                 '</form>')
-        for ep in pkg_resources.iter_entry_points('allura', repo_type):
+        for ep in h.iter_entry_points('allura', repo_type):
             break
         if ep is None or source_url is None:
             raise exc.HTTPNotFound

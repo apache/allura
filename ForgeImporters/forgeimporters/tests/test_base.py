@@ -66,7 +66,7 @@ def ep(name, source=None, importer=None, **kw):
 
 
 class TestProjectImporter(TestCase):
-    @mock.patch.object(base, 'iter_entry_points')
+    @mock.patch.object(base.h, 'iter_entry_points')
     def test_tool_importers(self, iep):
         eps = iep.return_value = [ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
         pi = base.ProjectImporter(mock.Mock(name='neighborhood'))
@@ -100,7 +100,7 @@ class TI3(base.ToolImporter):
 class TestToolImporter(TestCase):
 
 
-    @mock.patch.object(base, 'iter_entry_points')
+    @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_name(self, iep):
         eps = iep.return_value = [ep('my-name', 'my-source')]
         importer = base.ToolImporter.by_name('my-name')
@@ -113,7 +113,7 @@ class TestToolImporter(TestCase):
         iep.assert_called_once_with('allura.importers', 'other-name')
         self.assertEqual(importer, None)
 
-    @mock.patch.object(base, 'iter_entry_points')
+    @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_app(self, iep):
         eps = iep.return_value = [
                 ep('importer1', importer=TI1),
@@ -190,7 +190,7 @@ class TestProjectToolsImportController(TestController):
 
     def test_pages(self):
         admin_page = self.app.get('/admin/')
-        with mock.patch.object(base, 'iter_entry_points') as iep:
+        with mock.patch.object(base.h, 'iter_entry_points') as iep:
             iep.return_value = [
                 ep('importer1', importer=TI1),
                 ep('importer2', importer=TI2),

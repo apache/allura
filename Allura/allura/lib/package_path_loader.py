@@ -124,12 +124,11 @@ The positioners are:
 """
 import pkg_resources
 import os
-from collections import defaultdict
 
 import jinja2
 from ming.utils import LazyProperty
 
-from allura.lib.helpers import topological_sort
+from allura.lib.helpers import topological_sort, iter_entry_points
 
 
 class PackagePathLoader(jinja2.BaseLoader):
@@ -163,7 +162,7 @@ class PackagePathLoader(jinja2.BaseLoader):
         paths = self.default_paths[:]  # copy default_paths
         paths[-1:0] = [  # insert all eps just before last item, by default
                 [ep.name, pkg_resources.resource_filename(ep.module_name, "")]
-                for ep in pkg_resources.iter_entry_points(self.override_entrypoint)
+                for ep in iter_entry_points(self.override_entrypoint)
             ]
         return paths
 
@@ -190,7 +189,7 @@ class PackagePathLoader(jinja2.BaseLoader):
         """
         order_rules = []
         replacement_rules = {}
-        for ep in pkg_resources.iter_entry_points(self.override_entrypoint):
+        for ep in iter_entry_points(self.override_entrypoint):
             for rule in getattr(ep.load(), 'template_path_rules', []):
                 if rule[0] == '>':
                     order_rules.append((ep.name, rule[1]))

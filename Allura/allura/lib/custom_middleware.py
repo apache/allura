@@ -35,7 +35,7 @@ import allura.model.repo
 log = logging.getLogger(__name__)
 
 
-tool_entry_points = list(pkg_resources.iter_entry_points('allura'))
+tool_entry_points = list(h.iter_entry_points('allura'))
 
 class StaticFilesMiddleware(object):
     '''Custom static file middleware
@@ -169,7 +169,7 @@ class SSLMiddleware(object):
         if not resp:
             resp = self.app
         return resp(environ, start_response)
-    
+
 class AlluraTimerMiddleware(TimerMiddleware):
     def timers(self):
         import genshi

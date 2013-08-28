@@ -178,7 +178,7 @@ class Globals(object):
         # Cache some loaded entry points
         def _cache_eps(section_name, dict_cls=dict):
             d = dict_cls()
-            for ep in pkg_resources.iter_entry_points(section_name):
+            for ep in h.iter_entry_points(section_name):
                 value = ep.load()
                 d[ep.name] = value
             return d

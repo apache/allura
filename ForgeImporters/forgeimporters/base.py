@@ -20,8 +20,6 @@ import urllib
 import urllib2
 from collections import defaultdict
 
-from pkg_resources import iter_entry_points
-
 from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
@@ -176,7 +174,7 @@ class ProjectImporter(BaseController):
         as this project importer.
         """
         tools = {}
-        for ep in iter_entry_points('allura.importers'):
+        for ep in h.iter_entry_points('allura.importers'):
             epv = ep.load()
             if epv.source == self.source:
                 tools[ep.name] = epv()
@@ -289,7 +287,7 @@ class ToolImporter(object):
         """
         Return a ToolImporter subclass instance given its entry-point name.
         """
-        for ep in iter_entry_points('allura.importers', name):
+        for ep in h.iter_entry_points('allura.importers', name):
             return ep.load()()
 
     @staticmethod
@@ -298,7 +296,7 @@ class ToolImporter(object):
         Return a ToolImporter subclass instance given its target_app class.
         """
         importers = {}
-        for ep in iter_entry_points('allura.importers'):
+        for ep in h.iter_entry_points('allura.importers'):
             importer = ep.load()
             if app in aslist(importer.target_app):
                 importers[ep.name] = importer()
@@ -370,7 +368,7 @@ class ProjectToolsImportController(object):
     def index(self, *a, **kw):
         importer_matrix = defaultdict(dict)
         tools_with_importers = set()
-        for ep in iter_entry_points('allura.importers'):
+        for ep in h.iter_entry_points('allura.importers'):
             importer = ep.load()
             for tool in aslist(importer.target_app):
                 tools_with_importers.add(tool.tool_label)

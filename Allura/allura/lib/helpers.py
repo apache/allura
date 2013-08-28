@@ -49,7 +49,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist
 
 from webhelpers import date, feedgenerator, html, number, misc, text
 
@@ -984,3 +984,13 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
     text = re_angle_bracket_open.sub('&lt;', text)
     text = re_angle_bracket_close.sub('&gt;', text)
     return text
+
+
+def iter_entry_points(group, *a, **kw):
+    '''
+    yield entry points that have not been disabled in the config
+    '''
+    disabled = aslist(tg.config.get('disable_entry_points.' + group), sep=',')
+    for ep in pkg_resources.iter_entry_points(group, *a, **kw):
+        if ep.name not in disabled:
+            yield ep
