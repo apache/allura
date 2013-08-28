@@ -600,10 +600,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def install_app(self, ep_name, mount_point=None, mount_label=None, ordinal=None, **override_options):
         App = g.entry_points['tool'][ep_name]
-        try:
-            mount_point = v.MountPointValidator(App).to_python(mount_point)
-        except fe.Invalid as e:
-            raise exceptions.ToolError(str(e))
+        with h.push_config(c, project=self):
+            try:
+                mount_point = v.MountPointValidator(App).to_python(mount_point)
+            except fe.Invalid as e:
+                raise exceptions.ToolError(str(e))
         if ordinal is None:
             ordinal = int(self.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
         options = App.default_options()

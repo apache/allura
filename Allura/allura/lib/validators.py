@@ -90,8 +90,7 @@ class MountPointValidator(fev.UnicodeString):
         if mount_point in self.reserved_mount_points:
             raise fe.Invalid('Mount point "%s" is reserved' % mount_point,
                     value, state)
-        if (getattr(c, 'project', None) and
-                c.project.app_instance(mount_point) is not None):
+        if c.project and c.project.app_instance(mount_point) is not None:
             raise fe.Invalid('Mount point "%s" is already in use' % mount_point,
                     value, state)
         return mount_point
@@ -100,8 +99,7 @@ class MountPointValidator(fev.UnicodeString):
         base_mount_point = mount_point = self.app_class.default_mount_point
         i = 0
         while True:
-            if (not getattr(c, 'project', None) or
-                    c.project.app_instance(mount_point) is None):
+            if not c.project or c.project.app_instance(mount_point) is None:
                 return mount_point
             mount_point = base_mount_point + '-%d' % i
             i += 1
