@@ -1573,7 +1573,7 @@ class TestFunctionalController(TrackerTestController):
     def test_imported_tickets_redirect(self):
         self.new_ticket(summary='Imported ticket')
         ticket = tm.Ticket.query.get(ticket_num=1)
-        ticket.import_id = '42000'
+        ticket.import_id = {'source_id': '42000'}
         ThreadLocalORMSession.flush_all()
 
         # expect permanent redirect to /p/test/bugs/1/

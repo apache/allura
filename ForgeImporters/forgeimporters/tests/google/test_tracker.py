@@ -42,6 +42,12 @@ class TestTrackerImporter(TestCase):
         importer.postprocess_custom_fields = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
+        app.config.options = {
+                'import_id': {
+                        'source': 'Google Code',
+                        'project_name': 'project_name',
+                    },
+            }
         issues = gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
         tickets = TM.Ticket.side_effect = [mock.Mock(), mock.Mock()]
 
@@ -52,7 +58,10 @@ class TestTrackerImporter(TestCase):
                 EnableVoting=True,
                 open_status_names='New Accepted Started',
                 closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
-                import_id='Google Code/project_name/issues',
+                import_id={
+                        'source': 'Google Code',
+                        'project_name': 'project_name',
+                    }
             )
         gpe.iter_issues.assert_called_once_with('project_name')
         self.assertEqual(importer.process_fields.call_args_list, [

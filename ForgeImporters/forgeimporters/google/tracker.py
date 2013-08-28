@@ -40,11 +40,12 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post, task
 
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
-from . import GoogleCodeProjectExtractor
+from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
@@ -112,11 +113,15 @@ class GoogleCodeTrackerImporter(ToolImporter):
 
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
+        import_id_converter = ImportIdConverter.get()
         app = project.install_app('tickets', mount_point, mount_label,
                 EnableVoting=True,
                 open_status_names='New Accepted Started',
                 closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
-                import_id='%s/%s/issues' % (self.source, project_name),
+                import_id={
+                        'source': self.source,
+                        'project_name': project_name,
+                    },
             )
         ThreadLocalORMSession.flush_all()
         try:
@@ -128,7 +133,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                         app_config_id=app.config._id,
                         custom_fields=dict(),
                         ticket_num=ticket_num,
-                        import_id='%s/%s' % (app.config.options.import_id, ticket_num))
+                        import_id=import_id_converter.expand(ticket_num, app))
                     self.process_fields(ticket, issue)
                     self.process_labels(ticket, issue)
                     self.process_comments(ticket, issue)
