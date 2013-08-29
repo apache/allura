@@ -412,7 +412,8 @@ class ForgeTrackerApp(Application):
         f.write('{"tickets": [')
         tickets = TM.Ticket.query.find(dict(
             app_config_id=self.config._id,
-            deleted=False))
+            deleted={'$ne': True},  # backwards compat for old tickets that don't have it set
+        ))
         for i, ticket in enumerate(tickets):
             if i > 0:
                 f.write(',')
