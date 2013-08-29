@@ -71,14 +71,14 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(forums[0]['name'], 'General Discussion')
         assert_equal(forums[0]['description'], 'Forum about anything you want to talk about.')
         assert_equal(forums[0]['num_topics'], 2)
-        assert_equal(forums[0]['url'], 'http://localhost:80/rest/p/test/discussion/general/')
+        assert_equal(forums[0]['url'], 'http://localhost/rest/p/test/discussion/general/')
         assert_equal(forums[0]['last_post']['subject'], 'Hi guys')
         assert_equal(forums[0]['last_post']['author'], 'test-admin')
         assert_equal(forums[0]['last_post']['text'], 'Hi boys and girls')
         assert_equal(forums[1]['name'], u'Say Héllo')
         assert_equal(forums[1]['description'], u'Say héllo here')
         assert_equal(forums[1]['num_topics'], 0)
-        assert_equal(forums[1]['url'], 'http://localhost:80/rest/p/test/discussion/h%C3%A9llo/')
+        assert_equal(forums[1]['url'], 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
         assert_equal(forums[1]['last_post'], None)
 
     def test_forum(self):
@@ -94,7 +94,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topics[0]['last_post']['author'], 'test-admin')
         assert_equal(topics[0]['last_post']['text'], 'Hi boys and girls')
         t = ForumThread.query.find({'subject': 'Hi guys'}).first()
-        url = 'http://localhost:80/rest/p/test/discussion/general/thread/%s/' % t._id
+        url = 'http://localhost/rest/p/test/discussion/general/thread/%s/' % t._id
         assert_equal(topics[0]['url'], url)
         assert_equal(topics[1]['subject'], 'Let\'s talk')
         assert_equal(topics[1]['num_views'], 0)
@@ -102,7 +102,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topics[1]['last_post']['author'], 'test-admin')
         assert_equal(topics[1]['last_post']['text'], '1st post')
         t = ForumThread.query.find({'subject': 'Let\'s talk'}).first()
-        url = 'http://localhost:80/rest/p/test/discussion/general/thread/%s/' % t._id
+        url = 'http://localhost/rest/p/test/discussion/general/thread/%s/' % t._id
         assert_equal(topics[1]['url'], url)
 
     def test_forum_show_ok_topics(self):
@@ -128,7 +128,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(forum['name'], 'General Discussion')
         assert_equal(forum['description'], 'Forum about anything you want to talk about.')
         topics = forum['topics']
-        topic = self.api_get(topics[0]['url'][len('http://localhost:80'):])
+        topic = self.api_get(topics[0]['url'][len('http://localhost'):])
         topic = topic.json['topic']
         assert_equal(len(topic['posts']), 1)
         assert_equal(topic['subject'], 'Hi guys')

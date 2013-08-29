@@ -109,10 +109,10 @@ class TestRootController(SVNTestController):
             description = channel.find('description').text
             assert_equal(description, 'Recent changes to SVN repository in test project')
             link = channel.find('link').text
-            assert_equal(link, 'http://localhost:80/p/test/src/')
+            assert_equal(link, 'http://localhost/p/test/src/')
             commit = channel.find('item')
             assert_equal(commit.find('title').text, 'Create readme')
-            link = 'http://localhost:80/p/test/src/1/'
+            link = 'http://localhost/p/test/src/1/'
             assert_equal(commit.find('link').text, link)
             assert_equal(commit.find('guid').text, link)
         # .atom has slightly different structure
@@ -121,10 +121,10 @@ class TestRootController(SVNTestController):
         title = r.xml.find(prefix + 'title').text
         assert_equal(title, 'test SVN changes')
         link = r.xml.find(prefix + 'link').attrib['href']
-        assert_equal(link, 'http://localhost:80/p/test/src/')
+        assert_equal(link, 'http://localhost/p/test/src/')
         commit = r.xml.find(prefix + 'entry')
         assert_equal(commit.find(prefix + 'title').text, 'Create readme')
-        link = 'http://localhost:80/p/test/src/1/'
+        link = 'http://localhost/p/test/src/1/'
         assert_equal(commit.find(prefix + 'link').attrib['href'], link)
 
     def test_commit(self):

@@ -176,10 +176,10 @@ class TestRootController(_TestCase):
             description = channel.find('description').text
             assert_equal(description, 'Recent changes to Git repository in test project')
             link = channel.find('link').text
-            assert_equal(link, 'http://localhost:80/p/test/src-git/')
+            assert_equal(link, 'http://localhost/p/test/src-git/')
             commit = channel.find('item')
             assert_equal(commit.find('title').text, 'Initial commit')
-            link = 'http://localhost:80/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
+            link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
             assert_equal(commit.find('link').text, link)
             assert_equal(commit.find('guid').text, link)
         # .atom has slightly different structure
@@ -188,10 +188,10 @@ class TestRootController(_TestCase):
         title = r.xml.find(prefix + 'title').text
         assert_equal(title, 'test Git changes')
         link = r.xml.find(prefix + 'link').attrib['href']
-        assert_equal(link, 'http://localhost:80/p/test/src-git/')
+        assert_equal(link, 'http://localhost/p/test/src-git/')
         commit = r.xml.find(prefix + 'entry')
         assert_equal(commit.find(prefix + 'title').text, 'Initial commit')
-        link = 'http://localhost:80/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
+        link = 'http://localhost/p/test/src-git/ci/9a7df788cf800241e3bb5a849c8870f2f8259d98/'
         assert_equal(commit.find(prefix + 'link').attrib['href'], link)
 
     def test_tree(self):

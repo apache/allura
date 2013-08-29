@@ -54,8 +54,8 @@ def test_app_globals():
     g.oid_session()
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
-        assert g.url('/foo', a='foo bar') == 'http://localhost:80/foo?a=foo+bar', g.url('/foo', a='foo bar')
-        assert g.url('/foo') == 'http://localhost:80/foo', g.url('/foo')
+        assert g.url('/foo', a='foo bar') == 'http://localhost/foo?a=foo+bar', g.url('/foo', a='foo bar')
+        assert g.url('/foo') == 'http://localhost/foo', g.url('/foo')
 
 
 @with_setup(teardown=setUp) # reset everything we changed

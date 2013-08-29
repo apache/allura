@@ -80,7 +80,7 @@ class TestRestHome(TestRestApiBase):
         admin_dev = r.json['developers'][0]
         assert_equal(admin_dev['username'], 'test-admin')
         assert_equal(admin_dev['name'], 'Test Admin')
-        assert_equal(admin_dev['url'], 'http://localhost:80/u/test-admin/')
+        assert_equal(admin_dev['url'], 'http://localhost/u/test-admin/')
 
     @td.with_tool('test', 'Tickets', 'bugs')
     @td.with_tool('test', 'Tickets', 'private-bugs')

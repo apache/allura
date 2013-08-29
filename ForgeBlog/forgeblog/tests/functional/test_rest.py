@@ -44,7 +44,7 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.location, 'http://localhost:80/rest/p/test/blog/%s/%s/test/' % (date.today().strftime("%Y"), date.today().strftime("%m")))
+        assert_equal(r.location, 'http://localhost/rest/p/test/blog/%s/%s/test/' % (date.today().strftime("%Y"), date.today().strftime("%m")))
         assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
