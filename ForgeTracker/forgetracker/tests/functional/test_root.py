@@ -1877,10 +1877,10 @@ class TestFunctionalController(TrackerTestController):
         discussion_url = r.html.findAll('form')[-1]['action'][:-4]
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.body)
-        assert_equal(r['ticket']['discussion_thread_url'],'http://localhost:80/rest%s' % discussion_url)
+        assert_equal(r['ticket']['discussion_thread_url'],'http://localhost/rest%s' % discussion_url)
         slug = r['ticket']['discussion_thread']['posts'][0]['slug']
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['url'],
-                     'http://localhost:80%s%s/attachment/test.txt' % (discussion_url, slug))
+                     'http://localhost%s%s/attachment/test.txt' % (discussion_url, slug))
         assert_equal(r['ticket']['discussion_thread']['posts'][0]['attachments'][0]['bytes'], 11)
 
         file_name = 'test_root.py'
@@ -1891,7 +1891,7 @@ class TestFunctionalController(TrackerTestController):
         }, upload_files=[upload]).follow()
         r = self.app.get('/rest/p/test/bugs/1/')
         r = json.loads(r.body)
-        assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost:80/p/test/bugs/1/attachment/test_root.py')
+        assert_equal(r['ticket']['attachments'][0]['url'], 'http://localhost/p/test/bugs/1/attachment/test_root.py')
 
     def test_html_escaping(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
@@ -2138,8 +2138,8 @@ class TestEmailMonitoring(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert 'Sent from sourceforge.net because mailinglist@example.com is subscribed to http://localhost:80/p/test/bugs/' in email_tasks[0].kwargs['text']
-        assert 'a project admin can change settings at http://localhost:80/p/test/admin/bugs/options' in email_tasks[0].kwargs['text']
+        assert 'Sent from sourceforge.net because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in email_tasks[0].kwargs['text']
+        assert 'a project admin can change settings at http://localhost/p/test/admin/bugs/options' in email_tasks[0].kwargs['text']
 
 class TestCustomUserField(TrackerTestController):
     def setUp(self):
