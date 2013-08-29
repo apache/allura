@@ -471,9 +471,9 @@ class Globals(object):
     def url(self, base, **kw):
         params = urlencode(kw)
         if params:
-            return '%s://%s%s?%s' % (request.scheme, request.host, base, params)
+            return '%s%s?%s' % (request.host_url, base, params)
         else:
-            return '%s://%s%s' % (request.scheme, request.host, base)
+            return '%s%s' % (request.host_url, base)
 
     def postload_contents(self):
         text = '''

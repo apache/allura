@@ -360,17 +360,23 @@ class DateTimeConverter(FancyValidator):
     def _from_python(self, value, state):
         return value.isoformat()
 
+
 def absurl(url):
-    if url is None: return None
-    if '://' in url: return url
-    # some __json__ methods call absurl
-    # and in tests request is not set so exception raises
-    # this check prevents it
+    """
+    Given a root-relative URL, return a full URL including protocol and host
+    """
+    if url is None:
+        return None
+    if '://' in url:
+        return url
     try:
-        host = request.scheme + '://' + request.host
+        # try request first, so we can get proper http/https value
+        host = request.host_url
     except TypeError:
-        host = ''
+        # for tests, etc
+        host = tg.config['base_url'].rstrip('/')
     return host + url
+
 
 def diff_text(t1, t2, differ=None):
     t1_lines = t1.replace('\r', '').split('\n')
