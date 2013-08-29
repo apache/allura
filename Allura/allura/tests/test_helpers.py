@@ -25,6 +25,7 @@ from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
 from datadiff import tools as dd
+from webob import Request
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -382,3 +383,14 @@ class TestUrlOpen(TestCase):
         urlopen.side_effect = side_effect
         self.assertRaises(HTTPError, h.urlopen, 'myurl')
         self.assertEqual(urlopen.call_count, 1)
+
+
+def test_absurl_no_request():
+    assert_equals(h.absurl('/p/test/foobar'), 'http://localhost/p/test/foobar')
+
+
+@patch.object(h, 'request',
+              new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
+def test_absurl_with_request():
+    assert_equals(h.absurl('/p/test/foobar'), 'https://www.mysite.com/p/test/foobar')
+

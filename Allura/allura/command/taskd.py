@@ -27,7 +27,7 @@ import sys
 import faulthandler
 import pylons
 from setproctitle import setproctitle, getproctitle
-
+import tg
 from paste.deploy import loadapp
 from paste.deploy.converters import asint
 from webob import Request
@@ -134,10 +134,12 @@ class TaskdCommand(base.Command):
                             only=only)
                     if self.task:
                         with(proctitle("taskd:{0}:{1}".format(
-                            self.task.task_name, self.task._id))):
+                                self.task.task_name, self.task._id))):
                             # Build the (fake) request
-                            r = Request.blank('/--%s--/%s/' % (self.task.task_name, self.task._id),
-                                              {'task': self.task,
+                            request_path = '/--%s--/%s/' % (self.task.task_name, self.task._id)
+                            r = Request.blank(request_path,
+                                              base_url=tg.config['base_url'].rstrip('/') + request_path,
+                                              environ={'task': self.task,
                                                })
                             list(wsgi_app(r.environ, start_response))
                             self.task = None
