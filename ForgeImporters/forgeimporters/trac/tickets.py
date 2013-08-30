@@ -20,6 +20,7 @@ from datetime import (
         timedelta,
         )
 import json
+import traceback
 
 from formencode import validators as fev
 
@@ -59,7 +60,17 @@ from forgetracker.scripts.import_tracker import import_tracker
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    TracTicketImporter().import_tool(c.project, c.user, **kw)
+    try:
+        importer = TracTicketImporter()
+        importer.import_tool(c.project, c.user, **kw)
+    except Exception as e:
+        g.post_event('import_tool_task_failed',
+                error=str(e),
+                traceback=traceback.format_exc(),
+                importer_source=importer.source,
+                importer_tool_label=importer.tool_label,
+                project_name=kw.get('trac_url'),
+                )
 
 
 class TracTicketImportForm(ToolImportForm):

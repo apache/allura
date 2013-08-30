@@ -17,6 +17,7 @@
 
 from collections import defaultdict
 from datetime import datetime
+import traceback
 
 from formencode import validators as fev
 
@@ -53,7 +54,17 @@ from forgeimporters.base import (
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    GoogleCodeTrackerImporter().import_tool(c.project, c.user, **kw)
+    try:
+        importer = GoogleCodeTrackerImporter()
+        importer.import_tool(c.project, c.user, **kw)
+    except Exception as e:
+        g.post_event('import_tool_task_failed',
+                error=str(e),
+                traceback=traceback.format_exc(),
+                importer_source=importer.source,
+                importer_tool_label=importer.tool_label,
+                project_name=kw.get('project_name'),
+                )
 
 
 class GoogleCodeTrackerImportForm(ToolImportForm):
