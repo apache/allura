@@ -189,8 +189,10 @@ class SiteAdminController(object):
         limit, pagenum, start = g.handle_paging(limit, page, default=100)
         count = 0
         nb = M.Neighborhood.query.get(name='Users')
-        projects = (M.Project.query.find({'neighborhood_id': {'$ne': nb._id}})
-                                   .sort('_id', -1))
+        projects = (M.Project.query.find({
+                'neighborhood_id': {'$ne': nb._id},
+                'deleted': False,
+            }).sort('_id', -1))
         count = projects.count()
         projects = projects.skip(start).limit(limit)
         return {

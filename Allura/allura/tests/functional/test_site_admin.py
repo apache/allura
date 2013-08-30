@@ -17,6 +17,9 @@
 
 import json
 
+from nose.tools import assert_equal
+from ming.odm import ThreadLocalORMSession
+
 from allura import model as M
 from allura.tests import TestController
 from allura.lib.decorators import task
@@ -60,9 +63,20 @@ class TestSiteAdmin(TestController):
         assert headers[3].contents[0] == 'Name'
         assert headers[4].contents[0] == 'Short description'
         assert headers[5].contents[0] == 'Summary'
-        assert headers[6].contents[0] == 'Deleted?'
-        assert headers[7].contents[0] == 'Homepage'
-        assert headers[8].contents[0] == 'Admins'
+        assert headers[6].contents[0] == 'Homepage'
+        assert headers[7].contents[0] == 'Admins'
+
+    def test_new_projects_deleted_projects(self):
+        '''Deleted projects should not be visible here'''
+        r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
+                username='root'))
+        count = len(r.html.find('table').findAll('tr'))
+        p = M.Project.query.get(shortname='test')
+        p.deleted = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
+                username='root'))
+        assert_equal(len(r.html.find('table').findAll('tr')), count - 1)
 
     def test_reclone_repo_access(self):
         r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(

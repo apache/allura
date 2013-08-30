@@ -30,7 +30,6 @@
         <th>Name</th>
         <th>Short description</th>
         <th>Summary</th>
-        <th>Deleted?</th>
         <th>Homepage</th>
         <th>Admins</th>
       </tr>
@@ -47,7 +46,6 @@
       <td><small><a href="{{ p.url() }}">{{ p.name }}</a></small></td>
       <td><small>{{ p.short_description }}</small></td>
       <td><small>{{ p.summary }}</small></td>
-      <td><small>{{ 'Yes' if p.deleted else 'No' }}</small></td>
       <td><small>{{ p.external_homepage|urlize(22) }}</small></td>
       <td><small>{{ p.admins()|join(' ') }}</small></td>
     </tr>
