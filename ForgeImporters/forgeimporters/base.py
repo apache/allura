@@ -76,11 +76,10 @@ def import_tool(importer_name, project_name=None, mount_point=None, mount_label=
         g.post_event('import_tool_task_failed',
                 error=str(e),
                 traceback=traceback.format_exc(),
-                importer_name=importer_name,
+                importer_source=importer.source,
+                importer_tool_label=importer.tool_label,
                 project_name=project_name,
-                mount_point=mount_point,
-                mount_label=mount_label,
-                **kw)
+                )
 
 
 class ProjectExtractor(object):

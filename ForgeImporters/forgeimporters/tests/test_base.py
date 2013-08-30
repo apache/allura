@@ -54,20 +54,26 @@ def test_import_tool(g, c, by_name):
             mount_label='mount_label')
     assert not g.post_event.called
 
-@mock.patch.object(base.ToolImporter, 'by_name')
+
+@mock.patch.object(base.traceback, 'format_exc')
+@mock.patch.object(base, 'ToolImporter')
 @mock.patch.object(base, 'g')
-def test_import_tool_failed(g, by_name):
-    by_name.side_effect = RuntimeError('my error')
-    base.import_tool('importer_name', project_name='project_name',
-            mount_point='mount_point', mount_label='mount_label', other='other')
+def test_import_tool_failed(g, ToolImporter, format_exc):
+    format_exc.return_value = 'my traceback'
+
+    importer = mock.Mock(source='importer_source',
+            tool_label='importer_tool_label')
+    importer.import_tool.side_effect = RuntimeError('my error')
+    ToolImporter.by_name.return_value = importer
+
+    base.import_tool('importer_name', project_name='project_name')
     g.post_event.assert_called_once_with(
             'import_tool_task_failed',
-            error=by_name.side_effect,
-            importer_name='importer_name',
+            error=str(importer.import_tool.side_effect),
+            traceback='my traceback',
+            importer_source='importer_source',
+            importer_tool_label='importer_tool_label',
             project_name='project_name',
-            mount_point='mount_point',
-            mount_label='mount_label',
-            other='other',
         )
 
 

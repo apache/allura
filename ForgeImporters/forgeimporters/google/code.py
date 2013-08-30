@@ -16,6 +16,7 @@
 #       under the License.
 
 import urllib2
+import traceback
 
 import formencode as fe
 from formencode import validators as fev
@@ -83,7 +84,17 @@ def get_repo_class(type_):
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    GoogleRepoImporter().import_tool(c.project, c.user, **kw)
+    try:
+        importer = GoogleRepoImporter()
+        importer.import_tool(c.project, c.user, **kw)
+    except Exception as e:
+        g.post_event('import_tool_task_failed',
+                error=str(e),
+                traceback=traceback.format_exc(),
+                importer_source=importer.source,
+                importer_tool_label=importer.tool_label,
+                project_name=kw.get('project_name'),
+                )
 
 
 class GoogleRepoImportForm(fe.schema.Schema):
