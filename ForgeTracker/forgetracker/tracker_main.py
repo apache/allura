@@ -1180,7 +1180,16 @@ class TicketController(BaseController, FeedController):
                 if self.ticket is not None:
                     utils.permanent_redirect(self.ticket.url())
                 else:
-                    raise exc.HTTPNotFound('Ticket #%s does not exist.' % ticket_num)
+                    # trying to check if ticket was moved from here
+                    self.ticket = TM.Ticket.query.find({
+                        'custom_fields.moved_from_app': c.app.config._id,
+                        'custom_fields.moved_from_id': self.ticket_num,
+                    }).first()
+                    if self.ticket is not None:
+                        flash('Ticket #{} was moved to this app'.format(
+                            self.ticket.ticket_num
+                        ))
+                        utils.permanent_redirect(self.ticket.url())
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
 

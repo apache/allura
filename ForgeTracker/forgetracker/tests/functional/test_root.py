@@ -1733,6 +1733,22 @@ class TestFunctionalController(TrackerTestController):
                 status=403)
 
     @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_redirect(self):
+        self.new_ticket(summary='test 1')
+        self.app.get('/p/test/bugs/1/', status=200)  # shouldn't fail
+
+        # move ticket 1 to 'dummy' tracker
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post('/p/test/bugs/1/move',
+                params={'tracker': str(dummy_tracker.config._id)}).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+        # test that old url redirects to moved ticket
+        self.app.get('/p/test/bugs/1/', status=301).follow()
+        assert_equal(r.request.path, '/p/test/dummy/1/')
+
+    @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_and_delete_tool(self):
         """See [#5708] for details."""
         # create two tickets and ensure they are viewable
