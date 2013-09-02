@@ -192,7 +192,7 @@ class SiteAdminController(object):
             end_dt = datetime.strptime(end_dt, '%Y/%m/%d %H:%M:%S')
         except ValueError:
             end_dt = None
-        start_dt = datetime.now() if not start_dt else start_dt
+        start_dt = datetime.utcnow() if not start_dt else start_dt
         end_dt = start_dt - timedelta(days=3) if not end_dt else end_dt
         start = bson.ObjectId.from_datetime(start_dt)
         end = bson.ObjectId.from_datetime(end_dt)
