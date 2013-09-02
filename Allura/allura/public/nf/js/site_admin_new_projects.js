@@ -31,4 +31,10 @@ $(document).ready(function() {
       $('#selected-projects').text(shortnames.join(' '));
     }
   });
+
+  $('tr').click(function(event) {
+    if (event.target.tagName !== 'A' && event.target.type !== 'checkbox') {
+      $(this).find(':checkbox').trigger('click');
+    }
+  });
 });
