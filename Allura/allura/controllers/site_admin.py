@@ -192,14 +192,16 @@ class SiteAdminController(object):
             end_dt = datetime.strptime(end_dt, '%Y/%m/%d %H:%M:%S')
         except ValueError:
             end_dt = None
+        start_dt = datetime.now() if not start_dt else start_dt
+        end_dt = start_dt - timedelta(days=15) if not end_dt else end_dt
+        start = bson.ObjectId.from_datetime(start_dt)
+        end = bson.ObjectId.from_datetime(end_dt)
         nb = M.Neighborhood.query.get(name='Users')
         projects = (M.Project.query.find({
                 'neighborhood_id': {'$ne': nb._id},
                 'deleted': False,
+                '_id': {'$lt': start, '$gt': end},
             }).sort('_id', -1))
-        #projects = projects.skip(start).limit(limit)
-        start_dt = datetime.now() if not start_dt else start_dt
-        end_dt = start_dt - timedelta(days=15) if not end_dt else end_dt
         return {
             'projects': projects,
             'window_start': start_dt,

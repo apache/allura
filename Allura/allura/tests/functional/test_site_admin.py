@@ -16,6 +16,7 @@
 #       under the License.
 
 import json
+from datetime import timedelta
 
 from nose.tools import assert_equal
 from ming.odm import ThreadLocalORMSession
@@ -77,6 +78,19 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
                 username='root'))
         assert_equal(len(r.html.find('table').findAll('tr')), count - 1)
+
+    def test_new_projects_daterange_filtering(self):
+        r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
+                username='root'))
+        count = len(r.html.find('table').findAll('tr'))
+        assert_equal(count, 7)
+
+        filtr = r.forms[0]
+        filtr['start-dt'] = '2000/01/01 10:10:10'
+        filtr['end-dt'] = '2000/01/01 09:09:09'
+        r = filtr.submit()
+        count = len(r.html.find('table').findAll('tr'))
+        assert_equal(count, 1)  # only row with headers - no results
 
     def test_reclone_repo_access(self):
         r = self.app.get('/nf/admin/reclone_repo', extra_environ=dict(
