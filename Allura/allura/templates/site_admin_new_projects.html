@@ -19,6 +19,13 @@
 {% set page="new_projects" %}
 {% extends 'allura:templates/site_admin.html' %}
 
+{% macro _paging() %}
+<div class="paging">
+    <a class="newer" title="Newer" href="{{ newer_url }}">&lt;</a>&nbsp;&hellip;&nbsp;
+    <a class="newer" title="Older" href="{{ older_url }}">&gt;</a>
+</div>
+{% endmacro %}
+
 {% block content %}
   <div class="grid-24">
   <form method="GET">
@@ -29,6 +36,7 @@
     <div class="grid-2"><input type="submit" value="Filter"></div>
   </form>
   </div>
+  {{ _paging() }}
   <table>
     <thead>
       <tr>
@@ -59,7 +67,20 @@
     </tr>
     {% endfor %}
   </table>
+  {{ _paging() }}
   <div id="selected-projects"></div>
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+    .paging {
+        float: right;
+        margin: 1em;
+    }
+    .pad table {
+      width: 915px;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}

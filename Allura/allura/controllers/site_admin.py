@@ -193,7 +193,7 @@ class SiteAdminController(object):
         except ValueError:
             end_dt = None
         start_dt = datetime.now() if not start_dt else start_dt
-        end_dt = start_dt - timedelta(days=15) if not end_dt else end_dt
+        end_dt = start_dt - timedelta(days=3) if not end_dt else end_dt
         start = bson.ObjectId.from_datetime(start_dt)
         end = bson.ObjectId.from_datetime(end_dt)
         nb = M.Neighborhood.query.get(name='Users')
@@ -202,8 +202,18 @@ class SiteAdminController(object):
                 'deleted': False,
                 '_id': {'$lt': start, '$gt': end},
             }).sort('_id', -1))
+        step = start_dt - end_dt
+        params = request.params.copy()
+        params['start-dt'] = (start_dt + step).strftime('%Y/%m/%d %H:%M:%S')
+        params['end-dt'] = (end_dt + step).strftime('%Y/%m/%d %H:%M:%S')
+        newer_url = tg.url(params=params).lstrip('/')
+        params['start-dt'] = (start_dt - step).strftime('%Y/%m/%d %H:%M:%S')
+        params['end-dt'] = (end_dt - step).strftime('%Y/%m/%d %H:%M:%S')
+        older_url = tg.url(params=params).lstrip('/')
         return {
             'projects': projects,
+            'newer_url': newer_url,
+            'older_url': older_url,
             'window_start': start_dt,
             'window_end': end_dt,
         }
