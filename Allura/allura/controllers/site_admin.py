@@ -181,25 +181,29 @@ class SiteAdminController(object):
 
     @expose('jinja:allura:templates/site_admin_new_projects.html')
     @without_trailing_slash
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=100)))
-    def new_projects(self, page=0, limit=100, **kwargs):
-        c.page_list = W.page_list
-        c.page_size = W.page_size
-        limit, pagenum, start = g.handle_paging(limit, page, default=100)
-        count = 0
+    def new_projects(self, **kwargs):
+        start_dt = kwargs.pop('start-dt', '')
+        end_dt = kwargs.pop('end-dt', '')
+        try:
+            start_dt = datetime.strptime(start_dt, '%Y/%m/%d %H:%M:%S')
+        except ValueError:
+            start_dt = None
+        try:
+            end_dt = datetime.strptime(end_dt, '%Y/%m/%d %H:%M:%S')
+        except ValueError:
+            end_dt = None
         nb = M.Neighborhood.query.get(name='Users')
         projects = (M.Project.query.find({
                 'neighborhood_id': {'$ne': nb._id},
                 'deleted': False,
             }).sort('_id', -1))
-        count = projects.count()
-        projects = projects.skip(start).limit(limit)
+        #projects = projects.skip(start).limit(limit)
+        start_dt = datetime.now() if not start_dt else start_dt
+        end_dt = start_dt - timedelta(days=15) if not end_dt else end_dt
         return {
             'projects': projects,
-            'limit': limit,
-            'pagenum': pagenum,
-            'count': count
+            'window_start': start_dt,
+            'window_end': end_dt,
         }
 
     @expose('jinja:allura:templates/site_admin_reclone_repo.html')

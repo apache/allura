@@ -20,7 +20,15 @@
 {% extends 'allura:templates/site_admin.html' %}
 
 {% block content %}
-  {{ c.page_size.display(limit=limit, count=count, page=pagenum) }}
+  <div class="grid-24">
+  <form method="GET">
+    <div class="grid-13">
+    <label for="start-dt">From: </label><input type="text" name="start-dt" id="start-dt" value="{{ window_start.strftime('%Y/%m/%d %H:%M:%S') }}">
+    <label for="end-dt">To: </label><input type="text" name="end-dt" id="end-dt" value="{{ window_end.strftime('%Y/%m/%d %H:%M:%S') }}">
+    </div>
+    <div class="grid-2"><input type="submit" value="Filter"></div>
+  </form>
+  </div>
   <table>
     <thead>
       <tr>
@@ -51,7 +59,6 @@
     </tr>
     {% endfor %}
   </table>
-  {{ c.page_list.display(limit=limit, count=count, page=pagenum) }}
   <div id="selected-projects"></div>
 {% endblock %}
 
