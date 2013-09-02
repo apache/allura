@@ -16,7 +16,6 @@
 #       under the License.
 
 import json
-from datetime import timedelta
 
 from nose.tools import assert_equal
 from ming.odm import ThreadLocalORMSession
