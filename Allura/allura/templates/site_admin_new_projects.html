@@ -47,7 +47,7 @@
       <td><small>{{ p.short_description }}</small></td>
       <td><small>{{ p.summary }}</small></td>
       <td><small>{{ p.external_homepage|urlize(22) }}</small></td>
-      <td><small>{{ p.admins()|join(' ') }}</small></td>
+      <td>{% for a in p.admins() %}<small><a href="{{ a.url() }}">{{ a.username }}</a></small> {% endfor %}</td>
     </tr>
     {% endfor %}
   </table>
