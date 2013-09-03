@@ -29,6 +29,7 @@ class TestGitHubProjectExtractor(TestCase):
     PROJECT_INFO = {
         'description': 'project description',
         'homepage': 'http://example.com',
+        'has_wiki': True,
     }
     CLOSED_ISSUES_LIST = [
         {u'number': 1},
@@ -83,7 +84,6 @@ class TestGitHubProjectExtractor(TestCase):
     def setUp(self):
         self.extractor = github.GitHubProjectExtractor('test_project')
         self.extractor.urlopen = self.mocked_urlopen
-
     def test_get_next_page_url(self):
         self.assertIsNone(self.extractor.get_next_page_url(None))
         self.assertIsNone(self.extractor.get_next_page_url(''))
@@ -97,7 +97,7 @@ class TestGitHubProjectExtractor(TestCase):
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=1>; rel="prev"'
         self.assertIsNone(self.extractor.get_next_page_url(link))
-
+        
     def test_get_summary(self):
         self.assertEqual(self.extractor.get_summary(), 'project description')
 
@@ -120,3 +120,9 @@ class TestGitHubProjectExtractor(TestCase):
         mock_issue = {'events_url': '/issues/1/events'}
         events = list(self.extractor.iter_events(mock_issue))
         self.assertEqual(events, self.ISSUE_EVENTS + self.ISSUE_EVENTS_PAGE2[:1])
+
+    def test_has_wiki(self):
+        assert self.extractor.has_wiki()
+
+    def test_get_wiki_url(self):
+        self.assertEqual(self.extractor.get_wiki_url(), 'https://github.com/test_project.wiki')

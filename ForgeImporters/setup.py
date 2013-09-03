@@ -42,6 +42,7 @@ setup(name='ForgeImporters',
       github-tracker = forgeimporters.github.tracker:GitHubTrackerImporter
       google-code-tracker = forgeimporters.google.tracker:GoogleCodeTrackerImporter
       google-code-repo = forgeimporters.google.code:GoogleRepoImporter
+      github-wiki = forgeimporters.github.wiki:GitHubWikiImporter
       github-repo = forgeimporters.github.code:GitHubRepoImporter
       trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
       forge-tracker = forgeimporters.forge.tracker:ForgeTrackerImporter
