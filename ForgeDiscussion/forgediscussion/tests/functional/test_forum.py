@@ -27,6 +27,7 @@ from email.mime.multipart import MIMEMultipart
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
 from nose.tools import assert_equal, assert_in
+from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tasks import mail_tasks
@@ -326,32 +327,16 @@ class TestForum(TestController):
         r = self.app.get('/discussion/testforum/')
         r = self.app.get('/discussion/testforum/childforum/')
 
-    def test_post_count(self):
-        # Make sure post counts don't get skewed during moderation
-        r = self.app.get('/discussion/create_topic/')
-        f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
-        params[f.find('textarea')['name']] = '1st post in Test Post Count thread'
-        params[f.find('select')['name']] = 'testforum'
-        params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Post Count'
-        r = self.app.post('/discussion/save_new_topic', params=params)
-        for i in range(2):
-            r = self.app.get('/discussion/testforum/moderate')
-            slug = r.html.find('input', {'name': 'post-0.full_slug'})
-            if slug is None: slug = '' #FIXME this makes the test keep passing, but clearly something isn't found
-            r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
-                    'post-0.full_slug': slug,
-                    'post-0.checked': 'on',
-                    'approve': 'Approve Marked'})
-
     def test_threads_with_zero_posts(self):
         # Make sure that threads with zero posts (b/c all posts have been
         # deleted or marked as spam) don't show in the UI.
-        def _post():
+
+        # FIXME: This only works for posts that were initially pending, not
+        # those deleted or spammed later.
+
+        self._set_anon_allowed()
+
+        def _post_pending():
             r = self.app.get('/discussion/create_topic/')
             f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
             params = dict()
@@ -362,30 +347,35 @@ class TestForum(TestController):
             params[f.find('textarea')['name']] = '1st post in Zero Posts thread'
             params[f.find('select')['name']] = 'testforum'
             params[f.find('input',{'style':'width: 90%'})['name']] = 'Test Zero Posts'
-            r = self.app.post('/discussion/save_new_topic', params=params)
+            r = self.app.post('/discussion/save_new_topic', params=params,
+                              extra_environ=dict(username='*anonymous'),
+                              status=302)
+            assert r.location.startswith('http://localhost/p/test/discussion/testforum/thread/'), r.location
+
         def _check():
-            r = self.app.get('/discussion/')
-            assert 'Test Zero Posts' in r
+            # FIXME fix [#5907]
+            #r = self.app.get('/discussion/')
+            #assert 'Test Zero Posts' not in r
             r = self.app.get('/discussion/testforum/')
-            assert 'Test Zero Posts' in r
+            assert 'Test Zero Posts' not in r
+
         # test posts marked as spam
-        _post()
-        r = self.app.get('/discussion/testforum/moderate')
-        slug = r.html.find('input', {'name': 'post-0.full_slug'})
-        if slug is None: slug = '' #FIXME this makes the test keep passing, but clearly something isn't found
+        _post_pending()
+        r = self.app.get('/discussion/testforum/moderate?status=pending')
+        post_id = r.html.find('input', {'name': 'post-0._id'})['value']
         r = self.app.post('/discussion/testforum/moderate/save_moderation', params={
-                'post-0.full_slug': slug,
+                'post-0._id': post_id,
                 'post-0.checked': 'on',
                 'spam': 'Spam Marked'})
         _check()
+
         # test posts deleted
-        _post()
-        r = self.app.get('/discussion/testforum/moderate')
-        slug = r.html.find('input', {'name': 'post-0.full_slug'})
-        if slug is None: slug = '' #FIXME this makes the test keep passing, but clearly something isn't found
+        _post_pending()
+        r = self.app.get('/discussion/testforum/moderate?status=pending')
+        post_id = r.html.find('input', {'name': 'post-0._id'})['value']
         r = self.app.post('/discussion/testforum/moderate/save_'
                           'moderation', params={
-                'post-0.full_slug': slug,
+                'post-0._id': post_id,
                 'post-0.checked': 'on',
                 'delete': 'Delete Marked'})
         _check()
@@ -428,9 +418,7 @@ class TestForum(TestController):
         n = M.Notification.query.find(dict(subject="[test:discussion] this is <h2> o'clock")).first()
         assert_in('---\n\n[this is &lt;h2&gt; o&#39;clock]', n.text)
 
-    @mock.patch('allura.model.discuss.g.spam_checker')
-    def test_anonymous_post(self, spam_checker):
-        spam_checker.check.return_value = True
+    def _set_anon_allowed(self):
         r = self.app.get('/admin/discussion/permissions')
         select = r.html.find('select', {'name': 'card-3.new'})
         opt_anon = select.find(text='*anonymous').parent
@@ -444,6 +432,11 @@ class TestForum(TestController):
                 'card-3.value': opt_auth['value'],
                 'card-3.new': opt_anon['value'],
                 'card-3.id': 'post'})
+
+    @mock.patch('allura.model.discuss.g.spam_checker')
+    def test_anonymous_post(self, spam_checker):
+        spam_checker.check.return_value = True
+        self._set_anon_allowed()
         r = self.app.get('/discussion/create_topic/')
         f = r.html.find('form',{'action':'/p/test/discussion/save_new_topic'})
         params = dict()

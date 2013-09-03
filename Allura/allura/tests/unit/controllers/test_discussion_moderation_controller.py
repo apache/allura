@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from nose.tools import assert_equal
 from mock import Mock
 from ming.orm import ThreadLocalORMSession
 
@@ -33,27 +34,29 @@ class TestWhenModerating(WithDatabase):
 
     def setUp(self):
         super(TestWhenModerating, self).setUp()
-        create_post('mypost')
-        discussion_controller = Mock()
+        post = create_post('mypost')
+        discussion_controller = Mock(
+            discussion = Mock(_id=post.discussion_id),
+        )
         self.controller = ModerationController(discussion_controller)
 
     def test_that_it_can_approve(self):
         mod_date = self.get_post().mod_date
         self.moderate_post(approve=True)
         post = self.get_post()
-        assert post.status == 'ok'
-        assert post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S") == mod_date.strftime("%Y-%m-%d %H:%M:%S")
+        assert_equal(post.status, 'ok')
+        assert_equal(post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S"), mod_date.strftime("%Y-%m-%d %H:%M:%S"))
 
     def test_that_it_can_mark_as_spam(self):
         self.moderate_post(spam=True)
-        assert self.get_post().status == 'spam'
+        assert_equal(self.get_post().status, 'spam')
 
     def test_that_it_can_be_deleted(self):
         self.moderate_post(delete=True)
-        assert self.get_post() is None
+        assert_equal(self.get_post(), None)
 
     def moderate_post(self, **kwargs):
-        self.controller.save_moderation(post=[dict(checked=True, full_slug=self.get_post().full_slug)],
+        self.controller.save_moderation(post=[dict(checked=True, _id=self.get_post()._id)],
                                  **kwargs)
         ThreadLocalORMSession.flush_all()
 
@@ -95,4 +98,3 @@ def show_moderation_index(discussion, **kwargs_for_controller):
     controller = ModerationController(discussion_controller)
     template_variables = controller.index(**kwargs_for_controller)
     return template_variables
-

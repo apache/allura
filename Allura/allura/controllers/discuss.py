@@ -429,7 +429,10 @@ class ModerationController(BaseController):
     def save_moderation(self, post=[], delete=None, spam=None, approve=None, **kw):
         for p in post:
             if 'checked' in p:
-                posted = self.PostModel.query.get(full_slug=p['full_slug'])
+                posted = self.PostModel.query.get(
+                    _id=p['_id'],
+                    discussion_id=self.discussion._id,  # make sure nobody hacks the HTML form to moderate other posts
+                )
                 if posted:
                     if delete:
                         posted.delete()
