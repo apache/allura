@@ -66,20 +66,31 @@ class ToolImportForm(schema.Schema):
     mount_label = fev.UnicodeString()
 
 
+class ImportErrorHandler(object):
+    def __init__(self, importer, project_name):
+        self.importer = importer
+        self.project_name = project_name
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            g.post_event('import_tool_task_failed',
+                error=str(exc_val),
+                traceback=traceback.format_exc(),
+                importer_source=self.importer.source,
+                importer_tool_label=self.importer.tool_label,
+                project_name=self.project_name,
+                )
+
+
 @task(notifications_disabled=True)
 def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
-    try:
-        importer = ToolImporter.by_name(importer_name)
+    importer = ToolImporter.by_name(importer_name)
+    with ImportErrorHandler(importer, project_name):
         importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
-    except Exception as e:
-        g.post_event('import_tool_task_failed',
-                error=str(e),
-                traceback=traceback.format_exc(),
-                importer_source=importer.source,
-                importer_tool_label=importer.tool_label,
-                project_name=project_name,
-                )
 
 
 class ProjectExtractor(object):

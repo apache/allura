@@ -20,7 +20,7 @@ from unittest import TestCase
 from formencode import Invalid
 import mock
 from tg import expose
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
 from alluratest.controller import TestController
 
@@ -66,7 +66,8 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
     importer.import_tool.side_effect = RuntimeError('my error')
     ToolImporter.by_name.return_value = importer
 
-    base.import_tool('importer_name', project_name='project_name')
+    assert_raises(RuntimeError, base.import_tool, 'importer_name',
+            project_name='project_name')
     g.post_event.assert_called_once_with(
             'import_tool_task_failed',
             error=str(importer.import_tool.side_effect),

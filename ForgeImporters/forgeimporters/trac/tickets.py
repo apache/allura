@@ -20,7 +20,6 @@ from datetime import (
         timedelta,
         )
 import json
-import traceback
 
 from formencode import validators as fev
 
@@ -53,6 +52,7 @@ from allura.scripts.trac_export import (
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
+        ImportErrorHandler,
         )
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.scripts.import_tracker import import_tracker
@@ -60,17 +60,9 @@ from forgetracker.scripts.import_tracker import import_tracker
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    try:
-        importer = TracTicketImporter()
+    importer = TracTicketImporter()
+    with ImportErrorHandler(importer, kw.get('trac_url')):
         importer.import_tool(c.project, c.user, **kw)
-    except Exception as e:
-        g.post_event('import_tool_task_failed',
-                error=str(e),
-                traceback=traceback.format_exc(),
-                importer_source=importer.source,
-                importer_tool_label=importer.tool_label,
-                project_name=kw.get('trac_url'),
-                )
 
 
 class TracTicketImportForm(ToolImportForm):
