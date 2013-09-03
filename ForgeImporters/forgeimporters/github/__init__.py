@@ -30,6 +30,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
     PAGE_MAP = {
             'project_info': 'https://api.github.com/repos/{project_name}',
             'issues': 'https://api.github.com/repos/{project_name}/issues',
+            'wiki_url': 'https://github.com/{project_name}.wiki',
         }
     POSSIBLE_STATES = ('opened', 'closed')
     SUPPORTED_ISSUE_EVENTS = ('closed', 'reopened', 'assigned')
@@ -91,3 +92,9 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         for event in events:
             if event.get('event') in self.SUPPORTED_ISSUE_EVENTS:
                 yield event
+
+    def has_wiki(self):
+        return self.get_page('project_info').get('has_wiki')
+
+    def get_wiki_url(self):
+        return self.get_page_url('wiki_url')
