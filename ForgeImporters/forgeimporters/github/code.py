@@ -15,9 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import formencode as fe
+
 from pylons import app_globals as g
+from formencode import validators as fev
 
-
+from allura.controllers import BaseController
+from allura.lib import validators as v
 from forgeimporters.base import ToolImporter
 from forgeimporters.github import GitHubProjectExtractor
 
@@ -28,6 +32,56 @@ try:
     TARGET_APPS.append(ForgeGitApp)
 except ImportError:
     pass
+
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    GoogleRepoImporter().import_tool(c.project, c.user, **kw)
+
+
+class GitHubRepoImportForm(fe.schema.Schema):
+    gh_project_name = fev.UnicodeString(not_empty=True)
+    mount_point = fev.UnicodeString()
+    mount_label = fev.UnicodeString()
+
+    def _to_python(self, value, state):
+        value = super(self.__class__, self)._to_python(value, state)
+
+        gh_project_name = value['gh_project_name']
+        mount_point = value['mount_point']
+        try:
+            v.MountPointValidator('git').to_python(mount_point)
+        except fe.Invalid as e:
+            raise fe.Invalid('mount_point:' + str(e), value, state)
+        return value
+
+
+class GitHubRepoImportController(BaseController):
+    def __init__(self):
+        self.importer = GitHubRepoImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app[0]
+
+    @with_trailing_slash
+    @expose('jinja:forgeimporters.google:templates/code/index.html')
+    def index(self, **kw):
+        return dict(importer=self.importer,
+                target_app=self.target_app)
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    @validate(GoogleRepoImportForm(), error_handler=index)
+    def create(self, gc_project_name, mount_point, mount_label, **kw):
+        import_tool.post(
+                project_name=gc_project_name,
+                mount_point=mount_point,
+                mount_label=mount_label)
+        flash('Repo import has begun. Your new repo will be available '
+                'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
+
 
 
 class GitHubRepoImporter(ToolImporter):
