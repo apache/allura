@@ -33,10 +33,11 @@
     <label for="start-dt">From: </label><input type="text" name="start-dt" id="start-dt" value="{{ window_start.strftime('%Y/%m/%d %H:%M:%S') }}">
     <label for="end-dt">To: </label><input type="text" name="end-dt" id="end-dt" value="{{ window_end.strftime('%Y/%m/%d %H:%M:%S') }}">
     </div>
-    <div class="grid-2"><input type="submit" value="Filter"></div>
+    <div class="grid-3"><input type="submit" value="Filter"></div>
   </form>
   </div>
   {{ _paging() }}
+  <div style="clear:both;"></div>
   <table>
     <thead>
       <tr>
