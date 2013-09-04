@@ -73,7 +73,7 @@ class GitHubWikiImporter(ToolImporter):
         result = dict()
         wiki_pages = self.get_wiki_pages_form_git(wiki_url)
         for page_name, page_text in wiki_pages.iteritems():
-            page_text = h.render_any_markup(page_name, page_text)
+            page_text = h.render_any_markup(page_name, h.really_unicode(page_text))
             result[page_name.split('.')[0]] = page_text
         return result
 

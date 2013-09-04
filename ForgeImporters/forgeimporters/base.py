@@ -255,6 +255,9 @@ class ProjectImporter(BaseController):
             redirect('.')
 
         self.after_project_create(c.project, **kw)
+        if isinstance(kw['tools'], basestring):
+            kw['tools'] = [kw['tools'], ]
+
         for importer_name in kw['tools']:
             import_tool.post(importer_name, **kw)
         M.AuditLog.log('import project from %s' % self.source)
