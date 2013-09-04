@@ -61,7 +61,7 @@ class GitHubWikiImporter(ToolImporter):
             mount_label=mount_label or 'Wiki')
 
         with h.push_config(c, app=app):
-            for page_name, page_text in self.get_wiki_pages(extractor.get_wiki_url()).iteritems():
+            for page_name, page_text in self.get_wiki_pages(extractor.get_page_url('wiki_url')).iteritems():
                 page = WM.Page.upsert(page_name)
                 page.text = page_text
                 page.viewable_by = ['all']

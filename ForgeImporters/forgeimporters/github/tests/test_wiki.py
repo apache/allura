@@ -36,7 +36,6 @@ class TestGitHubRepoImporter(TestCase):
     def test_import_tool_happy_path(self, ghpe, g):
         with patch('forgeimporters.github.wiki.GitHubWikiImporter.get_wiki_pages'), patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
-            ghpe.return_value.get_wiki_url.return_value = "http://testwiki.com"
             p = self._make_project(gh_proj_name='myproject')
             GitHubWikiImporter().import_tool(p, Mock(name='c.user'), project_name='project_name', user_name='testuser')
             p.install_app.assert_called_once_with(
