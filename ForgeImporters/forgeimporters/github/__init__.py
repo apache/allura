@@ -95,6 +95,3 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 
     def has_wiki(self):
         return self.get_page('project_info').get('has_wiki')
-
-    def get_wiki_url(self):
-        return self.get_page_url('wiki_url')

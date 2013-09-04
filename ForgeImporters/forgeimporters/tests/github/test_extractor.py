@@ -125,4 +125,4 @@ class TestGitHubProjectExtractor(TestCase):
         assert self.extractor.has_wiki()
 
     def test_get_wiki_url(self):
-        self.assertEqual(self.extractor.get_wiki_url(), 'https://github.com/test_project.wiki')
+        self.assertEqual(self.extractor.get_page_url('wiki_url'), 'https://github.com/test_project.wiki')
