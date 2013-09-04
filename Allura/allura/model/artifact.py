@@ -564,7 +564,6 @@ class Message(Artifact):
     class __mongometa__:
         session = artifact_orm_session
         name='message'
-        indexes = Artifact.__mongometa__.indexes + [ 'slug', 'parent_id', 'timestamp' ]
     type_s='Generic Message'
 
     _id=FieldProperty(str, if_missing=h.gen_message_id)
@@ -593,30 +592,6 @@ class Message(Artifact):
     def author(self):
         from .auth import User
         return User.query.get(_id=self.author_id) or User.anonymous()
-
-    def reply(self):
-        new_id = h.gen_message_id()
-        slug, full_slug = self.make_slugs(self)
-        new_args = dict(
-            state(self).document,
-            _id=new_id,
-            slug=slug,
-            full_slug=full_slug,
-            parent_id=self._id,
-            timestamp=datetime.utcnow(),
-            author_id=c.user._id)
-        return self.__class__(**new_args)
-
-    def descendants(self):
-        q = self.query.find(dict(slug={'$gt':self.slug})).sort('slug')
-        for msg in q:
-            if msg.slug.startswith(self.slug):
-                yield msg
-            else:
-                break
-
-    def replies(self):
-        return self.query.find(dict(parent_id=self._id))
 
     def index(self):
         result = Artifact.index(self)

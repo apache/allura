@@ -108,7 +108,6 @@ def test_thread_methods():
     assert t.subscription
     t.subscription = False
     assert not t.subscription
-    assert t.top_level_posts().count() == 2
     assert t.post_count == 3
     jsn = t.__json__()
     assert '_id' in jsn

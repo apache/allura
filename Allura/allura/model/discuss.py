@@ -92,11 +92,15 @@ class Discussion(Artifact, ActivityObject):
 
     @LazyProperty
     def last_post(self):
+        # TODO add status: to query
         q = self.post_class().query.find(dict(
                 discussion_id=self._id))\
             .sort('timestamp', pymongo.DESCENDING)\
             .limit(1)\
-            .hint([('discussion_id', pymongo.ASCENDING), ('status', pymongo.ASCENDING)])
+            .hint([('discussion_id', pymongo.ASCENDING),
+                   ('status', pymongo.ASCENDING),
+                   ('timestamp', pymongo.ASCENDING),
+                   ])
             # hint is to try to force the index to be used, since mongo wouldn't select it sometimes
             # https://groups.google.com/forum/#!topic/mongodb-user/0TEqPfXxQU8
         return q.first()
@@ -358,12 +362,6 @@ class Thread(Artifact, ActivityObject):
         return self.query_posts(page=page, limit=limit,
                                 timestamp=timestamp, style=style).all()
 
-    def top_level_posts(self):
-        return self.post_class().query.find(dict(
-                thread_id=self._id,
-                parent_id=None,
-                status='ok'))
-
     def url(self):
         # Can't use self.discussion because it might change during the req
         discussion = self.discussion_class().query.get(_id=self.discussion_id)
@@ -441,7 +439,10 @@ class Post(Message, VersionedArtifact, ActivityObject):
     class __mongometa__:
         name = 'post'
         history_class = PostHistory
-        indexes = [('discussion_id', 'status'), 'thread_id']
+        indexes = [
+            ('discussion_id', 'status', 'timestamp'),  # used in general lookups, last_post, etc
+            'thread_id'
+        ]
     type_s = 'Post'
 
     thread_id = ForeignIdProperty(Thread)

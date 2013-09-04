@@ -158,24 +158,6 @@ def test_versioning():
     assert ss.text != pg.text
     assert pg.history().count() == 3
 
-@with_setup(setUp, tearDown)
-def test_messages():
-    m = Checkmessage()
-    assert m.author() == c.user
-    rm1 = m.reply()
-    assert rm1.slug.startswith(m.slug)
-    rm2 = rm1.reply()
-    rm3 = m.reply()
-    ThreadLocalORMSession.flush_all()
-    assert rm1 in list(m.descendants())
-    assert rm2 in list(m.descendants())
-    assert rm1 in list(m.replies())
-    assert rm2 not in list(m.replies())
-    idx = m.index()
-    assert 'author_user_name_t' in idx
-    assert 'author_display_name_t' in idx
-    assert 'timestamp_dt' in idx
-    assert m.shorthand_id() == m.slug
 
 @with_setup(setUp, tearDown)
 def test_messages_unknown_lookup():

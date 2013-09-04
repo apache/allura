@@ -896,7 +896,9 @@ class RootController(BaseController, FeedController):
 
     def ticket_comments_since(self, when=None):
         q = dict(
-            discussion_id=c.app.config.discussion_id)
+            discussion_id=c.app.config.discussion_id,
+            status='ok',
+        )
         if when is not None:
             q['timestamp'] = {'$gte':when}
         return M.Post.query.find(q).count()
