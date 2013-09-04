@@ -1006,3 +1006,9 @@ def iter_entry_points(group, *a, **kw):
     for ep in pkg_resources.iter_entry_points(group, *a, **kw):
         if ep.name not in disabled:
             yield ep
+
+
+# http://stackoverflow.com/a/1060330/79697
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)

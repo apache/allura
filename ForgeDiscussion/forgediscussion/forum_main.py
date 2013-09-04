@@ -172,6 +172,7 @@ class ForgeDiscussionApp(Application):
                 l.append(SitemapEntry(
                         'Mark as Spam', 'flag_as_spam',
                         ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
+            l.append(SitemapEntry('Stats Graph', c.app.url + 'stats', ui_icon=g.icons['stats']))
             if forum_links:
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
@@ -301,4 +302,3 @@ class ForumAdminController(DefaultAdminController):
     def add_forum(self, add_forum=None, **kw):
         f = utils.create_forum(self.app, add_forum)
         redirect(f.url())
-

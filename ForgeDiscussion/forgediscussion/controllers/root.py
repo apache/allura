@@ -18,10 +18,12 @@
 import json
 import logging
 from urllib import unquote
-from itertools import imap
+from datetime import date, datetime, timedelta, time
+from time import mktime
+from collections import OrderedDict
 
 from tg import expose, validate, redirect, flash, response
-from tg.decorators import with_trailing_slash
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from formencode import validators
@@ -211,6 +213,81 @@ class RootController(BaseController, DispatchIndex, FeedController):
             dict(project_id=project._id, app_config_id=app.config._id),
              'Recent posts to %s' % app.config.options.mount_label,
             app.url)
+
+    @without_trailing_slash
+    @expose('jinja:forgediscussion:templates/discussionforums/stats_graph.html')
+    def stats(self, dates=None, **kw):
+        if not dates:
+            dates = "{} to {}".format(
+                (date.today() - timedelta(days=60)).strftime('%Y-%m-%d'),
+                date.today().strftime('%Y-%m-%d'))
+        return dict(
+            dates=dates,
+        )
+
+    @expose('json')
+    @validate(dict(
+        begin=h.DateTimeConverter(if_empty=None, if_invalid=None),
+        end=h.DateTimeConverter(if_empty=None, if_invalid=None),
+    ))
+    def stats_data(self, begin=None, end=None, **kw):
+        end = end or date.today()
+        begin = begin or end - timedelta(days=60)
+
+        discussion_id_q = {
+            '$in': [d._id for d in c.app.forums]
+        }
+        # must be ordered dict, so that sorting by this works properly
+        grouping = OrderedDict()
+        grouping['year'] = {'$year': '$timestamp'}
+        grouping['month'] = {'$month': '$timestamp'}
+        grouping['day'] = {'$dayOfMonth': '$timestamp'}
+        {
+            'year': {'$year': '$timestamp'},
+            'month': {'$month': '$timestamp'},
+            'day': {'$dayOfMonth': '$timestamp'},
+        }
+        mongo_data = model.ForumPost.query.aggregate([
+            {'$match': {
+                'discussion_id': discussion_id_q,
+                'status': 'ok',
+                'timestamp': {
+                    # convert date to datetime to make pymongo happy
+                    '$gte': datetime.combine(begin, time.min),
+                    '$lte': datetime.combine(end, time.max),
+                },
+            }},
+            {'$group': {
+                '_id': grouping,
+                'posts': {'$sum': 1},
+            }},
+            {'$sort': {
+                '_id': pymongo.ASCENDING,
+            }},
+        ])['result']
+
+        def reformat_data(mongo_data):
+            def item(day, val):
+                return [
+                    mktime(day.timetuple()) * 1000,
+                    val
+                ]
+
+            next_expected_date = begin
+            for d in mongo_data:
+                this_date = datetime(d['_id']['year'], d['_id']['month'], d['_id']['day'])
+                for day in h.daterange(next_expected_date, this_date):
+                    yield item(day, 0)
+                yield item(this_date, d['posts'])
+                next_expected_date = this_date + timedelta(days=1)
+            for day in h.daterange(next_expected_date, end + timedelta(days=1)):
+                yield item(day, 0)
+
+        return dict(
+            begin=begin,
+            end=end,
+            data=list(reformat_data(mongo_data)),
+        )
 
 
 class RootRestController(BaseController):

@@ -18,33 +18,12 @@
 -#}
 {% extends g.theme.master %}
 
-{% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
-{% do g.register_app_css('css/tracker.css') %}
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Stats{% endblock %}
 
-{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Basic Statistics{% endblock %}
-
-{% block header %}Basic Statistics{% endblock %}
+{% block header %}Stats{% endblock %}
 
 {% block content %}
-<p># tickets: {{total}}</p>
-<p># open tickets: {{open}}</p>
-<p># closed tickets: {{closed}}</p>
-<p># new tickets in the last...</p>
-<ul>
-<li>7 days: {{week_tickets}}</li>
-<li>14 days: {{fortnight_tickets}}</li>
-<li>30 days: {{month_tickets}}</li>
-</ul>
-<p># of comments on tickets: {{comments}}</p>
-<p># of new comments on tickets in last...</p>
-<ul>
-<li>7 days: {{week_comments}}</li>
-<li>14 days: {{fortnight_comments}}</li>
-<li>30 days: {{month_comments}}</li>
-</ul>
-{% if show_stats %}
-<h2>Open and closed tickets over time</h2>
-<form class="bp" action="{{request.path_url}}">
+<form>
   <div id="stats_date_picker">
     <label for="dates">Date Range: </label>
     <input value="{{dates}}" type="text" class="text ui-corner-all" name="dates" id="dates">
@@ -55,7 +34,7 @@
   <div id="stats-viz" class="ui-corner-left ui-corner-br">
     <table>
       <tr>
-        <td class="yaxis">Tickets</td>
+        <td class="yaxis">Posts</td>
         <td>
           <div id="project_stats_holder">
             <div id="grid">
@@ -70,10 +49,14 @@
     </table>
   </div>
 </div>
-{% endif %}
+
 {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{{g.forge_static('css/smoothness/jquery-ui-1.8.4.custom.css')}}"/>
+{% endblock %}
+
 {% block extra_js %}
-{% if show_stats %}
 <script type="text/javascript" src="{{g.forge_static('js/jquery.flot.js')}}"></script>
 <script type="text/javascript" src="{{g.forge_static('js/jquery.daterangepicker.js')}}"></script>
 <script type="text/javascript" src="{{g.forge_static('js/stats.js')}}"></script>
@@ -81,17 +64,16 @@
   /*global chartProjectStats */
   $(document).ready(function () {
     var series = function(data){
-      return [{label: "Opened", lines: {show: true, lineWidth: 3}, points: {show:true, radius:2, fill: true, fillColor: '#0685c6'}, data: data.opened, shadowSize: 0},
-              {label: "Closed", lines: {show: true, lineWidth: 3}, points: {show:true, radius:2, fill: true, fillColor: '#87c706'}, data: data.closed, shadowSize: 0}];
+      return [{label: "Posts",
+              lines: {show: true, lineWidth: 3},
+              points: {show:true, radius:2, fill: true, fillColor: '#0685c6'},
+              data: data, shadowSize: 0}
+             ];
     };
     var checkEmpty = function(data){
-      return !data.opened && !data.closed;
+      return !data.length;
     };
-    var tooltipFormat = function(x,y,item){
-      return y + " tickets";
-    };
-    chartProjectStats('{{c.app.url}}stats_data',{},series,checkEmpty,tooltipFormat);
+    chartProjectStats('{{c.app.url}}stats_data',{},series,checkEmpty);
   });
 </script>
-{% endif %}
 {% endblock %}

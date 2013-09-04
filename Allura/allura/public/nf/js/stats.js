@@ -20,26 +20,30 @@
 /*global jQuery, $, addCommas */
 jQuery(function($) {
     // date range picker
-    if ($('.picker input').length) {
-        $('.picker input').daterangepicker({
+    var input = $('#stats_date_picker input');
+    if (input.length) {
+        input.daterangepicker({
             onOpen: function() {
-                $('.picker input')[0].prev_value = $('.picker input').val();
+                input[0].prev_value = input.val();
             },
             onClose: function() {
-                if ($('.picker input')[0].prev_value !== $('.picker input').val()) {
-                    $('.picker input').parents('form').submit();
-                    //console.log('close',$('.picker input').val());
+                if (input[0].prev_value !== input.val()) {
+                    input.parents('form').submit();
                 }
             },
             rangeSplitter: 'to',
             dateFormat: 'yy-mm-dd', // yy is 4 digit
-            earliestDate: new Date($('.picker input').attr('data-start-date')),
+            earliestDate: new Date(input.attr('data-start-date')),
             latestDate: new Date()
         });
     }
 });
 
 function chartProjectStats(url, params, series, checkEmpty, tooltipFormat){
+    var timeformat = "%y-%0m-%0d";
+    tooltipFormat = tooltipFormat || function(x,y,item) {
+        return y + " on " + $.plot.formatDate(new Date(parseInt(x, 10)), timeformat);
+    };
     var holder = $('#stats-viz');
     var dates = $('#dates').val().split(' to ');
     var begin = Date.parse(dates[0]).setTimezoneOffset(0);
@@ -64,7 +68,7 @@ function chartProjectStats(url, params, series, checkEmpty, tooltipFormat){
             colors: ['#0685c6','#87c706','#c7c706','#c76606'],
             xaxis:{
               mode: "time",
-              timeformat: "%y-%0m-%0d",
+              timeformat: timeformat,
               minTickSize: [1, "day"],
               min: begin,
               max: end,
@@ -103,8 +107,13 @@ function chartProjectStats(url, params, series, checkEmpty, tooltipFormat){
           $('<div id="tooltip" class="tooltip">' + tooltipFormat(x,y,item) + '</div>').css( {
             position: 'absolute',
             display: 'none',
-            top: item.pageY + 5,
-            left: item.pageX + 5
+            top: item.pageY - 5,
+            left: item.pageX + 5,
+            zIndex: 1,
+            background: 'white',
+            border: '1px solid black',
+            borderRadius: '0.5em',
+            padding: '0 0.3em',
           }).appendTo("body").fadeIn(200);
         }
       }
