@@ -353,9 +353,8 @@ class TestForum(TestController):
             assert r.location.startswith('http://localhost/p/test/discussion/testforum/thread/'), r.location
 
         def _check():
-            # FIXME fix [#5907]
-            #r = self.app.get('/discussion/')
-            #assert 'Test Zero Posts' not in r
+            r = self.app.get('/discussion/')
+            assert 'Test Zero Posts' not in r
             r = self.app.get('/discussion/testforum/')
             assert 'Test Zero Posts' not in r
 

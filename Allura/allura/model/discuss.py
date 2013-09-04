@@ -92,9 +92,10 @@ class Discussion(Artifact, ActivityObject):
 
     @LazyProperty
     def last_post(self):
-        # TODO add status: to query
         q = self.post_class().query.find(dict(
-                discussion_id=self._id))\
+                discussion_id=self._id,
+                status='ok'
+                ))\
             .sort('timestamp', pymongo.DESCENDING)\
             .limit(1)\
             .hint([('discussion_id', pymongo.ASCENDING),
