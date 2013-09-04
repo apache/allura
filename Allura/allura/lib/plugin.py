@@ -49,6 +49,7 @@ from ming.orm import ThreadLocalORMSession
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
+from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
@@ -291,18 +292,23 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 log.exception('Trying to create existing user %s', uname)
                 raise
             con.unbind_s()
-            argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
-                config['auth.ldap.schroot_name'], user_doc['username'])).split()
-            p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            rc = p.wait()
-            if rc != 0:
-                log.error('Error creating home directory for %s',
-                          user_doc['username'])
+
+            if asbool(config.get('auth.ldap.use_schroot', True)):
+                argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
+                    config['auth.ldap.schroot_name'], user_doc['username'])).split()
+                p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                rc = p.wait()
+                if rc != 0:
+                    log.error('Error creating home directory for %s',
+                              user_doc['username'])
         except:
             raise
         return result
 
     def upload_sshkey(self, username, pubkey):
+            if not asbool(config.get('auth.ldap.use_schroot', True)):
+                raise NotImplemented, 'SSH keys are not supported'
+
             argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
                 config['auth.ldap.schroot_name'], username)).split() + [ pubkey ]
             p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -339,6 +345,18 @@ class LdapAuthenticationProvider(AuthenticationProvider):
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
         return user
+
+    def user_project_shortname(self, user):
+        return 'u/' + user.username.replace('_', '-')
+
+    def user_by_project_shortname(self, shortname):
+        from allura import model as M
+        return M.User.query.get(username=shortname)
+
+    def user_registration_date(self, user):
+        if user._id:
+            return user._id.generation_time
+        return datetime.utcnow()
 
 class ProjectRegistrationProvider(object):
     '''
