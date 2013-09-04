@@ -22,6 +22,17 @@
 
 {% block header %}Project Export{% endblock %}
 
+{% block extra_js %}
+  {{ super() }}
+  <script type="text/javascript">
+    $(function() {
+      $('#check-all').click(function() {
+        $(':checkbox[name="tools"]').attr('checked', $(this).attr('checked') || null);
+      });
+    });
+  </script>
+{% endblock %}
+
 {% block content %}
 
 {% if status == 'busy' %}
@@ -34,6 +45,10 @@
 <div class="grid-19">
   {% if tools %}
     <form method="POST" action="">
+      <div class="grid-19">
+        <input type="checkbox" id="check-all"><label for="check-all">Check All</label>
+      </div>
+      <p>&nbsp;</p>
       {% for tool in tools %}
       <div class="grid-19">
         <input type="checkbox" name="tools" id="tool-{{ loop.index }}" value="{{ tool.options.mount_point }}">

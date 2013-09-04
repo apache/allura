@@ -867,3 +867,8 @@ class TestExport(TestController):
     def test_bulk_export_path_for_nbhd(self):
         project = M.Project.query.get(name='Home Project for Projects')
         assert_equals(project.bulk_export_path(), '/tmp/bulk_export/p/p')
+
+    def test_export_page_contains_check_all_checkbox(self):
+        r = self.app.get('/admin/export')
+        assert_in('<input type="checkbox" id="check-all">', r)
+        assert_in('Check All</label>', r)
