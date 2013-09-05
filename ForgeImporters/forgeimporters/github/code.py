@@ -61,7 +61,7 @@ class GitHubRepoImportForm(fe.schema.Schema):
         value = super(self.__class__, self)._to_python(value, state)
         mount_point = value['mount_point']
         try:
-            v.MountPointValidator('git').to_python(mount_point)
+            v.MountPointValidator(ForgeGitApp).to_python(mount_point)
         except fe.Invalid as e:
             raise fe.Invalid('mount_point:' + str(e), value, state)
         return value
@@ -76,7 +76,7 @@ class GitHubRepoImportController(BaseController):
         return self.importer.target_app[0]
 
     @with_trailing_slash
-    @expose('jinja:forgeimporters.google:templates/code/index.html')
+    @expose('jinja:forgeimporters.github:templates/code/index.html')
     def index(self, **kw):
         return dict(importer=self.importer,
                 target_app=self.target_app)
@@ -100,6 +100,7 @@ class GitHubRepoImportController(BaseController):
 class GitHubRepoImporter(ToolImporter):
     target_app = TARGET_APPS
     source = 'GitHub'
+    controller = GitHubRepoImportController
     tool_label = 'Source Code'
     tool_description = 'Import your repo from GitHub'
 

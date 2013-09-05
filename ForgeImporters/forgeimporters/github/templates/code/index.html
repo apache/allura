@@ -24,12 +24,14 @@
 
 {% block importer_fields %}
 <div>
-  <label for="gc_project_name">GitHub User Name</label>
-  <input name="gc_project_name" value="{{ c.form_values['gc_project_name'] }}" />
-  {{ error('gc_project_name') }}
-  <label for="gc_project_name">GitHub Project Name</label>
-  <input name="gc_project_name" value="{{ c.form_values['gc_project_name'] }}" />
-  {{ error('gc_project_name') }}
+  <label for="gh_user_name">GitHub User Name</label>
+  <input name="gh_user_name" value="{{ c.form_values['gh_user_name'] }}" />
+  {{ error('gh_user_name') }}
+</div>
+<div>
+  <label for="gh_project_name">GitHub Project Name</label>
+  <input name="gh_project_name" value="{{ c.form_values['gh_project_name'] }}" />
+  {{ error('gh_project_name') }}
 
 </div>
 {% endblock %}
