@@ -25,6 +25,19 @@ from allura.lib import validators as v
 from forgeimporters.base import ToolImporter
 from forgeimporters.github import GitHubProjectExtractor
 
+from tg import (
+        expose,
+        flash,
+        redirect,
+        validate,
+        )
+from tg.decorators import (
+        with_trailing_slash,
+        without_trailing_slash,
+        )
+from allura.lib.decorators import require_post, task
+from pylons import tmpl_context as c
+
 TARGET_APPS = []
 
 try:
@@ -35,18 +48,17 @@ except ImportError:
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    GoogleRepoImporter().import_tool(c.project, c.user, **kw)
+    GitHubRepoImporter().import_tool(c.project, c.user, **kw)
 
 
 class GitHubRepoImportForm(fe.schema.Schema):
     gh_project_name = fev.UnicodeString(not_empty=True)
+    gh_user_name = fev.UnicodeString(not_empty=True)
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
 
     def _to_python(self, value, state):
         value = super(self.__class__, self)._to_python(value, state)
-
-        gh_project_name = value['gh_project_name']
         mount_point = value['mount_point']
         try:
             v.MountPointValidator('git').to_python(mount_point)
@@ -72,10 +84,11 @@ class GitHubRepoImportController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GoogleRepoImportForm(), error_handler=index)
-    def create(self, gc_project_name, mount_point, mount_label, **kw):
+    @validate(GitHubRepoImportForm(), error_handler=index)
+    def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         import_tool.post(
-                project_name=gc_project_name,
+                project_name=gh_project_name,
+                user_name=gh_user_name,
                 mount_point=mount_point,
                 mount_label=mount_label)
         flash('Repo import has begun. Your new repo will be available '
