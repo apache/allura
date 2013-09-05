@@ -160,6 +160,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
         ticket.created_date = datetime.strptime(issue.get_issue_created_date(), '%c')
         ticket.mod_date = datetime.strptime(issue.get_issue_mod_date(), '%c')
         ticket.votes_up = issue.get_issue_stars()
+        ticket.votes = issue.get_issue_stars()
         owner = issue.get_issue_owner()
         if owner:
             owner_line = '*Originally owned by:* {owner}\n'.format(owner=owner)
