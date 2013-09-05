@@ -384,17 +384,18 @@ class GitImplementation(M.RepositoryImplementation):
                 # hash line read, need to yield previous commit
                 # first, cleaning lines a bit
                 commit_lines = [
-                    ln.strip('\n\ ').replace('\t', ' ')
+                    ln.strip('\n ').replace('\t', ' ')
                     for ln in commit_lines if ln.strip('\n ')
                 ]
                 if commit_lines:
                     hexsha, decoration = commit_lines[0].split('\x00')
                     refs = decoration.strip(' ()').split(', ') if decoration else []
-                    name_stat_parts = commit_lines[1].split(' ')
                     renamed = {}
-                    if name_stat_parts[0] == 'R100':
-                        renamed['from'] = name_stat_parts[1]
-                        renamed['to'] = name_stat_parts[2]
+                    if len(commit_lines) > 1:  # merge commits don't have any --name-status output
+                        name_stat_parts = commit_lines[1].split(' ')
+                        if name_stat_parts[0] == 'R100':
+                            renamed['from'] = name_stat_parts[1]
+                            renamed['to'] = name_stat_parts[2]
                     yield (git.Commit(self._git, gitdb.util.hex_to_bin(hexsha)), refs, renamed)
                 if not(len(line)):
                     # if all lines have been read
