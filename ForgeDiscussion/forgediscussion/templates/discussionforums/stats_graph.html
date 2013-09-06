@@ -65,9 +65,17 @@
   /*global chartProjectStats */
   $(document).ready(function () {
     var series = function(data){
+      var size;
+      if (data.length < 20) {
+        size = 3;
+      } else if (data.length < 100) {
+        size = 2;
+      } else  {
+        size = 1;
+      }
       return [{label: "Posts",
-              lines: {show: true, lineWidth: 3},
-              points: {show:true, radius:2, fill: true, fillColor: '#0685c6'},
+              lines: {show: true, lineWidth: size},
+              points: {show:true, radius:size, fill: true, fillColor: '#0685c6'},
               data: data, shadowSize: 0}
              ];
     };
