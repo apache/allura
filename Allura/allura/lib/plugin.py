@@ -955,10 +955,10 @@ class ImportIdConverter(object):
 
     To provide a new converter, expose an entry point in setup.py:
 
-        [allura.tickets.import_id_converter]
+        [allura.import_id_converter]
         mysource = foo.bar:SourceIdConverter
 
-    Then in your .ini file, set tickets.import_id_converter=mysource
+    Then in your .ini file, set import_id_converter=mysource
     '''
 
     @classmethod
