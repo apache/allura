@@ -2609,7 +2609,6 @@ div.attachment_thumb .file_type span {
 /* Stats Graph */
 
 #stats_date_picker {
-  text-align: right;
   width: 340px;
   display: inline;
   float: left;
@@ -2618,7 +2617,7 @@ div.attachment_thumb .file_type span {
   margin: 0 10px;
 }
 #stats_date_picker input {
-  width: 228px !important;
+  width: 14em;
 }
 
 #stats-viz-container {

@@ -216,13 +216,14 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
     @without_trailing_slash
     @expose('jinja:forgediscussion:templates/discussionforums/stats_graph.html')
-    def stats(self, dates=None, **kw):
+    def stats(self, dates=None, forum=None, **kw):
         if not dates:
             dates = "{} to {}".format(
                 (date.today() - timedelta(days=60)).strftime('%Y-%m-%d'),
                 date.today().strftime('%Y-%m-%d'))
         return dict(
             dates=dates,
+            selected_forum=forum,
         )
 
     @expose('json')
@@ -230,12 +231,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
         begin=h.DateTimeConverter(if_empty=None, if_invalid=None),
         end=h.DateTimeConverter(if_empty=None, if_invalid=None),
     ))
-    def stats_data(self, begin=None, end=None, **kw):
+    def stats_data(self, begin=None, end=None, forum=None, **kw):
         end = end or date.today()
         begin = begin or end - timedelta(days=60)
 
         discussion_id_q = {
-            '$in': [d._id for d in c.app.forums]
+            '$in': [d._id for d in c.app.forums
+                    if d.shortname == forum or forum is None]
         }
         # must be ordered dict, so that sorting by this works properly
         grouping = OrderedDict()

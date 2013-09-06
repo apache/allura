@@ -28,6 +28,15 @@
     <label for="dates">Date Range: </label>
     <input value="{{dates}}" type="text" class="text ui-corner-all" name="dates" id="dates">
   </div>
+  <label for="forum">Forum:</label>
+  <select name="forum">
+    <option value="">All</option>
+    {% for forum in c.app.forums %}
+        <option value="{{forum.shortname}}"
+          {%- if forum.shortname == selected_forum %} selected{% endif -%}
+          >{{forum.name}}</option>
+    {% endfor %}
+  </select>
 </form>
 
 <div id="stats-viz-container" class="project_stats">
@@ -82,7 +91,13 @@
     var checkEmpty = function(data){
       return !data.length;
     };
-    chartProjectStats('{{c.app.url}}stats_data',{},series,checkEmpty);
+    chartProjectStats('{{c.app.url}}stats_data',
+                      {forum: $('select[name=forum]').val()},
+                      series, checkEmpty);
+
+    $('select[name=forum]').change(function(){
+        $(this).parent('form').submit();
+    });
   });
 </script>
 {% endblock %}
