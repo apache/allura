@@ -18,7 +18,14 @@
 from unittest import TestCase
 from mock import Mock, patch
 
+from allura.tests import TestController
+from allura.tests.decorators import with_tool
 from forgeimporters.github.code import GitHubRepoImporter
+
+
+# important to be distinct from 'test' which ForgeGit uses, so that the tests can run in parallel and not clobber each other
+test_project_with_repo = 'test2'
+with_git = with_tool(test_project_with_repo, 'git', 'src', 'git')
 
 
 class TestGitHubRepoImporter(TestCase):
@@ -40,3 +47,32 @@ class TestGitHubRepoImporter(TestCase):
             mount_label='Code',
             init_from_url='http://remote/clone/url/')
         g.post_event.assert_called_once_with('project_updated')
+
+
+class TestGitHubImportController(TestController, TestCase):
+
+    @with_git
+    def test_index(self):
+        r = self.app.get('/p/{}/admin/ext/import/github-repo/'.format(test_project_with_repo))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="gh_user_name")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="gh_project_name")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
+        self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
+
+    @with_git
+    @patch('forgeimporters.github.code.import_tool')
+    def test_create(self, import_tool):
+        params = dict(
+                gh_user_name='spooky',
+                gh_project_name='poop',
+                mount_label='mylabel',
+                mount_point='mymount',
+                )
+        r = self.app.post('/p/{}/admin/ext/import/github-repo/create'.format(test_project_with_repo),
+                params,
+                status=302)
+        self.assertEqual(r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
+        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
+        self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
