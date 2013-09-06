@@ -22,6 +22,7 @@ Allura/allura/lib/widgets/resources/js/jquery.textarea.js
 Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/css/forge/accordion.css
+Allura/allura/public/nf/css/forge/ui.daterangepicker.css
 Allura/allura/public/nf/css/smoothness/jquery-ui-1.8.4.custom.css
 Allura/allura/public/nf/images/beta_sf.psd
 Allura/allura/public/nf/js/jquery-base.js

@@ -100,25 +100,18 @@ function chartProjectStats(url, params, series, checkEmpty, tooltipFormat){
         if (previousPoint !== item.dataIndex) {
           previousPoint = item.dataIndex;
 
-          $("#tooltip").remove();
+          $(".chart-tooltip").remove();
           var x = item.datapoint[0].toFixed(0),
           y = item.datapoint[1].toFixed(0);
 
-          $('<div id="tooltip" class="tooltip">' + tooltipFormat(x,y,item) + '</div>').css( {
-            position: 'absolute',
-            display: 'none',
+          $('<div class="chart-tooltip">' + tooltipFormat(x,y,item) + '</div>').css( {
             top: item.pageY - 5,
             left: item.pageX + 5,
-            zIndex: 1,
-            background: 'white',
-            border: '1px solid black',
-            borderRadius: '0.5em',
-            padding: '0 0.3em',
           }).appendTo("body").fadeIn(200);
         }
       }
       else {
-        $("#tooltip").remove();
+        $(".chart-tooltip").remove();
         previousPoint = null;
       }
   });
