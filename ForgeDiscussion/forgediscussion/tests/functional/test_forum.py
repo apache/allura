@@ -762,3 +762,46 @@ class TestForum(TestController):
         assert u'téstforum'.encode('utf-8') in r
         r = self.app.get(u'/p/test/discussion/create_topic/téstforum/'.encode('utf-8'))
         assert u'<option value="téstforum" selected>Tést Forum</option>' in r
+
+
+class TestForumStats(TestController):
+
+    def test_stats(self):
+        self.app.get('/discussion/stats', status=200)
+
+    @mock.patch('ming.session.Session.aggregate')  # mim doesn't support aggregate
+    def test_stats_data(self, aggregate):
+        # partial data, some days are implicit 0
+        aggregate.return_value = {'result': [
+            {"_id": {
+                "year": 2013,
+                "month": 1,
+                "day": 2},
+             "posts": 3
+            },
+            {"_id": {
+                "year": 2013,
+                "month": 1,
+                "day": 3},
+             "posts": 5
+            },
+            {"_id": {
+                "year": 2013,
+                "month": 1,
+                "day": 5},
+             "posts": 2
+            },
+        ]}
+        r = self.app.get('/discussion/stats_data?begin=2013-01-01&end=2013-01-06')
+        assert_equal(r.json, {
+            'begin': '2013-01-01 00:00:00',
+            'end': '2013-01-06 00:00:00',
+            'data': [
+                [1356998400000, 0],
+                [1357084800000, 3],
+                [1357171200000, 5],
+                [1357257600000, 0],
+                [1357344000000, 2],
+                [1357430400000, 0],
+            ]
+        })

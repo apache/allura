@@ -19,8 +19,9 @@
 
 from unittest import TestCase
 from os import path
-from mock import Mock, patch
+from datetime import datetime
 
+from mock import Mock, patch
 from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
@@ -428,3 +429,7 @@ def test_absurl_no_request():
 def test_absurl_with_request():
     assert_equals(h.absurl('/p/test/foobar'), 'https://www.mysite.com/p/test/foobar')
 
+
+def test_daterange():
+    assert_equals(list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))),
+                 [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
