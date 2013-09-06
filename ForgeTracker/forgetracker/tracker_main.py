@@ -57,7 +57,6 @@ from allura.lib import widgets as w
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets.subscriptions import SubscribeForm
-from allura.lib.zarkov_helpers import zero_fill_zarkov_result
 from allura.lib.plugin import ImportIdConverter
 from allura.controllers import AppDiscussionController, AppDiscussionRestController
 from allura.controllers import attachments as ac
@@ -928,10 +927,6 @@ class RootController(BaseController, FeedController):
         if dates is None:
             today = datetime.utcnow()
             dates = "%s to %s" % ((today - timedelta(days=61)).strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
-        if c.app.config.get_tool_data('sfx', 'group_artifact_id') and config.get('zarkov.webservice_host'):
-            show_stats = True
-        else:
-            show_stats = False
         return dict(
                 now=str(now),
                 week_ago=str(week_ago),
@@ -949,28 +944,8 @@ class RootController(BaseController, FeedController):
                 closed=closed,
                 globals=globals,
                 dates=dates,
-                show_stats=show_stats)
+        )
 
-    @expose('json:')
-    def stats_data(self, begin=None, end=None, **kw):
-        if c.app.config.get_tool_data('sfx', 'group_artifact_id') and config.get('zarkov.webservice_host'):
-            if begin is None and end is None:
-                end_time = datetime.utcnow()
-                begin_time = (end_time - timedelta(days=61))
-                end = end_time.strftime('%Y-%m-%d')
-                begin = begin_time.strftime('%Y-%m-%d')
-            else:
-                end_time = datetime.strptime(end,'%Y-%m-%d')
-                begin_time = datetime.strptime(begin,'%Y-%m-%d')
-            time_interval = 'date'
-            if end_time - begin_time > timedelta(days=183):
-                time_interval = 'month'
-            q_filter = 'group-tracker-%s/%s/%s/' % (time_interval,c.project.get_tool_data('sfx', 'group_id'),c.app.config.get_tool_data('sfx', 'group_artifact_id'))
-            params = urlencode({'data': '{"c":"tracker","b":"'+q_filter+begin+'","e":"'+q_filter+end+'"}'})
-            read_zarkov = json.load(urlopen(config.get('zarkov.webservice_host')+'/q', params))
-            return zero_fill_zarkov_result(read_zarkov, time_interval, begin, end)
-        else:
-            return dict()
 
     @expose()
     @validate(W.subscribe_form)
