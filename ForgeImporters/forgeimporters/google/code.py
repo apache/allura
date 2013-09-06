@@ -178,6 +178,6 @@ class GoogleRepoImporter(ToolImporter):
                 'import tool %s from %s on %s' % (
                     app.config.options.mount_point,
                     project_name, self.source,
-                ), project=project, user=user)
+                ), project=project, user=user, url=app.url)
         g.post_event('project_updated')
         return app

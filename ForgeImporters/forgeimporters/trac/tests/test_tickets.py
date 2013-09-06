@@ -48,6 +48,7 @@ class TestTracTicketImporter(TestCase):
         app = Mock(name='ForgeTrackerApp')
         app.config.options.mount_point = 'bugs'
         app.config.options.get = lambda *a: getattr(app.config.options, *a)
+        app.url = 'foo'
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
@@ -78,7 +79,7 @@ class TestTracTicketImporter(TestCase):
                 validate=False)
         AuditLog.log.assert_called_once_with(
                 'import tool bugs from http://example.com/trac/url/',
-                project=project, user=user)
+                project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
 
     @patch('forgeimporters.trac.tickets.session')
