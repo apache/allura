@@ -67,6 +67,7 @@ class TestGoogleRepoImporter(TestCase):
         u = Mock(name='c.user')
         app = p.install_app.return_value
         app.config.options.mount_point = 'code'
+        app.url = 'foo'
         GoogleRepoImporter().import_tool(p, u, project_name='project_name')
         get_repo_url.assert_called_once_with('project_name', 'git')
         p.install_app.assert_called_once_with('Git',
@@ -80,7 +81,7 @@ class TestGoogleRepoImporter(TestCase):
             )
         M.AuditLog.log.assert_called_once_with(
                 'import tool code from project_name on Google Code',
-                project=p, user=u)
+                project=p, user=u, url='foo')
         g.post_event.assert_called_once_with('project_updated')
 
 

@@ -141,7 +141,7 @@ class TracTicketImporter(ToolImporter):
                         app.config.options.mount_point, 
                         trac_url, 
                     ), 
-                project=project, user=user, 
+                project=project, user=user, url=app.url,
             ) 
             g.post_event('project_updated')
             return app

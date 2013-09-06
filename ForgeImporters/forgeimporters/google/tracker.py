@@ -147,6 +147,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                         ),
                     project=project,
                     user=user,
+                    url=app.url,
                 )
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
