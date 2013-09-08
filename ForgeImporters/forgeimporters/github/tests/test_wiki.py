@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import datetime
 
 from unittest import TestCase
 from nose.tools import assert_equal
@@ -49,15 +50,51 @@ class TestGitHubWikiImporter(TestCase):
 
     def setUp(self):
         setup_basic_test()
+        self.blob1 = Mock()
+        self.blob1.name = 'Home.md'
+        self.blob1.data_stream.read.return_value = '# test message'
 
-    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_wiki_pages_form_git')
-    def test_get_wiki_pages(self, get_wiki_pages):
-        get_wiki_pages.return_value = {
-            "Home_creole.creole": "**TEST**",
-            "Home_md.md": "# TEST",
-            "Home.rest": "test"
-        }
-        data = GitHubWikiImporter().get_wiki_pages("http://test.git")
-        assert_equal(data['Home_creole'], '<p><strong>TEST</strong></p>\n')
-        assert_equal(data['Home_md'], '<div class="markdown_content"><h1 id="test">TEST</h1></div>')
-        assert_equal(data['Home'], '<div class="document">\n<p>test</p>\n</div>\n')
+        self.blob2 = Mock()
+        self.blob2.name = 'Home2.creole'
+        self.blob2.data_stream.read.return_value = '**test message**'
+
+        self.blob3 = Mock()
+        self.blob3.name = 'Home3.rest'
+        self.blob3.data_stream.read.return_value = 'test message'
+
+        self.commit1 = Mock()
+        self.commit1.tree.blobs = [self.blob1]
+        self.commit1.committed_date = 1256301446
+
+        self.commit2 = Mock()
+        self.commit2.tree.blobs = [self.blob1, self.blob2, self.blob3]
+        self.commit2.committed_date = 1256291446
+
+    def test_get_blobs(self):
+        wiki = GitHubWikiImporter().get_blobs(self.commit2)
+        assert_equal(wiki['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
+        assert_equal(wiki['Home'][1], datetime.datetime(2009, 10, 23, 9, 50, 46))
+        assert_equal(wiki['Home2'][0], '<p><strong>test message</strong></p>\n')
+        assert_equal(wiki['Home3'][0], '<div class="document">\n<p>test message</p>\n</div>\n')
+
+    @patch('forgeimporters.github.wiki.git.Repo')
+    @patch('forgeimporters.github.wiki.mkdtemp')
+    def test_clone_from(self, path, repo):
+        with patch('forgeimporters.github.wiki.rmtree'):
+            path.return_value = 'temp_path'
+            GitHubWikiImporter().get_wiki_pages('wiki_url')
+            repo.clone_from.assert_called_with('wiki_url', to_path='temp_path', bare=True)
+
+    @patch('forgeimporters.github.wiki.git.Repo._clone')
+    def test_get_commits(self, clone):
+        repo = clone.return_value
+        repo.iter_commits.return_value = [self.commit1, self.commit2]
+        wiki = GitHubWikiImporter().get_wiki_pages('wiki_url')
+        assert_equal(len(wiki), 2)
+        assert_equal(wiki[0]['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
+        assert_equal(wiki[0]['Home2'][0], '<p><strong>test message</strong></p>\n')
+        assert_equal(wiki[0]['Home3'][0], '<div class="document">\n<p>test message</p>\n</div>\n')
+        assert_equal(len(wiki[0]), 3)
+
+        assert_equal(wiki[1]['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
+        assert_equal(len(wiki[1]), 1)
