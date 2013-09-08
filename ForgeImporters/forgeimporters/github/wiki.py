@@ -16,12 +16,12 @@
 #       under the License.
 
 import git
+from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
 from pylons import app_globals as g
 from pylons import tmpl_context as c
-
 
 from allura.lib import helpers as h
 from forgeimporters.base import ToolImporter
@@ -61,27 +61,29 @@ class GitHubWikiImporter(ToolImporter):
             mount_label=mount_label or 'Wiki')
 
         with h.push_config(c, app=app):
-            for page_name, page_text in self.get_wiki_pages(extractor.get_page_url('wiki_url')).iteritems():
-                page = WM.Page.upsert(page_name)
-                page.text = page_text
-                page.viewable_by = ['all']
+            for commit in self.get_wiki_pages(extractor.get_page_url('wiki_url')):
+                for page_name, page in commit.iteritems():
+                    wiki_page = WM.Page.upsert(page_name)
+                    wiki_page.text = page[0]
+                    wiki_page.mod_date = page[1]
+                    wiki_page.timestamp = page[1]
+                    wiki_page.viewable_by = ['all']
+                    wiki_page.commit()
 
         g.post_event('project_updated')
         return app
 
-    def get_wiki_pages(self, wiki_url):
+    def get_blobs(self, commit):
         result = dict()
-        wiki_pages = self.get_wiki_pages_form_git(wiki_url)
-        for page_name, page_text in wiki_pages.iteritems():
-            page_text = h.render_any_markup(page_name, h.really_unicode(page_text))
-            result[page_name.split('.')[0]] = page_text
+        for page in commit.tree.blobs:
+            result[page.name.split('.')[0]] = [h.render_any_markup(page.name, h.really_unicode(page.data_stream.read())), datetime.utcfromtimestamp(commit.committed_date)]
         return result
 
-    def get_wiki_pages_form_git(self, wiki_url):
-        result = dict()
+    def get_wiki_pages(self, wiki_url):
+        result = []
         wiki_path = mkdtemp()
-        wiki = git.Repo.clone_from(wiki_url, wiki_path)
-        for page in wiki.heads.master.commit.tree.blobs:
-            result[page.name] = page.data_stream.read()
+        wiki = git.Repo.clone_from(wiki_url, to_path=wiki_path, bare=True)
+        for commit in wiki.iter_commits():
+            result.insert(0, self.get_blobs(commit))
         rmtree(wiki_path)
         return result
