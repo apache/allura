@@ -15,16 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import formencode as fe
-
+from pylons import tmpl_context as c
 from pylons import app_globals as g
 from formencode import validators as fev
-
-from allura.controllers import BaseController
-from allura.lib import validators as v
-from forgeimporters.base import ToolImporter
-from forgeimporters.github import GitHubProjectExtractor
-
 from tg import (
         expose,
         flash,
@@ -35,36 +28,30 @@ from tg.decorators import (
         with_trailing_slash,
         without_trailing_slash,
         )
+
 from allura.lib.decorators import require_post, task
-from pylons import tmpl_context as c
+from allura.controllers import BaseController
 
-TARGET_APPS = []
+from forgegit.git_main import ForgeGitApp
 
-try:
-    from forgegit.git_main import ForgeGitApp
-    TARGET_APPS.append(ForgeGitApp)
-except ImportError:
-    pass
+from forgeimporters.base import (
+        ToolImporter,
+        ToolImportForm,
+        ImportErrorHandler,
+        )
+from forgeimporters.github import GitHubProjectExtractor
+
 
 @task(notifications_disabled=True)
 def import_tool(**kw):
-    GitHubRepoImporter().import_tool(c.project, c.user, **kw)
+    importer = GitHubRepoImporter()
+    with ImportErrorHandler(importer, kw.get('project_name')):
+        importer.import_tool(c.project, c.user, **kw)
 
 
-class GitHubRepoImportForm(fe.schema.Schema):
+class GitHubRepoImportForm(ToolImportForm):
     gh_project_name = fev.UnicodeString(not_empty=True)
     gh_user_name = fev.UnicodeString(not_empty=True)
-    mount_point = fev.UnicodeString()
-    mount_label = fev.UnicodeString()
-
-    def _to_python(self, value, state):
-        value = super(self.__class__, self)._to_python(value, state)
-        mount_point = value['mount_point']
-        try:
-            v.MountPointValidator(ForgeGitApp).to_python(mount_point)
-        except fe.Invalid as e:
-            raise fe.Invalid('mount_point:' + str(e), value, state)
-        return value
 
 
 class GitHubRepoImportController(BaseController):
@@ -73,7 +60,7 @@ class GitHubRepoImportController(BaseController):
 
     @property
     def target_app(self):
-        return self.importer.target_app[0]
+        return self.importer.target_app
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/code/index.html')
@@ -84,7 +71,7 @@ class GitHubRepoImportController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GitHubRepoImportForm(), error_handler=index)
+    @validate(GitHubRepoImportForm(ForgeGitApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         import_tool.post(
                 project_name=gh_project_name,
@@ -96,9 +83,8 @@ class GitHubRepoImportController(BaseController):
         redirect(c.project.url() + 'admin/')
 
 
-
 class GitHubRepoImporter(ToolImporter):
-    target_app = TARGET_APPS
+    target_app = ForgeGitApp
     source = 'GitHub'
     controller = GitHubRepoImportController
     tool_label = 'Source Code'
