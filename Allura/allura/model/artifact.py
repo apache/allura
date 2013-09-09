@@ -896,3 +896,9 @@ class VotableArtifact(MappedClass):
         if votes_count == 0:
             return 0
         return int(float(self.votes_up) / votes_count * 100)
+
+    def __json__(self):
+        return {
+            'votes_up': self.votes_up,
+            'votes_down': self.votes_down,
+        }

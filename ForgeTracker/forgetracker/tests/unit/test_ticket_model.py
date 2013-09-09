@@ -21,7 +21,7 @@ import urllib2
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming import schema
-from nose.tools import raises, assert_raises, assert_equal
+from nose.tools import raises, assert_raises, assert_equal, assert_in
 
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
@@ -277,3 +277,10 @@ class TestTicketModel(TrackerTestWithModel):
         ThreadLocalORMSession.flush_all()
         assert_equal(len(ticket.attachments), 1)
         assert_equal(ticket.attachments.first().filename, 'test_ticket_model.py')
+
+    def test_json_parents(self):
+        ticket = Ticket.new()
+        json_keys = ticket.__json__().keys()
+        assert_in('related_artifacts', json_keys)  # from Artifact
+        assert_in('votes_up', json_keys)  # VotableArtifact
+        assert_in('ticket_num', json_keys)  # Ticket

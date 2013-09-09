@@ -947,7 +947,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return ticket
 
     def __json__(self):
-        return dict(super(Ticket,self).__json__(),
+        parents_json = {}
+        for parent in reversed(type(self).mro()):
+            if parent != type(self) and hasattr(parent, '__json__'):
+                parents_json.update(parent.__json__(self))
+
+        return dict(parents_json,
             created_date=self.created_date,
             ticket_num=self.ticket_num,
             summary=self.summary,
