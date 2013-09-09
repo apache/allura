@@ -54,7 +54,7 @@ from forgeimporters.base import (
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = GoogleCodeTrackerImporter()
-    with ImportErrorHandler(importer, kw.get('project_name')):
+    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
         importer.import_tool(c.project, c.user, **kw)
 
 
@@ -81,13 +81,16 @@ class GoogleCodeTrackerImportController(BaseController):
     @require_post()
     @validate(GoogleCodeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
-        import_tool.post(
-                project_name=gc_project_name,
-                mount_point=mount_point,
-                mount_label=mount_label,
-                )
-        flash('Ticket import has begun. Your new tracker will be available '
-                'when the import is complete.')
+        if GoogleCodeTrackerImporter().enforce_limit(c.project):
+            import_tool.post(
+                    project_name=gc_project_name,
+                    mount_point=mount_point,
+                    mount_label=mount_label,
+                    )
+            flash('Ticket import has begun. Your new tracker will be available '
+                    'when the import is complete.')
+        else:
+            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 

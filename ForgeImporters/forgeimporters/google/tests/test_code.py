@@ -17,9 +17,11 @@
 
 from unittest import TestCase
 from mock import Mock, patch
+from ming.odm import ThreadLocalORMSession
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tool
+from allura import model as M
 
 
 # important to be distinct from 'test' which ForgeSVN uses, so that the tests can run in parallel and not clobber each other
@@ -113,3 +115,19 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
+
+    @with_svn
+    @patch('forgeimporters.google.code.import_tool')
+    def test_create_limit(self, import_tool):
+        project = M.Project.query.get(shortname=test_project_with_repo)
+        project.set_tool_data('GoogleRepoImporter', pending=1)
+        ThreadLocalORMSession.flush_all()
+        params = dict(gc_project_name='poop',
+                mount_label='mylabel',
+                mount_point='mymount',
+                )
+        r = self.app.post('/p/{}/admin/src/_importer/create'.format(test_project_with_repo),
+                params,
+                status=302).follow()
+        self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)

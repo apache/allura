@@ -18,12 +18,14 @@
 import json
 from unittest import TestCase
 from mock import Mock, patch
+from ming.orm import ThreadLocalORMSession
 
 from tg import config
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tracker
 
+from allura import model as M
 from forgeimporters.trac.tickets import (
     TracTicketImporter,
     TracTicketImportController,
@@ -132,3 +134,19 @@ class TestTracTicketImportController(TestController, TestCase):
         self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual('{"orig_user": "new_user"}', import_tool.post.call_args[1]['user_map'])
         self.assertEqual(u'http://example.com/trac/url', import_tool.post.call_args[1]['trac_url'])
+
+    @with_tracker
+    @patch('forgeimporters.trac.tickets.import_tool')
+    def test_create_limit(self, import_tool):
+        project = M.Project.query.get(shortname='test')
+        project.set_tool_data('TracTicketImporter', pending=1)
+        ThreadLocalORMSession.flush_all()
+        params = dict(trac_url='http://example.com/trac/url',
+                mount_label='mylabel',
+                mount_point='mymount',
+                )
+        r = self.app.post('/p/test/admin/bugs/_importer/create', params,
+                upload_files=[('user_map', 'myfile', '{"orig_user": "new_user"}')],
+                status=302).follow()
+        self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)
