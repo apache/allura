@@ -38,9 +38,8 @@ class BranchBrowser(repository.BranchBrowser, FeedController):
         latest = c.app.repo.latest(branch=self._branch)
         if is_empty or not latest:
             return dict(allow_fork=False, log=[], is_empty=is_empty)
-        redirect(c.app.repo.url_for_commit(c.app.default_branch_name) + 'tree/')
+        redirect('%s/tree/' % c.app.default_branch_name)
 
     @expose()
     def _lookup(self, rev, *remainder):
         return repository.CommitBrowser(rev), remainder
-

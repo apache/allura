@@ -59,6 +59,11 @@ class SVNTestController(TestController):
 
 
 class TestRootController(SVNTestController):
+
+    def test_head(self):
+        r = self.app.get('/src/')
+        assert r.location.endswith('/src/HEAD/tree/')
+
     def test_status(self):
         resp = self.app.get('/src/status')
         d = json.loads(resp.body)
