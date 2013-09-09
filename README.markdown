@@ -108,8 +108,8 @@ We have a custom config ready for use.
     (env-allura)~/src$ cp -f allura/solr_config/schema.xml solr-4.2.1/example/solr/collection1/conf
 
     (env-allura)~/src$ cd solr-4.2.1/example/
-    (env-allura)~/src/apache-solr-1.4.1/example/$ mkdir ~/logs/
-    (env-allura)~/src/apache-solr-1.4.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
+    (env-allura)~/src/apache-solr-4.2.1/example/$ mkdir ~/logs/
+    (env-allura)~/src/apache-solr-4.2.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
 
 
 ### Allura task processing
