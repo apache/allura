@@ -91,7 +91,7 @@ def _bulk_export(project, tools, user):
         'not_exported_tools': not_exported_tools,
     }
     email = {
-        'fromaddr': unicode(user.email_address_header()),
+        'fromaddr': unicode(tg.config['forgemail.return_path']),
         'reply_to': unicode(user.email_address_header()),
         'message_id': h.gen_message_id(),
         'destinations': [unicode(user._id)],

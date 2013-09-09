@@ -380,6 +380,7 @@ class TestExportTasks(unittest.TestCase):
             dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(tasks), 1)
         assert_equal(tasks[0].kwargs['subject'], 'Bulk export for project test completed')
+        assert_equal(tasks[0].kwargs['fromaddr'], 'noreply@sourceforge.net')
         text = tasks[0].kwargs['text']
         assert_in('The bulk export for project test is completed.', text)
         assert_in('The following tools were exported:\n- wiki', text)
