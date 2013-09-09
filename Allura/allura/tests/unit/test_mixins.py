@@ -75,3 +75,13 @@ class TestVotableArtifact(object):
         assert vote.votes_down_users == [self.user1.username]
         assert vote.votes_up == 0
         assert len(vote.votes_up_users) == 0
+
+    def test_json(self):
+        vote = VotableArtifact()
+        assert vote.__json__() == {'votes_up': 0, 'votes_down': 0}
+
+        vote.vote_down(self.user1)
+        assert vote.__json__() == {'votes_up': 0, 'votes_down': 1}
+
+        vote.vote_up(self.user2)
+        assert vote.__json__() == {'votes_up': 1, 'votes_down': 1}
