@@ -68,14 +68,16 @@ class ToolImportForm(schema.Schema):
 
 
 class ImportErrorHandler(object):
-    def __init__(self, importer, project_name):
+    def __init__(self, importer, project_name, project):
         self.importer = importer
         self.project_name = project_name
+        self.project = project
 
     def __enter__(self):
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.importer.clear_pending(self.project)
         if exc_type:
             g.post_event('import_tool_task_failed',
                 error=str(exc_val),
@@ -89,7 +91,7 @@ class ImportErrorHandler(object):
 @task(notifications_disabled=True)
 def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = ToolImporter.by_name(importer_name)
-    with ImportErrorHandler(importer, project_name):
+    with ImportErrorHandler(importer, project_name, c.project):
         importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
 
@@ -325,6 +327,44 @@ class ToolImporter(object):
             if app in aslist(importer.target_app):
                 importers[ep.name] = importer()
         return importers
+
+    @property
+    def classname(self):
+        return self.__class__.__name__
+
+    def enforce_limit(self, project):
+        """
+        Enforce rate limiting of tool imports on a given project.
+
+        Returns False if limit is met / exceeded.  Otherwise, increments the
+        count of pending / in-progress imports and returns True.
+        """
+        limit = config.get('tool_import.rate_limit', 1)
+        pending_key = 'tool_data.%s.pending' % self.classname
+        modified_project = M.Project.query.find_and_modify(
+                query={
+                        '_id': project._id,
+                        '$or': [
+                                {pending_key: None},
+                                {pending_key: {'$lt': limit}},
+                            ],
+                    },
+                update={'$inc': {pending_key: 1}},
+                new=True,
+            )
+        return modified_project is not None
+
+    def clear_pending(self, project):
+        """
+        Decrement the pending counter for this importer on the given project,
+        to indicate that an import is complete.
+        """
+        pending_key = 'tool_data.%s.pending' % self.classname
+        M.Project.query.find_and_modify(
+                query={'_id': project._id},
+                update={'$inc': {pending_key: -1}},
+                new=True,
+            )
 
     def import_tool(self, project, user, project_name=None,
             mount_point=None, mount_label=None, **kw):

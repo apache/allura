@@ -61,7 +61,7 @@ from forgetracker.scripts.import_tracker import import_tracker
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = TracTicketImporter()
-    with ImportErrorHandler(importer, kw.get('trac_url')):
+    with ImportErrorHandler(importer, kw.get('trac_url'), c.project):
         importer.import_tool(c.project, c.user, **kw)
 
 
@@ -89,13 +89,16 @@ class TracTicketImportController(BaseController):
     @require_post()
     @validate(TracTicketImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
-        import_tool.post(
-                mount_point=mount_point,
-                mount_label=mount_label,
-                trac_url=trac_url,
-                user_map=user_map)
-        flash('Ticket import has begun. Your new tracker will be available '
-                'when the import is complete.')
+        if TracTicketImporter().enforce_limit(c.project):
+            import_tool.post(
+                    mount_point=mount_point,
+                    mount_label=mount_label,
+                    trac_url=trac_url,
+                    user_map=user_map)
+            flash('Ticket import has begun. Your new tracker will be available '
+                    'when the import is complete.')
+        else:
+            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 

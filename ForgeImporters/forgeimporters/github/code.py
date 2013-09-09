@@ -45,7 +45,7 @@ from forgeimporters.github import GitHubProjectExtractor
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = GitHubRepoImporter()
-    with ImportErrorHandler(importer, kw.get('project_name')):
+    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
         importer.import_tool(c.project, c.user, **kw)
 
 
@@ -73,13 +73,16 @@ class GitHubRepoImportController(BaseController):
     @require_post()
     @validate(GitHubRepoImportForm(ForgeGitApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        import_tool.post(
-                project_name=gh_project_name,
-                user_name=gh_user_name,
-                mount_point=mount_point,
-                mount_label=mount_label)
-        flash('Repo import has begun. Your new repo will be available '
-                'when the import is complete.')
+        if GitHubRepoImporter().enforce_limit(c.project):
+            import_tool.post(
+                    project_name=gh_project_name,
+                    user_name=gh_user_name,
+                    mount_point=mount_point,
+                    mount_label=mount_label)
+            flash('Repo import has begun. Your new repo will be available '
+                    'when the import is complete.')
+        else:
+            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
