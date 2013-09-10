@@ -226,7 +226,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             selected_forum=forum,
         )
 
-    @expose('json')
+    @expose('json:')
     @validate(dict(
         begin=h.DateTimeConverter(if_empty=None, if_invalid=None),
         end=h.DateTimeConverter(if_empty=None, if_invalid=None),
