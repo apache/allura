@@ -81,9 +81,9 @@ class GitHubWikiImporter(ToolImporter):
             "Wiki",
             mount_point=mount_point or 'wiki',
             mount_label=mount_label or 'Wiki')
-        get_wiki_with_history = tool_option == 'history_github_wiki'
+        with_history = tool_option == 'history_github_wiki'
         with h.push_config(c, app=app):
-            self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=get_wiki_with_history)
+            self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=with_history)
         g.post_event('project_updated')
         return app
 
@@ -123,8 +123,6 @@ class GitHubWikiImporter(ToolImporter):
         wiki = git.Repo.clone_from(wiki_url, to_path=wiki_path, bare=True)
         if not history:
             return self.get_blobs_without_history(wiki.heads.master.commit)
-
-        commits = [commit for commit in wiki.iter_commits()]
-        for commit in reversed(commits):
+        for commit in reversed(list(wiki.iter_commits())):
             self.get_blobs_with_history(commit)
         rmtree(wiki_path)
