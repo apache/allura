@@ -237,7 +237,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
         discussion_id_q = {
             '$in': [d._id for d in c.app.forums
-                    if d.shortname == forum or forum is None]
+                    if d.shortname == forum or not forum]
         }
         # must be ordered dict, so that sorting by this works properly
         grouping = OrderedDict()
