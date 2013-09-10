@@ -84,7 +84,8 @@ class ForgeForm(ew.SimpleForm):
         submit_text='Save',
         style='standard',
         method='post',
-        enctype=None)
+        enctype=None,
+        target=None)
 
     def display_label(self, field, label_text=None):
         ctx = super(ForgeForm, self).context_for(field)

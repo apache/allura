@@ -190,7 +190,7 @@ class ProjectImporter(BaseController):
         self.neighborhood = neighborhood
 
     def _check_security(self):
-        require_access(self.neighborhood, 'register')
+        require_access(self.neighborhood, 'register', login_overlay=True)
 
     @LazyProperty
     def tool_importers(self):
@@ -231,6 +231,7 @@ class ProjectImporter(BaseController):
         tools installed and redirect to the new project, presumably with a
         message indicating that some data will not be available immediately.
         """
+        require_access(self.neighborhood, 'register', login_overlay=False)
         try:
             c.project = self.neighborhood.register_project(kw['project_shortname'],
                     project_name=kw['project_name'])
