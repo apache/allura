@@ -26,6 +26,7 @@ class TestGitHubImportController(TestController, TestCase):
         assert '<input id="user_name" name="user_name" value="" autofocus/>' in r
         assert '<input id="project_name" name="project_name" value="" />' in r
         assert '<input id="project_shortname" name="project_shortname" value=""/>' in r
+        assert '<input name="tool_option" value="history_github_wiki" type="checkbox" checked="checked"/>' in r, r
 
     def test_login_overlay(self):
         r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))

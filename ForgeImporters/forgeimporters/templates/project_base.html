@@ -125,6 +125,11 @@
             <label>
                 <input name="tools" value="{{name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tools'] %} checked="checked"{% endif %}/>
                 {{tool_importer.tool_label}}
+                {%for option_name, option_label in tool_importer.tool_option.iteritems()%}
+                    </br>
+                    <input name="tool_option" value="{{option_name}}" type="checkbox"{% if not c.form_errors or name in c.form_values['tool_option'] %} checked="checked"{% endif %}/>
+                    {{option_label}}
+                {%endfor%}
             </label>
             {{tool_importer.tool_description}}
         </div>
