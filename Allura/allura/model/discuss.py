@@ -97,13 +97,7 @@ class Discussion(Artifact, ActivityObject):
                 status='ok'
                 ))\
             .sort('timestamp', pymongo.DESCENDING)\
-            .limit(1)\
-            .hint([('discussion_id', pymongo.ASCENDING),
-                   ('status', pymongo.ASCENDING),
-                   ('timestamp', pymongo.ASCENDING),
-                   ])
-            # hint is to try to force the index to be used, since mongo wouldn't select it sometimes
-            # https://groups.google.com/forum/#!topic/mongodb-user/0TEqPfXxQU8
+            .limit(1)
         return q.first()
 
     def url(self):
