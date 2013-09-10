@@ -113,3 +113,12 @@
       </div>
   {% endif %}
 {%- endmacro %}
+
+{%- macro login_overlay() %}
+    {% do g.register_js('js/jquery.lightbox_me.js') %}
+    {% do g.register_js('js/login_overlay.js') %}
+    <div id="login_overlay" class="ui-widget-content">
+        <h2 class="dark title">Login Required</h2>
+        <iframe src="{{g.login_fragment_url}}"></iframe>
+    </div>
+{%- endmacro %}

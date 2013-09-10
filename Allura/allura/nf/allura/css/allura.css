@@ -216,3 +216,14 @@ tr.rev div.markdown_content p {
     padding: 0;
     margin-bottom: 0;
 }
+
+#login_overlay .title {
+    margin-bottom: 0;
+    padding-left: 10px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+#login_overlay iframe {
+    width: 400px;
+}

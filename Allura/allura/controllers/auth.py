@@ -105,6 +105,10 @@ class AuthController(BaseController):
         c.form = F.login_form
         return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
 
+    @expose('jinja:allura:templates/login_fragment.html')
+    def login_fragment(self, *args, **kwargs):
+        return self.index(*args, **kwargs)
+
     @expose('jinja:allura:templates/custom_login.html')
     def login_verify_oid(self, provider, username, return_to=None):
         if provider:

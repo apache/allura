@@ -115,6 +115,7 @@ class Globals(object):
         # Load login/logout urls; only used for SFX logins
         self.login_url = config.get('auth.login_url', '/auth/')
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
+        self.login_fragment_url = config.get('auth.login_fragment_url', '/auth/login_fragment')
 
         # Setup Gravatar
         self.gravatar = gravatar.url
@@ -400,6 +401,12 @@ class Globals(object):
     @property
     def resource_manager(self):
         return ew_core.widget_context.resource_manager
+
+    def register_css(self, href, **kw):
+        self.resource_manager.register(ew.CSSLink(href, **kw))
+
+    def register_js(self, href, **kw):
+        self.resource_manager.register(ew.JSLink(href, **kw))
 
     def register_forge_css(self, href, **kw):
         self.resource_manager.register(ew.CSSLink('allura/' + href, **kw))

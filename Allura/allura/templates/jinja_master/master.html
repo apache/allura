@@ -132,6 +132,9 @@
           </section>
         {% endfor %}
     </div>
+    {% if c.show_login_overlay %}
+        {{theme_macros.login_overlay()}}
+    {% endif %}
     {% for blob in g.resource_manager.emit('body_js') %}
       {{ blob }}
     {% endfor %}

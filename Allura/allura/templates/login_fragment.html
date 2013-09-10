@@ -1,0 +1,60 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+<!DOCTYPE html>
+<!-- Server: {{g.server_name}} -->
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% if g.theme.jinja_macros %}
+  {% import g.theme.jinja_macros as theme_macros with context %}
+{% endif %}
+{% do g.register_forge_js('js/jquery-base.js') %}
+{% do g.register_forge_js('js/allura-base.js') %}
+{% do g.theme.require() %}
+{% do g.resource_manager.register_widgets(c) %}
+{# paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ #}
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]>--> <html lang="en" class="no-js"> <!--<![endif]-->
+    <head>
+        {{theme_macros.extra_header(g.theme_href(''))}}
+        {% for blob in g.resource_manager.emit('head_css') %}
+          {{ blob }}
+        {% endfor %}
+        {% for blob in g.resource_manager.emit('head_js') %}
+          {{ blob }}
+        {% endfor %}
+        <style type="text/css">
+            html {
+                overflow: hidden;
+            }
+            body {
+                padding-top: 1em;
+                width: 1000px;
+            }
+        </style>
+    </head>
+    <body>
+        {{ c.form.display(action='../do_login', target='_top', value=dict(return_to=return_to)) }}
+
+        {% for blob in g.resource_manager.emit('body_js_tail') %}
+          {{ blob }}
+        {% endfor %}
+    </body>
+</html>
