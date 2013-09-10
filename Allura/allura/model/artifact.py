@@ -62,7 +62,7 @@ class Artifact(MappedClass):
         session = artifact_orm_session
         name='artifact'
         indexes = [
-            ('app_config_id', 'label'),
+            ('app_config_id', 'labels'),
         ]
         def before_save(data):
             if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
