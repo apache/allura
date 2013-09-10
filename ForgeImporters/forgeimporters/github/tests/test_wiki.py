@@ -19,8 +19,7 @@ import datetime
 
 from unittest import TestCase
 from nose.tools import assert_equal
-from mock import Mock, patch
-
+from mock import Mock, patch, call
 from forgeimporters.github.wiki import GitHubWikiImporter
 from alluratest.controller import setup_basic_test
 
@@ -70,12 +69,17 @@ class TestGitHubWikiImporter(TestCase):
         self.commit2.tree.blobs = [self.blob1, self.blob2, self.blob3]
         self.commit2.committed_date = 1256291446
 
-    def test_get_blobs(self):
-        wiki = GitHubWikiImporter().get_blobs(self.commit2)
-        assert_equal(wiki['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
-        assert_equal(wiki['Home'][1], datetime.datetime(2009, 10, 23, 9, 50, 46))
-        assert_equal(wiki['Home2'][0], '<p><strong>test message</strong></p>\n')
-        assert_equal(wiki['Home3'][0], '<div class="document">\n<p>test message</p>\n</div>\n')
+    @patch('forgeimporters.github.wiki.WM.Page.upsert')
+    @patch('forgeimporters.github.wiki.h.render_any_markup')
+    def test_get_blobs_without_history(self, render, upsert):
+        upsert.text = Mock()
+        GitHubWikiImporter().get_blobs_without_history(self.commit2)
+        assert_equal(upsert.call_args_list, [call('Home'), call('Home2'), call('Home3')])
+
+        assert_equal(render.call_args_list, [
+            call('Home.md', u'# test message'),
+            call('Home2.creole', u'**test message**'),
+            call('Home3.rest', u'test message')])
 
     @patch('forgeimporters.github.wiki.git.Repo')
     @patch('forgeimporters.github.wiki.mkdtemp')
@@ -86,15 +90,28 @@ class TestGitHubWikiImporter(TestCase):
             repo.clone_from.assert_called_with('wiki_url', to_path='temp_path', bare=True)
 
     @patch('forgeimporters.github.wiki.git.Repo._clone')
-    def test_get_commits(self, clone):
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_with_history')
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_without_history')
+    def test_get_commits_with_history(self, without_history, with_history, clone):
         repo = clone.return_value
         repo.iter_commits.return_value = [self.commit1, self.commit2]
-        wiki = GitHubWikiImporter().get_wiki_pages('wiki_url')
-        assert_equal(len(wiki), 2)
-        assert_equal(wiki[0]['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
-        assert_equal(wiki[0]['Home2'][0], '<p><strong>test message</strong></p>\n')
-        assert_equal(wiki[0]['Home3'][0], '<div class="document">\n<p>test message</p>\n</div>\n')
-        assert_equal(len(wiki[0]), 3)
+        GitHubWikiImporter().get_wiki_pages('wiki_url', history=True)
+        assert_equal(with_history.call_count, 2)
+        assert_equal(without_history.call_count, 0)
 
-        assert_equal(wiki[1]['Home'][0], '<div class="markdown_content"><h1 id="test-message">test message</h1></div>')
-        assert_equal(len(wiki[1]), 1)
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_with_history')
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_without_history')
+    def test_get_commits_without_history(self, without_history, with_history):
+        with patch('forgeimporters.github.wiki.git.Repo._clone'):
+            GitHubWikiImporter().get_wiki_pages('wiki_url')
+            assert_equal(with_history.call_count, 0)
+            assert_equal(without_history.call_count, 1)
+
+    @patch('forgeimporters.github.wiki.WM.Page.upsert')
+    @patch('forgeimporters.github.wiki.h.render_any_markup')
+    def test_get_blobs_with_history(self, render, upsert):
+        self.commit2.stats.files = {"Home.md": self.blob1}
+        self.commit2.tree = {"Home.md": self.blob1}
+        GitHubWikiImporter().get_blobs_with_history(self.commit2)
+        assert_equal(upsert.call_args_list, [call('Home')])
+        assert_equal(render.call_args_list, [call('Home.md', u'# test message')])

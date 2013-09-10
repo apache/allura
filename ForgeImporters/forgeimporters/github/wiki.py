@@ -45,8 +45,10 @@ class GitHubWikiImporter(ToolImporter):
     source = 'GitHub'
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
+    tool_option = {"history_github_wiki": "Import wiki revision history"}
 
-    def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None, **kw):
+    def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
+                    tool_option=None, **kw):
         """ Import a GitHub wiki into a new Wiki Allura tool.
 
         """
@@ -59,31 +61,42 @@ class GitHubWikiImporter(ToolImporter):
             "Wiki",
             mount_point=mount_point or 'wiki',
             mount_label=mount_label or 'Wiki')
-
+        get_wiki_with_history = tool_option == 'history_github_wiki'
         with h.push_config(c, app=app):
-            for commit in self.get_wiki_pages(extractor.get_page_url('wiki_url')):
-                for page_name, page in commit.iteritems():
-                    wiki_page = WM.Page.upsert(page_name)
-                    wiki_page.text = page[0]
-                    wiki_page.mod_date = page[1]
-                    wiki_page.timestamp = page[1]
-                    wiki_page.viewable_by = ['all']
-                    wiki_page.commit()
-
+            self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=get_wiki_with_history)
         g.post_event('project_updated')
         return app
 
-    def get_blobs(self, commit):
-        result = dict()
+    def get_blobs_without_history(self, commit):
         for page in commit.tree.blobs:
-            result[page.name.split('.')[0]] = [h.render_any_markup(page.name, h.really_unicode(page.data_stream.read())), datetime.utcfromtimestamp(commit.committed_date)]
-        return result
+            wiki_page = WM.Page.upsert(page.name.split('.')[0])
+            wiki_page.text = h.render_any_markup(page.name, h.really_unicode(page.data_stream.read()))
+            wiki_page.timestamp = wiki_page.mod_date = datetime.utcfromtimestamp(commit.committed_date)
+            wiki_page.viewable_by = ['all']
+            wiki_page.commit()
 
-    def get_wiki_pages(self, wiki_url):
-        result = []
+    def get_blobs_with_history(self, commit):
+        for page_name in commit.stats.files.keys():
+            wiki_page = WM.Page.upsert(page_name.split('.')[0])
+            if page_name in commit.tree:
+                wiki_page.text = h.render_any_markup(
+                    page_name,
+                    h.really_unicode(commit.tree[page_name].data_stream.read()))
+                wiki_page.timestamp = wiki_page.mod_date = datetime.utcfromtimestamp(commit.committed_date)
+                wiki_page.viewable_by = ['all']
+            else:
+                wiki_page.deleted = True
+                suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+                wiki_page.title += suffix
+            wiki_page.commit()
+
+    def get_wiki_pages(self, wiki_url, history=None):
         wiki_path = mkdtemp()
         wiki = git.Repo.clone_from(wiki_url, to_path=wiki_path, bare=True)
-        for commit in wiki.iter_commits():
-            result.insert(0, self.get_blobs(commit))
+        if not history:
+            return self.get_blobs_without_history(wiki.heads.master.commit)
+
+        commits = [commit for commit in wiki.iter_commits()]
+        for commit in reversed(commits):
+            self.get_blobs_with_history(commit)
         rmtree(wiki_path)
-        return result

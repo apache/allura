@@ -399,6 +399,14 @@ class ToolImporter(object):
         return getattr(aslist(self.target_app)[0], 'tool_label', None)
 
     @property
+    def tool_option(self):
+        """
+        The label for this tool importer.  Defaults to the `tool_label` from
+        the `target_app`.
+        """
+        return getattr(aslist(self.target_app)[0], 'tool_option', dict())
+
+    @property
     def tool_description(self):
         """
         The description for this tool importer.  Defaults to the `tool_description`
