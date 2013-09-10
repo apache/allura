@@ -1181,15 +1181,15 @@ class TicketController(BaseController, FeedController):
                     utils.permanent_redirect(self.ticket.url())
                 else:
                     # trying to check if ticket was moved from here
-                    self.ticket = TM.Ticket.query.find({
-                        'custom_fields.moved_from_app': c.app.config._id,
-                        'custom_fields.moved_from_id': self.ticket_num,
+                    moved_ticket = TM.MovedTicket.query.find({
+                        'app_config_id': c.app.config._id,
+                        'ticket_num': self.ticket_num,
                     }).first()
-                    if self.ticket is not None:
+                    if moved_ticket:
                         flash('Ticket #{} was moved to this app'.format(
-                            self.ticket.ticket_num
+                            moved_ticket.ticket_num
                         ))
-                        utils.permanent_redirect(self.ticket.url())
+                        utils.permanent_redirect(moved_ticket.moved_to_url)
             self.attachment = AttachmentsController(self.ticket)
             # self.comments = CommentController(self.ticket)
 

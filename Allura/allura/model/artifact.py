@@ -879,3 +879,14 @@ class VotableArtifact(MappedClass):
             'votes_up': self.votes_up,
             'votes_down': self.votes_down,
         }
+
+
+class MovedArtifact(Artifact):
+    class __mongometa__:
+        session = artifact_orm_session
+        name='moved_artifact'
+
+    _id = FieldProperty(S.ObjectId)
+    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    app_config = RelationProperty('AppConfig')
+    moved_to_url = FieldProperty(str, required=True, allow_none=False)

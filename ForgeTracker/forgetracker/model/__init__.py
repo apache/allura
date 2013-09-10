@@ -15,4 +15,4 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from ticket import Globals, Bin, Ticket, TicketAttachment
+from ticket import Globals, Bin, Ticket, TicketAttachment, MovedTicket

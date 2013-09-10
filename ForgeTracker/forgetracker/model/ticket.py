@@ -36,7 +36,7 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from allura.model import (Artifact, VersionedArtifact, Snapshot,
+from allura.model import (Artifact, MovedArtifact, VersionedArtifact, Snapshot,
                           project_orm_session, BaseAttachment, VotableArtifact, AppConfig, Mailbox, User)
 from allura.model import User, Feed, Thread, Notification, ProjectRole
 from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
@@ -858,6 +858,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         app = app_config.project.app_instance(app_config)
         prior_url = self.url()
         prior_app = self.app
+        prior_ticket_num = self.ticket_num
         attachments = self.attachments
         attach_metadata = BaseAttachment.metadata_for(self)
         prior_cfs = [
@@ -897,8 +898,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if old_val is None:
                 custom_fields[fn] = None if ft == 'user' else ''
             custom_fields[fn] = old_val
-        custom_fields['moved_from_app'] = prior_app.config._id
-        custom_fields['moved_from_id'] = self.ticket_num
+        # custom_fields['moved_from_app'] = prior_app.config._id
+        # custom_fields['moved_from_id'] = self.ticket_num
         self.custom_fields = custom_fields
 
         # move ticket. ensure unique ticket_num
@@ -938,6 +939,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         session(self).expunge(self)
         ticket = Ticket.query.find(dict(
             app_config_id=app_config._id, ticket_num=self.ticket_num)).first()
+
+        # creating MovedTicket to be able to redirect from this url
+        moved_ticket = MovedTicket(
+            app_config_id=prior_app.config._id, ticket_num=prior_ticket_num,
+            moved_to_url=ticket.url(),
+        )
 
         message = 'Ticket moved from %s' % prior_url
         if messages:
@@ -1080,5 +1087,9 @@ class TicketAttachment(BaseAttachment):
     class __mongometa__:
         polymorphic_identity='TicketAttachment'
     attachment_type=FieldProperty(str, if_missing='TicketAttachment')
+
+
+class MovedTicket(MovedArtifact):
+    ticket_num = FieldProperty(int, required=True, allow_none=False)
 
 Mapper.compile_all()
