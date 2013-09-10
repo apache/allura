@@ -45,7 +45,7 @@ class GitHubWikiImporter(ToolImporter):
     source = 'GitHub'
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
-    tool_option = {"history_github_wiki": "Import wiki revision history"}
+    tool_option = {"history_github_wiki": "Import history"}
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
             'asciidoc',
