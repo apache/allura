@@ -46,6 +46,26 @@ class GitHubWikiImporter(ToolImporter):
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
     tool_option = {"history_github_wiki": "Import wiki revision history"}
+    # List of supported formats https://github.com/gollum/gollum/wiki#page-files
+    supported_formats = [
+            'asciidoc',
+            'creole',
+            'markdown',
+            'mdown',
+            'mkdn',
+            'mkd',
+            'md',
+            'org',
+            'pod',
+            'rdoc',
+            'rest.txt',
+            'rst.txt',
+            'rest',
+            'rst',
+            'textile',
+            'mediawiki',
+            'wiki'
+    ]
 
     def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
                     tool_option=None, **kw):
@@ -69,7 +89,11 @@ class GitHubWikiImporter(ToolImporter):
 
     def get_blobs_without_history(self, commit):
         for page in commit.tree.blobs:
-            wiki_page = WM.Page.upsert(page.name.split('.')[0])
+            name, ext = page.name.split('.', 1)
+            if ext not in self.supported_formats:
+                log.info('Not a wiki page %s. Skipping.' % page.name)
+                continue
+            wiki_page = WM.Page.upsert(name)
             wiki_page.text = h.render_any_markup(page.name, h.really_unicode(page.data_stream.read()))
             wiki_page.timestamp = wiki_page.mod_date = datetime.utcfromtimestamp(commit.committed_date)
             wiki_page.viewable_by = ['all']
@@ -77,7 +101,11 @@ class GitHubWikiImporter(ToolImporter):
 
     def get_blobs_with_history(self, commit):
         for page_name in commit.stats.files.keys():
-            wiki_page = WM.Page.upsert(page_name.split('.')[0])
+            name, ext = page_name.split('.', 1)
+            if ext not in self.supported_formats:
+                log.info('Not a wiki page %s. Skipping.' % page_name)
+                continue
+            wiki_page = WM.Page.upsert(name)
             if page_name in commit.tree:
                 wiki_page.text = h.render_any_markup(
                     page_name,
