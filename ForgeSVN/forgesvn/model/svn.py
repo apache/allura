@@ -171,6 +171,8 @@ class SVNImplementation(M.RepositoryImplementation):
     def url_for_commit(self, commit, url_type=None):
         if hasattr(commit, '_id'):
             object_id = commit._id
+        elif commit == self._repo.app.default_branch_name:
+            object_id = commit
         else:
             object_id = self.rev_parse(commit)
         if ':' in object_id:
