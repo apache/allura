@@ -1,0 +1,265 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% extends g.theme.master %}
+{% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
+
+{% do g.register_forge_css('css/forge/hilite.css') %}
+{% do g.register_app_css('css/tracker.css') %}
+
+{% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / #{{ticket.ticket_num}} {{ticket.summary}}{% endblock %}
+
+{% block head %}
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss"/>
+  <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom"/>
+{% endblock %}
+
+{% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% if ticket.deleted %}<span> (deleted)</span>{% endif %}{% endblock %}
+
+{% block actions %}
+<script type="text/javascript">
+    incentify_type = 'allura';
+    incentify_width = 728;
+    incentify_height = 90;
+    incentify_panel_type = 'html';
+</script>
+<script type="text/javascript" src="https://secure.donay.com/site/scripts/incentify.js" async></script>
+<a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
+{% if c.user and c.user != c.user.anonymous() %}
+  {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
+{% endif %}
+{% if h.has_access(ticket.app, 'admin') %}
+  <a href="move" title="Move"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
+{% endif %}
+{% if h.has_access(ticket, 'update') and not ticket.deleted%}
+  <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
+  {%if h.has_access(ticket, 'delete') and not ticket.deleted%}
+    <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
+  {% endif %}
+{%elif h.has_access(ticket, 'delete') and ticket.deleted%}
+  <a class="post-link" href="undelete" title="Undelete"><b data-icon="{{g.icons['undelete'].char}}" class="ico {{g.icons['undelete'].css}}" title="Undelete"></b></a>
+{% endif %}
+{% endblock %}
+
+{% block edit_box %}
+<div class="editbox">
+  <div class="form_holder" style="display: none">
+    {{c.ticket_form.display(action='%supdate_ticket_from_widget' % ticket.url(),
+      value=ticket, ticket=ticket, show_comment=True)}}
+  </div>
+  <div class="view_holder">
+      {% if '_milestone' in ticket.custom_fields %}
+        <div class="grid-4">
+          <label class="simple">Milestone: </label>
+          {% if ticket.custom_fields['_milestone'] %}
+            <a href="{{c.app.url}}milestone/{{ticket.custom_fields['_milestone']}}">{{ticket.custom_fields['_milestone']}}</a>
+          {% else %}
+            None
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="grid-4">
+        <label class="simple">Status: </label>
+        <span class="{{ticket.open_or_closed}}">{{ticket.status}}</span>
+      </div>
+      <div class="grid-5 ticket-assigned-to">
+        <label class="simple">Owner: </label>
+        {% if ticket.assigned_to_id %}
+          <a href="{{ticket.assigned_to.url()}}">{{ticket.assigned_to_name()}}</a>
+        {% else %}
+          {{ticket.assigned_to_name()}}
+        {% endif %}
+      </div>
+      <div class="grid-4">
+        <label class="simple">Labels: </label>
+        {% for label in ticket.labels %}
+          <span class="ui-corner-all tag">
+              <a href="../search?q=labels:{{h.urlquoteplus(label)}}">{{label}} ({{ticket.artifacts_labeled_with(label, ticket.app_config).count()}})</a>
+          </span>
+        {% else %}
+          None
+        {% endfor %}
+      </div>
+    <div style="clear:both"></div>
+    {% set min_c_fields = '_milestone' in ticket.custom_fields and 1 or 0 %}
+    {% if globals.custom_fields and globals.custom_fields.__len__() > min_c_fields %}
+      {% set cf_count=0 %}
+      {% for field in globals.custom_fields or [] %}
+        {% if field.name != '_milestone' %}
+          {% if cf_count%4 == 0 and cf_count != 0 %}
+            <div style="clear:both"></div>
+          {% endif %}
+            <div class="grid-4">
+              <label class="simple">{{field.label}}:</label>
+              {% if field.type == 'user' %}
+                {% set user = ticket.get_custom_user(field.name) %}
+                {% if user %}
+                  <a href="{{user.url()}}">{{user.get_pref('display_name')}}</a>
+                {% else %}
+                  nobody
+                {% endif %}
+              {% elif field.type == 'milestone' %}
+                <a href="{{c.app.url}}{{field.name[1:]}}/{{ticket.custom_fields[field.name]}}">{{ticket.custom_fields[field.name]}}</a>
+              {% else %}
+                {{ticket.custom_fields[field.name]}}
+              {% endif %}
+            </div>
+          {% set cf_count=cf_count+1 %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <div style="clear:both"></div>
+    <div class="grid-4">
+      <label class="simple">Updated:</label>
+      {{abbr_date(ticket.mod_date)}}
+    </div>
+    <div class="grid-4">
+      <label class="simple">Created:</label>
+      {{abbr_date(ticket.created_date)}}
+    </div>
+    <div class="grid-5">
+      <label class="simple">Creator:</label>
+      <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
+    </div>
+    <div class="grid-4">
+      <label class="simple">Private:</label>
+      {{'Yes' if ticket.private else 'No'}}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if voting_enabled %}
+  {{ c.vote_form.display(artifact=ticket) }}
+{% endif %}
+<div id="ticket_content">
+  {{g.markdown.convert(ticket.description)|safe}}
+  {% if ticket.attachments %}
+    <strong class="grid-18">{{ticket.attachments.__len__()}} Attachments</strong>
+    <div class="clear">
+    {% for att in ticket.attachments %}
+        <div class="attachment_thumb">
+          {% if att.is_image() and not att.is_embedded() %}
+            <a href="{{att.url()}}" class="file_type">
+              <img src="{{att.url()}}/thumb" alt="">
+            </a>
+          {% endif %}
+          <a href="{{att.url()}}">{{att.filename}}</a>
+        </div>
+    {% endfor %}
+    </div>
+    <div style="clear:both"></div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block after_content %}
+  {{lib.related_artifacts(ticket)}}
+  <div id="discussion_holder">
+    <h2>Discussion</h2>
+    {% set thread=ticket.discussion_thread %}
+    {{c.thread.display(value=thread,new_post_text="New Comment",page=page,limit=limit,count=count)}}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {% if h.has_access(ticket, 'update')() %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+          // show/hide form
+          var form_holder = $('div.form_holder');
+          var view_holder = $('div.view_holder');
+          var discussion_holder = $('#discussion_holder');
+          var ticket_content = $('#ticket_content');
+          var title_holder = $('h2.dark');
+          var original_title = title_holder.text();
+          var title_actions = title_holder.find('small');
+          var vote = $('#vote');
+          var discussion_comment_textarea = $('#new_post_holder').find('form').find('textarea');
+
+          $('a.edit_ticket').click(function () {
+            var not_posted_comment = discussion_comment_textarea.val();
+            form_holder.show();
+            view_holder.hide();
+            discussion_holder.hide();
+            ticket_content.hide();
+            title_actions.hide();
+            title_actions.appendTo(document.body);
+            title_holder.text('\u00A0');
+            vote.hide();
+            $('a.edit_ticket').addClass('btn_activate');
+            $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
+            $('textarea[name="ticket_form.comment"]').val(not_posted_comment);
+            $(this).trigger('editTicket');
+            return false;
+          });
+          if ($('div > div.error').hasClass('error')){
+            $('a.edit_ticket').click();
+          }
+          $('a.cancel_form').click(function () {
+            form_holder.hide();
+            view_holder.show();
+            discussion_holder.show();
+            ticket_content.show();
+            title_holder.text(original_title);
+            title_actions.appendTo(title_holder);
+            title_actions.show();
+            vote.show();
+            $('a.edit_ticket').removeClass('btn_activate');
+            return false;
+          });
+          $('.post-link').click(function(evt) {
+                        var cval = $.cookie('_session_id');
+                        evt.preventDefault();
+                        $.post(this.href, {_session_id:cval}, function(val)
+                                { window.location = val.location; },
+                                'json');
+          });
+          // delete attachments
+          $('div.attachment_thumb a.delete_attachment').click(function () {
+            var cval = $.cookie('_session_id');
+            $.post(this.href, {'delete': 'True','_session_id':cval}, function () {
+                location.reload();
+            });
+            return false;
+          });
+        });
+    </script>
+  {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style type="text/css">
+  input[name='ticket_form.summary']{
+    top: 5px;
+    position: absolute;
+    z-index: 21;
+  }
+  div.form_holder .reply textarea{
+    height: 60px;
+  }
+  div.actions{
+    width: 150px;
+  }
+  .markdown_edit textarea {
+    height: 100px;
+  }
+</style>
+{% endblock %}
+
