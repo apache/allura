@@ -205,6 +205,9 @@ class ForumPost(M.Post):
     class __mongometa__:
         name='forum_post'
         history_class = ForumPostHistory
+        indexes = [
+            'timestamp',  # for the posts_24hr site_stats query
+        ]
     type_s = 'Post'
 
     discussion_id = ForeignIdProperty(Forum)
