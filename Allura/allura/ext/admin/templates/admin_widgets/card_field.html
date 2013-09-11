@@ -78,7 +78,12 @@
         <div class="block-list grid-13" style="display: none">
           <ul>
           {% for u, reason in block_list[name] %}
-            <li><input type="checkbox" name="user_id" value="{{ u._id }}">{{ u.username }} {{ '(' + reason + ')' if reason else '' }}</li>
+          <li>
+            <label>
+              <input type="checkbox" name="user_id" value="{{ u._id }}">
+              {{ u.username }} {{ '(' + reason + ')' if reason else '' }}
+            </label>
+          </li>
           {% endfor %}
           </ul>
         </div>
