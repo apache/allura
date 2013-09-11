@@ -85,9 +85,10 @@ class NeighborhoodController(object):
         provider = plugin.ProjectRegistrationProvider.get()
         try:
             provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=self.neighborhood)
-        except Invalid as e:
-            raise exc.HTTPNotFound, pname
-        project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
+        except Invalid:
+            project = None
+        else:
+            project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
             # create user-project if it is missing
             user = M.User.query.get(username=pname, disabled=False)
