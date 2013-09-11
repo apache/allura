@@ -30,9 +30,9 @@ class GitHubTrackerImporter(ToolImporter):
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
         app = project.install_app('tickets', mount_point, mount_label,
-                EnableVoting=True,
-                open_status_names='New Accepted Started',
-                closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+                EnableVoting=False,
+                open_status_names='Open',
+                closed_status_names='Closed',
             )
         ThreadLocalORMSession.flush_all()
         extractor = GitHubProjectExtractor(
@@ -88,7 +88,10 @@ class GitHubTrackerImporter(ToolImporter):
         for comment in extractor.iter_comments(issue):
             body, attachments = self._get_attachments(comment['body'])
             if comment['user']:
-                body += u'\n*Originally posted by: {}*'.format(comment['user']['login'])
+                posted_by = u'*Originally posted by: [{0}](https://github.com/{0})*\n'.format(
+                    comment['user']['login'])
+                posted_by += body
+                body = posted_by
             p = ticket.discussion_thread.add_post(
                     text = body,
                     ignore_security = True,
