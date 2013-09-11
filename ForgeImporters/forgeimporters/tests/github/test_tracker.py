@@ -45,9 +45,9 @@ class TestTrackerImporter(TestCase):
                 mount_point='mount_point', mount_label='mount_label', user_name='me')
 
         project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label',
-                EnableVoting=True,
-                open_status_names='New Accepted Started',
-                closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+                EnableVoting=False,
+                open_status_names='Open',
+                closed_status_names='Closed',
             )
         gpe.iter_issues.assert_called_once()
         self.assertEqual(tlos.flush_all.call_args_list, [
@@ -127,7 +127,7 @@ class TestTrackerImporter(TestCase):
         importer = tracker.GitHubTrackerImporter()
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text='hello\n*Originally posted by: me*',
+                text='*Originally posted by: [me](https://github.com/me)*\nhello',
                 timestamp=datetime(2013, 8, 26, 16, 57, 53),
                 ignore_security=True,
             ))
