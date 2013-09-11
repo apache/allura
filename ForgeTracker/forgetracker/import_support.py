@@ -148,7 +148,7 @@ class ImportSupport(object):
         u = M.User.by_username(username)
         return u._id if u else None
 
-    def check_custom_field(self, field, value):
+    def check_custom_field(self, field, value, ticket_status):
         field = c.app.globals.get_custom_field(field)
         if (field['type'] == 'select') and value:
             field_options = h.split_select_field_options(h.really_unicode(field['options']))
@@ -156,20 +156,21 @@ class ImportSupport(object):
                 field['options'] = ' '.join([field['options'], value])
         elif (field['type'] == 'milestone') and value:
             milestones = field['milestones']
-            is_exists = False
             for milestone in milestones:
                 if milestone['name'] == value:
-                    is_exists = True
-            if not is_exists:
+                    if ticket_status in c.app.globals.open_status_names:
+                        milestone['complete'] = False
+                    break
+            else:
                 milestone = {'due_date': '',
-                             'complete': False,
+                             'complete': not ticket_status in c.app.globals.open_status_names,
                              'description': '',
                              'name': value,
                              'old_name': value}
                 field['milestones'].append(milestone)
         ThreadLocalORMSession.flush_all()
 
-    def custom(self, ticket, field, value):
+    def custom(self, ticket, field, value, ticket_status):
         field = '_' + field
         if not c.app.has_custom_field(field):
             log.warning('Custom field %s is not defined, defining as string', field)
@@ -177,12 +178,9 @@ class ImportSupport(object):
             ThreadLocalORMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
-        self.check_custom_field(field, value)
+        self.check_custom_field(field, value, ticket_status)
         ticket['custom_fields'][field] = value
 
-    #
-    # Object convertors
-    #
     def make_artifact(self, ticket_dict):
         remapped = {}
         for f, v in ticket_dict.iteritems():
@@ -194,7 +192,7 @@ class ImportSupport(object):
             elif callable(transform):
                 transform(remapped, f, v)
             elif transform is ():
-                self.custom(remapped, f, v)
+                self.custom(remapped, f, v, ticket_dict.get('status'))
             else:
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
