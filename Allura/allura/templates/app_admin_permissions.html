@@ -72,7 +72,7 @@
       $('input.block_user_role').val(role);
   });
   $('a.block-list').click(function(){
-      var userlist = $(this).find('div.block-list').clone();
+      var userlist = $(this).siblings('div.block-list').clone();
       var deck =  $(this).closest('ul.deck');
       var role = deck.find('li.tcenter h3').text();
       $('input.block_user_role').val(role);
@@ -80,4 +80,3 @@
   });
 </script>
 {% endblock %}
-

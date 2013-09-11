@@ -164,7 +164,7 @@ class TestProjectAdmin(TestController):
 
         # Check the audit log
         r = self.app.get('/admin/audit/')
-        assert "uninstall tool test-tool" in r.body, r.bodyt
+        assert "uninstall tool test-tool" in r.body, r.body
 
     @td.with_wiki
     def test_add_user_to_block_list(self):

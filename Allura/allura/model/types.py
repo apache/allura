@@ -43,11 +43,14 @@ class ACE(S.Object):
             permission=permission)
 
     @classmethod
-    def deny(cls, role_id, permission):
-        return Object(
+    def deny(cls, role_id, permission, reason=None):
+        ace = Object(
             access=cls.DENY,
             role_id=role_id,
             permission=permission)
+        if reason:
+            ace.reason = reason
+        return ace
 
     @classmethod
     def match(cls, ace, role_id, permission):
@@ -60,5 +63,19 @@ class ACL(S.Array):
     def __init__(self, permissions=None, **kwargs):
         super(ACL, self).__init__(
             field_type=ACE(permissions), **kwargs)
+
+        def __contains__(self, ace):
+            """Test membership of ace in acl ignoring ace.reason field.
+
+            e.g. `ace in acl` test should evaluate to True with following vars:
+
+            ace = M.ACE.deny(role_id, 'read')
+            acl = [{role_id=ObjectId(...), permission='read', access='DENY', reason='Spammer'}]
+            """
+            def clear_reason(ace):
+                return Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
+
+            ace = Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
+            return ace in map(clear_reason, self)
 
 DENY_ALL = ACE.deny(EVERYONE, ALL_PERMISSIONS)

@@ -290,10 +290,11 @@ def has_access(obj, permission, user=None, project=None):
                     project = getattr(obj, 'project', None) or c.project
                     project = project.root_project
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
-        chainable_roles = []
-        block_user = getattr(obj, 'block_user', dict())
-        if (permission in block_user) and (str(user._id) in block_user[permission]):
+        user_role = user.project_role(project=project)
+        deny_user = M.ACE.deny(user_role._id, permission)
+        if deny_user in obj.acl:
             return False
+        chainable_roles = []
         for rid in roles:
             for ace in obj.acl:
                 if M.ACE.match(ace, rid, permission):

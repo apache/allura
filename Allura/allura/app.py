@@ -18,6 +18,7 @@
 import logging
 from urllib import basejoin
 from cStringIO import StringIO
+from collections import defaultdict
 
 from tg import expose, redirect, flash
 from tg.decorators import without_trailing_slash
@@ -583,21 +584,23 @@ class DefaultAdminController(BaseController):
         permanent_redirect('permissions')
 
     @expose()
-    def block_user(self, user_name, perm, reason=''):
-        user = model.User.by_username(user_name)
+    def block_user(self, username, perm, reason=None):
+        user = model.User.by_username(username)
         if not user:
-            flash('User "%s" not found' % user_name, 'error')
+            flash('User "%s" not found' % username, 'error')
             return redirect(request.referer)
 
-        if perm not in self.app.config.block_user:
-            self.app.config.block_user[perm] = dict()
-        if user._id not in self.app.config.block_user[perm]:
-            self.app.config.block_user[perm][str(user._id)] = reason
+        ace = model.ACE.deny(user.project_role()._id, perm, reason)
+        if ace not in self.app.acl:
+            self.app.acl.append(ace)
         return redirect(request.referer)
 
     @expose()
-    def unblock_user(self, user_id='', perm=''):
-        del self.app.config.block_user[perm][user_id]
+    def unblock_user(self, user_id, perm):
+        user = model.User.query.get(_id=ObjectId(user_id))
+        ace = model.ACE.deny(user.project_role()._id, perm)
+        if ace in self.app.acl:
+            self.app.acl.remove(ace)
         return redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
@@ -611,15 +614,7 @@ class DefaultAdminController(BaseController):
         c.block_user = BlockUser()
         c.block_list = BlockList()
         permissions = dict((p, []) for p in self.app.permissions)
-        block_list = {}
-
-        for perm, users in self.app.config.block_user.items():
-            users_id = [ObjectId(_id) for _id in users.keys()]
-            block_list[perm] = dict()
-            for user in model.User.query.find(dict(_id={'$in': users_id})):
-                block_list[perm][str(user._id)] = [user.username, users[str(user._id)]]
-
-
+        block_list = defaultdict(list)
         for ace in self.app.config.acl:
             if ace.access == model.ACE.ALLOW:
                 try:
@@ -627,6 +622,10 @@ class DefaultAdminController(BaseController):
                 except KeyError:
                     # old, unknown permission
                     pass
+            elif ace.access == model.ACE.DENY:
+                role = model.ProjectRole.query.get(_id=ace.role_id)
+                if role.name is None and role.user:
+                    block_list[ace.permission].append((role.user, getattr(ace, 'reason', None)))
         return dict(
             app=self.app,
             allow_config=has_access(c.project, 'admin')(),
