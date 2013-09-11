@@ -66,7 +66,7 @@ class ScriptTask(object):
         def __new__(meta, classname, bases, classDict):
             return task(type.__new__(meta, classname, bases, classDict))
 
-    def __new__(cls, arg_string):
+    def __new__(cls, arg_string=''):
         cls._execute_task(arg_string)
 
     @classmethod
