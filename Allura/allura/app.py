@@ -20,11 +20,13 @@ from urllib import basejoin
 from cStringIO import StringIO
 from collections import defaultdict
 
-from tg import expose, redirect, flash
+from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
 from pylons import request, app_globals as g, tmpl_context as c
 from paste.deploy.converters import asbool, asint
 from bson import ObjectId
+from bson.errors import InvalidId
+from formencode import validators as V
 
 from ming.orm import session, state
 from ming.utils import LazyProperty
@@ -585,24 +587,35 @@ class DefaultAdminController(BaseController):
 
     @expose()
     def block_user(self, username, perm, reason=None):
+        if not username or not perm:
+            redirect(request.referer)
         user = model.User.by_username(username)
         if not user:
             flash('User "%s" not found' % username, 'error')
-            return redirect(request.referer)
-
+            redirect(request.referer)
         ace = model.ACE.deny(user.project_role()._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
-        return redirect(request.referer)
+        redirect(request.referer)
 
+    @validate(dict(user_id=V.Set(),
+                   perm=V.UnicodeString()))
     @expose()
-    def unblock_user(self, user_id, perm):
-        user = model.User.query.get(_id=ObjectId(user_id))
-        ace = model.ACE.deny(user.project_role()._id, perm)
-        ace = model.ACL.contains(ace, self.app.acl)
-        if ace:
-            self.app.acl.remove(ace)
-        return redirect(request.referer)
+    def unblock_user(self, user_id=None, perm=None):
+        try:
+            user_id = map(ObjectId, user_id)
+        except InvalidId:
+            user_id = []
+        users = model.User.query.find({'_id': {'$in': user_id}}).all()
+        if not users:
+            flash('Select user to unblock', 'error')
+            redirect(request.referer)
+        for user in users:
+            ace = model.ACE.deny(user.project_role()._id, perm)
+            ace = model.ACL.contains(ace, self.app.acl)
+            if ace:
+                self.app.acl.remove(ace)
+        redirect(request.referer)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash

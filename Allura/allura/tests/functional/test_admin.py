@@ -167,6 +167,16 @@ class TestProjectAdmin(TestController):
         assert "uninstall tool test-tool" in r.body, r.body
 
     @td.with_wiki
+    def test_block_user_empty_data(self):
+        # shouldn't fail
+        self.app.post('/admin/wiki/block_user', params={'username': '', 'perm': '', 'reason': ''})
+
+    @td.with_wiki
+    def test_unblock_user_empty_data(self):
+        # shouldn't fail
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': '', 'perm': ''})
+
+    @td.with_wiki
     def test_block_user(self):
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-user">' in r
