@@ -526,7 +526,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         history_class = TicketHistory
         indexes = [
             'ticket_num',
-            'app_config_id',
             ('app_config_id', 'custom_fields._milestone'),
             'import_id',
             ]
