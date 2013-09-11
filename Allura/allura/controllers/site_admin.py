@@ -338,7 +338,7 @@ class TaskManagerController(object):
             config_dict['user'] = user
         with h.push_config(c, **config_dict):
             task = task.post(*args, **kw)
-        redirect('../view/%s' % task._id)
+        redirect('view/%s' % task._id)
 
     @expose()
     @require_post()
