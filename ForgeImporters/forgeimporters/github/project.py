@@ -31,10 +31,10 @@ from . import tasks
 log = logging.getLogger(__name__)
 
 class GitHubProjectForm(base.ProjectImportForm):
-    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$',
+    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-_.]{,61}$',
             not_empty=True,
             messages={
-                'invalid': 'Please use only letters, numbers, and dashes.',
+                'invalid': 'Valid symbols are: letters, numbers, dashes underscores, periods',
             })
 
 class GitHubProjectImporter(base.ProjectImporter):
