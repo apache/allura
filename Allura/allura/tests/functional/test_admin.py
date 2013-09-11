@@ -167,39 +167,57 @@ class TestProjectAdmin(TestController):
         assert "uninstall tool test-tool" in r.body, r.body
 
     @td.with_wiki
-    def test_add_user_to_block_list(self):
+    def test_block_user(self):
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-user">' in r
         assert '<a href="#" class="block-list">' not in r
 
-        self.app.post('/admin/wiki/block_user', params={'user_name': 'test-admin', 'perm': 'read', 'reason': 'Comment'})
-        user_id = M.User.by_username('test-admin')._id
-
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read', 'reason': 'Comment'})
+        user = M.User.by_username('test-admin')
+        admin_role = user.project_role()
         app = M.Project.query.get(shortname='test').app_instance('wiki')
-        assert_equals(app.config.block_user['read'], {str(user_id): 'Comment'})
+        ace = M.ACL.contains(M.ACE.deny(admin_role._id, 'read'), app.acl)
+        assert_equals(ace.reason, 'Comment')
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-list">' in r
-        assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user_id in r
+        assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user._id in r
 
     @td.with_wiki
-    def test_remove_user_from_block_list(self):
-        self.app.post('/admin/wiki/block_user', params={'user_name': 'test-admin', 'perm': 'read'})
+    def test_unblock_user(self):
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read'})
+        user = M.User.by_username('test-admin')
+        admin_role = user.project_role()
         app = M.Project.query.get(shortname='test').app_instance('wiki')
-        user_id = M.User.by_username('test-admin')._id
-        assert_equals(app.config.block_user['read'], {str(user_id): ''})
-        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user_id), 'perm': 'read'})
-        assert_equals(app.config.block_user['read'], dict())
+        ace = M.ACE.deny(admin_role._id, 'read')
+        assert M.ACL.contains(ace, app.acl) is not None
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user._id), 'perm': 'read'})
+        assert M.ACL.contains(ace, app.acl) is None
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-list">' not in r
 
     @td.with_wiki
-    def test_has_access_with_block_users(self):
-        wiki = M.Project.query.get(shortname='test').app_instance('wiki')
-        page = Page.query.get(app_config_id=wiki.config._id)
-        test_user = M.User.by_username('test-user')
-        assert has_access(page, 'read', user=test_user)()
-        self.app.post('/admin/wiki/block_user', params={'user_name': 'test-user', 'perm': 'read'})
-        assert not has_access(page, 'read', user=test_user)()
+    def test_block_unblock_multiple_users(self):
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read', 'reason': 'Spammer'})
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-user', 'perm': 'read'})
+        admin = M.User.by_username('test-admin')
+        user = M.User.by_username('test-user')
+        admin_role = admin.project_role()
+        user_role = user.project_role()
+        app = M.Project.query.get(shortname='test').app_instance('wiki')
+        deny_admin = M.ACE.deny(admin_role._id, 'read')
+        deny_user = M.ACE.deny(user_role._id, 'read')
+        assert M.ACL.contains(deny_admin, app.acl) is not None
+        assert M.ACL.contains(deny_user, app.acl) is not None
+        r = self.app.get('/admin/wiki/permissions')
+        assert '<a href="#" class="block-list">' in r
+        assert '<input type="checkbox" name="user_id" value="%s">test-admin (Spammer)' % admin._id in r
+        assert '<input type="checkbox" name="user_id" value="%s">test-user' % user._id in r
+
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': [str(user._id), str(admin._id)], 'perm': 'read'})
+        assert M.ACL.contains(deny_admin, app.acl) is None
+        assert M.ACL.contains(deny_user, app.acl) is None
+        r = self.app.get('/admin/wiki/permissions')
+        assert '<a href="#" class="block-list">' not in r
 
     def test_tool_permissions(self):
         BUILTIN_APPS = ['activity', 'blog', 'discussion', 'git', 'link',

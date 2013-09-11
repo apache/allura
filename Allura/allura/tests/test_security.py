@@ -157,3 +157,11 @@ class TestSecurity(TestController):
         assert has_access(page, 'read', test_user)()
         c.project = project2
         assert has_access(page, 'read', test_user)()
+
+    @td.with_wiki
+    def test_deny_access_for_single_user(self):
+        wiki = c.project.app_instance('wiki')
+        user = M.User.by_username('test-user')
+        assert has_access(wiki, 'read', user)()
+        wiki.acl.append(M.ACE.deny(user.project_role()._id, 'read', 'Spammer'))
+        assert not has_access(wiki, 'read', user)()

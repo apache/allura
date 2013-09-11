@@ -72,7 +72,7 @@
         </a>
     </li>
 
-    {% if block_list.get(name) %}
+    {% if block_list and block_list.get(name) %}
       <li>
         <a href="#" class="block-list">Block List</a>
         <div class="block-list grid-13" style="display: none">
@@ -80,8 +80,7 @@
           {% for u, reason in block_list[name] %}
           <li>
             <label>
-              <input type="checkbox" name="user_id" value="{{ u._id }}">
-              {{ u.username }} {{ '(' + reason + ')' if reason else '' }}
+              <input type="checkbox" name="user_id" value="{{ u._id }}">{{ u.username }} {{ '(' + reason + ')' if reason else '' }}
             </label>
           </li>
           {% endfor %}
