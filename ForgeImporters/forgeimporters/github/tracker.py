@@ -132,7 +132,12 @@ class GitHubTrackerImporter(ToolImporter):
         REGEXP = r'!\[[\w0-9]+?\]\(((?:https?:\/\/)?[\da-z\.-]+\.[a-z\.]{2,6}'\
             '(?:[\/\w\.-]+)*.(jpg|jpeg|png|gif))\)\r\n'
         attachments = []
-        found_matches = re.finditer(REGEXP, body, re.IGNORECASE)
+
+        try:
+            found_matches = re.finditer(REGEXP, body, re.IGNORECASE)
+        except TypeError:
+            found_matches = re.finditer(REGEXP, str(body), re.IGNORECASE)
+
         for i, match in enumerate(found_matches):
             # removing attach text from comment
             body = body.replace(match.group(0), '')
