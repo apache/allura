@@ -17,7 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 import os
 import sys
 import urllib
@@ -31,20 +30,16 @@ import oauth2 as oauth
 
 
 def main():
-    cp = ConfigParser()
-    cp.read('/var/local/allura/Allura/production.ini')
-
     op = OptionParser(usage='usage: %prog [options]')
-    op.add_option('-u', '--base-url', action='store', dest='base_url',
-            default=cp.get('app:main', 'base_url'), help='URL of API to upload to [default: %default]')
-    op.add_option('-D', '--debug', action='store_true', dest='debug', default=False)
     op.add_option('-f', '--from-wiki', action='store', dest='from_wiki',
-            help='URL of wiki to copy from like http://fromserver.com/rest/p/test/wiki/')
+                  help='URL of wiki API to copy from like http://fromserver.com/rest/p/test/wiki/')
     op.add_option('-t', '--to-wiki', action='store', dest='to_wiki',
-            help='URL of wiki to copy to like http://toserver.com/rest/p/test/wiki/')
+                  help='URL of wiki API to copy to like http://toserver.com/rest/p/test/wiki/')
+    op.add_option('-D', '--debug', action='store_true', dest='debug', default=False)
     (options, args) = op.parse_args(sys.argv[1:])
 
-    oauth_client = make_oauth_client(options.base_url)
+    base_url = options.to_wiki.split('/rest/')[0]
+    oauth_client = make_oauth_client(base_url)
 
     wiki_data = urllib.urlopen(options.from_wiki).read()
     wiki_json = json.loads(wiki_data)['pages']
@@ -67,20 +62,18 @@ def main():
             print "Error processing " + p
             raise
 
+
 def make_oauth_client(base_url):
     """
     Build an oauth.Client with which callers can query Allura.
-
-    Based on Allura, sfpy, and sfx push scripts
     """
-
+    config_file = os.path.join(os.environ['HOME'], '.allurarc')
     cp = ConfigParser()
-    cp.read(os.path.join(os.environ['HOME'], '.convertrc'))
+    cp.read(config_file)
 
-    # https://sourceforge.net/p/forge/documentation/API%20-%20Beta/
     REQUEST_TOKEN_URL = base_url+'/rest/oauth/request_token'
-    AUTHORIZE_URL =     base_url+'/rest/oauth/authorize'
-    ACCESS_TOKEN_URL =  base_url+'/rest/oauth/access_token'
+    AUTHORIZE_URL = base_url+'/rest/oauth/authorize'
+    ACCESS_TOKEN_URL = base_url+'/rest/oauth/access_token'
     oauth_key = option(cp, base_url, 'oauth_key', 'Forge API OAuth Key (%s/auth/oauth/): ' % base_url)
     oauth_secret = option(cp, base_url, 'oauth_secret', 'Forge API Oauth Secret: ')
     consumer = oauth.Consumer(oauth_key, oauth_secret)
@@ -114,14 +107,16 @@ def make_oauth_client(base_url):
         cp.set(base_url, 'oauth_token_secret', oauth_token_secret)
 
     # save oauth token for later use
-    cp.write(open(os.path.join(os.environ['HOME'], '.convertrc'), 'w'))
+    cp.write(open(config_file, 'w'))
+    print 'Saving oauth tokens in {} for later re-use'.format(config_file)
+    print
 
     access_token = oauth.Token(oauth_token, oauth_token_secret)
     oauth_client = oauth.Client(consumer, access_token)
     return oauth_client
 
+
 def option(cp, section, key, prompt=None):
-    """ shared (copy/paste) between Allura & sfpy """
     if not cp.has_section(section):
         cp.add_section(section)
     if cp.has_option(section, key):
