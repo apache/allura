@@ -292,7 +292,7 @@ def has_access(obj, permission, user=None, project=None):
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
         user_role = user.project_role(project=project)
         deny_user = M.ACE.deny(user_role._id, permission)
-        if deny_user in obj.acl:
+        if M.ACL.contains(deny_user, obj.acl):
             return False
         chainable_roles = []
         for rid in roles:

@@ -591,7 +591,7 @@ class DefaultAdminController(BaseController):
             return redirect(request.referer)
 
         ace = model.ACE.deny(user.project_role()._id, perm, reason)
-        if ace not in self.app.acl:
+        if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
         return redirect(request.referer)
 
@@ -599,7 +599,8 @@ class DefaultAdminController(BaseController):
     def unblock_user(self, user_id, perm):
         user = model.User.query.get(_id=ObjectId(user_id))
         ace = model.ACE.deny(user.project_role()._id, perm)
-        if ace in self.app.acl:
+        ace = model.ACL.contains(ace, self.app.acl)
+        if ace:
             self.app.acl.remove(ace)
         return redirect(request.referer)
 
@@ -625,7 +626,7 @@ class DefaultAdminController(BaseController):
             elif ace.access == model.ACE.DENY:
                 role = model.ProjectRole.query.get(_id=ace.role_id)
                 if role.name is None and role.user:
-                    block_list[ace.permission].append((role.user, getattr(ace, 'reason', None)))
+                    block_list[ace.permission].append((role.user, ace.reason))
         return dict(
             app=self.app,
             allow_config=has_access(c.project, 'admin')(),

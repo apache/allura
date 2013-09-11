@@ -31,6 +31,7 @@ class ACE(S.Object):
         super(ACE, self).__init__(
             fields=dict(
                 access=S.OneOf(self.ALLOW, self.DENY),
+                reason=S.String(),
                 role_id=S.ObjectId(),
                 permission=permission),
             **kwargs)
@@ -64,18 +65,24 @@ class ACL(S.Array):
         super(ACL, self).__init__(
             field_type=ACE(permissions), **kwargs)
 
-        def __contains__(self, ace):
-            """Test membership of ace in acl ignoring ace.reason field.
+    @classmethod
+    def contains(cls, ace, acl):
+        """Test membership of ace in acl ignoring ace.reason field.
 
-            e.g. `ace in acl` test should evaluate to True with following vars:
+        Return actual ACE with reason filled if ace is found in acl, None otherwise
 
-            ace = M.ACE.deny(role_id, 'read')
-            acl = [{role_id=ObjectId(...), permission='read', access='DENY', reason='Spammer'}]
-            """
-            def clear_reason(ace):
-                return Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
+        e.g. `ACL.contains(ace, acl)` will return `{role_id=ObjectId(...), permission='read', access='DENY', reason='Spammer'}`
+        with following vars:
 
-            ace = Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
-            return ace in map(clear_reason, self)
+        ace = M.ACE.deny(role_id, 'read')  # reason = None
+        acl = [{role_id=ObjectId(...), permission='read', access='DENY', reason='Spammer'}]
+        """
+        def clear_reason(ace):
+            return Object(access=ace.access, role_id=ace.role_id, permission=ace.permission)
+
+        ace_without_reason = clear_reason(ace)
+        for a in acl:
+            if clear_reason(a) == ace_without_reason:
+                return a
 
 DENY_ALL = ACE.deny(EVERYONE, ALL_PERMISSIONS)
