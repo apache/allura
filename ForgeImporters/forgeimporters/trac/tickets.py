@@ -141,11 +141,11 @@ class TracTicketImporter(ToolImporter):
                     export_string, validate=False)
             AuditLog.log(
                 'import tool %s from %s' % (
-                        app.config.options.mount_point, 
-                        trac_url, 
-                    ), 
+                        app.config.options.mount_point,
+                        trac_url,
+                    ),
                 project=project, user=user, url=app.url,
-            ) 
+            )
             g.post_event('project_updated')
             return app
         except Exception as e:
