@@ -190,7 +190,6 @@ class TestGCTrackerImporter(TestCase):
         ticket = self._make_ticket(self.test_issue)
         self._assert_attachments(ticket.attachments,
                 ('at1.txt', 'text/plain', 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255'),
-                ('at2.txt', 'text/plain', 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000001&name=at2.txt&token=C9Hn4s1-g38hlSggRGo65VZM1ys%3A1376059941255'),
             )
 
     @without_module('html2text')
