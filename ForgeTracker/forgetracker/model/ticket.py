@@ -513,7 +513,7 @@ class Bin(Artifact, ActivityObject):
         return result
 
     def __json__(self):
-        return dict(super(Bin,self).__json__(),
+        return dict(
             _id=self._id,
             summary=self.summary,
             terms=self.terms,

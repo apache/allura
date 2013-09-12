@@ -1583,6 +1583,9 @@ class RootRestController(BaseController):
                                         limit=int(limit), page=int(page))
         results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
                               for t in results['tickets']]
+        results['tracker_config'] = c.app.config
+        results['milestones'] = c.app.milestones
+        results['saved_bins'] = c.app.bins
         results.pop('q', None)
         results.pop('sort', None)
         return results

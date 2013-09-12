@@ -84,6 +84,17 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         assert len(tickets.json['tickets']) == 1, tickets.json
         assert (tickets.json['tickets'][0]
                 == dict(ticket_num=1, summary='test new ticket')), tickets.json['tickets'][0]
+        assert tickets.json['tracker_config']['options']['mount_point'] == 'bugs'
+        assert tickets.json['tracker_config']['options']['TicketMonitoringType'] == 'AllTicketChanges'
+        assert not tickets.json['tracker_config']['options']['EnableVoting']
+        assert tickets.json['tracker_config']['options']['TicketMonitoringEmail'] == 'test@localhost'
+        assert tickets.json['tracker_config']['options']['mount_label'] == 'Tickets'
+        assert tickets.json['saved_bins'][0]['sort'] == 'mod_date_dt desc'
+        assert tickets.json['saved_bins'][0]['terms'] == '!status:wont-fix && !status:closed'
+        assert tickets.json['saved_bins'][0]['summary'] == 'Changes'
+        assert len(tickets.json['saved_bins'][0]) == 4
+        assert tickets.json['milestones'][0]['name'] == '1.0'
+        assert tickets.json['milestones'][1]['name'] == '2.0'
 
     def test_update_ticket(self):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
