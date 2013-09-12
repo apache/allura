@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from time import mktime
+import calendar
 from datetime import datetime
 import re
 
@@ -128,7 +128,7 @@ class RssFeedsCommand(base.BlogCommand):
                                             getattr(e, 'title'))))
 
         content += u' [link](%s)' % e.link
-        updated = datetime.utcfromtimestamp(mktime(e.updated_parsed))
+        updated = datetime.utcfromtimestamp(calendar.timegm(e.updated_parsed))
 
         base_slug = BM.BlogPost.make_base_slug(title, updated)
         b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
