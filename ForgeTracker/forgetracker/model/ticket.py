@@ -898,8 +898,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if old_val is None:
                 custom_fields[fn] = None if ft == 'user' else ''
             custom_fields[fn] = old_val
-        # custom_fields['moved_from_app'] = prior_app.config._id
-        # custom_fields['moved_from_id'] = self.ticket_num
         self.custom_fields = custom_fields
 
         # move ticket. ensure unique ticket_num

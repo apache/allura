@@ -1769,7 +1769,8 @@ class TestFunctionalController(TrackerTestController):
 
         # remaining tickets in 'bugs' tracker should still be viewable
         self.app.get('/p/test/bugs/2/', status=200)  # shouldn't fail
-        self.app.get('/p/test/bugs/1/', status=301)  # ticket counts as moved
+        r = self.app.get('/p/test/bugs/1/', status=301)  # ticket counts as moved
+        r.follow(status=404)  # and not found 'cause already deleted
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_email_notifications(self):
