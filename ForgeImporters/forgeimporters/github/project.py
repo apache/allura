@@ -34,7 +34,7 @@ class GitHubProjectForm(base.ProjectImportForm):
     project_name = fev.Regex(r'^[a-z0-9][a-z0-9-_.]{,61}$',
             not_empty=True,
             messages={
-                'invalid': 'Valid symbols are: letters, numbers, dashes underscores, periods',
+                'invalid': 'Valid symbols are: letters, numbers, dashes, underscores and periods',
             })
 
 class GitHubProjectImporter(base.ProjectImporter):
