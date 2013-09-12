@@ -26,6 +26,7 @@ from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from pylons import app_globals as g
 from pylons import tmpl_context as c
+from pylons import request
 from formencode import validators as fev, schema
 from webob import exc
 
@@ -190,7 +191,8 @@ class ProjectImporter(BaseController):
         self.neighborhood = neighborhood
 
     def _check_security(self):
-        require_access(self.neighborhood, 'register', login_overlay=True)
+        with h.login_overlay(exceptions=['process']):
+            require_access(self.neighborhood, 'register')
 
     @LazyProperty
     def tool_importers(self):
@@ -231,7 +233,6 @@ class ProjectImporter(BaseController):
         tools installed and redirect to the new project, presumably with a
         message indicating that some data will not be available immediately.
         """
-        require_access(self.neighborhood, 'register', login_overlay=False)
         try:
             c.project = self.neighborhood.register_project(kw['project_shortname'],
                     project_name=kw['project_name'])

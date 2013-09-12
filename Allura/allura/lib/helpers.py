@@ -52,6 +52,7 @@ from jinja2 import Markup
 from paste.deploy.converters import asbool, aslist
 
 from webhelpers import date, feedgenerator, html, number, misc, text
+from webob.exc import HTTPUnauthorized
 
 from allura.lib import exceptions as exc
 # Reimport to make available to templates
@@ -1012,3 +1013,15 @@ def iter_entry_points(group, *a, **kw):
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
+
+
+@contextmanager
+def login_overlay(exceptions=None):
+    try:
+        yield
+    except HTTPUnauthorized as e:
+        if exceptions:
+            for exception in exceptions:
+                if request.path.rstrip('/').endswith('/%s' % exception):
+                    raise
+        c.show_login_overlay = True
