@@ -35,6 +35,7 @@ Getting Started
    :maxdepth: 2
 
    installation
+   administration
    platform_tour
    scm_host
    migration
