@@ -1583,7 +1583,12 @@ class RootRestController(BaseController):
                                         limit=int(limit), page=int(page))
         results['tickets'] = [dict(ticket_num=t.ticket_num, summary=t.summary)
                               for t in results['tickets']]
-        results['tracker_config'] = c.app.config
+        results['tracker_config'] = c.app.config.__json__()
+        if not has_access(c.app, 'admin', c.user):
+            try:
+                del results['tracker_config']['options']['TicketMonitoringEmail']
+            except KeyError:
+                pass
         results['milestones'] = c.app.milestones
         results['saved_bins'] = c.app.bins
         results.pop('q', None)

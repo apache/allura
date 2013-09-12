@@ -145,23 +145,35 @@ class TestRestApiBase(TestController):
     def setUp(self):
         super(TestRestApiBase, self).setUp()
         setup_global_objects()
-#        h.set_context('test', 'home')
-        self.user = M.User.query.get(username='test-admin')
-        self.token = M.ApiToken(user_id=self.user._id)
-        ming.orm.session(self.token).flush()
+        self._use_token = None
+        self._token_cache = {}
 
     def set_api_token(self, token):
-        self.token = token
+        self._use_token = token
+
+    def token(self, username):
+        if self._use_token:
+            return self._use_token
+
+        # only create token once, else ming gets dupe key error
+        if username not in self._token_cache:
+            user = M.User.query.get(username=username)
+            token = M.ApiToken(user_id=user._id)
+            ming.orm.session(token).flush()
+            self._token_cache[username] = token
+
+        return self._token_cache[username]
 
     def _api_getpost(self, method, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, **params):
+                 wrap_args=None, user='test-admin', **params):
         if wrap_args:
             params = {wrap_args: params}
         params = variabledecode.variable_encode(params, add_repetitions=False)
         if api_key: params['api_key'] = api_key
         if api_timestamp: params['api_timestamp'] = api_timestamp
         if api_signature: params['api_signature'] = api_signature
-        params = self.token.sign_request(path, params)
+
+        params = self.token(user).sign_request(path, params)
 
         fn = self.app.post if method=='POST' else self.app.get
 
@@ -175,9 +187,9 @@ class TestRestApiBase(TestController):
             return response
 
     def api_get(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, **params):
-        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, **params)
+                 wrap_args=None, user='test-admin', **params):
+        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, user, **params)
 
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, **params):
-        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, **params)
+                 wrap_args=None, user='test-admin', **params):
+        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, user, **params)

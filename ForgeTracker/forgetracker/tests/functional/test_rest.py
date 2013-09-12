@@ -96,6 +96,10 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         assert tickets.json['milestones'][0]['name'] == '1.0'
         assert tickets.json['milestones'][1]['name'] == '2.0'
 
+    def test_ticket_index_noauth(self):
+        tickets = self.api_get('/rest/p/test/bugs', user='*anonymous')
+        assert 'TicketMonitoringEmail' not in tickets.json['tracker_config']['options']
+
     def test_update_ticket(self):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
                     assigned_to=self.ticket_args['assigned_to_id'] or '')

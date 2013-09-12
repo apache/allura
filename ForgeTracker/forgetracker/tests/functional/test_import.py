@@ -46,7 +46,7 @@ class TestImportController(TestRestApiBase):
         return resp.follow()
 
     def set_api_ticket(self, caps={'import': ['Projects','test']}):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities=caps,
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities=caps,
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -107,7 +107,7 @@ class TestImportController(TestRestApiBase):
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -129,7 +129,7 @@ class TestImportController(TestRestApiBase):
     @td.with_tracker
     def test_import(self):
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -184,7 +184,7 @@ class TestImportController(TestRestApiBase):
 
     @td.with_tracker
     def test_links(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -207,7 +207,7 @@ class TestImportController(TestRestApiBase):
 
     @td.with_tracker
     def test_slug(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)

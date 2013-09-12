@@ -57,7 +57,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert not r.json['errors']
 
     def test_import_anon(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -76,7 +76,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'Anonymous' in str(r)
 
     def test_import_map(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -97,7 +97,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'Anonymous' not in str(r)
 
     def test_import_create(self):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects', 'test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
@@ -117,7 +117,7 @@ class TestImportController(TestRestApiBase):#TestController):
         assert 'test-rick446' in str(r)
 
     def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities=caps,
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities=caps,
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
