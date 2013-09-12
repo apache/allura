@@ -383,7 +383,7 @@ def all_allowed(obj, user_or_role=None, project=None):
         return set([M.ALL_PERMISSIONS])
     return perms
 
-def require(predicate, message=None, login_overlay=False):
+def require(predicate, message=None):
     '''
     Example: require(has_access(c.app, 'read'))
 
@@ -401,17 +401,13 @@ def require(predicate, message=None, login_overlay=False):
     if c.user != M.User.anonymous():
         request.environ['error_message'] = message
         raise exc.HTTPForbidden(detail=message)
-    elif login_overlay:
-        c.show_login_overlay = True
     else:
         raise exc.HTTPUnauthorized()
 
-def require_access(obj, permission, login_overlay=False, **kwargs):
+def require_access(obj, permission, **kwargs):
     if obj is not None:
         predicate = has_access(obj, permission, **kwargs)
-        return require(predicate,
-                message='%s access required' % permission.capitalize(),
-                login_overlay=login_overlay)
+        return require(predicate, message='%s access required' % permission.capitalize())
     else:
         raise exc.HTTPForbidden(detail="Could not verify permissions for this page.")
 

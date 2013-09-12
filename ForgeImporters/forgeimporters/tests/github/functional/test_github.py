@@ -26,3 +26,11 @@ class TestGitHubImportController(TestController, TestCase):
         assert '<input id="user_name" name="user_name" value="" autofocus/>' in r
         assert '<input id="project_name" name="project_name" value="" />' in r
         assert '<input id="project_shortname" name="project_shortname" value=""/>' in r
+
+    def test_login_overlay(self):
+        r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))
+        self.assertIn('GitHub Project Importer', r)
+        self.assertIn('Login Required', r)
+
+        r = self.app.post('/p/import_project/github/process', extra_environ=dict(username='*anonymous'), status=302)
+        self.assertIn('/auth/', r.location)

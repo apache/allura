@@ -21,8 +21,10 @@ from formencode import Invalid
 import mock
 from tg import expose
 from nose.tools import assert_equal, assert_raises
+from webob.exc import HTTPUnauthorized
 
 from alluratest.controller import TestController
+from allura.tests import decorators as td
 
 from .. import base
 
@@ -122,6 +124,29 @@ class TestProjectImporter(TestCase):
         M.AuditLog.log.assert_called_once_with('import project from Source')
         self.assertEqual(flash.call_count, 1)
         redirect.assert_called_once_with('script_name/admin/overview')
+
+    @mock.patch.object(base.h, 'request')
+    @mock.patch.object(base, 'require_access')
+    @mock.patch.object(base.h, 'c')
+    def test_login_overlay(self, c, require_access, request):
+        pi = base.ProjectImporter(mock.Mock())
+        require_access.side_effect = HTTPUnauthorized
+
+        c.show_login_overlay = False
+        request.path = '/test-importer/'
+        pi._check_security()
+        self.assertEqual(c.show_login_overlay, True)
+
+        c.show_login_overlay = False
+        request.path = '/test-importer/check_names/'
+        pi._check_security()
+        self.assertEqual(c.show_login_overlay, True)
+
+        c.show_login_overlay = False
+        request.path = '/test-importer/process/'
+        with td.raises(HTTPUnauthorized):
+            pi._check_security()
+        self.assertEqual(c.show_login_overlay, False)
 
 
 

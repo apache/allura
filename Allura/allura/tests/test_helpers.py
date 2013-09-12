@@ -27,6 +27,7 @@ from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
 from datadiff import tools as dd
 from webob import Request
+from webob.exc import HTTPUnauthorized
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
@@ -433,3 +434,14 @@ def test_absurl_with_request():
 def test_daterange():
     assert_equals(list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))),
                  [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
+
+@patch.object(h, 'request',
+              new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
+def test_login_overlay():
+    with h.login_overlay():
+        raise HTTPUnauthorized()
+    with h.login_overlay(exceptions=['foo']):
+        raise HTTPUnauthorized()
+    with td.raises(HTTPUnauthorized):
+        with h.login_overlay(exceptions=['foobar']):
+            raise HTTPUnauthorized()
