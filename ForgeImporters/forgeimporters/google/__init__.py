@@ -190,11 +190,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return [_as_text(l) for l in label_nodes]
 
     def get_issue_attachments(self):
-        attachments = self.page.find(id='hc0').find('div', 'attachments')
-        if attachments:
-            return [Attachment(a.parent) for a in attachments.findAll('a', text='Download')]
-        else:
-            return []
+        return _get_attachments(self.page.find(id='hc0'))
 
     def get_issue_stars(self):
         stars_re = re.compile(r'(\d+) (person|people) starred this issue')
@@ -221,13 +217,29 @@ class UserLink(object):
         else:
             return self.name
 
+def _get_attachments(tag):
+    attachment_links = tag.find('div', 'attachments')
+    if attachment_links:
+        attachments = []
+        for a in attachment_links.findAll('a', text='Download'):
+            url = a.parent.get('href')
+            try:
+                attachment = Attachment(url)
+            except Exception:
+                log.exception('Could not get attachment: %s', url)
+            else:
+                attachments.append(attachment)
+        return attachments
+    else:
+        return []
+
 class Comment(object):
     def __init__(self, tag):
         self.author = UserLink(tag.find('span', 'author').find(True, 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
         self.body = _as_text(tag.find('pre')).strip()
         self._get_updates(tag)
-        self._get_attachments(tag)
+        self.attachments = _get_attachments(tag)
 
     def _get_updates(self, tag):
         _updates = tag.find('div', 'updates')
@@ -237,13 +249,6 @@ class Comment(object):
             self.updates = {field: updates.next() for field in updates}
         else:
             self.updates = {}
-
-    def _get_attachments(self, tag):
-        attachments = tag.find('div', 'attachments')
-        if attachments:
-            self.attachments = [Attachment(a.parent) for a in attachments.findAll('a', text='Download')]
-        else:
-            self.attachments = []
 
     @property
     def annotated_text(self):
@@ -272,7 +277,7 @@ class File(object):
         self.file = extractor.page['data']
 
 class Attachment(File):
-    def __init__(self, tag):
-        url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+    def __init__(self, url):
+        url = urljoin(GoogleCodeProjectExtractor.BASE_URL, url)
         filename = parse_qs(urlparse(url).query)['name'][0]
         super(Attachment, self).__init__(url, filename)

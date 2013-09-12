@@ -217,13 +217,10 @@ class TestGoogleCodeProjectExtractor(TestCase):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         attachments = gpe.get_issue_attachments()
-        self.assertEqual(len(attachments), 2)
+        self.assertEqual(len(attachments), 1)
         self.assertEqual(attachments[0].filename, 'at1.txt')
         self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
-        self.assertEqual(attachments[1].filename, 'at2.txt')
-        self.assertEqual(attachments[1].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000001&name=at2.txt&token=C9Hn4s1-g38hlSggRGo65VZM1ys%3A1376059941255')
-        self.assertEqual(attachments[1].type, 'text/plain')
 
     @mock.patch.object(google, 'StringIO')
     def test_iter_comments(self, StringIO):
