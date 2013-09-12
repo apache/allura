@@ -19,8 +19,9 @@ import json
 import logging
 from urllib import unquote
 from datetime import date, datetime, timedelta, time
-from time import mktime
+import calendar
 from collections import OrderedDict
+
 
 from tg import expose, validate, redirect, flash, response
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -271,7 +272,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         def reformat_data(mongo_data):
             def item(day, val):
                 return [
-                    mktime(day.timetuple()) * 1000,
+                    calendar.timegm(day.timetuple()) * 1000,
                     val
                 ]
 
