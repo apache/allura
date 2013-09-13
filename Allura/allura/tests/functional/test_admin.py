@@ -223,7 +223,9 @@ class TestProjectAdmin(TestController):
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Spammer)' % admin._id in r
         assert '<input type="checkbox" name="user_id" value="%s">test-user' % user._id in r
 
-        self.app.post('/admin/wiki/unblock_user', params={'user_id': [str(user._id), str(admin._id)], 'perm': 'read'})
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user._id), 'perm': 'read'})
+        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(admin._id), 'perm': 'read'})
+        app = M.Project.query.get(shortname='test').app_instance('wiki')
         assert M.ACL.contains(deny_admin, app.acl) is None
         assert M.ACL.contains(deny_user, app.acl) is None
         r = self.app.get('/admin/wiki/permissions')
