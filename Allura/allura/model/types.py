@@ -37,9 +37,10 @@ class ACE(S.Object):
             **kwargs)
 
     @classmethod
-    def allow(cls, role_id, permission):
+    def allow(cls, role_id, permission, reason=None):
         return Object(
             access=cls.ALLOW,
+            reason=reason,
             role_id=role_id,
             permission=permission)
 
@@ -47,10 +48,9 @@ class ACE(S.Object):
     def deny(cls, role_id, permission, reason=None):
         ace = Object(
             access=cls.DENY,
+            reason=reason,
             role_id=role_id,
             permission=permission)
-        if reason:
-            ace.reason = reason
         return ace
 
     @classmethod
