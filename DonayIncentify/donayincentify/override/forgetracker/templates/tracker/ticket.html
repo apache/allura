@@ -32,13 +32,6 @@
 {% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% if ticket.deleted %}<span> (deleted)</span>{% endif %}{% endblock %}
 
 {% block actions %}
-<script type="text/javascript">
-    incentify_type = 'allura';
-    incentify_width = 728;
-    incentify_height = 90;
-    incentify_panel_type = 'html';
-</script>
-<script type="text/javascript" src="https://secure.donay.com/site/scripts/incentify.js" async></script>
 <a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if c.user and c.user != c.user.anonymous() %}
   {{c.subscribe_form.display(value=subscribed, tool_subscribed=tool_subscribed, action='subscribe', style='icon')}}
@@ -147,6 +140,18 @@
 {% block content %}
 {% if voting_enabled %}
   {{ c.vote_form.display(artifact=ticket) }}
+{% endif %}
+{% set incentify = c.project.app_instance('incentify') %}
+{% if incentify and incentify.config.options.get('ShowIncentify', True) %}
+<div id="incentify-content">
+    <script type="text/javascript">
+        incentify_type = 'allura';
+        incentify_width = 728;
+        incentify_height = 90;
+        incentify_panel_type = 'html';
+    </script>
+    <script type="text/javascript" src="https://secure.donay.com/site/scripts/incentify.js" async></script>
+</div>
 {% endif %}
 <div id="ticket_content">
   {{g.markdown.convert(ticket.description)|safe}}

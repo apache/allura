@@ -15,7 +15,18 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-class Incentify(object):
+from allura.app import Application
+from allura.app import DefaultAdminController
+from allura.app import ConfigOption
+
+class IncentifyApp(Application):
+    tool_label = 'Incentify'
+    tool_description = 'Donay Incentify button for tickets'
+    default_mount_label = 'Incentify'
+    default_mount_point = 'incentify'
+    config_options = Application.config_options + [
+            ConfigOption('ShowIncentify', bool, True),
+        ]
     template_path_rules = [
             ['>', 'Tickets'],
         ]

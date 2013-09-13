@@ -33,6 +33,9 @@ setup(name='DonayIncentify',
       install_requires=['Allura', 'ForgeTracker', ],
       entry_points="""
       # -*- Entry points: -*-
+      [allura]
+      donayincentify = donayincentify.incentify:IncentifyApp
+
       [allura.theme.override]
-      donayincentify = donayincentify.incentify:Incentify
+      donayincentify = donayincentify.incentify:IncentifyApp
       """,)
