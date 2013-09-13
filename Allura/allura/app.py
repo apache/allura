@@ -730,18 +730,41 @@ class DefaultAdminController(BaseController):
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
 
+            # ACE.deny() entries for blocked users will end up in del_group_ids after the following
             for acl in old_acl:
                 if (acl['permission']==perm) and (str(acl['role_id']) not in group_ids):
                     del_group_ids.append(str(acl['role_id']))
 
-            if new_group_ids or del_group_ids:
+            get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
+            groups = map(get_role, group_ids)
+            new_groups = map(get_role, new_group_ids)
+            del_groups = map(get_role, del_group_ids)
+
+            def split_group_user_roles(roles):
+                group_roles = []
+                user_roles = []
+                for role in roles:
+                    if role.user_id and not role.name:
+                        user_roles.append(role)
+                    else:
+                        group_roles.append(role)
+                return group_roles, user_roles
+
+            del_groups, user_roles = split_group_user_roles(del_groups)
+
+            if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
-                    ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+del_group_ids)),
-                    ', '.join(map(lambda id: model.ProjectRole.query.get(_id=ObjectId(id)).name, group_ids+new_group_ids)),
+                    ', '.join(map(lambda role: role.name, groups+del_groups)),
+                    ', '.join(map(lambda role: role.name, groups+new_groups)),
                     self.app.config.options['mount_point']))
 
             role_ids = map(ObjectId, group_ids + new_group_ids)
             self.app.config.acl += [
                 model.ACE.allow(r, perm) for r in role_ids]
+
+            # Add all ACEs for user roles back
+            user_roles_ids = map(lambda role: role._id, user_roles)
+            user_aces = filter(lambda ace: ace.permission == perm and ace.role_id in user_roles_ids, old_acl)
+            self.app.config.acl += user_aces
         redirect(request.referer)

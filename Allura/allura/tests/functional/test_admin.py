@@ -229,6 +229,28 @@ class TestProjectAdmin(TestController):
         r = self.app.get('/admin/wiki/permissions')
         assert '<a href="#" class="block-list">' not in r
 
+    @td.with_wiki
+    def test_blocked_users_remains_after_saving_all_permissions(self):
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-user', 'perm': 'read', 'reason': 'Comment'})
+        self.app.post('/admin/wiki/block_user', params={'username': 'test-user', 'perm': 'post', 'reason': 'Comment'})
+        user = M.User.by_username('test-user')
+        user_role = user.project_role()
+        app = M.Project.query.get(shortname='test').app_instance('wiki')
+        assert M.ACL.contains(M.ACE.deny(user_role._id, 'read'), app.acl)
+        assert M.ACL.contains(M.ACE.deny(user_role._id, 'post'), app.acl)
+        old_acl = app.acl
+
+        permissions_page = self.app.get('/admin/wiki/permissions')
+        permissions_page.forms[0].submit()
+
+        # deny ACEs for user still should be there
+        app = M.Project.query.get(shortname='test').app_instance('wiki')
+        assert M.ACL.contains(M.ACE.deny(user_role._id, 'read'), app.acl)
+        assert M.ACL.contains(M.ACE.deny(user_role._id, 'post'), app.acl)
+        # ...and all old ACEs also
+        for ace in old_acl:
+            assert_in(ace, app.acl)
+
     def test_tool_permissions(self):
         BUILTIN_APPS = ['activity', 'blog', 'discussion', 'git', 'link',
                 'shorturl', 'svn', 'tickets', 'userstats', 'wiki']
