@@ -2543,3 +2543,10 @@ class TestBulkMove(TrackerTestController):
 def sidebar_contains(response, text):
     sidebar_menu = response.html.find('div', attrs={'id': 'sidebar'})
     return text in str(sidebar_menu)
+
+
+class TestStats(TrackerTestController):
+
+    def test_stats(self):
+        r = self.app.get('/bugs/stats/', status=200)
+        assert_in('# tickets: 0', r.body)
