@@ -36,10 +36,9 @@ setup(
     version=__version__,
     description='Base distribution of the Allura development platform',
     long_description=PROJECT_DESCRIPTION,
-    author='SourceForge Team',
-    author_email='develop@discussion.allura.p.re.sf.net',
-    url='http://sourceforge.net/p/allura',
-    keywords='sourceforge allura turbogears pylons jinja2 mongodb rabbitmq',
+    author='Allura Team',
+    url='https://forge-allura.apache.org/p/allura/',
+    keywords='allura forge turbogears pylons jinja2 mongodb',
     license='Apache License, http://www.apache.org/licenses/LICENSE-2.0',
     platforms=[
         'Linux',

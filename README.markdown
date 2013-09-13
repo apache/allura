@@ -146,4 +146,4 @@ register a new project in your own forge, visit /p/add_project
     * Including how to enable extra features: <http://allura.sourceforge.net/installation.html>
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
-* Contribute code according to this guide: <http://sourceforge.net/p/allura/wiki/Contributing%20Code/>
+* Contribute code according to this guide: <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>

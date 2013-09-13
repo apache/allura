@@ -22,9 +22,9 @@ Generated API docs, useful for browsing through the code, viewing inheritance, e
 
 * http://allura.sourceforge.net/epydoc/
 
-Our SourceForge project page, including tickets, discussion forums, etc.:
+Our project page, including tickets, discussion forums, etc.:
 
-* http://sourceforge.net/p/allura/home/
+* https://forge-allura.apache.org/p/allura/
 
 
 Much of the current forge was inspired by Roundup
