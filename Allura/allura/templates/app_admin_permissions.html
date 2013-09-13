@@ -60,11 +60,11 @@
         <a href="{{c.app.url}}" class="btn link cancel">Cancel</a>
       </p>
     </form>
+    {{c.block_user.display()}}
+    {{c.block_list.display()}}
   {%endif%}
 {% endblock %}
 {% block extra_js %}
-  {{c.block_user.display()}}
-  {{c.block_list.display()}}
 <script type="text/javascript">
   $('a.block-user').click(function(){
       var deck =  $(this).closest('ul.deck');
