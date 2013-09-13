@@ -118,7 +118,7 @@ class ProjectExtractor(object):
     @staticmethod
     def urlopen(url, retries=3, codes=(408,), **kw):
         req = urllib2.Request(url, **kw)
-        req.add_header('User-Agent', 'Allura Data Importer (http://sf.net/p/allura)')
+        req.add_header('User-Agent', 'Allura Data Importer (https://forge-allura.apache.org/p/allura/)')
         return h.urlopen(req, retries=retries, codes=codes)
 
     def get_page(self, page_name_or_url, parser=None, **kw):

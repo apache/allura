@@ -21,7 +21,7 @@ Installation
 Easy Setup
 ---------------
 
-Our easy setup instructions are in our README.rst file.  You can read it online at https://sourceforge.net/p/allura/git/#readme
+Our easy setup instructions are in our README.rst file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/README.markdown
 
 You should be able to get Allura up and running in well under an hour by following those instructions.
 

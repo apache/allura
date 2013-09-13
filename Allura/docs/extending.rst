@@ -35,7 +35,7 @@ The available extension points for Allura are:
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
 
-A listing of available 3rd-party extensions is at https://sourceforge.net/p/allura/wiki/Extensions/
+A listing of available 3rd-party extensions is at https://forge-allura.apache.org/p/allura/wiki/Extensions/
 
 To disable any Allura entry point, simply add an entry in your ``.ini`` config file
 with names and values corresponding to entry points defined in any ``setup.py`` file.
