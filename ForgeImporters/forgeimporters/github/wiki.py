@@ -15,11 +15,11 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import git
 from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
+import git
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 
