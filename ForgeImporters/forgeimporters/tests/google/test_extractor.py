@@ -211,7 +211,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                 'OpSys-OSX',
             ])
 
-    @mock.patch.object(google, 'StringIO')
+    @mock.patch.object(base, 'StringIO')
     def test_get_issue_attachments(self, StringIO):
         self.urlopen.return_value.info.return_value = {'content-type': 'text/plain; foo'}
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
@@ -222,7 +222,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
 
-    @mock.patch.object(google, 'StringIO')
+    @mock.patch.object(base, 'StringIO')
     def test_iter_comments(self, StringIO):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)

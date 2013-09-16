@@ -167,11 +167,14 @@ class Thread(Artifact, ActivityObject):
             posts=[dict(slug=p.slug,
                         text=p.text,
                         subject=p.subject,
+                        author=p.author().username,
+                        timestamp=p.timestamp,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
                    for p in self.post_class().query.find(
-                   dict(discussion_id=self.discussion_id, thread_id=self._id, status='ok')
-                   )]
+                       dict(discussion_id=self.discussion_id, thread_id=self._id, status='ok')
+                   )
+                ]
         )
 
     @property

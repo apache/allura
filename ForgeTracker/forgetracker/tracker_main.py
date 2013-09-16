@@ -422,6 +422,12 @@ class ForgeTrackerApp(Application):
         f.write(',\n"milestones":')
         milestones = self.milestones
         json.dump(milestones, f, cls=jsonify.GenericJSON, indent=2)
+        f.write(',\n"custom_fields":')
+        json.dump(self.globals.custom_fields, f, cls=jsonify.GenericJSON, indent=2)
+        f.write(',\n"open_status_names":')
+        json.dump(self.globals.open_status_names, f, cls=jsonify.GenericJSON, indent=2)
+        f.write(',\n"closed_status_names":')
+        json.dump(self.globals.closed_status_names, f, cls=jsonify.GenericJSON, indent=2)
         f.write(',\n"saved_bins":')
         bins = self.bins
         json.dump(bins, f, cls=jsonify.GenericJSON, indent=2)

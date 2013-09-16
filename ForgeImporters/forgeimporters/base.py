@@ -15,11 +15,18 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
+import errno
 import logging
 import urllib
 import urllib2
 from collections import defaultdict
 import traceback
+from urlparse import urlparse, parse_qs
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 from BeautifulSoup import BeautifulSoup
 from tg import expose, validate, flash, redirect, config
@@ -461,3 +468,46 @@ class ImportAdminExtension(AdminExtension):
         base_url = c.project.url() + 'admin/ext/'
         link = SitemapEntry('Import', base_url+'import/')
         sidebar_links.append(link)
+
+
+def stringio_parser(page):
+    return {
+            'content-type': page.info()['content-type'],
+            'data': StringIO(page.read()),
+        }
+
+class File(object):
+    def __init__(self, url, filename=None):
+        extractor = ProjectExtractor(None, url, parser=stringio_parser)
+        self.url = url
+        self.filename = filename or os.path.basename(urlparse(url).path)
+        self.type = extractor.page['content-type'].split(';')[0]
+        self.file = extractor.page['data']
+
+
+def get_importer_upload_path(project):
+    shortname = project.shortname
+    if project.is_nbhd_project:
+        shortname = project.url().strip('/')
+    elif project.is_user_project:
+        shortname = project.shortname.split('/')[1]
+    elif not project.is_root:
+        shortname = project.shortname.split('/')[0]
+    upload_path = config['importer_upload_path'].format(
+            nbhd=project.neighborhood.url_prefix.strip('/'),
+            project=shortname,
+            c=c,
+        )
+    return upload_path
+
+def save_importer_upload(project, filename, data):
+    dest_path = get_importer_upload_path(project)
+    dest_file = os.path.join(dest_path, filename)
+    try:
+        os.makedirs(dest_path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    with open(dest_file, 'w') as fp:
+        fp.write(data)
+    return dest_file
