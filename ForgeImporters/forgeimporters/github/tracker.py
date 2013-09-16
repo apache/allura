@@ -6,8 +6,22 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+from formencode import validators as fev
+from tg import (
+        expose,
+        validate,
+        flash,
+        redirect
+        )
+from tg.decorators import (
+        with_trailing_slash,
+        without_trailing_slash
+        )
+
 from allura import model as M
+from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post, task
 from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
 from pylons import app_globals as g
@@ -16,13 +30,55 @@ from . import GitHubProjectExtractor
 from ..base import ToolImporter
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
+from forgeimporters.base import ToolImportForm, ImportErrorHandler
 
+
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    importer = GitHubTrackerImporter()
+    with ImportErrorHandler(importer, kw.get('project_name')):
+        importer.import_tool(c.project, c.user, **kw)
+
+
+class GitHubTrackerImportForm(ToolImportForm):
+    gh_project_name = fev.UnicodeString(not_empty=True)
+    gh_user_name = fev.UnicodeString(not_empty=True)
+
+
+class GitHubTrackerImportController(BaseController):
+
+    def __init__(self):
+        self.importer = GitHubTrackerImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app
+
+    @with_trailing_slash
+    @expose('jinja:forgeimporters.github:templates/tracker/index.html')
+    def index(self, **kw):
+        return dict(importer=self.importer,
+                    target_app=self.target_app)
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    @validate(GitHubTrackerImportForm(ForgeTrackerApp), error_handler=index)
+    def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
+        import_tool.post(
+                project_name=gh_project_name,
+                user_name=gh_user_name,
+                mount_point=mount_point,
+                mount_label=mount_label)
+        flash('Ticket import has begun. Your new tracker will be available '
+                'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
 
 
 class GitHubTrackerImporter(ToolImporter):
     source = 'GitHub'
     target_app = ForgeTrackerApp
-    controller = None
+    controller = GitHubTrackerImportController
     tool_label = 'Issues'
     max_ticket_num = 0
     open_milestones = set()
