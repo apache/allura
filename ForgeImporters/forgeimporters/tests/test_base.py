@@ -16,15 +16,18 @@
 #       under the License.
 
 from unittest import TestCase
+import errno
 
 from formencode import Invalid
 import mock
-from tg import expose
+from tg import expose, config
 from nose.tools import assert_equal, assert_raises
 
 from alluratest.controller import TestController
+from allura.tests import decorators as td
+from allura.lib import helpers as h
 
-from .. import base
+from forgeimporters import base
 
 
 class TestProjectExtractor(TestCase):
@@ -255,3 +258,41 @@ class TestProjectToolsImportController(TestController):
         url = import1_page.environ['PATH_INFO']
         assert url.endswith('/admin/ext/import/importer1'), url
         assert_equal(import1_page.body, 'test importer 1 controller webpage')
+
+
+def test_get_importer_upload_path():
+    project = mock.Mock(
+            shortname='prefix/shortname',
+            is_nbhd_project=False,
+            is_user_project=False,
+            is_root=False,
+            url=lambda: 'n_url/',
+            neighborhood=mock.Mock(url_prefix='p/'),
+        )
+    with h.push_config(config, importer_upload_path='path/{nbhd}/{project}'):
+        assert_equal(base.get_importer_upload_path(project), 'path/p/prefix')
+        project.is_nbhd_project = True
+        assert_equal(base.get_importer_upload_path(project), 'path/p/n_url')
+        project.is_nbhd_project = False
+        project.is_user_project = True
+        assert_equal(base.get_importer_upload_path(project), 'path/p/shortname')
+        project.is_user_project = False
+        project.is_root = True
+        assert_equal(base.get_importer_upload_path(project), 'path/p/prefix/shortname')
+
+@mock.patch.object(base, 'os')
+@mock.patch.object(base, 'get_importer_upload_path')
+def test_save_importer_upload(giup, os):
+    os.path.join = lambda *a: '/'.join(a)
+    giup.return_value = 'path'
+    os.makedirs.side_effect = OSError(errno.EEXIST, 'foo')
+    _open = mock.MagicMock()
+    fp = _open.return_value.__enter__.return_value
+    with mock.patch('__builtin__.open', _open):
+        base.save_importer_upload('project', 'file', 'data')
+    os.makedirs.assert_called_once_with('path')
+    _open.assert_called_once_with('path/file', 'w')
+    fp.write.assert_called_once_with('data')
+
+    os.makedirs.side_effect = OSError(errno.EACCES, 'foo')
+    assert_raises(OSError, base.save_importer_upload, 'project', 'file', 'data')

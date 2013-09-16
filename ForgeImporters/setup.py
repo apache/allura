@@ -43,6 +43,7 @@ setup(name='ForgeImporters',
       google-code-repo = forgeimporters.google.code:GoogleRepoImporter
       github-repo = forgeimporters.github.code:GitHubRepoImporter
       trac-tickets = forgeimporters.trac.tickets:TracTicketImporter
+      forge-tracker = forgeimporters.forge.tracker:ForgeTrackerImporter
 
       [allura.admin]
       importers = forgeimporters.base:ImportAdminExtension

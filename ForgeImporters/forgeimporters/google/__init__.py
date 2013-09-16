@@ -20,10 +20,6 @@ import urllib
 from urlparse import urlparse, urljoin, parse_qs
 from collections import defaultdict
 from contextlib import closing
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 import logging
 
 from BeautifulSoup import BeautifulSoup
@@ -31,6 +27,7 @@ from BeautifulSoup import BeautifulSoup
 from allura.lib import helpers as h
 from allura import model as M
 from forgeimporters.base import ProjectExtractor
+from forgeimporters.base import File
 
 
 log = logging.getLogger(__name__)
@@ -62,12 +59,6 @@ def csv_parser(page):
         lines.pop()
     # remove CSV wrapping (quotes, commas, newlines)
     return [line.strip('",\n') for line in lines]
-
-def stringio_parser(page):
-    return {
-            'content-type': page.info()['content-type'],
-            'data': StringIO(page.read()),
-        }
 
 
 class GoogleCodeProjectExtractor(ProjectExtractor):
@@ -262,14 +253,6 @@ class Comment(object):
                     ),
             )
         return text
-
-class File(object):
-    def __init__(self, url, filename):
-        extractor = GoogleCodeProjectExtractor(None, url, parser=stringio_parser)
-        self.url = url
-        self.filename = filename
-        self.type = extractor.page['content-type'].split(';')[0]
-        self.file = extractor.page['data']
 
 class Attachment(File):
     def __init__(self, tag):
