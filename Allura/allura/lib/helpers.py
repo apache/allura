@@ -1017,6 +1017,41 @@ def daterange(start_date, end_date):
 
 @contextmanager
 def login_overlay(exceptions=None):
+    """
+    Override the default behavior of redirecting to the auth.login_url and
+    instead display an overlay with content from auth.login_fragment_url.
+
+    This is to allow pages that require authentication for any actions but
+    not for the initial view to be more apparent what you will get once
+    logged in.
+
+    This should be wrapped around call to `require_access()` (presumably in
+    the `_check_security()` method on a controller).  The `exceptions` param
+    can be given a list of exposed views to leave with the original behavior.
+
+    For example:
+
+        class MyController(BaseController);
+            def _check_security(self):
+                with login_overlay(exceptions=['process']):
+                    require_access(self.neighborhood, 'register')
+
+            @expose
+            def index(self, *args, **kw):
+                return {}
+
+            @expose
+            def list(self, *args, **kw):
+                return {}
+
+            @expose
+            def process(self, *args, **kw):
+                return {}
+
+    This would show the overlay to unauthenticated users who visit `/`
+    or `/list` but would perform the normal redirect when `/process` is
+    visited.
+    """
     try:
         yield
     except HTTPUnauthorized as e:
