@@ -73,6 +73,7 @@ class TracTicketImportForm(ToolImportForm):
 class TracTicketImportController(BaseController):
     def __init__(self):
         self.importer = TracTicketImporter()
+        self.task = import_tool
 
     @property
     def target_app(self):
@@ -89,8 +90,8 @@ class TracTicketImportController(BaseController):
     @require_post()
     @validate(TracTicketImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
-        if TracTicketImporter().enforce_limit(c.project):
-            import_tool.post(
+        if self.importer.enforce_limit(c.project):
+            self.task.post(
                     mount_point=mount_point,
                     mount_label=mount_label,
                     trac_url=trac_url,
@@ -138,8 +139,10 @@ class TracTicketImporter(ToolImporter):
             session(api_ticket).flush(api_ticket)
             cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
                     api_ticket.secret_key, verbose=True, retry=False)
-            import_tracker(cli, project.shortname, mount_point,
-                    {'user_map': json.loads(user_map) if user_map else {}},
+            import_tracker(cli, project.shortname, mount_point, {
+                        'user_map': json.loads(user_map) if user_map else {},
+                        'usernames_match': self.usernames_match(trac_url),
+                    },
                     export_string, validate=False)
             AuditLog.log(
                 'import tool %s from %s' % (
@@ -150,6 +153,20 @@ class TracTicketImporter(ToolImporter):
             )
             g.post_event('project_updated')
             return app
-        except Exception as e:
+        except Exception:
             h.make_app_admin_only(app)
             raise
+
+    def usernames_match(self, trac_url):
+        """Return True if the usernames in the source Trac match the usernames
+        in the destination Allura instance.
+
+        If this is True, Trac usernames will be mapped to their Allura
+        counterparts regardless of whether a user_map file is supplied.
+
+        If this is False, any Trac username not present in the user_map file
+        (or if no file is supplied) will be assumed an unknown or non-existent
+        user in the Allura instance.
+
+        """
+        return False

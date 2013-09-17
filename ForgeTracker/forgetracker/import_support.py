@@ -107,7 +107,7 @@ class ImportSupport(object):
         self.FIELD_MAP = {
             'assigned_to': ('assigned_to_id', self.get_user_id),
             'class': None,
-            'date': ('created_date', self.parse_date), 
+            'date': ('created_date', self.parse_date),
             'date_updated': ('mod_date', self.parse_date),
             'description': True,
             'id': None,
@@ -142,11 +142,18 @@ class ImportSupport(object):
         return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
 
     def get_user_id(self, username):
-        username = self.options['user_map'].get(username)
-        if not username:
-            return None
-        u = M.User.by_username(username)
-        return u._id if u else None
+        def _get_user_id(username):
+            u = M.User.by_username(username)
+            return u._id if u else None
+
+        if self.options.get('usernames_match'):
+            return _get_user_id(username)
+
+        mapped_username = self.options['user_map'].get(username)
+        if mapped_username:
+            return _get_user_id(mapped_username)
+
+        return None
 
     def check_custom_field(self, field, value, ticket_status):
         field = c.app.globals.get_custom_field(field)
@@ -347,7 +354,7 @@ class ImportSupport(object):
         unknown_users = self.find_unknown_users(users)
         unknown_users = sorted(list(unknown_users))
         if unknown_users:
-            self.warnings.append('''Document references unknown users. You should provide 
+            self.warnings.append('''Document references unknown users. You should provide
 option user_map to avoid losing username information. Unknown users: %s''' % unknown_users)
 
         return {'status': True, 'errors': self.errors, 'warnings': self.warnings}
