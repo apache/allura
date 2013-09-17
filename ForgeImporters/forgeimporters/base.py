@@ -401,7 +401,7 @@ class ToolImporter(object):
     @property
     def tool_option(self):
         """
-        The label for this tool importer.  Defaults to the `tool_label` from
+        The option for this tool importer. Defaults to the `tool_option` from
         the `target_app`.
         """
         return getattr(aslist(self.target_app)[0], 'tool_option', dict())
