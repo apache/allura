@@ -151,8 +151,8 @@ class GitHubTrackerImporter(ToolImporter):
         for comment in extractor.iter_comments(issue):
             body, attachments = self._get_attachments(comment['body'])
             if comment['user']:
-                posted_by = u'*Originally posted by: [{0}](https://github.com/{0})*\n'.format(
-                    comment['user']['login'])
+                posted_by = u'*Originally posted by: {}*\n'.format(
+                    self.get_user_link(comment['user']['login']))
                 posted_by += body
                 body = posted_by
             p = ticket.discussion_thread.add_post(
