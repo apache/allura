@@ -47,6 +47,7 @@ from allura.tasks import mail_tasks
 from allura.tasks import notification_tasks
 from allura.tasks import repo_tasks
 from allura.tasks import export_tasks
+from allura.tasks import admin_tasks
 from allura.tests import decorators as td
 from allura.lib.decorators import event_handler, task
 
@@ -372,7 +373,7 @@ class TestExportTasks(unittest.TestCase):
         project_json.assert_called_once()
         temp = '/tmp/bulk_export/p/test/test'
         zipfn = '/tmp/bulk_export/p/test/test.zip'
-        zipdir.assert_caled_with(temp, temp + '/test.zip')
+        zipdir.assert_called_with(temp, zipfn)
         shutil.rmtree.assert_called_once_with(temp)
         # check notification
         M.MonQTask.run_ready()
@@ -409,5 +410,10 @@ class TestExportTasks(unittest.TestCase):
         export_tasks.bulk_export.post(['wiki'])
         assert_equal(c.project.bulk_export_status(), 'busy')
 
+
+class TestAdminTasks(unittest.TestCase):
+
+    def test_install_app_docstring(self):
+        assert_in('ep_name, mount_point=None', admin_tasks.install_app.__doc__)
 
 Mapper.compile_all()

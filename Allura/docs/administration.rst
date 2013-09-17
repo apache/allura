@@ -49,8 +49,17 @@ Scripts are in the `scripts/` directory and run via `paster script`.  An extra
 
     (env-allura) Allura$ paster script development.ini ../scripts/create-allura-sitemap.py -- -u 100
 
+TODO:   explain important scripts, commands
 
-TODO: explain how to run tasks, explain important scripts, commands and tasks here
+Tasks can be run via the web interface at /nf/admin/task_manager  You must know
+the full task name, e.g. `allura.tasks.admin_tasks.install_app`  You can
+optionally provide a username and project and app which will get set on the
+current context (`c`).  You should specify what args and kwargs will be passed
+as parameters to the task.  They are specified in JSON format on the form.
+
+See the listing of :mod:`some available tasks <allura.tasks.admin_tasks>`.
+
+TODO: explain how to run scripttasks and commandtasks
 
 
 Client Scripts
