@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
 import logging
 import json
 import urllib
@@ -31,9 +32,29 @@ class GitHubProjectExtractor(base.ProjectExtractor):
             'issues': 'https://api.github.com/repos/{project_name}/issues',
         }
     POSSIBLE_STATES = ('opened', 'closed')
+    NEXT_PAGE_URL_RE = re.compile(r'<([^>]*)>; rel="next"')
+
+    def get_next_page_url(self, link):
+        if not link:
+            return
+        m = self.NEXT_PAGE_URL_RE.match(link)
+        return m.group(1) if m else None
 
     def parse_page(self, page):
-        return json.loads(page.read().decode('utf8'))
+        # Look at link header to handle pagination
+        link = page.info().get('Link')
+        next_page_url = self.get_next_page_url(link)
+        return json.loads(page.read().decode('utf8')), next_page_url
+
+    def get_page(self, page_name_or_url, **kw):
+        page = super(GitHubProjectExtractor, self).get_page(page_name_or_url, **kw)
+        page, next_page_url = page
+        while next_page_url:
+            p = super(GitHubProjectExtractor, self).get_page(next_page_url, **kw)
+            p, next_page_url = p
+            page += p
+        self.page = page
+        return self.page
 
     def get_summary(self):
         return self.get_page('project_info').get('description')
@@ -52,7 +73,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
             issue_list_url = url.format(
                 state=state,
             )
-            issues += json.loads(self.urlopen(issue_list_url).read().decode('utf8'))
+            issues += self.get_page(issue_list_url)
         issues.sort(key=lambda x: x['number'])
         for issue in issues:
             yield (issue['number'], issue)

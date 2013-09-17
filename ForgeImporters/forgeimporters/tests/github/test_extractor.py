@@ -20,12 +20,9 @@ from unittest import TestCase
 
 from ... import github
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
-
+# Can't use cStringIO here, because we cannot set attributes or subclass it,
+# and this is needed in mocked_urlopen below
+from StringIO import StringIO
 
 
 class TestGitHubProjectExtractor(TestCase):
@@ -39,22 +36,47 @@ class TestGitHubProjectExtractor(TestCase):
     ]
     OPENED_ISSUES_LIST = [
         {u'number': 3},
+        {u'number': 4},
+        {u'number': 5},
+    ]
+    OPENED_ISSUES_LIST_PAGE2 = [
+        {u'number': 6},
+        {u'number': 7},
+        {u'number': 8},
     ]
     ISSUE_COMMENTS = [u'hello', u'mocked_comment']
+    ISSUE_COMMENTS_PAGE2 = [u'hello2', u'mocked_comment2']
 
     def mocked_urlopen(self, url):
+        headers = {}
         if url.endswith('/test_project'):
-            return StringIO(json.dumps(self.PROJECT_INFO))
+            response = StringIO(json.dumps(self.PROJECT_INFO))
         elif url.endswith('/issues?state=closed'):
-            return StringIO(json.dumps(self.CLOSED_ISSUES_LIST))
+            response = StringIO(json.dumps(self.CLOSED_ISSUES_LIST))
         elif url.endswith('/issues?state=opened'):
-            return StringIO(json.dumps(self.OPENED_ISSUES_LIST))
+            response = StringIO(json.dumps(self.OPENED_ISSUES_LIST))
+            headers = {'Link': '</issues?state=opened&page=2>; rel="next"'}
+        elif url.endswith('/issues?state=opened&page=2'):
+            response = StringIO(json.dumps(self.OPENED_ISSUES_LIST_PAGE2))
         elif url.endswith('/comments'):
-            return StringIO(json.dumps(self.ISSUE_COMMENTS))
+            response = StringIO(json.dumps(self.ISSUE_COMMENTS))
+            headers = {'Link': '</comments?page=2>; rel="next"'}
+        elif url.endswith('/comments?page=2'):
+            response = StringIO(json.dumps(self.ISSUE_COMMENTS_PAGE2))
+
+        response.info = lambda: headers
+        return response
 
     def setUp(self):
         self.extractor = github.GitHubProjectExtractor('test_project')
         self.extractor.urlopen = self.mocked_urlopen
+
+    def test_get_next_page_url(self):
+        self.assertIsNone(self.extractor.get_next_page_url(None))
+        self.assertIsNone(self.extractor.get_next_page_url(''))
+        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="last"'
+        self.assertEqual(self.extractor.get_next_page_url(link),
+                'https://api.github.com/repositories/8560576/issues?state=open&page=2')
 
     def test_get_summary(self):
         self.assertEqual(self.extractor.get_summary(), 'project description')
@@ -65,10 +87,11 @@ class TestGitHubProjectExtractor(TestCase):
     def test_iter_issues(self):
         issues = list(self.extractor.iter_issues())
         all_issues = zip((1,2), self.CLOSED_ISSUES_LIST)
-        all_issues.append((3, self.OPENED_ISSUES_LIST[0]))
+        all_issues += zip((3, 4, 5), self.OPENED_ISSUES_LIST)
+        all_issues += zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2)
         self.assertEqual(issues, all_issues)
 
     def test_iter_comments(self):
         mock_issue = {'comments_url': '/issues/1/comments'}
         comments = list(self.extractor.iter_comments(mock_issue))
-        self.assertEqual(comments, self.ISSUE_COMMENTS)
+        self.assertEqual(comments, self.ISSUE_COMMENTS + self.ISSUE_COMMENTS_PAGE2)
