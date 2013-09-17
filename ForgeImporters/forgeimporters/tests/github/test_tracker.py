@@ -74,7 +74,7 @@ class TestTrackerImporter(TestCase):
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'title')
-            self.assertEqual(ticket.description, '*Originally created by:* creator\n*Originally owned by:* owner\n\nhello')
+            self.assertEqual(ticket.description, '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
             self.assertEqual(ticket.status, 'New')
             self.assertEqual(ticket.created_date, 'created_at')
             self.assertEqual(ticket.mod_date, 'updated_at')
@@ -127,7 +127,7 @@ class TestTrackerImporter(TestCase):
         importer = tracker.GitHubTrackerImporter()
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text='*Originally posted by: [me](https://github.com/me)*\nhello',
+                text='*Originally posted by:* [me](https://github.com/me)\nhello',
                 timestamp=datetime(2013, 8, 26, 16, 57, 53),
                 ignore_security=True,
             ))
@@ -157,12 +157,12 @@ class TestTrackerImporter(TestCase):
         importer.process_events(extractor, ticket, issue)
         args = ticket.discussion_thread.add_post.call_args_list
         self.assertEqual(args[0], mock.call(
-            text='*Ticket changed by: [darth](https://github.com/darth)*\n\n'
+            text='*Ticket changed by:* [darth](https://github.com/darth)\n\n'
                  '- **status**: open --> closed',
             timestamp=datetime(2013, 9, 12, 9, 58, 49),
             ignore_security=True))
         self.assertEqual(args[1], mock.call(
-            text='*Ticket changed by: [yoda](https://github.com/yoda)*\n\n'
+            text='*Ticket changed by:* [yoda](https://github.com/yoda)\n\n'
                  '- **status**: closed --> open',
             timestamp=datetime(2013, 9, 12, 10, 13, 20),
             ignore_security=True))

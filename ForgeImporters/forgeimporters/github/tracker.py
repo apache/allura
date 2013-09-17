@@ -130,7 +130,8 @@ class GitHubTrackerImporter(ToolImporter):
         ticket.created_date = self.parse_datetime(issue['created_at'])
         ticket.mod_date = self.parse_datetime(issue['updated_at'])
         if issue['assignee']:
-            owner_line = '*Originally owned by:* {}\n'.format(issue['assignee']['login'])
+            owner_line = '*Originally owned by:* {}\n'.format(
+                    self.get_user_link(issue['assignee']['login']))
         else:
             owner_line = ''
         # body processing happens here
@@ -141,7 +142,7 @@ class GitHubTrackerImporter(ToolImporter):
                 u'{owner}'
                 u'\n'
                 u'{body}').format(
-                    creator=issue['user']['login'],
+                    creator=self.get_user_link(issue['user']['login']),
                     owner=owner_line,
                     body=body,
                 )
@@ -151,7 +152,7 @@ class GitHubTrackerImporter(ToolImporter):
         for comment in extractor.iter_comments(issue):
             body, attachments = self._get_attachments(comment['body'])
             if comment['user']:
-                posted_by = u'*Originally posted by: {}*\n'.format(
+                posted_by = u'*Originally posted by:* {}\n'.format(
                     self.get_user_link(comment['user']['login']))
                 posted_by += body
                 body = posted_by
@@ -166,7 +167,7 @@ class GitHubTrackerImporter(ToolImporter):
         for event in extractor.iter_events(issue):
             prefix = text = ''
             if event['event'] in ('reopened', 'closed'):
-                prefix = '*Ticket changed by: {}*\n\n'.format(
+                prefix = '*Ticket changed by:* {}\n\n'.format(
                         self.get_user_link(event['actor']['login']))
             if event['event'] == 'reopened':
                 text = '- **status**: closed --> open'
