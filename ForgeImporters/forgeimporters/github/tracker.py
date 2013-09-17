@@ -127,8 +127,8 @@ class GitHubTrackerImporter(ToolImporter):
     def process_fields(self, ticket, issue):
         ticket.summary = issue['title']
         ticket.status = issue['state']
-        ticket.created_date = datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ')
-        ticket.mod_date = datetime.strptime(issue['updated_at'], '%Y-%m-%dT%H:%M:%SZ')
+        ticket.created_date = self.parse_datetime(issue['created_at'])
+        ticket.mod_date = self.parse_datetime(issue['updated_at'])
         if issue['assignee']:
             owner_line = '*Originally owned by:* {}\n'.format(issue['assignee']['login'])
         else:
@@ -158,7 +158,7 @@ class GitHubTrackerImporter(ToolImporter):
             p = ticket.discussion_thread.add_post(
                     text = body,
                     ignore_security = True,
-                    timestamp = datetime.strptime(comment['created_at'], '%Y-%m-%dT%H:%M:%SZ'),
+                    timestamp = self.parse_datetime(comment['created_at']),
                 )
             p.add_multiple_attachments(attachments)
 
@@ -190,7 +190,7 @@ class GitHubTrackerImporter(ToolImporter):
             title = issue['milestone']['title']
             due = None
             if issue['milestone']['due_on']:
-                due = datetime.strptime(issue['milestone']['due_on'], '%Y-%m-%dT%H:%M:%SZ')
+                due = self.parse_datetime(issue['milestone']['due_on'])
             ticket.custom_fields = {
                 '_milestone': title,
             }
