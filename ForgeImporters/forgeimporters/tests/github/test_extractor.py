@@ -87,9 +87,16 @@ class TestGitHubProjectExtractor(TestCase):
     def test_get_next_page_url(self):
         self.assertIsNone(self.extractor.get_next_page_url(None))
         self.assertIsNone(self.extractor.get_next_page_url(''))
-        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="last"'
+        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=10>; rel="last"'
         self.assertEqual(self.extractor.get_next_page_url(link),
                 'https://api.github.com/repositories/8560576/issues?state=open&page=2')
+
+        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next"'
+        self.assertEqual(self.extractor.get_next_page_url(link),
+                'https://api.github.com/repositories/8560576/issues?state=open&page=2')
+
+        link = '<https://api.github.com/repositories/8560576/issues?state=open&page=1>; rel="prev"'
+        self.assertIsNone(self.extractor.get_next_page_url(link))
 
     def test_get_summary(self):
         self.assertEqual(self.extractor.get_summary(), 'project description')
