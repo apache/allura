@@ -22,8 +22,10 @@ from shutil import rmtree
 import git
 from pylons import app_globals as g
 from pylons import tmpl_context as c
+from ming.orm import ThreadLocalORMSession
 
 from allura.lib import helpers as h
+from allura import model as M
 from forgeimporters.base import ToolImporter
 from forgeimporters.github import GitHubProjectExtractor
 from forgewiki import model as WM
@@ -82,10 +84,19 @@ class GitHubWikiImporter(ToolImporter):
             mount_point=mount_point or 'wiki',
             mount_label=mount_label or 'Wiki')
         with_history = tool_option == 'history_github_wiki'
-        with h.push_config(c, app=app):
-            self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=with_history)
-        g.post_event('project_updated')
-        return app
+        ThreadLocalORMSession.flush_all()
+        try:
+            M.session.artifact_orm_session._get().skip_mod_date = True
+            with h.push_config(c, app=app):
+                self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=with_history)
+            ThreadLocalORMSession.flush_all()
+            g.post_event('project_updated')
+            return app
+        except Exception as e:
+            h.make_app_admin_only(app)
+            raise
+        finally:
+            M.session.artifact_orm_session._get().skip_mod_date = False
 
     def get_blobs_without_history(self, commit):
         for page in commit.tree.blobs:
