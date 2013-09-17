@@ -105,6 +105,7 @@ class GitHubTrackerImporter(ToolImporter):
                         ticket_num=ticket_num)
                     self.process_fields(ticket, issue)
                     self.process_comments(extractor, ticket, issue)
+                    self.process_events(extractor, ticket, issue)
                     self.process_milestones(ticket, issue)
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
@@ -116,6 +117,12 @@ class GitHubTrackerImporter(ToolImporter):
             return app
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
+
+    def parse_datetime(self, datetime_string):
+        return datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ')
+
+    def get_user_link(self, user):
+        return u'[{0}](https://github.com/{0})'.format(user)
 
     def process_fields(self, ticket, issue):
         ticket.summary = issue['title']
@@ -154,6 +161,29 @@ class GitHubTrackerImporter(ToolImporter):
                     timestamp = datetime.strptime(comment['created_at'], '%Y-%m-%dT%H:%M:%SZ'),
                 )
             p.add_multiple_attachments(attachments)
+
+    def process_events(self, extractor, ticket, issue):
+        for event in extractor.iter_events(issue):
+            prefix = text = ''
+            if event['event'] in ('reopened', 'closed'):
+                prefix = '*Ticket changed by: {}*\n\n'.format(
+                        self.get_user_link(event['actor']['login']))
+            if event['event'] == 'reopened':
+                text = '- **status**: closed --> open'
+            elif event['event'] == 'closed':
+                text = '- **status**: open --> closed'
+            elif event['event'] == 'assigned':
+                text = '- **assigned_to**: {}'.format(
+                        self.get_user_link(event['actor']['login']))
+
+            text = prefix + text
+            if not text:
+                continue
+            ticket.discussion_thread.add_post(
+                text = text,
+                ignore_security = True,
+                timestamp = self.parse_datetime(event['created_at'])
+            )
 
     def process_milestones(self, ticket, issue):
         if issue['milestone']:

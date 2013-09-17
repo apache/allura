@@ -131,3 +131,42 @@ class TestTrackerImporter(TestCase):
                 timestamp=datetime(2013, 8, 26, 16, 57, 53),
                 ignore_security=True,
             ))
+
+    def test_process_events(self):
+        ticket = mock.Mock()
+        extractor = mock.Mock()
+        issue = {'events_url': '/events'}
+        extractor.iter_events.return_value = [
+            {
+                'actor': {'login': 'darth'},
+                'created_at': '2013-09-12T09:58:49Z',
+                'event': 'closed',
+            },
+            {
+                'actor': {'login': 'yoda'},
+                'created_at': '2013-09-12T10:13:20Z',
+                'event': 'reopened',
+            },
+            {
+                'actor': {'login': 'luke'},
+                'created_at': '2013-09-12T10:14:00Z',
+                'event': 'assigned',
+            },
+        ]
+        importer = tracker.GitHubTrackerImporter()
+        importer.process_events(extractor, ticket, issue)
+        args = ticket.discussion_thread.add_post.call_args_list
+        self.assertEqual(args[0], mock.call(
+            text='*Ticket changed by: [darth](https://github.com/darth)*\n\n'
+                 '- **status**: open --> closed',
+            timestamp=datetime(2013, 9, 12, 9, 58, 49),
+            ignore_security=True))
+        self.assertEqual(args[1], mock.call(
+            text='*Ticket changed by: [yoda](https://github.com/yoda)*\n\n'
+                 '- **status**: closed --> open',
+            timestamp=datetime(2013, 9, 12, 10, 13, 20),
+            ignore_security=True))
+        self.assertEqual(args[2], mock.call(
+            text='- **assigned_to**: [luke](https://github.com/luke)',
+            timestamp=datetime(2013, 9, 12, 10, 14, 0),
+            ignore_security=True))
