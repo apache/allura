@@ -1,0 +1,31 @@
+{
+  "class": "PROJECT",
+  "trackers": {
+    "default": {
+      "artifacts": [
+        {
+          "class": "ARTIFACT",
+          "date": "2009-04-13T08:49:13Z",
+          "date_updated": "2009-07-20T15:44:32Z",
+          "id": 1,
+          "milestone": "open_milestone",
+          "status": "open",
+          "description": "",
+          "submitter": "",
+          "summary": "Ticket 1"
+        },
+        {
+          "class": "ARTIFACT",
+          "date": "2009-04-13T08:49:13Z",
+          "date_updated": "2009-07-20T15:44:32Z",
+          "id": 2,
+          "milestone": "closed_milestone",
+          "status": "closed",
+          "description": "",
+          "submitter": "",
+          "summary": "Ticket 2"
+        }
+      ]
+    }
+  }
+}

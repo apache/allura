@@ -27,10 +27,12 @@ from pylons import app_globals as g
 from pylons import tmpl_context as c
 
 from allura import model as M
+from allura.lib import helpers as h
 from alluratest.controller import TestRestApiBase
 from allura.tests import decorators as td
 from forgetracker import model as TM
 from forgetracker.import_support import ImportSupport
+
 
 class TestImportController(TestRestApiBase):
 
@@ -167,6 +169,37 @@ class TestImportController(TestRestApiBase):
         assert ticket_json['summary'] in r
         r = self.app.get('/p/test/bugs/')
         assert ticket_json['summary'] in r
+
+    @td.with_tracker
+    def test_milestone_status(self):
+        """When importing, if all tickets in a milestone are closed, the
+        milestone itself should also be closed.
+
+        """
+        here_dir = os.path.dirname(__file__)
+        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+                                 expires=datetime.utcnow() + timedelta(days=1))
+        ming.orm.session(api_ticket).flush()
+        self.set_api_token(api_ticket)
+
+        doc_text = open(here_dir + '/data/milestone-tickets.json').read()
+        self.api_post('/rest/p/test/bugs/perform_import', doc=doc_text,
+            options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+
+        ming.orm.ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ming.orm.ThreadLocalORMSession.flush_all()
+
+        with h.push_context('test', mount_point='bugs', neighborhood='Projects'):
+            for milestone_fld in c.app.globals.milestone_fields:
+                milestone_names = [ms['name'] for ms in milestone_fld['milestones']]
+                assert 'open_milestone' in milestone_names, milestone_names
+                assert 'closed_milestone' in milestone_names, milestone_names
+                for milestone in milestone_fld['milestones']:
+                    if milestone['name'] == 'open_milestone':
+                        assert milestone['complete'] == False
+                    if milestone['name'] == 'closed_milestone':
+                        assert milestone['complete'] == True
 
     @td.with_tracker
     def test_link_processing(self):

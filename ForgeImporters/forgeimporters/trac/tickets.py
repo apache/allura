@@ -120,6 +120,8 @@ class TracTicketImporter(ToolImporter):
                 'Tickets',
                 mount_point=mount_point,
                 mount_label=mount_label or 'Tickets',
+                open_status_names='new assigned accepted reopened',
+                closed_status_names='closed',
                 import_id={
                         'source': self.source,
                         'trac_url': trac_url,
@@ -135,7 +137,7 @@ class TracTicketImporter(ToolImporter):
                     expires=datetime.utcnow() + timedelta(minutes=60))
             session(api_ticket).flush(api_ticket)
             cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
-                    api_ticket.secret_key, verbose=True)
+                    api_ticket.secret_key, verbose=True, retry=False)
             import_tracker(cli, project.shortname, mount_point,
                     {'user_map': json.loads(user_map) if user_map else {}},
                     export_string, validate=False)
