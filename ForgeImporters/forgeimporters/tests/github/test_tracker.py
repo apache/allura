@@ -46,8 +46,8 @@ class TestTrackerImporter(TestCase):
 
         project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label',
                 EnableVoting=False,
-                open_status_names='Open',
-                closed_status_names='Closed',
+                open_status_names='open',
+                closed_status_names='closed',
             )
         gpe.iter_issues.assert_called_once()
         self.assertEqual(tlos.flush_all.call_args_list, [

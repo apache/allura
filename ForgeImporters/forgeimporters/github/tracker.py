@@ -87,8 +87,8 @@ class GitHubTrackerImporter(ToolImporter):
             mount_label=None, **kw):
         app = project.install_app('tickets', mount_point, mount_label,
                 EnableVoting=False,
-                open_status_names='Open',
-                closed_status_names='Closed',
+                open_status_names='open',
+                closed_status_names='closed',
             )
         ThreadLocalORMSession.flush_all()
         extractor = GitHubProjectExtractor(
