@@ -46,6 +46,14 @@ class TestGitHubProjectExtractor(TestCase):
     ]
     ISSUE_COMMENTS = [u'hello', u'mocked_comment']
     ISSUE_COMMENTS_PAGE2 = [u'hello2', u'mocked_comment2']
+    ISSUE_EVENTS = [
+        {u'event': u'closed'},
+        {u'event': u'reopened'},
+    ]
+    ISSUE_EVENTS_PAGE2 = [
+        {u'event': u'assigned'},
+        {u'event': u'not-supported-event'},
+    ]
 
     def mocked_urlopen(self, url):
         headers = {}
@@ -63,6 +71,11 @@ class TestGitHubProjectExtractor(TestCase):
             headers = {'Link': '</comments?page=2>; rel="next"'}
         elif url.endswith('/comments?page=2'):
             response = StringIO(json.dumps(self.ISSUE_COMMENTS_PAGE2))
+        elif url.endswith('/events'):
+            response = StringIO(json.dumps(self.ISSUE_EVENTS))
+            headers = {'Link': '</events?page=2>; rel="next"'}
+        elif url.endswith('/events?page=2'):
+            response = StringIO(json.dumps(self.ISSUE_EVENTS_PAGE2))
 
         response.info = lambda: headers
         return response
@@ -95,3 +108,8 @@ class TestGitHubProjectExtractor(TestCase):
         mock_issue = {'comments_url': '/issues/1/comments'}
         comments = list(self.extractor.iter_comments(mock_issue))
         self.assertEqual(comments, self.ISSUE_COMMENTS + self.ISSUE_COMMENTS_PAGE2)
+
+    def test_iter_events(self):
+        mock_issue = {'events_url': '/issues/1/events'}
+        events = list(self.extractor.iter_events(mock_issue))
+        self.assertEqual(events, self.ISSUE_EVENTS + self.ISSUE_EVENTS_PAGE2[:1])

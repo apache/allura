@@ -32,6 +32,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
             'issues': 'https://api.github.com/repos/{project_name}/issues',
         }
     POSSIBLE_STATES = ('opened', 'closed')
+    SUPPORTED_ISSUE_EVENTS = ('closed', 'reopened', 'assigned')
     NEXT_PAGE_URL_RE = re.compile(r'<([^>]*)>; rel="next"')
 
     def get_next_page_url(self, link):
@@ -83,3 +84,10 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         comments = self.get_page(comments_url)
         for comment in comments:
             yield comment
+
+    def iter_events(self, issue):
+        events_url = issue['events_url']
+        events = self.get_page(events_url)
+        for event in events:
+            if event.get('event') in self.SUPPORTED_ISSUE_EVENTS:
+                yield event
