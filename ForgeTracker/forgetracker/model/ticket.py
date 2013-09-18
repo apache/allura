@@ -36,10 +36,27 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from allura.model import (Artifact, MovedArtifact, VersionedArtifact, Snapshot,
-                          project_orm_session, BaseAttachment, VotableArtifact, AppConfig, Mailbox, User)
-from allura.model import User, Feed, Thread, Notification, ProjectRole
-from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
+from allura.model import (
+        ACE,
+        DENY_ALL,
+
+        AppConfig,
+        Artifact,
+        BaseAttachment,
+        Feed,
+        Mailbox,
+        MovedArtifact,
+        Notification,
+        ProjectRole,
+        Snapshot,
+        Thread,
+        User,
+        VersionedArtifact,
+        VotableArtifact,
+
+        artifact_orm_session,
+        project_orm_session,
+)
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
 
@@ -1088,6 +1105,14 @@ class TicketAttachment(BaseAttachment):
 
 
 class MovedTicket(MovedArtifact):
+
+    class __mongometa__:
+        session = artifact_orm_session
+        name='moved_ticket'
+        indexes = [
+            ('app_config_id', 'ticket_num'),
+        ]
+
     ticket_num = FieldProperty(int, required=True, allow_none=False)
 
 Mapper.compile_all()

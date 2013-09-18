@@ -1180,18 +1180,15 @@ class TicketController(BaseController, FeedController):
                 if self.ticket is not None:
                     utils.permanent_redirect(self.ticket.url())
                 else:
-                    # trying to check if ticket was moved from here
+                    # check if ticket was moved
                     moved_ticket = TM.MovedTicket.query.find({
                         'app_config_id': c.app.config._id,
                         'ticket_num': self.ticket_num,
                     }).first()
                     if moved_ticket:
-                        flash('Ticket #{} was moved to this app'.format(
-                            moved_ticket.ticket_num
-                        ))
+                        flash('Original ticket was moved to this location')
                         utils.permanent_redirect(moved_ticket.moved_to_url)
             self.attachment = AttachmentsController(self.ticket)
-            # self.comments = CommentController(self.ticket)
 
     def _check_security(self):
         if self.ticket is not None:
