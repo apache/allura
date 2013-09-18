@@ -177,7 +177,7 @@ class TestImportController(TestRestApiBase):
 
         """
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=self.user._id, capabilities={'import': ['Projects','test']},
+        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
