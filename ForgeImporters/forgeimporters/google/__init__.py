@@ -234,12 +234,9 @@ class Comment(object):
 
     def _get_updates(self, tag):
         _updates = tag.find('div', 'updates')
-        if _updates:
-            _strings = _updates.findAll(text=True)
-            updates = (s.strip() for s in _strings if s.strip())
-            self.updates = {field: updates.next() for field in updates}
-        else:
-            self.updates = {}
+        self.updates = {
+                b.text: b.nextSibling.strip()
+                for b in _updates.findAll('b')} if _updates else {}
 
     @property
     def annotated_text(self):
