@@ -123,6 +123,7 @@ class ForgeTrackerImporter(ToolImporter):
         tracker_json['tracker_config']['options'].pop('ordinal', None)
         tracker_json['tracker_config']['options'].pop('mount_point', None)
         tracker_json['tracker_config']['options'].pop('mount_label', None)
+        tracker_json['tracker_config']['options'].pop('import_id', None)
         app = project.install_app('tickets', mount_point, mount_label,
                 import_id={
                         'source': self.source,
