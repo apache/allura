@@ -284,3 +284,49 @@ class TestUserLink(TestCase):
         tag.get.return_value = '/p/project'
         link = google.UserLink(tag)
         self.assertEqual(str(link), '[name](http://code.google.com/p/project)')
+
+
+class TestComment(TestCase):
+    html = """
+    <div class="cursor_off vt issuecomment" id="hc2">
+     <div style="float:right; margin-right:.3em; text-align:right">
+     <span class="date" title="Tue Jun 25 03:20:09 2013">
+     Jun 25, 2013
+     </span>
+     </div>
+     <span class="author">
+     <span class="role_label">Project Member</span>
+     <a name="c2" href="/p/pychess/issues/detail?id=267#c2">#2</a>
+     <a class="userlink" href="/u/gbtami/">gbtami</a></span>
+    <pre><i>(No comment was entered for this change.)</i>
+    </pre>
+     <div class="updates">
+     <div class="round4"></div>
+     <div class="round2"></div>
+     <div class="round1"></div>
+     <div class="box-inner">
+     <b>Summary:</b>
+     Make PyChess keyboard accessible
+     <span class="oldvalue">
+     (was: Make PyChess keyboard accecible)
+     </span>
+     <br>
+     <b>Status:</b>
+     Accepted
+     <br>
+     </div>
+     <div class="round1"></div>
+     <div class="round2"></div>
+     <div class="round4"></div>
+     </div>
+    </div>
+    """
+
+    def test_init(self):
+        from BeautifulSoup import BeautifulSoup
+        html = BeautifulSoup(self.html)
+        comment = google.Comment(html.find('div', 'issuecomment'))
+        self.assertEqual(comment.updates, {
+            u'Summary:': u'Make PyChess keyboard accessible',
+            u'Status:': u'Accepted',
+            })
