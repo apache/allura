@@ -202,3 +202,9 @@ class GitHubWikiImporter(ToolImporter):
         for commit in reversed(list(wiki.iter_commits())):
             self.get_blobs_with_history(commit)
         rmtree(wiki_path)
+
+    def convert_gollum_page_links(self, text):
+        return text
+
+    def convert_gollum_external_links(self, text):
+        return text
