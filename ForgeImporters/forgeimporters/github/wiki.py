@@ -225,4 +225,22 @@ class GitHubWikiImporter(ToolImporter):
         return _re.sub(repl, text)
 
     def convert_gollum_external_links(self, text):
-        return text
+        _re = re.compile(
+            r'''(?P<quote>')?                     # possible tag escaping
+                (?P<tag>\[\[                      # tag start
+                (?:(?P<title>[^]|]*)\|)?          # optional title
+                (?P<link>(?:http|https)://[^]]+)  # link
+                \]\])                             # tag end''', re.VERBOSE)
+
+        def repl(match):
+            link = match.group('link')
+            title = match.groupdict().get('title')
+            quote = match.groupdict().get('quote')
+            if quote:
+                # tag is escaped, return untouched
+                return match.group('tag')
+            if title:
+                return u'[{}]({})'.format(title, link)
+            return u'<{}>'.format(link)
+
+        return _re.sub(repl, text)
