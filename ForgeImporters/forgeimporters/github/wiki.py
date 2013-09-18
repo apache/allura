@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
 from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -204,7 +205,24 @@ class GitHubWikiImporter(ToolImporter):
         rmtree(wiki_path)
 
     def convert_gollum_page_links(self, text):
-        return text
+        _re = re.compile(r'''(?P<quote>')?            # possible tag escaping
+                             (?P<tag>\[\[             # tag start
+                             (?:(?P<title>[^]|]*)\|)? # optional title
+                             (?P<page>[^]]+)          # page name
+                             \]\])                    # tag end''', re.VERBOSE)
+
+        def repl(match):
+            page = match.group('page').replace('-', ' ').replace('/', ' ')
+            title = match.groupdict().get('title')
+            quote = match.groupdict().get('quote')
+            if quote:
+                # tag is escaped, return untouched
+                return match.group('tag')
+            if title:
+                return u'[{}]({})'.format(title, page)
+            return u'[{}]'.format(page)
+
+        return _re.sub(repl, text)
 
     def convert_gollum_external_links(self, text):
         return text
