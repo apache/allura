@@ -204,6 +204,12 @@ class GitHubWikiImporter(ToolImporter):
             self.get_blobs_with_history(commit)
         rmtree(wiki_path)
 
+    def convert_gollum_tags(self, text):
+        # order is important
+        text = self.convert_gollum_external_links(text)
+        text = self.convert_gollum_page_links(text)
+        return text
+
     def convert_gollum_page_links(self, text):
         _re = re.compile(r'''(?P<quote>')?            # possible tag escaping
                              (?P<tag>\[\[             # tag start

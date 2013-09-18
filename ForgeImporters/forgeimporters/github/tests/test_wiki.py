@@ -124,9 +124,6 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
 
-    def test_convert_gollum_tags(self):
-        pass
-
     def test_convert_gollum_page_links(self):
         f = GitHubWikiImporter().convert_gollum_page_links
         assert_equal(f(u'[[Page]]'), u'[Page]')
@@ -165,8 +162,25 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
         assert_equal(f(u"'[[SourceForge|http://sf.net]]"), u'[[SourceForge|http://sf.net]]')
 
-    def test_convert_gollum_toc(self):
-        pass
+    def test_convert_gollum_tags(self):
+        f = GitHubWikiImporter().convert_gollum_tags
+        source = u'''Look at [[this page|Some Page]]
+
+More info at: [[MoreInfo]] [[Even More Info]]
+
+Our website is [[http://sf.net]].
+
+'[[Escaped Tag]]'''
+
+        result = u'''Look at [this page](Some Page)
+
+More info at: [MoreInfo] [Even More Info]
+
+Our website is <http://sf.net>.
+
+[[Escaped Tag]]'''
+
+        assert_equal(f(source), result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
