@@ -64,6 +64,8 @@ class TestTracTicketImporter(TestCase):
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
                 'Tickets', mount_point='bugs', mount_label='Bugs',
+                open_status_names='new assigned accepted reopened',
+                closed_status_names='closed',
                 import_id={
                         'source': 'Trac',
                         'trac_url': 'http://example.com/trac/url/',
