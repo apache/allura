@@ -1,3 +1,5 @@
+# coding: utf-8
+
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -121,6 +123,50 @@ class TestGitHubWikiImporter(TestCase):
         GitHubWikiImporter().get_blobs_with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
+
+    def test_convert_gollum_tags(self):
+        pass
+
+    def test_convert_gollum_page_links(self):
+        f = GitHubWikiImporter().convert_gollum_page_links
+        assert_equal(f(u'[[Page]]'), u'[Page]')
+        assert_equal(f(u'[[Page Title|Page]]'), u'[Page Title](Page)')
+        assert_equal(f(u'[[Pagê Nâme]]'), u'[Pagê Nâme]')
+        # Github always converts spaces and slashes in links to hyphens,
+        # to lookup page in the filesystem. During import we're converting
+        # all hyphens in page name to spaces, but still supporting both link formats.
+        assert_equal(f(u'[[Page With Spaces]]'), u'[Page With Spaces]')
+        assert_equal(f(u'[[Page-With-Spaces]]'), u'[Page With Spaces]')
+        assert_equal(f(u'[[Page / 1]]'), u'[Page   1]')
+        assert_equal(f(u'[[Title|Page With Spaces]]'), u'[Title](Page With Spaces)')
+        assert_equal(f(u'[[Title|Page-With-Spaces]]'), u'[Title](Page With Spaces)')
+        assert_equal(f(u'[[go here|Page / 1]]'), u'[go here](Page   1)')
+
+    def test_convert_gollum_page_links_escaped(self):
+        f = GitHubWikiImporter().convert_gollum_page_links
+        assert_equal(f(u"'[[Page]]"), u'[[Page]]')
+        assert_equal(f(u"'[[Page Title|Page]]"), u'[[Page Title|Page]]')
+        assert_equal(f(u"'[[Page With Spaces]]"), u'[[Page With Spaces]]')
+        assert_equal(f(u"'[[Page-With-Spaces]]"), u'[[Page-With-Spaces]]')
+        assert_equal(f(u"'[[Page / 1]]"), u'[[Page / 1]]')
+        assert_equal(f(u"'[[Title|Page With Spaces]]"), u'[[Title|Page With Spaces]]')
+        assert_equal(f(u"'[[Title|Page-With-Spaces]]"), u'[[Title|Page-With-Spaces]]')
+        assert_equal(f(u"'[[go here|Page / 1]]"), u'[[go here|Page / 1]]')
+
+    def test_convert_gollum_external_links(self):
+        f = GitHubWikiImporter().convert_gollum_external_links
+        assert_equal(f(u'[[http://sf.net]]'), u'<http://sf.net>')
+        assert_equal(f(u'[[https://sf.net]]'), u'<https://sf.net>')
+        assert_equal(f(u'[[SourceForge|http://sf.net]]'), u'[SourceForge](http://sf.net)')
+
+    def test_convert_gollum_external_links_escaped(self):
+        f = GitHubWikiImporter().convert_gollum_external_links
+        assert_equal(f(u"'[[http://sf.net]]"), u'[[http://sf.net]]')
+        assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
+        assert_equal(f(u"'[[SourceForge|http://sf.net]]"), u'[[SourceForge|http://sf.net]]')
+
+    def test_convert_gollum_toc(self):
+        pass
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
