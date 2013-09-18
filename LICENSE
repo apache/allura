@@ -209,6 +209,31 @@ notices and license terms. Your use of the source code for the these
 subcomponents is subject to the terms and conditions of the following
 licenses.
 
+The file Allura/allura/etc/mime.types from the mime-support package,
+which is in the public domain.  For details, see
+http://ftp-master.metadata.debian.org/changelogs//main/m/mime-support/mime-support_3.54_copyright
+
+ASCII, Dammit, which is in the public domain.
+For details, see Allura/allura/lib/AsciiDammit.py
+
+jQuery, jQueryUI, and various related plugins, which are available
+under the MIT license.  For details, see the individual files:
+    Allura/allura/public/nf/js/jquery-base.js
+    Allura/allura/public/nf/css/smoothness/jquery-ui-1.8.4.custom.css
+    Allura/allura/lib/widgets/resources/css/jquery.ui.datepicker.css
+    Allura/allura/public/nf/js/jquery.daterangepicker.js
+    Allura/allura/public/nf/css/forge/ui.daterangepicker.css
+    Allura/allura/lib/widgets/resources/css/autocomplete.css
+    Allura/allura/public/nf/css/forge/accordion.css
+    Allura/allura/lib/widgets/resources/js/jqfontselector.js
+    Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
+    Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
+    Allura/allura/lib/widgets/resources/js/jquery.tagsinput.js
+    Allura/allura/lib/widgets/resources/js/jquery.textarea.js
+    Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
+    Allura/allura/public/nf/js/jquery.flot.js
+    Allura/allura/public/nf/js/jquery.maxlength.min.js
+
 Blueprint, which is available under the MIT license.
 For details, see Allura/allura/public/nf/css/blueprint/
 
@@ -218,18 +243,5 @@ For details, see Allura/allura/public/nf/js/spin.min.js
 Sylvester, which is available under the MIT license.
 For details, see Allura/allura/public/nf/js/sylvester.js
 
-jQuery, jQueryUI, and various related plugins, which are available
-under the MIT license.  For details, see the individual files:
-    Allura/allura/public/nf/js/jquery-base.js
-    Allura/allura/public/nf/css/smoothness/jquery-ui-1.8.4.custom.css
-    Allura/allura/lib/widgets/resources/css/jquery.ui.datepicker.css
-    Allura/allura/lib/widgets/resources/css/autocomplete.css
-    Allura/allura/public/nf/css/forge/accordion.css
-    Allura/allura/lib/widgets/resources/js/jqfontselector.js
-    Allura/allura/lib/widgets/resources/js/jquery.autosize-min.js
-    Allura/allura/lib/widgets/resources/js/jquery.colorPicker.js
-    Allura/allura/lib/widgets/resources/js/jquery.textarea.js
-    Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
-    Allura/allura/public/nf/js/jquery.daterangepicker.js
-    Allura/allura/public/nf/js/jquery.flot.js
-    Allura/allura/public/nf/js/jquery.maxlength.min.js
+JSLint, which is available under the MIT license.
+For details, see AlluraTest/jslint/
