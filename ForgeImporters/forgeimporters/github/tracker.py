@@ -154,8 +154,7 @@ class GitHubTrackerImporter(ToolImporter):
             if comment['user']:
                 posted_by = u'*Originally posted by:* {}\n'.format(
                     self.get_user_link(comment['user']['login']))
-                posted_by += body
-                body = posted_by
+                body = posted_by + body
             p = ticket.discussion_thread.add_post(
                     text = body,
                     ignore_security = True,
