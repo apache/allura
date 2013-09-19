@@ -134,7 +134,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name='gh_project_name')))
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_label')))
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='tool_option', value='history_github_wiki')))
+        self.assertIsNotNone(r.html.find(attrs=dict(name='tool_option', value='import_history')))
 
     @with_wiki
     @patch('forgeimporters.github.wiki.import_tool')
@@ -144,7 +144,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
             gh_project_name='mulder',
             mount_point='gh-wiki',
             mount_label='GitHub Wiki',
-            tool_option='history_github_wiki')
+            tool_option='import_history')
         r = self.app.post(self.url + 'create', params, status=302)
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki)
         args = import_tool.post.call_args[1]
@@ -152,7 +152,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(u'gh-wiki', args['mount_point'])
         self.assertEqual(u'mulder', args['project_name'])
         self.assertEqual(u'spooky', args['user_name'])
-        self.assertEqual(u'history_github_wiki', args['tool_option'])
+        self.assertEqual(u'import_history', args['tool_option'])
 
         # without history
         params.pop('tool_option')

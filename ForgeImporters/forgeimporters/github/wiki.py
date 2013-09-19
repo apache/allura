@@ -112,7 +112,7 @@ class GitHubWikiImporter(ToolImporter):
     source = 'GitHub'
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
-    tool_option = {"history_github_wiki": "Import history"}
+    tool_option = {"import_history": "Import history"}
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
             'asciidoc',
@@ -148,7 +148,7 @@ class GitHubWikiImporter(ToolImporter):
             "Wiki",
             mount_point=mount_point or 'wiki',
             mount_label=mount_label or 'Wiki')
-        with_history = tool_option == 'history_github_wiki'
+        with_history = tool_option == 'import_history'
         ThreadLocalORMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
