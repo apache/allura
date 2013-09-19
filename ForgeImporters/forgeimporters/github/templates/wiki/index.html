@@ -34,8 +34,8 @@
   {{ error('gh_project_name') }}
 </div>
 <div>
-  <label for="tool_option">Import wiki history</label>
-  <input name="tool_option" value="history_github_wiki" type="checkbox" {% if c.form_values['tool_option'] == 'history_github_wiki'  %} checked="checked"{% endif %}/>
+  <label for="import_history">Import wiki history</label>
+  <input id="import_history" name="tool_option" value="history_github_wiki" type="checkbox" {% if c.form_values['tool_option'] == 'history_github_wiki'  %} checked="checked"{% endif %}/>
   {{ error('tool_option') }}
 </div>
 {% endblock %}
