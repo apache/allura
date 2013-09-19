@@ -596,7 +596,7 @@ class DefaultAdminController(BaseController):
         ace = model.ACE.deny(user.project_role()._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
-        redirect(request.referer)
+        return dict(user_id=str(user._id))
 
     @validate(dict(user_id=V.Set(),
                    perm=V.UnicodeString()))

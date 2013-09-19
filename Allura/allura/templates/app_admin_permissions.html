@@ -66,12 +66,15 @@
 {% endblock %}
 {% block extra_js %}
 <script type="text/javascript">
+  var current_block_list;
   $('a.block-user').click(function(){
+      current_block_list = $(this).parent().parent().find('div.block-list')     
       var deck =  $(this).closest('ul.deck');
       var role = deck.find('li.tcenter h3').text();
       $('input.block_user_role').val(role);
   });
   $('a.block-list').click(function(){
+      current_block_list = $(this).siblings('div.block-list')
       var userlist = $(this).siblings('div.block-list').clone();
       var deck =  $(this).closest('ul.deck');
       var role = deck.find('li.tcenter h3').text();
@@ -79,19 +82,44 @@
       $('div.model-block-list').html(userlist.html());
   });
   $('form[action="block_user"], form[action="unblock_user"]').submit(function() {
-    var form = $(this);
-    if($(this).is(':visible')) {
+    var form = $(this),
+        username = form.find('#block_user'),
+        reason = form.find("textarea[name='reason']")
+
+    if(form.is(':visible')) {
         $.ajax({
-            data: $(this).serialize(),
-            type: $(this).attr('method'),
-            url: $(this).attr('action'),
+            data: form.serialize(),
+            type: form.attr('method'),
+            url:  form.attr('action'),
             success: function(data) {
                 if(data.error){
-                  flash(data.error, 'error');
+                    flash(data.error, 'error');
                 }
                 else {
-                  form.parent().slideUp('fast');
-                  $('.lb_overlay').hide();
+                    form.parent().slideUp('fast');
+                    $('.lb_overlay').hide();
+
+                    if(form.attr('action') == 'block_user') {
+                        if(username.val().length != 0) {
+                            current_block_list
+                              .find('ul')
+                              .append('<li><label>' + 
+                                      '<input type="checkbox" value="' + data.user_id + '"name="user_id">' +
+                                      username.val() + ' (' +
+                                      reason.val() + ')' +
+                                      '</label></li>');
+                        }
+                    }
+                    else {
+                        var checked = form.find('input:checked');
+                        checked.each(function(i, e) {
+                            current_block_list
+                              .find('label:contains("'+$(e).parent().text()+'")')
+                              .parent()
+                              .remove()
+                        });
+                    }
+                    form.find("input[type=text], textarea").val("");
                 }
               }
             });
