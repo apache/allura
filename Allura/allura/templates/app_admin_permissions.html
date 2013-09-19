@@ -78,5 +78,25 @@
       $('input.block_user_role').val(role);
       $('div.model-block-list').html(userlist.html());
   });
+  $('form[action="block_user"]').submit(function() {
+    var form = $(this);
+    if($(this).is(':visible')) {
+        $.ajax({
+            data: $(this).serialize(),
+            type: $(this).attr('method'),
+            url: $(this).attr('action'),
+            success: function(data) {
+                if(data.error){
+                  flash(data.error, 'error');
+                }
+                else {
+                  form.parent().slideUp('fast');
+                  $('.lb_overlay').hide();
+                }
+              }
+            });
+        return false;
+    }
+  });
 </script>
 {% endblock %}

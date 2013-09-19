@@ -585,14 +585,14 @@ class DefaultAdminController(BaseController):
         """
         permanent_redirect('permissions')
 
-    @expose()
+    @expose('json:')
+    @require_post()
     def block_user(self, username, perm, reason=None):
         if not username or not perm:
             redirect(request.referer)
         user = model.User.by_username(username)
         if not user:
-            flash('User "%s" not found' % username, 'error')
-            redirect(request.referer)
+            return dict(error='User "%s" not found' % username)
         ace = model.ACE.deny(user.project_role()._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
