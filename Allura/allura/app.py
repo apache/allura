@@ -600,7 +600,8 @@ class DefaultAdminController(BaseController):
 
     @validate(dict(user_id=V.Set(),
                    perm=V.UnicodeString()))
-    @expose()
+    @expose('json:')
+    @require_post()
     def unblock_user(self, user_id=None, perm=None):
         try:
             user_id = map(ObjectId, user_id)
@@ -608,8 +609,7 @@ class DefaultAdminController(BaseController):
             user_id = []
         users = model.User.query.find({'_id': {'$in': user_id}}).all()
         if not users:
-            flash('Select user to unblock', 'error')
-            redirect(request.referer)
+            return dict(error='Select user to unblock')
         for user in users:
             ace = model.ACE.deny(user.project_role()._id, perm)
             ace = model.ACL.contains(ace, self.app.acl)

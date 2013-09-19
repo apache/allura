@@ -78,7 +78,7 @@
       $('input.block_user_role').val(role);
       $('div.model-block-list').html(userlist.html());
   });
-  $('form[action="block_user"]').submit(function() {
+  $('form[action="block_user"], form[action="unblock_user"]').submit(function() {
     var form = $(this);
     if($(this).is(':visible')) {
         $.ajax({
