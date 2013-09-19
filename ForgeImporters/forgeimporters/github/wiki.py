@@ -23,10 +23,30 @@ import git
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
+from formencode import validators as fev
+from tg import (
+        expose,
+        validate,
+        flash,
+        redirect,
+        )
+from tg.decorators import (
+        with_trailing_slash,
+        without_trailing_slash,
+        )
 
+from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.decorators import (
+        require_post,
+        task,
+        )
 from allura import model as M
-from forgeimporters.base import ToolImporter
+from forgeimporters.base import (
+        ToolImporter,
+        ToolImportForm,
+        ImportErrorHandler,
+        )
 from forgeimporters.github import GitHubProjectExtractor
 from forgewiki import model as WM
 
@@ -42,8 +62,53 @@ except ImportError:
     pass
 
 
+@task(notifications_disabled=True)
+def import_tool(**kw):
+    importer = GitHubWikiImporter()
+    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
+        importer.import_tool(c.project, c.user, **kw)
+
+
+class GitHubWikiImportForm(ToolImportForm):
+    gh_project_name = fev.UnicodeString(not_empty=True)
+    gh_user_name = fev.UnicodeString(not_empty=True)
+    tool_option = fev.UnicodeString(if_missing=u'')
+
+
+class GitHubWikiImportController(BaseController):
+
+    def __init__(self):
+        self.importer = GitHubWikiImporter()
+
+    @property
+    def target_app(self):
+        return self.importer.target_app[0]
+
+    @with_trailing_slash
+    @expose('jinja:forgeimporters.github:templates/wiki/index.html')
+    def index(self, **kw):
+        return dict(importer=self.importer,
+                    target_app=self.target_app)
+
+    @without_trailing_slash
+    @expose()
+    @require_post()
+    @validate(GitHubWikiImportForm(ForgeWikiApp), error_handler=index)
+    def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
+        import_tool.post(
+            project_name=gh_project_name,
+            user_name=gh_user_name,
+            mount_point=mount_point,
+            mount_label=mount_label,
+            tool_option=kw.get('tool_option'))
+        flash('Wiki import has begun. Your new wiki will be available '
+              'when the import is complete.')
+        redirect(c.project.url() + 'admin/')
+
+
 class GitHubWikiImporter(ToolImporter):
     target_app = TARGET_APPS
+    controller = GitHubWikiImportController
     source = 'GitHub'
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
