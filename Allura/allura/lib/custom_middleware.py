@@ -141,12 +141,16 @@ class CSRFMiddleware(object):
 class SSLMiddleware(object):
     'Verify the https/http schema is correct'
 
-    def __init__(self, app, no_redirect_pattern=None):
+    def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None):
         self.app = app
         if no_redirect_pattern:
             self._no_redirect_re = re.compile(no_redirect_pattern)
         else:
             self._no_redirect_re = re.compile('$$$')
+        if force_ssl_pattern:
+            self._force_ssl_re = re.compile(force_ssl_pattern)
+        else:
+            self._force_ssl_re = re.compile('$$$')
 
     def __call__(self, environ, start_response):
         req = Request(environ)
@@ -158,12 +162,12 @@ class SSLMiddleware(object):
             request_uri.decode('ascii')
         except UnicodeError:
             resp = exc.HTTPNotFound()
-        secure = req.environ.get('HTTP_X_SFINC_SSL', 'false') == 'true'
+        secure = req.url.startswith('https://')
         srv_path = req.url.split('://', 1)[-1]
-        if req.cookies.get('SFUSER'):
-            if not secure:
-                resp = exc.HTTPFound(location='https://' + srv_path)
-        elif secure:
+        force_ssl = req.cookies.get('SFUSER') or self._force_ssl_re.match(environ['PATH_INFO'])
+        if not secure and force_ssl:
+            resp = exc.HTTPFound(location='https://' + srv_path)
+        elif secure and not force_ssl:
             resp = exc.HTTPFound(location='http://' + srv_path)
 
         if not resp:
