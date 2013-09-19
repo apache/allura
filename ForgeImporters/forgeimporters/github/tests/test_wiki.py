@@ -15,13 +15,19 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import datetime
-
 from unittest import TestCase
 from nose.tools import assert_equal
 from mock import Mock, patch, call
-from forgeimporters.github.wiki import GitHubWikiImporter
+
+from allura.tests import TestController
+from allura.tests.decorators import with_tool
 from alluratest.controller import setup_basic_test
+from forgeimporters.github.wiki import GitHubWikiImporter
+
+
+# important to be distinct from 'test' which ForgeWiki uses, so that the tests can run in parallel and not clobber each other
+test_project_with_wiki = 'test2'
+with_wiki = with_tool(test_project_with_wiki, 'wiki', 'w', 'wiki')
 
 
 class TestGitHubRepoImporter(TestCase):
@@ -115,3 +121,46 @@ class TestGitHubWikiImporter(TestCase):
         GitHubWikiImporter().get_blobs_with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
+
+
+class TestGitHubWikiImportController(TestController, TestCase):
+
+    url = '/p/%s/admin/ext/import/github-wiki/' % test_project_with_wiki
+
+    @with_wiki
+    def test_index(self):
+        r = self.app.get(self.url)
+        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_user_name')))
+        self.assertIsNotNone(r.html.find(attrs=dict(name='gh_project_name')))
+        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_label')))
+        self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
+        self.assertIsNotNone(r.html.find(attrs=dict(name='tool_option', value='history_github_wiki')))
+
+    @with_wiki
+    @patch('forgeimporters.github.wiki.import_tool')
+    def test_create(self, import_tool):
+        params = dict(
+            gh_user_name='spooky',
+            gh_project_name='mulder',
+            mount_point='gh-wiki',
+            mount_label='GitHub Wiki',
+            tool_option='history_github_wiki')
+        r = self.app.post(self.url + 'create', params, status=302)
+        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki)
+        args = import_tool.post.call_args[1]
+        self.assertEqual(u'GitHub Wiki', args['mount_label'])
+        self.assertEqual(u'gh-wiki', args['mount_point'])
+        self.assertEqual(u'mulder', args['project_name'])
+        self.assertEqual(u'spooky', args['user_name'])
+        self.assertEqual(u'history_github_wiki', args['tool_option'])
+
+        # without history
+        params.pop('tool_option')
+        r = self.app.post(self.url + 'create', params, status=302)
+        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki)
+        args = import_tool.post.call_args[1]
+        self.assertEqual(u'GitHub Wiki', args['mount_label'])
+        self.assertEqual(u'gh-wiki', args['mount_point'])
+        self.assertEqual(u'mulder', args['project_name'])
+        self.assertEqual(u'spooky', args['user_name'])
+        self.assertEqual(u'', args['tool_option'])
