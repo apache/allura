@@ -21,8 +21,9 @@ from unittest import TestCase
 from nose.tools import assert_equal
 from mock import Mock, patch, call
 
+from IPython.testing.decorators import module_not_available, skipif
 from allura.tests import TestController
-from allura.tests.decorators import with_tool
+from allura.tests.decorators import with_tool, without_module
 from alluratest.controller import setup_basic_test
 from forgeimporters.github.wiki import GitHubWikiImporter
 
@@ -182,6 +183,44 @@ Our website is <http://sf.net>.
 
         assert_equal(f(source), result)
 
+    @skipif(module_not_available('html2text'))
+    def test_convert_markup(self):
+        f = GitHubWikiImporter().convert_markup
+        source = u'''Look at [[this page|Some Page]]
+
+More info at: [[MoreInfo]] [[Even More Info]]
+
+Our website is [[http://sf.net]].
+
+'[[Escaped Tag]]'''
+
+        result = u'''Look at [this page](Some Page)
+
+More info at: [MoreInfo] [Even More Info]
+
+Our website is <http://sf.net>.
+
+[[Escaped Tag]]\n\n'''
+
+        assert_equal(f(source, 'test.md'), result)
+
+    @without_module('html2text')
+    def test_convert_markup_without_html2text(self):
+        f = GitHubWikiImporter().convert_markup
+        source = u'''Look at [[this page|Some Page]]
+
+More info at: [[MoreInfo]] [[Even More Info]]
+
+Our website is [[http://sf.net]].
+
+'[[Escaped Tag]]'''
+
+        result = u'''<div class="markdown_content"><p>Look at [[this page|Some Page]]</p>
+<p>More info at: [[MoreInfo]] [[Even More Info]]</p>
+<p>Our website is [[http://sf.net]].</p>
+<p>'[[Escaped Tag]]</p></div>'''
+
+        assert_equal(f(source, 'test.md'), result)
 
 class TestGitHubWikiImportController(TestController, TestCase):
 
