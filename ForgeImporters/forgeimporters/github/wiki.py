@@ -268,6 +268,9 @@ class GitHubWikiImporter(ToolImporter):
         else:
             title, link, options = link[0], link[1], link[2:]
 
+        if link == '_TOC_':
+            return '[TOC]'
+
         if link.startswith('http://') or link.startswith('https://'):
             sub = self._gollum_external_link
         # TODO: add embedded images and file links
