@@ -85,7 +85,12 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.h.render_any_markup')
     def test_without_history(self, render, upsert):
         upsert.text = Mock()
-        GitHubWikiImporter()._without_history(self.commit2)
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        importer.rewrite_links = Mock(return_value='')
+        importer._without_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home'), call('Home2'), call('Home3')])
 
         assert_equal(render.call_args_list, [
@@ -104,7 +109,7 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.git.Repo._clone')
     @patch('forgeimporters.github.wiki.GitHubWikiImporter._with_history')
     @patch('forgeimporters.github.wiki.GitHubWikiImporter._without_history')
-    def test_with_history(self, without_history, with_history, clone):
+    def test_import_with_history(self, without_history, with_history, clone):
         repo = clone.return_value
         repo.iter_commits.return_value = [self.commit1, self.commit2]
         GitHubWikiImporter().import_pages('wiki_url', history=True)
@@ -121,10 +126,15 @@ class TestGitHubWikiImporter(TestCase):
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
-    def test_get_blobs_with_history(self, render, upsert):
+    def test_with_history(self, render, upsert):
         self.commit2.stats.files = {"Home.md": self.blob1}
         self.commit2.tree = {"Home.md": self.blob1}
-        GitHubWikiImporter()._with_history(self.commit2)
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        importer.rewrite_links = Mock(return_value='')
+        importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
 
@@ -199,14 +209,22 @@ Our website is <http://sf.net>.
 
     @skipif(module_not_available('html2text'))
     def test_convert_markup(self):
-        f = GitHubWikiImporter().convert_markup
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
         source = u'''Look at [[this page|Some Page]]
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
 Our website is [[http://sf.net]].
 
-'[[Escaped Tag]]'''
+'[[Escaped Tag]]
+
+[External link to the wiki page](https://github.com/a/b/wiki/Page)
+
+[External link](https://github.com/a/b/issues/1)'''
 
         result = u'''Look at [this page](Some Page)
 
@@ -214,27 +232,57 @@ More info at: [MoreInfo] [Even More Info]
 
 Our website is <http://sf.net>.
 
-[[Escaped Tag]]\n\n'''
+[[Escaped Tag]]
+
+[External link to the wiki page](/p/test/wiki/Page)
+
+[External link](https://github.com/a/b/issues/1)\n\n'''
 
         assert_equal(f(source, 'test.md'), result)
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
-        f = GitHubWikiImporter().convert_markup
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
         source = u'''Look at [[this page|Some Page]]
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
 Our website is [[http://sf.net]].
 
-'[[Escaped Tag]]'''
+'[[Escaped Tag]]
+
+[External link to the wiki page](https://github.com/a/b/wiki/Page)
+
+[External link](https://github.com/a/b/issues/1)'''
 
         result = u'''<div class="markdown_content"><p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://sf.net]].</p>
-<p>'[[Escaped Tag]]</p></div>'''
+<p>'[[Escaped Tag]]</p>
+<p><a class="" href="/p/test/wiki/Page" rel="nofollow">External link to the wiki page</a></p>
+<p><a class="" href="https://github.com/a/b/issues/1" rel="nofollow">External link</a></p></div>'''
 
         assert_equal(f(source, 'test.md'), result)
+
+    def test_rewrite_links(self):
+        f = GitHubWikiImporter().rewrite_links
+        prefix = 'https://github/a/b/wiki'
+        new = '/p/test/wiki/'
+        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test Page</a>', prefix, new),
+                     u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+        assert_equal(f(u'<a href="https://github/a/b/wiki/Test-Page">Test-Page</a>', prefix, new),
+                     u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+        assert_equal(f(u'<a href="https://github/a/b/issues/1" class="1"></a>', prefix, new),
+                     u'<a href="https://github/a/b/issues/1" class="1"></a>')
+        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>', prefix, new),
+                     u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
+        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>', prefix, new),
+                     u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
+
 
 class TestGitHubWikiImportController(TestController, TestCase):
 

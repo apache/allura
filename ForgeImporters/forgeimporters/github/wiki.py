@@ -20,6 +20,7 @@ from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
+from BeautifulSoup import BeautifulSoup
 import git
 from pylons import app_globals as g
 from pylons import tmpl_context as c
@@ -145,7 +146,8 @@ class GitHubWikiImporter(ToolImporter):
         if not extractor.has_wiki():
             return
 
-        app = project.install_app(
+        self.github_wiki_url = extractor.get_page_url('wiki_url').replace('.wiki', '/wiki')
+        self.app = project.install_app(
             "Wiki",
             mount_point=mount_point or 'wiki',
             mount_label=mount_label or 'Wiki')
@@ -153,13 +155,13 @@ class GitHubWikiImporter(ToolImporter):
         ThreadLocalORMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
-            with h.push_config(c, app=app):
+            with h.push_config(c, app=self.app):
                 self.import_pages(extractor.get_page_url('wiki_url'), history=with_history)
             ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
-            return app
+            return self.app
         except Exception as e:
-            h.make_app_admin_only(app)
+            h.make_app_admin_only(self.app)
             raise
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
@@ -217,13 +219,14 @@ class GitHubWikiImporter(ToolImporter):
     def convert_markup(self, text, filename):
         """Convert any supported github markup into Allura-markdown.
 
-        Conversion happens in 3 phases:
+        Conversion happens in 4 phases:
 
         1. Convert source text to a html using h.render_any_markup
-        2. Convert resulting html to a markdown using html2text, if available.
-        3. Convert gollum tags
+        2. Rewrite links that match the wiki URL prefix with new location
+        3. Convert resulting html to a markdown using html2text, if available.
+        4. Convert gollum tags
 
-        If html2text module isn't available then only phase (1) will be executed.
+        If html2text module isn't available then only phases 1 and 2 will be executed.
         """
         try:
             import html2text
@@ -231,6 +234,7 @@ class GitHubWikiImporter(ToolImporter):
             html2text = None
 
         text = h.render_any_markup(filename, text)
+        text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
         if html2text:
             text = html2text.html2text(text)
             text = self.convert_gollum_tags(text)
@@ -288,3 +292,20 @@ class GitHubWikiImporter(ToolImporter):
         if title:
             return u'[{}]({})'.format(title, page)
         return u'[{}]'.format(page)
+
+    def rewrite_links(self, html, prefix, new_prefix):
+        if not prefix.endswith('/'):
+            prefix += '/'
+        if not new_prefix.endswith('/'):
+            new_prefix += '/'
+        soup = BeautifulSoup(html)
+        for a in soup.findAll('a'):
+            if a.get('href').startswith(prefix):
+                page = a['href'].replace(prefix, '')
+                new_page = self._convert_page_name(page)
+                a['href'] = new_prefix + new_page
+                if a.text == page:
+                    a.setString(new_page)
+                elif a.text == prefix + page:
+                    a.setString(new_prefix + new_page)
+        return str(soup)
