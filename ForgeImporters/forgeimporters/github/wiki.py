@@ -154,7 +154,7 @@ class GitHubWikiImporter(ToolImporter):
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=app):
-                self.get_wiki_pages(extractor.get_page_url('wiki_url'), history=with_history)
+                self.import_pages(extractor.get_page_url('wiki_url'), history=with_history)
             ThreadLocalORMSession.flush_all()
             g.post_event('project_updated')
             return app
@@ -164,44 +164,49 @@ class GitHubWikiImporter(ToolImporter):
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
 
-    def get_blobs_without_history(self, commit):
+    def _without_history(self, commit):
         for page in commit.tree.blobs:
-            name, ext = page.name.split('.', 1)
-            if ext not in self.supported_formats:
-                log.info('Not a wiki page %s. Skipping.' % page.name)
-                continue
-            wiki_page = WM.Page.upsert(name)
-            wiki_page.text = h.render_any_markup(page.name, h.really_unicode(page.data_stream.read()))
-            wiki_page.timestamp = wiki_page.mod_date = datetime.utcfromtimestamp(commit.committed_date)
-            wiki_page.viewable_by = ['all']
-            wiki_page.commit()
+            self._make_page(page.data_stream.read(), page.name, commit)
 
-    def get_blobs_with_history(self, commit):
-        for page_name in commit.stats.files.keys():
-            name, ext = page_name.split('.', 1)
-            if ext not in self.supported_formats:
-                log.info('Not a wiki page %s. Skipping.' % page_name)
-                continue
-            wiki_page = WM.Page.upsert(name)
-            if page_name in commit.tree:
-                wiki_page.text = h.render_any_markup(
-                    page_name,
-                    h.really_unicode(commit.tree[page_name].data_stream.read()))
-                wiki_page.timestamp = wiki_page.mod_date = datetime.utcfromtimestamp(commit.committed_date)
-                wiki_page.viewable_by = ['all']
+    def _with_history(self, commit):
+        for filename in commit.stats.files.keys():
+            if filename in commit.tree:
+                text = commit.tree[filename].data_stream.read()
             else:
-                wiki_page.deleted = True
-                suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
-                wiki_page.title += suffix
-            wiki_page.commit()
+                # file is deleted
+                text = ''
+            self._make_page(text, filename, commit)
 
-    def get_wiki_pages(self, wiki_url, history=None):
+    def _make_page(self, text, filename, commit):
+        name_and_ext = filename.split('.', 1)
+        if len(name_and_ext) == 1:
+            name, ext = name_and_ext[0], None
+        else:
+            name, ext = name_and_ext
+        if ext and ext not in self.supported_formats:
+            log.info('Not a wiki page %s. Skipping.' % filename)
+            return
+        mod_date = datetime.utcfromtimestamp(commit.committed_date)
+        wiki_page = WM.Page.upsert(name)
+        if filename in commit.tree:
+            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
+            wiki_page.timestamp = wiki_page.mod_date = mod_date
+            wiki_page.viewable_by = ['all']
+        else:
+            wiki_page.deleted = True
+            suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=mod_date)
+            wiki_page.title += suffix
+        wiki_page.commit()
+        return wiki_page
+
+    def import_pages(self, wiki_url, history=None):
         wiki_path = mkdtemp()
         wiki = git.Repo.clone_from(wiki_url, to_path=wiki_path, bare=True)
         if not history:
-            return self.get_blobs_without_history(wiki.heads.master.commit)
-        for commit in reversed(list(wiki.iter_commits())):
-            self.get_blobs_with_history(commit)
+            self._without_history(wiki.heads.master.commit)
+        else:
+            for commit in reversed(list(wiki.iter_commits())):
+                self._with_history(commit)
         rmtree(wiki_path)
 
     def convert_markup(self, text, filename):
