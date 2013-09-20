@@ -204,6 +204,28 @@ class GitHubWikiImporter(ToolImporter):
             self.get_blobs_with_history(commit)
         rmtree(wiki_path)
 
+    def convert_markup(self, text, filename):
+        """Convert any supported github markup into Allura-markdown.
+
+        Conversion happens in 3 phases:
+
+        1. Convert source text to a html using h.render_any_markup
+        2. Convert resulting html to a markdown using html2text, if available.
+        3. Convert gollum tags
+
+        If html2text module isn't available then only phase (1) will be executed.
+        """
+        try:
+            import html2text
+        except ImportError:
+            html2text = None
+
+        text = h.render_any_markup(filename, text)
+        if html2text:
+            text = html2text.html2text(text)
+            text = self.convert_gollum_tags(text)
+        return text
+
     def convert_gollum_tags(self, text):
         # order is important
         text = self.convert_gollum_external_links(text)
