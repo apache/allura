@@ -334,6 +334,20 @@ class TestLastCommit(unittest.TestCase):
         self.assertEqual(len(lcd.entries), 1)
         self.assertEqual(lcd.by_name['file2'], commit3._id)
 
+    def test_loop(self):
+        commit1 = self._add_commit('Commit 1', ['file1'])
+        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
+        commit2.parent_ids = [commit3._id]
+        session(commit2).flush(commit2)
+        lcd = M.repo.LastCommit.get(commit3.tree)
+        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(lcd.commit_id, commit3._id)
+        self.assertEqual(lcd.path, '')
+        self.assertEqual(len(lcd.entries), 2)
+        self.assertEqual(lcd.by_name['dir1'], commit2._id)
+        self.assertEqual(lcd.by_name['file2'], commit3._id)
+
 
 class TestModelCache(unittest.TestCase):
     def setUp(self):

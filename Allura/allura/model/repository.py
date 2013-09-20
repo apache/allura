@@ -149,9 +149,13 @@ class RepositoryImplementation(object):
         start_time = time()
         paths = set(paths)
         result = {}
+        seen_commits = set()
         while paths and commit:
             if time() - start_time > timeout:
                 return result
+            if commit._id in seen_commits:
+                return result  # sanity check for bad data (loops)
+            seen_commits.add(commit._id)
             changed = paths & set(commit.changed_paths)
             result.update({path: commit._id for path in changed})
             paths = paths - changed
