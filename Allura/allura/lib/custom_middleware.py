@@ -158,13 +158,8 @@ class SSLMiddleware(object):
             request_uri.decode('ascii')
         except UnicodeError:
             resp = exc.HTTPNotFound()
-        secure = req.environ.get('HTTP_X_SFINC_SSL', 'false') == 'true'
-        srv_path = req.url.split('://', 1)[-1]
-        if req.cookies.get('SFUSER'):
-            if not secure:
-                resp = exc.HTTPFound(location='https://' + srv_path)
-        elif secure:
-            resp = exc.HTTPFound(location='http://' + srv_path)
+        if request_uri.startswith('http://'):
+            resp = exc.HTTPFound(location=request_uri.replace('http://', 'https://', 1))
 
         if not resp:
             resp = self.app
