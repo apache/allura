@@ -135,7 +135,7 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f('Page / Name'), 'Page   Name')
 
     def test_convert_gollum_page_links(self):
-        f = GitHubWikiImporter().convert_gollum_page_links
+        f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u'[[Page]]'), u'[Page]')
         assert_equal(f(u'[[Page Title|Page]]'), u'[Page Title](Page)')
         assert_equal(f(u'[[Pagê Nâme]]'), u'[Pagê Nâme]')
@@ -150,7 +150,7 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u'[[go here|Page / 1]]'), u'[go here](Page   1)')
 
     def test_convert_gollum_page_links_escaped(self):
-        f = GitHubWikiImporter().convert_gollum_page_links
+        f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u"'[[Page]]"), u'[[Page]]')
         assert_equal(f(u"'[[Page Title|Page]]"), u'[[Page Title|Page]]')
         assert_equal(f(u"'[[Page With Spaces]]"), u'[[Page With Spaces]]')
@@ -161,13 +161,13 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u"'[[go here|Page / 1]]"), u'[[go here|Page / 1]]')
 
     def test_convert_gollum_external_links(self):
-        f = GitHubWikiImporter().convert_gollum_external_links
+        f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u'[[http://sf.net]]'), u'<http://sf.net>')
         assert_equal(f(u'[[https://sf.net]]'), u'<https://sf.net>')
         assert_equal(f(u'[[SourceForge|http://sf.net]]'), u'[SourceForge](http://sf.net)')
 
     def test_convert_gollum_external_links_escaped(self):
-        f = GitHubWikiImporter().convert_gollum_external_links
+        f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u"'[[http://sf.net]]"), u'[[http://sf.net]]')
         assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
         assert_equal(f(u"'[[SourceForge|http://sf.net]]"), u'[[SourceForge|http://sf.net]]')
