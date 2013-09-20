@@ -27,13 +27,14 @@ from subprocess import Popen, PIPE
 from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
+from time import time
 from collections import defaultdict
 from itertools import izip
 from urlparse import urljoin
 from urllib import quote
 
 import tg
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 import pymongo.errors
@@ -144,9 +145,13 @@ class RepositoryImplementation(object):
         Return a mapping {path: commit_id} of the _id of the last
         commit to touch each path, starting from the given commit.
         '''
+        timeout = asint(config.get('lcd_timeout', 60)) * 1000
+        start_time = time()
         paths = set(paths)
         result = {}
         while paths and commit:
+            if time() - start_time > timeout:
+                return result
             changed = paths & set(commit.changed_paths)
             result.update({path: commit._id for path in changed})
             paths = paths - changed

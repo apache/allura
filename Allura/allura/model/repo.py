@@ -843,8 +843,9 @@ class LastCommit(RepoObject):
             # (but only ask for the ones that we know we need)
             entries = tree.commit.repo.last_commit_ids(tree.commit, unchanged)
             if entries is None:
-                # something strange went wrong; bail out and possibly try again later
-                return None
+                # something strange went wrong; still show the list of files
+                # and possibly try again later
+                entries = {}
             # paths are fully-qualified; shorten them back to just node names
             entries = {os.path.basename(path):commit_id for path,commit_id in entries.iteritems()}
         # update with the nodes changed in this tree's commit

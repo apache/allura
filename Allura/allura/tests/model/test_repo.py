@@ -17,15 +17,18 @@
 
 from datetime import datetime
 from collections import defaultdict, OrderedDict
+
 import unittest
 import mock
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
 from bson import ObjectId
 from ming.orm import session
+from tg import config
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
+from allura.lib import helpers as h
 
 class TestGitLikeTree(object):
 
@@ -318,6 +321,18 @@ class TestLastCommit(unittest.TestCase):
         commit1.changed_paths = []
         result = self.repo.last_commit_ids(commit1, ['file1'])
         assert_equal(result, {'file1': commit1._id})
+
+    def test_timeout(self):
+        commit1 = self._add_commit('Commit 1', ['file1'])
+        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
+        with h.push_config(config, lcd_timeout=0):
+            lcd = M.repo.LastCommit.get(commit3.tree)
+        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(lcd.commit_id, commit3._id)
+        self.assertEqual(lcd.path, '')
+        self.assertEqual(len(lcd.entries), 1)
+        self.assertEqual(lcd.by_name['file2'], commit3._id)
 
 
 class TestModelCache(unittest.TestCase):
