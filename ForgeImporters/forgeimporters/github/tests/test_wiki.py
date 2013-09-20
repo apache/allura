@@ -172,6 +172,11 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
         assert_equal(f(u"'[[SourceForge|http://sf.net]]"), u'[[SourceForge|http://sf.net]]')
 
+    def test_convert_gollum_toc(self):
+        f = GitHubWikiImporter().convert_gollum_tags
+        assert_equal(f(u'[[_TOC_]]'), u'[TOC]')
+        assert_equal(f(u"'[[_TOC_]]"), u'[[_TOC_]]')
+
     def test_convert_gollum_tags(self):
         f = GitHubWikiImporter().convert_gollum_tags
         source = u'''Look at [[this page|Some Page]]
