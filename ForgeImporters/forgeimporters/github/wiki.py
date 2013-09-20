@@ -187,6 +187,7 @@ class GitHubWikiImporter(ToolImporter):
             log.info('Not a wiki page %s. Skipping.' % filename)
             return
         mod_date = datetime.utcfromtimestamp(commit.committed_date)
+        name = self._convert_page_name(name)
         wiki_page = WM.Page.upsert(name)
         if filename in commit.tree:
             wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
@@ -198,6 +199,10 @@ class GitHubWikiImporter(ToolImporter):
             wiki_page.title += suffix
         wiki_page.commit()
         return wiki_page
+
+    def _convert_page_name(self, name):
+        """Convert '-' and '/' into spaces in page name to match github behavior"""
+        return name.replace('-', ' ').replace('/', ' ')
 
     def import_pages(self, wiki_url, history=None):
         wiki_path = mkdtemp()
@@ -245,7 +250,7 @@ class GitHubWikiImporter(ToolImporter):
                              \]\])                    # tag end''', re.VERBOSE)
 
         def repl(match):
-            page = match.group('page').replace('-', ' ').replace('/', ' ')
+            page = self._convert_page_name(match.group('page'))
             title = match.groupdict().get('title')
             quote = match.groupdict().get('quote')
             if quote:

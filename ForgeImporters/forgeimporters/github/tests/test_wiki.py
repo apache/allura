@@ -128,6 +128,12 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
 
+    def test_convert_page_name(self):
+        f = GitHubWikiImporter()._convert_page_name
+        assert_equal(f('Page Name'), 'Page Name')
+        assert_equal(f('Page-Name'), 'Page Name')
+        assert_equal(f('Page / Name'), 'Page   Name')
+
     def test_convert_gollum_page_links(self):
         f = GitHubWikiImporter().convert_gollum_page_links
         assert_equal(f(u'[[Page]]'), u'[Page]')
