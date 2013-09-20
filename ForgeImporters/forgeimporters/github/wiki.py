@@ -237,48 +237,51 @@ class GitHubWikiImporter(ToolImporter):
         return text
 
     def convert_gollum_tags(self, text):
-        # order is important
-        text = self.convert_gollum_external_links(text)
-        text = self.convert_gollum_page_links(text)
-        return text
+        tag_re = re.compile(r'''
+            (?P<quote>')?             # optional tag escaping
+            (?P<tag>\[\[              # tag start
+            (?P<link>[^]]+)           # title/link/filename with options
+            \]\])                     # tag end
+        ''', re.VERBOSE)
+        return tag_re.sub(self._gollum_tag_match, text)
 
-    def convert_gollum_page_links(self, text):
-        _re = re.compile(r'''(?P<quote>')?            # possible tag escaping
-                             (?P<tag>\[\[             # tag start
-                             (?:(?P<title>[^]|]*)\|)? # optional title
-                             (?P<page>[^]]+)          # page name
-                             \]\])                    # tag end''', re.VERBOSE)
+    def _gollum_tag_match(self, match):
+        available_options = [
+            'alt=',
+            'frame',
+            'align=',
+            'float',
+            'width=',
+            'height=',
+        ]
+        quote = match.groupdict().get('quote')
+        if quote:
+            # tag is escaped, return untouched
+            return match.group('tag')
+        link = match.group('link').split('|')
+        title = options = None
+        if len(link) == 1:
+            link = link[0]
+        elif any(map(lambda opt: link[1].startswith(opt), available_options)):
+            # second element is option -> first is the link
+            link, options = link[0], link[1:]
+        else:
+            title, link, options = link[0], link[1], link[2:]
 
-        def repl(match):
-            page = self._convert_page_name(match.group('page'))
-            title = match.groupdict().get('title')
-            quote = match.groupdict().get('quote')
-            if quote:
-                # tag is escaped, return untouched
-                return match.group('tag')
-            if title:
-                return u'[{}]({})'.format(title, page)
-            return u'[{}]'.format(page)
+        if link.startswith('http://') or link.startswith('https://'):
+            sub = self._gollum_external_link
+        # TODO: add embedded images and file links
+        else:
+            sub = self._gollum_page_link
+        return sub(link, title, options)
 
-        return _re.sub(repl, text)
+    def _gollum_external_link(self, link, title, options):
+        if title:
+            return u'[{}]({})'.format(title, link)
+        return u'<{}>'.format(link)
 
-    def convert_gollum_external_links(self, text):
-        _re = re.compile(
-            r'''(?P<quote>')?                     # possible tag escaping
-                (?P<tag>\[\[                      # tag start
-                (?:(?P<title>[^]|]*)\|)?          # optional title
-                (?P<link>(?:http|https)://[^]]+)  # link
-                \]\])                             # tag end''', re.VERBOSE)
-
-        def repl(match):
-            link = match.group('link')
-            title = match.groupdict().get('title')
-            quote = match.groupdict().get('quote')
-            if quote:
-                # tag is escaped, return untouched
-                return match.group('tag')
-            if title:
-                return u'[{}]({})'.format(title, link)
-            return u'<{}>'.format(link)
-
-        return _re.sub(repl, text)
+    def _gollum_page_link(self, link, title, options):
+        page = self._convert_page_name(link)
+        if title:
+            return u'[{}]({})'.format(title, page)
+        return u'[{}]'.format(page)
