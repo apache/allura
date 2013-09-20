@@ -40,10 +40,12 @@ class TestGitHubRepoImporter(TestCase):
         project.get_tool_data.side_effect = lambda *args: gh_proj_name
         return project
 
+
+    @patch('forgeimporters.github.wiki.ThreadLocalORMSession')
     @patch('forgeimporters.github.wiki.g')
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
-    def test_import_tool_happy_path(self, ghpe, g):
-        with patch('forgeimporters.github.wiki.GitHubWikiImporter.get_wiki_pages'), patch('forgeimporters.github.wiki.c'):
+    def test_import_tool_happy_path(self, ghpe, g, tlorms):
+        with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'), patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
             p = self._make_project(gh_proj_name='myproject')
             GitHubWikiImporter().import_tool(p, Mock(name='c.user'), project_name='project_name', user_name='testuser')
@@ -76,13 +78,14 @@ class TestGitHubWikiImporter(TestCase):
 
         self.commit2 = Mock()
         self.commit2.tree.blobs = [self.blob1, self.blob2, self.blob3]
+        self.commit2.tree.__contains__ = lambda _, item: item in [self.blob1.name, self.blob2.name, self.blob3.name]
         self.commit2.committed_date = 1256291446
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
-    def test_get_blobs_without_history(self, render, upsert):
+    def test_without_history(self, render, upsert):
         upsert.text = Mock()
-        GitHubWikiImporter().get_blobs_without_history(self.commit2)
+        GitHubWikiImporter()._without_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home'), call('Home2'), call('Home3')])
 
         assert_equal(render.call_args_list, [
@@ -95,24 +98,24 @@ class TestGitHubWikiImporter(TestCase):
     def test_clone_from(self, path, repo):
         with patch('forgeimporters.github.wiki.rmtree'):
             path.return_value = 'temp_path'
-            GitHubWikiImporter().get_wiki_pages('wiki_url')
+            GitHubWikiImporter().import_pages('wiki_url')
             repo.clone_from.assert_called_with('wiki_url', to_path='temp_path', bare=True)
 
     @patch('forgeimporters.github.wiki.git.Repo._clone')
-    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_with_history')
-    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_without_history')
-    def test_get_commits_with_history(self, without_history, with_history, clone):
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter._with_history')
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter._without_history')
+    def test_with_history(self, without_history, with_history, clone):
         repo = clone.return_value
         repo.iter_commits.return_value = [self.commit1, self.commit2]
-        GitHubWikiImporter().get_wiki_pages('wiki_url', history=True)
+        GitHubWikiImporter().import_pages('wiki_url', history=True)
         assert_equal(with_history.call_count, 2)
         assert_equal(without_history.call_count, 0)
 
-    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_with_history')
-    @patch('forgeimporters.github.wiki.GitHubWikiImporter.get_blobs_without_history')
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter._with_history')
+    @patch('forgeimporters.github.wiki.GitHubWikiImporter._without_history')
     def test_get_commits_without_history(self, without_history, with_history):
         with patch('forgeimporters.github.wiki.git.Repo._clone'):
-            GitHubWikiImporter().get_wiki_pages('wiki_url')
+            GitHubWikiImporter().import_pages('wiki_url')
             assert_equal(with_history.call_count, 0)
             assert_equal(without_history.call_count, 1)
 
@@ -121,7 +124,7 @@ class TestGitHubWikiImporter(TestCase):
     def test_get_blobs_with_history(self, render, upsert):
         self.commit2.stats.files = {"Home.md": self.blob1}
         self.commit2.tree = {"Home.md": self.blob1}
-        GitHubWikiImporter().get_blobs_with_history(self.commit2)
+        GitHubWikiImporter()._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
 
