@@ -540,7 +540,7 @@ class VersionedArtifact(Artifact):
     @property
     def last_updated(self):
         history = self.history()
-        if len(history):
+        if history.count():
             return self.history().first().timestamp
         else:
             return self.mod_date

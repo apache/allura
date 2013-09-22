@@ -53,7 +53,7 @@
           <td>{{author.display_name}} ({{author.username}})</td>
           <td>{{post.thread.subject or '(no subject)'}}</td>
           <td>{{h.text.truncate(post.text,200)}}</td>
-          <td>{{post.attachments|length}}</td>
+          <td>{{post.attachments.count()}}</td>
           <td>
           {% if c.app.config.tool_name.lower() != 'discussion' %}
             <a href="{{post.thread.artifact.url()}}">[{{post.thread.artifact.shorthand_id()}}]</a>
