@@ -59,7 +59,7 @@ class TroveCategoryController(BaseController):
                hierarchy = [temp_cat] + hierarchy
                temp_cat = temp_cat.parent_category
         else:
-            l = M.TroveCategory.query.find(dict(trove_parent_id=0))
+            l = M.TroveCategory.query.find(dict(trove_parent_id=0)).all()
             selected_cat = None
             hierarchy = []
         return dict(

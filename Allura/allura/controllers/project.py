@@ -537,7 +537,7 @@ class NeighborhoodAdminController(object):
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         awards_count = len(awards)
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
-        grants_count = len(grants)
+        grants_count = grants.count()
         c.project_select = W.project_select(self.neighborhood.url() + '_admin/project_search')
         return dict(
             awards=awards,
@@ -756,7 +756,7 @@ class NeighborhoodAwardsController(object):
     def index(self, **kw):
         require_access(self.neighborhood, 'admin')
         awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
-        count = len(awards)
+        count = awards.count()
         return dict(awards=awards or [], count=count)
 
     @expose('jinja:allura:templates/award_not_found.html')
@@ -767,7 +767,7 @@ class NeighborhoodAwardsController(object):
     def grants(self, **kw):
         require_access(self.neighborhood, 'admin')
         grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
-        count = len(grants)
+        count = grants.count()
         return dict(grants=grants or [], count=count)
 
     @expose()

@@ -511,7 +511,7 @@ class UserSkillsController(BaseController):
             selected_skill = selected_skill,
             parents = parents,
             menu = menu,
-            add_details_fields=(len(l)==0))
+            add_details_fields=(l.count() == 0))
 
     @expose()
     @require_post()
