@@ -204,13 +204,14 @@ class TestImportController(TestRestApiBase):
     @td.with_tracker
     def test_link_processing(self):
         import_support = ImportSupport()
+        import_support.get_slug_by_id = lambda ticket, comment: '123'
         result = import_support.link_processing('''test link [[2496]](http://testlink.com)
                                        test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201))
-                                       [test comment](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
+                                       Replying to [someuser](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
                                        #200''')
 
         assert "test link [\[2496\]](http://testlink.com)" in result
-        assert 'test comment' in result
+        assert 'Replying to [someuser](204/#123)' in result
         assert 'test link [\[2496\]](http://testlink.com)' in result
         assert 'test ticket ([#201](201))' in result
         assert '[\[200\]](bugs:#200)' in result, result
@@ -234,7 +235,7 @@ class TestImportController(TestRestApiBase):
             thread_id=ticket.discussion_thread._id,
             status={'$in': ['ok', 'pending']})).sort('timestamp').all()[0].slug
 
-        assert '[test comment](204#%s)' % slug in r
+        assert '[test comment](204/#%s)' % slug in r
         assert 'test link [\[2496\]](http://testlink.com)' in r
         assert 'test ticket ([#201](201))' in r
 

@@ -249,7 +249,7 @@ class ImportSupport(object):
         text = text.replace('\n', ' ')
         slug = self.get_slug_by_id(ticket, comment)
         if slug:
-            return '[%s](%s#%s)' % (text, ticket, slug)
+            return '[%s](%s/#%s)' % (text, ticket, slug)
         else:
             return text
 
