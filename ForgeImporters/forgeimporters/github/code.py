@@ -45,8 +45,9 @@ from forgeimporters.github import GitHubProjectExtractor
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = GitHubRepoImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
-        importer.import_tool(c.project, c.user, **kw)
+    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
+        app = importer.import_tool(c.project, c.user, **kw)
+        handler.success(app)
 
 
 class GitHubRepoImportForm(ToolImportForm):

@@ -61,8 +61,9 @@ from forgetracker.scripts.import_tracker import import_tracker
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = TracTicketImporter()
-    with ImportErrorHandler(importer, kw.get('trac_url'), c.project):
-        importer.import_tool(c.project, c.user, **kw)
+    with ImportErrorHandler(importer, kw.get('trac_url'), c.project) as handler:
+        app = importer.import_tool(c.project, c.user, **kw)
+        handler.success(app)
 
 
 class TracTicketImportForm(ToolImportForm):

@@ -45,6 +45,7 @@ from allura.lib import helpers as h
 from allura.lib import exceptions
 from allura.lib import validators as v
 from allura.app import SitemapEntry
+from allura.tasks.mail_tasks import sendmail
 from allura import model as M
 
 from paste.deploy.converters import aslist
@@ -82,7 +83,7 @@ class ImportErrorHandler(object):
         self.project = project
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.importer.clear_pending(self.project)
@@ -95,13 +96,21 @@ class ImportErrorHandler(object):
                 project_name=self.project_name,
                 )
 
+    def success(self, app):
+        with h.push_config(c, project=self.project, app=app):
+            g.post_event('import_tool_task_succeeded',
+                    self.importer.source,
+                    self.importer.tool_label,
+                    )
+
 
 @task(notifications_disabled=True)
 def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = ToolImporter.by_name(importer_name)
-    with ImportErrorHandler(importer, project_name, c.project):
-        importer.import_tool(c.project, c.user, project_name=project_name,
+    with ImportErrorHandler(importer, project_name, c.project) as handler:
+        app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
+        handler.success(app)
 
 
 class ProjectExtractor(object):

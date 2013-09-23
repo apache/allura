@@ -54,8 +54,9 @@ from forgeimporters.base import (
 @task(notifications_disabled=True)
 def import_tool(**kw):
     importer = GoogleCodeTrackerImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
-        importer.import_tool(c.project, c.user, **kw)
+    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
+        app = importer.import_tool(c.project, c.user, **kw)
+        handler.success(app)
 
 
 class GoogleCodeTrackerImportForm(ToolImportForm):
