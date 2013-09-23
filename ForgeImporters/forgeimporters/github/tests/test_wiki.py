@@ -83,6 +83,7 @@ class TestGitHubWikiImporter(TestCase):
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
+    @patch('forgeimporters.github.wiki.convert_markup')
     def test_without_history(self, render, upsert):
         upsert.text = Mock()
         importer = GitHubWikiImporter()
@@ -126,6 +127,7 @@ class TestGitHubWikiImporter(TestCase):
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
+    @patch('forgeimporters.github.wiki.convert_markup')
     def test_with_history(self, render, upsert):
         self.commit2.stats.files = {"Home.md": self.blob1}
         self.commit2.tree = {"Home.md": self.blob1}
@@ -238,7 +240,7 @@ Our website is <http://sf.net>.
 
 [External link](https://github.com/a/b/issues/1)\n\n'''
 
-        assert_equal(f(source, 'test.md'), result)
+        assert_equal(f(source, 'test.md', None), result)
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
@@ -266,7 +268,7 @@ Our website is [[http://sf.net]].
 <p><a class="" href="/p/test/wiki/Page" rel="nofollow">External link to the wiki page</a></p>
 <p><a class="" href="https://github.com/a/b/issues/1" rel="nofollow">External link</a></p></div>'''
 
-        assert_equal(f(source, 'test.md'), result)
+        assert_equal(f(source, 'test.md', None), result)
 
     def test_rewrite_links(self):
         f = GitHubWikiImporter().rewrite_links
@@ -282,6 +284,8 @@ Our website is [[http://sf.net]].
                      u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
         assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>', prefix, new),
                      u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
+
+
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
