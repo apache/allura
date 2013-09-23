@@ -159,7 +159,7 @@ class Thread(Artifact, ActivityObject):
     first_post = RelationProperty('Post', via='first_post_id')
     ref = RelationProperty('ArtifactReference')
 
-    def __json__(self):
+    def __json__(self, limit=None, page=None):
         return dict(
             _id=self._id,
             discussion_id=str(self.discussion_id),
@@ -171,9 +171,7 @@ class Thread(Artifact, ActivityObject):
                         timestamp=p.timestamp,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
-                   for p in self.post_class().query.find(
-                       dict(discussion_id=self.discussion_id, thread_id=self._id, status='ok')
-                   )
+                   for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
                 ]
         )
 

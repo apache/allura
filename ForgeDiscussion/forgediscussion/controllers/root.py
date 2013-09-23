@@ -23,7 +23,7 @@ import calendar
 from collections import OrderedDict
 
 
-from tg import expose, validate, redirect, flash, response
+from tg import expose, validate, redirect, flash, response, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
@@ -416,11 +416,9 @@ class ForumTopicRestController(BaseController):
     @expose('json:')
     def index(self, limit=100, page=0, **kw):
         limit, page, start = g.handle_paging(int(limit), int(page))
-        posts = self.topic.query_posts(page=page, limit=limit, style='', status='ok')
-        json = {}
-        json['topic'] = self.topic.__json__()
-        json['count'] = posts.count()
-        json['page'] = page
-        json['limit'] = limit
-        json['topic']['posts'] = posts.all()
-        return json
+        json_data = {}
+        json_data['topic'] = self.topic.__json__(limit=limit, page=page)
+        json_data['count'] = self.topic.query_posts(status='ok').count()
+        json_data['page'] = page
+        json_data['limit'] = limit
+        return json_data
