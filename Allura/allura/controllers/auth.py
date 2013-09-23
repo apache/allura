@@ -495,7 +495,7 @@ class UserSkillsController(BaseController):
         elif self.category:
             selected_skill = self.category
         else:
-            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True))
+            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True)).all()
             selected_skill = None
         if selected_skill:
             l = [scat for scat in selected_skill.subcategories
@@ -511,7 +511,7 @@ class UserSkillsController(BaseController):
             selected_skill = selected_skill,
             parents = parents,
             menu = menu,
-            add_details_fields=(l.count() == 0))
+            add_details_fields=(len(l) == 0))
 
     @expose()
     @require_post()
