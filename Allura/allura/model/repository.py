@@ -145,6 +145,7 @@ class RepositoryImplementation(object):
         Return a mapping {path: commit_id} of the _id of the last
         commit to touch each path, starting from the given commit.
         '''
+        orig_commit = commit
         timeout = asint(config.get('lcd_timeout', 60)) * 1000
         start_time = time()
         paths = set(paths)
@@ -152,9 +153,8 @@ class RepositoryImplementation(object):
         seen_commits = set()
         while paths and commit:
             if time() - start_time > timeout:
+                log.error('last_commit_ids timeout for %s on %s', orig_commit._id, ', '.join(paths))
                 return result
-            if commit._id in seen_commits:
-                return result  # sanity check for bad data (loops)
             seen_commits.add(commit._id)
             changed = paths & set(commit.changed_paths)
             result.update({path: commit._id for path in changed})
@@ -164,6 +164,9 @@ class RepositoryImplementation(object):
             # computed wrong (not including children of added trees).
             # Can be removed once all projects have had diffs / LCDs refreshed.
             parent = commit.get_parent()
+            if parent and parent._id in seen_commits:
+                log.error('last_commit_ids loop detected at %s for %s on %s', parent._id, orig_commit._id, ', '.join(paths))
+                return result  # sanity check for bad data (loops)
             if parent:
                 changed = set([path for path in paths if not parent.has_path(path)])
                 result.update({path: commit._id for path in changed})
