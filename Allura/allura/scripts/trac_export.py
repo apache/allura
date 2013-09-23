@@ -148,7 +148,8 @@ class TracExport(object):
 
     def parse_ticket_comments(self, id):
         # Use RSS export to get ticket comments
-        from html2text import html2text
+        import html2text
+        html2text.BODY_WIDTH = 0
         url = self.full_url(self.TICKET_URL % id, 'rss')
         self.log_url(url)
         d = feedparser.parse(urlopen(url))
@@ -157,7 +158,7 @@ class TracExport(object):
             c = {}
             c['submitter'] = getattr(comment, 'author', None)
             c['date'] = comment.updated_parsed
-            c['comment'] = html2text(comment.summary)
+            c['comment'] = html2text.html2text(comment.summary)
             c['class'] = 'COMMENT'
             res.append(c)
         return res
