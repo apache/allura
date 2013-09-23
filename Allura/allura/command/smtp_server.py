@@ -18,6 +18,7 @@
 import smtpd
 import asyncore
 
+import faulthandler
 import tg
 from paste.script import command
 
@@ -37,6 +38,7 @@ class SMTPServerCommand(base.Command):
                             ' and/or tool'))
 
     def command(self):
+        faulthandler.enable()
         self.basic_setup()
         MailServer((tg.config.get('forgemail.host', '0.0.0.0'),
                     asint(tg.config.get('forgemail.port', 8825))),
