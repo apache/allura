@@ -17,7 +17,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
@@ -134,6 +134,7 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(topic['subject'], 'Hi guys')
         assert_equal(topic['posts'][0]['text'], 'Hi boys and girls')
         assert_equal(topic['posts'][0]['subject'], 'Hi guys')
+        assert_in('timestamp', topic['posts'][0])
 
     def test_forum_list_pagination(self):
         resp = self.app.get('/rest/p/test/discussion/?limit=1')
