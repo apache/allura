@@ -51,6 +51,8 @@ from forgeimporters.base import (
         )
 from forgeimporters.github import GitHubProjectExtractor
 from forgewiki import model as WM
+from forgewiki.converters import mediawiki2markdown
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -192,7 +194,7 @@ class GitHubWikiImporter(ToolImporter):
         name = self._convert_page_name(name)
         wiki_page = WM.Page.upsert(name)
         if filename in commit.tree:
-            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
+            wiki_page.text = self.convert_markup(h.really_unicode(text), filename, ext)
             wiki_page.timestamp = wiki_page.mod_date = mod_date
             wiki_page.viewable_by = ['all']
         else:
@@ -216,7 +218,7 @@ class GitHubWikiImporter(ToolImporter):
                 self._with_history(commit)
         rmtree(wiki_path)
 
-    def convert_markup(self, text, filename):
+    def convert_markup(self, text, filename, ext):
         """Convert any supported github markup into Allura-markdown.
 
         Conversion happens in 4 phases:
@@ -233,9 +235,14 @@ class GitHubWikiImporter(ToolImporter):
         except ImportError:
             html2text = None
 
-        text = h.render_any_markup(filename, text)
+        if html2text and ext in ['md', 'mediawiki']:
+            text = mediawiki2markdown(text)
+            text = self.convert_gollum_tags(text)
+        else:    
+            text = h.render_any_markup(filename, text)
+        
         text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
-        if html2text:
+        if html2text and ext not in ['md', 'mediawiki']:
             text = html2text.html2text(text)
             text = self.convert_gollum_tags(text)
         return text
