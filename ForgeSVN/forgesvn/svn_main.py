@@ -18,13 +18,13 @@
 #-*- python -*-
 import logging
 from pylons import tmpl_context as c
-from pylons import request
 
 # Non-stdlib imports
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
+from timermiddleware import Timer
 
 # Pyforge-specific imports
 import allura.tasks.repo_tasks
@@ -169,3 +169,12 @@ class SVNImportController(BaseController):
                 c.user, self.app.repo, 'error',
                 text="Can't import into non empty repository.")
         redirect(c.project.url() + 'admin/tools')
+
+
+def svn_timers():
+    return Timer('svn_lib.{method_name}', SM.svn.SVNLibWrapper, 'checkout', 'add',
+                 'checkin', 'info2', 'log', 'cat', 'list')
+
+
+def forgesvn_timers():
+    return Timer('svn_tool.{method_name}', SM.svn.SVNImplementation, '*')

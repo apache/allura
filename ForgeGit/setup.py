@@ -42,5 +42,9 @@ setup(name='ForgeGit',
       # -*- Entry points: -*-
       [allura]
       Git=forgegit.git_main:ForgeGitApp
+
+      [allura.timers]
+      git = forgegit.git_main:git_timers
+      forgegit = forgegit.git_main:forgegit_timers
       """,
       )

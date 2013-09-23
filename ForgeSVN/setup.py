@@ -51,5 +51,9 @@ setup(name='ForgeSVN',
       # -*- Entry points: -*-
       [allura]
       SVN=forgesvn.svn_main:ForgeSVNApp
+
+      [allura.timers]
+      svn = forgesvn.svn_main:svn_timers
+      forgesvn = forgesvn.svn_main:forgesvn_timers
       """,
       )

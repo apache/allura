@@ -34,6 +34,7 @@ The available extension points for Allura are:
 * :class:`allura.lib.spam.SpamFilter`
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
+* ``[allura.timers]`` functions which return a list or single :class:`timermiddleware.Timer` which will be included in stats.log timings
 
 A listing of available 3rd-party extensions is at https://forge-allura.apache.org/p/allura/wiki/Extensions/
 

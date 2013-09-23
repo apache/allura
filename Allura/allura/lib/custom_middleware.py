@@ -23,6 +23,7 @@ from contextlib import contextmanager
 import tg
 import pkg_resources
 from paste import fileapp
+from paste.deploy.converters import aslist
 from pylons import tmpl_context as c
 from pylons.util import call_wsgi_application
 from timermiddleware import Timer, TimerMiddleware
@@ -180,10 +181,10 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import socket
         import urllib2
 
-        return self.scm_lib_timers() + self.repo_impl_timers() + [
+        return self.entry_point_timers() + [
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
-            Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),
+            Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),  # FIXME: this may captures timings ok, but is misleading for counts
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
                 'get'),
             Timer('ming', ming.schema.Document, 'validate',
@@ -194,8 +195,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('mongo', pymongo.collection.Collection, 'count', 'find',
                 'find_one'),
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
-                'explain', 'hint', 'limit', 'next', 'rewind', 'skip',
-                'sort', 'where'),
+                '_refresh'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
             Timer('repo.Blob.{method_name}', allura.model.repo.Blob, '*'),
@@ -210,6 +210,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('template', genshi.template.Template, '_prepare', '_parse',
                 'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
+            Timer('base_repo_tool.{method_name}', allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
             Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
             Timer('sequencematcher.{method_name}', allura.model.repo.SequenceMatcher, 'ratio', 'quick_ratio', 'real_quick_ratio'),
             Timer('unified_diff', allura.model.repo, 'unified_diff'),
@@ -220,43 +221,9 @@ class AlluraTimerMiddleware(TimerMiddleware):
             stat_record.add('request_category', c.app.config.tool_name.lower())
         return stat_record
 
-    def scm_lib_timers(self):
+    def entry_point_timers(self):
         timers = []
-        with pass_on_exc(ImportError):
-            import forgesvn
-            timers.append(Timer('svn_lib.{method_name}', forgesvn.model.svn.SVNLibWrapper, 'checkout', 'add',
-                        'checkin', 'info2', 'log', 'cat', 'list'))
-        with pass_on_exc(ImportError):
-            import git
-            import forgegit
-            timers.append(Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'))
-            timers.append(Timer('git_lib.{method_name}', forgegit.model.git_repo.GitLibCmdWrapper, 'log'))
-        with pass_on_exc(ImportError):
-            import mercurial.hg
-            timers.append(Timer('hg_lib.{method_name}', mercurial.hg.localrepo.localrepository, 'heads',
-                'branchtags', 'tags'))
-            timers.append(Timer('hg_lib.{method_name}', mercurial.cmdutil, 'walkchangerevs'))
+        for ep in h.iter_entry_points('allura.timers'):
+            func = ep.load()
+            timers += aslist(func())
         return timers
-
-    def repo_impl_timers(self):
-        timers= []
-        from allura.model.repository import Repository, RepositoryImplementation
-        timers.append(Timer('base_tool.{method_name}', RepositoryImplementation, 'last_commit_ids'))
-        with pass_on_exc(ImportError):
-            from forgegit.model.git_repo import GitImplementation
-            timers.append(Timer('git_tool.{method_name}', GitImplementation, '*'))
-        with pass_on_exc(ImportError):
-            from forgesvn.model.svn import SVNImplementation
-            timers.append(Timer('svn_tool.{method_name}', SVNImplementation, '*'))
-        with pass_on_exc(ImportError):
-            from forgehg.model.hg import HgImplementation
-            timers.append(Timer('hg_tool.{method_name}', HgImplementation, '*'))
-        return timers
-
-
-@contextmanager
-def pass_on_exc(exc):
-    try:
-        yield
-    except exc:
-        pass

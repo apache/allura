@@ -23,6 +23,8 @@ from pylons import tmpl_context as c
 
 from ming.utils import LazyProperty
 from ming.orm.ormsession import ThreadLocalORMSession
+from timermiddleware import Timer
+import git
 
 # Pyforge-specific imports
 import allura.tasks.repo_tasks
@@ -106,3 +108,14 @@ class ForgeGitApp(RepositoryApp):
                 cloned_from_url=init_from_url)
         else:
             allura.tasks.repo_tasks.init.post()
+
+
+def git_timers():
+    return [
+        Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'),
+        Timer('git_lib.{method_name}', GM.git_repo.GitLibCmdWrapper, 'log'),
+    ]
+
+
+def forgegit_timers():
+    return Timer('git_tool.{method_name}', GM.git_repo.GitImplementation, '*')
