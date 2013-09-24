@@ -301,7 +301,38 @@ Our website is [[http://sf.net]].
         assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>', prefix, new),
                      u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
 
+    def test_convert_markup_with_mediawiki2markdown(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+        source = u'''Look at [[this page|Some Page]]
 
+More info at: [[MoreInfo]] [[Even More Info]]
+
+Our website is [[http://sf.net]].
+
+'[[Escaped Tag]]
+
+[External link to the wiki page](https://github.com/a/b/wiki/Page)
+
+[External link](https://github.com/a/b/issues/1)'''
+
+        result = u'''Look at [this page](Some Page) 
+
+More info at: [MoreInfo] [Even More Info] 
+
+Our website is [[http://sf.net](http://sf.net)]. 
+
+[[Escaped Tag]] 
+
+[External link to the wiki page](https://github.com/a/b/wiki/Page) 
+
+[External link](https://github.com/a/b/issues/1) 
+'''
+
+        assert_equal(f(source, 'test.md', 'md'), result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
