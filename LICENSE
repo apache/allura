@@ -209,10 +209,6 @@ separate copyright notices and license terms. Your use of the source code
 for the these dependencies is subject to the terms and conditions of the
 following licenses.
 
-HTML5 Canvas for Internet Explorer, which is available under the
-Apache License, Version 2.0.
-For details, see Allura/allura/public/nf/js/excanvas.compiled.js
-
 The file Allura/allura/etc/mime.types from the mime-support package,
 which is in the public domain.  For details, see
 http://ftp-master.metadata.debian.org/changelogs//main/m/mime-support/mime-support_3.54_copyright
