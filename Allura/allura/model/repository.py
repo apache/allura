@@ -146,7 +146,7 @@ class RepositoryImplementation(object):
         commit to touch each path, starting from the given commit.
         '''
         orig_commit = commit
-        timeout = asint(config.get('lcd_timeout', 60)) * 1000
+        timeout = float(config.get('lcd_timeout', 60))
         start_time = time()
         paths = set(paths)
         result = {}
