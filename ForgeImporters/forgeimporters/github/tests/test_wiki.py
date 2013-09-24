@@ -83,8 +83,8 @@ class TestGitHubWikiImporter(TestCase):
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
-    @patch('forgeimporters.github.wiki.convert_markup')
     def test_without_history(self, render, upsert):
+        self.commit2.tree.blobs = [self.blob2, self.blob3]
         upsert.text = Mock()
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -92,10 +92,9 @@ class TestGitHubWikiImporter(TestCase):
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
         importer._without_history(self.commit2)
-        assert_equal(upsert.call_args_list, [call('Home'), call('Home2'), call('Home3')])
+        assert_equal(upsert.call_args_list, [call('Home2'), call('Home3')])
 
         assert_equal(render.call_args_list, [
-            call('Home.md', u'# test message'),
             call('Home2.creole', u'**test message**'),
             call('Home3.rest', u'test message')])
 
@@ -127,10 +126,9 @@ class TestGitHubWikiImporter(TestCase):
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
-    @patch('forgeimporters.github.wiki.convert_markup')
     def test_with_history(self, render, upsert):
-        self.commit2.stats.files = {"Home.md": self.blob1}
-        self.commit2.tree = {"Home.md": self.blob1}
+        self.commit2.stats.files = {"Home.rst": self.blob1}
+        self.commit2.tree = {"Home.rst": self.blob1}
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
@@ -138,7 +136,25 @@ class TestGitHubWikiImporter(TestCase):
         importer.rewrite_links = Mock(return_value='')
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
-        assert_equal(render.call_args_list, [call('Home.md', u'# test message')])
+        assert_equal(render.call_args_list, [call('Home.rst', u'# test message')])
+
+
+    @skipif(module_not_available('html2text'))
+    @patch('forgeimporters.github.wiki.WM.Page.upsert')
+    @patch('forgeimporters.github.wiki.mediawiki2markdown')
+    def test_with_history_mediawiki(self, md2mkm, upsert):
+        self.commit2.stats.files = {"Home.md": self.blob1}
+        self.commit2.tree = {"Home.md": self.blob1}
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        importer.rewrite_links = Mock(return_value='')
+        importer.convert_gollum_tags = Mock()
+        importer._with_history(self.commit2)
+        assert_equal(upsert.call_args_list, [call('Home')])
+        assert_equal(md2mkm.call_args_list, [call(u'# test message')])
+
 
     def test_convert_page_name(self):
         f = GitHubWikiImporter()._convert_page_name
