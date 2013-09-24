@@ -589,14 +589,15 @@ class DefaultAdminController(BaseController):
     @require_post()
     def block_user(self, username, perm, reason=None):
         if not username or not perm:
-            redirect(request.referer)
+            return dict(error='Enter username')
         user = model.User.by_username(username)
         if not user:
             return dict(error='User "%s" not found' % username)
         ace = model.ACE.deny(user.project_role()._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
-        return dict(user_id=str(user._id))
+            return dict(user_id=str(user._id), username=user.username, reason=reason)
+        return dict(error='User "%s" already blocked' % user.username)
 
     @validate(dict(user_id=V.Set(),
                    perm=V.UnicodeString()))
@@ -610,12 +611,14 @@ class DefaultAdminController(BaseController):
         users = model.User.query.find({'_id': {'$in': user_id}}).all()
         if not users:
             return dict(error='Select user to unblock')
+        unblocked = []
         for user in users:
             ace = model.ACE.deny(user.project_role()._id, perm)
             ace = model.ACL.contains(ace, self.app.acl)
             if ace:
                 self.app.acl.remove(ace)
-        redirect(request.referer)
+                unblocked.append(str(user._id))
+        return dict(unblocked=unblocked)
 
     @expose('jinja:allura:templates/app_admin_permissions.html')
     @without_trailing_slash

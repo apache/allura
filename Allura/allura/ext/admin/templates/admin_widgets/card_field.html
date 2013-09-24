@@ -72,11 +72,11 @@
         </a>
     </li>
 
-    {% if block_list and block_list.get(name) %}
-      <li>
-        <a href="#" class="block-list">Block List</a>
-        <div class="block-list grid-13" style="display: none">
-          <ul>
+    <li{% if not block_list or not block_list.get(name) %} style="display:none;"{% endif %}>
+      <a href="#" class="block-list">Block List</a>
+      <div class="block-list grid-13" style="display: none">
+        <ul>
+        {% if block_list and block_list.get(name) %}
           {% for u, reason in block_list[name] %}
           <li>
             <label>
@@ -84,9 +84,9 @@
             </label>
           </li>
           {% endfor %}
-          </ul>
-        </div>
-      </li>
-    {% endif %}
+        {% endif %}
+        </ul>
+      </div>
+    </li>
   </ul>
 </div>

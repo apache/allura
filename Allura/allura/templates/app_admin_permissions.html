@@ -68,7 +68,7 @@
 <script type="text/javascript">
   var current_block_list;
   $('a.block-user').click(function(){
-      current_block_list = $(this).parent().parent().find('div.block-list')     
+      current_block_list = $(this).parent().parent().find('div.block-list')
       var deck =  $(this).closest('ul.deck');
       var role = deck.find('li.tcenter h3').text();
       $('input.block_user_role').val(role);
@@ -81,50 +81,57 @@
       $('input.block_user_role').val(role);
       $('div.model-block-list').html(userlist.html());
   });
-  $('form[action="block_user"], form[action="unblock_user"]').submit(function() {
-    var form = $(this),
-        username = form.find('#block_user'),
-        reason = form.find("textarea[name='reason']")
 
-    if(form.is(':visible')) {
-        $.ajax({
-            data: form.serialize(),
-            type: form.attr('method'),
-            url:  form.attr('action'),
-            success: function(data) {
-                if(data.error){
-                    flash(data.error, 'error');
-                }
-                else {
-                    form.parent().slideUp('fast');
-                    $('.lb_overlay').hide();
 
-                    if(form.attr('action') == 'block_user') {
-                        if(username.val().length != 0) {
-                            current_block_list
-                              .find('ul')
-                              .append('<li><label>' + 
-                                      '<input type="checkbox" value="' + data.user_id + '"name="user_id">' +
-                                      username.val() + ' (' +
-                                      reason.val() + ')' +
-                                      '</label></li>');
-                        }
-                    }
-                    else {
-                        var checked = form.find('input:checked');
-                        checked.each(function(i, e) {
-                            current_block_list
-                              .find('label:contains("'+$(e).parent().text()+'")')
-                              .parent()
-                              .remove()
-                        });
-                    }
-                    form.find("input[type=text], textarea").val("");
-                }
-              }
-            });
-        return false;
+  $('form[action="block_user"], form[action="unblock_user"').submit(function() {
+    var form = $(this);
+
+    function display_error(data) {
+      if (data.error) {
+        flash(data.error, 'error');
+        return true;
+      }
+      return false;
     }
+    function after() {
+      form.parent().slideUp('fast');
+      $('.lb_overlay').hide();
+    }
+    function on_block_user_success(data) {
+      if (display_error(data)) { return; }
+
+      current_block_list.find('ul').append(
+        '<li><label><input type="checkbox" value="' + data.user_id + '"name="user_id">'
+        + data.username + (data.reason ? ' (' + data.reason + ')' : '') + '</label></li>'
+      );
+      // show 'Block List' button
+      current_block_list.parent('li').show();
+      form.find('input[type="text"], textarea').val('');
+      after();
+    }
+    function on_unblock_user_success(data) {
+      if (display_error(data)) { return; }
+
+      for (var i in data.unblocked) {
+        var uid = data.unblocked[i];
+        current_block_list.find(':checkbox[name="user_id"][value="' + uid + '"]').parent().parent().remove();
+      }
+      if (current_block_list.find(':checkbox[name="user_id"]').length == 0) {
+        // hide 'Block List' button
+        current_block_list.parent('li').hide();
+      }
+      after();
+    }
+
+    var callback = form.attr('action') == 'block_user' ? on_block_user_success : on_unblock_user_success;
+
+    $.ajax({
+      data: form.serialize(),
+      type: form.attr('method'),
+      url:  form.attr('action'),
+      success: callback
+    });
+    return false;
   });
 </script>
 {% endblock %}
