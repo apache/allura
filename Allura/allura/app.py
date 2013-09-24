@@ -733,27 +733,14 @@ class DefaultAdminController(BaseController):
             if isinstance(group_ids, basestring):
                 group_ids = [ group_ids ]
 
-            # ACE.deny() entries for blocked users will end up in del_group_ids after the following
             for acl in old_acl:
-                if (acl['permission']==perm) and (str(acl['role_id']) not in group_ids):
+                if (acl['permission'] == perm) and (str(acl['role_id']) not in group_ids) and acl['access'] != model.ACE.DENY:
                     del_group_ids.append(str(acl['role_id']))
 
             get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
             groups = map(get_role, group_ids)
             new_groups = map(get_role, new_group_ids)
             del_groups = map(get_role, del_group_ids)
-
-            def split_group_user_roles(roles):
-                group_roles = []
-                user_roles = []
-                for role in roles:
-                    if role.user_id and not role.name:
-                        user_roles.append(role)
-                    else:
-                        group_roles.append(role)
-                return group_roles, user_roles
-
-            del_groups, user_roles = split_group_user_roles(del_groups)
 
             if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
@@ -767,7 +754,7 @@ class DefaultAdminController(BaseController):
                 model.ACE.allow(r, perm) for r in role_ids]
 
             # Add all ACEs for user roles back
-            user_roles_ids = map(lambda role: role._id, user_roles)
-            user_aces = filter(lambda ace: ace.permission == perm and ace.role_id in user_roles_ids, old_acl)
-            self.app.config.acl += user_aces
+            for ace in old_acl:
+                if (ace.permission == perm) and (ace.access == model.ACE.DENY):
+                    self.app.config.acl.append(ace)
         redirect(request.referer)
