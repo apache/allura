@@ -223,9 +223,12 @@ class GitHubWikiImporter(ToolImporter):
 
         Conversion happens in 4 phases:
 
-        1. Convert source text to a html using h.render_any_markup
+        1. Convert source text to a html using h.render_any_markup,
+           if file format is not mediawiki. If mediawiki, it will
+           converted using mediawiki2markdown method.
         2. Rewrite links that match the wiki URL prefix with new location
-        3. Convert resulting html to a markdown using html2text, if available.
+        3. Convert resulting html to a markdown using html2text, if available,
+           and not mediawiki.
         4. Convert gollum tags
 
         If html2text module isn't available then only phases 1 and 2 will be executed.
@@ -238,9 +241,9 @@ class GitHubWikiImporter(ToolImporter):
         if html2text and ext in ['md', 'mediawiki']:
             text = mediawiki2markdown(text)
             text = self.convert_gollum_tags(text)
-        else:    
+        else:
             text = h.render_any_markup(filename, text)
-        
+
         text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
         if html2text and ext not in ['md', 'mediawiki']:
             text = html2text.html2text(text)
