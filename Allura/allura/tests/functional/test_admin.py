@@ -168,42 +168,46 @@ class TestProjectAdmin(TestController):
 
     @td.with_wiki
     def test_block_user_empty_data(self):
-        # shouldn't fail
-        self.app.post('/admin/wiki/block_user', params={'username': '', 'perm': '', 'reason': ''})
+        r = self.app.post('/admin/wiki/block_user', params={'username': '', 'perm': '', 'reason': ''})
+        assert_equals(r.json, dict(error='Enter username'))
 
     @td.with_wiki
     def test_unblock_user_empty_data(self):
-        # shouldn't fail
-        self.app.post('/admin/wiki/unblock_user', params={'user_id': '', 'perm': ''})
+        r = self.app.post('/admin/wiki/unblock_user', params={'user_id': '', 'perm': ''})
+        assert_equals(r.json, dict(error='Select user to unblock'))
 
     @td.with_wiki
     def test_block_user(self):
         r = self.app.get('/admin/wiki/permissions')
-        assert '<a href="#" class="block-user">' in r
-        assert '<a href="#" class="block-list">' not in r
+        assert '<input type="checkbox" name="user_id"' not in r
 
-        self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read', 'reason': 'Comment'})
+        user = M.User.by_username('test-admin')
+        r = self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read', 'reason': 'Comment'})
+        assert_equals(r.json, dict(user_id=str(user._id), username='test-admin', reason='Comment'))
         user = M.User.by_username('test-admin')
         admin_role = user.project_role()
         app = M.Project.query.get(shortname='test').app_instance('wiki')
         ace = M.ACL.contains(M.ACE.deny(admin_role._id, 'read'), app.acl)
         assert_equals(ace.reason, 'Comment')
         r = self.app.get('/admin/wiki/permissions')
-        assert '<a href="#" class="block-list">' in r
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Comment)' % user._id in r
 
     @td.with_wiki
     def test_unblock_user(self):
-        self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read'})
+        r = self.app.post('/admin/wiki/block_user', params={'username': 'test-admin', 'perm': 'read'})
         user = M.User.by_username('test-admin')
         admin_role = user.project_role()
         app = M.Project.query.get(shortname='test').app_instance('wiki')
         ace = M.ACE.deny(admin_role._id, 'read')
+        r = self.app.get('/admin/wiki/permissions')
+        assert '<input type="checkbox" name="user_id" value="%s">test-admin' % user._id in r
+        app = M.Project.query.get(shortname='test').app_instance('wiki')
         assert M.ACL.contains(ace, app.acl) is not None
-        self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user._id), 'perm': 'read'})
+        r = self.app.post('/admin/wiki/unblock_user', params={'user_id': str(user._id), 'perm': 'read'})
+        assert_equals(r.json, dict(unblocked=[str(user._id)]))
         assert M.ACL.contains(ace, app.acl) is None
         r = self.app.get('/admin/wiki/permissions')
-        assert '<a href="#" class="block-list">' not in r
+        assert '<input type="checkbox" name="user_id"' not in r
 
     @td.with_wiki
     def test_block_unblock_multiple_users(self):
@@ -219,7 +223,6 @@ class TestProjectAdmin(TestController):
         assert M.ACL.contains(deny_admin, app.acl) is not None
         assert M.ACL.contains(deny_user, app.acl) is not None
         r = self.app.get('/admin/wiki/permissions')
-        assert '<a href="#" class="block-list">' in r
         assert '<input type="checkbox" name="user_id" value="%s">test-admin (Spammer)' % admin._id in r
         assert '<input type="checkbox" name="user_id" value="%s">test-user' % user._id in r
 
@@ -229,7 +232,7 @@ class TestProjectAdmin(TestController):
         assert M.ACL.contains(deny_admin, app.acl) is None
         assert M.ACL.contains(deny_user, app.acl) is None
         r = self.app.get('/admin/wiki/permissions')
-        assert '<a href="#" class="block-list">' not in r
+        assert '<input type="checkbox" name="user_id"' not in r
 
     @td.with_wiki
     def test_blocked_users_remains_after_saving_all_permissions(self):
