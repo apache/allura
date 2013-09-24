@@ -21,7 +21,7 @@ import errno
 from formencode import Invalid
 import mock
 from tg import expose, config
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, assert_raises, assert_in, assert_not_in
 from webob.exc import HTTPUnauthorized
 
 from alluratest.controller import TestController
@@ -282,6 +282,20 @@ class TestProjectToolsImportController(TestController):
         url = import1_page.environ['PATH_INFO']
         assert url.endswith('/admin/ext/import/importer1'), url
         assert_equal(import1_page.body, 'test importer 1 controller webpage')
+
+    @mock.patch.object(base.h, 'iter_entry_points')
+    def test_hidden(self, iep):
+        iep.return_value = [
+            ep('importer1', importer=TI1),
+            ep('importer2', importer=TI2),
+        ]
+        admin_page = self.app.get('/admin/')
+        with h.push_config(config, hidden_importers='importer1'):
+            import_main_page = admin_page.click('Import')
+        url = import_main_page.environ['PATH_INFO']
+        assert url.endswith('/admin/ext/import/'), url
+        assert not import_main_page.html.find('a', href='importer1')
+        assert import_main_page.html.find('a', href='importer2')
 
 
 def test_get_importer_upload_path():

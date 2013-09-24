@@ -441,7 +441,9 @@ class ProjectToolsImportController(object):
     def index(self, *a, **kw):
         importer_matrix = defaultdict(dict)
         tools_with_importers = set()
-        for ep in h.iter_entry_points('allura.importers'):
+        hidden = set(aslist(config.get('hidden_importers'), sep=','))
+        visible = lambda ep: ep.name not in hidden
+        for ep in filter(visible, h.iter_entry_points('allura.importers')):
             importer = ep.load()
             for tool in aslist(importer.target_app):
                 tools_with_importers.add(tool.tool_label)
