@@ -270,7 +270,7 @@ class TestTicketModel(TrackerTestWithModel):
             ticket = Ticket.new()
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
-        assert_equal(ticket.attachments.count(), 0)
+        assert_equal(len(ticket.attachments), 0)
         f = urllib2.urlopen('file://%s' % __file__)
         TicketAttachment.save_attachment('test_ticket_model.py', ResettableStream(f),
                                             artifact_id=ticket._id)

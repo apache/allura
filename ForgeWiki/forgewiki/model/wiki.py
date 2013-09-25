@@ -76,10 +76,6 @@ class PageHistory(Snapshot):
         return g.markdown_wiki.convert(self.data.text)
 
     @property
-    def attachments(self):
-        return self.original().attachments
-
-    @property
     def email_address(self):
         return self.original().email_address
 
@@ -160,10 +156,6 @@ class Page(VersionedArtifact, ActivityObject):
             type_s='WikiPage',
             text=self.text)
         return result
-
-    @property
-    def attachments(self):
-        return WikiAttachment.query.find(dict(artifact_id=self._id, type='attachment'))
 
     @classmethod
     def upsert(cls, title, version=None):

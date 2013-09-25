@@ -525,10 +525,10 @@ class Post(Message, VersionedArtifact, ActivityObject):
                 subject = getattr(artifact, 'email_subject', '')
         return subject or '(no subject)'
 
-    @property
+    @LazyProperty
     def attachments(self):
         return self.attachment_class().query.find(dict(
-            post_id=self._id, type='attachment'))
+            post_id=self._id, type='attachment')).all()
 
     def add_multiple_attachments(self, file_info):
         if isinstance(file_info, list):

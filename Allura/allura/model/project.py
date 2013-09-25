@@ -583,7 +583,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def direct_subprojects(self):
-        return self.query.find(dict(parent_id=self._id, deleted=False))
+        return self.query.find(dict(parent_id=self._id, deleted=False)).all()
 
     @property
     def accolades(self):

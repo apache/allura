@@ -121,7 +121,7 @@ def test_set_ordinal_to_admin_tool():
 
 def test_users_and_roles():
     p = M.Project.query.get(shortname='test')
-    sub = p.direct_subprojects.next()
+    sub = p.direct_subprojects[0]
     u = M.User.by_username('test-admin')
     assert p.users_with_role('Admin') == [u]
     assert p.users_with_role('Admin') == sub.users_with_role('Admin')

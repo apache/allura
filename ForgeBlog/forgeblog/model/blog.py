@@ -85,13 +85,6 @@ class BlogPostSnapshot(M.Snapshot):
         return g.markdown_wiki.convert(self.data.text)
 
     @property
-    def attachments(self):
-        orig = self.original()
-        if not orig:
-            return None
-        return orig.attachments
-
-    @property
     def email_address(self):
         orig = self.original()
         if not orig:

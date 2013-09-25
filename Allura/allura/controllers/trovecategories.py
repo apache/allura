@@ -132,7 +132,7 @@ class TroveCategoryController(BaseController):
             redirect(redirecturl)
             return
         
-        if len(M.User.withskill(cat)) > 0:
+        if M.User.withskill(cat).count() > 0:
             m = "This category is used as a skill by at least a user, "
             m = m + "therefore it can't be removed."
             flash(m, "error")

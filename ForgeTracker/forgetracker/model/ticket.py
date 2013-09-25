@@ -811,11 +811,6 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if who in (None, User.anonymous()): return 'nobody'
         return who.get_pref('display_name')
 
-    @property
-    def attachments(self):
-        return TicketAttachment.query.find(dict(
-            app_config_id=self.app_config_id, artifact_id=self._id, type='attachment'))
-
     def update(self, ticket_form):
         # update is not allowed to change the ticket_num
         ticket_form.pop('ticket_num', None)
