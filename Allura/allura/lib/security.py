@@ -245,6 +245,9 @@ def has_access(obj, permission, user=None, project=None):
 
     - First, all the roles for a user in the given project context are computed.
 
+    - If the given object's ACL contains a DENY for this permission on this
+      user's project role, return False and deny access.
+
     - Next, for each role, the given object's ACL is examined linearly. If an ACE
       is found which matches the permission and user, and that ACE ALLOWs access,
       then the function returns True and access is permitted. If the ACE DENYs
@@ -265,10 +268,15 @@ def has_access(obj, permission, user=None, project=None):
       obj.parent_security_context(). If the parent_security_context is None, then
       the function returns False and access is denied.
 
-    The effect of this processing is that if *any* role for the user is ALLOWed
-    access via a linear traversal of the ACLs, then access is allowed. All of the
-    users roles must either be explicitly DENYed or processing terminate with no
-    matches to DENY access to the resource.
+    The effect of this processing is that:
+
+      1. If the user's project_role is DENYed, access is denied (e.g. if the user
+         has been blocked for a permission on a specific tool).
+
+      2. Else, if *any* role for the user is ALLOWed access via a linear
+         traversal of the ACLs, then access is allowed.
+
+      3. Otherwise, DENY access to the resource.
     '''
     from allura import model as M
     def predicate(obj=obj, user=user, project=project, roles=None):
@@ -290,10 +298,11 @@ def has_access(obj, permission, user=None, project=None):
                     project = getattr(obj, 'project', None) or c.project
                     project = project.root_project
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
-        user_role = user.project_role(project=project)
-        deny_user = M.ACE.deny(user_role._id, permission)
-        if M.ACL.contains(deny_user, obj.acl):
-            return False
+        if user != M.User.anonymous():
+            user_role = user.project_role(project=project)
+            deny_user = M.ACE.deny(user_role._id, permission)
+            if M.ACL.contains(deny_user, obj.acl):
+                return False
         chainable_roles = []
         for rid in roles:
             for ace in obj.acl:

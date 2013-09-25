@@ -727,8 +727,8 @@ class ProjectRole(MappedClass):
         unique_indexes = [ ('user_id', 'project_id', 'name') ]
         indexes = [
             ('user_id',),
-            ('project_id',),
-            ('roles',)
+            ('project_id', 'name'), # used in ProjectRole.by_name()
+            ('roles',),
             ]
 
     _id = FieldProperty(S.ObjectId)
