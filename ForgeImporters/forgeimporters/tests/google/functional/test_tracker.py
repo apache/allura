@@ -182,7 +182,7 @@ class TestGCTrackerImporter(TestCase):
             )
 
     def _assert_attachments(self, actual, *expected):
-        self.assertEqual(actual.count(), len(expected))
+        self.assertEqual(len(actual), len(expected))
         atts = set((a.filename, a.content_type, a.rfile().read()) for a in actual)
         self.assertEqual(atts, set(expected))
 

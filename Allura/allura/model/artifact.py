@@ -409,6 +409,11 @@ class Artifact(MappedClass):
             fp=fp, artifact_id=self._id, **kw)
         return att
 
+    @LazyProperty
+    def attachments(self):
+        return self.attachment_class().query.find(dict(
+            app_config_id=self.app_config_id, artifact_id=self._id, type='attachment')).all()
+
     def delete(self):
         """Delete this Artifact.
 
@@ -462,6 +467,13 @@ class Snapshot(Artifact):
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
+    
+    @property
+    def attachments(self):
+        orig = self.original()
+        if not orig:
+            return None
+        return orig.attachments
 
     def __getattr__(self, name):
         return getattr(self.data, name)

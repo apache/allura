@@ -755,9 +755,8 @@ class NeighborhoodAwardsController(object):
     @expose('jinja:allura:templates/awards.html')
     def index(self, **kw):
         require_access(self.neighborhood, 'admin')
-        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id))
-        count = awards.count()
-        return dict(awards=awards or [], count=count)
+        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
+        return dict(awards=awards or [], count=len(awards))
 
     @expose('jinja:allura:templates/award_not_found.html')
     def not_found(self, **kw):

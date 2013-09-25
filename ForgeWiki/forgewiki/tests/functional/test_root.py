@@ -391,7 +391,7 @@ class TestRootController(TestController):
         self.app.post('/wiki/TEST/attach', upload_files=[upload])
         h.set_context('test', 'wiki', neighborhood='Projects')
         page = model.Page.query.find(dict(title='TEST')).first()
-        filename = page.attachments.first().filename
+        filename = page.attachments[0].filename
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/wiki/TEST/attachment/'+filename)

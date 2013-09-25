@@ -144,7 +144,7 @@
 <div id="ticket_content">
   {{g.markdown.convert(ticket.description)|safe}}
   {% if ticket.attachments %}
-    <strong class="grid-18">{{ticket.attachments.count()}} Attachments</strong>
+    <strong class="grid-18">{{ticket.attachments|length}} Attachments</strong>
     <div class="clear">
     {% for att in ticket.attachments %}
         <div class="attachment_thumb">

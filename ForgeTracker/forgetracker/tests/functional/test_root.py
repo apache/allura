@@ -560,7 +560,7 @@ class TestFunctionalController(TrackerTestController):
             'summary':'zzz'
         }, upload_files=[upload]).follow()
         ticket = tm.Ticket.query.find({'ticket_num':1}).first()
-        filename = ticket.attachments.first().filename
+        filename = ticket.attachments[0].filename
 
         uploaded = PIL.Image.open(file_path)
         r = self.app.get('/bugs/1/attachment/'+filename)

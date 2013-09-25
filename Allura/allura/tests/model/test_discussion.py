@@ -149,7 +149,7 @@ def test_post_methods():
     p.commit()
     assert p.parent is None
     assert p.subject == 'Test Thread'
-    assert p.attachments.count() == 0
+    assert_equals(p.attachments, [])
     assert 'wiki/_discuss' in p.url()
     assert p.reply_subject() == 'Re: Test Thread'
     assert p.link_text() == p.subject
@@ -222,8 +222,8 @@ def test_multiple_attachments():
     test_post = t.post('test post')
     test_post.add_multiple_attachments([test_file1, test_file2])
     ThreadLocalORMSession.flush_all()
-    assert test_post.attachments.count() == 2, test_post.attachments.count()
-    attaches = test_post.attachments.all()
+    assert_equals(len(test_post.attachments), 2)
+    attaches = test_post.attachments
     assert 'test1.txt' in [attaches[0].filename, attaches[1].filename]
     assert 'test2.txt' in [attaches[0].filename, attaches[1].filename]
 
@@ -239,8 +239,8 @@ def test_add_attachment():
     test_post = t.post('test post')
     test_post.add_attachment(test_file)
     ThreadLocalORMSession.flush_all()
-    assert test_post.attachments.count() == 1, test_post.attachments.count()
-    attach = test_post.attachments.first()
+    assert_equals(len(test_post.attachments), 1)
+    attach = test_post.attachments[0]
     assert attach.filename == 'test.txt', attach.filename
     assert attach.content_type == 'text/plain', attach.content_type
 
