@@ -174,6 +174,12 @@ class AuthenticationProvider(object):
                 'target': "/auth/subscriptions",
                 'alt': 'Manage Subscription Preferences',
             },
+            {
+                'tabid': 'account_oauth',
+                'title': 'OAuth',
+                'target': "/auth/oauth",
+                'alt': 'Manage OAuth Preferences',
+            },
         ]
 
     def user_project_shortname(self, user):

@@ -732,7 +732,6 @@ class SubscriptionsController(BaseController):
         menu = provider.account_navigation()
         return dict(
             subscriptions=subscriptions,
-            authorized_applications=M.OAuthAccessToken.for_user(c.user),
             menu=menu)
 
     @h.vardec
@@ -756,26 +755,33 @@ class SubscriptionsController(BaseController):
 
 class OAuthController(BaseController):
 
+    def _check_security(self):
+        require_authenticated()
+
     @with_trailing_slash
     @expose('jinja:allura:templates/oauth_applications.html')
     def index(self, **kw):
-        require_authenticated()
         c.form = F.oauth_application_form
-        return dict(apps=M.OAuthConsumerToken.for_user(c.user))
+        consumer_tokens = M.OAuthConsumerToken.for_user(c.user)
+        access_tokens = M.OAuthAccessToken.for_user(c.user)
+        provider = plugin.AuthenticationProvider.get(request)
+        return dict(
+                menu=provider.account_navigation(),
+                consumer_tokens=consumer_tokens,
+                access_tokens=access_tokens,
+            )
 
     @expose()
     @require_post()
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
-        require_authenticated()
         M.OAuthConsumerToken(name=application_name, description=application_description)
         flash('OAuth Application registered')
         redirect('.')
 
     @expose()
     @require_post()
-    def delete(self, id=None):
-        require_authenticated()
+    def deregister(self, id=None):
         app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
         if app is None:
             flash('Invalid app ID', 'error')
@@ -783,6 +789,56 @@ class OAuthController(BaseController):
         if app.user_id != c.user._id:
             flash('Invalid app ID', 'error')
             redirect('.')
+        M.OAuthRequestToken.query.remove({'consumer_token_id': app._id})
+        M.OAuthAccessToken.query.remove({'consumer_token_id': app._id})
         app.delete()
         flash('Application deleted')
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def generate_access_token(self, id, name=None):
+        """
+        Manually generate an OAuth access token for the given consumer.
+
+        NB: Manually generated access tokens are bearer tokens, which are
+        less secure (since they rely only on the token, which is transmitted
+        with each request, unlike the access token secret).
+        """
+        consumer_token = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
+        if consumer_token is None:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        if consumer_token.user_id != c.user._id:
+            flash('Invalid app ID', 'error')
+            redirect('.')
+        request_token = M.OAuthRequestToken(
+                consumer_token_id=consumer_token._id,
+                user_id=c.user._id,
+                callback='manual',
+                validation_pin=h.nonce(20),
+                name=name,
+                is_bearer=True,
+            )
+        access_token = M.OAuthAccessToken(
+                consumer_token_id=consumer_token._id,
+                request_token_id=c.user._id,
+                user_id=request_token.user_id,
+                name=name,
+                is_bearer=True,
+            )
+        redirect('.')
+
+    @expose()
+    @require_post()
+    def revoke_access_token(self, id):
+        access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(id))
+        if access_token is None:
+            flash('Invalid token ID', 'error')
+            redirect('.')
+        if access_token.user_id != c.user._id:
+            flash('Invalid token ID', 'error')
+            redirect('.')
+        access_token.delete()
+        flash('Token revoked')
         redirect('.')

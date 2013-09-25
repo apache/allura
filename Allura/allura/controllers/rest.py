@@ -45,7 +45,7 @@ class RestController(object):
 
     def _authenticate_request(self):
         'Based on request.params or oauth, authenticate the request'
-        if 'oauth_token' in request.params:
+        if 'oauth_token' in request.params or 'access_token' in request.params:
             return self.oauth._authenticate()
         elif 'api_key' in request.params:
             api_key = request.params.get('api_key')
@@ -115,6 +115,15 @@ class OAuthNegotiator(object):
         return result
 
     def _authenticate(self):
+        if 'access_token' in request.params:
+            # handle bearer tokens
+            if request.scheme != 'https':
+                raise exc.HTTPForbidden
+            access_token = M.OAuthAccessToken.query.get(
+                api_key=request.params['access_token'])
+            if not (access_token and access_token.is_bearer):
+                raise exc.HTTPForbidden
+            return access_token
         req = oauth.Request.from_request(
             request.method,
             request.url.split('?')[0],
@@ -233,9 +242,11 @@ class OAuthNegotiator(object):
             log.error('Invalid signature')
             return None
         acc_token = M.OAuthAccessToken(
-            consumer_token_id=consumer_token._id,
-            request_token_id=request_token._id,
-            user_id=request_token.user_id)
+                consumer_token_id=consumer_token._id,
+                request_token_id=request_token._id,
+                user_id=request_token.user_id,
+                name=request_token.name,
+            )
         return acc_token.to_string()
 
 class NeighborhoodRestController(object):

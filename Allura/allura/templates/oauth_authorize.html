@@ -24,11 +24,19 @@
 {% block header %}Authorize third party application?{% endblock %}
 
 {% block content %}
-<p>The application {{ consumer.name }} wishes to access your account.  If you
-  grant them access, they will be able to perform any actions on the site as
-  though they were logged in as you.  Do you wish to grant them access? </p>
+<p>
+  {% if name %}
+    The application {{ name }} wishes to access your account using the {{ consumer.name }} key.
+  {% else %}
+    The application {{ consumer.name }} wishes to access your account.
+  {% endif %}
+  If you grant them access, they will be able to perform any actions on
+  the site as though they were logged in as you.  Do you wish to grant
+  them access?
+</p>
 <form method="POST" action="do_authorize">
   <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
+  <input type="hidden" name="name" value="{{name}}"/>
   <input type="submit" name="no" value="No, do not authorize {{ consumer.name }}">
   <input type="submit" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
 </form>

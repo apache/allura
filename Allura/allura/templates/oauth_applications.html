@@ -23,20 +23,124 @@
 
 {% block header %}OAuth applications registered for {{c.user.username}}{% endblock %}
 
+{% block extra_css %}
+<style type="text/css">
+    table {
+        border: 1px solid #e5e5e5;
+    }
+    th {
+        text-align: left;
+        width: 10em;
+        padding: 5px;
+        border: 1px solid #e5e5e5;
+    }
+    tr.description p {
+        padding-left: 0;
+    }
+    tr.description p:last-child {
+        padding-bottom: 0;
+    }
+    tr.controls input[type="submit"] {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+    $(function() {
+        $('.deregister_consumer_token').submit(function(e) {
+            var ok = confirm('Deregister application and revoke all its access tokens?')
+            if(!ok) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        $('.revoke_access_token').submit(function(e) {
+            var ok = confirm('Revoke access?')
+            if(!ok) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    })
+</script>
+{% endblock %}
+
 {% block content %}
-{% for token in apps %}
-<h2>{{token.name}}</h2>
-{{token.description_html | safe }}
-<dl>
-  <dt>Consumer Key</dt><dd>{{token.api_key}}</dd>
-  <dt>Consumer Secret</dt><dd>{{token.secret_key}}</dd>
-</dl>
-<br>
-<form method="POST" action="delete"><input type="hidden" name="id" value="{{token._id}}">
-<input type="submit" value="Deregister {{token.name}}">
-</form>
-<br style="clear:both"/>
-{% endfor %}
-<h2>Register a new OAuth application</h2>
-{{ c.form.display() }}
+    <ul id="account-nav-menu" class="b-hornav droppy">
+    {% for item in menu -%}
+        <li id="{{ item.tabid }}">
+            <a href="{{ item.target }}">
+                {{ item.title }}
+                <div class="marker{% if item.target.rstrip('/') == request.path.rstrip('/') %} current{% endif %}"></div>
+            </a>
+        </li>
+    {%- endfor %}
+    </ul>
+
+    <h2>Authorized Applications</h2>
+    <p>
+        These are applications you have authorized to act on your behalf.
+        They potentially have full access to your account, so if you are
+        no longer using an application listed here, you should revoke its
+        access.
+    </p>
+    {% for access_token in access_tokens %}
+    <table class="authorized_app">
+        <tr class="name">
+            <th>Name:</th><td>{{access_token.consumer_token.name}}</td>
+        </tr>
+        <tr class="description">
+            <th>Description:</th><td>{{access_token.consumer_token.description_html | safe}}</td>
+        </tr>
+        {% if access_token.is_bearer %}
+        <tr class="bearer_token">
+            <th>Bearer Token:</th><td>{{access_token.api_key}}</td>
+        </tr>
+        {% endif %}
+        <tr class="controls">
+            <td colspan="2">
+                <form method="POST" action="revoke_access_token" class="revoke_access_token">
+                    <input type="hidden" name="id" value="{{access_token._id}}">
+                    <input type="submit" value="Revoke">
+                </form>
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
+
+    <h2>My Applications</h2>
+    <p>
+    These are the applications you have registered.  They can request authorization
+    for a user using the Consumer Key and Consumer Secret via OAuth negotiation.
+    Alternatively, you can generate a bearer token to give your applicationa access
+    to your account without having to perform the OAuth negotiation.  Note, however,
+    that you must be careful with bearer tokens, since anyone who has them token can
+    access your account as that application.
+    </p>
+    {% for consumer_token in consumer_tokens %}
+    <table class="registered_app">
+        <tr><th>Name:</th><td>{{consumer_token.name}}</td></tr>
+        <tr class="description"><th>Description:</th><td>{{consumer_token.description_html | safe}}</td></tr>
+        <tr class="consumer_key"><th>Consumer Key:</th><td>{{consumer_token.api_key}}</td></tr>
+        <tr class="consumer_secret"><th>Consumer Secret:</th><td>{{consumer_token.api_key}}</td></tr>
+        <tr class="controls">
+            <td colspan="2"
+                <form method="POST" action="deregister" class="deregister_consumer_token">
+                    <input type="hidden" name="id" value="{{consumer_token._id}}">
+                    <input type="submit" value="Deregister">
+                </form>
+                <form method="POST" action="generate_access_token" class="generate_access_token">
+                    <input type="hidden" name="id" value="{{consumer_token._id}}">
+                    <input type="submit" value="Generate Bearer Token">
+                </form>
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
+
+    <h2>Register New Application</h2>
+    {{ c.form.display() }}
 {% endblock %}

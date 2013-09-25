@@ -96,6 +96,7 @@ class OAuthAccessToken(OAuthToken):
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     request_token_id = ForeignIdProperty('OAuthToken')
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
+    is_bearer = FieldProperty(bool, if_missing=False)
 
     user = RelationProperty('User')
     consumer_token = RelationProperty('OAuthConsumerToken', via='consumer_token_id')
@@ -104,5 +105,5 @@ class OAuthAccessToken(OAuthToken):
     @classmethod
     def for_user(cls, user=None):
         if user is None: user = c.user
-        return cls.query.find(dict(user_id=user._id)).all()
+        return cls.query.find(dict(user_id=user._id, type='access')).all()
 
