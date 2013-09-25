@@ -682,9 +682,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def anonymous(cls):
-        if not hasattr(cls, '_anon_user'):
-            cls._anon_user = User.query.get(_id=None)
-        return cls._anon_user
+        return User.query.get(_id=None)
 
     def email_address_header(self):
         h = header.Header()
@@ -729,7 +727,7 @@ class ProjectRole(MappedClass):
         unique_indexes = [ ('user_id', 'project_id', 'name') ]
         indexes = [
             ('user_id',),
-            ('project_id', 'name'),
+            ('project_id', 'name'), # used in ProjectRole.by_name()
             ('roles',),
             ]
 
