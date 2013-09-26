@@ -143,8 +143,8 @@ class TestGitHubWikiImporter(TestCase):
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.mediawiki2markdown')
     def test_with_history_mediawiki(self, md2mkm, upsert):
-        self.commit2.stats.files = {"Home.md": self.blob1}
-        self.commit2.tree = {"Home.md": self.blob1}
+        self.commit2.stats.files = {"Home.mediawiki": self.blob1}
+        self.commit2.tree = {"Home.mediawiki": self.blob1}
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
@@ -256,7 +256,7 @@ Our website is <http://sf.net>.
 
 [External link](https://github.com/a/b/issues/1)\n\n'''
 
-        assert_equal(f(source, 'test.md', None), result)
+        assert_equal(f(source, 'test.md'), result)
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
@@ -284,7 +284,7 @@ Our website is [[http://sf.net]].
 <p><a class="" href="/p/test/wiki/Page" rel="nofollow">External link to the wiki page</a></p>
 <p><a class="" href="https://github.com/a/b/issues/1" rel="nofollow">External link</a></p></div>'''
 
-        assert_equal(f(source, 'test.md', None), result)
+        assert_equal(f(source, 'test.md'), result)
 
     def test_rewrite_links(self):
         f = GitHubWikiImporter().rewrite_links
@@ -301,38 +301,32 @@ Our website is [[http://sf.net]].
         assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>', prefix, new),
                      u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
 
+    @skipif(module_not_available('html2text'))
     def test_convert_markup_with_mediawiki2markdown(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
-        source = u'''Look at [[this page|Some Page]]
+        source = u'''
+''-- Al'fredas 235 BC''
+== See also ==
+* [https://github/a/b/wiki/AgentSpring-running-instructions-for-d13n-model Test1]
+* [https://github/a/b/wiki/AgentSpring-conventions Test2]
+* [https://github/a/b/wiki/AgentSpring-Q&A Test3]
+* [https://github/a/b/wiki/Extensions Test4]'''
 
-More info at: [[MoreInfo]] [[Even More Info]]
+        result = u'''_-- Al'fredas 235 BC_
 
-Our website is [[http://sf.net]].
+## See also
 
-'[[Escaped Tag]]
-
-[External link to the wiki page](https://github.com/a/b/wiki/Page)
-
-[External link](https://github.com/a/b/issues/1)'''
-
-        result = u'''Look at [this page](Some Page) 
-
-More info at: [MoreInfo] [Even More Info] 
-
-Our website is [[http://sf.net](http://sf.net)]. 
-
-[[Escaped Tag]] 
-
-[External link to the wiki page](https://github.com/a/b/wiki/Page) 
-
-[External link](https://github.com/a/b/issues/1) 
+  * [Test1](https://github/a/b/wiki/AgentSpring-running-instructions-for-d13n-model)
+  * [Test2](https://github/a/b/wiki/AgentSpring-conventions)
+  * [Test3](https://github/a/b/wiki/AgentSpring-Q&A)
+  * [Test4](https://github/a/b/wiki/Extensions)
 '''
 
-        assert_equal(f(source, 'test.md', 'md'), result)
+        assert_equal(f(source, 'test.mediawiki'), result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):

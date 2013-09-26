@@ -194,7 +194,7 @@ class GitHubWikiImporter(ToolImporter):
         name = self._convert_page_name(name)
         wiki_page = WM.Page.upsert(name)
         if filename in commit.tree:
-            wiki_page.text = self.convert_markup(h.really_unicode(text), filename, ext)
+            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
             wiki_page.timestamp = wiki_page.mod_date = mod_date
             wiki_page.viewable_by = ['all']
         else:
@@ -218,7 +218,7 @@ class GitHubWikiImporter(ToolImporter):
                 self._with_history(commit)
         rmtree(wiki_path)
 
-    def convert_markup(self, text, filename, ext):
+    def convert_markup(self, text, filename):
         """Convert any supported github markup into Allura-markdown.
 
         Conversion happens in 4 phases:
@@ -238,17 +238,32 @@ class GitHubWikiImporter(ToolImporter):
         except ImportError:
             html2text = None
 
-        if html2text and ext in ['md', 'mediawiki']:
-            text = mediawiki2markdown(text)
-            text = self.convert_gollum_tags(text)
+        name_and_ext = filename.split('.', 1)
+        if len(name_and_ext) == 1:
+            name, ext = name_and_ext[0], None
+        else:
+            name, ext = name_and_ext
+
+        is_mediawiki = False
+        if ext and ext in ['wiki', 'mediawiki']:
+            is_mediawiki = True
+
+        if is_mediawiki:
+            if html2text:
+                text = mediawiki2markdown(text)
+                text = self.convert_gollum_tags(text)
+                text = text.replace(self.github_wiki_url, self.app.url)
+            else:
+                text = h.render_any_markup(filename, text)
+                text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
+            return text
         else:
             text = h.render_any_markup(filename, text)
-
-        text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
-        if html2text and ext not in ['md', 'mediawiki']:
-            text = html2text.html2text(text)
-            text = self.convert_gollum_tags(text)
-        return text
+            text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
+            if html2text:
+                text = html2text.html2text(text)
+                text = self.convert_gollum_tags(text)
+            return text
 
     def convert_gollum_tags(self, text):
         tag_re = re.compile(r'''
