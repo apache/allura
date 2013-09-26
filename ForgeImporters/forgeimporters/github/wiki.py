@@ -223,15 +223,15 @@ class GitHubWikiImporter(ToolImporter):
 
         Conversion happens in 4 phases:
 
-        1. Convert source text to a html using h.render_any_markup,
-           if file format is not mediawiki. If mediawiki, it will
-           converted using mediawiki2markdown method.
-        2. Rewrite links that match the wiki URL prefix with new location
-        3. Convert resulting html to a markdown using html2text, if available,
-           and not mediawiki.
+        1. Convert source text to a html using h.render_any_markup.
+        2. Rewrite links that match the wiki URL prefix with new location.
+        3. Convert resulting html to a markdown using html2text, if available.
         4. Convert gollum tags
 
         If html2text module isn't available then only phases 1 and 2 will be executed.
+
+        Files in mediawiki format are converted using mediawiki2markdown
+        if html2text is available.
         """
         try:
             import html2text
@@ -244,11 +244,7 @@ class GitHubWikiImporter(ToolImporter):
         else:
             name, ext = name_and_ext
 
-        is_mediawiki = False
         if ext and ext in ['wiki', 'mediawiki']:
-            is_mediawiki = True
-
-        if is_mediawiki:
             if html2text:
                 text = mediawiki2markdown(text)
                 text = self.convert_gollum_tags(text)
