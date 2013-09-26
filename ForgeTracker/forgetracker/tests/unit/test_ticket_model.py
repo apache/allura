@@ -20,6 +20,7 @@ from datetime import datetime
 import urllib2
 
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.orm import session
 from ming import schema
 from nose.tools import raises, assert_raises, assert_equal, assert_in
 
@@ -275,8 +276,11 @@ class TestTicketModel(TrackerTestWithModel):
         TicketAttachment.save_attachment('test_ticket_model.py', ResettableStream(f),
                                             artifact_id=ticket._id)
         ThreadLocalORMSession.flush_all()
-        assert_equal(ticket.attachments.count(), 1)
-        assert_equal(ticket.attachments.first().filename, 'test_ticket_model.py')
+        # need to refetch since attachments are cached
+        session(ticket).expunge(ticket)
+        ticket = Ticket.query.get(_id=ticket._id)
+        assert_equal(len(ticket.attachments), 1)
+        assert_equal(ticket.attachments[0].filename, 'test_ticket_model.py')
 
     def test_json_parents(self):
         ticket = Ticket.new()
