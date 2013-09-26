@@ -309,14 +309,14 @@ Our website is [[http://sf.net]].
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
         source = u'''
-''-- Al'fredas 235 BC''
+''Al'fredas 235 BC''
 == See also ==
 * [https://github/a/b/wiki/AgentSpring-running-instructions-for-d13n-model Test1]
 * [https://github/a/b/wiki/AgentSpring-conventions Test2]
 * [https://github/a/b/wiki/AgentSpring-Q&A Test3]
 * [https://github/a/b/wiki/Extensions Test4]'''
 
-        result = u'''_-- Al'fredas 235 BC_
+        result = u'''_Al'fredas 235 BC_
 
 ## See also
 
