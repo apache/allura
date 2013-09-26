@@ -165,9 +165,11 @@ class TestRestApiBase(TestController):
         return self._token_cache[username]
 
     def _api_getpost(self, method, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', **params):
+                 wrap_args=None, user='test-admin', status=None, **params):
         if wrap_args:
             params = {wrap_args: params}
+        if status is None:
+            status = [200, 201, 301, 302, 400, 403, 404]
         params = variabledecode.variable_encode(params, add_repetitions=False)
         if api_key: params['api_key'] = api_key
         if api_timestamp: params['api_timestamp'] = api_timestamp
@@ -180,16 +182,16 @@ class TestRestApiBase(TestController):
         response = fn(
             str(path),
             params=params,
-            status=[200, 201, 301, 302, 400, 403, 404])
+            status=status)
         if response.status_int in [301, 302]:
             return response.follow()
         else:
             return response
 
     def api_get(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', **params):
-        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, user, **params)
+                 wrap_args=None, user='test-admin', status=None, **params):
+        return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)
 
     def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', **params):
-        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, user, **params)
+                 wrap_args=None, user='test-admin', status=None, **params):
+        return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)

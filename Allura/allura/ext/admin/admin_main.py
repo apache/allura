@@ -20,11 +20,12 @@ from collections import defaultdict
 from datetime import datetime
 from urlparse import urlparse
 import json
+import os
 
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, aslist
 from tg import expose, redirect, flash, validate, config, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
@@ -86,6 +87,7 @@ class AdminApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ProjectAdminController()
+        self.api_root = ProjectAdminRestController()
         self.admin = AdminAppAdminController(self)
         self.templates = pkg_resources.resource_filename('allura.ext.admin', 'templates')
         self.sitemap = [ SitemapEntry('Admin','.')]
@@ -660,6 +662,40 @@ class ProjectAdminController(BaseController):
             'tools': exportable_tools,
             'status': c.project.bulk_export_status()
         }
+
+
+class ProjectAdminRestController(BaseController):
+
+    def _check_security(self):
+        require_access(c.project, 'read')
+
+    @expose('json:')
+    @require_post()
+    def export(self, tools=None, **kw):
+        require_access(c.project, 'admin')
+        if not tools:
+            raise exc.HTTPBadRequest('Must give at least one tool mount point to export')
+        tools = aslist(tools,',')
+        exportable_tools = AdminApp.exportable_tools_for(c.project)
+        allowed = set(t.options.mount_point for t in exportable_tools)
+        if not set(tools).issubset(allowed):
+            raise exc.HTTPBadRequest('Invalid tool')
+        if c.project.bulk_export_status() == 'busy':
+            raise exc.HTTPServiceUnavailable(
+                'Export for project %s already running' % c.project.shortname)
+        # filename (potentially) includes a timestamp, so we have
+        # to pre-generate to be able to return it to the user
+        filename = c.project.bulk_export_filename()
+        export_tasks.bulk_export.post(tools, filename)
+        return {
+                'status': 'in progress',
+                'filename': filename,
+            }
+
+    @expose('json:')
+    def export_status(self, **kw):
+        status = c.project.bulk_export_status()
+        return {'status': status or 'ready'}
 
 
 class PermissionsController(BaseController):

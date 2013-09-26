@@ -38,6 +38,7 @@ except ImportError:
 
 from allura.tests import TestController
 from allura.tests import decorators as td
+from alluratest.controller import TestRestApiBase
 from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.plugin import AdminExtension
@@ -965,3 +966,43 @@ class TestExport(TestController):
         r = self.app.get('/admin/export')
         assert_in('<input type="checkbox" id="check-all">', r)
         assert_in('Check All</label>', r)
+
+
+class TestRestExport(TestRestApiBase):
+    @mock.patch('allura.model.project.MonQTask')
+    def test_export_status(self, MonQTask):
+        MonQTask.query.get.return_value = None
+        r = self.api_get('/rest/p/test/admin/export_status')
+        assert_equals(r.json, {'status': 'ready'})
+
+        MonQTask.query.get.return_value = 'something'
+        r = self.api_get('/rest/p/test/admin/export_status')
+        assert_equals(r.json, {'status': 'busy'})
+
+    @mock.patch('allura.model.project.MonQTask')
+    @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
+    @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
+    def test_export(self, bulk_export, exportable_tools, MonQTask):
+        MonQTask.query.get.return_value = None
+        exportable_tools.return_value = []
+        r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=400)
+        assert_equals(bulk_export.post.call_count, 0)
+
+        exportable_tools.return_value = [
+                mock.Mock(options=mock.Mock(mount_point='tickets')),
+                mock.Mock(options=mock.Mock(mount_point='discussion')),
+            ]
+        r = self.api_post('/rest/p/test/admin/export', status=400)
+        assert_equals(bulk_export.post.call_count, 0)
+
+        MonQTask.query.get.return_value = 'something'
+        r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=503)
+        assert_equals(bulk_export.post.call_count, 0)
+
+        MonQTask.query.get.return_value = None
+        r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=200)
+        assert_equals(r.json, {
+                'filename': 'test.zip',
+                'status': 'in progress',
+            })
+        bulk_export.post.assert_called_once_with(['tickets', 'discussion'], 'test.zip')
