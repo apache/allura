@@ -981,5 +981,5 @@ class AppConfig(MappedClass):
     def __json__(self):
         return dict(
             _id=self._id,
-            options=self.options,
+            options=dict(self.options),  # strip away the ming instrumentation
         )

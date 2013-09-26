@@ -22,6 +22,7 @@ from mock import patch
 
 from allura.lib import helpers as h
 from allura.tests import decorators as td
+from allura import model as M
 from alluratest.controller import TestRestApiBase
 
 from forgetracker import model as TM
@@ -122,6 +123,9 @@ class TestRestIndex(TestTrackerApiBase):
     def test_ticket_index_noauth(self):
         tickets = self.api_get('/rest/p/test/bugs', user='*anonymous')
         assert 'TicketMonitoringEmail' not in tickets.json['tracker_config']['options']
+        # make sure it didn't get removed from the db too
+        ticket_config = M.AppConfig.query.get(project_id=c.project._id, tool_name='tickets')
+        assert_equal(ticket_config.options.get('TicketMonitoringEmail'), 'test@localhost')
 
 
 class TestRestDiscussion(TestTrackerApiBase):
