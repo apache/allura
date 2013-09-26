@@ -205,10 +205,15 @@ class ImportSupport(object):
                 remapped[new_f] = conv(v)
 
         description = h.really_unicode(self.link_processing(remapped['description']))
+        creator = owner = ''
         if ticket_dict['submitter'] and not remapped['reported_by_id']:
-            description = u'Originally created by: {0}\n\n{1}'.format(
-                    h.really_unicode(ticket_dict['submitter']), description)
-        remapped['description'] = description
+            creator = u'*Originally created by:* {0}\n'.format(
+                    h.really_unicode(ticket_dict['submitter']))
+        if ticket_dict['assigned_to'] and not remapped['assigned_to_id']:
+            owner = u'*Originally owned by:* {0}\n'.format(
+                    h.really_unicode(ticket_dict['assigned_to']))
+        remapped['description'] = u'{0}{1}{2}{3}'.format(creator, owner,
+                '\n' if creator or owner else '', description)
 
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
