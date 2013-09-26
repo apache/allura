@@ -333,4 +333,4 @@ class GitHubWikiImporter(ToolImporter):
                     a.setString(new_page)
                 elif a.text == prefix + page:
                     a.setString(new_prefix + new_page)
-        return str(soup)
+        return unicode(soup)
