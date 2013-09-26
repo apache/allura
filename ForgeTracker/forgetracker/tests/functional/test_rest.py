@@ -39,6 +39,18 @@ class TestTrackerApiBase(TestRestApiBase):
         h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals
 
+    def create_ticket(self):
+        return self.api_post(
+            '/rest/p/test/bugs/new',
+            wrap_args='ticket_form',
+            summary='test new ticket',
+            status=self.tracker_globals.open_status_names.split()[0],
+            labels='',
+            description='',
+            assigned_to='',
+            **{'custom_fields._milestone':''})
+
+
 class TestRestNewTicket(TestTrackerApiBase):
 
     def test_new_ticket(self):
@@ -67,17 +79,28 @@ class TestRestUpdateTicket(TestTrackerApiBase):
 
     def setUp(self):
         super(TestRestUpdateTicket, self).setUp()
-        summary = 'test new ticket'
-        ticket_view = self.api_post(
-            '/rest/p/test/bugs/new',
-            wrap_args='ticket_form',
-            summary=summary,
-            status=self.tracker_globals.open_status_names.split()[0],
-            labels='',
-            description='',
-            assigned_to='',
-            **{'custom_fields._milestone':''})
+        ticket_view = self.create_ticket()
         self.ticket_args = ticket_view.json['ticket']
+
+    def test_update_ticket(self):
+        args = dict(self.ticket_args, summary='test update ticket', labels='',
+                    assigned_to=self.ticket_args['assigned_to_id'] or '')
+        for bad_key in ('ticket_num', 'assigned_to_id', 'created_date',
+                'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
+            del args[bad_key]
+        args['private'] = str(args['private'])
+        ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', **h.encode_keys(args))
+        assert ticket_view.status_int == 200, ticket_view.showbrowser()
+        json = ticket_view.json['ticket']
+        assert int(json['ticket_num']) == 1
+        assert json['summary'] == 'test update ticket', json
+
+
+class TestRestIndex(TestTrackerApiBase):
+
+    def setUp(self):
+        super(TestRestIndex, self).setUp()
+        self.create_ticket()
 
     def test_ticket_index(self):
         tickets = self.api_get('/rest/p/test/bugs/')
@@ -100,33 +123,12 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         tickets = self.api_get('/rest/p/test/bugs', user='*anonymous')
         assert 'TicketMonitoringEmail' not in tickets.json['tracker_config']['options']
 
-    def test_update_ticket(self):
-        args = dict(self.ticket_args, summary='test update ticket', labels='',
-                    assigned_to=self.ticket_args['assigned_to_id'] or '')
-        for bad_key in ('ticket_num', 'assigned_to_id', 'created_date',
-                'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
-            del args[bad_key]
-        args['private'] = str(args['private'])
-        ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', **h.encode_keys(args))
-        assert ticket_view.status_int == 200, ticket_view.showbrowser()
-        json = ticket_view.json['ticket']
-        assert int(json['ticket_num']) == 1
-        assert json['summary'] == 'test update ticket', json
 
 class TestRestDiscussion(TestTrackerApiBase):
 
     def setUp(self):
         super(TestRestDiscussion, self).setUp()
-        summary = 'test new ticket'
-        ticket_view = self.api_post(
-            '/rest/p/test/bugs/new',
-            wrap_args='ticket_form',
-            summary=summary,
-            status=self.tracker_globals.open_status_names.split()[0],
-            labels='',
-            description='',
-            milestone='',
-            assigned_to='')
+        ticket_view = self.create_ticket()
         self.ticket_args = ticket_view.json['ticket']
 
     def test_index(self):
