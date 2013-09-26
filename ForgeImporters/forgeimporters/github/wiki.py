@@ -248,7 +248,18 @@ class GitHubWikiImporter(ToolImporter):
             if html2text:
                 text = mediawiki2markdown(text)
                 text = self.convert_gollum_tags(text)
-                text = text.replace(self.github_wiki_url, self.app.url)
+                # Don't have html here, so we can't call self._rewrite_links.
+                # Falling back to simpler rewriter.
+                prefix = self.github_wiki_url
+                new_prefix = self.app.url
+                if not prefix.endswith('/'):
+                    prefix += '/'
+                if not new_prefix.endswith('/'):
+                    new_prefix += '/'
+                _re = re.compile(r'%s(\S*)' % prefix)
+                def repl(m):
+                    return new_prefix + self._convert_page_name(m.group(1))
+                text = _re.sub(repl, text)
             else:
                 text = h.render_any_markup(filename, text)
                 text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
