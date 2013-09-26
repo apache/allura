@@ -329,6 +329,30 @@ Our website is [[http://sf.net]].
 
         assert_equal(f(source, 'test.mediawiki'), result)
 
+    @skipif(module_not_available('html2text'))
+    def test_convert_textile_no_leading_tabs(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+        source = u'''h1. Header 1
+
+Some text 1.
+
+h2. Header 2
+
+See [[Page]]'''
+
+        result = u'''# Header 1
+
+Some text 1.
+
+## Header 2
+
+See [Page]'''
+        assert_equal(f(source, 'test.textile').rstrip('\n\n'), result)
+
 
 class TestGitHubWikiImportController(TestController, TestCase):
 
