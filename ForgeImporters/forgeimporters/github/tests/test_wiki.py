@@ -145,12 +145,13 @@ class TestGitHubWikiImporter(TestCase):
     def test_with_history_mediawiki(self, md2mkm, upsert):
         self.commit2.stats.files = {"Home.mediawiki": self.blob1}
         self.commit2.tree = {"Home.mediawiki": self.blob1}
+        md2mkm.return_value = u'# test message'
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
-        importer.convert_gollum_tags = Mock()
+        importer.convert_gollum_tags = Mock(return_value=u'# test message')
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(md2mkm.call_args_list, [call(u'# test message')])
@@ -311,19 +312,19 @@ Our website is [[http://sf.net]].
         source = u'''
 ''Al'fredas 235 BC''
 == See also ==
-* [https://github/a/b/wiki/AgentSpring-running-instructions-for-d13n-model Test1]
-* [https://github/a/b/wiki/AgentSpring-conventions Test2]
-* [https://github/a/b/wiki/AgentSpring-Q&A Test3]
-* [https://github/a/b/wiki/Extensions Test4]'''
+* [https://github.com/a/b/wiki/AgentSpring-running-instructions-for-d13n-model Test1]
+* [https://github.com/a/b/wiki/AgentSpring-conventions Test2]
+* [https://github.com/a/b/wiki/AgentSpring-Q&A Test3]
+* [https://github.com/a/b/wiki/Extensions Test4]'''
 
         result = u'''_Al'fredas 235 BC_
 
 ## See also
 
-  * [Test1](https://github/a/b/wiki/AgentSpring-running-instructions-for-d13n-model)
-  * [Test2](https://github/a/b/wiki/AgentSpring-conventions)
-  * [Test3](https://github/a/b/wiki/AgentSpring-Q&A)
-  * [Test4](https://github/a/b/wiki/Extensions)
+  * [Test1](/p/test/wiki/AgentSpring running instructions for d13n model)
+  * [Test2](/p/test/wiki/AgentSpring conventions)
+  * [Test3](/p/test/wiki/AgentSpring Q&A)
+  * [Test4](/p/test/wiki/Extensions)
 '''
 
         assert_equal(f(source, 'test.mediawiki'), result)
