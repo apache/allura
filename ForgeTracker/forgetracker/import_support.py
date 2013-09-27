@@ -206,10 +206,10 @@ class ImportSupport(object):
 
         description = h.really_unicode(self.link_processing(remapped['description']))
         creator = owner = ''
-        if ticket_dict['submitter'] and not remapped['reported_by_id']:
+        if ticket_dict.get('submitter') and not remapped.get('reported_by_id'):
             creator = u'*Originally created by:* {0}\n'.format(
                     h.really_unicode(ticket_dict['submitter']))
-        if ticket_dict['assigned_to'] and not remapped['assigned_to_id']:
+        if ticket_dict.get('assigned_to') and not remapped.get('assigned_to_id'):
             owner = u'*Originally owned by:* {0}\n'.format(
                     h.really_unicode(ticket_dict['assigned_to']))
         remapped['description'] = u'{0}{1}{2}{3}'.format(creator, owner,
