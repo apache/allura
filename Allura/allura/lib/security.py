@@ -246,7 +246,8 @@ def has_access(obj, permission, user=None, project=None):
     - First, all the roles for a user in the given project context are computed.
 
     - If the given object's ACL contains a DENY for this permission on this
-      user's project role, return False and deny access.
+      user's project role, return False and deny access.  TODO: make ACL order
+      matter instead of doing DENY first; see ticket [#6715]
 
     - Next, for each role, the given object's ACL is examined linearly. If an ACE
       is found which matches the permission and user, and that ACE ALLOWs access,
@@ -298,12 +299,15 @@ def has_access(obj, permission, user=None, project=None):
                     project = getattr(obj, 'project', None) or c.project
                     project = project.root_project
             roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
+
+        # TODO: move deny logic into loop below; see ticket [#6715]
         if user != M.User.anonymous():
             user_role = M.ProjectRole.by_user(user, project)
             if user_role:
                 deny_user = M.ACE.deny(user_role._id, permission)
                 if M.ACL.contains(deny_user, obj.acl):
                     return False
+
         chainable_roles = []
         for rid in roles:
             for ace in obj.acl:
