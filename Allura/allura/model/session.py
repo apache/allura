@@ -83,15 +83,35 @@ class ArtifactSessionExtension(SessionExtension):
         if arefs:
             index_tasks.add_artifacts.post([aref._id for aref in arefs])
 
+
+class MongoProfiling(SessionExtension):
+    def cursor_created(self, cursor, action, *args, **kw):
+        explain = cursor.ming_cursor.cursor.explain()
+        if explain.get('cursor') == 'BasicCursor':
+            log.warn('No index for mongo query: %s(%r, %r)', action, args, kw)
+        else:
+            nscanned, n = explain.get('nscanned'), explain.get('n', 0)
+            if nscanned and nscanned - n > 0:
+                log.warn('Query scan: nscanned(%i) > n(%i) for query: %s(%r, %r)',
+                        nscanned, n, action, args, kw)
+
+
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')
 task_doc_session = Session.by_name('task')
-main_orm_session = ThreadLocalORMSession(main_doc_session)
-project_orm_session = ThreadLocalORMSession(project_doc_session)
-task_orm_session = ThreadLocalORMSession(task_doc_session)
+
+main_orm_session = ThreadLocalORMSession(
+        doc_session=main_doc_session,
+        extensions=[ ])
+project_orm_session = ThreadLocalORMSession(
+        doc_session=project_doc_session,
+        extensions=[ MongoProfiling])
+task_orm_session = ThreadLocalORMSession(
+        doc_session=task_doc_session,
+        extensions=[ MongoProfiling ])
 artifact_orm_session = ThreadLocalORMSession(
-    doc_session=project_doc_session,
-    extensions = [ ArtifactSessionExtension ])
+        doc_session=project_doc_session,
+        extensions=[ ArtifactSessionExtension, MongoProfiling ])
 repository_orm_session = ThreadLocalORMSession(
-    doc_session=main_doc_session,
-    extensions = [  ])
+        doc_session=main_doc_session,
+        extensions=[ MongoProfiling ])
