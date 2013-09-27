@@ -1050,3 +1050,9 @@ class TestRename(unittest.TestCase):
             entry['rename_details']['commit_url'],
             self.repo.url_for_commit(2)  # previous revision
         )
+
+    def test_check_changed_path(self):
+        changed_path = {'copyfrom_path':'/test/path', 'path':'/test/path2'}
+        result = self.repo._impl._check_changed_path(changed_path, '/test/path2/file.txt')
+        assert_equal({'path': '/test/path2/file.txt', 'copyfrom_path': '/test/path/file.txt'}, result)
+

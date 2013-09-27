@@ -535,7 +535,7 @@ class SVNImplementation(M.RepositoryImplementation):
         while revno > exclude:
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
-                logs = self._svn.log(url, revision_start=rev, limit=page_size,
+                logs = self._svn.log(url, revision_start=rev, peg_revision=rev, limit=page_size,
                     discover_changed_paths=True)
             except pysvn.ClientError as e:
                 if 'Unable to connect' in e.message:
@@ -553,6 +553,16 @@ class SVNImplementation(M.RepositoryImplementation):
                 return  # we didn't get a full page, don't bother calling SVN again
             revno = ci.revision.number - 1
 
+    def _check_changed_path(self, changed_path, path):
+        if (changed_path['copyfrom_path'] and
+                    changed_path['path'] and
+                    path and
+                    (len(changed_path['path']) < len(path)) and
+                    path.startswith(changed_path['path'])):
+                changed_path['copyfrom_path'] = changed_path['copyfrom_path'] + path[len(changed_path['path']):]
+                changed_path['path'] = path
+        return changed_path
+
     def _map_log(self, ci, url, path=None):
         revno = ci.revision.number
         try:
@@ -562,6 +572,7 @@ class SVNImplementation(M.RepositoryImplementation):
         rename_details = {}
         changed_paths = ci.get('changed_paths', [])
         for changed_path in changed_paths:
+            changed_path = self._check_changed_path(changed_path, path)
             if changed_path['copyfrom_path'] and changed_path['path'] == path and changed_path['action'] == 'A':
                 rename_details['path'] = changed_path['copyfrom_path']
                 rename_details['commit_url'] = self._repo.url_for_commit(
@@ -719,7 +730,7 @@ class SVNImplementation(M.RepositoryImplementation):
         url = '/'.join([self._url, path.strip('/')])
         rev = pysvn.Revision(pysvn.opt_revision_kind.number, self._revno(self.rev_parse(rev)))
         try:
-            info = self._svn.list(url, revision=rev, dirent_fields=pysvn.SVN_DIRENT_KIND)[0][0]
+            info = self._svn.list(url, revision=rev, peg_revision=rev, dirent_fields=pysvn.SVN_DIRENT_KIND)[0][0]
             return info.kind == pysvn.node_kind.file
         except pysvn.ClientError:
             return False
