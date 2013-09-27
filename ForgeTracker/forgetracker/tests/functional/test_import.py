@@ -117,8 +117,9 @@ class TestImportController(TestRestApiBase):
         doc_text = open(here_dir + '/data/sf.json').read()
         doc_json = json.loads(doc_text)
         ticket_json = doc_json['trackers']['default']['artifacts'][0]
-        self.api_post('/rest/p/test/bugs/perform_import',
+        r = self.api_post('/rest/p/test/bugs/perform_import',
             doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+        assert r.json['status'], r.json
 
         ming.orm.ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
@@ -183,8 +184,9 @@ class TestImportController(TestRestApiBase):
         self.set_api_token(api_ticket)
 
         doc_text = open(here_dir + '/data/milestone-tickets.json').read()
-        self.api_post('/rest/p/test/bugs/perform_import', doc=doc_text,
+        r = self.api_post('/rest/p/test/bugs/perform_import', doc=doc_text,
             options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+        assert r.json['status'], r.json
 
         ming.orm.ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
@@ -224,8 +226,9 @@ class TestImportController(TestRestApiBase):
         self.set_api_token(api_ticket)
 
         doc_text = open(os.path.dirname(__file__) + '/data/sf.json').read()
-        self.api_post('/rest/p/test/bugs/perform_import',
+        r = self.api_post('/rest/p/test/bugs/perform_import',
                       doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+        assert r.json['status'], r.json
 
         r = self.app.get('/p/test/bugs/204/')
         ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
@@ -247,8 +250,9 @@ class TestImportController(TestRestApiBase):
         self.set_api_token(api_ticket)
 
         doc_text = open(os.path.dirname(__file__) + '/data/sf.json').read()
-        self.api_post('/rest/p/test/bugs/perform_import',
+        r = self.api_post('/rest/p/test/bugs/perform_import',
                       doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+        assert r.json['status'], r.json
         ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                     ticket_num=204)
         comments = ticket.discussion_thread.post_class().query.find(dict(
