@@ -127,6 +127,17 @@ class TestRestIndex(TestTrackerApiBase):
         ticket_config = M.AppConfig.query.get(project_id=c.project._id, tool_name='tickets')
         assert_equal(ticket_config.options.get('TicketMonitoringEmail'), 'test@localhost')
 
+    @td.with_tool('test', 'Tickets', 'dummy')
+    def test_move_ticket_redirect(self):
+        p = M.Project.query.get(shortname='test')
+        dummy_tracker = p.app_instance('dummy')
+        r = self.app.post(
+            '/p/test/bugs/1/move',
+            params={'tracker': str(dummy_tracker.config._id)}).follow()
+
+        ticket = self.api_get('/rest/p/test/bugs/1/')
+        assert_equal(ticket.request.path, '/rest/p/test/dummy/1/')
+
 
 class TestRestDiscussion(TestTrackerApiBase):
 

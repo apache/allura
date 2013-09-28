@@ -1666,6 +1666,12 @@ class TicketRestController(BaseController):
             self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
             if self.ticket is None:
+                moved_ticket = TM.MovedTicket.query.get(
+                    app_config_id=c.app.config._id,
+                    ticket_num=self.ticket_num)
+                if moved_ticket:
+                    utils.permanent_redirect('/rest' + moved_ticket.moved_to_url)
+
                 raise exc.HTTPNotFound()
 
     def _check_security(self):
