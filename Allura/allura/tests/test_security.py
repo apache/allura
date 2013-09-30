@@ -164,4 +164,5 @@ class TestSecurity(TestController):
         user = M.User.by_username('test-user')
         assert has_access(wiki, 'read', user)()
         wiki.acl.append(M.ACE.deny(user.project_role()._id, 'read', 'Spammer'))
+        Credentials.get().clear()
         assert not has_access(wiki, 'read', user)()

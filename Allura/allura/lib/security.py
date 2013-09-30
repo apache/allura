@@ -302,9 +302,10 @@ def has_access(obj, permission, user=None, project=None):
 
         # TODO: move deny logic into loop below; see ticket [#6715]
         if user != M.User.anonymous():
-            user_role = M.ProjectRole.by_user(user, project)
-            if user_role:
-                deny_user = M.ACE.deny(user_role._id, permission)
+            user_roles = Credentials.get().user_roles(user_id=user._id,
+                    project_id=project.root_project._id)
+            for r in user_roles:
+                deny_user = M.ACE.deny(r['_id'], permission)
                 if M.ACL.contains(deny_user, obj.acl):
                     return False
 
