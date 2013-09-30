@@ -3190,3 +3190,25 @@ ul.dropdown ul li a:hover {
     background-image: -moz-linear-gradient(100% 100% 90deg, rgb(0,0,0), rgb(90,90,90) 100%);
     border: 1px solid black;
 }
+
+.content-maximized #top_nav,
+.content-maximized #page-body,
+.content-maximized #content_base > div:last-child,
+.content-maximized #content_base .codebrowser
+{
+    width: 100%;
+}
+
+.content-maximized #content_base .diffbrowser {
+    width: auto;
+}
+
+.content-maximized #sidebar,
+.content-maximized #maximize-content,
+#restore-content {
+    display: none;
+}
+
+.content-maximized #restore-content {
+    display: inline;
+}

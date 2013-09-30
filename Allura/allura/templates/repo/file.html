@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends 'allura:templates/repo/repo_master.html' %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 
 {% block title %}
@@ -31,6 +32,7 @@
 {% endblock %}
 
 {% block actions %}
+{{ lib.maximize_content_button() }}
 <a href="{{blob.commit.url()}}log/?path={{ blob.path() }}">
   <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
 </a>

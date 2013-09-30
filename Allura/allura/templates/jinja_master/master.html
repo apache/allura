@@ -71,9 +71,11 @@
   </head>
 
   <body{% block body_attrs %}{% endblock %} id="forge">
+    {% block body_top_js %}
     {% for blob in g.resource_manager.emit('body_top_js') %}
       {{ blob }}
     {% endfor %}
+    {% endblock %}
     {{theme_macros.header(g.login_url, '/auth/logout')}}
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     <section id="page-body" class="{{g.document_class(neighborhood)}}">

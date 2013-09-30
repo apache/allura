@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends 'allura:templates/repo/repo_master.html' %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% do g.register_forge_css('css/forge/hilite.css') %}
 {% do g.register_forge_css('css/forge/diff.css') %}
 
@@ -35,6 +36,10 @@
 <a href="{{b.url()}}">{{b.commit.shorthand_id()}}</a>
 {% endblock %}
 
+{% block actions %}
+{{ lib.maximize_content_button() }}
+{% endblock %}
+
 {% block content %}
   {% if a.has_image_view and b.has_image_view %}
   <div class="grid-19">
@@ -46,7 +51,7 @@
          title="{{h.text.truncate(b.commit._id, 10)}}"/>
   </div>
   {% else %}
-  <div class="clip grid-19">
+  <div class="clip grid-19 diffbrowser">
     <h3>
       <span class="ico-l"><b data-icon="{{g.icons['table'].char}}" class="ico {{g.icons['table'].css}}"></b> {{h.really_unicode(a.filename) or h.html.literal('&nbsp;')}}</span>
       <span class="fright">
