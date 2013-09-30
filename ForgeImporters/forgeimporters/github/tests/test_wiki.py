@@ -245,19 +245,10 @@ Our website is [[http://sf.net]].
 
 [External link](https://github.com/a/b/issues/1)'''
 
-        result = u'''Look at [this page](Some Page)
+        # markdown should be untouched
+        assert_equal(f(source, 'test.md'), source)
 
-More info at: [MoreInfo] [Even More Info]
-
-Our website is <http://sf.net>.
-
-[[Escaped Tag]]
-
-[External link to the wiki page](/p/test/wiki/Page)
-
-[External link](https://github.com/a/b/issues/1)\n\n'''
-
-        assert_equal(f(source, 'test.md'), result)
+        assert_equal(f(u'h1. Hello', 't.textile'), u'# Hello\n\n')
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
@@ -278,14 +269,14 @@ Our website is [[http://sf.net]].
 
 [External link](https://github.com/a/b/issues/1)'''
 
-        result = u'''<div class="markdown_content"><p>Look at [[this page|Some Page]]</p>
+        result = u''' <p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://sf.net]].</p>
 <p>'[[Escaped Tag]]</p>
-<p><a class="" href="/p/test/wiki/Page" rel="nofollow">External link to the wiki page</a></p>
-<p><a class="" href="https://github.com/a/b/issues/1" rel="nofollow">External link</a></p></div>'''
+<p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
+<p>[External link](https://github.com/a/b/issues/1)</p>'''
 
-        assert_equal(f(source, 'test.md'), result)
+        assert_equal(f(source, 'test.textile'), result)
 
     def test_rewrite_links(self):
         f = GitHubWikiImporter().rewrite_links

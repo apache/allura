@@ -118,16 +118,13 @@ class GitHubWikiImporter(ToolImporter):
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
     tool_option = {"import_history": "Import history"}
+
     mediawiki_exts = ['.wiki', '.mediawiki']
+    markdown_exts = ['.markdown,' '.mdown', '.mkdn', '.mkd', '.md']
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
             '.asciidoc',
             '.creole',
-            '.markdown',
-            '.mdown',
-            '.mkdn',
-            '.mkd',
-            '.md',
             '.org',
             '.pod',
             '.rdoc',
@@ -136,7 +133,7 @@ class GitHubWikiImporter(ToolImporter):
             '.rest',
             '.rst',
             '.textile',
-    ] + mediawiki_exts
+    ] + mediawiki_exts + markdown_exts
 
     def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
                     tool_option=None, **kw):
@@ -227,12 +224,15 @@ class GitHubWikiImporter(ToolImporter):
         Files in mediawiki format are converted using mediawiki2markdown
         if html2text is available.
         """
+        name, ext = os.path.splitext(filename)
+        if ext in self.markdown_exts:
+            return text
+
         try:
             import html2text
         except ImportError:
             html2text = None
 
-        name, ext = os.path.splitext(filename)
         if ext and ext in self.mediawiki_exts:
             if html2text:
                 text = mediawiki2markdown(text)
