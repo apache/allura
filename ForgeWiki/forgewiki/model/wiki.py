@@ -219,7 +219,7 @@ class Page(VersionedArtifact, ActivityObject):
         return User.query.find({'_id':{'$in':user_ids}}).all()
 
     def delete(self):
-        Shortlink.query.remove(dict(ref_id=self.page.index_id()))
+        Shortlink.query.remove(dict(ref_id=self.index_id()))
         self.deleted = True
         suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.title += suffix
