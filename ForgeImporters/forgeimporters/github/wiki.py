@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import re
 from datetime import datetime
 from tempfile import mkdtemp
@@ -117,26 +118,25 @@ class GitHubWikiImporter(ToolImporter):
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
     tool_option = {"import_history": "Import history"}
+    mediawiki_exts = ['.wiki', '.mediawiki']
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
-            'asciidoc',
-            'creole',
-            'markdown',
-            'mdown',
-            'mkdn',
-            'mkd',
-            'md',
-            'org',
-            'pod',
-            'rdoc',
-            'rest.txt',
-            'rst.txt',
-            'rest',
-            'rst',
-            'textile',
-            'mediawiki',
-            'wiki'
-    ]
+            '.asciidoc',
+            '.creole',
+            '.markdown',
+            '.mdown',
+            '.mkdn',
+            '.mkd',
+            '.md',
+            '.org',
+            '.pod',
+            '.rdoc',
+            '.rest.txt',
+            '.rst.txt',
+            '.rest',
+            '.rst',
+            '.textile',
+    ] + mediawiki_exts
 
     def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
                     tool_option=None, **kw):
@@ -182,11 +182,7 @@ class GitHubWikiImporter(ToolImporter):
             self._make_page(text, filename, commit)
 
     def _make_page(self, text, filename, commit):
-        name_and_ext = filename.split('.', 1)
-        if len(name_and_ext) == 1:
-            name, ext = name_and_ext[0], None
-        else:
-            name, ext = name_and_ext
+        name, ext = os.path.splitext(filename)
         if ext and ext not in self.supported_formats:
             log.info('Not a wiki page %s. Skipping.' % filename)
             return
@@ -236,13 +232,8 @@ class GitHubWikiImporter(ToolImporter):
         except ImportError:
             html2text = None
 
-        name_and_ext = filename.split('.', 1)
-        if len(name_and_ext) == 1:
-            name, ext = name_and_ext[0], None
-        else:
-            name, ext = name_and_ext
-
-        if ext and ext in ['wiki', 'mediawiki']:
+        name, ext = os.path.splitext(filename)
+        if ext and ext in self.mediawiki_exts:
             if html2text:
                 text = mediawiki2markdown(text)
                 text = self.convert_gollum_tags(text)
