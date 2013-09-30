@@ -29,6 +29,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {%- endblock %}
 
 {% block actions %}
+<a id="maximize-content" href="#">
+  <b data-icon="{{g.icons.expand.char}}" class="ico {{g.icons.expand.css}}" title="Maximize"> </b> Maximize
+</a>
+<a id="restore-content" href="#">
+  <b data-icon="{{g.icons.restore.char}}" class="ico {{g.icons.restore.css}}" title="Restore"> </b> Restore
+</a>
 <a href="{{commit.url()}}log/">
   <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
 </a>
@@ -96,6 +102,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
           });
         }
         return false;
+      });
+
+      $('#maximize-content, #restore-content').click(function(e) {
+          $('body').toggleClass('content-maximized');
+          e.preventDefault();
+          return false;
       });
     });
   </script>
