@@ -526,10 +526,7 @@ class PageController(BaseController, FeedController):
     @require_post()
     def delete(self):
         require_access(self.page, 'delete')
-        M.Shortlink.query.remove(dict(ref_id=self.page.index_id()))
-        self.page.deleted = True
-        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
-        self.page.title += suffix
+        self.page.delete()
         return dict(location='../'+self.page.title+'/?deleted=True')
 
     @without_trailing_slash

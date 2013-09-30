@@ -198,9 +198,7 @@ class GitHubWikiImporter(ToolImporter):
             wiki_page.timestamp = wiki_page.mod_date = mod_date
             wiki_page.viewable_by = ['all']
         else:
-            wiki_page.deleted = True
-            suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=mod_date)
-            wiki_page.title += suffix
+            wiki_page.delete()
         wiki_page.commit()
         return wiki_page
 

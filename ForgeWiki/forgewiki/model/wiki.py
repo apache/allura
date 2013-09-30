@@ -15,6 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+from datetime import datetime
 import difflib
 from pylons import app_globals as g #g is a namespace for globally accessable app helpers
 from pylons import tmpl_context as context
@@ -23,8 +24,18 @@ from ming import schema
 from ming.orm import FieldProperty, ForeignIdProperty, Mapper, session
 from ming.orm.declarative import MappedClass
 
-from allura.model import VersionedArtifact, Snapshot, Feed, Thread, Post, User, BaseAttachment
-from allura.model import Notification, project_orm_session
+from allura.model import (
+        VersionedArtifact,
+        Snapshot,
+        Feed,
+        Thread,
+        Post,
+        User,
+        BaseAttachment,
+        Notification,
+        project_orm_session,
+        Shortlink,
+)
 from allura.model.timeline import ActivityObject
 from allura.lib import helpers as h
 from allura.lib import utils
@@ -206,6 +217,12 @@ class Page(VersionedArtifact, ActivityObject):
             return t.values()
         user_ids = uniq([r.author for r in self.history().all()])
         return User.query.find({'_id':{'$in':user_ids}}).all()
+
+    def delete(self):
+        Shortlink.query.remove(dict(ref_id=self.page.index_id()))
+        self.deleted = True
+        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+        self.title += suffix
 
 class WikiAttachment(BaseAttachment):
     ArtifactType=Page
