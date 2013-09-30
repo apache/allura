@@ -18,6 +18,7 @@
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import user_link, abbr_date with context %}
 {% set app = app or c.app %}
+{% set path = request.params.get('path', '')%}
 <div>
   {%if is_file%}
   <div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>
@@ -68,13 +69,16 @@
             {% if commit.committed.date %}{{commit.committed.date|datetimeformat}}{% endif %}
           </td>
           <td style="text-align: left; vertical-align: text-top">
-              <a class="browse" href="{{app.repo.url_for_commit(commit.id)}}tree{{request.params.get('path', '')}}">
+              <a class="browse" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}">
                   {{ 'View' if is_file else 'Tree' }}
               </a>
               {%if is_file%}
               <br/>
-              <a class="download" href="{{app.repo.url_for_commit(commit.id)}}tree{{request.params.get('path', '')}}?format=raw">Download</a>
+              <a class="download" href="{{app.repo.url_for_commit(commit.id)}}tree{{path}}?format=raw">Download</a>
               {%endif%}
+              {% if commit.rename_details %}
+                  {%set path=commit.rename_details['path']%}
+              {% endif %}
           </td>
         </tr>
       {% endfor %}

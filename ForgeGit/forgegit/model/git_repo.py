@@ -313,8 +313,9 @@ class GitImplementation(M.RepositoryImplementation):
                 if path:
                     if renamed and renamed['to'] == path:
                         rename_details['path'] = '/' + renamed['from']
+                        revisions = [revision for revision in self._git.iter_commits(revs, renamed['from'])]
                         rename_details['commit_url'] = self._repo.url_for_commit(
-                            ci.hexsha
+                            revisions[1].hexsha
                         )
 
                     try:
@@ -340,9 +341,6 @@ class GitImplementation(M.RepositoryImplementation):
                         'size': size,
                         'rename_details': rename_details,
                     }
-                if rename_details:
-                    # we do not need to show commits before rename
-                    break
 
     def _iter_commits_with_refs(self, *args, **kwargs):
         """

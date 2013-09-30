@@ -568,12 +568,12 @@ class TestGitRename(unittest.TestCase):
     def test_renamed_file(self):
         # There was a file f.txt, then it was renamed to f2.txt.
         commits = list(self.repo.log(id_only=False, path='/f2.txt'))
-        self.assertEqual(len(commits), 2)
+        self.assertEqual(len(commits), 4)
         rename_commit = commits[1]
         self.assertEqual(rename_commit['rename_details']['path'], '/f.txt')
         self.assertEqual(
             rename_commit['rename_details']['commit_url'],
-            self.repo.url_for_commit(rename_commit['id'])
+            '/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/'
         )
 
     def test_merge_commit(self):
