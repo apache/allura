@@ -313,9 +313,12 @@ class GitImplementation(M.RepositoryImplementation):
                 if path:
                     if renamed and renamed['to'] == path:
                         rename_details['path'] = '/' + renamed['from']
-                        revisions = [revision for revision in self._git.iter_commits(revs, renamed['from'])]
+                        # get first rev **before** rename
+                        _iter = self._git.iter_commits(revs, renamed['from'])
+                        prev_rev = next(_iter)
+                        prev_rev = next(_iter)
                         rename_details['commit_url'] = self._repo.url_for_commit(
-                            revisions[1].hexsha
+                            prev_rev.hexsha
                         )
 
                     try:
