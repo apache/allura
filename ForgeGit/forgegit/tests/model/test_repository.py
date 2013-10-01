@@ -575,6 +575,8 @@ class TestGitRename(unittest.TestCase):
             rename_commit['rename_details']['commit_url'],
             '/p/test/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/'
         )
+        self.assertEqual(rename_commit['size'], 19)
+        self.assertEqual(commits[2]['size'], 19)
 
     def test_merge_commit(self):
         merge_sha = '13951944969cf45a701bf90f83647b309815e6d5'

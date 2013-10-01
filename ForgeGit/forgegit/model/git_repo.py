@@ -326,6 +326,8 @@ class GitImplementation(M.RepositoryImplementation):
                         size = node.size if node.type == 'blob' else None
                     except KeyError as e:
                         size = None
+                    if rename_details:
+                        path = rename_details['path'].strip('/')
                 yield {
                         'id': ci.hexsha,
                         'message': h.really_unicode(ci.message or '--none--'),
