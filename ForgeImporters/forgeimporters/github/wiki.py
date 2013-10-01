@@ -230,6 +230,7 @@ class GitHubWikiImporter(ToolImporter):
 
         try:
             import html2text
+            html2text.BODY_WIDTH = 0
         except ImportError:
             html2text = None
 
