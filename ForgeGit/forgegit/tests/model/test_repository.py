@@ -432,6 +432,20 @@ class TestGitImplementation(unittest.TestCase):
                 Object(name='foo', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
             ])
 
+    def test_last_commit_ids(self):
+        repo_dir = pkg_resources.resource_filename(
+            'forgegit', 'tests/data/testrename.git')
+        repo = mock.Mock(full_fs_path=repo_dir)
+        impl = GM.git_repo.GitImplementation(repo)
+        lcd = lambda c, p: impl.last_commit_ids(mock.Mock(_id=c), p)
+        self.assertEqual(lcd('13951944969cf45a701bf90f83647b309815e6d5', ['f2.txt', 'f3.txt']), {
+                'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
+                'f3.txt': '653667b582ef2950c1954a0c7e1e8797b19d778a',
+            })
+        self.assertEqual(lcd('259c77dd6ee0e6091d11e429b56c44ccbf1e64a3', ['f2.txt', 'f3.txt']), {
+                'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
+            })
+
 
 class TestGitCommit(unittest.TestCase):
 

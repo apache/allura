@@ -26,6 +26,7 @@ from collections import namedtuple
 from datetime import datetime
 from glob import glob
 import gzip
+from time import time
 
 import tg
 import git
@@ -496,6 +497,47 @@ class GitImplementation(M.RepositoryImplementation):
         self._git.git.symbolic_ref('HEAD', 'refs/heads/%s' % name)
         self._repo.default_branch_name = name
         session(self._repo).flush(self._repo)
+
+    def last_commit_ids(self, commit, paths):
+        """
+        Find the ID of the last commit to touch each path.
+        """
+        def prefix_paths_union(a, b):
+            """
+            Given two sets of paths, a and b, find the items from a that
+            are either in b or are parent directories of items in b.
+            """
+            union = a & b
+            prefixes = a - b
+            candidates = b - a
+            for prefix in prefixes:
+                for candidate in candidates:
+                    if candidate.startswith(prefix + '/'):
+                        union.add(prefix)
+                        break
+            return union
+        result = {}
+        paths = set(paths)
+        orig_commit_id = commit_id = commit._id
+        timeout = float(tg.config.get('lcd_timeout', 60))
+        start_time = time()
+        while paths and commit_id:
+            if time() - start_time > timeout:
+                log.error('last_commit_ids timeout for %s on %s', orig_commit_id, ', '.join(paths))
+                return result
+            lines = self._git.git.log(
+                    orig_commit_id, '--', *paths,
+                    pretty='format:%H',
+                    name_only=True,
+                    max_count=1,
+                    no_merges=True).split('\n')
+            commit_id = lines[0]
+            changes = set(lines[1:])
+            changed = prefix_paths_union(paths, changes)
+            for path in changed:
+                result[path] = commit_id
+            paths -= changed
+        return result
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096
