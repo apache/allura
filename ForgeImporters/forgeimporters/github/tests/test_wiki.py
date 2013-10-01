@@ -77,8 +77,10 @@ class TestGitHubWikiImporter(TestCase):
         self.commit1.committed_date = 1256301446
 
         self.commit2 = Mock()
-        self.commit2.tree.blobs = [self.blob1, self.blob2, self.blob3]
+        blobs = [self.blob1, self.blob2, self.blob3]
+        self.commit2.tree.blobs = blobs
         self.commit2.tree.__contains__ = lambda _, item: item in [self.blob1.name, self.blob2.name, self.blob3.name]
+        self.commit2.tree.traverse.return_value = blobs
         self.commit2.committed_date = 1256291446
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
@@ -130,6 +132,7 @@ class TestGitHubWikiImporter(TestCase):
         self.commit2.stats.files = {"Home.rst": self.blob1}
         self.commit2.tree = {"Home.rst": self.blob1}
         importer = GitHubWikiImporter()
+        importer._set_available_pages = Mock()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
@@ -137,7 +140,6 @@ class TestGitHubWikiImporter(TestCase):
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(render.call_args_list, [call('Home.rst', u'# test message')])
-
 
     @skipif(module_not_available('html2text'))
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
@@ -147,6 +149,7 @@ class TestGitHubWikiImporter(TestCase):
         self.commit2.tree = {"Home.mediawiki": self.blob1}
         md2mkm.return_value = u'# test message'
         importer = GitHubWikiImporter()
+        importer._set_available_pages = Mock()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
@@ -156,6 +159,23 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(upsert.call_args_list, [call('Home')])
         assert_equal(md2mkm.call_args_list, [call(u'# test message')])
 
+    def test_set_available_pages(self):
+        importer = GitHubWikiImporter()
+        commit = Mock()
+        blobs = [Mock() for i in range(3)]
+        blobs[0].name = u'Home-42.md'
+        blobs[1].name = u'image.png'
+        blobs[2].name = u'code & fun.textile'
+        commit.tree.traverse.return_value = blobs
+        importer._set_available_pages(commit)
+        assert_equal(importer.available_pages, [u'Home 42', u'code & fun'])
+
+    def test_gollum_page_links_case_insensitive(self):
+        i = GitHubWikiImporter()
+        i.available_pages = [u'Home 42', u'code & fun']
+        assert_equal(i.convert_gollum_tags(u'[[Code & Fun]]'), u'[code & fun]')
+        assert_equal(i.convert_gollum_tags(u'[[home-42]]'), u'[Home 42]')
+        assert_equal(i.convert_gollum_tags(u'[[Unknown]]'), u'[Unknown]')
 
     def test_convert_page_name(self):
         f = GitHubWikiImporter()._convert_page_name

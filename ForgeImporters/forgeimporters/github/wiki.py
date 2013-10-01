@@ -134,6 +134,7 @@ class GitHubWikiImporter(ToolImporter):
             '.rst',
             '.textile',
     ] + mediawiki_exts + markdown_exts
+    available_pages = []
 
     def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
                     tool_option=None, **kw):
@@ -165,12 +166,21 @@ class GitHubWikiImporter(ToolImporter):
         finally:
             M.session.artifact_orm_session._get().skip_mod_date = False
 
+    def _set_available_pages(self, commit):
+        pages = [blob.name for blob in commit.tree.traverse()]
+        pages = map(os.path.splitext, pages)
+        pages = [self._convert_page_name(name) for name, ext in pages
+                if ext in self.supported_formats]
+        self.available_pages = pages
+
     def _without_history(self, commit):
+        self._set_available_pages(commit)
         for page in commit.tree.blobs:
             self._make_page(page.data_stream.read(), page.name, commit)
 
     def _with_history(self, commit):
         for filename in commit.stats.files.keys():
+            self._set_available_pages(commit)
             if filename in commit.tree:
                 text = commit.tree[filename].data_stream.read()
             else:
@@ -312,6 +322,17 @@ class GitHubWikiImporter(ToolImporter):
     def _gollum_page_link(self, link, title, options):
         page = self._convert_page_name(link)
         page = page.replace(u'&amp;', u'&')  # allow & in page links
+        # gollum page lookups are case-insensitive, you'll always get link to
+        # whatever comes first in the file system, no matter how you refer to a page.
+        # E.g. if you have two pages: a.md and A.md both [[a]] and [[A]] will refer a.md.
+        # We're emulating this behavior using list of all available pages
+        try:
+            idx = map(lambda p: p.lower(), self.available_pages).index(page.lower())
+        except ValueError:
+            idx = None
+        if idx is not None:
+            page = self.available_pages[idx]
+
         if title:
             return u'[{}]({})'.format(title, page)
         return u'[{}]'.format(page)
