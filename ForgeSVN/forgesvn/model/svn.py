@@ -565,8 +565,9 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def _map_log(self, ci, url, path=None):
         revno = ci.revision.number
+        rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
         try:
-            size = int(self._svn.list(url)[0][0].size)
+            size = int(self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
         except pysvn.ClientError:
             size = None
         rename_details = {}
@@ -606,9 +607,11 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def blob_size(self, blob):
         try:
+            rev = self._revision(blob.commit._id)
             data = self._svn.list(
                    self._url + blob.path(),
-                   revision=self._revision(blob.commit._id),
+                   revision=rev,
+                   peg_revision=rev,
                    dirent_fields=pysvn.SVN_DIRENT_SIZE)
         except pysvn.ClientError:
             log.info('ClientError getting filesize %r %r, returning 0', blob.path(), self._repo, exc_info=True)

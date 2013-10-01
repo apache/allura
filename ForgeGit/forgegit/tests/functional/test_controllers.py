@@ -590,3 +590,14 @@ class TestGitRename(TestController):
         resp = self.app.get('/src-git/ci/259c77dd6ee0e6091d11e429b56c44ccbf1e64a3/log/?path=/f2.txt')
         assert '<b>renamed from</b>' in resp
         assert '/f.txt' in resp
+        assert '(27 Bytes)' in resp
+        assert '(19 Bytes)' in resp
+
+        resp = self.app.get('/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/log/?path=/f.txt')
+        assert '(19 Bytes)' in resp
+        assert '(10 Bytes)' in resp
+
+        resp = self.app.get('/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
+        assert "2 lines (1 with data), 10 Bytes" in resp
+
+
