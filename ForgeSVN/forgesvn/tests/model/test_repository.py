@@ -314,7 +314,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
              'message': u'Create readme',
              'parents': [],
              'refs': [],
-             'size': 28,
+             'size': 15,
              'rename_details': {}},
             ])
 
