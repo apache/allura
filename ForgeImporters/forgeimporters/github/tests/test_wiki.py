@@ -248,7 +248,7 @@ Our website is [[http://sf.net]].
         # markdown should be untouched
         assert_equal(f(source, 'test.md'), source)
 
-        assert_equal(f(u'h1. Hello', 't.textile'), u'# Hello\n\n')
+        assert_equal(f(u'h1. Hello', 't.textile').strip(), u'# Hello')
 
     @without_module('html2text')
     def test_convert_markup_without_html2text(self):
@@ -269,14 +269,14 @@ Our website is [[http://sf.net]].
 
 [External link](https://github.com/a/b/issues/1)'''
 
-        result = u''' <p>Look at [[this page|Some Page]]</p>
+        result = u'''<p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
 <p>Our website is [[http://sf.net]].</p>
 <p>'[[Escaped Tag]]</p>
 <p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
 <p>[External link](https://github.com/a/b/issues/1)</p>'''
 
-        assert_equal(f(source, 'test.textile'), result)
+        assert_equal(f(source, 'test.textile').strip(), result)
 
     def test_rewrite_links(self):
         f = GitHubWikiImporter().rewrite_links
@@ -342,7 +342,19 @@ Some text 1.
 ## Header 2
 
 See [Page]'''
-        assert_equal(f(source, 'test.textile').rstrip('\n\n'), result)
+        assert_equal(f(source, 'test.textile').strip(), result)
+
+    @skipif(module_not_available('html2text'))
+    def test_convert_markup_with_amp_in_links(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+        source = u'[[Ticks & Leeches]]'
+        result = u'[Ticks & Leeches]'
+        # markdown should be untouched
+        assert_equal(f(source, 'test.textile').strip(), result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):

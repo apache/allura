@@ -311,6 +311,7 @@ class GitHubWikiImporter(ToolImporter):
 
     def _gollum_page_link(self, link, title, options):
         page = self._convert_page_name(link)
+        page = page.replace(u'&amp;', u'&')  # allow & in page links
         if title:
             return u'[{}]({})'.format(title, page)
         return u'[{}]'.format(page)
