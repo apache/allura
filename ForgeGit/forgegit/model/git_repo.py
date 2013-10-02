@@ -314,9 +314,8 @@ class GitImplementation(M.RepositoryImplementation):
                     if renamed and renamed['to'] == path:
                         rename_details['path'] = '/' + renamed['from']
                         # get first rev **before** rename
-                        _iter = self._git.iter_commits(revs, renamed['from'])
-                        prev_rev = next(_iter)
-                        prev_rev = next(_iter)
+                        _iter = self._git.iter_commits(revs, renamed['from'], max_count=2)
+                        prev_rev = list(_iter)[1]
                         rename_details['commit_url'] = self._repo.url_for_commit(
                             prev_rev.hexsha
                         )
