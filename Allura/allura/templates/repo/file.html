@@ -31,6 +31,12 @@
 {% endblock %}
 
 {% block actions %}
+<a id="maximize-content" href="#">
+  <b data-icon="{{g.icons.expand.char}}" class="ico {{g.icons.expand.css}}" title="Maximize"> </b> Maximize
+</a>
+<a id="restore-content" href="#">
+  <b data-icon="{{g.icons.restore.char}}" class="ico {{g.icons.restore.css}}" title="Restore"> </b> Restore
+</a>
 <a href="{{blob.commit.url()}}log/?path={{ blob.path() }}">
   <b data-icon="{{g.icons.history.char}}" class="ico {{g.icons.history.css}}" title="History"> </b> History
 </a>
@@ -58,6 +64,11 @@
       $(element).css('background-color', '#ffff99');
       window.location.href = '#' + $(element).attr('id');
     });
+  });
+  $('#maximize-content, #restore-content').click(function(e) {
+      $('body').toggleClass('content-maximized');
+      e.preventDefault();
+      return false;
   });
 }());
 </script>

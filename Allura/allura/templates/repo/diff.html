@@ -35,6 +35,15 @@
 <a href="{{b.url()}}">{{b.commit.shorthand_id()}}</a>
 {% endblock %}
 
+{% block actions %}
+<a id="maximize-content" href="#">
+  <b data-icon="{{g.icons.expand.char}}" class="ico {{g.icons.expand.css}}" title="Maximize"> </b> Maximize
+</a>
+<a id="restore-content" href="#">
+  <b data-icon="{{g.icons.restore.char}}" class="ico {{g.icons.restore.css}}" title="Restore"> </b> Restore
+</a>
+{% endblock %}
+
 {% block content %}
   {% if a.has_image_view and b.has_image_view %}
   <div class="grid-19">
@@ -73,4 +82,17 @@
   <style type="text/css">
     .clip h3 {margin-bottom: 0;}
   </style>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('#maximize-content, #restore-content').click(function(e) {
+          $('body').toggleClass('content-maximized');
+          e.preventDefault();
+          return false;
+      });
+    });
+  </script>
 {% endblock %}
