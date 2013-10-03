@@ -143,7 +143,8 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # Setup the allura SOPs
     app = allura_globals_middleware(app)
     # Ensure https for logged in users, http for anonymous ones
-    if asbool(app_conf.get('auth.method', 'local')=='sfx'):
+    if (asbool(app_conf.get('auth.method', 'local') == 'sfx')
+            and config.get('override_root') != 'task'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
                 app_conf.get('force_ssl.pattern'))
     # Setup resource manager, widget context SOP

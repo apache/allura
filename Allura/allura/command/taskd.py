@@ -38,6 +38,7 @@ faulthandler.enable()
 
 status_log = logging.getLogger('taskdstatus')
 
+log = logging.getLogger(__name__)
 
 @contextmanager
 def proctitle(title):
@@ -99,7 +100,9 @@ class TaskdCommand(base.Command):
             only = only.split(',')
 
         def start_response(status, headers, exc_info=None):
-            pass
+            if status != '200 OK':
+                log.warn('Unexpected http response from taskd request: %s.  Headers: %s',
+                             status, headers)
 
         def waitfunc_amqp():
             try:
