@@ -165,6 +165,10 @@ class SSLMiddleware(object):
             resp = exc.HTTPNotFound()
         secure = req.url.startswith('https://')
         srv_path = req.url.split('://', 1)[-1]
+        # This SFUSER check is SourceForge-specific (to require all logged-in users to use https)
+        # BUT has the additional affect of not forcing SSL for regular Allura instances
+        # This is important for local development, at least.  When we remove SFUSER (perhaps by requiring SSL everywhere),
+        # we can use `no_redirect.pattern = .` for local development to work without SSL
         force_ssl = req.cookies.get('SFUSER') or self._force_ssl_re.match(environ['PATH_INFO'])
         if not secure and force_ssl:
             resp = exc.HTTPFound(location='https://' + srv_path)
