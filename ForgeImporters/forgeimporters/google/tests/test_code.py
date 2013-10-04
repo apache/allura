@@ -102,7 +102,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_svn
-    @patch('forgeimporters.google.code.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool):
         params = dict(gc_project_name='poop',
                 mount_label='mylabel',
@@ -117,7 +117,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
 
     @with_svn
-    @patch('forgeimporters.google.code.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create_limit(self, import_tool):
         project = M.Project.query.get(shortname=test_project_with_repo)
         project.set_tool_data('GoogleRepoImporter', pending=1)

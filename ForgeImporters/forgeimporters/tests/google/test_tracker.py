@@ -290,7 +290,7 @@ class TestGoogleCodeTrackerImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_tracker
-    @patch('forgeimporters.google.tracker.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool):
         params = dict(gc_project_name='test',
                 mount_label='mylabel',
@@ -304,7 +304,7 @@ class TestGoogleCodeTrackerImportController(TestController, TestCase):
         self.assertEqual(u'test', import_tool.post.call_args[1]['project_name'])
 
     @with_tracker
-    @patch('forgeimporters.google.tracker.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create_limit(self, import_tool):
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('GoogleCodeTrackerImporter', pending=1)

@@ -42,13 +42,11 @@ from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.decorators import (
         require_post,
-        task,
         )
 from allura import model as M
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
-        ImportErrorHandler,
         )
 from forgeimporters.github import GitHubProjectExtractor
 from forgewiki import model as WM
@@ -65,13 +63,6 @@ try:
     TARGET_APPS.append(ForgeWikiApp)
 except ImportError:
     pass
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = GitHubWikiImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project):
-        importer.import_tool(c.project, c.user, **kw)
 
 
 class GitHubWikiImportForm(ToolImportForm):
@@ -100,7 +91,7 @@ class GitHubWikiImportController(BaseController):
     @require_post()
     @validate(GitHubWikiImportForm(ForgeWikiApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        import_tool.post(
+        self.importer.post(
             project_name=gh_project_name,
             user_name=gh_user_name,
             mount_point=mount_point,

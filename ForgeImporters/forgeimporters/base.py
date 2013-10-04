@@ -102,11 +102,18 @@ class ImportErrorHandler(object):
                     )
 
 
+def object_from_path(path):
+    """Given a dotted path, import and return the object at that path.
+
+    """
+    module_name, obj_name = path.rsplit('.', 1)
+    module = __import__(module_name, fromlist=[obj_name])
+    return getattr(module, obj_name)
+
+
 @task(notifications_disabled=True)
 def import_tool(importer_path, project_name=None, mount_point=None, mount_label=None, **kw):
-    smod, sklass = importer_path.rsplit('.', 1)
-    mod = __import__(smod, fromlist=[sklass])
-    importer = getattr(mod, sklass)()
+    importer = object_from_path(importer_path)()
     with ImportErrorHandler(importer, project_name, c.project) as handler:
         app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
