@@ -39,7 +39,7 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
 
     @with_tracker
-    @patch('forgeimporters.github.tracker.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool):
         params = dict(
             gh_user_name='spooky',

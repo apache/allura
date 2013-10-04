@@ -62,7 +62,7 @@ class TestGitHubImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_git
-    @patch('forgeimporters.github.code.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool):
         params = dict(
                 gh_user_name='spooky',
@@ -80,7 +80,7 @@ class TestGitHubImportController(TestController, TestCase):
         self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
 
     @with_git
-    @patch('forgeimporters.github.code.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create_limit(self, import_tool):
         project = M.Project.query.get(shortname=test_project_with_repo)
         project.set_tool_data('GitHubRepoImporter', pending=1)

@@ -110,8 +110,7 @@ class TestTracTicketImporter(TestCase):
 
 
 class TestTracTicketImportController(TestController, TestCase):
-    @patch('forgeimporters.trac.tickets.import_tool')
-    def setUp(self, import_tool):
+    def setUp(self):
         """Mount Trac import controller on the Tracker admin controller"""
         super(TestTracTicketImportController, self).setUp()
         from forgetracker.tracker_main import TrackerAdminController
@@ -125,8 +124,8 @@ class TestTracTicketImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_tracker
-    def test_create(self):
-        import_tool = self.importer.task
+    @patch('forgeimporters.base.import_tool')
+    def test_create(self, import_tool):
         params = dict(trac_url='http://example.com/trac/url',
                 mount_label='mylabel',
                 mount_point='mymount',
@@ -141,8 +140,8 @@ class TestTracTicketImportController(TestController, TestCase):
         self.assertEqual(u'http://example.com/trac/url', import_tool.post.call_args[1]['trac_url'])
 
     @with_tracker
-    def test_create_limit(self):
-        import_tool = self.importer.task
+    @patch('forgeimporters.base.import_tool')
+    def test_create_limit(self, import_tool):
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('TracTicketImporter', pending=1)
         ThreadLocalORMSession.flush_all()

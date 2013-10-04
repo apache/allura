@@ -391,7 +391,7 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name='tool_option', value='import_history')))
 
     @with_wiki
-    @patch('forgeimporters.github.wiki.import_tool')
+    @patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool):
         params = dict(
             gh_user_name='spooky',

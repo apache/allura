@@ -65,7 +65,6 @@ class TracTicketImportForm(ToolImportForm):
 class TracTicketImportController(BaseController):
     def __init__(self):
         self.importer = TracTicketImporter()
-        self.task = import_tool
 
     @property
     def target_app(self):

@@ -44,19 +44,25 @@ class TestProjectExtractor(TestCase):
         self.assertEqual(r, urlopen.return_value)
 
 
-@mock.patch.object(base.ToolImporter, 'by_name')
+@mock.patch.object(base, 'object_from_path')
 @mock.patch.object(base, 'c')
 @mock.patch.object(base, 'g')
-def test_import_tool(g, c, by_name):
+def test_import_tool(g, c, object_from_path):
     c.project = mock.Mock(name='project')
     c.user = mock.Mock(name='user')
-    base.import_tool('importer_name', project_name='project_name',
+    object_from_path.return_value = importer = mock.Mock()
+    importer.return_value.source = 'source'
+    importer.return_value.tool_label = 'label'
+    base.import_tool('forgeimporters.base.ToolImporter', project_name='project_name',
             mount_point='mount_point', mount_label='mount_label')
-    by_name.assert_called_once_with('importer_name')
-    by_name.return_value.import_tool.assert_called_once_with(c.project,
+    importer.return_value.import_tool.assert_called_once_with(c.project,
             c.user, project_name='project_name', mount_point='mount_point',
             mount_label='mount_label')
-    assert not g.post_event.called
+    g.post_event.assert_called_once_with(
+            'import_tool_task_succeeded',
+            'source',
+            'label',
+        )
 
 
 @mock.patch.object(base.traceback, 'format_exc')
@@ -68,9 +74,9 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
     importer = mock.Mock(source='importer_source',
             tool_label='importer_tool_label')
     importer.import_tool.side_effect = RuntimeError('my error')
-    ToolImporter.by_name.return_value = importer
+    ToolImporter.return_value = importer
 
-    assert_raises(RuntimeError, base.import_tool, 'importer_name',
+    assert_raises(RuntimeError, base.import_tool, 'forgeimporters.base.ToolImporter',
             project_name='project_name')
     g.post_event.assert_called_once_with(
             'import_tool_task_failed',
@@ -103,12 +109,15 @@ class TestProjectImporter(TestCase):
         self.assertEqual(pi.tool_importers, {'ep1': eps[0].lv, 'ep3': eps[2].lv})
         iep.assert_called_once_with('allura.importers')
 
+    @mock.patch.object(base.ToolImporter, 'by_name')
     @mock.patch.object(base, 'redirect')
     @mock.patch.object(base, 'flash')
     @mock.patch.object(base, 'import_tool')
     @mock.patch.object(base, 'M')
     @mock.patch.object(base, 'c')
-    def test_process(self, c, M, import_tool, flash, redirect):
+    def test_process(self, c, M, import_tool, flash, redirect, by_name):
+        by_name.return_value = base.ToolImporter()
+
         pi = base.ProjectImporter(mock.Mock())
         pi.source = 'Source'
         pi.after_project_create = mock.Mock()
@@ -122,7 +131,7 @@ class TestProjectImporter(TestCase):
             pi.process(**kw)
         pi.neighborhood.register_project.assert_called_once_with('shortname', project_name='project_name')
         pi.after_project_create.assert_called_once_with(c.project, **kw)
-        import_tool.post.assert_called_once_with('tool', **kw)
+        import_tool.post.assert_called_once_with('forgeimporters.base.ToolImporter', **kw)
         M.AuditLog.log.assert_called_once_with('import project from Source')
         self.assertEqual(flash.call_count, 1)
         redirect.assert_called_once_with('script_name/admin/overview')

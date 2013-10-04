@@ -299,7 +299,7 @@ class TestForgeTrackerImportController(TestController, TestCase):
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')
-    @mock.patch('forgeimporters.forge.tracker.import_tool')
+    @mock.patch('forgeimporters.base.import_tool')
     def test_create(self, import_tool, sui):
         project = M.Project.query.get(shortname='test')
         params = {
@@ -311,11 +311,12 @@ class TestForgeTrackerImportController(TestController, TestCase):
                 status=302)
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
         sui.assert_called_once_with(project, 'tickets.json', '{"key": "val"}')
-        import_tool.post.assert_called_once_with(mount_point='mymount', mount_label='mylabel')
+        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
 
     @with_tracker
     @mock.patch('forgeimporters.forge.tracker.save_importer_upload')
-    @mock.patch('forgeimporters.forge.tracker.import_tool')
+    @mock.patch('forgeimporters.base.import_tool')
     def test_create_limit(self, import_tool, sui):
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('ForgeTrackerImporter', pending=1)
