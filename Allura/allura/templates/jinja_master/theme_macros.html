@@ -122,3 +122,13 @@
         <iframe src="{{g.login_fragment_url}}"></iframe>
     </div>
 {%- endmacro %}
+
+{%- macro maximize_content_button() %}
+    {% do g.register_forge_js('js/maximize-content.js') %}
+    <a id="maximize-content" href="#">
+      <b data-icon="{{g.icons.expand.char}}" class="ico {{g.icons.expand.css}}" title="Maximize"> </b> Maximize
+    </a>
+    <a id="restore-content" href="#">
+      <b data-icon="{{g.icons.restore.char}}" class="ico {{g.icons.restore.css}}" title="Restore"> </b> Restore
+    </a>
+{%- endmacro %}
