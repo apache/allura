@@ -309,7 +309,6 @@ class Notification(MappedClass):
             fromaddr=from_address,
             reply_to=reply_to_address,
             subject=subject,
-            sender=self._sender(),
             message_id=h.gen_message_id(),
             text=text)
 
@@ -331,7 +330,6 @@ class Notification(MappedClass):
             fromaddr=from_address,
             reply_to=from_address,
             subject=subject,
-            sender=self._sender(),
             message_id=h.gen_message_id(),
             text=text)
 

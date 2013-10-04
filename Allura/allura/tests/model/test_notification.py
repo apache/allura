@@ -91,6 +91,7 @@ class TestNotification(unittest.TestCase):
                 subject='subject',
                 message_id='_id',
                 in_reply_to='in_reply_to',
+                sender='wiki@test.p.in.sf.net',
                 text='text footer',
             )
 
@@ -151,6 +152,7 @@ class TestNotification(unittest.TestCase):
                 subject='subject',
                 message_id='_id',
                 in_reply_to='in_reply_to',
+                sender='wiki@test.p.in.sf.net',
                 text='text footer',
             )
 
