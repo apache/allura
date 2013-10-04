@@ -36,14 +36,19 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 </a>
 {% endblock %}
 
-{% block extra_js %}
+{% block body_top_js %}
 {{ super() }}
   <script type="text/javascript">
     var MAX_REQUESTS = 5; // max simultaneous load requests
     var WAIT_FOR = 500;   // wait for 100ms when requests queue is full and try again
     var diff_queue = [];  // queue of diffs waiting for load
     var called_count = 0; // count of running load requests
+  </script>
+{% endblock %}
 
+{% block extra_js %}
+{{ super() }}
+  <script type="text/javascript">
     function ld(diff, callback) {
       $(diff.selector).load(encodeURI(diff.url), callback);
     }
@@ -150,12 +155,10 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                 {% else %}
                     <img src="{{g.forge_static('images/spinner.gif')}}" class="loading_icon" alt="Loading..."/>
                     <script type="text/javascript">
-                        $(document).ready(function() {
-                          diff_queue.push({
-                            selector: '#diff-{{loop.index}}',
-                            url: '{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id if prev else ''}}'
-                          });
-                        });
+                      diff_queue.push({
+                        selector: '#diff-{{loop.index}}',
+                        url: '{{commit.url()}}tree/{{h.really_unicode(file)}}?barediff={{prev[0]._id if prev else ''}}'
+                      });
                     </script>
                 {% endif %}
             </div>
