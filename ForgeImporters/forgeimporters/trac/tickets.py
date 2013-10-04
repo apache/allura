@@ -15,10 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from datetime import (
-        datetime,
-        timedelta,
-        )
 import json
 
 from formencode import validators as fev
@@ -27,7 +23,6 @@ from ming.orm import session
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from tg import (
-        config,
         expose,
         flash,
         redirect,
@@ -40,12 +35,11 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
-from allura.lib.import_api import AlluraImportApiClient
 from allura.lib import validators as v
 from allura.lib import helpers as h
-from allura.model import ApiTicket, AuditLog
+from allura.model import AuditLog
 from allura.scripts.trac_export import (
-        TracExport,
+        export,
         DateJSONEncoder,
         )
 
@@ -54,7 +48,7 @@ from forgeimporters.base import (
         ToolImportForm,
         )
 from forgetracker.tracker_main import ForgeTrackerApp
-from forgetracker.scripts.import_tracker import import_tracker
+from forgetracker.import_support import ImportSupport
 
 
 class TracTicketImportForm(ToolImportForm):
@@ -123,19 +117,14 @@ class TracTicketImporter(ToolImporter):
         session(app.config).flush(app.config)
         session(app.globals).flush(app.globals)
         try:
-            export = [ticket for ticket in TracExport(trac_url)]
-            export_string = json.dumps(export, cls=DateJSONEncoder)
-            api_ticket = ApiTicket(user_id=user._id,
-                    capabilities={"import": ["Projects", project.shortname]},
-                    expires=datetime.utcnow() + timedelta(minutes=60))
-            session(api_ticket).flush(api_ticket)
-            cli = AlluraImportApiClient(config['base_url'], api_ticket.api_key,
-                    api_ticket.secret_key, verbose=True, retry=False)
-            import_tracker(cli, project.shortname, mount_point, {
-                        'user_map': json.loads(user_map) if user_map else {},
-                        'usernames_match': self.usernames_match(trac_url),
-                    },
-                    export_string, validate=False)
+            with h.push_config(c, app=app):
+                ImportSupport().perform_import(
+                        json.dumps(export(trac_url), cls=DateJSONEncoder),
+                        json.dumps({
+                            'user_map': json.loads(user_map) if user_map else {},
+                            'usernames_match': self.usernames_match(trac_url),
+                            }),
+                        )
             AuditLog.log(
                 'import tool %s from %s' % (
                         app.config.options.mount_point,

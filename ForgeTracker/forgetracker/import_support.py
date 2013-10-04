@@ -24,12 +24,12 @@ from cStringIO import StringIO
 
 # Non-stdlib imports
 from pylons import tmpl_context as c
-from allura.lib import helpers as h
-
 from ming.orm.ormsession import ThreadLocalORMSession
 
 # Pyforge-specific imports
 from allura import model as M
+from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 
 # Local imports
 from forgetracker import model as TM
@@ -230,7 +230,7 @@ class ImportSupport(object):
             app_config_id=c.app.config._id,
             custom_fields=dict(),
             ticket_num=ticket_num,
-            import_id=c.api_token.api_key)
+            import_id=ImportIdConverter.get().expand(ticket_dict['id'], c.app))
         ticket.update(remapped)
         return ticket
 
@@ -289,7 +289,6 @@ class ImportSupport(object):
                     h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
-        comment.import_id = c.api_token.api_key
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):
         if att_dict['size'] > self.ATTACHMENT_SIZE_LIMIT:
@@ -374,8 +373,6 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
         if len(tracker_names) > 1:
             self.errors.append('Only single tracker import is supported')
             return self.errors, self.warnings
-
-        log.info('Import id: %s', c.api_token.api_key)
 
         artifacts = project_doc['trackers'][tracker_names[0]]['artifacts']
 

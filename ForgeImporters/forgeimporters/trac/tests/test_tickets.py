@@ -36,15 +36,9 @@ class TestTracTicketImporter(TestCase):
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.g')
     @patch('forgeimporters.trac.tickets.AuditLog')
-    @patch('forgeimporters.trac.tickets.import_tracker')
-    @patch('forgeimporters.trac.tickets.AlluraImportApiClient')
-    @patch('forgeimporters.trac.tickets.datetime')
-    @patch('forgeimporters.trac.tickets.ApiTicket')
-    @patch('forgeimporters.trac.tickets.TracExport')
-    def test_import_tool(self, TracExport, ApiTicket, dt, ApiClient, import_tracker, AuditLog, g, session):
-        from datetime import datetime, timedelta
-        now = datetime.utcnow()
-        dt.utcnow.return_value = now
+    @patch('forgeimporters.trac.tickets.ImportSupport')
+    @patch('forgeimporters.trac.tickets.export')
+    def test_import_tool(self, export, ImportSupport, AuditLog, g, session):
         user_map = {"orig_user":"new_user"}
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
@@ -54,13 +48,13 @@ class TestTracTicketImporter(TestCase):
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        with patch.dict('forgeimporters.trac.tickets.config', {'base_url': 'foo'}):
-            res = importer.import_tool(project, user,
-                    mount_point='bugs',
-                    mount_label='Bugs',
-                    trac_url='http://example.com/trac/url',
-                    user_map=json.dumps(user_map),
-                    )
+        export.return_value = []
+        res = importer.import_tool(project, user,
+                mount_point='bugs',
+                mount_label='Bugs',
+                trac_url='http://example.com/trac/url',
+                user_map=json.dumps(user_map),
+                )
         self.assertEqual(res, app)
         project.install_app.assert_called_once_with(
                 'Tickets', mount_point='bugs', mount_label='Bugs',
@@ -70,19 +64,14 @@ class TestTracTicketImporter(TestCase):
                         'source': 'Trac',
                         'trac_url': 'http://example.com/trac/url/',
                     })
-        TracExport.return_value = []
-        TracExport.assert_called_once_with('http://example.com/trac/url/')
-        ApiTicket.assert_called_once_with(
-                user_id=user._id,
-                capabilities={"import": ["Projects", "myproject"]},
-                expires=now + timedelta(minutes=60))
-        api_client = ApiClient.return_value
-        import_tracker.assert_called_once_with(
-                api_client, 'myproject', 'bugs', {
+        export.assert_called_once_with('http://example.com/trac/url/')
+        ImportSupport.return_value.perform_import.assert_called_once_with(
+                json.dumps(export.return_value),
+                json.dumps({
                     "user_map": user_map,
                     "usernames_match": False,
-                }, '[]',
-                validate=False)
+                    }),
+                )
         AuditLog.log.assert_called_once_with(
                 'import tool bugs from http://example.com/trac/url/',
                 project=project, user=user, url='foo')
@@ -90,14 +79,14 @@ class TestTracTicketImporter(TestCase):
 
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.h')
-    @patch('forgeimporters.trac.tickets.TracExport')
-    def test_import_tool_failure(self, TracExport, h, session):
+    @patch('forgeimporters.trac.tickets.export')
+    def test_import_tool_failure(self, export, h, session):
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        TracExport.side_effect = ValueError
+        export.side_effect = ValueError
 
         self.assertRaises(ValueError, importer.import_tool, project, user,
                 mount_point='bugs',
