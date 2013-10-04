@@ -19,8 +19,7 @@ import json
 from bson import ObjectId
 
 import mock
-from nose.tools import assert_equal
-
+from nose.tools import assert_not_equal
 from datadiff.tools import assert_equal
 from pylons import tmpl_context as c
 from allura.tests import TestController
@@ -185,27 +184,6 @@ class TestAuth(TestController):
          r = self.app.post('/auth/preferences/del_api_token', status=302)
          r = self.app.get('/auth/preferences/')
          assert 'No API token generated' in r
-
-    def test_oauth(self):
-        r = self.app.get('/auth/oauth/')
-        r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
-        assert 'oautstapp' in r
-        r = self.app.post('/auth/oauth/delete').follow()
-        assert 'Invalid app ID' in r
-
-    def test_revoke_access(self):
-        self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
-        M.OAuthAccessToken(
-            consumer_token_id=None,
-            request_token_id=None,
-            user_id=M.User.by_username('test-admin')._id)
-        ThreadLocalORMSession.flush_all()
-        r = self.app.get('/auth/subscriptions/')
-        assert '<form method="post" action="/auth/preferences/revoke_oauth">' in r
-        r.forms[0].submit()
-        r = self.app.get('/auth/subscriptions/')
-        assert '<form method="post" action="/auth/preferences/revoke_oauth">' not in r
-        assert_equal(M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
 
     @mock.patch('allura.controllers.auth.verify_oid')
     def test_login_verify_oid_with_provider(self, verify_oid):
@@ -416,6 +394,7 @@ class TestAuth(TestController):
         r = self.app.get('/p/test/admin/', extra_environ={'username':'test-admin'})
         assert_equal(r.status_int, 302)
         assert_equal(r.location, 'http://localhost/auth/?return_to=%2Fp%2Ftest%2Fadmin%2F')
+
 
 class TestPreferences(TestController):
 
@@ -711,3 +690,32 @@ class TestPreferences(TestController):
                  categoryid=str(skill_cat.trove_cat_id)))
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
+
+
+class TestOAuth(TestController):
+
+    def test_register_deregister_app(self):
+        # register
+        r = self.app.get('/auth/oauth/')
+        r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+        assert 'oautstapp' in r
+        # deregister
+        assert_equal(r.forms[0].action, 'deregister')
+        r.forms[0].submit()
+        r = self.app.get('/auth/oauth/')
+        assert 'oautstapp' not in r
+
+    def test_generate_revoke_access_token(self):
+        # generate
+        r = self.app.post('/auth/oauth/register', params={'application_name': 'oautstapp', 'application_description': 'Oauth rulez'}).follow()
+        assert_equal(r.forms[1].action, 'generate_access_token')
+        r.forms[1].submit()
+        r = self.app.get('/auth/oauth/')
+        assert 'Bearer Token:' in r
+        assert_not_equal(M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])
+        # revoke
+        assert_equal(r.forms[0].action, 'revoke_access_token')
+        r.forms[0].submit()
+        r = self.app.get('/auth/oauth/')
+        assert_not_equal(r.forms[0].action, 'revoke_access_token')
+        assert_equal(M.OAuthAccessToken.for_user(M.User.by_username('test-admin')), [])

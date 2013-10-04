@@ -245,7 +245,6 @@ class OAuthNegotiator(object):
                 consumer_token_id=consumer_token._id,
                 request_token_id=request_token._id,
                 user_id=request_token.user_id,
-                name=request_token.name,
             )
         return acc_token.to_string()
 

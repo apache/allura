@@ -339,7 +339,6 @@ class PreferencesController(BaseController):
         return dict(
                 menu=menu,
                 api_token=api_token,
-                authorized_applications=M.OAuthAccessToken.for_user(c.user),
             )
 
     @h.vardec
@@ -399,20 +398,6 @@ class PreferencesController(BaseController):
         tok = M.ApiToken.query.get(user_id=c.user._id)
         if tok is None: return
         tok.delete()
-        redirect(request.referer)
-
-    @expose()
-    @require_post()
-    def revoke_oauth(self, _id=None):
-        tok = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
-        if tok is None:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        if tok.user_id != c.user._id:
-            flash('Invalid app ID', 'error')
-            redirect('.')
-        tok.delete()
-        flash('Application access revoked')
         redirect(request.referer)
 
     @expose()
@@ -781,8 +766,8 @@ class OAuthController(BaseController):
 
     @expose()
     @require_post()
-    def deregister(self, id=None):
-        app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
+    def deregister(self, _id=None):
+        app = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(_id))
         if app is None:
             flash('Invalid app ID', 'error')
             redirect('.')
@@ -797,7 +782,7 @@ class OAuthController(BaseController):
 
     @expose()
     @require_post()
-    def generate_access_token(self, id, name=None):
+    def generate_access_token(self, _id):
         """
         Manually generate an OAuth access token for the given consumer.
 
@@ -805,7 +790,7 @@ class OAuthController(BaseController):
         less secure (since they rely only on the token, which is transmitted
         with each request, unlike the access token secret).
         """
-        consumer_token = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(id))
+        consumer_token = M.OAuthConsumerToken.query.get(_id=bson.ObjectId(_id))
         if consumer_token is None:
             flash('Invalid app ID', 'error')
             redirect('.')
@@ -817,22 +802,20 @@ class OAuthController(BaseController):
                 user_id=c.user._id,
                 callback='manual',
                 validation_pin=h.nonce(20),
-                name=name,
                 is_bearer=True,
             )
         access_token = M.OAuthAccessToken(
                 consumer_token_id=consumer_token._id,
                 request_token_id=c.user._id,
                 user_id=request_token.user_id,
-                name=name,
                 is_bearer=True,
             )
         redirect('.')
 
     @expose()
     @require_post()
-    def revoke_access_token(self, id):
-        access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(id))
+    def revoke_access_token(self, _id):
+        access_token = M.OAuthAccessToken.query.get(_id=bson.ObjectId(_id))
         if access_token is None:
             flash('Invalid token ID', 'error')
             redirect('.')

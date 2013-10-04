@@ -103,8 +103,8 @@
         <tr class="controls">
             <td colspan="2">
                 <form method="POST" action="revoke_access_token" class="revoke_access_token">
-                    <input type="hidden" name="id" value="{{access_token._id}}">
-                    <input type="submit" value="Revoke">
+                    <input type="hidden" name="_id" value="{{access_token._id}}"/>
+                    <input type="submit" value="Revoke"/>
                 </form>
             </td>
         </tr>
@@ -125,16 +125,16 @@
         <tr><th>Name:</th><td>{{consumer_token.name}}</td></tr>
         <tr class="description"><th>Description:</th><td>{{consumer_token.description_html | safe}}</td></tr>
         <tr class="consumer_key"><th>Consumer Key:</th><td>{{consumer_token.api_key}}</td></tr>
-        <tr class="consumer_secret"><th>Consumer Secret:</th><td>{{consumer_token.api_key}}</td></tr>
+        <tr class="consumer_secret"><th>Consumer Secret:</th><td>{{consumer_token.secret_key}}</td></tr>
         <tr class="controls">
-            <td colspan="2"
+            <td colspan="2">
                 <form method="POST" action="deregister" class="deregister_consumer_token">
-                    <input type="hidden" name="id" value="{{consumer_token._id}}">
-                    <input type="submit" value="Deregister">
+                    <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
+                    <input type="submit" value="Deregister"/>
                 </form>
                 <form method="POST" action="generate_access_token" class="generate_access_token">
-                    <input type="hidden" name="id" value="{{consumer_token._id}}">
-                    <input type="submit" value="Generate Bearer Token">
+                    <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
+                    <input type="submit" value="Generate Bearer Token"/>
                 </form>
             </td>
         </tr>
