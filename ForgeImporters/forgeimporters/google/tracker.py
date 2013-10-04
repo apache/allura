@@ -38,7 +38,7 @@ from tg.decorators import (
 from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from allura import model as M
 
 from forgetracker.tracker_main import ForgeTrackerApp
@@ -47,16 +47,7 @@ from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
-        ImportErrorHandler,
         )
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = GoogleCodeTrackerImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
 
 
 class GoogleCodeTrackerImportForm(ToolImportForm):
@@ -82,8 +73,8 @@ class GoogleCodeTrackerImportController(BaseController):
     @require_post()
     @validate(GoogleCodeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
-        if GoogleCodeTrackerImporter().enforce_limit(c.project):
-            import_tool.post(
+        if self.importer.enforce_limit(c.project):
+            self.importer.post(
                     project_name=gc_project_name,
                     mount_point=mount_point,
                     mount_label=mount_label,

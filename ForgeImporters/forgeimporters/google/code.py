@@ -35,12 +35,11 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib import validators as v
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from allura import model as M
 
 from forgeimporters.base import (
         ToolImporter,
-        ImportErrorHandler,
         )
 from forgeimporters.google import GoogleCodeProjectExtractor
 
@@ -83,14 +82,6 @@ def get_repo_url(project_name, type_):
 
 def get_repo_class(type_):
     return REPO_APPS[type_]
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = GoogleRepoImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
 
 
 class GoogleRepoImportForm(fe.schema.Schema):
@@ -141,8 +132,8 @@ class GoogleRepoImportController(BaseController):
     @require_post()
     @validate(GoogleRepoImportForm(), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
-        if GoogleRepoImporter().enforce_limit(c.project):
-            import_tool.post(
+        if self.importer.enforce_limit(c.project):
+            self.importer.post(
                     project_name=gc_project_name,
                     mount_point=mount_point,
                     mount_label=mount_label)

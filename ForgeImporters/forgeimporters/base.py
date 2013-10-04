@@ -22,7 +22,7 @@ import urllib
 import urllib2
 from collections import defaultdict
 import traceback
-from urlparse import urlparse, parse_qs
+from urlparse import urlparse
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -33,7 +33,6 @@ from tg import expose, validate, flash, redirect, config
 from tg.decorators import with_trailing_slash
 from pylons import app_globals as g
 from pylons import tmpl_context as c
-from pylons import request
 from formencode import validators as fev, schema
 from webob import exc
 
@@ -45,7 +44,6 @@ from allura.lib import helpers as h
 from allura.lib import exceptions
 from allura.lib import validators as v
 from allura.app import SitemapEntry
-from allura.tasks.mail_tasks import sendmail
 from allura import model as M
 
 from paste.deploy.converters import aslist
@@ -105,8 +103,10 @@ class ImportErrorHandler(object):
 
 
 @task(notifications_disabled=True)
-def import_tool(importer_name, project_name=None, mount_point=None, mount_label=None, **kw):
-    importer = ToolImporter.by_name(importer_name)
+def import_tool(importer_path, project_name=None, mount_point=None, mount_label=None, **kw):
+    smod, sklass = importer_path.rsplit('.', 1)
+    mod = __import__(smod, fromlist=[sklass])
+    importer = getattr(mod, sklass)()
     with ImportErrorHandler(importer, project_name, c.project) as handler:
         app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
@@ -268,7 +268,7 @@ class ProjectImporter(BaseController):
             kw['tools'] = [kw['tools'], ]
 
         for importer_name in kw['tools']:
-            import_tool.post(importer_name, **kw)
+            ToolImporter.by_name(importer_name).post(**kw)
         M.AuditLog.log('import project from %s' % self.source)
 
         flash('Welcome to the %s Project System! '
@@ -425,6 +425,14 @@ class ToolImporter(object):
 
     def tool_icon(self, theme, size):
         return theme.app_icon_url(aslist(self.target_app)[0], size)
+
+    def post(self, **kw):
+        """Post a task that will call ``import_tool()`` on this instance.
+
+        """
+        klass = self.__class__
+        importer_path = '{0}.{1}'.format(klass.__module__, klass.__name__)
+        import_tool.post(importer_path, **kw)
 
 
 class ToolsValidator(fev.Set):
