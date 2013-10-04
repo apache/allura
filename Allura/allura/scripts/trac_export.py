@@ -137,31 +137,32 @@ class TracExport(object):
             raise urllib2.HTTPError(url, 403, 'Forbidden - emulated', f.info(), f)
         return f
 
-    def parse_ticket_body(self, id):
+    def parse_ticket(self, id):
         # Use CSV export to get ticket fields
         url = self.full_url(self.TICKET_URL % id, 'csv')
         f = self.csvopen(url)
         reader = csv.DictReader(f)
         ticket_fields = reader.next()
         ticket_fields['class'] = 'ARTIFACT'
-        return self.remap_fields(ticket_fields)
+        ticket = self.remap_fields(ticket_fields)
 
-    def parse_ticket_comments(self, id):
-        # Use RSS export to get ticket comments
+        # Use RSS export to get ticket description and comments
         import html2text
         html2text.BODY_WIDTH = 0
         url = self.full_url(self.TICKET_URL % id, 'rss')
         self.log_url(url)
         d = feedparser.parse(urlopen(url))
-        res = []
+        ticket['description'] = html2text.html2text(d.feed.description)
+        comments = []
         for comment in d['entries']:
             c = {}
             c['submitter'] = getattr(comment, 'author', None)
             c['date'] = comment.updated_parsed
             c['comment'] = html2text.html2text(comment.summary)
             c['class'] = 'COMMENT'
-            res.append(c)
-        return res
+            comments.append(c)
+        ticket['comments'] = comments
+        return ticket
 
     def parse_ticket_attachments(self, id):
         SIZE_PATTERN = r'(\d+) bytes'
@@ -210,8 +211,7 @@ class TracExport(object):
         '''Get ticket with given id
         extra: extra fields to add to ticket (parsed elsewhere)
         '''
-        t = self.parse_ticket_body(id)
-        t['comments'] = self.parse_ticket_comments(id)
+        t = self.parse_ticket(id)
         if self.do_attachments:
             atts = self.parse_ticket_attachments(id)
             if atts:
