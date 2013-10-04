@@ -231,12 +231,19 @@ class Notification(MappedClass):
     def footer(self, toaddr=''):
         return self.ref.artifact.get_mail_footer(self, toaddr)
 
+    def _sender(self):
+        from allura.model import AppConfig
+        app_config = AppConfig.query.get(_id=self.app_config_id)
+        app = app_config.project.app_instance(app_config)
+        return app.email_address if app else None
+
     def send_simple(self, toaddr):
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=toaddr,
             fromaddr=self.from_address,
             reply_to=self.reply_to_address,
             subject=self.subject,
+            sender=self._sender(),
             message_id=self._id,
             in_reply_to=self.in_reply_to,
             text=(self.text or '') + self.footer(toaddr))
@@ -266,6 +273,7 @@ class Notification(MappedClass):
             subject=self.subject,
             message_id=self._id,
             in_reply_to=self.in_reply_to,
+            sender=self._sender(),
             text=(self.text or '') + self.footer())
 
     @classmethod
@@ -301,6 +309,7 @@ class Notification(MappedClass):
             fromaddr=from_address,
             reply_to=reply_to_address,
             subject=subject,
+            sender=self._sender(),
             message_id=h.gen_message_id(),
             text=text)
 
@@ -322,6 +331,7 @@ class Notification(MappedClass):
             fromaddr=from_address,
             reply_to=from_address,
             subject=subject,
+            sender=self._sender(),
             message_id=h.gen_message_id(),
             text=text)
 

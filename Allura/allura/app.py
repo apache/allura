@@ -36,9 +36,11 @@ from allura.lib.security import require, has_access, require_access
 from allura import model
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post, event_handler
-from allura.lib.utils import permanent_redirect
+from allura.lib.utils import permanent_redirect, ConfigProxy
 
 log = logging.getLogger(__name__)
+
+config = ConfigProxy(common_suffix='forgemail.domain')
 
 
 class ConfigOption(object):
@@ -269,6 +271,11 @@ class Application(object):
 
         """
         return self.config.url(project=self.project)
+
+    @property
+    def email_address(self):
+        parts = list(reversed(self.url[1:-1].split('/')))
+        return '%s@%s%s' % (parts[0], '.'.join(parts[1:]), config.common_suffix)
 
     @property
     def acl(self):

@@ -76,7 +76,7 @@ def route_email(
 
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
-             message_id, in_reply_to=None):
+             message_id, in_reply_to=None, sender=None):
     from allura import model as M
     addrs_plain = []
     addrs_html = []
@@ -126,13 +126,13 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
         addrs_multi, fromaddr, reply_to, subject, message_id,
-        in_reply_to, multi_msg)
+        in_reply_to, multi_msg, sender=sender)
     smtp_client.sendmail(
         addrs_plain, fromaddr, reply_to, subject, message_id,
-        in_reply_to, plain_msg)
+        in_reply_to, plain_msg, sender=sender)
     smtp_client.sendmail(
         addrs_html, fromaddr, reply_to, subject, message_id,
-        in_reply_to, html_msg)
+        in_reply_to, html_msg, sender=sender)
 
 @task
 def sendsimplemail(
@@ -142,7 +142,8 @@ def sendsimplemail(
     reply_to,
     subject,
     message_id,
-    in_reply_to=None):
+    in_reply_to=None,
+    sender=None):
     from allura import model as M
     if fromaddr is None:
         fromaddr = u'noreply@in.sf.net'
@@ -161,4 +162,4 @@ def sendsimplemail(
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
-        in_reply_to, multi_msg)
+        in_reply_to, multi_msg, sender=sender)
