@@ -149,6 +149,14 @@ class GitHubWikiImporter(ToolImporter):
             with h.push_config(c, app=self.app):
                 self.import_pages(extractor.get_page_url('wiki_url'), history=with_history)
             ThreadLocalORMSession.flush_all()
+            M.AuditLog.log(
+                'import tool %s from %s on %s' % (
+                    self.app.config.options.mount_point,
+                    project_name,
+                    self.source),
+                project=project,
+                user=user,
+                url=self.app.url)
             g.post_event('project_updated')
             return self.app
         except Exception as e:

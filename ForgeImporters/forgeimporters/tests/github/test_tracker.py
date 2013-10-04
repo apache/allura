@@ -39,6 +39,8 @@ class TestTrackerImporter(TestCase):
         importer.postprocess_milestones= mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
+        app.config.options.mount_point = 'mount_point'
+        app.url = 'foo'
         gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
 
         importer.import_tool(project, user, project_name='project_name',
@@ -54,6 +56,9 @@ class TestTrackerImporter(TestCase):
                 mock.call(),
                 mock.call(),
             ])
+        M.AuditLog.log.assert_called_once_with(
+                'import tool mount_point from me/project_name on GitHub',
+                project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
 

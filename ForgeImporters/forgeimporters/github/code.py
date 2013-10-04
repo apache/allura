@@ -31,6 +31,7 @@ from tg.decorators import (
 
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController
+from allura import model as M
 
 from forgegit.git_main import ForgeGitApp
 
@@ -85,7 +86,8 @@ class GitHubRepoImporter(ToolImporter):
     tool_label = 'Source Code'
     tool_description = 'Import your repo from GitHub'
 
-    def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None, **kw):
+    def import_tool(self, project, user, project_name=None, mount_point=None,
+            mount_label=None, user_name=None, **kw):
         """ Import a GitHub repo into a new Git Allura tool.
 
         """
@@ -97,5 +99,10 @@ class GitHubRepoImporter(ToolImporter):
             mount_point=mount_point or 'code',
             mount_label=mount_label or 'Code',
             init_from_url=repo_url,)
+        M.AuditLog.log(
+                'import tool %s from %s on %s' % (
+                    app.config.options.mount_point,
+                    project_name, self.source,
+                ), project=project, user=user, url=app.url)
         g.post_event('project_updated')
         return app

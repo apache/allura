@@ -37,17 +37,25 @@ class TestGitHubRepoImporter(TestCase):
         project.get_tool_data.side_effect = lambda *args: gh_proj_name
         return project
 
+    @patch('forgeimporters.github.code.M')
     @patch('forgeimporters.github.code.g')
     @patch('forgeimporters.github.code.GitHubProjectExtractor')
-    def test_import_tool_happy_path(self, ghpe, g):
+    def test_import_tool_happy_path(self, ghpe, g, M):
         ghpe.return_value.get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gh_proj_name='myproject')
-        GitHubRepoImporter().import_tool(p, Mock(name='c.user'), project_name='project_name', user_name='testuser')
+        u = Mock(name='c.user')
+        app = p.install_app.return_value
+        app.config.options.mount_point = 'code'
+        app.url = 'foo'
+        GitHubRepoImporter().import_tool(p, u, project_name='project_name', user_name='testuser')
         p.install_app.assert_called_once_with(
             'Git',
             mount_point='code',
             mount_label='Code',
             init_from_url='http://remote/clone/url/')
+        M.AuditLog.log.assert_called_once_with(
+                'import tool code from testuser/project_name on GitHub',
+                project=p, user=u, url='foo')
         g.post_event.assert_called_once_with('project_updated')
 
 

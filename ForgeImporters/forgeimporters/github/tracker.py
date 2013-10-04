@@ -101,9 +101,8 @@ class GitHubTrackerImporter(ToolImporter):
                 closed_status_names='closed',
             )
         ThreadLocalORMSession.flush_all()
-        extractor = GitHubProjectExtractor(
-            '{}/{}'.format(kw['user_name'],project_name),
-        )
+        project_name = '%s/%s' % (kw['user_name'], project_name)
+        extractor = GitHubProjectExtractor(project_name)
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, user=M.User.anonymous(), app=app):
@@ -122,6 +121,11 @@ class GitHubTrackerImporter(ToolImporter):
                 app.globals.custom_fields = self.postprocess_milestones()
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
+            M.AuditLog.log(
+                    'import tool %s from %s on %s' % (
+                        app.config.options.mount_point,
+                        project_name, self.source),
+                    project=project, user=user, url=app.url)
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app

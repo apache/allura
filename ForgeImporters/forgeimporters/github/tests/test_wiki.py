@@ -41,18 +41,26 @@ class TestGitHubRepoImporter(TestCase):
         return project
 
 
+    @patch('forgeimporters.github.wiki.M')
     @patch('forgeimporters.github.wiki.ThreadLocalORMSession')
     @patch('forgeimporters.github.wiki.g')
     @patch('forgeimporters.github.wiki.GitHubProjectExtractor')
-    def test_import_tool_happy_path(self, ghpe, g, tlorms):
+    def test_import_tool_happy_path(self, ghpe, g, tlorms, M):
         with patch('forgeimporters.github.wiki.GitHubWikiImporter.import_pages'), patch('forgeimporters.github.wiki.c'):
             ghpe.return_value.has_wiki.return_value = True
             p = self._make_project(gh_proj_name='myproject')
-            GitHubWikiImporter().import_tool(p, Mock(name='c.user'), project_name='project_name', user_name='testuser')
+            u = Mock(name='c.user')
+            app = p.install_app.return_value
+            app.config.options.mount_point = 'wiki'
+            app.url = 'foo'
+            GitHubWikiImporter().import_tool(p, u, project_name='project_name', user_name='testuser')
             p.install_app.assert_called_once_with(
                 'Wiki',
                 mount_point='wiki',
                 mount_label='Wiki')
+            M.AuditLog.log.assert_called_once_with(
+                'import tool wiki from testuser/project_name on GitHub',
+                project=p, user=u, url='foo')
             g.post_event.assert_called_once_with('project_updated')
 
 
