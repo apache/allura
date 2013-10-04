@@ -273,18 +273,24 @@ class DateJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def main():
-    options, args = parse_options()
-    ex = TracExport(args[0], start_id=options.start_id,
-            verbose=options.verbose, do_attachments=options.do_attachments)
-    # Implement iterator sequence limiting using islice()
-    doc = [t for t in islice(ex, options.limit)]
+def export(url, start_id=1, verbose=False, do_attachments=True,
+        only_tickets=False, limit=None):
+    ex = TracExport(url, start_id=start_id,
+            verbose=verbose, do_attachments=do_attachments)
 
-    if not options.only_tickets:
+    doc = [t for t in islice(ex, limit)]
+
+    if not only_tickets:
         doc = {
             'class': 'PROJECT',
             'trackers': {'default': {'artifacts': doc}}
         }
+    return doc
+
+
+def main():
+    options, args = parse_options()
+    doc = export(args[0], **vars(options))
 
     out_file = sys.stdout
     if options.out_filename:
