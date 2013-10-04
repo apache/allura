@@ -982,12 +982,17 @@ class TestRestExport(TestRestApiBase):
     @mock.patch('allura.model.project.MonQTask')
     @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
     @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
-    def test_export(self, bulk_export, exportable_tools, MonQTask):
+    def test_export_no_exportable_tools(self, bulk_export, exportable_tools, MonQTask):
         MonQTask.query.get.return_value = None
         exportable_tools.return_value = []
         r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=400)
         assert_equals(bulk_export.post.call_count, 0)
 
+    @mock.patch('allura.model.project.MonQTask')
+    @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
+    @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
+    def test_export_no_tools_specified(self, bulk_export, exportable_tools, MonQTask):
+        MonQTask.query.get.return_value = None
         exportable_tools.return_value = [
                 mock.Mock(options=mock.Mock(mount_point='tickets')),
                 mock.Mock(options=mock.Mock(mount_point='discussion')),
@@ -995,11 +1000,27 @@ class TestRestExport(TestRestApiBase):
         r = self.api_post('/rest/p/test/admin/export', status=400)
         assert_equals(bulk_export.post.call_count, 0)
 
+    @mock.patch('allura.model.project.MonQTask')
+    @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
+    @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
+    def test_export_busy(self, bulk_export, exportable_tools, MonQTask):
         MonQTask.query.get.return_value = 'something'
+        exportable_tools.return_value = [
+                mock.Mock(options=mock.Mock(mount_point='tickets')),
+                mock.Mock(options=mock.Mock(mount_point='discussion')),
+            ]
         r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=503)
         assert_equals(bulk_export.post.call_count, 0)
 
+    @mock.patch('allura.model.project.MonQTask')
+    @mock.patch('allura.ext.admin.admin_main.AdminApp.exportable_tools_for')
+    @mock.patch('allura.ext.admin.admin_main.export_tasks.bulk_export')
+    def test_export_ok(self, bulk_export, exportable_tools, MonQTask):
         MonQTask.query.get.return_value = None
+        exportable_tools.return_value = [
+                mock.Mock(options=mock.Mock(mount_point='tickets')),
+                mock.Mock(options=mock.Mock(mount_point='discussion')),
+            ]
         r = self.api_post('/rest/p/test/admin/export', tools='tickets, discussion', status=200)
         assert_equals(r.json, {
                 'filename': 'test.zip',
