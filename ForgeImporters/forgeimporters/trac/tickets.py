@@ -39,7 +39,7 @@ from tg.decorators import (
         )
 
 from allura.controllers import BaseController
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from allura.lib.import_api import AlluraImportApiClient
 from allura.lib import validators as v
 from allura.lib import helpers as h
@@ -52,18 +52,9 @@ from allura.scripts.trac_export import (
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
-        ImportErrorHandler,
         )
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.scripts.import_tracker import import_tracker
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = TracTicketImporter()
-    with ImportErrorHandler(importer, kw.get('trac_url'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
 
 
 class TracTicketImportForm(ToolImportForm):
@@ -92,7 +83,8 @@ class TracTicketImportController(BaseController):
     @validate(TracTicketImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
         if self.importer.enforce_limit(c.project):
-            self.task.post(
+            self.importer.post(
+                    project_name=trac_url,
                     mount_point=mount_point,
                     mount_label=mount_label,
                     trac_url=trac_url,

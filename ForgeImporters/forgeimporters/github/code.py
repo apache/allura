@@ -29,7 +29,7 @@ from tg.decorators import (
         without_trailing_slash,
         )
 
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from allura.controllers import BaseController
 
 from forgegit.git_main import ForgeGitApp
@@ -37,17 +37,8 @@ from forgegit.git_main import ForgeGitApp
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
-        ImportErrorHandler,
         )
 from forgeimporters.github import GitHubProjectExtractor
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = GitHubRepoImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
 
 
 class GitHubRepoImportForm(ToolImportForm):
@@ -74,8 +65,8 @@ class GitHubRepoImportController(BaseController):
     @require_post()
     @validate(GitHubRepoImportForm(ForgeGitApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        if GitHubRepoImporter().enforce_limit(c.project):
-            import_tool.post(
+        if self.importer.enforce_limit(c.project):
+            self.importer.post(
                     project_name=gh_project_name,
                     user_name=gh_user_name,
                     mount_point=mount_point,

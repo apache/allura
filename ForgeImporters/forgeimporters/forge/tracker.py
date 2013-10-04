@@ -16,12 +16,9 @@
 #       under the License.
 
 import os
-from collections import defaultdict
-from datetime import datetime
 import json
 
 import dateutil.parser
-from formencode import validators as fev
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
@@ -40,7 +37,7 @@ from tg.decorators import (
 from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from allura.lib import validators as v
 from allura import model as M
 
@@ -49,19 +46,10 @@ from forgetracker import model as TM
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
-        ImportErrorHandler,
         File,
         get_importer_upload_path,
         save_importer_upload,
         )
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = ForgeTrackerImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
 
 
 class ForgeTrackerImportForm(ToolImportForm):
@@ -87,9 +75,9 @@ class ForgeTrackerImportController(BaseController):
     @require_post()
     @validate(ForgeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, tickets_json, mount_point, mount_label, **kw):
-        if ForgeTrackerImporter().enforce_limit(c.project):
+        if self.importer.enforce_limit(c.project):
             save_importer_upload(c.project, 'tickets.json', json.dumps(tickets_json))
-            import_tool.post(
+            self.importer.post(
                     mount_point=mount_point,
                     mount_label=mount_label,
                 )

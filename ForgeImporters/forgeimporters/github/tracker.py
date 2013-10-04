@@ -38,7 +38,7 @@ from tg.decorators import (
 from allura import model as M
 from allura.controllers import BaseController
 from allura.lib import helpers as h
-from allura.lib.decorators import require_post, task
+from allura.lib.decorators import require_post
 from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
 from pylons import app_globals as g
@@ -47,15 +47,7 @@ from . import GitHubProjectExtractor
 from ..base import ToolImporter
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
-from forgeimporters.base import ToolImportForm, ImportErrorHandler
-
-
-@task(notifications_disabled=True)
-def import_tool(**kw):
-    importer = GitHubTrackerImporter()
-    with ImportErrorHandler(importer, kw.get('project_name'), c.project) as handler:
-        app = importer.import_tool(c.project, c.user, **kw)
-        handler.success(app)
+from forgeimporters.base import ToolImportForm
 
 
 class GitHubTrackerImportForm(ToolImportForm):
@@ -83,7 +75,7 @@ class GitHubTrackerImportController(BaseController):
     @require_post()
     @validate(GitHubTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        import_tool.post(
+        self.importer.post(
                 project_name=gh_project_name,
                 user_name=gh_user_name,
                 mount_point=mount_point,
