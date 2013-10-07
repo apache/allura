@@ -667,12 +667,11 @@ class ProjectAdminController(BaseController):
 class ProjectAdminRestController(BaseController):
 
     def _check_security(self):
-        require_access(c.project, 'read')
+        require_access(c.project, 'admin')
 
     @expose('json:')
     @require_post()
     def export(self, tools=None, **kw):
-        require_access(c.project, 'admin')
         if not tools:
             raise exc.HTTPBadRequest('Must give at least one tool mount point to export')
         tools = aslist(tools,',')
