@@ -639,25 +639,18 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):
         if not asbool(config.get('bulk_export_enabled', True)):
-            redirect('.')
-        exportable_tools = AdminApp.exportable_tools_for(c.project)
+            raise exc.HTTPNotFound()
         if request.method == 'POST':
-            if not tools:
-                flash('Select at least one tool to export', 'error')
+            try:
+                ProjectAdminRestController().export(tools)
+            except (exc.HTTPBadRequest, exc.HTTPServiceUnavailable) as e:
+                flash(str(e), 'error')
+                redirect('.')
+            else:
+                flash('Export scheduled.  You will recieve an email with download instructions when complete.', 'ok')
                 redirect('export')
-            if isinstance(tools, basestring):
-                tools = [tools]
-            allowed = set(t.options.mount_point for t in exportable_tools)
-            if not set(tools).issubset(allowed):
-                flash('Wrong tools in input data', 'error')
-                redirect('export')
-            if c.project.bulk_export_status() == 'busy':
-                flash('Export for project %s already running' % c.project.shortname, 'info')
-                redirect('export')
-            export_tasks.bulk_export.post(tools)
-            flash('Export scheduled.  You will recieve an email with download instructions when complete.', 'ok')
-            redirect('export')
 
+        exportable_tools = AdminApp.exportable_tools_for(c.project)
         return {
             'tools': exportable_tools,
             'status': c.project.bulk_export_status()
@@ -672,6 +665,8 @@ class ProjectAdminRestController(BaseController):
     @expose('json:')
     @require_post()
     def export(self, tools=None, **kw):
+        if not asbool(config.get('bulk_export_enabled', True)):
+            raise exc.HTTPNotFound()
         if not tools:
             raise exc.HTTPBadRequest('Must give at least one tool mount point to export')
         tools = aslist(tools,',')

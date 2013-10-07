@@ -899,8 +899,7 @@ class TestExport(TestController):
         tg.config['bulk_export_enabled'] = 'false'
         r = self.app.get('/admin/')
         assert_not_in('Export', r)
-        r = self.app.get('/admin/export').follow()
-        assert_equals(r.request.url, 'http://localhost/admin/')
+        r = self.app.get('/admin/export', status=404)
         tg.config['bulk_export_enabled'] = 'true'
         r = self.app.get('/admin/')
         assert_in('Export', r)
@@ -930,13 +929,13 @@ class TestExport(TestController):
     def test_selected_one_tool(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with([u'wiki'])
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki'], 'test.zip')
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with([u'wiki', u'wiki2'])
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki', u'wiki2'], 'test.zip')
 
     def test_export_in_progress(self):
         from allura.tasks import export_tasks
