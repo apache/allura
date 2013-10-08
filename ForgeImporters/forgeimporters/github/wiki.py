@@ -279,12 +279,7 @@ class GitHubWikiImporter(ToolImporter):
             return text
         else:
             if ext and ext in self.textile_exts:
-                # need to convert lists properly
-                text_lines = text.splitlines()
-                for i, l in enumerate(text_lines):
-                    if l.lstrip().startswith('#'):
-                        text_lines[i] = l.lstrip()
-                text = '\n'.join(text_lines)
+                text = self._prepare_textile_text(text)
 
             text = h.render_any_markup(filename, text)
             text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
@@ -374,3 +369,32 @@ class GitHubWikiImporter(ToolImporter):
                 elif a.text == prefix + page:
                     a.setString(new_prefix + new_page)
         return unicode(soup)
+
+    def _prepare_textile_text(self, text):
+        # need to convert lists properly
+        text_lines = text.splitlines()
+        for i, l in enumerate(text_lines):
+            if l.lstrip().startswith('#'):
+                text_lines[i] = l.lstrip()
+        text = '\n'.join(text_lines)
+
+        # if gollum-link, need to convert it to textile-link,
+        # because textile converter does not convert formatted
+        # gollum-link properly
+        link_re = re.compile("\[\[(?P<link>[^]]+)\]\]")
+        links = link_re.findall(text)
+        for link in links:
+            link = link.split('|')
+            if len(link) != 1:
+                title, link = link[0], link[1]
+                text = text.replace(u'[[%s|%s]]' % (title, link),
+                                    '"%s":%s' % (title, link.replace(' ', '%20')))
+            else:
+                link = link[0]
+                # textile importer doesn't works with some symbols
+                if "'" in link:
+                    text = text.replace(u'[[%s]]' % link, '[%s]' % link)
+                else:
+                    text = text.replace(u'[[%s]]' % link,
+                                        '"%s":%s' % (link, link.replace(' ', '%20')))
+        return text
