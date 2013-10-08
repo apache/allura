@@ -21,6 +21,8 @@ prompt VERSION "Version" "$VERSION"
 RELEASE_BASE=allura-incubating-$VERSION
 RELEASE_DIR=$RELEASE_DIR_BASE/$RELEASE_BASE
 RELEASE_FILE=$RELEASE_DIR/$RELEASE_BASE.tar.gz
+RELEASE_TAG=asf_release_$VERSION
+CLOSE_DATE=`date -d '+72 hours' +%F`
 
 DEFAULT_KEY=`grep default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
 if [[ -z "$DEFAULT_KEY" ]]; then
@@ -37,28 +39,18 @@ prompt DISCUSS_THREAD_URL "URL for allura-dev DISCUSS thread"
 prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin"
 
 
+git tag $RELEASE_TAG
+COMMIT_SHA=`git rev-parse $RELEASE_TAG`
 
-mkdir $RELEASE_DIR
-ln -s . $RELEASE_BASE
-tar -czf $RELEASE_FILE \
-    --exclude='*.pyc' \
-    --exclude='.git' \
-    --exclude="$RELEASE_BASE/*/LICENSE" \
-    --exclude="$RELEASE_BASE/*/NOTICE" \
-    --exclude="$RELEASE_BASE/allura-incubating-*" \
-    $RELEASE_BASE/*
-rm -f $RELEASE_BASE
+mkdir -p $RELEASE_DIR
+git archive -o $RELEASE_FILE --prefix $RELEASE_BASE/ $RELEASE_TAG
 
 gpg --default-key $KEY --armor --output $RELEASE_FILE.asc --detach-sig $RELEASE_FILE
 MD5_CHECKSUM=`md5sum $RELEASE_FILE` ; echo $MD5_CHECKSUM > $RELEASE_FILE.md5
 SHA1_CHECKSUM=`shasum -a1 $RELEASE_FILE` ; echo $SHA1_CHECKSUM > $RELEASE_FILE.sha1
 SHA512_CHECKSUM=`shasum -a512 $RELEASE_FILE` ; echo $SHA512_CHECKSUM > $RELEASE_FILE.sha512
 
-git tag asf_release_$VERSION
 #git push origin asf_release_$VERSION
-COMMIT_SHA=`git rev-parse asf_release_$VERSION`
-
-CLOSE_DATE=`date -d '+72 hours' +%F`
 
 echo "Release is ready at: $RELEASE_DIR"
 echo "Once confirmed, push release tag with: git push origin asf_release_$VERSION"
@@ -69,7 +61,7 @@ echo "-------------------------------------------------------------"
 echo <<EOF
 Hello,
 
-This is a call for a vote on Apache Allura 1.0.0 incubating.
+This is a call for a vote on Apache Allura $VERSION incubating.
 
 A vote was held on developer mailing list and it passed
 with $PLUS_VOTES +1's, $MINUS_VOTES -1's, and $ZERO_VOTES +0's votes, and now requires a vote
