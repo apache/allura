@@ -414,7 +414,7 @@ See [Page](Page)'''
         # markdown should be untouched
         assert_equal(f(source, 'test.rst').strip(), result)
 
-
+    @skipif(module_not_available('html2text'))
     def test_convert_markup_textile(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
