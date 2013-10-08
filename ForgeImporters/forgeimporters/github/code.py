@@ -98,7 +98,12 @@ class GitHubRepoImporter(ToolImporter):
             "Git",
             mount_point=mount_point or 'code',
             mount_label=mount_label or 'Code',
-            init_from_url=repo_url,)
+            init_from_url=repo_url,
+            import_id={
+                'source': self.source,
+                'project_name': project_name,
+            }
+        )
         M.AuditLog.log(
                 'import tool %s from %s on %s' % (
                     app.config.options.mount_point,

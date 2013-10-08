@@ -52,7 +52,8 @@ class TestGitHubRepoImporter(TestCase):
             'Git',
             mount_point='code',
             mount_label='Code',
-            init_from_url='http://remote/clone/url/')
+            init_from_url='http://remote/clone/url/',
+            import_id={'source': 'GitHub', 'project_name': 'testuser/project_name'})
         M.AuditLog.log.assert_called_once_with(
                 'import tool code from testuser/project_name on GitHub',
                 project=p, user=u, url='foo')

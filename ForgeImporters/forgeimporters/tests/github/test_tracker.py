@@ -50,6 +50,10 @@ class TestTrackerImporter(TestCase):
                 EnableVoting=False,
                 open_status_names='open',
                 closed_status_names='closed',
+                import_id={
+                    'source': 'GitHub',
+                    'project_name': 'me/project_name',
+                }
             )
         gpe.iter_issues.assert_called_once()
         self.assertEqual(tlos.flush_all.call_args_list, [

@@ -40,6 +40,7 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import (
         require_post,
         )
@@ -141,7 +142,12 @@ class GitHubWikiImporter(ToolImporter):
         self.app = project.install_app(
             "Wiki",
             mount_point=mount_point or 'wiki',
-            mount_label=mount_label or 'Wiki')
+            mount_label=mount_label or 'Wiki',
+            import_id={
+                'source': self.source,
+                'project_name': project_name,
+            }
+        )
         with_history = tool_option == 'import_history'
         ThreadLocalORMSession.flush_all()
         try:
@@ -188,12 +194,12 @@ class GitHubWikiImporter(ToolImporter):
             self._make_page(text, filename, commit)
 
     def _make_page(self, text, filename, commit):
-        name, ext = os.path.splitext(filename)
+        orig_name, ext = os.path.splitext(filename)
         if ext and ext not in self.supported_formats:
             log.info('Not a wiki page %s. Skipping.' % filename)
             return
         mod_date = datetime.utcfromtimestamp(commit.committed_date)
-        name = self._convert_page_name(name)
+        name = self._convert_page_name(orig_name)
         wiki_page = WM.Page.upsert(name)
         if filename in commit.tree:
             wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
@@ -201,6 +207,7 @@ class GitHubWikiImporter(ToolImporter):
             wiki_page.viewable_by = ['all']
         else:
             wiki_page.delete()
+        wiki_page.import_id = ImportIdConverter.get().expand(orig_name, self.app)
         wiki_page.commit()
         return wiki_page
 

@@ -33,7 +33,7 @@ test_project_with_wiki = 'test2'
 with_wiki = with_tool(test_project_with_wiki, 'wiki', 'w', 'wiki')
 
 
-class TestGitHubRepoImporter(TestCase):
+class TestGitHubWikiImporter(TestCase):
 
     def _make_project(self, gh_proj_name=None):
         project = Mock()
@@ -57,7 +57,12 @@ class TestGitHubRepoImporter(TestCase):
             p.install_app.assert_called_once_with(
                 'Wiki',
                 mount_point='wiki',
-                mount_label='Wiki')
+                mount_label='Wiki',
+                import_id={
+                    'source': 'GitHub',
+                    'project_name': 'testuser/project_name',
+                }
+            )
             M.AuditLog.log.assert_called_once_with(
                 'import tool wiki from testuser/project_name on GitHub',
                 project=p, user=u, url='foo')
@@ -92,6 +97,26 @@ class TestGitHubWikiImporter(TestCase):
         self.commit2.committed_date = 1256291446
 
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
+    def test_import_id(self, upsert):
+        page = Mock()
+        upsert.return_value = page
+        importer = GitHubWikiImporter()
+        importer.app = Mock()
+        importer.app.config.options = {
+            'import_id': {
+                'source': 'GitHub',
+                'project_name': 'me/project',
+            }
+        }
+        importer._make_page('text', 'Page.md', self.commit2)
+        import_id = {
+            'source': 'GitHub',
+            'project_name': 'me/project',
+            'source_id': 'Page',
+        }
+        assert_equal(page.import_id, import_id)
+
+    @patch('forgeimporters.github.wiki.WM.Page.upsert')
     @patch('forgeimporters.github.wiki.h.render_any_markup')
     def test_without_history(self, render, upsert):
         self.commit2.tree.blobs = [self.blob2, self.blob3]
@@ -99,6 +124,7 @@ class TestGitHubWikiImporter(TestCase):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
+        importer.app.config.options = {}
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
         importer._without_history(self.commit2)
@@ -143,6 +169,7 @@ class TestGitHubWikiImporter(TestCase):
         importer._set_available_pages = Mock()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
+        importer.app.config.options = {}
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
         importer._with_history(self.commit2)
@@ -160,6 +187,7 @@ class TestGitHubWikiImporter(TestCase):
         importer._set_available_pages = Mock()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
+        importer.app.config.options = {}
         importer.app.url = '/p/test/wiki/'
         importer.rewrite_links = Mock(return_value='')
         importer.convert_gollum_tags = Mock(return_value=u'# test message')

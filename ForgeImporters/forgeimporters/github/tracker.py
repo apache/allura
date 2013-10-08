@@ -38,6 +38,7 @@ from tg.decorators import (
 from allura import model as M
 from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post
 from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
@@ -95,13 +96,18 @@ class GitHubTrackerImporter(ToolImporter):
 
     def import_tool(self, project, user, project_name, mount_point=None,
             mount_label=None, **kw):
+        import_id_converter = ImportIdConverter.get()
+        project_name = '%s/%s' % (kw['user_name'], project_name)
         app = project.install_app('tickets', mount_point, mount_label,
                 EnableVoting=False,
                 open_status_names='open',
                 closed_status_names='closed',
+                import_id={
+                    'source': self.source,
+                    'project_name': project_name,
+                }
             )
         ThreadLocalORMSession.flush_all()
-        project_name = '%s/%s' % (kw['user_name'], project_name)
         extractor = GitHubProjectExtractor(project_name)
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
@@ -111,7 +117,9 @@ class GitHubTrackerImporter(ToolImporter):
                     ticket = TM.Ticket(
                         app_config_id=app.config._id,
                         custom_fields=dict(),
-                        ticket_num=ticket_num)
+                        ticket_num=ticket_num,
+                        import_id=import_id_converter.expand(ticket_num, app)
+                    )
                     self.process_fields(ticket, issue)
                     self.process_comments(extractor, ticket, issue)
                     self.process_events(extractor, ticket, issue)
