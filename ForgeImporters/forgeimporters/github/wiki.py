@@ -120,6 +120,7 @@ class GitHubWikiImporter(ToolImporter):
 
     mediawiki_exts = ['.wiki', '.mediawiki']
     markdown_exts = ['.markdown,' '.mdown', '.mkdn', '.mkd', '.md']
+    textile_exts = ['.textile']
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
             '.asciidoc',
@@ -131,8 +132,7 @@ class GitHubWikiImporter(ToolImporter):
             '.rst.txt',
             '.rest',
             '.rst',
-            '.textile',
-    ] + mediawiki_exts + markdown_exts
+    ] + mediawiki_exts + markdown_exts + textile_exts
     available_pages = []
 
     def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
@@ -278,6 +278,14 @@ class GitHubWikiImporter(ToolImporter):
                 text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             return text
         else:
+            if ext and ext in self.textile_exts:
+                # need to convert lists properly
+                text_lines = text.splitlines()
+                for i, l in enumerate(text_lines):
+                    if l.lstrip().startswith('#'):
+                        text_lines[i] = l.lstrip()
+                text = '\n'.join(text_lines)
+
             text = h.render_any_markup(filename, text)
             text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             if html2text:

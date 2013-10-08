@@ -415,6 +415,29 @@ See [Page]'''
         assert_equal(f(source, 'test.textile').strip(), result)
 
 
+    def test_convert_markup_textile(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+
+        # check if lists converting works properly
+        source = u'''There are good reasons for this:
+
+  # Duplicate libraries regularly break builds
+  # Subtle bugs emerge with duplicate libraries, and to a lesser extent, duplicate tools
+  # We want you to try harder to make your formula work with what OS X comes with
+'''
+        result = u'''There are good reasons for this:
+
+  1. Duplicate libraries regularly break builds
+  2. Subtle bugs emerge with duplicate libraries, and to a lesser extent, duplicate tools
+  3. We want you to try harder to make your formula work with what OS X comes with
+'''
+
+        assert_equal(f(source, 'test.textile'), result)
+
 class TestGitHubWikiImportController(TestController, TestCase):
 
     url = '/p/%s/admin/ext/import/github-wiki/' % test_project_with_wiki
