@@ -143,6 +143,7 @@ table {
 
 select, input, textarea {
   font: 99% sans-serif;
+  background-color: white;
 }
 
 pre, code, kbd, samp {
