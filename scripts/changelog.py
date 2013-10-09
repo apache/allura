@@ -25,7 +25,7 @@ from datetime import datetime
 
 
 CHANGELOG = 'CHANGES'
-API_URL = 'http://sourceforge.net/rest/p/allura/tickets/{0}'
+API_URL = 'http://sourceforge.net/rest/p/allura/tickets/search?q=ticket_num:({0})'
 
 
 def main():
@@ -43,20 +43,18 @@ def get_tickets(from_ref, to_ref):
     ticket_nums = set()
     ref_spec = '..'.join([from_ref, to_ref])
     for commit in repo.iter_commits(ref_spec):
-        match = re.match(r'\s*\[#([^]]*)\]', commit.summary)
+        match = re.match(r'\s*\[#(\d+)\]', commit.summary)
         if match:
             ticket_nums.add(match.group(1))
     return list(ticket_nums)
 
 def get_ticket_summaries(tickets):
     summaries = {}
-    for ticket in tickets:
-        r = requests.get(API_URL.format(ticket))
-        if r.status_code == 401:
-            continue  # skip private tickets
-        if r.status_code != 200:
-            raise ValueError('Unexpected response code: {}'.format(r.status_code))
-        summaries[ticket] = r.json()['ticket']['summary']
+    r = requests.get(API_URL.format(' '.join(tickets)))
+    if r.status_code != 200:
+        raise ValueError('Unexpected response code: {0}'.format(r.status_code))
+    for ticket in r.json()['tickets']:
+        summaries[ticket['ticket_num']] = ticket['summary']
     return summaries
 
 def print_changelog(version, summaries):
