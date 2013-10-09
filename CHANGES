@@ -1,3 +1,42 @@
+Version 1.0.1  (October 2013)
+
+Upgrade Instructions
+ * Run ensure_index command
+ * Add bulk export and importer_upload_path INI settings (see development.ini)
+
+New Features
+
+ * [#6422] Added release script, cleaned up NOTICE and LICENSE files
+ * Added GitHub importers for Project, Code, Wiki, and Tickets
+ * Added Tickets importer for Google Code
+ * Added Allura exported Tickets importer
+ * [#3154] Allura data export
+
+Bug Fixes & Minor Improvements:
+
+ * Improvements to importer infrastructure
+ * Additions to Tracker API
+ * Fixes for Trac importer
+ * Performance improvements for code snapshots
+ * [#5561] Maximize view for wide code files
+ * [#5775] Allura Code Viewer: provide "copied from" link in history view
+ * [#6284] Allura Code Viewer: show SVN revision in commit browser
+ * [#6626] Regression: SVN urls don't default to HEAD revision
+ * [#6629] "list index out of range" error on git _iter_commits_with_refs
+ * [#6695] timeout & loop detection in LCD logic
+ * [#6529] Login overlay
+ * [#4595] Revisions to /nf/admin/new_projects
+ * [#5966] Script to move wiki
+ * [#6100] URL-Redirection for moved tickets
+ * [#6392] Per tool user bans
+ * [#6431] Upgrade to ming 0.4.x to avoid extraneous count() queries
+ * [#6539] Timeouts on approving moderated comments [ss4838]
+ * [#6545] Show forum stats graph
+ * [#6604] IE9 json parsing vulnerability
+ * [#6654] Tracker stats template error
+ * [#6685] add faulthandler to smtp_server
+ * [#6699] Provide a way to add additional Timers to AlluraTimerMiddleware
+
 Version 1.0.0  (August 2013)
 
  * Initial ASF Incubation release
