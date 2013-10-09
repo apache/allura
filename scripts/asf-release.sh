@@ -1,5 +1,22 @@
 #!/bin/bash
 
+#       Licensed to the Apache Software Foundation (ASF) under one
+#       or more contributor license agreements.  See the NOTICE file
+#       distributed with this work for additional information
+#       regarding copyright ownership.  The ASF licenses this file
+#       to you under the Apache License, Version 2.0 (the
+#       "License"); you may not use this file except in compliance
+#       with the License.  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#       Unless required by applicable law or agreed to in writing,
+#       software distributed under the License is distributed on an
+#       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#       KIND, either express or implied.  See the License for the
+#       specific language governing permissions and limitations
+#       under the License.
+
 function prompt() {
     ivar="$1"
     prompt_str="$2: "
@@ -24,6 +41,14 @@ RELEASE_FILE=$RELEASE_DIR/$RELEASE_BASE.tar.gz
 RELEASE_TAG=asf_release_$VERSION
 CLOSE_DATE=`date -d '+72 hours' +%F`
 
+scripts/changelog.py asf_release_$PREV_VERSION HEAD $VERSION > .changelog.tmp
+echo >> .changelog.tmp
+cat CHANGES >> .changelog.tmp
+mv -f .changelog.tmp CHANGES
+prompt DUMMY "Changelog updated; press enter when ready to commit" "enter"
+git add CHANGES
+git commit -m "CHANGES updated for ASF release $VERSION"
+
 DEFAULT_KEY=`grep default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
 if [[ -z "$DEFAULT_KEY" ]]; then
     DEFAULT_KEY=`gpg --list-secret-keys | head -3 | tail -1 | sed -e 's/^.*\///' | sed -e 's/ .*//'`
@@ -38,7 +63,6 @@ prompt VOTE_THREAD_URL "URL for allura-dev VOTE thread"
 prompt DISCUSS_THREAD_URL "URL for allura-dev DISCUSS thread"
 prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin"
 
-
 git tag $RELEASE_TAG
 COMMIT_SHA=`git rev-parse $RELEASE_TAG`
 
@@ -50,10 +74,10 @@ MD5_CHECKSUM=`md5sum $RELEASE_FILE` ; echo $MD5_CHECKSUM > $RELEASE_FILE.md5
 SHA1_CHECKSUM=`shasum -a1 $RELEASE_FILE` ; echo $SHA1_CHECKSUM > $RELEASE_FILE.sha1
 SHA512_CHECKSUM=`shasum -a512 $RELEASE_FILE` ; echo $SHA512_CHECKSUM > $RELEASE_FILE.sha512
 
-#git push origin asf_release_$VERSION
-
 echo "Release is ready at: $RELEASE_DIR"
-echo "Once confirmed, push release tag with: git push origin asf_release_$VERSION"
+echo "Once confirmed, push the CHANGES commit and release tag with:"
+echo "    git push"
+echo "    git push --tags"
 echo "Then upload the files and signatures, and post the following:"
 echo "-------------------------------------------------------------"
 echo "Subject: [VOTE] Release of Apache Allura $VERSION (incubating)"
