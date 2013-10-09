@@ -76,13 +76,16 @@ class GitHubTrackerImportController(BaseController):
     @require_post()
     @validate(GitHubTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        self.importer.post(
-                project_name=gh_project_name,
-                user_name=gh_user_name,
-                mount_point=mount_point,
-                mount_label=mount_label)
-        flash('Ticket import has begun. Your new tracker will be available '
-                'when the import is complete.')
+        if self.importer.enforce_limit(c.project):
+            self.importer.post(
+                    project_name=gh_project_name,
+                    user_name=gh_user_name,
+                    mount_point=mount_point,
+                    mount_label=mount_label)
+            flash('Ticket import has begun. Your new tracker will be available '
+                    'when the import is complete.')
+        else:
+            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 

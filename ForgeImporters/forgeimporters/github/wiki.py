@@ -92,14 +92,17 @@ class GitHubWikiImportController(BaseController):
     @require_post()
     @validate(GitHubWikiImportForm(ForgeWikiApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
-        self.importer.post(
-            project_name=gh_project_name,
-            user_name=gh_user_name,
-            mount_point=mount_point,
-            mount_label=mount_label,
-            tool_option=kw.get('tool_option'))
-        flash('Wiki import has begun. Your new wiki will be available '
-              'when the import is complete.')
+        if self.importer.enforce_limit(c.project):
+            self.importer.post(
+                project_name=gh_project_name,
+                user_name=gh_user_name,
+                mount_point=mount_point,
+                mount_label=mount_label,
+                tool_option=kw.get('tool_option'))
+            flash('Wiki import has begun. Your new wiki will be available '
+                  'when the import is complete.')
+        else:
+            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 

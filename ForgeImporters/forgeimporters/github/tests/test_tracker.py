@@ -17,9 +17,11 @@
 
 from unittest import TestCase
 from mock import patch
+from ming.odm import ThreadLocalORMSession
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tool
+from allura import model as M
 
 # important to be distinct from 'test' which ForgeTracker uses, so that the tests can run in parallel and not clobber each other
 test_project_with_tracker = 'test2'
@@ -52,3 +54,18 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         self.assertEqual(u'issues', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(u'mulder', import_tool.post.call_args[1]['project_name'])
         self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
+
+    @with_tracker
+    @patch('forgeimporters.base.import_tool')
+    def test_create_limit(self, import_tool):
+        p = M.Project.query.get(shortname=test_project_with_tracker)
+        p.set_tool_data('GitHubTrackerImporter', pending=1)
+        ThreadLocalORMSession.flush_all()
+        params = dict(
+            gh_user_name='spooky',
+            gh_project_name='mulder',
+            mount_point='issues',
+            mount_label='Issues')
+        r = self.app.post(self.url + 'create', params, status=302).follow()
+        self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)

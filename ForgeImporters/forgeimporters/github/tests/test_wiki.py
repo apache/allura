@@ -20,8 +20,10 @@
 from unittest import TestCase
 from nose.tools import assert_equal
 from mock import Mock, patch, call
+from ming.odm import ThreadLocalORMSession
 
 from IPython.testing.decorators import module_not_available, skipif
+from allura import model as M
 from allura.tests import TestController
 from allura.tests.decorators import with_tool, without_module
 from alluratest.controller import setup_basic_test
@@ -454,3 +456,18 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(u'mulder', args['project_name'])
         self.assertEqual(u'spooky', args['user_name'])
         self.assertEqual(u'', args['tool_option'])
+
+    @with_wiki
+    @patch('forgeimporters.base.import_tool')
+    def test_create_limit(self, import_tool):
+        p = M.Project.query.get(shortname=test_project_with_wiki)
+        p.set_tool_data('GitHubWikiImporter', pending=1)
+        ThreadLocalORMSession.flush_all()
+        params = dict(
+            gh_user_name='spooky',
+            gh_project_name='mulder',
+            mount_point='gh-wiki',
+            mount_label='GitHub Wiki')
+        r = self.app.post(self.url + 'create', params, status=302).follow()
+        self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)
