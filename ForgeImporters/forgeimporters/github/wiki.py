@@ -277,10 +277,19 @@ class GitHubWikiImporter(ToolImporter):
                 text = h.render_any_markup(filename, text)
                 text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             return text
-        else:
-            if ext and ext in self.textile_exts:
-                text = self._prepare_textile_text(text)
+        elif ext and ext in self.textile_exts:
+            text = self._prepare_textile_text(text)
 
+            text = h.render_any_markup(filename, text)
+            text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
+            if html2text:
+                text = html2text.html2text(text)
+                text = self.convert_gollum_tags(text)
+                text = text.replace('<notextile>', '').replace('</notextile>', '')
+            else:
+                text = text.replace('&#60;notextile&#62;', '').replace('&#60;/notextile&#62;', '')
+            return text
+        else:
             text = h.render_any_markup(filename, text)
             text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
             if html2text:
@@ -378,23 +387,7 @@ class GitHubWikiImporter(ToolImporter):
                 text_lines[i] = l.lstrip()
         text = '\n'.join(text_lines)
 
-        # if gollum-link, need to convert it to textile-link,
-        # because textile converter does not convert formatted
-        # gollum-link properly
-        link_re = re.compile("\[\[(?P<link>[^]]+)\]\]")
-        links = link_re.findall(text)
-        for link in links:
-            link = link.split('|')
-            if len(link) != 1:
-                title, link = link[0], link[1]
-                text = text.replace(u'[[%s|%s]]' % (title, link),
-                                    '"%s":%s' % (title, link.replace(' ', '%20')))
-            else:
-                link = link[0]
-                # textile importer doesn't works with some symbols
-                if "'" in link:
-                    text = text.replace(u'[[%s]]' % link, '[%s]' % link)
-                else:
-                    text = text.replace(u'[[%s]]' % link,
-                                        '"%s":%s' % (link, link.replace(' ', '%20')))
+        # to convert gollum tags properly used <notextile> tag,
+        # so these tags will not be affected by converter
+        text = text.replace('[[', '<notextile>[[').replace(']]', ']]</notextile>')
         return text

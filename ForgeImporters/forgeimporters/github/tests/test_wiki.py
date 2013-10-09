@@ -327,10 +327,10 @@ Our website is [[http://sf.net]].
 
 [External link](https://github.com/a/b/issues/1)'''
 
-        result = u'''<p>Look at <a href="Some%20Page" rel="nofollow">this page</a></p>
-<p>More info at: <a href="MoreInfo" rel="nofollow">MoreInfo</a> <a href="Even%20More%20Info" rel="nofollow">Even More Info</a></p>
-<p>Our website is <a href="http://sf.net" rel="nofollow">http://sf.net</a>.</p>
-<p>'<a href="Escaped%20Tag" rel="nofollow">Escaped Tag</a></p>
+        result = u'''<p>Look at [[this page|Some Page]]</p>
+<p>More info at: [[MoreInfo]] [[Even More Info]]</p>
+<p>Our website is [[http://sf.net]].</p>
+<p>'[[Escaped Tag]]</p>
 <p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
 <p>[External link](https://github.com/a/b/issues/1)</p>'''
 
@@ -399,7 +399,7 @@ Some text 1.
 
 ## Header 2
 
-See [Page](Page)'''
+See [Page]'''
         assert_equal(f(source, 'test.textile').strip(), result)
 
     @skipif(module_not_available('html2text'))
