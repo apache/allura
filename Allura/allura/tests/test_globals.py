@@ -20,6 +20,8 @@
 
 import re
 import os, allura
+import unittest
+import hashlib
 from mock import patch
 from urllib import quote
 
@@ -33,6 +35,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 
 from allura import model as M
 from allura.lib import helpers as h
+from allura.lib.app_globals import ForgeMarkdown
 from allura.tests import decorators as td
 
 from forgewiki import model as WM
@@ -542,3 +545,71 @@ def get_projects_property_in_the_same_order(names, prop):
     projects = M.Project.query.find(dict(name={'$in': names})).all()
     projects_dict = dict([(p['name'],p[prop]) for p in projects])
     return [projects_dict[name] for name in names]
+
+
+class TestCachedMarkdown(unittest.TestCase):
+    def setUp(self):
+        self.md = ForgeMarkdown()
+        self.post = M.Post()
+        self.post.text = u'**bold**'
+        self.expected_html = u'<p><strong>bold</strong></p>'
+
+    def test_bad_source_field_name(self):
+        self.assertRaises(AttributeError, self.md.cached_convert, self.post, 'no_such_field')
+
+    def test_missing_cache_field(self):
+        delattr(self.post, 'text_cache')
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertEqual(html, self.expected_html)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    def test_empty_cache(self):
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertEqual(html, self.expected_html)
+        self.assertEqual(html, self.post.text_cache.html)
+        self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
+                self.post.text_cache.md5)
+        self.assertTrue(self.post.text_cache.render_time > 0)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    def test_stale_cache(self):
+        old = self.md.cached_convert(self.post, 'text')
+        self.post.text = u'new, different source text'
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertNotEqual(old, html)
+        self.assertEqual(html, self.post.text_cache.html)
+        self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
+                self.post.text_cache.md5)
+        self.assertTrue(self.post.text_cache.render_time > 0)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    def test_valid_cache(self):
+        self.md.cached_convert(self.post, 'text')
+        with patch.object(self.md, 'convert') as convert_func:
+            html = self.md.cached_convert(self.post, 'text')
+            self.assertEqual(html, self.expected_html)
+            self.assertFalse(convert_func.called)
+
+    @patch.dict('allura.lib.app_globals.config', {})
+    def test_no_threshhold_defined(self):
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertEqual(html, self.expected_html)
+        self.assertIsNone(self.post.text_cache.md5)
+        self.assertIsNone(self.post.text_cache.html)
+        self.assertIsNone(self.post.text_cache.render_time)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='foo')
+    def test_invalid_threshhold(self):
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertEqual(html, self.expected_html)
+        self.assertIsNone(self.post.text_cache.md5)
+        self.assertIsNone(self.post.text_cache.html)
+        self.assertIsNone(self.post.text_cache.render_time)
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='99999')
+    def test_render_time_below_threshhold(self):
+        html = self.md.cached_convert(self.post, 'text')
+        self.assertEqual(html, self.expected_html)
+        self.assertIsNone(self.post.text_cache.md5)
+        self.assertIsNone(self.post.text_cache.html)
+        self.assertIsNone(self.post.text_cache.render_time)

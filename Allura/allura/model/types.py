@@ -20,6 +20,15 @@ from ming import schema as S
 
 EVERYONE, ALL_PERMISSIONS = None, '*'
 
+class MarkdownCache(S.Object):
+    def __init__(self, **kw):
+        super(MarkdownCache, self).__init__(
+            fields=dict(
+                md5=S.String(),
+                html=S.String(),
+                render_time=S.Float()),
+            **kw)
+
 class ACE(S.Object):
     '''ACE - access control entry'''
     ALLOW, DENY = 'ALLOW', 'DENY'

@@ -36,7 +36,7 @@ from .stats import Stats
 from .oauth import OAuthToken, OAuthConsumerToken, OAuthRequestToken, OAuthAccessToken
 from .monq_model import MonQTask
 
-from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL
+from .types import ACE, ACL, EVERYONE, ALL_PERMISSIONS, DENY_ALL, MarkdownCache
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session, repository_orm_session

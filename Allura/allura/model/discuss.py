@@ -33,11 +33,11 @@ from allura.lib import security
 from allura.lib.security import require_access, has_access
 from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
-from allura.model.auth import ProjectRole
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
 from .auth import User
 from .timeline import ActivityObject
+from .types import MarkdownCache
 
 log = logging.getLogger(__name__)
 
@@ -452,6 +452,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     last_edit_by_id = ForeignIdProperty(User)
     edit_count = FieldProperty(int, if_missing=0)
     spam_check_id = FieldProperty(str, if_missing='')
+    text_cache = FieldProperty(MarkdownCache)
 
     thread = RelationProperty(Thread)
     discussion = RelationProperty(Discussion)

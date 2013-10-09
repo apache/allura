@@ -23,11 +23,13 @@
 __all__ = ['Globals']
 import logging
 import cgi
+import hashlib
 import json
 import datetime
 from urllib import urlencode
 from subprocess import Popen, PIPE
 import os
+import time
 import traceback
 
 import activitystream
@@ -79,6 +81,39 @@ class ForgeMarkdown(markdown.Markdown):
             escaped = cgi.escape(escaped)
             return h.html.literal(u"""<p><strong>ERROR!</strong> The markdown supplied could not be parsed correctly.
             Did you forget to surround a code snippet with "~~~~"?</p><pre>%s</pre>""" % escaped)
+
+    def cached_convert(self, artifact, field_name):
+        """Convert ``artifact.field_name`` markdown source to html, caching
+        the result if the render time is greater than the defined threshhold.
+
+        """
+        source_text = getattr(artifact, field_name)
+        cache_field_name = field_name + '_cache'
+        cache = getattr(artifact, cache_field_name, None)
+        if not cache:
+            log.warn('Skipping Markdown caching - Missing cache field "%s" on class %s',
+                    field_name, artifact.__class__.__name__)
+            return self.convert(source_text)
+
+        md5 = hashlib.md5(source_text).hexdigest()
+        if cache.md5 == md5:
+            return cache.html
+
+        start = time.time()
+        html = self.convert(source_text)
+        render_time = time.time() - start
+
+        threshhold = config.get('markdown_cache_threshhold')
+        try:
+            threshhold = float(threshhold) if threshhold else None
+        except ValueError:
+            threshhold = None
+            log.warn('Skipping Markdown caching - The value for config param '
+                    '"markdown_cache_threshhold" must be a float.')
+
+        if threshhold != None and render_time > threshhold:
+            cache.md5, cache.html, cache.render_time = md5, html, render_time
+        return html
 
 
 class Globals(object):
