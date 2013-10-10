@@ -264,7 +264,7 @@ class GitHubWikiImporter(ToolImporter):
         """
         name, ext = os.path.splitext(filename)
         if ext in self.markdown_exts:
-            return text
+            return self.convert_github_markup(text)
 
         try:
             import html2text
@@ -394,6 +394,7 @@ class GitHubWikiImporter(ToolImporter):
                     a.setString(new_prefix + new_page)
         return unicode(soup)
 
+
     def _prepare_textile_text(self, text):
         # need to convert lists properly
         text_lines = text.splitlines()
@@ -406,3 +407,4 @@ class GitHubWikiImporter(ToolImporter):
         # so these tags will not be affected by converter
         text = text.replace('[[', '<notextile>[[').replace(']]', ']]</notextile>')
         return text
+
