@@ -466,9 +466,8 @@ some text and **[Tips n' Tricks]**
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
         source = u'*[[this checklist|Troubleshooting]]*'
-        result = u"**[this checklist](Troubleshooting)**"
-        assert_not_in('<notextile>', result)
-        assert_not_in('&#60;notextile&#62;', result)
+        assert_not_in('<notextile>', f(source, 'test3.textile'))
+        assert_not_in('&#60;notextile&#62;', f(source, 'test3.textile'))
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
