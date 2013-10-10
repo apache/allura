@@ -18,7 +18,7 @@
 #       under the License.
 
 from unittest import TestCase
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_not_in
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
 
@@ -457,6 +457,18 @@ some text and **[Tips n' Tricks]**
 **[link](http://otherlink.com)**
 '''
         assert_equal(f(source, 'test3.textile'), result)
+
+
+    def test_convert_textile_special_tag(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+        source = u'*[[this checklist|Troubleshooting]]*'
+        result = u"**[this checklist](Troubleshooting)**"
+        assert_not_in('<notextile>', result)
+        assert_not_in('&#60;notextile&#62;', result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
