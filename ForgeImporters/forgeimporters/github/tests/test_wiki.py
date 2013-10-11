@@ -458,7 +458,7 @@ some text and **[Tips n' Tricks]**
 '''
         assert_equal(f(source, 'test3.textile'), result)
 
-
+    @skipif(module_not_available('html2text'))
     def test_convert_textile_special_tag(self):
         importer = GitHubWikiImporter()
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
@@ -466,8 +466,18 @@ some text and **[Tips n' Tricks]**
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
         source = u'*[[this checklist|Troubleshooting]]*'
-        assert_not_in('<notextile>', f(source, 'test3.textile'))
-        assert_not_in('&#60;notextile&#62;', f(source, 'test3.textile'))
+        assert_equal(f(source, 't.textile').strip(), u'**[this checklist](Troubleshooting)**')
+
+    @without_module('html2text')
+    def test_convert_textile_special_tag_without_html2text(self):
+        importer = GitHubWikiImporter()
+        importer.github_wiki_url = 'https://github.com/a/b/wiki'
+        importer.app = Mock()
+        importer.app.url = '/p/test/wiki/'
+        f = importer.convert_markup
+        source = u'*[[this checklist|Troubleshooting]]*'
+        result = u'<p><strong>[[this checklist|Troubleshooting]]</strong></p>'
+        assert_equal(f(source, 't.textile').strip(), result)
 
 
 class TestGitHubWikiImportController(TestController, TestCase):
