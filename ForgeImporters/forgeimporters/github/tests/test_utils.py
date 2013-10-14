@@ -30,13 +30,13 @@ class TestGitHubMarkdownConverter(object):
     def test_convert_user_repo_sha(self):
         text = 'user/project@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[p:mount:16c999e8c71134401a78d4d46435517b2271d6ac]')
+        assert_equal(result, '[p:mount:16c999]')
 
         # Not a current project
         text = 'user/p@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[user/project@16c999e8c71134401a78d4d46435517b2271d6ac]'
-                             '(https://github.com/u/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
+        assert_equal(result, '[user/p@16c999]'
+                             '(https://github.com/user/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
 
     def test_convert_ticket(self):
         text = 'Ticket #1'
@@ -67,8 +67,7 @@ class TestGitHubMarkdownConverter(object):
         # Not a current project
         text = 'user/p#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[user/project@16c999e8c71134401a78d4d46435517b2271d6ac]'
-                             '(https://github.com/u/p/issues/1)')
+        assert_equal(result, '[user/p#1](https://github.com/u/p/issues/1)')
 
     def test_convert_strikethrough(self):
         text = '~~mistake~~'
