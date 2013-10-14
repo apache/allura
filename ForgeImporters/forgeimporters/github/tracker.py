@@ -111,6 +111,12 @@ class GitHubTrackerImporter(ToolImporter):
                     'project_name': project_name,
                 }
             )
+        self.github_markdown_converter = GitHubMarkdownConverter(
+            kw['user_name'],
+            project_name,
+            project.shortname,
+            app.config.options.mount_point,
+        )
         ThreadLocalORMSession.flush_all()
         extractor = GitHubProjectExtractor(project_name)
         try:
@@ -170,7 +176,7 @@ class GitHubTrackerImporter(ToolImporter):
                 u'{body}').format(
                     creator=self.get_user_link(issue['user']['login']),
                     owner=owner_line,
-                    body=GitHubMarkdownConverter().convert(body),
+                    body=self.github_markdown_converter.convert(body),
                 )
         ticket.labels = [label['name'] for label in issue['labels']]
 
@@ -182,7 +188,7 @@ class GitHubTrackerImporter(ToolImporter):
                     self.get_user_link(comment['user']['login']))
                 body = posted_by + body
             p = ticket.discussion_thread.add_post(
-                    text = GitHubMarkdownConverter().convert(body),
+                    text = self.github_markdown_converter.convert(body),
                     ignore_security = True,
                     timestamp = self.parse_datetime(comment['created_at']),
                 )

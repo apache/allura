@@ -16,11 +16,11 @@
 #       under the License.
 
 from datetime import datetime
-from operator import itemgetter
 from unittest import TestCase
 import mock
 
 from ...github import tracker
+from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
 class TestTrackerImporter(TestCase):
@@ -79,6 +79,7 @@ class TestTrackerImporter(TestCase):
             'labels': [{'name': 'first'}, {'name': 'second'}],
         }
         importer = tracker.GitHubTrackerImporter()
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
@@ -134,6 +135,7 @@ class TestTrackerImporter(TestCase):
                 }
             ]
         importer = tracker.GitHubTrackerImporter()
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
                 text='*Originally posted by:* [me](https://github.com/me)\nhello',
@@ -208,6 +210,7 @@ def hello(name):
             'labels': [{'name': 'first'}, {'name': 'second'}],
         }
         importer = tracker.GitHubTrackerImporter()
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
@@ -238,6 +241,7 @@ def hello(name):
                 }
             ]
         importer = tracker.GitHubTrackerImporter()
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
                 text=body_converted,
