@@ -49,6 +49,7 @@ from ..base import ToolImporter
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.base import ToolImportForm
+from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
 class GitHubTrackerImportForm(ToolImportForm):
@@ -169,7 +170,7 @@ class GitHubTrackerImporter(ToolImporter):
                 u'{body}').format(
                     creator=self.get_user_link(issue['user']['login']),
                     owner=owner_line,
-                    body=body,
+                    body=GitHubMarkdownConverter().convert(body),
                 )
         ticket.labels = [label['name'] for label in issue['labels']]
 
@@ -181,7 +182,7 @@ class GitHubTrackerImporter(ToolImporter):
                     self.get_user_link(comment['user']['login']))
                 body = posted_by + body
             p = ticket.discussion_thread.add_post(
-                    text = body,
+                    text = GitHubMarkdownConverter().convert(body),
                     ignore_security = True,
                     timestamp = self.parse_datetime(comment['created_at']),
                 )

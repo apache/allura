@@ -44,4 +44,4 @@ class GitHubMarkdownConverter(object):
 
     @classmethod
     def _convert_codeblock(cls, match):
-        return '\n~~~~%s~~~~\n'% match.group(1)
+        return '~~~~%s~~~~'% match.group(1)

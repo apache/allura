@@ -179,3 +179,68 @@ class TestTrackerImporter(TestCase):
             text='- **assigned_to**: [luke](https://github.com/luke)',
             timestamp=datetime(2013, 9, 12, 10, 14, 0),
             ignore_security=True))
+
+    def test_github_markdown_converted_in_description(self):
+        ticket = mock.Mock()
+        body = '''Hello
+
+```python
+def hello(name):
+    print "Hello, " + name
+```'''
+        body_converted = '''*Originally created by:* [creator](https://github.com/creator)
+*Originally owned by:* [owner](https://github.com/owner)
+
+Hello
+
+~~~~
+def hello(name):
+    print "Hello, " + name
+~~~~'''
+        issue = {
+            'body': body,
+            'title': 'title',
+            'state': 'New',
+            'created_at': 'created_at',
+            'updated_at': 'updated_at',
+            'assignee': {'login': 'owner'},
+            'user': {'login': 'creator'},
+            'labels': [{'name': 'first'}, {'name': 'second'}],
+        }
+        importer = tracker.GitHubTrackerImporter()
+        with mock.patch.object(tracker, 'datetime') as dt:
+            dt.strptime.side_effect = lambda s,f: s
+            importer.process_fields(ticket, issue)
+        self.assertEqual(ticket.description.strip(), body_converted.strip())
+
+    def test_github_markdown_converted_in_comments(self):
+        ticket = mock.Mock()
+        extractor = mock.Mock()
+        body = '''Hello
+
+```python
+def hello(name):
+    print "Hello, " + name
+```'''
+        body_converted = '''*Originally posted by:* [me](https://github.com/me)
+Hello
+
+~~~~
+def hello(name):
+    print "Hello, " + name
+~~~~'''
+        issue = {'comments_url': '/comments'}
+        extractor.iter_comments.return_value = [
+                {
+                    'body': body,
+                    'created_at': '2013-08-26T16:57:53Z',
+                    'user': {'login': 'me'},
+                }
+            ]
+        importer = tracker.GitHubTrackerImporter()
+        importer.process_comments(extractor, ticket, issue)
+        self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
+                text=body_converted,
+                timestamp=datetime(2013, 8, 26, 16, 57, 53),
+                ignore_security=True,
+            ))
