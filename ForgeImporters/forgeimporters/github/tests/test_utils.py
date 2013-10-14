@@ -6,34 +6,71 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 class TestGitHubMarkdownConverter(object):
 
     def setUp(self):
-        self.conv = GitHubMarkdownConverter
+        self.conv = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
 
-    def test_convert_sha_github_markup(self):
-        text = 'SHA: 16c999e8c71134401a78d4d46435517b2271d6ac'
+    def test_convert_sha(self):
+        text = '16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, 'SHA: [16c999]')
+        assert_equal(result, '[16c999]')
 
-    def test_convert_user_sha_github_markup(self):
-        text = 'User@SHA: mojombo@16c999e8c71134401a78d4d46435517b2271d6ac'
+        text = 'some context  16c999e8c71134401a78d4d46435517b2271d6ac '
         result = self.conv.convert(text)
-        assert_equal(result, 'User@SHA:[16c999]')
+        assert_equal(result, 'some context  [16c999] ')
 
-    def test_convert_user_repo_sha_github_markup(self):
-        text = 'User/Repository@SHA: mojombo/github-flavored-markdown@16c999e8c71134401a78d4d46435517b2271d6ac'
+    def test_convert_user_sha(self):
+        text = 'user@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, 'User/Repository@SHA: [16c999]')
+        assert_equal(result, '[16c999]')
 
-    def test_convert_ticket_github_markup(self):
-        text = 'Ticket: #1'
+        # Not an owner of current project
+        text = 'another-user@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, 'Ticket: [#1]')
+        assert_equal(result, text)
 
-    def test_convert_username_ticket_github_markup(self):
-        text = 'User#Num: user#1'
+    def test_convert_user_repo_sha(self):
+        text = 'user/project@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, 'User#Num: [#1]')
+        assert_equal(result, '[p:mount:16c999e8c71134401a78d4d46435517b2271d6ac]')
 
-    def test_convert_username_repo_ticket_github_markup(self):
-        text = 'User/Repository#Num: user/repo#1'
+        # Not a current project
+        text = 'user/p@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, 'User/Repository#Num: [#1]')
+        assert_equal(result, '[user/project@16c999e8c71134401a78d4d46435517b2271d6ac]'
+                             '(https://github.com/u/p/commit/16c999e8c71134401a78d4d46435517b2271d6ac)')
+
+    def test_convert_ticket(self):
+        text = 'Ticket #1'
+        result = self.conv.convert(text)
+        assert_equal(result, 'Ticket [#1]')
+
+    def test_convert_username_ticket(self):
+        text = 'user#1'
+        result = self.conv.convert(text)
+        assert_equal(result, '[#1]')
+
+        # Not an owner of current project
+        text = 'another-user#1'
+        result = self.conv.convert(text)
+        assert_equal(result, 'another-user#1')
+
+    def test_convert_username_repo_ticket(self):
+        text = 'user/project#1'
+        result = self.conv.convert(text)
+        assert_equal(result, '[p:mount:#1]')
+
+        # Not a current project
+        text = 'user/p#1'
+        result = self.conv.convert(text)
+        assert_equal(result, '[user/project@16c999e8c71134401a78d4d46435517b2271d6ac]'
+                             '(https://github.com/u/p/issues/1)')
+
+    def test_convert_strikethrough(self):
+        text = '~~mistake~~'
+        assert_equal(self.conv.convert(text), '<s>mistake</s>')
+
+    def test_convert_code_blocks(self):
+        text = u'''```python
+print "Hello!"
+```'''
+        result = u'~~~~\nprint "Hello!"\n~~~~'
+        assert_equal(self.conv.convert(text).strip(), result)
