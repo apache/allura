@@ -138,7 +138,7 @@ class TestTrackerImporter(TestCase):
         importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text='*Originally posted by:* [me](https://github.com/me)\nhello',
+                text='*Originally posted by:* [me](https://github.com/me)\n\nhello',
                 timestamp=datetime(2013, 8, 26, 16, 57, 53),
                 ignore_security=True,
             ))
@@ -226,6 +226,7 @@ def hello(name):
     print "Hello, " + name
 ```'''
         body_converted = '''*Originally posted by:* [me](https://github.com/me)
+
 Hello
 
 ~~~~

@@ -180,7 +180,7 @@ class GitHubTrackerImporter(ToolImporter):
         for comment in extractor.iter_comments(issue):
             body, attachments = self._get_attachments(comment['body'])
             if comment['user']:
-                posted_by = u'*Originally posted by:* {}\n'.format(
+                posted_by = u'*Originally posted by:* {}\n\n'.format(
                     self.get_user_link(comment['user']['login']))
                 body = posted_by + body
             p = ticket.discussion_thread.add_post(
