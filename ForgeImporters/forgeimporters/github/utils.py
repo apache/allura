@@ -30,7 +30,7 @@ class GitHubMarkdownConverter(object):
         _re = re.compile(r'~~(.*)~~',)
         text = _re.sub(self._convert_strikethrough, text)
 
-        _re = re.compile(r'```\w*(.*)```', re.DOTALL)
+        _re = re.compile(r'```\w*(.*?)```', re.DOTALL)
         text = _re.sub(self._convert_codeblock, text)
         return text
 

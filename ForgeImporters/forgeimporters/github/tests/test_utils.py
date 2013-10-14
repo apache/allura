@@ -76,6 +76,24 @@ class TestGitHubMarkdownConverter(object):
     def test_convert_code_blocks(self):
         text = u'''```python
 print "Hello!"
+```
+
+Two code blocks here!
+
+```
+for (var i = 0; i < a.length; i++) {
+    console.log(i);
+}
 ```'''
-        result = u'~~~~\nprint "Hello!"\n~~~~'
+        result = u'''~~~~
+print "Hello!"
+~~~~
+
+Two code blocks here!
+
+~~~~
+for (var i = 0; i < a.length; i++) {
+    console.log(i);
+}
+~~~~'''
         assert_equal(self.conv.convert(text).strip(), result)
