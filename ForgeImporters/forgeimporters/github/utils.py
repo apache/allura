@@ -15,7 +15,7 @@ class GitHubMarkdownConverter(object):
         _re = re.compile(r'(\s|^)(.+)/(.+)@([0-9a-f]{40})(\s|$)')
         text = _re.sub(self._convert_user_repo_sha, text)
 
-        _re = re.compile(r'\s\S*@([0-9a-f]{40})')
+        _re = re.compile(r'(\s|^)(.+)@([0-9a-f]{40})(\s|$)')
         text = _re.sub(self._convert_user_sha, text)
 
         _re = re.compile(r'(\s|^)([0-9a-f]{40})(\s|$)')
@@ -38,7 +38,11 @@ class GitHubMarkdownConverter(object):
         return '%s[%s]' % m.groups()
 
     def _convert_user_sha(self, m):
-        return '[%s]' % (m.group(1)[:6])
+        user = m.group(2)
+        sha = m.group(3)
+        if self.gh_project.startswith(user + '/'):
+            return '%s[%s]%s' % (m.group(1), sha[:6], m.group(4))
+        return m.group(0)
 
     def _convert_user_repo_sha(self, m):
         project = '%s/%s' % (m.group(2), m.group(3))
