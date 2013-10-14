@@ -51,6 +51,7 @@ from forgeimporters.base import (
         ToolImportForm,
         )
 from forgeimporters.github import GitHubProjectExtractor
+from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgewiki import model as WM
 from forgewiki.converters import mediawiki2markdown
 
@@ -264,7 +265,9 @@ class GitHubWikiImporter(ToolImporter):
         """
         name, ext = os.path.splitext(filename)
         if ext in self.markdown_exts:
-            return self.convert_github_markup(text)
+            text = GitHubMarkdownConverter.convert(text)
+            return text
+            #return self.convert_gollum_tags(text)
 
         try:
             import html2text
@@ -393,7 +396,6 @@ class GitHubWikiImporter(ToolImporter):
                 elif a.text == prefix + page:
                     a.setString(new_prefix + new_page)
         return unicode(soup)
-
 
     def _prepare_textile_text(self, text):
         # need to convert lists properly

@@ -479,42 +479,6 @@ some text and **[Tips n' Tricks]**
         result = u'<p><strong>[[this checklist|Troubleshooting]]</strong></p>'
         assert_equal(f(source, 't.textile').strip(), result)
 
-    def test_convert_sha_github_markup(self):
-        html = 'SHA: 16c999e8c71134401a78d4d46435517b2271d6ac'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'SHA: [16c999]')
-
-    def test_convert_user_sha_github_markup(self):
-        html = 'User@SHA: mojombo@16c999e8c71134401a78d4d46435517b2271d6ac'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'User@SHA:[16c999]')
-
-    def test_convert_user_repo_sha_github_markup(self):
-        html = 'User/Repository@SHA: mojombo/github-flavored-markdown@16c999e8c71134401a78d4d46435517b2271d6ac'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'User/Repository@SHA: [16c999]')
-
-    def test_convert_ticket_github_markup(self):
-        html = 'Ticket: #1'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'Ticket: [#1]')
-
-    def test_convert_username_ticket_github_markup(self):
-        html = 'User#Num: user#1'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'User#Num: [#1]')
-
-    def test_convert_username_repo_ticket_github_markup(self):
-        html = 'User/Repository#Num: user/repo#1'
-        importer = GitHubWikiImporter()
-        result = importer.convert_github_markup(html)
-        assert_equal(result, 'User/Repository#Num: [#1]')
-
 
 class TestGitHubWikiImportController(TestController, TestCase):
 
