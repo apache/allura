@@ -28,6 +28,7 @@ from allura.tests import TestController
 from allura.tests.decorators import with_tool, without_module
 from alluratest.controller import setup_basic_test
 from forgeimporters.github.wiki import GitHubWikiImporter
+from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the tests can run in parallel and not clobber each other
@@ -290,6 +291,7 @@ Our website is <http://sf.net>.
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'proj', 'p', 'mount')
         f = importer.convert_markup
         source = u'''Look at [[this page|Some Page]]
 
@@ -299,12 +301,33 @@ Our website is [[http://sf.net]].
 
 '[[Escaped Tag]]
 
-[External link to the wiki page](https://github.com/a/b/wiki/Page)
+```python
+codeblock
+```
 
-[External link](https://github.com/a/b/issues/1)'''
+ticket #1
 
-        # markdown should be untouched
-        assert_equal(f(source, 'test.md'), source)
+#1 header
+
+sha aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'''
+        result = u'''Look at [this page](Some Page)
+
+More info at: [MoreInfo] [Even More Info]
+
+Our website is <http://sf.net>.
+
+[[Escaped Tag]]
+
+~~~~
+codeblock
+~~~~
+
+ticket [#1]
+
+#1 header
+
+sha [aaaaaa]'''
+        assert_equal(f(source, 'test.md').strip(), result)
 
         assert_equal(f(u'h1. Hello', 't.textile').strip(), u'# Hello')
 

@@ -155,6 +155,12 @@ class GitHubWikiImporter(ToolImporter):
         )
         with_history = tool_option == 'import_history'
         ThreadLocalORMSession.flush_all()
+        self.github_markdown_converter = GitHubMarkdownConverter(
+            user_name,
+            project_name,
+            project.shortname,
+            self.app.config.options.mount_point,
+        )
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=self.app):
@@ -265,9 +271,8 @@ class GitHubWikiImporter(ToolImporter):
         """
         name, ext = os.path.splitext(filename)
         if ext in self.markdown_exts:
-            text = GitHubMarkdownConverter.convert(text)
-            return text
-            #return self.convert_gollum_tags(text)
+            text = self.github_markdown_converter.convert(text)
+            return self.convert_gollum_tags(text)
 
         try:
             import html2text
