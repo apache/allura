@@ -49,7 +49,7 @@ class TestGitHubMarkdownConverter(object):
         text = '  #1'
         assert_equal(self.conv.convert(text), '  #1')
 
-    def test_convert_username_ticket(self):
+    def test_convert_user_ticket(self):
         text = 'user#1'
         result = self.conv.convert(text)
         assert_equal(result, '[#1]')
@@ -59,7 +59,7 @@ class TestGitHubMarkdownConverter(object):
         result = self.conv.convert(text)
         assert_equal(result, 'another-user#1')
 
-    def test_convert_username_repo_ticket(self):
+    def test_convert_user_repo_ticket(self):
         text = 'user/project#1'
         result = self.conv.convert(text)
         assert_equal(result, '[p:mount:#1]')
@@ -67,7 +67,7 @@ class TestGitHubMarkdownConverter(object):
         # Not a current project
         text = 'user/p#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[user/p#1](https://github.com/u/p/issues/1)')
+        assert_equal(result, '[user/p#1](https://github.com/user/p/issues/1)')
 
     def test_convert_strikethrough(self):
         text = '~~mistake~~'
