@@ -19,11 +19,11 @@
 {% extends g.theme.master %}
 
 {% block title %}
-{{c.project.name}} / {{ importer.tool_description }}
+{{c.project.name}} / {{importer.source}} {{importer.tool_label}} Importer
 {% endblock %}
 
 {% block header %}
-{{ importer.tool_description }}
+{{importer.source}} {{importer.tool_label}} Importer
 {% endblock %}
 
 {% block extra_css %}
