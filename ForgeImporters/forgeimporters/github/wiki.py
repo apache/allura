@@ -112,6 +112,10 @@ class GitHubWikiImporter(ToolImporter):
     source = 'GitHub'
     tool_label = 'Wiki'
     tool_description = 'Import your wiki from GitHub'
+    extra_notes = 'The wiki importer does not support all formats; currently, '\
+                  'only Markdown and MediaWiki are supported.  Additionally, '\
+                  'links to internal files or images (those in the wiki '\
+                  'repository) are not supported.'
     tool_option = {"import_history": "Import history"}
 
     mediawiki_exts = ['.wiki', '.mediawiki']

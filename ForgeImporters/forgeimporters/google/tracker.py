@@ -91,6 +91,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
     target_app = ForgeTrackerApp
     controller = GoogleCodeTrackerImportController
     tool_label = 'Issues'
+    extra_notes = 'Private tickets are not imported.'
 
     field_types = defaultdict(lambda: 'string',
             milestone='milestone',

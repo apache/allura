@@ -44,10 +44,7 @@
 {% endblock %}
 
 {% block extra_notes %}
-<br/>
-<br/>
 Not all project data can be imported at this time.  The full description
 on the Project Home cannot be automatically converted, due to size limit
-differences.  Only the first (default) source repository is imported,
-and private tickets are not imported.
+differences. {{ super() }}
 {% endblock %}

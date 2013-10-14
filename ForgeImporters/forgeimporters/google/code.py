@@ -150,6 +150,10 @@ class GoogleRepoImporter(ToolImporter):
     controller = GoogleRepoImportController
     tool_label = 'Source Code'
     tool_description = 'Import your SVN, Git, or Hg repo from Google Code'
+    extra_notes = 'Only the first (default) source repository is imported. '\
+                  'It is recommended that you add a README file to your '\
+                  'repository, if one is not already present, as it will be '\
+                  'displayed by default when browsing your repository.'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
             mount_label=None, **kw):

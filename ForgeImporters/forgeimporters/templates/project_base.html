@@ -140,7 +140,14 @@
     <div style="margin:5px">
       You'll receive an email after each tool import finishes.
       Import time varies depending on the amount of data being imported.
-      {% block extra_notes %}{% endblock %}
+      <br/><br/>
+      {% block extra_notes %}
+        {% for name, tool_importer in importer.tool_importers.iteritems() %}
+          {% if tool_importer.extra_notes %}
+            {{tool_importer.extra_notes}}
+          {% endif %}
+        {% endfor %}
+      {% endblock %}
     </div>
 
     <input type="submit" value="Import"/>
