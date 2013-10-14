@@ -40,7 +40,7 @@
     </div>
 
     <div class="grid-6" style="clear:left">
-        <label>URL Name</label>
+        <label>{{config.site_name}} URL Name</label>
     </div>
     <div class="grid-10">
         <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
@@ -51,4 +51,12 @@
             http://{{request.environ['HTTP_HOST']}}{{importer.neighborhood.url()}}<span id="url-fragment">{{c.form_values['project_shortname']}}</span>
         </div>
     </div>
+{% endblock %}
+
+{% block extra_notes %}
+<br/>
+<br/>
+The wiki importer does not support all formats; currently, only Markdown
+and MediaWiki are supported.  Additionally, links to internal files or
+images (those in the wiki repository) are not supported.
 {% endblock %}

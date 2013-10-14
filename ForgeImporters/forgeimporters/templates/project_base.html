@@ -101,7 +101,7 @@
       </div>
 
       <div class="grid-6" style="clear:left">
-          <label>URL Name</label>
+          <label>{{config.site_name}} URL Name</label>
       </div>
       <div class="grid-10">
           <input id="project_shortname" name="project_shortname" value="{{c.form_values['project_shortname']}}"/>
@@ -140,6 +140,7 @@
     <div style="margin:5px">
       You'll receive an email after each tool import finishes.
       Import time varies depending on the amount of data being imported.
+      {% block extra_notes %}{% endblock %}
     </div>
 
     <input type="submit" value="Import"/>
