@@ -3,9 +3,8 @@ import re
 
 class GitHubMarkdownConverter(object):
 
-    def __init__(self, gh_user, gh_project, project, mount_point):
+    def __init__(self, gh_user, gh_project):
         self.gh_project = '%s/%s' % (gh_user, gh_project)
-        self.project = '%s:%s' % (project, mount_point)
         self.gh_base_url = u'https://github.com/'
 
     def convert(self, text):
@@ -57,8 +56,7 @@ class GitHubMarkdownConverter(object):
         project = '%s/%s' % (m.group(2), m.group(3))
         tid = m.group(4)
         if project == self.gh_project:
-            link = ':'.join([self.project, '#' + tid])
-            return '%s[%s]%s' % (m.group(1), link, m.group(5))
+            return '%s[%s]%s' % (m.group(1), '#' + tid, m.group(5))
         title = project + '#' + tid
         return ''.join([m.group(1),
                         self._gh_ticket_url(project, tid, title),
@@ -75,8 +73,7 @@ class GitHubMarkdownConverter(object):
         project = '%s/%s' % (m.group(2), m.group(3))
         sha = m.group(4)
         if project == self.gh_project:
-            link = ':'.join([self.project, sha[:6]])
-            return '%s[%s]%s' % (m.group(1), link, m.group(5))
+            return '%s[%s]%s' % (m.group(1), sha[:6], m.group(5))
         title = project + '@' + sha[:6]
         return ''.join([m.group(1),
                         self._gh_commit_url(project, sha, title),

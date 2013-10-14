@@ -291,7 +291,7 @@ Our website is <http://sf.net>.
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'proj', 'p', 'mount')
+        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'proj')
         f = importer.convert_markup
         source = u'''Look at [[this page|Some Page]]
 

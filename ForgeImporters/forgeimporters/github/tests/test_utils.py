@@ -6,7 +6,7 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 class TestGitHubMarkdownConverter(object):
 
     def setUp(self):
-        self.conv = GitHubMarkdownConverter('user', 'project', 'p', 'mount')
+        self.conv = GitHubMarkdownConverter('user', 'project')
 
     def test_convert_sha(self):
         text = '16c999e8c71134401a78d4d46435517b2271d6ac'
@@ -30,7 +30,7 @@ class TestGitHubMarkdownConverter(object):
     def test_convert_user_repo_sha(self):
         text = 'user/project@16c999e8c71134401a78d4d46435517b2271d6ac'
         result = self.conv.convert(text)
-        assert_equal(result, '[p:mount:16c999]')
+        assert_equal(result, '[16c999]')
 
         # Not a current project
         text = 'user/p@16c999e8c71134401a78d4d46435517b2271d6ac'
@@ -62,7 +62,7 @@ class TestGitHubMarkdownConverter(object):
     def test_convert_user_repo_ticket(self):
         text = 'user/project#1'
         result = self.conv.convert(text)
-        assert_equal(result, '[p:mount:#1]')
+        assert_equal(result, '[#1]')
 
         # Not a current project
         text = 'user/p#1'

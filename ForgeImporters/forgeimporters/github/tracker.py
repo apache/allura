@@ -112,11 +112,7 @@ class GitHubTrackerImporter(ToolImporter):
                 }
             )
         self.github_markdown_converter = GitHubMarkdownConverter(
-            kw['user_name'],
-            project_name,
-            project.shortname,
-            app.config.options.mount_point,
-        )
+            kw['user_name'], project_name)
         ThreadLocalORMSession.flush_all()
         extractor = GitHubProjectExtractor(project_name)
         try:

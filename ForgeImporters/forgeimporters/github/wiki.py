@@ -156,11 +156,7 @@ class GitHubWikiImporter(ToolImporter):
         with_history = tool_option == 'import_history'
         ThreadLocalORMSession.flush_all()
         self.github_markdown_converter = GitHubMarkdownConverter(
-            user_name,
-            project_name,
-            project.shortname,
-            self.app.config.options.mount_point,
-        )
+            user_name, project_name)
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=self.app):
