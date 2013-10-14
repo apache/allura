@@ -43,6 +43,12 @@ class TestGitHubMarkdownConverter(object):
         result = self.conv.convert(text)
         assert_equal(result, 'Ticket [#1]')
 
+        # github treats '#' in the begining as a header
+        text = '#1'
+        assert_equal(self.conv.convert(text), '#1')
+        text = '  #1'
+        assert_equal(self.conv.convert(text), '  #1')
+
     def test_convert_username_ticket(self):
         text = 'user#1'
         result = self.conv.convert(text)

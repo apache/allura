@@ -8,7 +8,7 @@ class GitHubMarkdownConverter(object):
         self.project = '%s:%s' % (project, mount_point)
 
     def convert(self, text):
-        _re = re.compile('\S+\s+(#\d+)')
+        _re = re.compile('(\S+\s+)(#\d+)')
         text = _re.sub(self._convert_ticket, text)
 
         _re = re.compile('\S*/\S*@([0-9a-f]{40})')
@@ -31,7 +31,7 @@ class GitHubMarkdownConverter(object):
         return '%s[%s]%s' % (match.group(1), match.group(2)[:6], match.group(3))
 
     def _convert_ticket(self, match):
-        return '[%s]' % match.group(1)
+        return '%s[%s]' % match.groups()
 
     def _convert_user_sha(self, match):
         return '[%s]' % (match.group(1)[:6])
