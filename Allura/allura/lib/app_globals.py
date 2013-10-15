@@ -95,9 +95,11 @@ class ForgeMarkdown(markdown.Markdown):
                     field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
-        md5 = hashlib.md5(source_text).hexdigest()
-        if cache.md5 == md5:
-            return cache.html
+        md5 = None
+        if cache.md5 is not None:
+            md5 = hashlib.md5(source_text).hexdigest()
+            if cache.md5 == md5:
+                return cache.html
 
         start = time.time()
         html = self.convert(source_text)
@@ -112,6 +114,8 @@ class ForgeMarkdown(markdown.Markdown):
                     '"markdown_cache_threshhold" must be a float.')
 
         if threshhold != None and render_time > threshhold:
+            if md5 is None:
+                md5 = hashlib.md5(source_text).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
         return html
 
