@@ -20,10 +20,10 @@
 
 {% block importer_fields %}
   <div>
-    <label for="json">Tickets JSON
+    <label for="tickets_json">Tickets JSON
       <br><small>JSON file exported from Allura</small>
     </label>
     <input name="tickets_json" type="file" />
-    {{ error('json') }}
+    {{ error('tickets_json') }}
   </div>
 {% endblock %}
