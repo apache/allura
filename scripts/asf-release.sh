@@ -56,11 +56,6 @@ fi
 prompt KEY "Key" "$DEFAULT_KEY"
 FINGERPRINT=`gpg --fingerprint $KEY | grep fingerprint | cut -d' ' -f 17-20 | sed -e 's/ //g'`
 
-prompt PLUS_VOTES "+1 votes"
-prompt MINUS_VOTES "-1 votes" "0"
-prompt ZERO_VOTES "+0 votes" "0"
-prompt VOTE_THREAD_URL "URL for allura-dev VOTE thread"
-prompt DISCUSS_THREAD_URL "URL for allura-dev DISCUSS thread"
 prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin"
 
 git tag $RELEASE_TAG
@@ -82,18 +77,10 @@ echo "Then upload the files and signatures, and post the following:"
 echo "-------------------------------------------------------------"
 echo "Subject: [VOTE] Release of Apache Allura $VERSION (incubating)"
 echo "-------------------------------------------------------------"
-echo <<EOF
+cat <<EOF
 Hello,
 
 This is a call for a vote on Apache Allura $VERSION incubating.
-
-A vote was held on developer mailing list and it passed
-with $PLUS_VOTES +1's, $MINUS_VOTES -1's, and $ZERO_VOTES +0's votes, and now requires a vote
-on general@incubator.apache.org.
-
-The [VOTE] and [DISCUSS] threads can be found at:
-  [VOTE]:    $VOTE_THREAD_URL
-  [DISCUSS]: $DISCUSS_THREAD_URL
 
 Source tarball and signature are available at:
   https://dist.apache.org/repos/dist/dev/incubator/allura/$RELEASE_BASE.tar.gz
