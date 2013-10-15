@@ -16,7 +16,7 @@
 #       under the License.
 
 from unittest import TestCase
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from ming.odm import ThreadLocalORMSession
 
 from allura.tests import TestController
@@ -26,7 +26,6 @@ from allura import model as M
 
 # important to be distinct from 'test' which ForgeSVN uses, so that the tests can run in parallel and not clobber each other
 test_project_with_repo = 'test2'
-with_svn = with_tool(test_project_with_repo, 'SVN', 'src', 'SVN')
 
 
 from forgeimporters.google.code import (
@@ -88,27 +87,22 @@ class TestGoogleRepoImporter(TestCase):
 
 
 class TestGoogleRepoImportController(TestController, TestCase):
-    def setUp(self):
-        """Mount Google Code importer on the SVN admin controller"""
-        super(TestGoogleRepoImportController, self).setUp()
-        from forgesvn.svn_main import SVNRepoAdminController
-        SVNRepoAdminController._importer = GoogleRepoImportController()
 
-    @with_svn
     def test_index(self):
-        r = self.app.get('/p/{}/admin/src/_importer/'.format(test_project_with_repo))
+        r = self.app.get('/p/{}/admin/ext/import/google-code-repo/'.format(test_project_with_repo))
         self.assertIsNotNone(r.html.find(attrs=dict(name="gc_project_name")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
-    @with_svn
+    @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.base.import_tool')
-    def test_create(self, import_tool):
+    def test_create(self, import_tool, extractor):
+        extractor.return_value.get_repo_type.return_value = 'git'
         params = dict(gc_project_name='poop',
                 mount_label='mylabel',
                 mount_point='mymount',
                 )
-        r = self.app.post('/p/{}/admin/src/_importer/create'.format(test_project_with_repo),
+        r = self.app.post('/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
                 params,
                 status=302)
         self.assertEqual(r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
@@ -116,9 +110,10 @@ class TestGoogleRepoImportController(TestController, TestCase):
         self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
 
-    @with_svn
+    @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.base.import_tool')
-    def test_create_limit(self, import_tool):
+    def test_create_limit(self, import_tool, extractor):
+        extractor.return_value.get_repo_type.return_value = 'git'
         project = M.Project.query.get(shortname=test_project_with_repo)
         project.set_tool_data('GoogleRepoImporter', pending=1)
         ThreadLocalORMSession.flush_all()
@@ -126,7 +121,7 @@ class TestGoogleRepoImportController(TestController, TestCase):
                 mount_label='mylabel',
                 mount_point='mymount',
                 )
-        r = self.app.post('/p/{}/admin/src/_importer/create'.format(test_project_with_repo),
+        r = self.app.post('/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
                 params,
                 status=302).follow()
         self.assertIn('Please wait and try again', r)
