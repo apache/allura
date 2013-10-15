@@ -21,7 +21,7 @@ Installation
 Easy Setup
 ---------------
 
-Our easy setup instructions are in our README.rst file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/README.markdown
+Our easy setup instructions are in our INSTALL.markdown file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown
 
 You should be able to get Allura up and running in well under an hour by following those instructions.
 
@@ -41,7 +41,7 @@ To change the port number, edit `development.ini` and change `forgemail.port` to
 Enabling RabbitMQ
 -----------------
 
-For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the README, run these commands
+For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the INSTALL, run these commands
 to install rabbitmq and set it up::
 
 (env-allura)~$ sudo aptitude install rabbitmq-server
