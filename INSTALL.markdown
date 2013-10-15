@@ -19,7 +19,9 @@
 
 # Sandbox Creation
 
-We'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Allura development/testing.
+For a faster setup with a pre-packaged machine image, see [Install and Run Allura - Vagrant](https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/) instead.
+
+In these instructions, we'll use [VirtualBox](http://www.virtualbox.org) and [Ubuntu 12.04](http://ubuntu.com) (11.10 works too) to create a disposable sandbox for Allura development/testing.  Allura should work on other Linux systems (including OSX), but setting up all the dependencies will be different.
 
 * Download and install [VirtualBox](http://www.virtualbox.org/wiki/Downloads) for your platform.
 
@@ -68,11 +70,13 @@ You'll need to do this whenever you're working on the Allura codebase so you may
 
 ## Installing the Allura code and dependencies
 
-Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.
+Now we can get down to actually getting the Allura code and dependencies downloaded and ready to go.  If you don't have the source code yet, run:
 
     (env-allura)~$ mkdir src
     (env-allura)~$ cd src
     (env-allura)~/src$ git clone https://git-wip-us.apache.org/repos/asf/incubator-allura.git allura
+
+If you already reading this file from an Allura release or checkout, you're ready to continue.
 
 Although the application setup.py files define a number of dependencies, the `requirements.txt` files are currently the authoritative source, so we'll use those with `pip` to make sure the correct versions are installed.
 
