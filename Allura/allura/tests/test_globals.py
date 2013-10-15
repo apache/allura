@@ -562,7 +562,7 @@ class TestCachedMarkdown(unittest.TestCase):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_empty_cache(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
@@ -571,7 +571,7 @@ class TestCachedMarkdown(unittest.TestCase):
                 self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_stale_cache(self):
         old = self.md.cached_convert(self.post, 'text')
         self.post.text = u'new, different source text'
@@ -582,7 +582,7 @@ class TestCachedMarkdown(unittest.TestCase):
                 self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='0')
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_valid_cache(self):
         self.md.cached_convert(self.post, 'text')
         with patch.object(self.md, 'convert') as convert_func:
@@ -591,23 +591,23 @@ class TestCachedMarkdown(unittest.TestCase):
             self.assertFalse(convert_func.called)
 
     @patch.dict('allura.lib.app_globals.config', {})
-    def test_no_threshhold_defined(self):
+    def test_no_threshold_defined(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='foo')
-    def test_invalid_threshhold(self):
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='foo')
+    def test_invalid_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
         self.assertIsNone(self.post.text_cache.md5)
         self.assertIsNone(self.post.text_cache.html)
         self.assertIsNone(self.post.text_cache.render_time)
 
-    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshhold='99999')
-    def test_render_time_below_threshhold(self):
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='99999')
+    def test_render_time_below_threshold(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
         self.assertIsNone(self.post.text_cache.md5)

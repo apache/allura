@@ -84,7 +84,7 @@ class ForgeMarkdown(markdown.Markdown):
 
     def cached_convert(self, artifact, field_name):
         """Convert ``artifact.field_name`` markdown source to html, caching
-        the result if the render time is greater than the defined threshhold.
+        the result if the render time is greater than the defined threshold.
 
         """
         source_text = getattr(artifact, field_name)
@@ -105,15 +105,15 @@ class ForgeMarkdown(markdown.Markdown):
         html = self.convert(source_text)
         render_time = time.time() - start
 
-        threshhold = config.get('markdown_cache_threshhold')
+        threshold = config.get('markdown_cache_threshold')
         try:
-            threshhold = float(threshhold) if threshhold else None
+            threshold = float(threshold) if threshold else None
         except ValueError:
-            threshhold = None
+            threshold = None
             log.warn('Skipping Markdown caching - The value for config param '
-                    '"markdown_cache_threshhold" must be a float.')
+                    '"markdown_cache_threshold" must be a float.')
 
-        if threshhold != None and render_time > threshhold:
+        if threshold != None and render_time > threshold:
             if md5 is None:
                 md5 = hashlib.md5(source_text).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
