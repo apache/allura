@@ -6,7 +6,7 @@ Upgrade Instructions
 
 New Features
 
- * [#6422] Added release script, cleaned up NOTICE and LICENSE files
+ * [#6422] Added release script and DISCLAIMER, cleaned up NOTICE, LICENSE, and README files
  * Added GitHub importers for Project, Code, Wiki, and Tickets
  * Added Tickets importer for Google Code
  * Added Allura exported Tickets importer
@@ -37,6 +37,6 @@ Bug Fixes & Minor Improvements:
  * [#6685] add faulthandler to smtp_server
  * [#6699] Provide a way to add additional Timers to AlluraTimerMiddleware
 
-Version 1.0.0  (August 2013)
+Version 1.0.0  (August 2013) (unreleased)
 
  * Initial ASF Incubation release
