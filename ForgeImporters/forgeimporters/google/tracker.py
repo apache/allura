@@ -44,6 +44,7 @@ from allura import model as M
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.google import GoogleCodeProjectExtractor
+from forgeimporters.google import GoogleCodeProjectNameValidator
 from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
@@ -51,7 +52,7 @@ from forgeimporters.base import (
 
 
 class GoogleCodeTrackerImportForm(ToolImportForm):
-    gc_project_name = fev.UnicodeString(not_empty=True)
+    gc_project_name = GoogleCodeProjectNameValidator()
 
 
 class GoogleCodeTrackerImportController(BaseController):

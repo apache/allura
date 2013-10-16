@@ -18,9 +18,33 @@
 -#}
 {% extends 'forgeimporters:templates/project_base.html' %}
 
+{% block extra_js %}
+    {{super()}}
+    <script type="text/javascript">
+        function suggest_name() {  // overrides base suggest_names
+            var $project_shortname = $('#project_shortname');
+            if (!manual) {
+                var name_or_url = $('#project_name').val().replace(/\s/g, '').toLowerCase();
+                name_or_url = name_or_url.replace(/\/$/, '');  // strip any trailing slash
+                var a = $('<a>', {href: name_or_url})[0];  // leverage DOM to parse URL
+                var project_name;
+                var old_style = a.hostname.match(/^(.*)\.googlecode\.com$/);
+                if (old_style) {
+                    project_name = old_style[1];
+                } else {
+                    var parts = a.pathname.split('/');
+                    project_name = parts.pop();
+                }
+                $project_shortname.val(project_name);
+            }
+            $project_shortname.trigger('change');
+        }
+    </script>
+{% endblock %}
+
 {% block project_fields %}
-    <div class="grid-6">
-        <label>Google Project Name</label>
+    <div class="grid-7">
+        <label>Google Project Name or URL</label>
     </div>
     <div class="grid-10">
         <input id="project_name" name="project_name" value="{{c.form_values['project_name']}}" autofocus/>
@@ -29,7 +53,7 @@
         </div>
     </div>
 
-    <div class="grid-6" style="clear:left">
+    <div class="grid-7" style="clear:left">
         <label>{{config.site_name}} URL Name</label>
     </div>
     <div class="grid-10">

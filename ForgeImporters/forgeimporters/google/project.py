@@ -24,19 +24,16 @@ from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
 
-from .. import base
-from . import tasks
+from forgeimporters import base
+from forgeimporters.google import tasks
+from forgeimporters.google import GoogleCodeProjectNameValidator
 
 
 log = logging.getLogger(__name__)
 
 
 class GoogleCodeProjectForm(base.ProjectImportForm):
-    project_name = fev.Regex(r'^[a-z0-9][a-z0-9-]{,61}$',
-            not_empty=True,
-            messages={
-                'invalid': 'Please use only letters, numbers, and dashes.',
-            })
+    project_name = GoogleCodeProjectNameValidator()
 
 
 class GoogleCodeProjectImporter(base.ProjectImporter):

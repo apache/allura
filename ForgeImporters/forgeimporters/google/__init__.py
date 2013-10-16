@@ -22,8 +22,11 @@ from urlparse import urlparse, urljoin, parse_qs
 from collections import defaultdict
 from contextlib import closing
 import logging
+import os
+import re
 
 from BeautifulSoup import BeautifulSoup
+from formencode import validators as fev
 
 from allura.lib import helpers as h
 from allura import model as M
@@ -60,6 +63,23 @@ def csv_parser(page):
         lines.pop()
     # remove CSV wrapping (quotes, commas, newlines)
     return [line.strip('",\n') for line in lines]
+
+
+class GoogleCodeProjectNameValidator(fev.FancyValidator):
+    not_empty = True
+    messages={
+            'invalid': 'Please enter a project URL, or a project name containing only letters, numbers, and dashes.',
+        }
+
+    def _to_python(self, value, state=None):
+        url = urlparse(value.strip())
+        if url.netloc.endswith('.googlecode.com'):
+            project_name = url.netloc.split('.')[0]
+        else:
+            project_name = os.path.basename(url.path.strip('/'))
+        if not re.match(r'^[a-z0-9][a-z0-9-]{,61}$', project_name):
+            raise fev.Invalid(self.message('invalid'))
+        return project_name
 
 
 class GoogleCodeProjectExtractor(ProjectExtractor):

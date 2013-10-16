@@ -42,6 +42,7 @@ from forgeimporters.base import (
         ToolImporter,
         )
 from forgeimporters.google import GoogleCodeProjectExtractor
+from forgeimporters.google import GoogleCodeProjectNameValidator
 
 REPO_APPS = {}
 TARGET_APPS = []
@@ -85,7 +86,7 @@ def get_repo_class(type_):
 
 
 class GoogleRepoImportForm(fe.schema.Schema):
-    gc_project_name = fev.UnicodeString(not_empty=True)
+    gc_project_name = GoogleCodeProjectNameValidator()
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
 
