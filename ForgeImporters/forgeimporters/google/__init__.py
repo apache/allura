@@ -17,6 +17,7 @@
 
 import re
 import urllib
+from urllib2 import HTTPError
 from urlparse import urlparse, urljoin, parse_qs
 from collections import defaultdict
 from contextlib import closing
@@ -135,7 +136,11 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             if len(extractor.page) <= 0:
                 return
             for issue_id in extractor.page:
-                yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
+                try:
+                    yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
+                except HTTPError as e:
+                    log.warn('Unable to load GC issue: %s #%s: %s', project_name, issue_id, e)
+                    continue
             start += limit
             extractor.get_page('issues_csv', parser=csv_parser, start=start)
 
