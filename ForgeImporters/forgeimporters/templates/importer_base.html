@@ -87,7 +87,11 @@
   <div>
     You'll receive an email when the import is finished.
     Import time varies depending on the amount of data being imported.
-    {{ importer.extra_notes }}
+    {% if config['doc.url.importers'] %}
+        <br/><br/>
+        For more information on what will be imported and post-import configuration,
+        please see the <a href="{{ config['doc.url.importers'] }}">import documentation</a>.
+    {% endif %}
   </div>
 
   <input type="submit" value="Import"/>

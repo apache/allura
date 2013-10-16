@@ -335,7 +335,6 @@ class ToolImporter(object):
     target_app = None  # app or list of apps
     source = None  # string description of source, must match project importer
     controller = None
-    extra_notes = ''
 
     @staticmethod
     def by_name(name):
