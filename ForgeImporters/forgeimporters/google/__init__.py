@@ -159,8 +159,11 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
                 try:
                     yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
                 except HTTPError as e:
-                    log.warn('Unable to load GC issue: %s #%s: %s', project_name, issue_id, e)
-                    continue
+                    if e.code == 404:
+                        log.warn('Unable to load GC issue: %s #%s: %s: %s', project_name, issue_id, e, e.url)
+                        continue
+                    else:
+                        raise
             start += limit
             extractor.get_page('issues_csv', parser=csv_parser, start=start)
 
