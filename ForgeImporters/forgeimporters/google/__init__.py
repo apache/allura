@@ -89,7 +89,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     PAGE_MAP = {
             'project_info': BASE_URL + '/p/{project_name}/',
             'source_browse': BASE_URL + '/p/{project_name}/source/browse/',
-            'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&start={start}',
+            'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&sort=ID&start={start}',
             'issue': BASE_URL + '/p/{project_name}/issues/detail?id={issue_id}',
         }
 
@@ -148,14 +148,9 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         Iterate over all issues for a project,
         using paging to keep the responses reasonable.
         """
-        start = 0
-        limit = 100
-
-        extractor = cls(project_name, 'issues_csv', parser=csv_parser, start=start)
-        while extractor.page:
-            if len(extractor.page) <= 0:
-                return
-            for issue_id in extractor.page:
+        issue_ids = cls.get_issue_ids(project_name, start=0)
+        while issue_ids:
+            for issue_id in sorted(issue_ids):
                 try:
                     yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
                 except HTTPError as e:
@@ -164,8 +159,23 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
                         continue
                     else:
                         raise
+            # get any new issues that were created while importing
+            # (jumping back a few in case some were deleted and new ones added)
+            new_ids = cls.get_issue_ids(project_name, start=len(issue_ids)-10)
+            issue_ids = new_ids - issue_ids
+
+    def get_issue_ids(self, project_name, start=0):
+        limit = 100
+
+        issue_ids = set()
+        page = self.get_page('issues_csv', parser=csv_parser, start=start)
+        while page:
+            if len(page) <= 0:
+                return
+            issue_ids.update(page)
             start += limit
-            extractor.get_page('issues_csv', parser=csv_parser, start=start)
+            page = self.get_page('issues_csv', parser=csv_parser, start=start)
+        return issue_ids
 
     def get_issue_summary(self):
         text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.text.strip()

@@ -17,6 +17,7 @@
 
 from unittest import TestCase
 import pkg_resources
+from urllib2 import HTTPError
 
 import mock
 from datadiff.tools import assert_equal
@@ -287,6 +288,49 @@ class TestGoogleCodeProjectExtractor(TestCase):
             self.assertEqual(actual.body, expected['body'])
             self.assertEqual(actual.updates, expected['updates'])
             self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
+
+    def test_get_issue_ids(self):
+        extractor = google.GoogleCodeProjectExtractor(None)
+        extractor.get_page = mock.Mock(side_effect=((1, 2, 3),(2, 3, 4), ()))
+        self.assertItemsEqual(extractor.get_issue_ids('foo', start=10), (1, 2, 3, 4))
+        self.assertEqual(extractor.get_page.call_count, 3)
+        extractor.get_page.assert_has_calls([
+                mock.call('issues_csv', parser=google.csv_parser, start=10),
+                mock.call('issues_csv', parser=google.csv_parser, start=110),
+                mock.call('issues_csv', parser=google.csv_parser, start=210),
+            ])
+
+    @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_page')
+    @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_issue_ids')
+    def test_iter_issue_ids(self, get_issue_ids, get_page):
+        get_issue_ids.side_effect = [set([1, 2]), set([2, 3, 4])]
+        issue_ids = [i for i,e in list(google.GoogleCodeProjectExtractor.iter_issues('foo'))]
+        self.assertEqual(issue_ids, [1, 2, 3, 4])
+        get_issue_ids.assert_has_calls([
+                mock.call('foo', start=0),
+                mock.call('foo', start=-8),
+            ])
+
+    @mock.patch.object(google.GoogleCodeProjectExtractor, '__init__')
+    @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_issue_ids')
+    def test_iter_issue_ids_raises(self, get_issue_ids, __init__):
+        get_issue_ids.side_effect = [set([1, 2, 3, 4, 5])]
+        __init__.side_effect = [
+                None,
+                HTTPError('fourohfour', 404, 'fourohfour', {}, mock.Mock()),  # should skip but keep going
+                None,
+                HTTPError('fubar', 500, 'fubar', {}, mock.Mock()),  # should be re-raised
+                None,
+            ]
+        issue_ids = []
+        try:
+            for issue_id, extractor in google.GoogleCodeProjectExtractor.iter_issues('foo'):
+                issue_ids.append(issue_id)
+        except HTTPError as e:
+            self.assertEqual(e.code, 500)
+        else:
+            assert False, 'Missing expected raised exception'
+        self.assertEqual(issue_ids, [1, 3])
 
 class TestUserLink(TestCase):
     def test_plain(self):
