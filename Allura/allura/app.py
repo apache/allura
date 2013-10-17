@@ -274,6 +274,17 @@ class Application(object):
 
     @property
     def email_address(self):
+        """Return email address for this Application.
+
+        Email address constructed from Application's url, and looks like this:
+
+            wiki@test.p.in.sf.net
+
+        where 'wiki@test.p' comes from app url (in this case /p/test/wiki/)
+        and '.in.sf.net' comes from 'forgemail.domain' config entry.
+
+        Assumes self.url returns a url path without domain, starting with '/'
+        """
         parts = list(reversed(self.url[1:-1].split('/')))
         return '%s@%s%s' % (parts[0], '.'.join(parts[1:]), config.common_suffix)
 
