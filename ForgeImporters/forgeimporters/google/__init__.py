@@ -110,7 +110,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     def get_short_description(self, project):
         page = self.get_page('project_info')
-        project.short_description = page.find(itemprop='description').string.strip()
+        project.short_description = page.find(itemprop='description').text.strip()
 
     def get_icon(self, project):
         page = self.get_page('project_info')
@@ -126,7 +126,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     def get_license(self, project):
         page = self.get_page('project_info')
-        license = page.find(text='Code license').findNext().find('a').string.strip()
+        license = page.find(text='Code license').findNext().find('a').text.strip()
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         project.trove_license.append(trove._id)
 
@@ -168,9 +168,9 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             extractor.get_page('issues_csv', parser=csv_parser, start=start)
 
     def get_issue_summary(self):
-        text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.string.strip()
+        text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.text.strip()
         bs = BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
-        return bs.string
+        return bs.text
 
     def get_issue_description(self):
         return _as_text(self.page.find(id='hc0').pre).strip()
@@ -193,7 +193,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     def get_issue_status(self):
         tag = self.page.find(id='issuemeta').find('th', text=re.compile('Status:')).findNext().span
         if tag:
-            return tag.string.strip()
+            return tag.text.strip()
         else:
             return ''
 
@@ -224,7 +224,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
 class UserLink(object):
     def __init__(self, tag):
-        self.name = tag.string.strip()
+        self.name = tag.text.strip()
         if tag.get('href'):
             self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
         else:
