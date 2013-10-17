@@ -114,10 +114,10 @@ def test_anchored_tools():
 
 def test_set_ordinal_to_admin_tool():
     with h.push_config(c,
-                       user=M.User.anonymous(),
+                       user=M.User.by_username('test-admin'),
                        project=M.Project.query.get(shortname='test')):
-        assert c.project.sitemap()
-        assert c.project.app_config('admin').options.ordinal == 100
+        sm = c.project.sitemap()
+        assert_equals(sm[-1].tool_name, 'admin')
 
 def test_users_and_roles():
     p = M.Project.query.get(shortname='test')

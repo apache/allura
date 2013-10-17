@@ -461,7 +461,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         anchored_tools = self.neighborhood.get_anchored_tools()
         i = len(anchored_tools)
         new_tools = self.install_anchored_tools()
-        self.app_config('admin').options.ordinal = 100
 
         # Set menu mode
         delta_ordinal = i
@@ -490,6 +489,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
                     if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
                         ordinal = anchored_tools.keys().index(entry.tool_name.lower())
+                    elif ac.tool_name == 'admin':
+                        ordinal = 100
                     else:
                         ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
                     if self.is_nbhd_project and entry.label == 'Admin':
