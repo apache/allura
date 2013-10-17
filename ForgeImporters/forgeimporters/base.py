@@ -40,6 +40,7 @@ from allura.lib.decorators import require_post
 from allura.lib.decorators import task
 from allura.lib.security import require_access
 from allura.lib.plugin import ProjectRegistrationProvider, AdminExtension
+from allura.lib.utils import guess_mime_type
 from allura.lib import helpers as h
 from allura.lib import exceptions
 from allura.lib import validators as v
@@ -510,7 +511,6 @@ class ImportAdminExtension(AdminExtension):
 
 def stringio_parser(page):
     return {
-            'content-type': page.info()['content-type'],
             'data': StringIO(page.read()),
         }
 
@@ -519,7 +519,7 @@ class File(object):
         extractor = ProjectExtractor(None, url, parser=stringio_parser)
         self.url = url
         self.filename = filename or os.path.basename(urlparse(url).path)
-        self.type = extractor.page['content-type'].split(';')[0]
+        self.type = guess_mime_type(filename)
         self.file = extractor.page['data']
 
 
