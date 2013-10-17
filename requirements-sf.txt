@@ -24,7 +24,7 @@ TracWikiImporter==0.3.3
 
 # use version built from https://github.com/johnsca/GitPython/commits/tv/6000
 # for unmerged fixes for [#5411], [#6000], and [#6078]
-GitPython==0.3.2.RC1-20131014
+GitPython==0.3.2.RC1-20131017
 
 WebError==0.10.3-20130423
 
