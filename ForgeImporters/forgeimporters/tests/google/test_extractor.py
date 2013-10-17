@@ -76,7 +76,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     def test_get_short_description(self):
         extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
-        extractor.page.find.return_value.string = 'My Super Project'
+        extractor.page.find.return_value.text = 'My Super Project'
 
         extractor.get_short_description(self.project)
 
@@ -104,7 +104,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_get_license(self, M):
         self.project.trove_license = []
         extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
-        extractor.page.find.return_value.findNext.return_value.find.return_value.string = '  New BSD License  '
+        extractor.page.find.return_value.findNext.return_value.find.return_value.text = '  New BSD License  '
         trove = M.TroveCategory.query.get.return_value
 
         extractor.get_license(self.project)
@@ -116,7 +116,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
         M.TroveCategory.query.get.assert_called_once_with(fullname='BSD License')
 
         M.TroveCategory.query.get.reset_mock()
-        extractor.page.find.return_value.findNext.return_value.find.return_value.string = 'non-existant license'
+        extractor.page.find.return_value.findNext.return_value.find.return_value.text = 'non-existant license'
         extractor.get_license(self.project)
         M.TroveCategory.query.get.assert_called_once_with(fullname='Other/Proprietary License')
 
@@ -190,6 +190,24 @@ class TestGoogleCodeProjectExtractor(TestCase):
             )
         self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
         self.assertEqual(gpe.get_issue_stars(), 1)
+
+    def test_get_issue_summary(self):
+        html = u"""
+        <div id="issueheader">
+            <table>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td><span>%s</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        """
+        gpe = self._make_extractor(html % u'')
+        self.assertEqual(gpe.get_issue_summary(), u'')
+        gpe = self._make_extractor(html % u'My Summary')
+        self.assertEqual(gpe.get_issue_summary(), u'My Summary')
 
     def test_get_issue_mod_date(self):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
@@ -273,14 +291,14 @@ class TestGoogleCodeProjectExtractor(TestCase):
 class TestUserLink(TestCase):
     def test_plain(self):
         tag = mock.Mock()
-        tag.string.strip.return_value = 'name'
+        tag.text.strip.return_value = 'name'
         tag.get.return_value = None
         link = google.UserLink(tag)
         self.assertEqual(str(link), 'name')
 
     def test_linked(self):
         tag = mock.Mock()
-        tag.string.strip.return_value = 'name'
+        tag.text.strip.return_value = 'name'
         tag.get.return_value = '/p/project'
         link = google.UserLink(tag)
         self.assertEqual(str(link), '[name](http://code.google.com/p/project)')
