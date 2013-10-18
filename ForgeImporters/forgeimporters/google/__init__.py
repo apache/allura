@@ -148,7 +148,8 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         Iterate over all issues for a project,
         using paging to keep the responses reasonable.
         """
-        issue_ids = cls.get_issue_ids(project_name, start=0)
+        extractor = cls(project_name)
+        issue_ids = extractor.get_issue_ids(start=0)
         while issue_ids:
             for issue_id in sorted(issue_ids):
                 try:
@@ -161,10 +162,10 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
                         raise
             # get any new issues that were created while importing
             # (jumping back a few in case some were deleted and new ones added)
-            new_ids = cls.get_issue_ids(project_name, start=len(issue_ids)-10)
+            new_ids = extractor.get_issue_ids(start=len(issue_ids)-10)
             issue_ids = new_ids - issue_ids
 
-    def get_issue_ids(self, project_name, start=0):
+    def get_issue_ids(self, start=0):
         limit = 100
 
         issue_ids = set()

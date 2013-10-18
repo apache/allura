@@ -292,7 +292,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_get_issue_ids(self):
         extractor = google.GoogleCodeProjectExtractor(None)
         extractor.get_page = mock.Mock(side_effect=((1, 2, 3),(2, 3, 4), ()))
-        self.assertItemsEqual(extractor.get_issue_ids('foo', start=10), (1, 2, 3, 4))
+        self.assertItemsEqual(extractor.get_issue_ids(start=10), (1, 2, 3, 4))
         self.assertEqual(extractor.get_page.call_count, 3)
         extractor.get_page.assert_has_calls([
                 mock.call('issues_csv', parser=google.csv_parser, start=10),
@@ -307,8 +307,8 @@ class TestGoogleCodeProjectExtractor(TestCase):
         issue_ids = [i for i,e in list(google.GoogleCodeProjectExtractor.iter_issues('foo'))]
         self.assertEqual(issue_ids, [1, 2, 3, 4])
         get_issue_ids.assert_has_calls([
-                mock.call('foo', start=0),
-                mock.call('foo', start=-8),
+                mock.call(start=0),
+                mock.call(start=-8),
             ])
 
     @mock.patch.object(google.GoogleCodeProjectExtractor, '__init__')
@@ -316,6 +316,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_iter_issue_ids_raises(self, get_issue_ids, __init__):
         get_issue_ids.side_effect = [set([1, 2, 3, 4, 5])]
         __init__.side_effect = [
+                None,
                 None,
                 HTTPError('fourohfour', 404, 'fourohfour', {}, mock.Mock()),  # should skip but keep going
                 None,
