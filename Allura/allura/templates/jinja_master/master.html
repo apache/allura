@@ -77,6 +77,7 @@
     {% endfor %}
     {% endblock %}
     {{theme_macros.header(g.login_url, '/auth/logout')}}
+    {{theme_macros.site_notification()}}
     {% set flash = tg.flash_obj.render('flash', use_js=False) %}
     <section id="page-body" class="{{g.document_class(neighborhood)}}">
 	  <div id="nav_menu_holder">

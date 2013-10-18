@@ -16,13 +16,15 @@
 #       under the License.
 
 from functools import partial
-from nose.tools import assert_equals, assert_raises
+from nose.tools import assert_equals, assert_raises, assert_is_none, assert_is
 from mock import Mock, MagicMock, patch
 from formencode import Invalid
+from datetime import timedelta
 
 from allura import model as M
 from allura.lib.utils import TruthyCallable
 from allura.lib.plugin import ProjectRegistrationProvider
+from allura.lib.plugin import ThemeProvider
 from allura.lib.exceptions import ProjectConflict, ProjectShortnameInvalid
 
 
@@ -61,3 +63,54 @@ class TestProjectRegistrationProvider(object):
         assert_raises(ProjectShortnameInvalid, v, 'this is invalid and too long', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
+
+
+class TestThemeProvider(object):
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_no_note(self, request, response, SiteNotification):
+        SiteNotification.current.return_value = None
+        assert_is_none(ThemeProvider().get_site_notification())
+        assert not response.set_cookie.called
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_closed(self, request, response, SiteNotification):
+        SiteNotification.current.return_value._id = 'deadbeef'
+        request.cookies = {'notification-closed-deadbeef': 'true'}
+        assert_is_none(ThemeProvider().get_site_notification())
+        assert not response.set_cookie.called
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_impressions_over(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 2
+        request.cookies = {'notification-seen-deadbeef': '3'}
+        assert_is_none(ThemeProvider().get_site_notification())
+        assert not response.set_cookie.called
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_impressions_under(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 2
+        request.cookies = {'notification-seen-deadbeef': '1'}
+        assert_is(ThemeProvider().get_site_notification(), note)
+        response.set_cookie.assert_called_once_with('notification-seen-deadbeef', '3', max_age=timedelta(days=365))
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_impressions_persistent(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 0
+        request.cookies = {'notification-seen-deadbeef': '1000'}
+        assert_is(ThemeProvider().get_site_notification(), note)

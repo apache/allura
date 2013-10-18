@@ -563,6 +563,43 @@ blockquote {
   margin: 0 auto;
 }
 
+#site-notification {
+  margin: 0 auto;
+  margin-bottom: 20px;
+  *zoom: 1;
+  width: 940px;
+  border-size: 2px;
+  border-style: solid;
+  -moz-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
+  -o-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
+  box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
+  opacity: 0.9;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -o-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+  padding: 10px;
+}
+#site-notification .ico-close {
+  float: right;
+  margin-top: -10px;
+  margin-right: -10px;
+  display: none;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+#site-notification:hover .ico-close {
+  display: block;
+}
+
 .hub {
   width: 200px;
   overflow: hidden;

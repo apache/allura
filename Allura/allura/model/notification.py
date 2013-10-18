@@ -620,3 +620,23 @@ class MailFooter(object):
             email=toaddr,
             app_url=app_url,
             setting_url=setting_url)
+
+
+class SiteNotification(MappedClass):
+    """
+    Storage for site-wide notification.
+    """
+
+    class __mongometa__:
+        session = main_orm_session
+        name = 'site_notification'
+        indexes = ['deleted']
+
+    _id = FieldProperty(S.ObjectId)
+    content = FieldProperty(str, if_missing='')
+    deleted = FieldProperty(bool, if_missing=False)
+    impressions = FieldProperty(int, if_missing=lambda:config.get('site_notification.impressions', 0))
+
+    @classmethod
+    def current(cls):
+        return cls.query.find({'deleted': False}).sort('_id', -1).limit(1).first()

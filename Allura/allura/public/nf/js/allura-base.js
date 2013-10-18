@@ -216,4 +216,13 @@ $(function(){
     // Provide CSRF protection
     var cval = $.cookie('_session_id');
     $('form[method=post]').append('<input name="_session_id" type="hidden" value="'+cval+'">');
+
+    $('#site-notification .ico-close').click(function() {
+        var $note = $(this).parent();
+        $note.hide();
+        $.cookie('notification-closed-'+$note.data('notification-id'), 'true', {
+            expires: 365,
+            path: '/'
+        });
+    });
 });

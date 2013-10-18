@@ -28,7 +28,7 @@ from cStringIO import StringIO
 from random import randint
 from hashlib import sha256
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 try:
@@ -41,6 +41,7 @@ from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from webob import exc
 from bson.tz_util import FixedOffset
+from paste.deploy.converters import asbool, asint
 
 from ming.utils import LazyProperty
 from ming.orm import state
@@ -865,6 +866,21 @@ class ThemeProvider(object):
                 return g.entry_points['tool'][app].icon_url(size)
         else:
             return app.icon_url(size)
+
+    def get_site_notification(self):
+        from pylons import request, response
+        from allura.model.notification import SiteNotification
+        note = SiteNotification.current()
+        if note is None:
+            return None
+        closed_cookie = ('notification-closed-%s' % note._id).encode('utf8')
+        seen_cookie = ('notification-seen-%s' % note._id).encode('utf8')
+        closed = asbool(request.cookies.get(closed_cookie))
+        seen = asint(request.cookies.get(seen_cookie, '0'))+1
+        if closed or note.impressions > 0 and seen > note.impressions:
+            return None
+        response.set_cookie(seen_cookie, str(seen+1), max_age=timedelta(days=365))
+        return note
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
