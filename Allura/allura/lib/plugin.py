@@ -873,13 +873,19 @@ class ThemeProvider(object):
         note = SiteNotification.current()
         if note is None:
             return None
-        closed_cookie = ('notification-closed-%s' % note._id).encode('utf8')
-        seen_cookie = ('notification-seen-%s' % note._id).encode('utf8')
-        closed = asbool(request.cookies.get(closed_cookie))
-        seen = asint(request.cookies.get(seen_cookie, '0'))+1
-        if closed or note.impressions > 0 and seen > note.impressions:
+        cookie = request.cookies.get('site-notification', '').split('-')
+        if len(cookie) == 3 and cookie[0] == str(note._id):
+            views = asint(cookie[1])+1
+            closed = asbool(cookie[2])
+        else:
+            views = 1
+            closed = False
+        if closed or note.impressions > 0 and views > note.impressions:
             return None
-        response.set_cookie(seen_cookie, str(seen), max_age=timedelta(days=365))
+        response.set_cookie(
+                'site-notification',
+                '-'.join(map(str, [note._id, views, closed])),
+                max_age=timedelta(days=365))
         return note
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):

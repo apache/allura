@@ -79,7 +79,7 @@ class TestThemeProvider(object):
     @patch('pylons.request')
     def test_get_site_notification_closed(self, request, response, SiteNotification):
         SiteNotification.current.return_value._id = 'deadbeef'
-        request.cookies = {'notification-closed-deadbeef': 'true'}
+        request.cookies = {'site-notification': 'deadbeef-1-true'}
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
 
@@ -90,7 +90,7 @@ class TestThemeProvider(object):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
         note.impressions = 2
-        request.cookies = {'notification-seen-deadbeef': '3'}
+        request.cookies = {'site-notification': 'deadbeef-3-false'}
         assert_is_none(ThemeProvider().get_site_notification())
         assert not response.set_cookie.called
 
@@ -101,9 +101,9 @@ class TestThemeProvider(object):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
         note.impressions = 2
-        request.cookies = {'notification-seen-deadbeef': '1'}
+        request.cookies = {'site-notification': 'deadbeef-1-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('notification-seen-deadbeef', '2', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-2-False', max_age=timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -112,5 +112,38 @@ class TestThemeProvider(object):
         note = SiteNotification.current.return_value
         note._id = 'deadbeef'
         note.impressions = 0
-        request.cookies = {'notification-seen-deadbeef': '1000'}
+        request.cookies = {'site-notification': 'deadbeef-1000-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_new_notification(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 1
+        request.cookies = {'site-notification': '0ddba11-1000-true'}
+        assert_is(ThemeProvider().get_site_notification(), note)
+        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_no_cookie(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 0
+        request.cookies = {}
+        assert_is(ThemeProvider().get_site_notification(), note)
+        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+
+    @patch('allura.model.notification.SiteNotification')
+    @patch('pylons.response')
+    @patch('pylons.request')
+    def test_get_site_notification_bad_cookie(self, request, response, SiteNotification):
+        note = SiteNotification.current.return_value
+        note._id = 'deadbeef'
+        note.impressions = 0
+        request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
+        assert_is(ThemeProvider().get_site_notification(), note)
+        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))

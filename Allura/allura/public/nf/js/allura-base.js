@@ -217,10 +217,13 @@ $(function(){
     var cval = $.cookie('_session_id');
     $('form[method=post]').append('<input name="_session_id" type="hidden" value="'+cval+'">');
 
+    var SN_ID=0, SN_VIEWS=1, SN_CLOSED=2;
     $('#site-notification .ico-close').click(function() {
         var $note = $(this).parent();
         $note.hide();
-        $.cookie('notification-closed-'+$note.data('notification-id'), 'true', {
+        var status = $.cookie('site-notification').split('-');
+        status[SN_CLOSED] = 'true';
+        $.cookie('site-notification', status.join('-'), {
             expires: 365,
             path: '/'
         });

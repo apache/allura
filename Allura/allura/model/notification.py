@@ -630,13 +630,15 @@ class SiteNotification(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'site_notification'
-        indexes = ['deleted']
 
     _id = FieldProperty(S.ObjectId)
     content = FieldProperty(str, if_missing='')
-    deleted = FieldProperty(bool, if_missing=False)
+    active = FieldProperty(bool, if_missing=True)
     impressions = FieldProperty(int, if_missing=lambda:config.get('site_notification.impressions', 0))
 
     @classmethod
     def current(cls):
-        return cls.query.find({'deleted': False}).sort('_id', -1).limit(1).first()
+        note = cls.query.find().sort('_id', -1).limit(1).first()
+        if note is None or not note.active:
+            return None
+        return note

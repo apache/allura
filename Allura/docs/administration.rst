@@ -73,3 +73,23 @@ One such script is `wiki-copy.py` which reads the wiki pages from one Allura wik
 instance and uploads them to another Allura wiki instance.  It can be run as::
 
 $ python scripts/wiki-copy.py --help
+
+
+Site Notifications
+------------------
+
+Allura has support for site-wide notifications that appear below the site header,
+but there is currently no UI for managing them.  They can easily be inserted via
+manual mongo queries, however:
+
+    > db.site_notification.insert({
+    ... active: true,
+    ... impressions: 10,
+    ... content: 'You can now reimport exported project data.'
+    ... })
+
+This will create a notification that will be shown for 10 page views or until the
+user closes it manually.  An `impressions` value of 0 will show the notification
+indefinitely (until closed).  The notification content can contain HTML.  Only the
+most recent notification will be shown, unless it has `active:false`, in which case
+no notification will be shown.
