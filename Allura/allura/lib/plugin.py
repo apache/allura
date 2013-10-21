@@ -879,7 +879,7 @@ class ThemeProvider(object):
         seen = asint(request.cookies.get(seen_cookie, '0'))+1
         if closed or note.impressions > 0 and seen > note.impressions:
             return None
-        response.set_cookie(seen_cookie, str(seen+1), max_age=timedelta(days=365))
+        response.set_cookie(seen_cookie, str(seen), max_age=timedelta(days=365))
         return note
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):

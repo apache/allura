@@ -126,9 +126,11 @@
 {%- macro site_notification() %}
     {% set note = g.theme.get_site_notification() %}
     {% if note %}
-        <div id="site-notification" class="info" data-notification-id="{{note._id}}">
-            <b title="Close" class="ico ico-close" data-icon="D"></b>
-            {{note.content|safe}}
+        <div id="site-notification">
+            <section class="message info" data-notification-id="{{note._id}}">
+                <b title="Close" class="ico ico-close" data-icon="D"></b>
+                {{note.content|safe}}
+            </section>
         </div>
     {% endif %}
 {%- endmacro %}

@@ -567,9 +567,12 @@ blockquote {
   margin: 0 auto;
   margin-bottom: 20px;
   *zoom: 1;
-  width: 940px;
-  border-size: 2px;
-  border-style: solid;
+  width: 960px;
+}
+#site-notification .message {
+  float: none;
+  margin: 0;
+  margin-left: -2px;
   -moz-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
   -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
   -o-box-shadow: rgba(0, 0, 0, 0.5) 0 4px 10px 0;
@@ -586,18 +589,8 @@ blockquote {
   padding: 10px;
 }
 #site-notification .ico-close {
-  float: right;
-  margin-top: -10px;
-  margin-right: -10px;
-  display: none;
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  color: #1a1a1a;
-  cursor: pointer;
-}
-#site-notification:hover .ico-close {
   display: block;
+  cursor: pointer;
 }
 
 .hub {

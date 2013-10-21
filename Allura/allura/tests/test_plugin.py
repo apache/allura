@@ -103,7 +103,7 @@ class TestThemeProvider(object):
         note.impressions = 2
         request.cookies = {'notification-seen-deadbeef': '1'}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('notification-seen-deadbeef', '3', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with('notification-seen-deadbeef', '2', max_age=timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
