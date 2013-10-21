@@ -73,7 +73,8 @@
   {% endif %}
   <input type="submit" value="Search"/>
 </form>
-<a href="#" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
+<a href="{{tg.url(c.app.url + 'search_help/')}}" target="_blank" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
+
 </div>
 <div style="clear:both"></div>
 {{c.ticket_search_results.display(solr_error=solr_error,
@@ -85,7 +86,7 @@
   columns=columns,
   page=page,
   sort=sort)}}
-{{c.search_help_modal.display()}}
+
 {% endblock %}
 
 {% block extra_js %}
