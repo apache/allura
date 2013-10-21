@@ -221,7 +221,7 @@ class Page(VersionedArtifact, ActivityObject):
     def delete(self):
         Shortlink.query.remove(dict(ref_id=self.index_id()))
         self.deleted = True
-        suffix = " {dt.hour}:{dt.minute}:{dt.second} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
+        suffix = " {dt.hour}:{dt.minute}:{dt.second}.{dt.microsecond} {dt.day}-{dt.month}-{dt.year}".format(dt=datetime.utcnow())
         self.title += suffix
 
 class WikiAttachment(BaseAttachment):
