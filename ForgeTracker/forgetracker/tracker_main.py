@@ -765,7 +765,7 @@ class RootController(BaseController, FeedController):
     @expose('jinja:forgetracker:templates/tracker/search_help.html')
     def search_help(self):
         'Static page with search help'
-        return dict()
+        return dict(globals=c.app.globals)
 
 
     @with_trailing_slash
