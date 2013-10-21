@@ -42,7 +42,7 @@ from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
 from allura.lib import utils
-from allura.model.repository import topological_sort
+from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
 
 log = logging.getLogger(__name__)
@@ -502,20 +502,6 @@ class GitImplementation(M.RepositoryImplementation):
         """
         Find the ID of the last commit to touch each path.
         """
-        def prefix_paths_union(a, b):
-            """
-            Given two sets of paths, a and b, find the items from a that
-            are either in b or are parent directories of items in b.
-            """
-            union = a & b
-            prefixes = a - b
-            candidates = b - a
-            for prefix in prefixes:
-                for candidate in candidates:
-                    if candidate.startswith(prefix + '/'):
-                        union.add(prefix)
-                        break
-            return union
         result = {}
         paths = set(paths)
         orig_commit_id = commit_id = commit._id

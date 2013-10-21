@@ -745,6 +745,22 @@ def topological_sort(graph):
     assert not graph, 'Cycle detected'
 
 
+def prefix_paths_union(a, b):
+    """
+    Given two sets of paths, a and b, find the items from a that
+    are either in b or are parent directories of items in b.
+    """
+    union = a & b
+    prefixes = a - b
+    candidates = b - a
+    for prefix in prefixes:
+        for candidate in candidates:
+            if candidate.startswith(prefix + '/'):
+                union.add(prefix)
+                break
+    return union
+
+
 def zipdir(source, zipfile, exclude=None):
     """Create zip archive using zip binary."""
     zipbin = tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')

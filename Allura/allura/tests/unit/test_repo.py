@@ -24,7 +24,7 @@ from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.controllers.repository import topo_sort
-from allura.model.repository import zipdir
+from allura.model.repository import zipdir, prefix_paths_union
 from alluratest.controller import setup_unit_test
 
 class TestCommitRunBuilder(unittest.TestCase):
@@ -325,3 +325,20 @@ class TestZipDir(unittest.TestCase):
                 "returned non-zero exit code 1" in emsg)
         self.assertTrue("STDOUT: 1" in emsg)
         self.assertTrue("STDERR: 2" in emsg)
+
+
+class TestPrefixPathsUnion(unittest.TestCase):
+    def test_disjoint(self):
+        a = set(['a1', 'a2', 'a3'])
+        b = set(['b1', 'b1/foo', 'b2'])
+        self.assertItemsEqual(prefix_paths_union(a, b), [])
+
+    def test_exact(self):
+        a = set(['a1', 'a2', 'a3'])
+        b = set(['b1', 'a2', 'a3'])
+        self.assertItemsEqual(prefix_paths_union(a, b), ['a2', 'a3'])
+
+    def test_prefix(self):
+        a = set(['a1', 'a2', 'a3'])
+        b = set(['b1', 'a2/foo', 'b3/foo'])
+        self.assertItemsEqual(prefix_paths_union(a, b), ['a2'])
