@@ -535,6 +535,7 @@ class Tree(RepoObject):
         # otherwise, try old format
         old_style_results = self.ls_old()
         if old_style_results:
+            log.info('Using old-style results from ls_old()')
             return old_style_results
         # finally, use the new implentation that auto-vivifies
         last_commit = LastCommit.get(self, create=True)
