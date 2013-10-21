@@ -189,30 +189,48 @@ class GitHubWikiImporter(ToolImporter):
     def _with_history(self, commit):
         for filename in commit.stats.files.keys():
             self._set_available_pages(commit)
-            if filename in commit.tree:
+            renamed_to = None
+            if '=>' in filename:
+                # File renamed. Stats contains entry like 'Page.md => NewPage.md'
+                filename, renamed_to = filename.split(' => ')
+            if renamed_to and renamed_to in commit.tree:
+                text = commit.tree[renamed_to].data_stream.read()
+            elif filename in commit.tree:
                 text = commit.tree[filename].data_stream.read()
             else:
                 # file is deleted
                 text = ''
-            self._make_page(text, filename, commit)
+            self._make_page(text, filename, commit, renamed_to)
 
-    def _make_page(self, text, filename, commit):
+    def _make_page(self, text, filename, commit, renamed_to=None):
+        orig_name = self._format_supported(filename)
+        renamed_orig_name = self._format_supported(renamed_to) if renamed_to else None
+        if not orig_name:
+            return
+        if renamed_to and not renamed_orig_name:
+            return
+        mod_date = datetime.utcfromtimestamp(commit.committed_date)
+        wiki_page = WM.Page.upsert(self._convert_page_name(orig_name))
+        wiki_page.timestamp = wiki_page.mod_date = mod_date
+        wiki_page.viewable_by = ['all']
+        if renamed_orig_name and renamed_to in commit.tree:
+            wiki_page.title = self._convert_page_name(renamed_orig_name)
+            wiki_page.text = self.convert_markup(h.really_unicode(text), renamed_to)
+        elif filename in commit.tree:
+            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
+        else:
+            wiki_page.delete()
+        import_id_name = renamed_orig_name if renamed_orig_name else orig_name
+        wiki_page.import_id = ImportIdConverter.get().expand(import_id_name, self.app)
+        wiki_page.commit()
+        return wiki_page
+
+    def _format_supported(self, filename):
         orig_name, ext = os.path.splitext(filename)
         if ext and ext not in self.supported_formats:
             log.info('Not a wiki page %s. Skipping.' % filename)
-            return
-        mod_date = datetime.utcfromtimestamp(commit.committed_date)
-        name = self._convert_page_name(orig_name)
-        wiki_page = WM.Page.upsert(name)
-        if filename in commit.tree:
-            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
-            wiki_page.timestamp = wiki_page.mod_date = mod_date
-            wiki_page.viewable_by = ['all']
-        else:
-            wiki_page.delete()
-        wiki_page.import_id = ImportIdConverter.get().expand(orig_name, self.app)
-        wiki_page.commit()
-        return wiki_page
+            return False
+        return orig_name
 
     def _convert_page_name(self, name):
         """Convert '-' and '/' into spaces in page name to match github behavior"""
