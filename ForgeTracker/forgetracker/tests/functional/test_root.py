@@ -333,6 +333,52 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
 
+        params = dict(
+            custom_fields=[
+                dict(name='_major', label='Major', type='boolean'), ],
+                open_status_names='aa bb',
+                closed_status_names='cc',
+                )
+        self.app.post(
+            '/admin/bugs/set_custom_fields',
+            params=variable_encode(params))
+        kw = {'custom_fields._major': 'True'}
+        self.new_ticket(summary='First Custom', **kw)
+        kw = {'custom_fields._major': ''}
+        self.new_ticket(summary='Second Custom', **kw)
+        third_ticket = tm.Ticket.query.find({
+            'summary': 'First Custom'}).first()
+        fourth_ticket = tm.Ticket.query.find({
+            'summary': 'Second Custom'}).first()
+
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          third_ticket._id,
+                          fourth_ticket._id,),
+                      'status': 'accepted',
+                      '_major': 'False'
+                      })
+        M.MonQTask.run_ready()
+        r = self.app.get('/p/test/bugs/3/')
+        assert '<li><strong>Major</strong>: True --&gt; False</li>' in r
+        r = self.app.get('/p/test/bugs/4/')
+        assert '<li><strong>Major</strong>: True --&gt; False</li>' not in r
+
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          third_ticket._id,
+                          fourth_ticket._id,),
+                      'status': 'accepted',
+                      '_major': 'True'
+                      })
+        M.MonQTask.run_ready()
+        r = self.app.get('/p/test/bugs/3/')
+        assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
+        r = self.app.get('/p/test/bugs/4/')
+        assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
+
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
         assert_true('<label class="simple">Private:</label> No' in ticket_view)
