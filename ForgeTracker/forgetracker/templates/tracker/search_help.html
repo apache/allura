@@ -48,7 +48,17 @@
     <li>Votes up/down of the ticket - votes_up/votes_down (if enabled in tool options)</li>
     <li>Votes total of the ticket - votes_total</li>
     <li>Imported legacy id - import_id</li>
-    <li>Custom field - the field name with an underscore in front, like _custom</li>
+    {% if c.app.globals.custom_fields %}
+    <li>Custom fields:
+        <ul>
+        {% for field in c.app.globals.custom_fields or [] %}
+            {% if field.name != '_milestone' %}
+                <li>{{field.name}}</li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </li>
+    {% endif %}
     </ul>
 
     <h2>Example searches</h2>
@@ -80,6 +90,7 @@
     <li>Status of the ticket - status_s</li>
     <li>Title of the ticket - snippet_s</li>
     <li>Private ticket - private_b</li>
+    {% if c.app.globals.custom_fields %}
     <li>Custom fields:
         <ul>
         {% for field in c.app.globals.custom_fields or [] %}
@@ -89,6 +100,7 @@
         {% endfor %}
         </ul>
     </li>
+    {% endif %}
     </ul>
     <p>You can use these properties by appending them to the url (only one sort allowed at a time) like this:</p>
     <div class="codehilite"><pre>/p/yourproject/tickets/search/?q=_milestone:1.0&amp;sort=snippet_s+asc</pre></div></div>
