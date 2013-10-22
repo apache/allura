@@ -23,6 +23,7 @@ import json
 from pylons import app_globals as g
 import mock
 from nose.tools import assert_equal, assert_in, assert_not_in
+from ming.odm import ThreadLocalODMSession
 
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
@@ -73,18 +74,32 @@ class TestRestHome(TestRestApiBase):
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 403)
 
-    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
     @td.with_wiki
-    def test_bearer_token_valid(self, request, OAuthAccessToken):
-        request.params = {'access_token': 'foo'}
+    def test_bearer_token_valid(self, request):
+        user = M.User.by_username('test-admin')
+        consumer_token = M.OAuthConsumerToken(
+                name='foo',
+                description='foo app',
+            )
+        request_token = M.OAuthRequestToken(
+                consumer_token_id=consumer_token._id,
+                user_id=user._id,
+                callback='manual',
+                validation_pin=h.nonce(20),
+                is_bearer=True,
+            )
+        access_token = M.OAuthAccessToken(
+                consumer_token_id=consumer_token._id,
+                request_token_id=request_token._id,
+                user_id=user._id,
+                is_bearer=True,
+            )
+        ThreadLocalODMSession.flush_all()
+        request.params = {'access_token': access_token.api_key}
         request.scheme = 'https'
-        access_token = OAuthAccessToken.query.get.return_value
-        access_token.is_bearer = True
-        access_token.user = M.User.by_username('test-admin')
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 200)
-        OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
 
     def test_bad_path(self):
         r = self.api_post('/rest/1/test/wiki/')
