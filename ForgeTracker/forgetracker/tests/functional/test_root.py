@@ -2682,3 +2682,16 @@ class TestStats(TrackerTestController):
     def test_stats(self):
         r = self.app.get('/bugs/stats/', status=200)
         assert_in('# tickets: 0', r.body)
+
+
+class TestNotifications(TrackerTestController):
+
+    def test_notification_email_grouping(self):
+        ticket_view = self.new_ticket(summary='Test Ticket')
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        assert_equal(email.kwargs.message_id, ticket.message_id())
+        assert_equal(email.kwargs.in_reply_to, None)

@@ -29,6 +29,7 @@ from nose import with_setup
 
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import Mapper
+from bson import ObjectId
 
 import allura
 from allura import model as M
@@ -131,6 +132,16 @@ def test_artifactlink():
 @with_setup(setUp, tearDown)
 def test_gen_messageid():
     assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net', h.gen_message_id())
+
+@with_setup(setUp, tearDown)
+def test_gen_messageid_with_id_set():
+    oid = ObjectId()
+    assert re.match(r'%s.wiki@test.p.sourceforge.net' % str(oid), h.gen_message_id(oid))
+
+@with_setup(setUp, tearDown)
+def test_artifact_messageid():
+    p = WM.Page(title='T')
+    assert re.match(r'%s.wiki@test.p.sourceforge.net' % str(p._id), p.message_id())
 
 @with_setup(setUp, tearDown)
 def test_versioning():

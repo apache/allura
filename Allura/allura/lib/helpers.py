@@ -412,15 +412,17 @@ def diff_text(t1, t2, differ=None):
             result += t1_words[i1:i2]
     return ' '.join(result).replace('\n', '<br/>\n')
 
-def gen_message_id():
+def gen_message_id(_id=None):
+    if not _id:
+        _id = nonce(40)
     if getattr(c, 'project', None):
         parts = c.project.url().split('/')[1:-1]
     else:
         parts = ['mail']
     if getattr(c, 'app', None):
-        addr = '%s.%s' % (nonce(40), c.app.config.options['mount_point'])
+        addr = '%s.%s' % (_id, c.app.config.options['mount_point'])
     else:
-        addr = nonce(40)
+        addr = _id
     return '%s@%s.sourceforge.net' % (
         addr, '.'.join(reversed(parts)))
 

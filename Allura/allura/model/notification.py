@@ -160,14 +160,16 @@ class Notification(MappedClass):
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
             author = post.author()
+            msg_id = artifact.url() + post._id
+            parent_msg_id = artifact.url() + post.parent_id if post.parent_id else artifact.message_id()
             d = dict(
-                _id=artifact.url()+post._id,
+                _id=msg_id,
                 from_address=str(author._id) if author != User.anonymous() else None,
                 reply_to_address='"%s" <%s>' % (
                     subject_prefix, getattr(artifact, 'email_address', u'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
                 text=text,
-                in_reply_to=post.parent_id,
+                in_reply_to=parent_msg_id,
                 author_id=author._id,
                 pubdate=datetime.utcnow())
         elif topic == 'flash':
@@ -182,6 +184,7 @@ class Notification(MappedClass):
                 h.get_first(idx, 'title'),
                 getattr(artifact, 'email_address', u'noreply@in.sf.net'))
             d = dict(
+                message_id=artifact.message_id(),
                 from_address=reply_to,
                 reply_to_address=reply_to,
                 subject=subject_prefix + subject,

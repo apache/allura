@@ -424,6 +424,10 @@ class Artifact(MappedClass):
     def get_mail_footer(self, notification, toaddr):
         return MailFooter.standard(notification)
 
+    def message_id(self):
+        '''Persistent, email-friendly (Message-ID header) id of this artifact'''
+        return h.gen_message_id(self._id)
+
 
 class Snapshot(Artifact):
     """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
@@ -467,7 +471,7 @@ class Snapshot(Artifact):
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
-    
+
     @property
     def attachments(self):
         orig = self.original()
