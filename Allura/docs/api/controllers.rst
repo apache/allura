@@ -26,3 +26,8 @@
 
     .. autoclass:: RestController
         :members:
+
+.. automodule:: allura.ext.admin.admin_main
+
+  .. autoclass:: ProjectAdminRestController
+        :members:

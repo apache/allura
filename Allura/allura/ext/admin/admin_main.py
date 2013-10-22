@@ -658,6 +658,9 @@ class ProjectAdminController(BaseController):
 
 
 class ProjectAdminRestController(BaseController):
+    """
+    Exposes RESTful APi for project admin actions.
+    """
 
     def _check_security(self):
         require_access(c.project, 'admin')
@@ -665,6 +668,25 @@ class ProjectAdminRestController(BaseController):
     @expose('json:')
     @require_post()
     def export(self, tools=None, **kw):
+        """
+        Initiate a bulk export of the project data.
+
+        Must be given a list of tool mount points to include in the export.
+        The list can either be comma-separated or a repeated param, e.g.,
+        `export?tools=tickets&tools=discussion`.
+
+        If the tools are not provided, an invalid mount point is listed, or
+        there is some other problems with the arguments, a `400 Bad Request`
+        response will be returned.
+
+        If an export is already currently running for this project, a
+        `503 Unavailable` response will be returned.
+
+        Otherwise, a JSON object of the form
+        `{"status": "in progress", "filename": FILENAME}` will be returned,
+        where `FILENAME` is the filename of the export artifact relative to
+        the users shell account directory.
+        """
         if not asbool(config.get('bulk_export_enabled', True)):
             raise exc.HTTPNotFound()
         if not tools:
@@ -688,6 +710,12 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     def export_status(self, **kw):
+        """
+        Check the status of a bulk export.
+
+        Returns an object containing only one key, `status`, whose value is
+        either `'busy'` or `'ready'`.
+        """
         status = c.project.bulk_export_status()
         return {'status': status or 'ready'}
 
