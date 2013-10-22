@@ -22,7 +22,7 @@ from tg.controllers.dispatcher import ObjectDispatcher
 
 class BaseController(object):
     @expose()
-    def _lookup(self, name, *remainder):
+    def _lookup(self, name=None, *remainder):
         """Provide explicit default lookup to avoid dispatching backtracking
         and possible loops."""
         raise exc.HTTPNotFound, name

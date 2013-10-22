@@ -46,13 +46,17 @@ class TestRestHome(TestRestApiBase):
 
     @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
     @mock.patch('allura.controllers.rest.request')
-    def test_bearer_token(self, request, OAuthAccessToken):
+    def test_bearer_token_non_ssl(self, request, OAuthAccessToken):
         request.params = {'access_token': 'foo'}
         request.scheme = 'http'
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 403)
         assert_equal(OAuthAccessToken.query.get.call_count, 0)
 
+    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
+    @mock.patch('allura.controllers.rest.request')
+    def test_bearer_token_non_bearer(self, request, OAuthAccessToken):
+        request.params = {'access_token': 'foo'}
         request.scheme = 'https'
         access_token = OAuthAccessToken.query.get.return_value
         access_token.is_bearer = False
@@ -60,15 +64,27 @@ class TestRestHome(TestRestApiBase):
         assert_equal(r.status_int, 403)
         OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
 
-        OAuthAccessToken.query.get.reset_mock()
-        access_token.is_bearer = True
-        r = self.api_post('/rest/p/test/wiki', access_token='foo')
-        assert_equal(r.status_int, 404)
-        OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
-
+    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
+    @mock.patch('allura.controllers.rest.request')
+    def test_bearer_token_invalid(self, request, OAuthAccessToken):
+        request.params = {'access_token': 'foo'}
+        request.scheme = 'https'
         OAuthAccessToken.query.get.return_value = None
         r = self.api_post('/rest/p/test/wiki', access_token='foo')
         assert_equal(r.status_int, 403)
+
+    @mock.patch('allura.controllers.rest.M.OAuthAccessToken')
+    @mock.patch('allura.controllers.rest.request')
+    @td.with_wiki
+    def test_bearer_token_valid(self, request, OAuthAccessToken):
+        request.params = {'access_token': 'foo'}
+        request.scheme = 'https'
+        access_token = OAuthAccessToken.query.get.return_value
+        access_token.is_bearer = True
+        access_token.user = M.User.by_username('test-admin')
+        r = self.api_post('/rest/p/test/wiki', access_token='foo')
+        assert_equal(r.status_int, 200)
+        OAuthAccessToken.query.get.assert_called_once_with(api_key='foo')
 
     def test_bad_path(self):
         r = self.api_post('/rest/1/test/wiki/')
