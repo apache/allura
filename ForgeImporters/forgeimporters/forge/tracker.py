@@ -53,7 +53,7 @@ from forgeimporters.base import (
 
 
 class ForgeTrackerImportForm(ToolImportForm):
-    tickets_json = v.JsonFile(required=True)
+    tickets_json = v.JsonFile(not_empty=True)
 
 
 class ForgeTrackerImportController(BaseController):
@@ -76,11 +76,7 @@ class ForgeTrackerImportController(BaseController):
     @validate(ForgeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, tickets_json, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
-            if not tickets_json:
-                flash('No file specified.', 'error')
-                redirect(c.project.url() + 'admin/')
-            else:
-                save_importer_upload(c.project, 'tickets.json', json.dumps(tickets_json))
+            save_importer_upload(c.project, 'tickets.json', json.dumps(tickets_json))
             self.importer.post(
                     mount_point=mount_point,
                     mount_label=mount_label,
