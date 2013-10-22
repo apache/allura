@@ -118,10 +118,12 @@ class OAuthNegotiator(object):
         if 'access_token' in request.params:
             # handle bearer tokens
             if request.scheme != 'https':
+                request.environ['pylons.status_code_redirect'] = True
                 raise exc.HTTPForbidden
             access_token = M.OAuthAccessToken.query.get(
                 api_key=request.params['access_token'])
             if not (access_token and access_token.is_bearer):
+                request.environ['pylons.status_code_redirect'] = True
                 raise exc.HTTPForbidden
             return access_token
         req = oauth.Request.from_request(
