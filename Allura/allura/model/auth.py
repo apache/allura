@@ -639,7 +639,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             p.delete()
             ThreadLocalORMSession.flush_all()
             p = None
-        if not p and self != User.anonymous():
+        if not p and not self.is_anonymous():
             # create user-project on demand if it is missing
             p = n.register_project(project_shortname, user=self, user_project=True)
         return p
@@ -655,8 +655,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
         that role.
 
         """
-        reaching_role_ids = g.credentials.user_roles(user_id=self._id).reaching_ids_set
-        reaching_roles = [ProjectRole.query.get(_id=i) for i in reaching_role_ids]
+        if self.is_anonymous():
+            return
+        reaching_role_ids = list(g.credentials.user_roles(user_id=self._id).reaching_ids_set)
+        reaching_roles = ProjectRole.query.find({'_id': {'$in': reaching_role_ids}}).all()
         if not role_name:
             named_roles = [r for r in reaching_roles
                            if r.name and r.project and not r.project.deleted]
@@ -671,7 +673,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def project_role(self, project=None):
         if project is None: project = c.project
-        if self._id is None:
+        if self.is_anonymous():
             return ProjectRole.anonymous(project)
         else:
             return ProjectRole.upsert(user_id=self._id, project_id=project.root_project._id)
@@ -683,6 +685,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
     @classmethod
     def anonymous(cls):
         return User.query.get(_id=None)
+
+    def is_anonymous(self):
+        return self._id is None or self.username == ''
 
     def email_address_header(self):
         h = header.Header()

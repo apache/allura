@@ -129,6 +129,23 @@ def test_user_project_does_not_create_on_demand_for_disabled_user():
     assert not M.Project.query.get(shortname='u/foobar123')
 
 @with_setup(setUp)
+def test_user_project_does_not_create_on_demand_for_anonymous_user():
+    u = M.User.anonymous()
+    ThreadLocalORMSession.flush_all()
+    assert not u.private_project()
+    assert not M.Project.query.get(shortname='u/anonymous')
+    assert not M.Project.query.get(shortname='u/*anonymous')
+
+@with_setup(setUp)
+def test_user_project_does_not_create_on_demand_for_openid_user():
+    u = M.User.register({'username': ''}, make_project=False)
+    ThreadLocalORMSession.flush_all()
+    assert not u.private_project()
+    assert not M.Project.query.get(shortname='u/')
+    assert not M.Project.query.get(shortname='u/anonymous')
+    assert not M.Project.query.get(shortname='u/*anonymous')
+
+@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     c.user.project_role().roles.append(role._id)
