@@ -789,7 +789,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 for perm in self.permissions ]
             self.private = is_private_project
             for user in users:
-                pr = user.project_role()
+                pr = ProjectRole.by_user(user, project=self, upsert=True)
                 pr.roles = [ role_admin._id ]
             session(self).flush(self)
             # Setup apps
@@ -801,7 +801,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def add_user(self, user, role_names):
         'Convenience method to add member with the given role(s).'
-        pr = user.project_role(self)
+        pr = ProjectRole.by_user(user, project=self, upsert=True)
         for role_name in role_names:
             r = ProjectRole.by_name(role_name, self)
             pr.roles.append(r._id)

@@ -755,7 +755,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def _set_private(self, bool_flag):
         if bool_flag:
             role_developer = ProjectRole.by_name('Developer')
-            role_creator = self.reported_by.project_role()
+            role_creator = ProjectRole.by_user(self.reported_by, upsert=True)
             _allow_all = lambda role, perms: [ACE.allow(role._id, perm) for perm in perms]
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else

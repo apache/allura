@@ -38,7 +38,7 @@ def _deny(obj, role, perm):
     Credentials.get().clear()
 
 def _add_to_group(user, role):
-    user.project_role().roles.append(role._id)
+    M.ProjectRole.by_user(user, upsert=True).roles.append(role._id)
     ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
 
@@ -169,6 +169,6 @@ class TestSecurity(TestController):
         wiki = c.project.app_instance('wiki')
         user = M.User.by_username('test-user')
         assert has_access(wiki, 'read', user)()
-        wiki.acl.append(M.ACE.deny(user.project_role()._id, 'read', 'Spammer'))
+        wiki.acl.append(M.ACE.deny(M.ProjectRole.by_user(user, upsert=True)._id, 'read', 'Spammer'))
         Credentials.get().clear()
         assert not has_access(wiki, 'read', user)()

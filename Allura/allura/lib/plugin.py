@@ -536,7 +536,7 @@ class ProjectRegistrationProvider(object):
                 for username in usernames:
                     guser = M.User.by_username(username)
                     if not (guser and guser._id): continue
-                    pr = guser.project_role(project=p)
+                    pr = M.ProjectRole.by_user(guser, project=p, upsert=True)
                     if group._id not in pr.roles:
                         pr.roles.append(group._id)
         if 'tools' in project_template:

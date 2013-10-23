@@ -341,7 +341,7 @@ class ProjectController(FeedController):
         admins = []
         developers = []
         for user in c.project.users():
-            roles = M.ProjectRole.query.find({'_id': {'$in': user.project_role().roles}})
+            roles = M.ProjectRole.query.find({'_id': {'$in': M.ProjectRole.by_user(user).roles}})
             roles = set([r.name for r in roles])
             u = dict(
                     display_name=user.display_name,

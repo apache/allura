@@ -168,7 +168,7 @@ def test_macro_neighborhood_feeds():
         # Make project private & verify we don't see its new feed items
         anon = M.User.anonymous()
         p_test.acl.insert(0, M.ACE.deny(
-                anon.project_role(p_test)._id, 'read'))
+                M.ProjectRole.anonymous(p_test)._id, 'read'))
         ThreadLocalORMSession.flush_all()
         pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
         pg.text = 'Change'

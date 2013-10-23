@@ -671,13 +671,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
             seen_project_ids.add(r.project_id)
             yield r.project
 
-    def project_role(self, project=None):
-        if project is None: project = c.project
-        if self.is_anonymous():
-            return ProjectRole.anonymous(project)
-        else:
-            return ProjectRole.upsert(user_id=self._id, project_id=project.root_project._id)
-
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
             self, self.password, new_password)
@@ -760,19 +753,20 @@ class ProjectRole(MappedClass):
         return '**unknown name role: %s' % self._id # pragma no cover
 
     @classmethod
-    def by_user(cls, user=None, project=None):
-        if user is None and project is None:
-            return c.user.current_project_role
-        if user is None: user = c.user
+    def by_user(cls, user, project=None, upsert=False):
         if project is None: project = c.project
-        pr = cls.query.get(
-            user_id=user._id,
-            project_id=project.root_project._id)
-        if pr is None:
-            pr = cls.query.get(
-                user_id=user._id,
-                project_id={'$exists':False})
-        return pr
+        if user.is_anonymous():
+            return cls.anonymous(project)
+        if upsert:
+            return cls.upsert(
+                    user_id=user._id,
+                    project_id=project.root_project._id,
+                )
+        else:
+            return cls.query.get(
+                    user_id=user._id,
+                    project_id=project.root_project._id,
+                )
 
     @classmethod
     def by_name(cls, name, project=None):

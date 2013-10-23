@@ -53,7 +53,7 @@ def main(options):
     project_role = M.ProjectRole.by_name(options.group, project=project)
     if not project_role:
         return "Couldn't find group (ProjectRole) with name '%s'" % options.group
-    user_roles = user.project_role(project=project).roles
+    user_roles = M.ProjectRole.by_user(user, project=project, upsert=True).roles
     if project_role._id not in user_roles:
         user_roles.append(project_role._id)
     ThreadLocalORMSession.flush_all()

@@ -35,7 +35,7 @@ from allura.lib import utils
 from allura.model.notification import Notification, Mailbox
 from .artifact import Artifact, ArtifactReference, VersionedArtifact, Snapshot, Message, Feed
 from .attachments import BaseAttachment
-from .auth import User
+from .auth import User, ProjectRole
 from .timeline import ActivityObject
 from .types import MarkdownCache
 
@@ -626,13 +626,14 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return
         self.status = 'ok'
         author = self.author()
+        author_role = ProjectRole.by_user(author, project=self.project, upsert=True)
         security.simple_grant(
-            self.acl, author.project_role(self.project)._id, 'moderate')
+            self.acl, author_role._id, 'moderate')
         self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
             and author._id != None):
             security.simple_grant(
-                self.acl, author.project_role()._id, 'unmoderated_post')
+                self.acl, author_role._id, 'unmoderated_post')
         if notify:
             self.notify(file_info=file_info)
         artifact = self.thread.artifact or self.thread

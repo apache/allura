@@ -334,7 +334,7 @@ def create_project(pid, nbhd):
         admin_usernames.add(admin.userName)
         user = get_user(admin.userName)
         c.user = user
-        pr = user.project_role(project)
+        pr = M.ProjectRole.by_user(user, project=project, upsert=True)
         pr.roles = [ role_admin._id ]
         ThreadLocalORMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
@@ -345,7 +345,7 @@ def create_project(pid, nbhd):
         if member.userName in admin_usernames:
             continue
         user = get_user(member.userName)
-        pr = user.project_role(project)
+        pr = M.ProjectRole.by_user(user, project=project, upsert=True)
         pr.roles = [ role_developer._id ]
         ThreadLocalORMSession.flush_all()
     project.labels = [cat.path.split('projects/categorization.root.')[1] for cat in data.categories]
