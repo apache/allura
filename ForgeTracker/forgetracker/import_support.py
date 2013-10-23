@@ -115,6 +115,7 @@ class ImportSupport(object):
             'status': True,
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
+            'cc': None,
         }
         self.user_map = {}
         self.warnings = []

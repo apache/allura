@@ -20,7 +20,7 @@ import os
 import json
 from formencode.variabledecode import variable_encode
 from datetime import datetime, timedelta
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_false
 
 import ming
 from pylons import app_globals as g
@@ -84,7 +84,7 @@ class TestImportController(TestRestApiBase):
         assert_equal(from_api['created_date'], self.time_normalize(org['date']))
         assert_equal(from_api['mod_date'], self.time_normalize(org['date_updated']))
         assert_equal(from_api['custom_fields']['_resolution'], org['resolution'])
-        assert_equal(from_api['custom_fields']['_cc'], org['cc'])
+        assert_false('_cc' in from_api['custom_fields'])
         assert_equal(from_api['custom_fields']['_private'], org['private'])
 
     @td.with_tracker
