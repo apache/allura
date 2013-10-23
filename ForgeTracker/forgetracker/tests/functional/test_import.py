@@ -210,13 +210,13 @@ class TestImportController(TestRestApiBase):
         result = import_support.link_processing('''test link [[2496]](http://testlink.com)
                                        test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201))
                                        Replying to [someuser](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
-                                       #200''')
+                                       #200 unchanged''')
 
         assert "test link [\[2496\]](http://testlink.com)" in result
         assert 'Replying to [someuser](204/#123)' in result
         assert 'test link [\[2496\]](http://testlink.com)' in result
         assert 'test ticket ([#201](201))' in result
-        assert '[\[200\]](bugs:#200)' in result, result
+        assert '#200 unchanged' in result, result
 
     @td.with_tracker
     def test_links(self):

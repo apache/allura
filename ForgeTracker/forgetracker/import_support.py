@@ -269,12 +269,10 @@ class ImportSupport(object):
         return '[\[%s\]]' % m.groups()[0]
 
     def link_processing(self, text):
-        short_link_ticket_pattern = re.compile('(?<!\[)#(\d+)(?!\])')
         comment_pattern = re.compile('\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
         ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
         brackets_pattern = re.compile('\[\[(.*)\]\]')
 
-        text = short_link_ticket_pattern.sub(self.ticket_bracket_link, text)
         text = comment_pattern.sub(self.comment_link, text)
         text = ticket_pattern.sub(self.ticket_link, text)
         text = brackets_pattern.sub(self.brackets_escaping, text)
@@ -285,7 +283,7 @@ class ImportSupport(object):
         author_id = self.get_user_id(comment_dict['submitter'])
         text = h.really_unicode(self.link_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
-            text = u'Originally posted by: {0}\n\n{1}'.format(
+            text = u'*Originally posted by:* {0}\n\n{1}'.format(
                     h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
