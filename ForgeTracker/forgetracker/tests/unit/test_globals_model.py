@@ -116,6 +116,13 @@ class TestGlobalsModel(TrackerTestWithModel):
         assert_equal(gbl._bin_counts_expire, now + timedelta(minutes=60))
         assert_equal(gbl._bin_counts_invalidated, None)
 
+    def test_check_labels(self):
+        gbl = Globals()
+        assert_equal(gbl.check_labels([], ['tag1']), ['tag1'])
+        assert_equal(gbl.check_labels(['tag1', 'tag2'], ['tag2']), ['tag1', 'tag2'])
+        assert_equal(gbl.check_labels(['tag1', 'tag2'], ['tag3']), ['tag1', 'tag2', 'tag3'])
+        assert_equal(gbl.check_labels(['tag1', 'tag2', 'tag3'], ['tag2']), ['tag1', 'tag2', 'tag3'])
+
 
 class TestCustomFields(TrackerTestWithModel):
     def test_it_has_sortable_custom_fields(self):

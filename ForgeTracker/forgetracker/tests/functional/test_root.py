@@ -333,6 +333,31 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
 
+    def test_label_for_mass_edit(self):
+        self.new_ticket(summary='Ticket1')
+        self.new_ticket(summary='Ticket2', labels='tag1')
+        self.new_ticket(summary='Ticket3', labels='tag1,tag2')
+        M.MonQTask.run_ready()
+        ticket1 = tm.Ticket.query.get(summary='Ticket1')
+        ticket2 = tm.Ticket.query.get(summary='Ticket2')
+        ticket3 = tm.Ticket.query.get(summary='Ticket3')
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket1._id,
+                          ticket2._id,
+                          ticket3._id),
+                      'labels': 'tag2, tag3',
+                      })
+        M.MonQTask.run_ready()
+
+        ticket1 = tm.Ticket.query.get(summary='Ticket1')
+        ticket2 = tm.Ticket.query.get(summary='Ticket2')
+        ticket3 = tm.Ticket.query.get(summary='Ticket3')
+        assert_equal(ticket1.labels, ['tag2', 'tag3'])
+        assert_equal(ticket2.labels, ['tag1', 'tag2', 'tag3'])
+        assert_equal(ticket3.labels, ['tag1', 'tag2', 'tag3'])
+
     def test_mass_edit_custom_fields(self):
         params = dict(
             custom_fields=[

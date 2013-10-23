@@ -318,6 +318,8 @@ class Globals(MappedClass):
 
         fields = set(['status'])
         values = {}
+        labels = post_data.get('labels', [])
+
         for k in fields:
             v = post_data.get(k)
             if v: values[k] = v
@@ -341,6 +343,8 @@ class Globals(MappedClass):
         changed_tickets = {}
         for ticket in tickets:
             message = ''
+            if labels:
+                values['labels'] = self.check_labels(ticket.labels, labels.split(','))
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
@@ -456,6 +460,13 @@ class Globals(MappedClass):
                 user = filtered.setdefault(subscription.user_id, set())
                 user.add(tickets_index_id[subscription.artifact_index_id])
         return filtered
+
+    def check_labels(self, old_labels, new_labels):
+        for label in new_labels:
+            label = label.strip()
+            if label not in old_labels:
+                old_labels.append(label)
+        return old_labels
 
 
 class TicketHistory(Snapshot):

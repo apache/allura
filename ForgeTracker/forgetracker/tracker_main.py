@@ -821,6 +821,7 @@ class RootController(BaseController, FeedController):
             c.app.url + 'search/',
             dict(q=q, limit=limit, sort=sort))
         c.user_select = ffw.ProjectUserCombo()
+        c.label_edit = ffw.LabelEdit()
         c.mass_edit = W.mass_edit
         c.mass_edit_form = W.mass_edit_form
         return result
