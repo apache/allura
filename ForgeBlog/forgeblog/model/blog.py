@@ -269,7 +269,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                     title=self.title,
                     url=h.absurl('/rest' + self.url()),
                     text=self.text,
-                    labels=self.labels,
+                    labels=list(self.labels),
                     state=self.state)
 
 

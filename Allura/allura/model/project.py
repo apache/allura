@@ -886,22 +886,23 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         return dict(
             shortname=self.shortname,
             name=self.name,
-            _id=self._id,
+            _id=str(self._id),
             url=h.absurl(self.url()),
             private=self.private,
             short_description=self.short_description,
             summary=self.summary,
             external_homepage=self.external_homepage,
-            socialnetworks=self.socialnetworks,
+            socialnetworks=[dict(n) for n in self.socialnetworks],
             status=self.removal or 'active',
             moved_to_url=self.moved_to_url,
             preferred_support_tool=self.support_page,
             preferred_support_url=self.support_page_url,
-            developers=self.users_with_role('Developer'),
+            developers=[u.__json__() for u in self.users_with_role('Developer')],
             tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
                    for t in self.app_configs if h.has_access(t, 'read')],
-            labels=self.labels,
-            categories=self.all_troves(),
+            labels=list(self.labels),
+            categories={
+                n: [t.__json__() for t in ts] for n, ts in self.all_troves().items()},
             icon_url=h.absurl(self.url() + 'icon') if self.icon else None,
             screenshots = [
                 dict(
@@ -982,5 +983,5 @@ class AppConfig(MappedClass):
     def __json__(self):
         return dict(
             _id=self._id,
-            options=dict(self.options),  # strip away the ming instrumentation
+            options=self.options._deinstrument(),  # strip away the ming instrumentation
         )

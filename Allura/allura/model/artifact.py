@@ -100,9 +100,9 @@ class Artifact(MappedClass):
         return dict(
             _id=str(self._id),
             mod_date=self.mod_date,
-            labels=self.labels,
+            labels=list(self.labels),
             related_artifacts=[a.url() for a in self.related_artifacts()],
-            discussion_thread=self.discussion_thread,
+            discussion_thread=self.discussion_thread.__json__(),
             discussion_thread_url=h.absurl('/rest%s' % self.discussion_thread.url()),
         )
 
