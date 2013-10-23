@@ -195,6 +195,7 @@ class SMTPClient(object):
             if not isinstance(in_reply_to, basestring):
                 raise TypeError('Only strings are supported now, not lists')
             message['In-Reply-To'] = Header(u'<%s>' % in_reply_to)
+            message['References'] = message['In-Reply-To']
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
         smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]

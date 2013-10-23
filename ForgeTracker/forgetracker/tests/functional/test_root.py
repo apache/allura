@@ -2684,10 +2684,10 @@ class TestStats(TrackerTestController):
         assert_in('# tickets: 0', r.body)
 
 
-class TestNotifications(TrackerTestController):
+class TestNotificationEmailGrouping(TrackerTestController):
 
-    def test_notification_email_grouping(self):
-        ticket_view = self.new_ticket(summary='Test Ticket')
+    def test_new_ticket_message_id(self):
+        self.new_ticket(summary='Test Ticket')
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -2695,3 +2695,59 @@ class TestNotifications(TrackerTestController):
         ticket = tm.Ticket.query.get(ticket_num=1)
         assert_equal(email.kwargs.message_id, ticket.message_id())
         assert_equal(email.kwargs.in_reply_to, None)
+
+    def test_comments(self):
+        ticket_view = self.new_ticket(summary='Test Ticket').follow()
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.query.remove()
+        ThreadLocalORMSession.flush_all()
+        # Messy code to add a comment
+        for f in ticket_view.html.findAll('form'):
+            if f.get('action', '').endswith('/post'):
+                break
+        post_content = 'top-level comment'
+        params = dict()
+        inputs = f.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        params[f.find('textarea')['name']] = post_content
+        r = self.app.post(f['action'].encode('utf-8'), params=params,
+                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        # Check that comment notification refers ticket's message id
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        top_level_comment = ticket.discussion_thread.posts[0]
+        top_level_comment_msg_id = ticket.url() + top_level_comment._id
+        assert_equal(email.kwargs.message_id, top_level_comment_msg_id)
+        assert_equal(email.kwargs.in_reply_to, ticket.message_id())
+
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.query.remove()
+        ThreadLocalORMSession.flush_all()
+        # Messy code to add reply
+        r = self.app.get('/bugs/1/')
+        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
+        post_form = r.html.find('form', {'action': post_link + 'reply'})
+        params = dict()
+        inputs = post_form.findAll('input')
+        for field in inputs:
+            if field.has_key('name'):
+                params[field['name']] = field.has_key('value') and field['value'] or ''
+        reply_text = 'Reply to top-level-comment'
+        params[post_form.find('textarea')['name']] = reply_text
+        r = self.app.post(post_link + 'reply',
+            params=params,
+            headers={'Referer':post_link.encode("utf-8")})
+        ThreadLocalORMSession.flush_all()
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        # Check that reply notification refers top-level comment's message id
+        email = M.MonQTask.query.find(dict(task_name='allura.tasks.mail_tasks.sendmail')).first()
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        reply = [post for post in ticket.discussion_thread.posts if post.text == reply_text][0]
+        assert_equal(email.kwargs.message_id, ticket.url() + reply._id)
+        assert_equal(email.kwargs.in_reply_to, top_level_comment_msg_id)

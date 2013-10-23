@@ -799,7 +799,14 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             subject = self.email_subject
             Thread.new(discussion_id=self.app_config.discussion_id,
                    ref_id=self.index_id())
-            n = Notification.post(artifact=self, topic='metadata', text=description, subject=subject)
+            # First ticket notification. Use persistend Message-ID (self.message_id()).
+            # Thus we can group notification emails in one thread later.
+            n = Notification.post(
+                    message_id=self.message_id(),
+                    artifact=self,
+                    topic='metadata',
+                    text=description,
+                    subject=subject)
             if monitoring_email and n and (not self.private or
                     self.app.config.options.get('TicketMonitoringType') in (
                         'NewTicketsOnly', 'AllTicketChanges')):

@@ -184,13 +184,14 @@ class Notification(MappedClass):
                 h.get_first(idx, 'title'),
                 getattr(artifact, 'email_address', u'noreply@in.sf.net'))
             d = dict(
-                message_id=artifact.message_id(),
                 from_address=reply_to,
                 reply_to_address=reply_to,
                 subject=subject_prefix + subject,
                 text=kwargs.pop('text', subject),
                 author_id=c.user._id,
                 pubdate=datetime.utcnow())
+            if kwargs.get('message_id'):
+                d['_id'] = kwargs['message_id']
             if c.user.get_pref('email_address'):
                 d['from_address'] = '"%s" <%s>' % (
                     c.user.get_pref('display_name'),
