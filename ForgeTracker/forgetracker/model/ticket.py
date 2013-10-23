@@ -983,7 +983,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             private=self.private,
             attachments=[dict(bytes=attach.length,
                               url=h.absurl(attach.url())) for attach in self.attachments],
-            custom_fields=self.custom_fields)
+            custom_fields=dict(self.custom_fields))
 
     @classmethod
     def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False, **kw):

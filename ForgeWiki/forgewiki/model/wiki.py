@@ -109,7 +109,7 @@ class Page(VersionedArtifact, ActivityObject):
         return dict(super(Page, self).__json__(),
                     title=self.title,
                     text=self.text,
-                    labels=self.labels,
+                    labels=list(self.labels),
                     attachments=[dict(bytes=attach.length,
                                       url=h.absurl(attach.url())) for attach in self.attachments])
 
