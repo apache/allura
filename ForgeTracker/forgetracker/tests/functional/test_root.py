@@ -333,6 +333,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
 
+
     def test_label_for_mass_edit(self):
         self.new_ticket(summary='Ticket1')
         self.new_ticket(summary='Ticket2', labels='tag1')
@@ -447,6 +448,68 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(ticket1.custom_fields._major, True)
         assert_equal(ticket2.custom_fields._major, False)
 
+    def test_mass_edit_private_field(self):
+        kw = {'private': True}
+        self.new_ticket(summary='First', **kw)
+        self.new_ticket(summary='Second')
+        M.MonQTask.run_ready()
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second'}).first()
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket1._id,
+                          ticket2._id,),
+                      'private': False
+                      })
+        M.MonQTask.run_ready()
+        r = self.app.get('/p/test/bugs/1/')
+        assert '<li><strong>Private</strong>: Yes --&gt; No</li>' in r
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Private</strong>: No --&gt; Yes</li>' not in r
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second'}).first()
+        assert_equal(ticket1.private, False)
+        assert_equal(ticket2.private, False)
+
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket1._id,
+                          ticket2._id,),
+                      'private': True
+                      })
+        M.MonQTask.run_ready()
+        r = self.app.get('/p/test/bugs/1/')
+        assert '<li><strong>Private</strong>: No --&gt; Yes</li>' in r
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Private</strong>: No --&gt; Yes</li>' in r
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second'}).first()
+        assert_equal(ticket1.private, True)
+        assert_equal(ticket2.private, True)
+
+        ticket2.private = False
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket1._id,
+                          ticket2._id,),
+                      'private': ''
+                      })
+        M.MonQTask.run_ready()
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second'}).first()
+        assert_equal(ticket1.private, True)
+        assert_equal(ticket2.private, False)
 
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()

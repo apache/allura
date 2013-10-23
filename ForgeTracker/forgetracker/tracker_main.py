@@ -126,6 +126,8 @@ def get_label(name):
             return column['label']
     if name == 'assigned_to_id':
         return 'Owner'
+    if name == 'private':
+        return 'Private'
 
 
 def get_change_text(name, new_value, old_value):
@@ -1308,7 +1310,7 @@ class TicketController(BaseController, FeedController):
         changes['labels'] = self.ticket.labels
         self.ticket.labels = labels
         changes['labels'] = self.ticket.labels
-        for k in ['summary', 'description', 'status']:
+        for k in ['summary', 'description', 'status', 'private']:
             changes[k] = getattr(self.ticket, k)
             setattr(self.ticket, k, post_data.pop(k, ''))
             changes[k] = getattr(self.ticket, k)

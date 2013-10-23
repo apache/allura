@@ -317,7 +317,7 @@ class Globals(MappedClass):
                 _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
                 app_config_id=self.app_config_id)).all()
 
-        fields = set(['status'])
+        fields = set(['status', 'private'])
         values = {}
         labels = post_data.get('labels', [])
 
@@ -331,6 +331,11 @@ class Globals(MappedClass):
             user = c.project.user_in_project(assigned_to)
             if user:
                 values['assigned_to_id'] = user._id
+        private = post_data.get('private')
+        if private == 'True':
+            values['private'] = True
+        elif private == 'False':
+            values['private'] = False
 
         custom_values = {}
         custom_fields = {}
