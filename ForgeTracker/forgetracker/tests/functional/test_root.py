@@ -333,6 +333,7 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Status</strong>: open --&gt; accepted</li>' in r
 
+    def test_mass_edit_custom_fields(self):
         params = dict(
             custom_fields=[
                 dict(name='_major', label='Major', type='boolean'), ],
@@ -346,38 +347,69 @@ class TestFunctionalController(TrackerTestController):
         self.new_ticket(summary='First Custom', **kw)
         kw = {'custom_fields._major': ''}
         self.new_ticket(summary='Second Custom', **kw)
-        third_ticket = tm.Ticket.query.find({
+        M.MonQTask.run_ready()
+
+        ticket1 = tm.Ticket.query.find({
             'summary': 'First Custom'}).first()
-        fourth_ticket = tm.Ticket.query.find({
+        ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
 
         self.app.post('/p/test/bugs/update_tickets', {
                       '__search': '',
                       '__ticket_ids': (
-                          third_ticket._id,
-                          fourth_ticket._id,),
+                          ticket1._id,
+                          ticket2._id,),
                       'status': 'accepted',
                       '_major': 'False'
                       })
         M.MonQTask.run_ready()
-        r = self.app.get('/p/test/bugs/3/')
+        r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Major</strong>: True --&gt; False</li>' in r
-        r = self.app.get('/p/test/bugs/4/')
+        r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Major</strong>: True --&gt; False</li>' not in r
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second Custom'}).first()
+        assert_equal(ticket1.custom_fields._major, u'False')
+        assert_equal(ticket2.custom_fields._major, u'False')
 
         self.app.post('/p/test/bugs/update_tickets', {
                       '__search': '',
                       '__ticket_ids': (
-                          third_ticket._id,
-                          fourth_ticket._id,),
+                          ticket1._id,
+                          ticket2._id,),
                       'status': 'accepted',
                       '_major': 'True'
                       })
         M.MonQTask.run_ready()
-        r = self.app.get('/p/test/bugs/3/')
+        r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
-        r = self.app.get('/p/test/bugs/4/')
+        r = self.app.get('/p/test/bugs/2/')
         assert '<li><strong>Major</strong>: False --&gt; True</li>' in r
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second Custom'}).first()
+        assert_equal(ticket1.custom_fields._major, u'True')
+        assert_equal(ticket2.custom_fields._major, u'True')
+
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket1._id,
+                          ticket2._id,),
+                      'status': 'accepted',
+                      '_major': ''
+                      })
+        M.MonQTask.run_ready()
+        ticket1 = tm.Ticket.query.find({
+            'summary': 'First Custom'}).first()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second Custom'}).first()
+        assert_equal(ticket1.custom_fields._major, u'True')
+        assert_equal(ticket2.custom_fields._major, u'True')
+
 
     def test_private_ticket(self):
         ticket_view = self.new_ticket(summary='Public Ticket').follow()
