@@ -940,10 +940,11 @@ class GroupsController(BaseController):
             return dict(error='Could not find group with id %s' % role_id)
         if not user:
             return dict(error='User %s not found' % username)
-        if group._id in user.project_role().roles:
+        user_role = M.ProjectRole.by_user(user, upsert=True)
+        if group._id in user_role.roles:
             return dict(error='%s (%s) is already in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('add user %s to %s', username, group.name)
-        user.project_role().roles.append(group._id)
+        user_role.roles.append(group._id)
         if group.name == 'Admin':
             for ac in c.project.app_configs:
                 c.project.app_instance(ac).subscribe(user)
@@ -963,10 +964,11 @@ class GroupsController(BaseController):
             return dict(error='Could not find group with id %s' % role_id)
         if not user:
             return dict(error='User %s not found' % username)
-        if group._id not in user.project_role().roles:
+        user_role = M.ProjectRole.by_user(user)
+        if not user_role or group._id not in user_role.roles:
             return dict(error='%s (%s) is not in the group %s.' % (user.display_name, username, group.name))
         M.AuditLog.log('remove user %s from %s', username, group.name)
-        user.project_role().roles.remove(group._id)
+        user_role.roles.remove(group._id)
         g.post_event('project_updated')
         return dict()
 
@@ -994,7 +996,7 @@ class GroupsController(BaseController):
                 if not user._id:
                     continue # never add anon users to groups
                 M.AuditLog.log('add user %s to %s', username, group.name)
-                user.project_role().roles.append(group._id)
+                M.ProjectRole.by_user(user, upsert=True).roles.append(group._id)
                 user_added = True
             # Make sure we aren't removing all users from the Admin group
             if group.name == u'Admin' and not (user_ids or user_added):

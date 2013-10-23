@@ -88,7 +88,6 @@ def test_user():
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
     assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(M.User.anonymous().project_role().name, '*anonymous')
     u = M.User.register(dict(
             username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
@@ -150,7 +149,7 @@ def test_user_project_does_not_create_on_demand_for_openid_user():
 @with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
-    c.user.project_role().roles.append(role._id)
+    M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
     ThreadLocalORMSession.flush_all()
     roles = g.credentials.user_roles(
         c.user._id, project_id=c.project.root_project._id)
@@ -219,7 +218,7 @@ def test_user_projects_by_role():
     project = M.Project.query.get(shortname='test2')
     admin_role = M.ProjectRole.by_name('Admin', project)
     developer_role = M.ProjectRole.by_name('Developer', project)
-    user_role = c.user.project_role(project)
+    user_role = M.ProjectRole.by_user(c.user, project=project, upsert=True)
     user_role.roles.remove(admin_role._id)
     user_role.roles.append(developer_role._id)
     ThreadLocalORMSession.flush_all()

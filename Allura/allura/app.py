@@ -611,7 +611,7 @@ class DefaultAdminController(BaseController):
         user = model.User.by_username(username)
         if not user:
             return dict(error='User "%s" not found' % username)
-        ace = model.ACE.deny(user.project_role()._id, perm, reason)
+        ace = model.ACE.deny(model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
             return dict(user_id=str(user._id), username=user.username, reason=reason)
@@ -631,7 +631,7 @@ class DefaultAdminController(BaseController):
             return dict(error='Select user to unblock')
         unblocked = []
         for user in users:
-            ace = model.ACE.deny(user.project_role()._id, perm)
+            ace = model.ACE.deny(model.ProjectRole.by_user(user)._id, perm)
             ace = model.ACL.contains(ace, self.app.acl)
             if ace:
                 self.app.acl.remove(ace)

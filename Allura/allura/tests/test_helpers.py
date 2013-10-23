@@ -104,8 +104,7 @@ def test_make_users():
 
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
-    u = M.User.anonymous()
-    pr = u.project_role()
+    pr = M.ProjectRole.anonymous()
     assert h.make_roles([pr._id]).next() == pr
 
 @td.with_wiki

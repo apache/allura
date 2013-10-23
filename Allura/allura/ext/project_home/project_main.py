@@ -77,7 +77,7 @@ class ProjectHomeApp(Application):
 
     def install(self, project):
         super(ProjectHomeApp, self).install(project)
-        pr = c.user.project_role()
+        pr = model.ProjectRole.by_user(c.user)
         if pr:
             self.config.acl = [
                 model.ACE.allow(pr._id, perm)

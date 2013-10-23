@@ -79,7 +79,7 @@ def test_artifact():
     assert pg.app.config == c.app.config
     assert pg.app_config == c.app.config
     u = M.User.query.get(username='test-user')
-    pr = u.project_role()
+    pr = M.ProjectRole.by_user(u, upsert=True)
     ThreadLocalORMSession.flush_all()
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     assert not security.has_access(pg, 'delete')(user=u)

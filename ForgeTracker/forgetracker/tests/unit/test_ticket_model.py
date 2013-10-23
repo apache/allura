@@ -95,8 +95,8 @@ class TestTicketModel(TrackerTestWithModel):
         assert creator == t.reported_by
         role_admin = ProjectRole.by_name('Admin')._id
         role_developer = ProjectRole.by_name('Developer')._id
-        role_creator = t.reported_by.project_role()._id
-        developer.project_role().roles.append(role_developer)
+        role_creator = ProjectRole.by_user(t.reported_by, upsert=True)._id
+        ProjectRole.by_user(developer, upsert=True).roles.append(role_developer)
         ThreadLocalORMSession.flush_all()
         cred = Credentials.get().clear()
 

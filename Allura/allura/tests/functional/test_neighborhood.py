@@ -689,7 +689,7 @@ class TestNeighborhood(TestController):
                 for username in usernames:
                     user = M.User.by_username(username)
                     if user and user._id:
-                        assert role in user.project_role(project=p).roles
+                        assert role in M.ProjectRole.by_user(user, project=p).roles
             # confirm roles with invalid json data are not created
             if name in ('', 'TestGroup1'):
                 assert name not in roles

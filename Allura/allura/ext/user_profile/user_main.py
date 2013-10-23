@@ -31,7 +31,7 @@ from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
 from allura.lib.plugin import AuthenticationProvider
-from allura.model import User, Feed, ACE
+from allura.model import User, Feed, ACE, ProjectRole
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post
@@ -71,7 +71,7 @@ class UserProfileApp(Application):
         return c.project.is_root
 
     def install(self, project):
-        pr = c.user.project_role()
+        pr = ProjectRole.by_user(c.user)
         if pr:
             self.config.acl = [
                 ACE.allow(pr._id, perm)
