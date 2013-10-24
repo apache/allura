@@ -2697,23 +2697,19 @@ class TestNotificationEmailGrouping(TrackerTestController):
         assert_equal(email.kwargs.in_reply_to, None)
 
     def test_comments(self):
+        def find(d, pred):
+            for n,v in d.items():
+                if pred(v):
+                    return (n,v)
+
         ticket_view = self.new_ticket(summary='Test Ticket').follow()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.query.remove()
         ThreadLocalORMSession.flush_all()
-        # Messy code to add a comment
-        for f in ticket_view.html.findAll('form'):
-            if f.get('action', '').endswith('/post'):
-                break
-        post_content = 'top-level comment'
-        params = dict()
-        inputs = f.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
-        params[f.find('textarea')['name']] = post_content
-        r = self.app.post(f['action'].encode('utf-8'), params=params,
-                          headers={'Referer': '/bugs/1/'.encode("utf-8")})
+        _, form = find(ticket_view.forms, lambda f: f.action.endswith('/post'))
+        field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
+        form.set(field, 'top-level comment')
+        r = form.submit()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
@@ -2728,20 +2724,12 @@ class TestNotificationEmailGrouping(TrackerTestController):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.query.remove()
         ThreadLocalORMSession.flush_all()
-        # Messy code to add reply
         r = self.app.get('/bugs/1/')
-        post_link = str(r.html.find('div', {'class': 'edit_post_form reply'}).find('form')['action'])
-        post_form = r.html.find('form', {'action': post_link + 'reply'})
-        params = dict()
-        inputs = post_form.findAll('input')
-        for field in inputs:
-            if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+        _, form = find(r.forms, lambda f: f.action.endswith('/reply'))
+        field, _ = find(form.fields, lambda f: f[0].tag == 'textarea')
         reply_text = 'Reply to top-level-comment'
-        params[post_form.find('textarea')['name']] = reply_text
-        r = self.app.post(post_link + 'reply',
-            params=params,
-            headers={'Referer':post_link.encode("utf-8")})
+        form.set(field, reply_text)
+        r = form.submit()
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
