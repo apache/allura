@@ -357,6 +357,8 @@ class TestFunctionalController(TrackerTestController):
         assert_equal(ticket1.labels, ['tag2', 'tag3'])
         assert_equal(ticket2.labels, ['tag1', 'tag2', 'tag3'])
         assert_equal(ticket3.labels, ['tag1', 'tag2', 'tag3'])
+        r = self.app.get('/p/test/bugs/2/')
+        assert '<li><strong>Labels</strong>: tag1 --&gt; tag1tag2tag3</li>' in r
 
     def test_mass_edit_custom_fields(self):
         params = dict(

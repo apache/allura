@@ -344,7 +344,7 @@ class Globals(MappedClass):
         for ticket in tickets:
             message = ''
             if labels:
-                values['labels'] = self.check_labels(ticket.labels, labels.split(','))
+                values['labels'] = self.check_labels(ticket.labels[:], labels.split(','))
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
