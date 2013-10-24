@@ -1310,7 +1310,7 @@ class TicketController(BaseController, FeedController):
         changes['labels'] = self.ticket.labels
         self.ticket.labels = labels
         changes['labels'] = self.ticket.labels
-        for k in ['summary', 'description', 'status', 'private']:
+        for k in ['summary', 'description', 'status']:
             changes[k] = getattr(self.ticket, k)
             setattr(self.ticket, k, post_data.pop(k, ''))
             changes[k] = getattr(self.ticket, k)
