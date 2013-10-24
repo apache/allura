@@ -261,6 +261,7 @@ class Globals(MappedClass):
             moved = ticket.move(tracker, notify=False)
             moved_tickets[moved._id] = moved
         mail = dict(
+            sender = c.project.app_instance(self.app_config).email_address,
             fromaddr = str(c.user.email_address_header()),
             reply_to = str(c.user.email_address_header()),
             subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
@@ -389,6 +390,7 @@ class Globals(MappedClass):
                 # html part of email is handled by markdown and it'll be properly escaped
                 yield (changed_tickets[t_id], jinja2.Markup(changes[t_id]))
         mail = dict(
+            sender = c.project.app_instance(self.app_config).email_address,
             fromaddr = str(c.user._id),
             reply_to = str(c.user._id),
             subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
