@@ -30,6 +30,7 @@ from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
 from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
+from allura.lib.plugin import AuthenticationProvider
 from allura.model import User, Feed, ACE
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
@@ -90,7 +91,8 @@ class UserProfileController(BaseController, FeedController):
         user = c.project.user_project_of
         if not user:
             raise exc.HTTPNotFound()
-        return dict(user=user)
+        provider = AuthenticationProvider.get(request)
+        return dict(user=user, reg_date=provider.user_registration_date(user))
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
