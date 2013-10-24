@@ -343,17 +343,17 @@ class TestFunctionalController(TrackerTestController):
         self.app.post(
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
-        kw = {'custom_fields._major': 'True'}
+        kw = {'custom_fields._major': True}
         self.new_ticket(summary='First Custom', **kw)
-        kw = {'custom_fields._major': ''}
-        self.new_ticket(summary='Second Custom', **kw)
+        self.new_ticket(summary='Second Custom')
         M.MonQTask.run_ready()
 
         ticket1 = tm.Ticket.query.find({
             'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-
+        ticket2.custom_fields._major = None
+        ticket2.commit()
         self.app.post('/p/test/bugs/update_tickets', {
                       '__search': '',
                       '__ticket_ids': (
@@ -366,13 +366,13 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/p/test/bugs/1/')
         assert '<li><strong>Major</strong>: True --&gt; False</li>' in r
         r = self.app.get('/p/test/bugs/2/')
-        assert '<li><strong>Major</strong>: True --&gt; False</li>' not in r
+        assert '<li><strong>Major</strong>: --&gt; False</li>' in r
         ticket1 = tm.Ticket.query.find({
             'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-        assert_equal(ticket1.custom_fields._major, u'False')
-        assert_equal(ticket2.custom_fields._major, u'False')
+        assert_equal(ticket1.custom_fields._major, False)
+        assert_equal(ticket2.custom_fields._major, False)
 
         self.app.post('/p/test/bugs/update_tickets', {
                       '__search': '',
@@ -391,9 +391,19 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-        assert_equal(ticket1.custom_fields._major, u'True')
-        assert_equal(ticket2.custom_fields._major, u'True')
+        assert_equal(ticket1.custom_fields._major, True)
+        assert_equal(ticket2.custom_fields._major, True)
 
+        self.app.post('/p/test/bugs/update_tickets', {
+                      '__search': '',
+                      '__ticket_ids': (
+                          ticket2._id,),
+                      '_major': 'False'
+                      })
+        M.MonQTask.run_ready()
+        ticket2 = tm.Ticket.query.find({
+            'summary': 'Second Custom'}).first()
+        assert_equal(ticket2.custom_fields._major, False)
         self.app.post('/p/test/bugs/update_tickets', {
                       '__search': '',
                       '__ticket_ids': (
@@ -407,8 +417,8 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'First Custom'}).first()
         ticket2 = tm.Ticket.query.find({
             'summary': 'Second Custom'}).first()
-        assert_equal(ticket1.custom_fields._major, u'True')
-        assert_equal(ticket2.custom_fields._major, u'True')
+        assert_equal(ticket1.custom_fields._major, True)
+        assert_equal(ticket2.custom_fields._major, False)
 
 
     def test_private_ticket(self):

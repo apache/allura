@@ -26,7 +26,7 @@ import pymongo
 from pymongo.errors import OperationFailure
 from pylons import tmpl_context as c, app_globals as g
 from pprint import pformat
-from paste.deploy.converters import aslist
+from paste.deploy.converters import aslist, asbool
 import jinja2
 
 from ming import schema
@@ -363,6 +363,8 @@ class Globals(MappedClass):
                            else ticket.custom_fields.get(cf.name)
                 cf = custom_fields[k]
                 old_value = cf_val(cf)
+                if cf.type == 'boolean':
+                    v = asbool(v)
                 ticket.custom_fields[k] = v
                 new_value = cf_val(cf)
                 message += get_change_text(
