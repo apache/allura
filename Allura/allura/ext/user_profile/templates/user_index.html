@@ -56,6 +56,10 @@
 
   <div class="grid-24">
     <div class="grid-24" style="margin:0;"><b>Personal data</b></div>
+    <div class="grid-24" style="margin:0;">
+      <div class="grid-4">Registration Date:</div>
+      <div class="grid-8">{{reg_date}}</div>
+    </div>
     {% if user.get_pref('sex') == 'Male' or user.get_pref('sex') == 'Female' %}
       <div class="grid-24" style="margin:0;">
         <div class="grid-4">Gender:</div>
