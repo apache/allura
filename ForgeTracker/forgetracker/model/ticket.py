@@ -344,7 +344,7 @@ class Globals(MappedClass):
         for ticket in tickets:
             message = ''
             if labels:
-                values['labels'] = self.check_labels(ticket.labels[:], labels.split(','))
+                values['labels'] = self.append_new_labels(ticket.labels, labels.split(','))
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
@@ -461,12 +461,10 @@ class Globals(MappedClass):
                 user.add(tickets_index_id[subscription.artifact_index_id])
         return filtered
 
-    def check_labels(self, old_labels, new_labels):
-        for label in new_labels:
-            label = label.strip()
-            if label not in old_labels:
-                old_labels.append(label)
-        return old_labels
+    def append_new_labels(self, old_labels, new_labels):
+        old_labels = set(old_labels)
+        new_labels = set(l.strip() for l in new_labels)
+        return list(old_labels | new_labels)
 
 
 class TicketHistory(Snapshot):

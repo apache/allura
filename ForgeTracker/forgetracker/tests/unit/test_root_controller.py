@@ -116,3 +116,8 @@ class test_change_text(unittest.TestCase):
         self.assertEqual(
             '- **test**: value2 --> value1\n',
             tracker_main.get_change_text('test', 'value1', 'value2'))
+
+    def test_get_change_text_for_lists(self):
+        self.assertEqual(
+            '- **test**: v1, v2 --> v3, v4, v5\n',
+            tracker_main.get_change_text('test', ['v3', 'v4', 'v5'], ['v1', 'v2']))

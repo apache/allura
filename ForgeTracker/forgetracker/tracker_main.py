@@ -130,6 +130,10 @@ def get_label(name):
 
 def get_change_text(name, new_value, old_value):
     changes = changelog()
+    if isinstance(old_value, list):
+        old_value = ', '.join(old_value)
+    if isinstance(new_value, list):
+        new_value = ', '.join(new_value)
     changes[name] = old_value
     changes[name] = new_value
     tpl_fn = pkg_resources.resource_filename(
