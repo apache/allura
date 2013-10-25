@@ -18,6 +18,8 @@
 import json
 from unittest import TestCase
 
+from mock import patch, Mock
+
 from ... import github
 
 # Can't use cStringIO here, because we cannot set attributes or subclass it,
@@ -84,6 +86,7 @@ class TestGitHubProjectExtractor(TestCase):
     def setUp(self):
         self.extractor = github.GitHubProjectExtractor('test_project')
         self.extractor.urlopen = self.mocked_urlopen
+
     def test_get_next_page_url(self):
         self.assertIsNone(self.extractor.get_next_page_url(None))
         self.assertIsNone(self.extractor.get_next_page_url(''))
@@ -97,7 +100,7 @@ class TestGitHubProjectExtractor(TestCase):
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=1>; rel="prev"'
         self.assertIsNone(self.extractor.get_next_page_url(link))
-        
+
     def test_get_summary(self):
         self.assertEqual(self.extractor.get_summary(), 'project description')
 
@@ -126,3 +129,23 @@ class TestGitHubProjectExtractor(TestCase):
 
     def test_get_wiki_url(self):
         self.assertEqual(self.extractor.get_page_url('wiki_url'), 'https://github.com/test_project.wiki')
+
+    @patch('forgeimporters.base.h.urlopen')
+    def test_urlopen(self, urlopen):
+        e = github.GitHubProjectExtractor('test_project')
+        url = 'https://github.com/u/p/'
+        e.urlopen(url)
+        request = urlopen.call_args[0][0]
+        self.assertEqual(request.get_full_url(), url)
+
+        user = Mock()
+        user.get_tool_data.return_value = 'abc'
+        e = github.GitHubProjectExtractor('test_project', user=user)
+        e.urlopen(url)
+        request = urlopen.call_args[0][0]
+        self.assertEqual(request.get_full_url(), url + '?access_token=abc')
+
+        url = 'https://github.com/u/p/?p=1'
+        e.urlopen(url)
+        request = urlopen.call_args[0][0]
+        self.assertEqual(request.get_full_url(), url + '&access_token=abc')

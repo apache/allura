@@ -18,8 +18,6 @@
 import re
 import logging
 import json
-import urllib
-import urllib2
 
 from forgeimporters import base
 
@@ -35,6 +33,23 @@ class GitHubProjectExtractor(base.ProjectExtractor):
     POSSIBLE_STATES = ('opened', 'closed')
     SUPPORTED_ISSUE_EVENTS = ('closed', 'reopened', 'assigned')
     NEXT_PAGE_URL_RE = re.compile(r'<([^>]*)>; rel="next"')
+
+    def __init__(self, *args, **kw):
+        self.token = None
+        user = kw.pop('user', None)
+        if user:
+            self.token = user.get_tool_data('GitHubProjectExtractor', 'token')
+        super(GitHubProjectExtractor, self).__init__(*args, **kw)
+
+    def add_token(self, url):
+        if self.token:
+            glue = '&' if '?' in url else '?'
+            url += glue + 'access_token=' + self.token
+        return url
+
+    def urlopen(self, url, **kw):
+        url = self.add_token(url)
+        return super(GitHubProjectExtractor, self).urlopen(url, **kw)
 
     def get_next_page_url(self, link):
         if not link:
