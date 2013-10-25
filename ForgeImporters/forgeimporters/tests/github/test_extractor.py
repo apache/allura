@@ -16,6 +16,7 @@
 #       under the License.
 
 import json
+from datetime import datetime
 from unittest import TestCase
 
 from mock import patch, Mock
@@ -149,3 +150,33 @@ class TestGitHubProjectExtractor(TestCase):
         e.urlopen(url)
         request = urlopen.call_args[0][0]
         self.assertEqual(request.get_full_url(), url + '&access_token=abc')
+
+    @patch('forgeimporters.base.h.urlopen')
+    @patch('forgeimporters.github.time.sleep')
+    @patch('forgeimporters.github.log')
+    def test_urlopen_rate_limit(self, log, sleep, urlopen):
+        limit_exceeded_headers = {
+            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': '1382693522',
+        }
+        response_limit_exceeded = StringIO('{}')
+        response_limit_exceeded.info = lambda: limit_exceeded_headers
+        response_ok = StringIO('{}')
+        response_ok.info = lambda: {}
+        results = [response_limit_exceeded, response_ok]
+        urlopen.side_effect = lambda *a, **kw: results.pop(0)
+        e = github.GitHubProjectExtractor('test_project')
+        e.get_page('fake')
+        self.assertEqual(sleep.call_count, 1)
+        self.assertEqual(urlopen.call_count, 2)
+        log.warn.assert_called_once_with(
+            'Rate limit exceeded (10 requests/hour). '
+            'Sleeping until 2013-10-25 09:32:02 UTC'
+        )
+        sleep.reset_mock(); urlopen.reset_mock(); log.warn.reset_mock()
+        urlopen.side_effect = lambda *a, **kw: response_ok
+        e.get_page('fake 2')
+        self.assertEqual(sleep.call_count, 0)
+        self.assertEqual(urlopen.call_count, 1)
+        self.assertEqual(log.warn.call_count, 0)

@@ -18,6 +18,8 @@
 import re
 import logging
 import json
+import time
+from datetime import datetime
 
 from forgeimporters import base
 
@@ -48,8 +50,18 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return url
 
     def urlopen(self, url, **kw):
-        url = self.add_token(url)
-        return super(GitHubProjectExtractor, self).urlopen(url, **kw)
+        resp = super(GitHubProjectExtractor, self).urlopen(self.add_token(url), **kw)
+        remain = resp.info().get('X-RateLimit-Remaining')
+        if remain and int(remain) == 0:
+            reset = resp.info().get('X-RateLimit-Reset')
+            limit = resp.info().get('X-RateLimit-Limit')
+            reset = datetime.utcfromtimestamp(int(reset))
+            now = datetime.utcnow()
+            log.warn('Rate limit exceeded (%s requests/hour). '
+                     'Sleeping until %s UTC' % (limit, reset))
+            time.sleep((reset - now).total_seconds())
+            self.urlopen(url, **kw)
+        return resp
 
     def get_next_page_url(self, link):
         if not link:
