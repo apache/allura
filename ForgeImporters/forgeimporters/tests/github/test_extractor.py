@@ -16,8 +16,8 @@
 #       under the License.
 
 import json
-from datetime import datetime
 from unittest import TestCase
+import urllib2
 
 from mock import patch, Mock
 
@@ -164,8 +164,7 @@ class TestGitHubProjectExtractor(TestCase):
         response_limit_exceeded.info = lambda: limit_exceeded_headers
         response_ok = StringIO('{}')
         response_ok.info = lambda: {}
-        results = [response_limit_exceeded, response_ok]
-        urlopen.side_effect = lambda *a, **kw: results.pop(0)
+        urlopen.side_effect = [response_limit_exceeded, response_ok]
         e = github.GitHubProjectExtractor('test_project')
         e.get_page('fake')
         self.assertEqual(sleep.call_count, 1)
@@ -175,8 +174,36 @@ class TestGitHubProjectExtractor(TestCase):
             'Sleeping until 2013-10-25 09:32:02 UTC'
         )
         sleep.reset_mock(); urlopen.reset_mock(); log.warn.reset_mock()
-        urlopen.side_effect = lambda *a, **kw: response_ok
+        response_ok = StringIO('{}')
+        response_ok.info = lambda: {}
+        urlopen.side_effect = [response_ok]
         e.get_page('fake 2')
         self.assertEqual(sleep.call_count, 0)
         self.assertEqual(urlopen.call_count, 1)
         self.assertEqual(log.warn.call_count, 0)
+
+    @patch('forgeimporters.base.h.urlopen')
+    @patch('forgeimporters.github.time.sleep')
+    @patch('forgeimporters.github.log')
+    def test_urlopen_rate_limit_403(self, log, sleep, urlopen):
+        '''Test that urlopen catches 403 which may happen if limit exceeded by another task'''
+        limit_exceeded_headers = {
+            'X-RateLimit-Limit': '10',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': '1382693522',
+        }
+        def urlopen_side_effect(*a, **kw):
+            mock_resp = StringIO('{}')
+            mock_resp.info = lambda: {}
+            urlopen.side_effect = [mock_resp]
+            raise urllib2.HTTPError(
+                'url', 403, 'msg', limit_exceeded_headers, StringIO('{}'))
+        urlopen.side_effect = urlopen_side_effect
+        e = github.GitHubProjectExtractor('test_project')
+        e.get_page('fake')
+        self.assertEqual(sleep.call_count, 1)
+        self.assertEqual(urlopen.call_count, 2)
+        log.warn.assert_called_once_with(
+            'Rate limit exceeded (10 requests/hour). '
+            'Sleeping until 2013-10-25 09:32:02 UTC'
+        )
