@@ -115,7 +115,7 @@ class GitHubWikiImporter(ToolImporter):
     tool_option = {"import_history": "Import history"}
 
     mediawiki_exts = ['.wiki', '.mediawiki']
-    markdown_exts = ['.markdown,' '.mdown', '.mkdn', '.mkd', '.md']
+    markdown_exts = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
     textile_exts = ['.textile']
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
