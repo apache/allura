@@ -170,7 +170,7 @@ class AuthController(BaseController):
                 flash('Hash was not found')
                 redirect('/')
             hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            if not hash_expiry or hash_expiry < datetime.datetime.now():
+            if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
                 flash('Hash time was expired.')
                 redirect('/')
             if request.method == 'POST':
@@ -191,7 +191,7 @@ class AuthController(BaseController):
         hash = h.nonce(42)
         user_record.set_tool_data('AuthPasswordReset',
                                   hash=hash,
-                                  hash_expiry=datetime.datetime.now() +
+                                  hash_expiry=datetime.datetime.utcnow() +
                                   datetime.timedelta(hours=int(config['auth.recovery_hash_expiry_period'])))
 
         log.info('Sending password recovery link to %s', email)

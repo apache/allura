@@ -36,6 +36,7 @@ from allura.tests import TestController
 from allura.lib.helpers import push_config
 from tg import config
 from mock import patch
+import datetime
 
 
 def setUp():
@@ -285,3 +286,15 @@ To reset your password on %s, please visit the following URL:
                 subject='Password recovery',
                 message_id=gen_message_id(),
                 text=text)
+            user = M.User.query.get(username='test-admin')
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            assert_equal(hash, '')
+            assert_equal(hash_expiry, '')
+
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            user.set_tool_data('AuthPasswordReset', hash_expiry=hash_expiry-datetime.timedelta(hours=1))
+            r = self.app.post('/auth/forgotten_password/%s' % hash, {'pw': 154321, 'pw2': 154321})
+            assert_equal(r.status, '302 Found')
