@@ -17,6 +17,7 @@
 
 import logging, string, os
 from urllib import urlencode
+import datetime
 
 import bson
 from tg import expose, session, flash, redirect, validate, config
@@ -166,9 +167,14 @@ class AuthController(BaseController):
             if not user_record:
                 flash('Hash was not found')
                 redirect('/')
+            hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            if not hash_expiry or hash_expiry < datetime.datetime.now():
+                flash('Hash time was expired.')
+                redirect('/')
             if request.method == 'POST':
                 ap = plugin.AuthenticationProvider.get(request)
                 ap.recovery_set_password(user_record, kw['pw'])
+                user_record.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 flash('Password changed')
                 redirect('/auth/')
         return dict()
@@ -181,7 +187,10 @@ class AuthController(BaseController):
             redirect('/')
         user_record = M.User.query.find({'preferences.email_address': email}).first()
         hash = h.nonce(42)
-        user_record.set_tool_data('AuthPasswordReset', hash=hash)
+        user_record.set_tool_data('AuthPasswordReset',
+                                  hash=hash,
+                                  hash_expiry=datetime.datetime.now() +
+                                  datetime.timedelta(hours=int(config['auth.recovery_hash_expiry_period'])))
 
         log.info('Sending password recovery link to %s', email)
         text = '''
