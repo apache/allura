@@ -146,19 +146,18 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 class GitHubOAuthMixin(object):
     '''Support for github oauth web application flow.'''
 
-    def oauth_begin(self, controller_url):
-        '''controller_url is absolute url, refers the controller you mixed this class in'''
+    def oauth_begin(self):
         client_id = config.get('github_importer.client_id')
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
             return  # GitHub app is not configured
         if c.user.get_tool_data('GitHubProjectImport', 'token'):
             return  # token already exists, nothing to do
-        redirect_uri = controller_url.rstrip('/') + '/oauth_callback'
+        redirect_uri = request.url.rstrip('/') + '/oauth_callback'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
         auth_url, state = oauth.authorization_url('https://github.com/login/oauth/authorize')
         session['github.oauth.state'] = state  # Used in callback to prevent CSRF
-        session['github.oauth.redirect'] = controller_url
+        session['github.oauth.redirect'] = request.url
         session.save()
         redirect(auth_url)
 

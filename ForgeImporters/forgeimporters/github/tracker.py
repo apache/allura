@@ -44,7 +44,7 @@ from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 
-from . import GitHubProjectExtractor
+from . import GitHubProjectExtractor, GitHubOAuthMixin
 from ..base import ToolImporter
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
@@ -57,7 +57,7 @@ class GitHubTrackerImportForm(ToolImportForm):
     gh_user_name = fev.UnicodeString(not_empty=True)
 
 
-class GitHubTrackerImportController(BaseController):
+class GitHubTrackerImportController(BaseController, GitHubOAuthMixin):
 
     def __init__(self):
         self.importer = GitHubTrackerImporter()
@@ -69,6 +69,7 @@ class GitHubTrackerImportController(BaseController):
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/tracker/index.html')
     def index(self, **kw):
+        self.oauth_begin()
         return dict(importer=self.importer,
                     target_app=self.target_app)
 

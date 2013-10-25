@@ -30,6 +30,7 @@ from tg.decorators import (
         )
 
 from allura.lib.decorators import require_post
+from allura.lib import helpers as h
 from allura.controllers import BaseController
 from allura import model as M
 
@@ -39,7 +40,7 @@ from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
         )
-from forgeimporters.github import GitHubProjectExtractor
+from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
 
 
 class GitHubRepoImportForm(ToolImportForm):
@@ -47,7 +48,7 @@ class GitHubRepoImportForm(ToolImportForm):
     gh_user_name = fev.UnicodeString(not_empty=True)
 
 
-class GitHubRepoImportController(BaseController):
+class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
     def __init__(self):
         self.importer = GitHubRepoImporter()
 
@@ -58,6 +59,7 @@ class GitHubRepoImportController(BaseController):
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/code/index.html')
     def index(self, **kw):
+        self.oauth_begin()
         return dict(importer=self.importer,
                 target_app=self.target_app)
 

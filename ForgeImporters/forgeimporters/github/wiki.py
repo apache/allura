@@ -50,7 +50,7 @@ from forgeimporters.base import (
         ToolImporter,
         ToolImportForm,
         )
-from forgeimporters.github import GitHubProjectExtractor
+from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgewiki import model as WM
 from forgewiki.converters import mediawiki2markdown
@@ -74,7 +74,7 @@ class GitHubWikiImportForm(ToolImportForm):
     tool_option = fev.UnicodeString(if_missing=u'')
 
 
-class GitHubWikiImportController(BaseController):
+class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
 
     def __init__(self):
         self.importer = GitHubWikiImporter()
@@ -86,6 +86,7 @@ class GitHubWikiImportController(BaseController):
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/wiki/index.html')
     def index(self, **kw):
+        self.oauth_begin()
         return dict(importer=self.importer,
                     target_app=self.target_app)
 

@@ -53,7 +53,7 @@ class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):
     @with_trailing_slash
     @expose(index_template)
     def index(self, **kw):
-        self.oauth_begin(h.absurl('/p/import_project/github/'))
+        self.oauth_begin()
         return super(self.__class__, self).index(**kw)
 
     @require_post()
