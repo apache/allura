@@ -35,7 +35,13 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.decorators import require_post
 from allura.lib.repository import RepositoryApp
-from allura.lib.widgets import SubscriptionForm, OAuthApplicationForm, OAuthRevocationForm, LoginForm
+from allura.lib.widgets import (
+    SubscriptionForm,
+    OAuthApplicationForm,
+    OAuthRevocationForm,
+    LoginForm,
+    RecoverPasswordChangeForm,
+    ForgottenPasswordForm)
 from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
 from allura.controllers import BaseController
@@ -58,6 +64,8 @@ OID_PROVIDERS=[
 
 class F(object):
     login_form = LoginForm()
+    recover_password_change_form = RecoverPasswordChangeForm()
+    forgotten_password_form = ForgottenPasswordForm()
     subscription_form=SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
@@ -147,6 +155,35 @@ class AuthController(BaseController):
     def create_account(self, **kw):
         c.form = F.registration_form
         return dict()
+
+    @expose('jinja:allura:templates/forgotten_password.html')
+    def forgotten_password(self, hash=None, **kw):
+        if not hash:
+            c.forgotten_password_form = F.forgotten_password_form
+        else:
+            c.recover_password_change_form = F.recover_password_change_form
+            user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
+            if not user_record:
+                flash('Hash was not found')
+                redirect('/')
+            if request.method == 'POST':
+                ap = plugin.AuthenticationProvider.get(request)
+                ap.recovery_set_password(user_record, kw['pw'])
+                flash('Password changed')
+                redirect('/auth/')
+        return dict()
+
+    @expose()
+    @require_post()
+    @validate(F.forgotten_password_form, error_handler=forgotten_password)
+    def password_recovery_hash(self, email=None, **kw):
+        if not email:
+            redirect('/')
+        user_record = M.User.query.find({'preferences.email_address': email}).first()
+        hash = h.nonce(42)
+        user_record.set_tool_data('AuthPasswordReset', hash=hash)
+        flash('Email with instructions has been sent.')
+        redirect('/')
 
     @expose()
     @require_post()
