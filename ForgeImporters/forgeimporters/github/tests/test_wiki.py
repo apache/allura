@@ -29,6 +29,7 @@ from allura.tests.decorators import with_tool, without_module
 from alluratest.controller import setup_basic_test
 from forgeimporters.github.wiki import GitHubWikiImporter
 from forgeimporters.github.utils import GitHubMarkdownConverter
+from forgeimporters.github import GitHubOAuthMixin
 
 
 # important to be distinct from 'test' which ForgeWiki uses, so that the tests can run in parallel and not clobber each other
@@ -558,3 +559,9 @@ class TestGitHubWikiImportController(TestController, TestCase):
         r = self.app.post(self.url + 'create', params, status=302).follow()
         self.assertIn('Please wait and try again', r)
         self.assertEqual(import_tool.post.call_count, 0)
+
+    @with_wiki
+    @patch.object(GitHubOAuthMixin, 'oauth_begin')
+    def test_oauth(self, oauth_begin):
+        r = self.app.get(self.url)
+        oauth_begin.assert_called_once()

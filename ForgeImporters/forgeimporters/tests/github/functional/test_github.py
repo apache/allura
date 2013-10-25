@@ -15,8 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import tg
+from mock import patch, call, Mock
+from nose.tools import assert_equal
 from unittest import TestCase
+
 from allura.tests import TestController
+from allura import model as M
 
 class TestGitHubImportController(TestController, TestCase):
 
@@ -35,3 +40,42 @@ class TestGitHubImportController(TestController, TestCase):
 
         r = self.app.post('/p/import_project/github/process', extra_environ=dict(username='*anonymous'), status=302)
         self.assertIn('/auth/', r.location)
+
+
+class TestGitHubOAuth(TestController):
+
+    def setUp(self):
+        super(TestGitHubOAuth, self).setUp()
+        tg.config['github_importer.client_id'] = 'client_id'
+        tg.config['github_importer.client_secret'] = 'secret'
+
+    @patch('forgeimporters.github.OAuth2Session')
+    @patch('forgeimporters.github.session')
+    def test_oauth_flow(self, session, oauth):
+        redirect = 'http://localhost/p/import_project/github/oauth_callback'
+        oauth_instance = Mock()
+        oauth_instance.authorization_url.return_value = (redirect, 'state')
+        oauth_instance.fetch_token.return_value = {'access_token': 'abc'}
+        oauth.return_value = oauth_instance
+
+        user = M.User.by_username('test-admin')
+        assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), None)
+        r = self.app.get('/p/import_project/github/')
+        assert_equal(r.status_int, 302)
+        assert_equal(r.location, redirect)
+        session.__setitem__.assert_has_calls([
+            call('github.oauth.state', 'state'),
+            call('github.oauth.redirect', 'http://localhost/p/import_project/github/')
+        ])
+        session.save.assert_called_once()
+
+        r = self.app.get(redirect)
+        session.get.assert_has_calls([
+            call('github.oauth.state'),
+            call('github.oauth.redirect', '/')
+        ])
+        user = M.User.by_username('test-admin')
+        assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), 'abc')
+
+        r = self.app.get('/p/import_project/github/')
+        assert_equal(r.status_int, 200)  # token in user data, so oauth isn't triggered

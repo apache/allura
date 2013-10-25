@@ -23,6 +23,8 @@ from allura.tests import TestController
 from allura.tests.decorators import with_tool
 from allura import model as M
 
+from forgeimporters.github import GitHubOAuthMixin
+
 # important to be distinct from 'test' which ForgeTracker uses, so that the tests can run in parallel and not clobber each other
 test_project_with_tracker = 'test2'
 with_tracker = with_tool(test_project_with_tracker, 'tickets', 'spooky-issues', 'tickets')
@@ -69,3 +71,9 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         r = self.app.post(self.url + 'create', params, status=302).follow()
         self.assertIn('Please wait and try again', r)
         self.assertEqual(import_tool.post.call_count, 0)
+
+    @with_tracker
+    @patch.object(GitHubOAuthMixin, 'oauth_begin')
+    def test_oauth(self, oauth_begin):
+        r = self.app.get(self.url)
+        oauth_begin.assert_called_once()

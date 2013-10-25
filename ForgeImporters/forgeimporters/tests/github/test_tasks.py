@@ -25,8 +25,9 @@ from ...github import tasks
 @mock.patch.object(tasks, 'c')
 def test_import_project_info(c, session, ghpe):
     c.project = mock.Mock(name='project')
+    c.user = mock.Mock(name='user')
     tasks.import_project_info('my-project')
-    ghpe.assert_called_once_with('my-project')
+    ghpe.assert_called_once_with('my-project', user=c.user)
     ghpe.return_value.get_summary.assert_called_once_with()
     ghpe.return_value.get_homepage.assert_called_once_with()
     session.flush_all.assert_called_once_with()
