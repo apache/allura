@@ -31,7 +31,7 @@ def import_project_info(project_name):
     from forgeimporters.github.project import GitHubProjectImporter
     importer = GitHubProjectImporter(None)
     with ImportErrorHandler(importer, project_name, c.project) as handler:
-        extractor = GitHubProjectExtractor(project_name)
+        extractor = GitHubProjectExtractor(project_name, user=c.user)
         c.project.summary = extractor.get_summary()
         c.project.external_homepage = extractor.get_homepage()
         ThreadLocalORMSession.flush_all()

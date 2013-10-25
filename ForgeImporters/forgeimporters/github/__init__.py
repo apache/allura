@@ -46,7 +46,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         self.token = None
         user = kw.pop('user', None)
         if user:
-            self.token = user.get_tool_data('GitHubProjectExtractor', 'token')
+            self.token = user.get_tool_data('GitHubProjectImport', 'token')
         super(GitHubProjectExtractor, self).__init__(*args, **kw)
 
     def add_token(self, url):

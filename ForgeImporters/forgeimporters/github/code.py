@@ -92,7 +92,7 @@ class GitHubRepoImporter(ToolImporter):
 
         """
         project_name = "%s/%s" % (user_name, project_name)
-        extractor = GitHubProjectExtractor(project_name)
+        extractor = GitHubProjectExtractor(project_name, user=user)
         repo_url = extractor.get_repo_url()
         app = project.install_app(
             "Git",

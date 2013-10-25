@@ -114,7 +114,7 @@ class GitHubTrackerImporter(ToolImporter):
         self.github_markdown_converter = GitHubMarkdownConverter(
             kw['user_name'], project_name)
         ThreadLocalORMSession.flush_all()
-        extractor = GitHubProjectExtractor(project_name)
+        extractor = GitHubProjectExtractor(project_name, user=user)
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, user=M.User.anonymous(), app=app):

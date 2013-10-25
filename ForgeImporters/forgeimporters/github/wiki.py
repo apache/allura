@@ -139,7 +139,7 @@ class GitHubWikiImporter(ToolImporter):
 
         """
         project_name = "%s/%s" % (user_name, project_name)
-        extractor = GitHubProjectExtractor(project_name)
+        extractor = GitHubProjectExtractor(project_name, user=user)
         if not extractor.has_wiki():
             return
 
