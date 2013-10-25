@@ -34,7 +34,8 @@ class LoginForm(ForgeForm):
     class fields(ew_core.NameList):
         username = ew.TextField(label='Username')
         password = ew.PasswordField(label='Password')
-        link = ew.HTMLField(text='<a href="forgotten_password">Forgot password?</a>')
+        if plugin.LocalAuthenticationProvider.forgotten_password_process:
+            link = ew.HTMLField(text='<a href="./forgotten_password">Forgot password?</a>')
 
     class hidden_fields(ew_core.NameList):
         return_to = ew.HiddenField()

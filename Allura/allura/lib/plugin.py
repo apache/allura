@@ -68,7 +68,7 @@ class AuthenticationProvider(object):
 
     def __init__(self, request):
         self.request = request
-        #self.forgotten_password_process = False
+    forgotten_password_process = False
 
     @classmethod
     def get(cls, request):
@@ -84,9 +84,9 @@ class AuthenticationProvider(object):
     def session(self):
         return self.request.environ['beaker.session']
 
-    #@LazyProperty
-    #def forgotten_password(self):
-    #    return self.forgotten_password_process
+    @LazyProperty
+    def forgotten_password(self):
+        return self.forgotten_password_process
 
     def authenticate_request(self):
         from allura import model as M
@@ -218,9 +218,7 @@ class LocalAuthenticationProvider(AuthenticationProvider):
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
     SHA-256 encryption.
     '''
-    #def __init__(self, *args, **kwargs):
-    #    super(AuthenticationProvider, self).__init__(*args, **kwargs)
-    #    self.forgotten_password_process = True
+    forgotten_password_process = True
 
     def register_user(self, user_doc):
         from allura import model as M

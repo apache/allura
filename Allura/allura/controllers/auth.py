@@ -159,6 +159,8 @@ class AuthController(BaseController):
 
     @expose('jinja:allura:templates/forgotten_password.html')
     def forgotten_password(self, hash=None, **kw):
+        if not plugin.LocalAuthenticationProvider.forgotten_password_process:
+            redirect('/')
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
