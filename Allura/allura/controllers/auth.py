@@ -182,6 +182,23 @@ class AuthController(BaseController):
         user_record = M.User.query.find({'preferences.email_address': email}).first()
         hash = h.nonce(42)
         user_record.set_tool_data('AuthPasswordReset', hash=hash)
+
+        log.info('Sending password recovery link to %s', email)
+        text = '''
+To reset your password on %s, please visit the following URL:
+
+%s/auth/forgotten_password/%s
+
+''' % (config['site_name'], config['base_url'], hash)
+
+        allura.tasks.mail_tasks.sendmail.post(
+            destinations=[email],
+            fromaddr=config['forgemail.return_path'],
+            reply_to='',
+            subject='Password recovery',
+            message_id=h.gen_message_id(),
+            text=text)
+
         flash('Email with instructions has been sent.')
         redirect('/')
 
