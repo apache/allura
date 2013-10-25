@@ -20,7 +20,7 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup, assert_equal
+from nose.tools import with_setup, assert_equal, assert_not_equal
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch
@@ -32,6 +32,10 @@ from allura import model as M
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
+from allura.tests import TestController
+from allura.lib.helpers import push_config
+from tg import config
+from mock import patch
 
 
 def setUp():
@@ -225,3 +229,59 @@ def test_user_projects_by_role():
     g.credentials.clear()
     assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+
+
+class TestForgotPassword(TestController):
+
+    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_forgot_password_reset(self, gen_message_id, sendmail):
+        user = M.User.query.get(username='test-admin')
+        password1 = user.password
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = False
+        user.disabled = True
+
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is None
+
+        user = M.User.query.get(username='test-admin')
+        user.disabled = True
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is None
+
+        user = M.User.query.get(username='test-admin')
+        user.disabled = False
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+
+        with push_config(config, **{'auth.recovery_hash_expiry_period': '1'}):
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            assert hash is not None
+            assert hash_expiry is not None
+
+            r = self.app.post('/auth/forgotten_password/%s' % hash, {'pw': 154321, 'pw2': 154321})
+            user = M.User.query.get(username='test-admin')
+            password2 = user.password
+            assert_not_equal(password1, password2)
+
+            text = '''
+To reset your password on %s, please visit the following URL:
+
+%s/auth/forgotten_password/%s
+
+''' % (config['site_name'], config['base_url'], hash)
+
+            sendmail.post.assert_called_once_with(
+                destinations=[email._id],
+                fromaddr=config['forgemail.return_path'],
+                reply_to='',
+                subject='Password recovery',
+                message_id=gen_message_id(),
+                text=text)
