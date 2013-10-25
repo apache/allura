@@ -21,6 +21,7 @@ from collections import Counter, OrderedDict
 from datetime import datetime
 from copy import deepcopy
 import urllib
+import re
 
 from tg import config
 from pylons import tmpl_context as c, app_globals as g
@@ -87,7 +88,7 @@ class TroveCategory(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name='trove_category'
-        indexes = [ 'trove_cat_id', 'trove_parent_id', 'shortname' ]
+        indexes = [ 'trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath' ]
 
     _id=FieldProperty(S.ObjectId)
     trove_cat_id = FieldProperty(int, if_missing=None)
@@ -108,18 +109,7 @@ class TroveCategory(MappedClass):
 
     @property
     def children(self):
-        def recursive_children(cat_ids):
-            result = []
-            children = self.query.find({'trove_parent_id': {'$in': cat_ids}}).all()
-            for child in children:
-                result.append(child)
-            if children:
-                result.extend(recursive_children([c.trove_cat_id for c in children]))
-            return result
-
-        result = recursive_children([self.trove_cat_id])
-        result.sort(key=lambda x: x.fullpath)
-        return result
+        return self.query.find({'fullpath': re.compile('^' + re.escape(self.fullpath) + ' ::')}).sort('fullpath')
 
     @property
     def type(self):
