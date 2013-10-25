@@ -387,6 +387,12 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert svn_path_exists("file://%s/a" % repo_path)
         assert svn_path_exists("file://%s" % repo_path)
         assert not svn_path_exists("file://%s/badpath" % repo_path)
+        with mock.patch('forgesvn.model.svn.pysvn') as pysvn:
+            svn_path_exists('dummy')
+            pysvn.Client.return_value.info2.assert_called_once_with(
+                    'dummy',
+                    revision=pysvn.Revision.return_value,
+                    recurse=False)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball(self):

@@ -106,7 +106,7 @@ def svn_path_exists(path, rev=None):
     else:
         rev = pysvn.Revision(pysvn.opt_revision_kind.head)
     try:
-        svn.info2(path, revision=rev)
+        svn.info2(path, revision=rev, recurse=False)
         return True
     except pysvn.ClientError:
         return False
