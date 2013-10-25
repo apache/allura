@@ -108,12 +108,17 @@ class TroveCategory(MappedClass):
 
     @property
     def children(self):
-        result = []
-        children = self.query.find(dict(trove_parent_id=self.trove_cat_id)).all()
-        for child in children:
-            result.append(child);
-            result.extend(child.children)
-        result.sort(key=lambda x:x.fullpath)
+        def recursive_children(cat_ids):
+            result = []
+            children = self.query.find({'trove_parent_id': {'$in': cat_ids}}).all()
+            for child in children:
+                result.append(child)
+            if children:
+                result.extend(recursive_children([c.trove_cat_id for c in children]))
+            return result
+
+        result = recursive_children([self.trove_cat_id])
+        result.sort(key=lambda x: x.fullpath)
         return result
 
     @property
