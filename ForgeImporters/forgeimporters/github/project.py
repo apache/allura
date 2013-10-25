@@ -23,9 +23,11 @@ from tg import expose, validate
 from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
+from allura.lib import helpers as h
 
 from .. import base
 from . import tasks
+from . import GitHubOAuthMixin
 
 
 log = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ class GitHubProjectForm(base.ProjectImportForm):
                 'invalid': 'Valid symbols are: letters, numbers, dashes, underscores and periods',
             })
 
-class GitHubProjectImporter(base.ProjectImporter):
+class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):
 
     source = 'GitHub'
     index_template = 'jinja:forgeimporters.github:templates/project.html'
@@ -51,6 +53,7 @@ class GitHubProjectImporter(base.ProjectImporter):
     @with_trailing_slash
     @expose(index_template)
     def index(self, **kw):
+        self.oauth_begin(h.absurl('/p/import_project/github/'))
         return super(self.__class__, self).index(**kw)
 
     @require_post()

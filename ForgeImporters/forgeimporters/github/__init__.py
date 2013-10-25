@@ -22,6 +22,11 @@ import time
 import urllib2
 from datetime import datetime
 
+from tg import config, session, redirect, request, expose
+from tg.decorators import without_trailing_slash
+from pylons import tmpl_context as c
+from requests_oauthlib import OAuth2Session
+
 from forgeimporters import base
 
 log = logging.getLogger(__name__)
@@ -136,3 +141,39 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 
     def has_wiki(self):
         return self.get_page('project_info').get('has_wiki')
+
+
+class GitHubOAuthMixin(object):
+    '''Support for github oauth web application flow.'''
+
+    def oauth_begin(self, controller_url):
+        '''controller_url is absolute url, refers the controller you mixed this class in'''
+        client_id = config.get('github_importer.client_id')
+        secret = config.get('github_importer.client_secret')
+        if not client_id or not secret:
+            return  # GitHub app is not configured
+        if c.user.get_tool_data('GitHubProjectImport', 'token'):
+            return  # token already exists, nothing to do
+        redirect_uri = controller_url.rstrip('/') + '/oauth_callback'
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+        auth_url, state = oauth.authorization_url('https://github.com/login/oauth/authorize')
+        session['github.oauth.state'] = state  # Used in callback to prevent CSRF
+        session['github.oauth.redirect'] = controller_url
+        session.save()
+        redirect(auth_url)
+
+    @without_trailing_slash
+    @expose()
+    def oauth_callback(self, **kw):
+        client_id = config.get('github_importer.client_id')
+        secret = config.get('github_importer.client_secret')
+        if not client_id or not secret:
+            return  # GitHub app is not configured
+        oauth = OAuth2Session(client_id, state=session.get('github.oauth.state'))
+        token = oauth.fetch_token(
+            'https://github.com/login/oauth/access_token',
+            client_secret=secret,
+            authorization_response=request.url
+        )
+        c.user.set_tool_data('GitHubProjectImport', token=token['access_token'])
+        redirect(session.get('github.oauth.redirect', '/'))

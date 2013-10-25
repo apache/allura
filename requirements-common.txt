@@ -39,6 +39,7 @@ python-openid==2.2.5
 python-oembed==0.2.1
 pytidylib==0.2.1
 requests==1.2.3
+requests-oauthlib==0.4.0
 # for taskd proc name switching
 setproctitle==1.1.7
 # dep of pypeline
