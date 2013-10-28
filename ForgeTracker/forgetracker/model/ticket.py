@@ -66,6 +66,7 @@ from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.tasks import mail_tasks
+from paste.deploy.converters import asbool
 
 
 log = logging.getLogger(__name__)
@@ -332,10 +333,8 @@ class Globals(MappedClass):
             if user:
                 values['assigned_to_id'] = user._id
         private = post_data.get('private')
-        if private == 'True':
-            values['private'] = True
-        elif private == 'False':
-            values['private'] = False
+        if private:
+            values['private'] = asbool(private)
 
         custom_values = {}
         custom_fields = {}
