@@ -51,7 +51,10 @@ from ming.utils import LazyProperty
 
 import allura.tasks.event_tasks
 from allura import model as M
-from allura.lib.markdown_extensions import ForgeExtension
+from allura.lib.markdown_extensions import (
+        ForgeExtension,
+        CommitMessageExtension,
+        )
 from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
@@ -427,6 +430,15 @@ class Globals(object):
             return self.forge_markdown(wiki=True, macro_context='userproject-wiki')
         else:
             return self.forge_markdown(wiki=True)
+
+    @property
+    def markdown_commit(self):
+        """Return a Markdown parser configured for rendering commit messages.
+
+        """
+        app = getattr(c, 'app', None)
+        return ForgeMarkdown(extensions=[CommitMessageExtension(app), 'nl2br'],
+                output_format='html4')
 
     @property
     def production_mode(self):
