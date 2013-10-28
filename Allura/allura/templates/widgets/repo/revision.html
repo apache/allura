@@ -19,8 +19,8 @@
 {% from 'allura:templates/jinja_master/lib.html' import email_gravatar, abbr_date with context %}
 <div class="commit-details">
     <div class="commit-message">
-        <div class="first-line">{{g.markdown.convert(h.really_unicode(value.message.split('\n')[0]))}}</div>
-        {{g.markdown.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])))}}
+        <div class="first-line">{{g.markdown_commit.convert(h.really_unicode(value.message.split('\n')[0]))}}</div>
+        {{g.markdown_commit.convert(h.really_unicode('\n'.join(value.message.split('\n')[1:])))}}
     </div>
     <div class="commit-details">
 

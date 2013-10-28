@@ -54,7 +54,7 @@
                 {%- if commit.committed.email != commit.authored.email %},
                 pushed by {{ user_link(commit.committed.email, commit.committed.name) }}
                 {% endif %}
-                {{g.markdown.convert(commit.message)}}
+                {{g.markdown_commit.convert(commit.message)}}
                 {% if commit.rename_details %}
                     <div>
                       <b>renamed from</b>

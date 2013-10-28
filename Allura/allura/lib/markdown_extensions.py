@@ -20,7 +20,6 @@ import logging
 from urlparse import urljoin
 
 from tg import config
-from pylons import request
 from BeautifulSoup import BeautifulSoup
 
 import markdown
@@ -38,6 +37,195 @@ PLAINTEXT_BLOCK_RE = re.compile( \
     )
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
+
+
+class CommitMessageExtension(markdown.Extension):
+    """Markdown extension for processing commit messages.
+
+    People don't expect their commit messages to be parsed as Markdown. This
+    extension is therefore intentionally minimal in what it does. It knows how
+    to handle Trac-style short refs, will replace short refs with links, and
+    will create paragraphs around double-line breaks. That is *all* it does.
+
+    To make it do more, re-add some inlinePatterns and/or blockprocessors.
+
+    Some examples of the Trac-style refs this extension can parse::
+
+        #100
+        r123
+        ticket:100
+        comment:13:ticket:100
+        source:path/to/file.c@123#L456 (rev 123, lineno 456)
+
+    Trac-style refs will be converted to links to the appropriate artifact by
+    the :class:`PatternReplacingProcessor` preprocessor.
+
+    """
+    def __init__(self, app):
+        markdown.Extension.__init__(self)
+        self.app = app
+        self._use_wiki = False
+
+    def extendMarkdown(self, md, md_globals):
+        md.registerExtension(self)
+        # remove default preprocessors and add our own
+        md.preprocessors.clear()
+        md.preprocessors['trac_refs'] = PatternReplacingProcessor(
+            TracRef1(), TracRef2(), TracRef3(self.app))
+        # remove all inlinepattern processors except short refs and links
+        md.inlinePatterns.clear()
+        md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(
+                markdown.inlinepatterns.LINK_RE, md)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(
+                markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        # remove all default block processors except for paragraph
+        md.parser.blockprocessors.clear()
+        md.parser.blockprocessors['paragraph'] = \
+                markdown.blockprocessors.ParagraphProcessor(md.parser)
+        # wrap artifact link text in square brackets
+        self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
+        md.treeprocessors['links'] = self.forge_link_tree_processor
+        # Sanitize HTML
+        md.postprocessors['sanitize_html'] = HTMLSanitizer()
+        # Put a class around markdown content for custom css
+        md.postprocessors['add_custom_class'] = AddCustomClass()
+        md.postprocessors['mark_safe'] = MarkAsSafe()
+
+    def reset(self):
+        self.forge_link_tree_processor.reset()
+
+
+class Pattern(object):
+    """Base class for regex patterns used by the :class:`PatternReplacingProcessor`.
+
+    Subclasses must define :attr:`pattern` (a compiled regex), and
+    :meth:`repl`.
+
+    """
+    BEGIN, END = r'(^|\b|\s)', r'($|\b|\s)'
+
+    def sub(self, line):
+        return self.pattern.sub(self.repl, line)
+
+    def repl(self, match):
+        """Return a string to replace ``match`` in the source string (the
+        string in which the match was found).
+
+        """
+        return match.group()
+
+
+class TracRef1(Pattern):
+    """Replaces Trac-style short refs with links. Example patterns::
+
+        #100 (ticket 100)
+        r123 (revision 123)
+
+    """
+    pattern = re.compile(r'(?<!\[|\w)([#r]\d+)(?!\]|\w)')
+
+    def repl(self, match):
+        shortlink = M.Shortlink.lookup(match.group(1))
+        if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
+            return '[{ref}]({url})'.format(
+                    ref=match.group(1),
+                    url=shortlink.url)
+        return match.group()
+
+
+class TracRef2(Pattern):
+    """Replaces Trac-style short refs with links. Example patterns::
+
+        ticket:100
+        comment:13:ticket:400
+
+    """
+    pattern = re.compile(
+            Pattern.BEGIN + r'((comment:(\d+):)?(ticket:)(\d+))' + Pattern.END)
+
+    def repl(self, match):
+        shortlink = M.Shortlink.lookup('#' + match.group(6))
+        if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
+            url = shortlink.url
+            if match.group(4):
+                slug = self.get_comment_slug(shortlink.ref.artifact, match.group(4))
+                slug = '#' + slug if slug else ''
+                url = url + slug
+
+            return '{front}[{ref}]({url}){back}'.format(
+                    front=match.group(1),
+                    ref=match.group(2),
+                    url=url,
+                    back=match.group(7))
+        return match.group()
+
+    def get_comment_slug(self, ticket, comment_num):
+        """Given the id of an imported Trac comment, return it's Allura slug.
+
+        """
+        if not ticket:
+            return None
+
+        comment_num = int(comment_num)
+        comments = ticket.discussion_thread.post_class().query.find(dict(
+            discussion_id=ticket.discussion_thread.discussion_id,
+            thread_id=ticket.discussion_thread._id,
+            status={'$in': ['ok', 'pending']})).sort('timestamp')
+
+        if comment_num <= comments.count():
+            return comments.all()[comment_num-1].slug
+
+
+class TracRef3(Pattern):
+    """Replaces Trac-style short refs with links. Example patterns::
+
+        source:trunk/server/file.c@123#L456 (rev 123, lineno 456)
+
+    Creates a link to a specific line of a source file at a specific revision.
+
+    """
+    pattern = re.compile(
+            Pattern.BEGIN + r'((source:)([^@#]+)(@(\d+))?(#L(\d+))?)' + Pattern.END)
+
+    def __init__(self, app):
+        super(Pattern, self).__init__()
+        self.app = app
+
+    def repl(self, match):
+        if not self.app:
+            return match.group()
+        file, rev, lineno = (
+                match.group(4),
+                match.group(6) or 'HEAD',
+                '#l' + match.group(8) if match.group(8) else '')
+        url = '{app_url}{rev}/tree/{file}{lineno}'.format(
+                app_url=self.app.url,
+                rev=rev,
+                file=file,
+                lineno=lineno)
+        return '{front}[{ref}]({url}){back}'.format(
+                front=match.group(1),
+                ref=match.group(2),
+                url=url,
+                back=match.group(9))
+
+
+class PatternReplacingProcessor(markdown.preprocessors.Preprocessor):
+    """A Markdown preprocessor that searches the source lines for patterns and
+    replaces matches with alternate text.
+
+    """
+
+    def __init__(self, *patterns):
+        self.patterns = patterns or []
+
+    def run(self, lines):
+        new_lines = []
+        for line in lines:
+            for pattern in self.patterns:
+                line = pattern.sub(line)
+            new_lines.append(line)
+        return new_lines
 
 
 class ForgeExtension(markdown.Extension):
