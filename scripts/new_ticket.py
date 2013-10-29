@@ -22,7 +22,7 @@ print '-----------------------------------------------'
 description = sys.stdin.read()
 print '-----------------------------------------------'
 
-r = requests.post(opts.url, verify=False, params={
+r = requests.post(opts.url, params={
         'access_token': access_token,
         'ticket_form.summary': summary,
         'ticket_form.description': description,
