@@ -359,6 +359,16 @@ class Globals(MappedClass):
                             get_label(k),
                             new_user.display_name,
                             old_user.display_name)
+                elif k == 'private':
+                    def private_text(val):
+                        if val:
+                            return 'Yes'
+                        else:
+                            return 'No'
+                    message += get_change_text(
+                        get_label(k),
+                        private_text(v),
+                        private_text(getattr(ticket, k)))
                 else:
                     message += get_change_text(
                         get_label(k),
