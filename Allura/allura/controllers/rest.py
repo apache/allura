@@ -184,10 +184,10 @@ class OAuthNegotiator(object):
     def authorize(self, oauth_token=None):
         security.require_authenticated()
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
-        rtok.user_id = c.user._id
         if rtok is None:
             log.error('Invalid token %s', oauth_token)
             raise exc.HTTPForbidden
+        rtok.user_id = c.user._id
         return dict(
             oauth_token=oauth_token,
             consumer=rtok.consumer_token)
@@ -242,7 +242,7 @@ class OAuthNegotiator(object):
             self.server.verify_request(req, consumer, rtok)
         except:
             log.error('Invalid signature')
-            return None
+            raise exc.HTTPForbidden
         acc_token = M.OAuthAccessToken(
                 consumer_token_id=consumer_token._id,
                 request_token_id=request_token._id,

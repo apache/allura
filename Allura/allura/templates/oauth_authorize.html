@@ -36,7 +36,6 @@
 </p>
 <form method="POST" action="do_authorize">
   <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
-  <input type="hidden" name="name" value="{{name}}"/>
   <input type="submit" name="no" value="No, do not authorize {{ consumer.name }}">
   <input type="submit" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
 </form>
