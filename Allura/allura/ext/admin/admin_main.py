@@ -578,7 +578,7 @@ class ProjectAdminController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    def update_mounts(self, subproject=None, tool=None, new=None, **kw):
+    def update_mounts(self, subproject=None, tool=None, new=None, called_by_api=False, **kw):
         if subproject is None: subproject = []
         if tool is None: tool = []
         for sp in subproject:
@@ -634,7 +634,10 @@ class ProjectAdminController(BaseController):
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         g.post_event('project_updated')
-        redirect('tools')
+        if not called_by_api:
+            redirect('tools')
+        else:
+            return True
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):

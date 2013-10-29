@@ -294,3 +294,39 @@ class ProjectRestController(object):
     @expose('json:')
     def index(self, **kw):
         return c.project.__json__()
+
+    @expose('json:')
+    def install_tool(self, tool, mount_point, mount_label, **kw):
+        from allura.ext.admin.admin_main import ProjectAdminController
+        from allura.ext.admin.admin_main import AdminApp
+        controller = ProjectAdminController()
+
+        if not tool or not mount_point or not mount_label:
+            return {'success': False,
+                    'info': 'All arguments required.'
+                    }
+
+        installable_tools = AdminApp.installable_tools_for(c.project)
+        tools_names = [t['name'] for t in installable_tools]
+        if not tool in tools_names:
+            return {'success': False,
+                    'info': 'Incorrect tool name.'
+                    }
+        if not h.re_tool_mount_point.match(tool) or c.project.app_instance(mount_point) is not None:
+            return {'success': False,
+                    'info': 'Incorrect mount point name, or mount point already exists.'
+                    }
+
+        data = {
+            'install': 'install',
+            'ep_name': tool,
+            # TODO:
+            'ordinal': '1',
+            'mount_point': mount_point,
+            'mount_label': mount_label
+        }
+        controller.update_mounts(new=data, called_by_api=True)
+        return {'success': True,
+                'info': 'Tool %s with mount_point %s and mount_label %s was created.'
+                        % (tool, mount_point, mount_label)
+        }
