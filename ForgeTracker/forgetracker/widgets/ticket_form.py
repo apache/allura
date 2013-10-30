@@ -141,12 +141,6 @@ class TicketForm(GenericTicketForm):
                 evt.preventDefault();
             });
             $('form').submit(function() {
-                var value = $('div.tagsinput div input').val();
-                var exists = $('input.label_edit').tagExist(value);
-                var default_value = $('div.tagsinput div input').attr('data-default');
-                if ((value !== default_value) && (!exists) && value !== ''){
-                    $('input.label_edit').addTag(value);
-                }
                 $('input[type=submit]', this).attr('disabled', 'disabled');
             });
             $('div.reply.discussion-post a.markdown_preview').click(function(){

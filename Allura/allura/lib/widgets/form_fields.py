@@ -72,6 +72,22 @@ class LabelEdit(ew.InputField):
               'width':'100%%',
               'autocomplete_url':'%(url)stags'
           });
+          $('form').on('blur', '.ui-autocomplete-input', function() {
+              setTimeout(function(){
+                  var clicked = $(document.activeElement); // This is the element that has focus
+                  if (clicked.is('#ui-active-menuitem')) {
+                      return false;
+                  } else {
+                      var value = $('div.tagsinput div input').val();
+                      var exists = $('input.label_edit').tagExist(value);
+                      var default_value = $('div.tagsinput div input').attr('data-default');
+                      if ((value !== default_value) && (!exists) && value !== '') {
+                          $('input.label_edit').addTag(value);
+                      }
+                      $('input[type=submit]', this).attr('disabled', 'disabled');
+                  }
+                }, 1);
+            });
         ''' % dict(url=c.app.url))
 
 class ProjectUserSelect(ew.InputField):
