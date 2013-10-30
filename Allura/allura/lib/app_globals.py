@@ -97,7 +97,7 @@ class ForgeMarkdown(markdown.Markdown):
 
         md5 = None
         if cache.md5 is not None:
-            md5 = hashlib.md5(source_text).hexdigest()
+            md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             if cache.md5 == md5:
                 return cache.html
 
@@ -115,7 +115,7 @@ class ForgeMarkdown(markdown.Markdown):
 
         if threshold != None and render_time > threshold:
             if md5 is None:
-                md5 = hashlib.md5(source_text).hexdigest()
+                md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             cache.md5, cache.html, cache.render_time = md5, html, render_time
         return html
 

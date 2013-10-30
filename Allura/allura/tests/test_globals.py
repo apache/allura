@@ -563,6 +563,15 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(html, self.expected_html)
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    def test_non_ascii(self):
+        self.post.text = u'å∫ç'
+        expected = u'<p>å∫ç</p>'
+        # test with empty cache
+        self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
+        # test with primed cache
+        self.assertEqual(expected, self.md.cached_convert(self.post, 'text'))
+
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_empty_cache(self):
         html = self.md.cached_convert(self.post, 'text')
         self.assertEqual(html, self.expected_html)
