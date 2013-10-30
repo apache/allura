@@ -16,6 +16,7 @@
 #       under the License.
 
 import json
+import re
 
 from formencode import validators as fev
 
@@ -49,6 +50,7 @@ from forgeimporters.base import (
         )
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.import_support import ImportSupport
+from forgetracker import model as TM
 
 
 class TracTicketImportForm(ToolImportForm):
@@ -118,7 +120,7 @@ class TracTicketImporter(ToolImporter):
         session(app.globals).flush(app.globals)
         try:
             with h.push_config(c, app=app):
-                ImportSupport().perform_import(
+                TracImportSupport().perform_import(
                         json.dumps(export(trac_url), cls=DateJSONEncoder),
                         json.dumps({
                             'user_map': json.loads(user_map) if user_map else {},
@@ -151,3 +153,69 @@ class TracTicketImporter(ToolImporter):
 
         """
         return False
+
+
+class TracImportSupport(ImportSupport):
+    """Provides Trac-specific ticket and comment text processing."""
+
+    def ticket_link(self, m):
+        return '(%s)' % m.groups()[0]
+
+    def get_slug_by_id(self, ticket, comment):
+        """Given the id of an imported Trac comment, return it's Allura slug.
+
+        """
+        comment = int(comment)
+        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
+                                     ticket_num=int(ticket))
+        if not ticket:
+            return ''
+        comments = ticket.discussion_thread.post_class().query.find(dict(
+            discussion_id=ticket.discussion_thread.discussion_id,
+            thread_id=ticket.discussion_thread._id,
+            status={'$in': ['ok', 'pending']})).sort('timestamp')
+
+        if comment <= comments.count():
+            return comments.all()[comment-1].slug
+
+    def comment_link(self, m):
+        """Convert a Trac-style comment url to it's equivalent Allura url."""
+        text, ticket, comment = m.groups()
+        ticket = ticket.replace('\n', '')
+        text = text.replace('\n', ' ')
+        slug = self.get_slug_by_id(ticket, comment)
+        if slug:
+            return '[%s](%s/#%s)' % (text, ticket, slug)
+        else:
+            return text
+
+    def brackets_escaping(self, m):
+        """Escape double brackets."""
+        return '[\[%s\]]' % m.groups()[0]
+
+    def link_processing(self, text):
+        """Fix up links in text imported from Trac::
+
+            * Convert comment anchors from Trac ids to Allura slugs
+            * Convert absolute links to Trac tickets into relative links to
+              their Allura counterparts
+            * Escape double-brackets
+
+        """
+        comment_pattern = re.compile('\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
+        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
+        brackets_pattern = re.compile('\[\[(.*)\]\]')
+
+        text = comment_pattern.sub(self.comment_link, text)
+        text = ticket_pattern.sub(self.ticket_link, text)
+        text = brackets_pattern.sub(self.brackets_escaping, text)
+        return text
+
+    def comment_processing(self, comment_text):
+        """Modify comment text before comment is created."""
+        return self.link_processing(comment_text)
+
+    def description_processing(self, description_text):
+        """Modify ticket description before ticket is created."""
+        return self.link_processing(description_text)
+

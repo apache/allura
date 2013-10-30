@@ -30,8 +30,6 @@ from allura import model as M
 from allura.lib import helpers as h
 from alluratest.controller import TestRestApiBase
 from allura.tests import decorators as td
-from forgetracker import model as TM
-from forgetracker.import_support import ImportSupport
 
 
 class TestImportController(TestRestApiBase):
@@ -202,64 +200,3 @@ class TestImportController(TestRestApiBase):
                         assert milestone['complete'] == False
                     if milestone['name'] == 'closed_milestone':
                         assert milestone['complete'] == True
-
-    @td.with_tracker
-    def test_link_processing(self):
-        import_support = ImportSupport()
-        import_support.get_slug_by_id = lambda ticket, comment: '123'
-        result = import_support.link_processing('''test link [[2496]](http://testlink.com)
-                                       test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201))
-                                       Replying to [someuser](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
-                                       #200 unchanged''')
-
-        assert "test link [\[2496\]](http://testlink.com)" in result
-        assert 'Replying to [someuser](204/#123)' in result
-        assert 'test link [\[2496\]](http://testlink.com)' in result
-        assert 'test ticket ([#201](201))' in result
-        assert '#200 unchanged' in result, result
-
-    @td.with_tracker
-    def test_links(self):
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
-
-        doc_text = open(os.path.dirname(__file__) + '/data/sf.json').read()
-        r = self.api_post('/rest/p/test/bugs/perform_import',
-                      doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
-        assert r.json['status'], r.json
-
-        r = self.app.get('/p/test/bugs/204/')
-        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
-                                    ticket_num=204)
-        slug = ticket.discussion_thread.post_class().query.find(dict(
-            discussion_id=ticket.discussion_thread.discussion_id,
-            thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']})).sort('timestamp').all()[0].slug
-
-        assert '[test comment](204/#%s)' % slug in r
-        assert 'test link [\[2496\]](http://testlink.com)' in r
-        assert 'test ticket ([#201](201))' in r
-
-    @td.with_tracker
-    def test_slug(self):
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + timedelta(days=1))
-        ming.orm.session(api_ticket).flush()
-        self.set_api_token(api_ticket)
-
-        doc_text = open(os.path.dirname(__file__) + '/data/sf.json').read()
-        r = self.api_post('/rest/p/test/bugs/perform_import',
-                      doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
-        assert r.json['status'], r.json
-        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
-                                    ticket_num=204)
-        comments = ticket.discussion_thread.post_class().query.find(dict(
-            discussion_id=ticket.discussion_thread.discussion_id,
-            thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']})).sort('timestamp').all()
-
-        import_support = ImportSupport()
-        assert_equal(import_support.get_slug_by_id('204', '1'), comments[0].slug)
-        assert_equal(import_support.get_slug_by_id('204', '2'), comments[1].slug)

@@ -18,7 +18,6 @@
 #-*- python -*-
 import logging
 import json
-import re
 from datetime import datetime
 from cStringIO import StringIO
 
@@ -205,7 +204,7 @@ class ImportSupport(object):
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
 
-        description = h.really_unicode(self.link_processing(remapped['description']))
+        description = h.really_unicode(self.description_processing(remapped['description']))
         creator = owner = ''
         if ticket_dict.get('submitter') and not remapped.get('reported_by_id'):
             creator = u'*Originally created by:* {0}\n'.format(
@@ -235,54 +234,18 @@ class ImportSupport(object):
         ticket.update(remapped)
         return ticket
 
-    def ticket_link(self, m):
-        return '(%s)' % m.groups()[0]
+    def comment_processing(self, comment_text):
+        """Modify comment text before comment is created."""
+        return comment_text
 
-    def ticket_bracket_link(self, m):
-        text = m.groups()[0]
-        return '[\[%s\]](%s:#%s)' % (text, c.app.config.options.mount_point, text)
-
-    def get_slug_by_id(self, ticket, comment):
-        comment = int(comment)
-        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
-                                     ticket_num=int(ticket))
-        if not ticket:
-            return ''
-        comments = ticket.discussion_thread.post_class().query.find(dict(
-            discussion_id=ticket.discussion_thread.discussion_id,
-            thread_id=ticket.discussion_thread._id,
-            status={'$in': ['ok', 'pending']})).sort('timestamp')
-
-        if comment <= comments.count():
-            return comments.all()[comment-1].slug
-
-    def comment_link(self, m):
-        text, ticket, comment = m.groups()
-        ticket = ticket.replace('\n', '')
-        text = text.replace('\n', ' ')
-        slug = self.get_slug_by_id(ticket, comment)
-        if slug:
-            return '[%s](%s/#%s)' % (text, ticket, slug)
-        else:
-            return text
-
-    def brackets_escaping(self, m):
-        return '[\[%s\]]' % m.groups()[0]
-
-    def link_processing(self, text):
-        comment_pattern = re.compile('\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
-        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
-        brackets_pattern = re.compile('\[\[(.*)\]\]')
-
-        text = comment_pattern.sub(self.comment_link, text)
-        text = ticket_pattern.sub(self.ticket_link, text)
-        text = brackets_pattern.sub(self.brackets_escaping, text)
-        return text
+    def description_processing(self, description_text):
+        """Modify ticket description before ticket is created."""
+        return description_text
 
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
         author_id = self.get_user_id(comment_dict['submitter'])
-        text = h.really_unicode(self.link_processing(comment_dict['comment']))
+        text = h.really_unicode(self.comment_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
             text = u'*Originally posted by:* {0}\n\n{1}'.format(
                     h.really_unicode(comment_dict['submitter']), text)
