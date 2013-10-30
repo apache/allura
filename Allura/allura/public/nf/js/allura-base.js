@@ -218,7 +218,7 @@ $(function(){
     $('form[method=post]').append('<input name="_session_id" type="hidden" value="'+cval+'">');
 
     var SN_ID=0, SN_VIEWS=1, SN_CLOSED=2;
-    $('#site-notification .ico-close').click(function() {
+    $('#site-notification .btn-close').click(function(e) {
         var $note = $(this).parent();
         $note.hide();
         var status = $.cookie('site-notification').split('-');
@@ -227,5 +227,7 @@ $(function(){
             expires: 365,
             path: '/'
         });
+        e.preventDefault();
+        return false;
     });
 });

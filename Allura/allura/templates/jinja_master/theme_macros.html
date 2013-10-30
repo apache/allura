@@ -127,9 +127,9 @@
     {% set note = g.theme.get_site_notification() %}
     {% if note %}
         <div id="site-notification">
-            <section class="message info" data-notification-id="{{note._id}}">
-                <b title="Close" class="ico ico-close" data-icon="D"></b>
+            <section class="site-message info" data-notification-id="{{note._id}}">
                 {{note.content|safe}}
+                <a href="" class="btn btn-close">Got It</a>
             </section>
         </div>
     {% endif %}
