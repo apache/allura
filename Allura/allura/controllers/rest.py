@@ -34,9 +34,11 @@ from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
 from allura.lib.exceptions import Invalid
+from allura.ext.admin.admin_main import ProjectAdminController, AdminApp
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
+
 
 class RestController(object):
 
@@ -297,8 +299,6 @@ class ProjectRestController(object):
 
     @expose('json:')
     def install_tool(self, tool, mount_point, mount_label, **kw):
-        from allura.ext.admin.admin_main import ProjectAdminController
-        from allura.ext.admin.admin_main import AdminApp
         controller = ProjectAdminController()
 
         if not tool or not mount_point or not mount_label:
@@ -312,7 +312,7 @@ class ProjectRestController(object):
             return {'success': False,
                     'info': 'Incorrect tool name.'
                     }
-        if not h.re_tool_mount_point.match(tool) or c.project.app_instance(mount_point) is not None:
+        if not h.re_tool_mount_point.match(mount_point) or c.project.app_instance(mount_point) is not None:
             return {'success': False,
                     'info': 'Incorrect mount point name, or mount point already exists.'
                     }
@@ -320,7 +320,6 @@ class ProjectRestController(object):
         data = {
             'install': 'install',
             'ep_name': tool,
-            # TODO:
             'ordinal': '1',
             'mount_point': mount_point,
             'mount_label': mount_label

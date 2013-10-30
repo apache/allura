@@ -30,6 +30,8 @@ from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
+from webtest.app import AppError
+
 
 class TestRestHome(TestRestApiBase):
 
@@ -217,3 +219,34 @@ class TestRestHome(TestRestApiBase):
             Provider.get().shortname_validator.to_python.side_effect = Invalid('name', 'value', {})
             r = self.api_get('/rest/p/test/')
             assert r.status_int == 404
+
+    def test_install_tool(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        r = self.api_post('/rest/p/test/install_tool/something/ticketsmount1/tickets_label1')
+        assert_equal(r.json['info'], 'Incorrect tool name.')
+
+        # check incorrect mount_point name
+        r = self.api_post('/rest/p/test/install_tool/tickets/tickets_mount1/tickets_label1')
+        assert_equal(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+
+        # check that tool was installed
+        r = self.api_post('/rest/p/test/install_tool/tickets/ticketsmount1/tickets_label1')
+        assert_equal(r.json['info'],
+                     'Tool %s with mount_point %s and mount_label %s was created.' % ('tickets', 'ticketsmount1', 'tickets_label1'))
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' in tools_names
+
+        # check that tool already exists
+        r = self.api_post('/rest/p/test/install_tool/tickets/ticketsmount1/tickets_label1')
+        assert_equal(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+
+        # test that unauthorized can't install tool
+        try:
+            self.app.post('/rest/p/test/install_tool/wiki/wikimount1/wikilabel1', extra_environ={'username': '*anonymous'})
+        except AppError, e:
+            assert '401 Unauthorized' in e.message
+
