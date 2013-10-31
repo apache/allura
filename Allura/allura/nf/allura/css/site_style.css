@@ -607,7 +607,9 @@ blockquote {
 #site-notification .call-to-action {
   float: none;
   text-decoration: none;
-  padding: 4px 15px;
+  font-size: 85%;
+  padding: 2px 10px;
+  color: #069;
   margin-left: 6px;
 }
 
