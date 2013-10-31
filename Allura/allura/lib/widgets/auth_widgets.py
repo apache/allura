@@ -64,31 +64,15 @@ class ForgottenPasswordForm(ForgeForm):
     def validate(self, value, state=None):
         email = value['email']
         record = M.EmailAddress.query.find({'_id': email}).first()
-        if not record:
+        if not record or not record.confirmed:
             raise Invalid(
                 "Email doesn't exists",
                 dict(email=value['email']),
                 None)
-        user_record = M.User.query.find({'_id': record.claimed_by_user_id}).first()
-        if not record.confirmed or not user_record or user_record.disabled:
+        user_record = M.User.by_email_address(email)
+        if not user_record or user_record.disabled:
             raise Invalid(
                 "Email doesn't verified or user record disabled",
                 dict(email=value['email']),
                 None)
         return value
-
-class RecoverPasswordChangeForm(ForgeForm):
-    class fields(ew_core.NameList):
-        pw = ew.PasswordField(
-            label='New Password',
-            validator=validators.UnicodeString(not_empty=True, min=6))
-        pw2 = ew.PasswordField(
-            label='New Password (again)',
-            validator=validators.UnicodeString(not_empty=True))
-
-    @validator
-    def to_python(self, value, state):
-        d = super(RecoverPasswordChangeForm, self).to_python(value, state)
-        if d['pw'] != d['pw2']:
-            raise Invalid('Passwords must match', value, state)
-        return d

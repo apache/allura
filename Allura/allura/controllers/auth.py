@@ -41,7 +41,6 @@ from allura.lib.widgets import (
     OAuthApplicationForm,
     OAuthRevocationForm,
     LoginForm,
-    RecoverPasswordChangeForm,
     ForgottenPasswordForm)
 from allura.lib.widgets import forms
 from allura.lib import exceptions as exc
@@ -65,7 +64,7 @@ OID_PROVIDERS=[
 
 class F(object):
     login_form = LoginForm()
-    recover_password_change_form = RecoverPasswordChangeForm()
+    recover_password_change_form = forms.PasswordChangeBase()
     forgotten_password_form = ForgottenPasswordForm()
     subscription_form=SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
@@ -159,7 +158,8 @@ class AuthController(BaseController):
 
     @expose('jinja:allura:templates/forgotten_password.html')
     def forgotten_password(self, hash=None, **kw):
-        if not plugin.LocalAuthenticationProvider.forgotten_password_process:
+        provider = plugin.AuthenticationProvider.get(request)
+        if not provider:
             redirect('/')
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
@@ -175,7 +175,7 @@ class AuthController(BaseController):
                 redirect('/')
             if request.method == 'POST':
                 ap = plugin.AuthenticationProvider.get(request)
-                ap.recovery_set_password(user_record, kw['pw'])
+                ap.set_password(user_record, None, kw['pw'])
                 user_record.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 flash('Password changed')
                 redirect('/auth/')
@@ -192,7 +192,7 @@ class AuthController(BaseController):
         user_record.set_tool_data('AuthPasswordReset',
                                   hash=hash,
                                   hash_expiry=datetime.datetime.utcnow() +
-                                  datetime.timedelta(hours=int(config['auth.recovery_hash_expiry_period'])))
+                                  datetime.timedelta(seconds=int(config.get('auth.recovery_hash_expiry_period', 600))))
 
         log.info('Sending password recovery link to %s', email)
         text = '''

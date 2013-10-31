@@ -22,18 +22,22 @@ from urlparse import urlparse, parse_qs
 
 import mock
 from nose.tools import (
+        assert_equal,
         assert_not_equal,
         assert_is_none,
         assert_is_not_none,
         assert_in
     )
-from datadiff.tools import assert_equal
 from pylons import tmpl_context as c
 from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession, session
 from allura.lib import oid_helper
+from allura.lib.helpers import push_config
+from tg import config
+from mock import patch
+import datetime
 
 
 def unentity(s):
@@ -704,6 +708,73 @@ class TestPreferences(TestController):
                  categoryid=str(skill_cat.trove_cat_id)))
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
+
+    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_forgot_password_reset(self, gen_message_id, sendmail):
+        user = M.User.query.get(username='test-admin')
+        password1 = user.password
+
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = False
+        user.disabled = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is None
+
+        user = M.User.query.get(username='test-admin')
+        user.disabled = True
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is None
+
+        user = M.User.query.get(username='test-admin')
+        user.disabled = False
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        ThreadLocalORMSession.flush_all()
+        with push_config(config, **{'auth.recovery_hash_expiry_period': '600'}):
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            assert hash is not None
+            assert hash_expiry is not None
+
+            r = self.app.post('/auth/forgotten_password/%s' % hash, {'pw': 154321, 'pw2': 154321})
+            user = M.User.query.get(username='test-admin')
+            password2 = user.password
+            assert_not_equal(password1, password2)
+
+            text = '''
+To reset your password on %s, please visit the following URL:
+
+%s/auth/forgotten_password/%s
+
+''' % (config['site_name'], config['base_url'], hash)
+
+            sendmail.post.assert_called_once_with(
+                destinations=[email._id],
+                fromaddr=config['forgemail.return_path'],
+                reply_to='',
+                subject='Password recovery',
+                message_id=gen_message_id(),
+                text=text)
+            user = M.User.query.get(username='test-admin')
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            assert_equal(hash, '')
+            assert_equal(hash_expiry, '')
+
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+            user.set_tool_data('AuthPasswordReset', hash_expiry=hash_expiry-datetime.timedelta(seconds=600))
+            r = self.app.post('/auth/forgotten_password/%s' % hash, {'pw': 154321, 'pw2': 154321})
+            assert_equal(r.status, '302 Found')
 
 
 class TestOAuth(TestController):
