@@ -118,7 +118,8 @@ def import_tool(importer_path, project_name=None, mount_point=None, mount_label=
     with ImportErrorHandler(importer, project_name, c.project) as handler:
         app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
-        handler.success(app)
+        if app:
+            handler.success(app)
 
 
 class ProjectExtractor(object):
