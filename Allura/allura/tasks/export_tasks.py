@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 
 @task
-def bulk_export(tools, filename=None):
+def bulk_export(tools, filename=None, send_email=True):
     '''
     Export the current project data.  Send notification to current user.
 
@@ -44,10 +44,10 @@ def bulk_export(tools, filename=None):
     '''
     # it's very handy to use c.* within a @task,
     # but let's be explicit and keep it separate from the main code
-    return _bulk_export(c.project, tools, c.user, filename)
+    return _bulk_export(c.project, tools, c.user, filename, send_email)
 
 
-def _bulk_export(project, tools, user, filename=None):
+def _bulk_export(project, tools, user, filename=None, send_email=True):
     export_filename = filename or project.bulk_export_filename()
     export_path = create_export_dir(project, export_filename)
     not_exported_tools = []
@@ -82,6 +82,9 @@ def _bulk_export(project, tools, user, filename=None):
     if not user:
         log.info('No user. Skipping notification.')
         return
+    if not send_email:
+        return
+
     tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
     instructions = tg.config.get('bulk_export_download_instructions', '')
     instructions = instructions.format(
