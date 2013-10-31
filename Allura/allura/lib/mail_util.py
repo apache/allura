@@ -182,7 +182,8 @@ class SMTPClient(object):
     def __init__(self):
         self._client = None
 
-    def sendmail(self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message, sender=None):
+    def sendmail(self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message,
+                 sender=None, references=None):
         if not addrs: return
         # We send one message with multiple envelope recipients, so use a generic To: addr
         # It might be nice to refactor to send one message per recipient, and use the actual To: addr
@@ -197,7 +198,14 @@ class SMTPClient(object):
             if not isinstance(in_reply_to, basestring):
                 raise TypeError('Only strings are supported now, not lists')
             message['In-Reply-To'] = Header(u'<%s>' % in_reply_to)
-            message['References'] = message['In-Reply-To']
+            if not references:
+                message['References'] = message['In-Reply-To']
+        if references:
+            if isinstance(references, list):
+                references = [u'<%s>' % r for r in references]
+            else:
+                references = [references]
+            message['References'] = Header(*references)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
         smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]

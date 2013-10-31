@@ -2758,6 +2758,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
         ticket = tm.Ticket.query.get(ticket_num=1)
         assert_equal(email.kwargs.message_id, ticket.message_id())
         assert_equal(email.kwargs.in_reply_to, None)
+        assert_equal(email.kwargs.references, [])
 
     def test_comments(self):
         def find(d, pred):
@@ -2783,6 +2784,7 @@ class TestNotificationEmailGrouping(TrackerTestController):
         top_level_comment_msg_id = ticket.url() + top_level_comment._id
         assert_equal(email.kwargs.message_id, top_level_comment_msg_id)
         assert_equal(email.kwargs.in_reply_to, ticket.message_id())
+        assert_equal(email.kwargs.references, [ticket.message_id()])
 
         ThreadLocalORMSession.flush_all()
         M.MonQTask.query.remove()
@@ -2802,3 +2804,4 @@ class TestNotificationEmailGrouping(TrackerTestController):
         reply = [post for post in ticket.discussion_thread.posts if post.text == reply_text][0]
         assert_equal(email.kwargs.message_id, ticket.url() + reply._id)
         assert_equal(email.kwargs.in_reply_to, top_level_comment_msg_id)
+        assert_equal(email.kwargs.references, [ticket.message_id(), top_level_comment_msg_id])

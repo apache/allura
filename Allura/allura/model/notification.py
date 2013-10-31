@@ -83,6 +83,7 @@ class Notification(MappedClass):
 
     # Notification Content
     in_reply_to=FieldProperty(str)
+    references=FieldProperty([str])
     from_address=FieldProperty(str)
     reply_to_address=FieldProperty(str)
     subject=FieldProperty(str)
@@ -170,6 +171,7 @@ class Notification(MappedClass):
                 subject=subject_prefix + subject,
                 text=text,
                 in_reply_to=parent_msg_id,
+                references=cls._references(artifact, post),
                 author_id=author._id,
                 pubdate=datetime.utcnow())
         elif topic == 'flash':
@@ -237,6 +239,16 @@ class Notification(MappedClass):
         app = app_config.project.app_instance(app_config)
         return app.email_address if app else None
 
+    @classmethod
+    def _references(cls, artifact, post):
+        msg_ids = []
+        while post.parent_id:
+            msg_ids.append(artifact.url() + post.parent_id)
+            post = post.parent
+        msg_ids.append(artifact.message_id())
+        msg_ids.reverse()
+        return msg_ids
+
     def send_simple(self, toaddr):
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=toaddr,
@@ -246,6 +258,7 @@ class Notification(MappedClass):
             sender=self._sender(),
             message_id=self._id,
             in_reply_to=self.in_reply_to,
+            references=self.references,
             text=(self.text or '') + self.footer(toaddr))
 
     def send_direct(self, user_id):
@@ -273,6 +286,7 @@ class Notification(MappedClass):
             subject=self.subject,
             message_id=self._id,
             in_reply_to=self.in_reply_to,
+            references=self.references,
             sender=self._sender(),
             text=(self.text or '') + self.footer())
 
