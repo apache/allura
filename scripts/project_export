@@ -105,5 +105,5 @@ while true; do
 done
 
 CMD="scp $USER_NAME@web.$HOST:/home/project-exports/$PROJECT/$filename $OUTPUT"
-echo "Running $CMD"
+$VERBOSE && echo "Running $CMD"
 $CMD
