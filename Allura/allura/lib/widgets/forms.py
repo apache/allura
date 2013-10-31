@@ -135,14 +135,18 @@ class PasswordChangeBase(ForgeForm):
     @ew_core.core.validator
     def to_python(self, value, state):
         d = super(PasswordChangeBase, self).to_python(value, state)
-        if d['pw'] != d['pw2']:
-            raise formencode.Invalid('Passwords must match', value, state)
+        try:
+            if d['pw'] != d['pw2']:
+                raise formencode.Invalid('Passwords must match', value, state)
+        except KeyError:
+            pass
         return d
 
 class PasswordChangeForm(PasswordChangeBase):
     class fields(ew_core.NameList):
         oldpw = ew.PasswordField(
-            label='Old Password', validator=fev.UnicodeString(not_empty=True))
+            label='Old Password',
+            validator=fev.UnicodeString(not_empty=True))
         pw = ew.PasswordField(
             label='New Password',
             validator=fev.UnicodeString(not_empty=True, min=6))

@@ -157,6 +157,7 @@ class AuthController(BaseController):
         return dict()
 
     @expose('jinja:allura:templates/forgotten_password.html')
+    @validate(F.recover_password_change_form, error_handler=index)
     def forgotten_password(self, hash=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         if not provider:
@@ -174,8 +175,7 @@ class AuthController(BaseController):
                 flash('Hash time was expired.')
                 redirect('/')
             if request.method == 'POST':
-                ap = plugin.AuthenticationProvider.get(request)
-                ap.set_password(user_record, None, kw['pw'])
+                provider.set_password(user_record, None, kw['pw'])
                 user_record.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 flash('Password changed')
                 redirect('/auth/')
@@ -187,7 +187,7 @@ class AuthController(BaseController):
     def password_recovery_hash(self, email=None, **kw):
         if not email:
             redirect('/')
-        user_record = M.User.query.find({'preferences.email_address': email}).first()
+        user_record = M.User.by_email_address(email)
         hash = h.nonce(42)
         user_record.set_tool_data('AuthPasswordReset',
                                   hash=hash,
