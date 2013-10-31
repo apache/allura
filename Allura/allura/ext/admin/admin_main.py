@@ -575,10 +575,7 @@ class ProjectAdminController(BaseController):
                 c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
         redirect('tools')
 
-    @h.vardec
-    @expose()
-    @require_post()
-    def update_mounts(self, subproject=None, tool=None, new=None, called_by_api=False, **kw):
+    def _update_mounts(self, subproject=None, tool=None, new=None, **kw):
         if subproject is None: subproject = []
         if tool is None: tool = []
         for sp in subproject:
@@ -634,10 +631,13 @@ class ProjectAdminController(BaseController):
             flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
                   'error')
         g.post_event('project_updated')
-        if not called_by_api:
-            redirect('tools')
-        else:
-            return True
+
+    @h.vardec
+    @expose()
+    @require_post()
+    def update_mounts(self, subproject=None, tool=None, new=None, **kw):
+        self._update_mounts(subproject, tool, new, **kw)
+        redirect('tools')
 
     @expose('jinja:allura.ext.admin:templates/export.html')
     def export(self, tools=None):

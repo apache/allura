@@ -35,6 +35,8 @@ from allura.lib import security
 from allura.lib import plugin
 from allura.lib.exceptions import Invalid
 from allura.ext.admin.admin_main import ProjectAdminController, AdminApp
+from allura.lib.security import require_access
+from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
@@ -298,7 +300,33 @@ class ProjectRestController(object):
         return c.project.__json__()
 
     @expose('json:')
-    def install_tool(self, tool, mount_point, mount_label, **kw):
+    @require_post()
+    def install_tool(self, tool=None, mount_point=None, mount_label=None, **kw):
+        """API for installing tools in current project.
+
+           Requires a valid tool, mount point and mount label names.
+           (All arguments are required.)
+
+           Usage example::
+                POST to:
+               /rest/p/testproject/install_tool/
+
+               with params:
+               {
+                    'tool': 'tickets',
+                    'mount_point': 'mountpoint',
+                    'mount_label': 'mountlabel'
+               }
+
+           Example output (in successful case)::
+
+                {
+                    "info": "Tool tickets with mount_point mountpoint and mount_label mountlabel was created.",
+                    "success": true
+                }
+
+        """
+        require_access(c.project, 'admin')
         controller = ProjectAdminController()
 
         if not tool or not mount_point or not mount_label:
@@ -324,7 +352,7 @@ class ProjectRestController(object):
             'mount_point': mount_point,
             'mount_label': mount_label
         }
-        controller.update_mounts(new=data, called_by_api=True)
+        controller._update_mounts(new=data)
         return {'success': True,
                 'info': 'Tool %s with mount_point %s and mount_label %s was created.'
                         % (tool, mount_point, mount_label)
