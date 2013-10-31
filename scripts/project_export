@@ -6,6 +6,7 @@ PROJECT=''
 TOOLS=''
 HOST='sourceforge.net'
 OUTPUT=.
+VERBOSE=false
 
 MAX_MINUTES=10
 HEADERS=/tmp/project_export_response_headers
@@ -16,10 +17,10 @@ function error() {
     exit 1
 }
 
-while getopts "ht:u:o:H:c:" opt; do
+while getopts "ht:u:o:H:c:v" opt; do
     case $opt in
         h)
-            echo "Usage: $0 [OPTION]... PROJECT TOOLS..."
+            echo "Usage: $0 [OPTION]... PROJECT TOOL,TOOL,TOOL,..."
             echo "Schedule an export of PROJECT and retrieve the file when ready"
             echo
             echo "  -c CONFIG_FILE    Load config (optionally including PROJECT and TOOLs) from file"
@@ -27,9 +28,11 @@ while getopts "ht:u:o:H:c:" opt; do
             echo "  -o OUTPUT         Directory and/or filename for downloaded export file"
             echo "  -t ACCESS_TOKEN   Access (bearer) token for the API"
             echo "  -u USER_NAME      Username associated with access token (to download file)"
+            echo "  -v                Verbose mode"
             echo "  -h                Show this help message"
             echo
-            echo "The TOOLS should be one or more tool mount-point names, separated by spaces"
+            echo "The TOOLS should be one or more tool mount-point names, separated by commas"
+            exit
             ;;
         t)
             C_ACCESS_TOKEN="$OPTARG"
@@ -43,6 +46,9 @@ while getopts "ht:u:o:H:c:" opt; do
         o)
             C_OUTPUT="$OPTARG"
             ;;
+        v)
+            C_VERBOSE=true
+            ;;
         c)
             source "$OPTARG"
             ;;
@@ -55,6 +61,7 @@ done
 [ -n "$C_USER_NAME" ] && USER_NAME="$C_USER_NAME"
 [ -n "$C_HOST" ] && HOST="$C_HOST"
 [ -n "$C_OUTPUT" ] && OUTPUT="$C_OUTPUT"
+[ -n "$C_VERBOSE" ] && VERBOSE="$C_VERBOSE"
 shift $(($OPTIND - 1))
 if [[ $# -ge 1 ]]; then
     PROJECT="$1"
@@ -67,13 +74,17 @@ fi
 [ -z "$PROJECT" ] && read -p "Project: " PROJECT
 [ -z "$TOOLS" ] && read -p "Tools: " TOOLS
 
+curl_s='-s'
+$VERBOSE && curl_s=''
+
 URL="https://$HOST/rest/p/$PROJECT/admin/export"
 
 function json() {
     python -c "import sys, json;  print json.load(sys.stdin)['$1']"
 }
 
-curl -s -D $HEADERS -o $BODY --data "access_token=$ACCESS_TOKEN&tools=$TOOLS" "$URL"
+$VERBOSE && echo "Posting to $URL"
+curl $curl_s -D $HEADERS -o $BODY --data "access_token=$ACCESS_TOKEN&tools=$TOOLS" "$URL" || error "Running curl failed"
 head -n1 $HEADERS | grep 400 && error "Invalid or missing tool"
 head -n1 $HEADERS | grep 503 && error "Export already in progress"
 head -n1 $HEADERS | grep -v 200 && error "Error: $(head -n1 $HEADERS)"
@@ -82,13 +93,17 @@ filename=`cat $BODY | json filename`
 
 minutes=0
 while true; do
-    curl -s -D $HEADERS -o $BODY "${URL}_status?access_token=$ACCESS_TOKEN"
+    $VERBOSE && echo "Checking $URL_status"
+    curl $curl_s -D $HEADERS -o $BODY "${URL}_status?access_token=$ACCESS_TOKEN" || error "Running curl failed"
     head -n1 $HEADERS | grep -v 200 && error "Error: $(head -n1 $HEADERS)"
     status=`cat $BODY | json status`
+    $VERBOSE && echo "Status: $status"
     [ "$status" == "ready" ] && break
     sleep 60
     let minutes+=1
     [ "$minutes" -ge "$MAX_MINUTES" ] && error "Timeout waiting for export"
 done
 
-scp $USER_NAME@web.$HOST:/home/project-exports/$PROJECT/$filename $OUTPUT
+CMD="scp $USER_NAME@web.$HOST:/home/project-exports/$PROJECT/$filename $OUTPUT"
+$VERBOSE && echo "Running $CMD"
+$CMD
