@@ -585,11 +585,14 @@ blockquote {
 #site-notification h1 {
     line-height: normal;
 }
+#site-notification p {
+    width: 90%;
+}
 #site-notification .btn-close {
   float: right;
   cursor: pointer;
   text-decoration: none;
-  top: -8px;
+  margin-top: -26px;
   padding: 2px 25px;
   color: white;
   text-shadow: none;
