@@ -642,7 +642,7 @@ class ProjectAdminController(BaseController):
             raise exc.HTTPNotFound()
         if request.method == 'POST':
             try:
-                ProjectAdminRestController().export(tools)
+                ProjectAdminRestController().export(tools, send_email=True)
             except (exc.HTTPBadRequest, exc.HTTPServiceUnavailable) as e:
                 flash(str(e), 'error')
                 redirect('.')
@@ -667,7 +667,7 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     @require_post()
-    def export(self, tools=None, **kw):
+    def export(self, tools=None, send_email=False, **kw):
         """
         Initiate a bulk export of the project data.
 
@@ -702,7 +702,7 @@ class ProjectAdminRestController(BaseController):
         # filename (potentially) includes a timestamp, so we have
         # to pre-generate to be able to return it to the user
         filename = c.project.bulk_export_filename()
-        export_tasks.bulk_export.post(tools, filename)
+        export_tasks.bulk_export.post(tools, filename, send_email=send_email)
         return {
                 'status': 'in progress',
                 'filename': filename,
