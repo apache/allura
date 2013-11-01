@@ -22,8 +22,9 @@ import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from formencode import validators
-from tg import expose, redirect, validate, response
+from tg import expose, redirect, validate, response, config, flash
 from webob import exc
+from datetime import timedelta, datetime
 
 from allura import version
 from allura.app import Application, SitemapEntry
@@ -106,3 +107,45 @@ class UserProfileController(BaseController, FeedController):
             {'author_link': user.url()},
             'Recent posts by %s' % user.display_name,
             project.url())
+
+    @expose('jinja:allura.ext.user_profile:templates/send_message.html')
+    def send_message(self, subject='', message='', cc=None, errors=None):
+        user = c.project.user_project_of
+        if not user:
+            raise exc.HTTPNotFound()
+
+        time_interval = config['user_message.time_interval']
+        max_messages = config['user_message.max_messages']
+        expire_time = None
+
+        if not c.user.check_send_emails_times(time_interval, max_messages):
+            expire_seconds = c.user.send_emails_times[0] + timedelta(seconds=int(time_interval)) - datetime.utcnow()
+            h, remainder = divmod(expire_seconds.total_seconds(), 3600)
+            m, s = divmod(remainder, 60)
+            expire_time = '%s:%s:%s' % (int(h), int(m), int(s))
+
+        return dict(user=user, expire_time=expire_time)
+
+    @require_post()
+    @expose()
+    @validate(dict(subject=validators.NotEmpty,
+                   message=validators.NotEmpty))
+    def send_user_message(self, subject='', message='', cc=None):
+
+        if c.form_errors:
+            error_msg = ''
+            for field, error in c.form_errors.iteritems():
+                error_msg += '%s: %s ' % (field, error)
+            flash(error_msg, 'error')
+            redirect(request.referer)
+        time_interval = config['user_message.time_interval']
+        max_messages = config['user_message.max_messages']
+        if cc:
+            cc = c.user.get_pref('email_address')
+        user = c.project.user_project_of
+        if c.user.check_send_emails_times(time_interval, max_messages):
+            c.user.send_user_message(user, subject, message, cc)
+        else:
+            flash("You can't send more than %s messages per %s seconds" % (max_messages, time_interval), 'error')
+        return redirect(user.url())
+

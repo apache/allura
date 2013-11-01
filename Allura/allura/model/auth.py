@@ -33,6 +33,7 @@ import iso8601
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
+from tg import flash
 
 from ming import schema as S
 from ming import Field, collection
@@ -333,6 +334,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         end_time=dict(h=int, m=int))])
     localization=FieldProperty(dict(city=str,country=str))
     timezone=FieldProperty(str)
+    send_emails_times=FieldProperty([S.DateTime])
     inactiveperiod=FieldProperty([dict(
         start_date=S.DateTime,
         end_date=S.DateTime)])
@@ -351,6 +353,27 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     #Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
+
+    def check_send_emails_times(self, time_interval, max_messages):
+        times = []
+        time_interval = timedelta(seconds=int(time_interval))
+        for t in self.send_emails_times:
+            if t + time_interval > datetime.utcnow():
+                times.append(t)
+        self.send_emails_times = times
+        return len(times) < int(max_messages)
+
+    def send_user_message(self, user, subject, message, cc):
+        allura.tasks.mail_tasks.sendsimplemail.post(
+            toaddr=user.get_pref('email_address'),
+            fromaddr=c.user.get_pref('email_address'),
+            reply_to=c.user.get_pref('email_address'),
+            message_id=h.gen_message_id(),
+            subject=subject,
+            text=message,
+            cc=cc)
+        self.send_emails_times.append(datetime.utcnow())
+        flash("email sent")
 
     @property
     def activity_name(self):
