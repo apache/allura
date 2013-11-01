@@ -26,10 +26,11 @@ from datetime import datetime
 from pylons import tmpl_context as c
 from nose.tools import assert_raises
 from nose import with_setup
-
+from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import Mapper
 from bson import ObjectId
+from webob import Request
 
 import allura
 from allura import model as M
@@ -146,7 +147,9 @@ def test_artifact_messageid():
 @with_setup(setUp, tearDown)
 def test_versioning():
     pg = WM.Page(title='TestPage3')
-    pg.commit()
+    with patch('allura.model.artifact.request',
+               Request.blank('/', remote_addr='1.1.1.1')):
+        pg.commit()
     ThreadLocalORMSession.flush_all()
     pg.text = 'Here is some text'
     pg.commit()
