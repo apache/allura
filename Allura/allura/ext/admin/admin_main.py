@@ -722,6 +722,64 @@ class ProjectAdminRestController(BaseController):
         status = c.project.bulk_export_status()
         return {'status': status or 'ready'}
 
+    @expose('json:')
+    @require_post()
+    def install_tool(self, tool=None, mount_point=None, mount_label=None, **kw):
+        """API for installing tools in current project.
+
+           Requires a valid tool, mount point and mount label names.
+           (All arguments are required.)
+
+           Usage example::
+                POST to:
+               /rest/p/testproject/admin/install_tool/
+
+               with params:
+               {
+                    'tool': 'tickets',
+                    'mount_point': 'mountpoint',
+                    'mount_label': 'mountlabel'
+               }
+
+           Example output (in successful case)::
+
+                {
+                    "info": "Tool tickets with mount_point mountpoint and mount_label mountlabel was created.",
+                    "success": true
+                }
+
+        """
+        controller = ProjectAdminController()
+
+        if not tool or not mount_point or not mount_label:
+            return {'success': False,
+                    'info': 'All arguments required.'
+                    }
+
+        installable_tools = AdminApp.installable_tools_for(c.project)
+        tools_names = [t['name'] for t in installable_tools]
+        if not tool in tools_names:
+            return {'success': False,
+                    'info': 'Incorrect tool name.'
+                    }
+        if not h.re_tool_mount_point.match(mount_point) or c.project.app_instance(mount_point) is not None:
+            return {'success': False,
+                    'info': 'Incorrect mount point name, or mount point already exists.'
+                    }
+
+        data = {
+            'install': 'install',
+            'ep_name': tool,
+            'ordinal': len(installable_tools) + len(c.project.direct_subprojects),
+            'mount_point': mount_point,
+            'mount_label': mount_label
+        }
+        controller._update_mounts(new=data)
+        return {'success': True,
+                'info': 'Tool %s with mount_point %s and mount_label %s was created.'
+                        % (tool, mount_point, mount_label)
+        }
+
 
 class PermissionsController(BaseController):
 

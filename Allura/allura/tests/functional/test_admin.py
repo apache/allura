@@ -30,6 +30,8 @@ from tg import expose
 from pylons import tmpl_context as c, app_globals as g
 import mock
 from BeautifulSoup import BeautifulSoup
+from webtest.app import AppError
+
 
 try:
     import sfx
@@ -1026,3 +1028,98 @@ class TestRestExport(TestRestApiBase):
                 'status': 'in progress',
             })
         bulk_export.post.assert_called_once_with(['tickets', 'discussion'], 'test.zip', send_email=False)
+
+
+class TestRestInstallTool(TestRestApiBase):
+    def test_missing_mount_info(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'tickets'
+        }
+        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+        assert_equals(r.json['success'], False)
+        assert_equals(r.json['info'], 'All arguments required.')
+
+    def test_invalid_tool(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'something',
+            'mount_point': 'ticketsmount1',
+            'mount_label': 'tickets_label1'
+        }
+        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+        assert_equals(r.json['success'], False)
+        assert_equals(r.json['info'], 'Incorrect tool name.')
+
+    def test_bad_mount(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'tickets',
+            'mount_point': 'tickets_mount1',
+            'mount_label': 'tickets_label1'
+        }
+        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+        assert_equals(r.json['success'], False)
+        assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+
+    def test_install_tool_ok(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'tickets',
+            'mount_point': 'ticketsmount1',
+            'mount_label': 'tickets_label1'
+        }
+        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+        assert_equals(r.json['success'], True)
+        assert_equals(r.json['info'],
+                     'Tool %s with mount_point %s and mount_label %s was created.'
+                     % ('tickets', 'ticketsmount1', 'tickets_label1'))
+
+        project = M.Project.query.get(shortname='test')
+        assert_equals(project.ordered_mounts()[-1]['ac'].options.mount_point, 'ticketsmount1')
+        audit_log = M.AuditLog.query.find({'project_id': project._id}).sort({'_id': -1}).first()
+        assert_equals(audit_log.message, 'install tool ticketsmount1')
+
+    def test_tool_exists(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'tickets',
+            'mount_point': 'ticketsmount1',
+            'mount_label': 'tickets_label1'
+        }
+        c.project.install_app('tickets', mount_point=data['mount_point'])
+        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+        assert_equals(r.json['success'], False)
+        assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+
+    def test_unauthorized(self):
+        r = self.api_get('/rest/p/test/')
+        tools_names = [t['name'] for t in r.json['tools']]
+        assert 'tickets' not in tools_names
+
+        data = {
+            'tool': 'wiki',
+            'mount_point': 'wikimount1',
+            'mount_label': 'wiki_label1'
+        }
+        r = self.app.post('/rest/p/test/admin/install_tool/',
+                             extra_environ={'username': '*anonymous'},
+                             status=401,
+                             params=data)
+        assert_equals(r.status, '401 Unauthorized')
+

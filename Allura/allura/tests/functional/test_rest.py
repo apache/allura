@@ -30,7 +30,6 @@ from alluratest.controller import TestRestApiBase
 from allura.lib import helpers as h
 from allura.lib.exceptions import Invalid
 from allura import model as M
-from webtest.app import AppError
 
 
 class TestRestHome(TestRestApiBase):
@@ -219,69 +218,3 @@ class TestRestHome(TestRestApiBase):
             Provider.get().shortname_validator.to_python.side_effect = Invalid('name', 'value', {})
             r = self.api_get('/rest/p/test/')
             assert r.status_int == 404
-
-    def test_install_tool(self):
-        r = self.api_get('/rest/p/test/')
-        tools_names = [t['name'] for t in r.json['tools']]
-        assert 'tickets' not in tools_names
-
-        data = {
-            'tool': 'tickets'
-        }
-        r = self.api_post('/rest/p/test/install_tool/', **data)
-        assert_equal(r.json['success'], False)
-        assert_equal(r.json['info'], 'All arguments required.')
-
-        # check incorrect tool name
-        data = {
-            'tool': 'something',
-            'mount_point': 'ticketsmount1',
-            'mount_label': 'tickets_label1'
-        }
-        r = self.api_post('/rest/p/test/install_tool/', **data)
-        assert_equal(r.json['success'], False)
-        assert_equal(r.json['info'], 'Incorrect tool name.')
-
-        # check incorrect mount_point name
-        data = {
-            'tool': 'tickets',
-            'mount_point': 'tickets_mount1',
-            'mount_label': 'tickets_label1'
-        }
-        r = self.api_post('/rest/p/test/install_tool/', **data)
-        assert_equal(r.json['success'], False)
-        assert_equal(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
-
-        # check that tool was installed
-        data = {
-            'tool': 'tickets',
-            'mount_point': 'ticketsmount1',
-            'mount_label': 'tickets_label1'
-        }
-        r = self.api_post('/rest/p/test/install_tool/', **data)
-        assert_equal(r.json['success'], True)
-        assert_equal(r.json['info'],
-                     'Tool %s with mount_point %s and mount_label %s was created.'
-                     % ('tickets', 'ticketsmount1', 'tickets_label1'))
-
-        r = self.api_get('/rest/p/test/')
-        tools_names = [t['name'] for t in r.json['tools']]
-        assert 'tickets' in tools_names
-
-        # check that tool already exists
-        r = self.api_post('/rest/p/test/install_tool/', **data)
-        assert_equal(r.json['success'], False)
-        assert_equal(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
-
-        # test that unauthorized can't install tool
-        data = {
-            'tool': 'wiki',
-            'mount_point': 'wikimount1',
-            'mount_label': 'wiki_label1'
-        }
-        r = self.app.post('/rest/p/test/install_tool/',
-                             extra_environ={'username': '*anonymous'},
-                             status=401,
-                             params=data)
-        assert_equal(r.status, '401 Unauthorized')
-
