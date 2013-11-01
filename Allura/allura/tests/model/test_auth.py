@@ -23,6 +23,7 @@ Model tests for auth
 from nose.tools import with_setup, assert_equal
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
+from mock import patch
 
 from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -57,7 +58,8 @@ def test_email_address():
     assert addr2
     addr4 = M.EmailAddress.upsert('test@SF.NET')
     assert addr4 is addr2
-    addr.send_verification_link()
+    with patch('allura.lib.app_globals.request', Request.blank('/')):
+        addr.send_verification_link()
     assert addr is c.user.address_object('test_admin@sf.net')
     c.user.claim_address('test@SF.NET')
     assert 'test@sf.net' in c.user.email_addresses

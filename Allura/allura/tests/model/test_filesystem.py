@@ -22,10 +22,11 @@ from unittest import TestCase
 from cStringIO import StringIO
 from io import BytesIO
 
-from pylons import response
 from pylons import tmpl_context as c
 from ming.orm import session, Mapper
 from nose.tools import assert_equal
+from mock import patch
+from webob import Request, Response
 
 from allura import model as M
 from alluratest.controller import setup_unit_test
@@ -119,16 +120,26 @@ class TestFile(TestCase):
         assert self.db.fs.chunks.count() == 2
         self._assert_content(f, 'test2')
 
-    def test_serve(self):
+    def test_serve_embed(self):
         f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
-        assert [ 'test1' ] == list(f.serve())
-        assert response.content_type == f.content_type
-        assert 'Content-Disposition' not in response.headers
-        assert [ 'test1' ] == list(f.serve(False))
-        assert response.content_type == f.content_type
-        assert response.headers['Content-Disposition'] == \
-            'attachment;filename="te s\xe0\xad\xae1.txt"'
+        with patch('allura.lib.utils.tg.request', Request.blank('/')), \
+                patch('allura.lib.utils.pylons.response', Response()) as response:
+            response_body = list(f.serve())
+            assert_equal([ 'test1' ], response_body)
+            assert_equal(response.content_type, f.content_type)
+            assert 'Content-Disposition' not in response.headers
+
+    def test_serve_embed_false(self):
+        f = File.from_data(u'te s\u0b6e1.txt', 'test1')
+        self.session.flush()
+        with patch('allura.lib.utils.tg.request', Request.blank('/')), \
+                patch('allura.lib.utils.pylons.response', Response()) as response:
+            response_body = list(f.serve(embed=False))
+            assert_equal([ 'test1' ], response_body)
+            assert_equal(response.content_type, f.content_type)
+            assert_equal(response.headers['Content-Disposition'],
+                'attachment;filename="te s\xe0\xad\xae1.txt"')
 
     def test_image(self):
         path = os.path.join(
