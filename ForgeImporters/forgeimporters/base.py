@@ -519,7 +519,7 @@ class File(object):
         extractor = ProjectExtractor(None, url, parser=stringio_parser)
         self.url = url
         self.filename = filename or os.path.basename(urlparse(url).path)
-        self.type = guess_mime_type(filename)
+        self.type = guess_mime_type(self.filename)
         self.file = extractor.page['data']
 
 

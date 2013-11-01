@@ -343,3 +343,14 @@ def test_save_importer_upload(giup, os):
 
     os.makedirs.side_effect = OSError(errno.EACCES, 'foo')
     assert_raises(OSError, base.save_importer_upload, 'project', 'file', 'data')
+
+
+class TestFile(object):
+
+    @mock.patch.object(base, 'ProjectExtractor', mock.MagicMock)
+    def test_type(self):
+        f = base.File('http://example.com/barbaz.jpg')
+        assert_equal(f.type, 'image/jpeg')
+
+        f = base.File('http://example.com/barbaz')
+        assert_equal(f.type, 'application/octet-stream')
