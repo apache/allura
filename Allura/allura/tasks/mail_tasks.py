@@ -143,7 +143,8 @@ def sendsimplemail(
     subject,
     message_id,
     in_reply_to=None,
-    sender=None):
+    sender=None,
+    cc=None):
     from allura import model as M
     if fromaddr is None:
         fromaddr = u'noreply@in.sf.net'
@@ -162,4 +163,4 @@ def sendsimplemail(
     multi_msg = mail_util.make_multipart_message(plain_msg, html_msg)
     smtp_client.sendmail(
         [toaddr], fromaddr, reply_to, subject, message_id,
-        in_reply_to, multi_msg, sender=sender)
+        in_reply_to, multi_msg, sender=sender, cc=cc)

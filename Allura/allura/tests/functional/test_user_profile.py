@@ -17,6 +17,8 @@
 
 from formencode.variabledecode import variable_encode
 
+import mock
+
 from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
@@ -57,3 +59,46 @@ class TestUserProfile(TestController):
             r = self.app.get('/u/test-admin/profile/feed%s' % ext, status=200)
             assert 'Recent posts by Test Admin' in r
             assert 'Home modified by Test Admin' in r
+
+    @td.with_user_project('test-admin')
+    @td.with_user_project('test-user')
+    @mock.patch('allura.tasks.mail_tasks.sendsimplemail')
+    @mock.patch('allura.lib.helpers.gen_message_id')
+    @mock.patch('allura.model.User.check_send_emails_times')
+    def test_send_message(self, check, gen_message_id, sendsimplemail):
+        check.return_value = True
+        gen_message_id.return_value = 'id'
+        response = self.app.get('/u/test-user/profile/send_message', status=200)
+        assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
+        self.app.post('/u/test-user/profile/send_user_message',
+                      params={'subject': 'test subject',
+                              'message': 'test message',
+                              'cc': 'on'})
+
+        sendsimplemail.post.assert_called_once_with(
+            cc=User.by_username('test-admin').get_pref('email_address'),
+            text=u'test message',
+            toaddr=User.by_username('test-user').get_pref('email_address'),
+            fromaddr=User.by_username('test-admin').get_pref('email_address'),
+            reply_to=User.by_username('test-admin').get_pref('email_address'),
+            message_id=u'id',
+            subject=u'test subject')
+        sendsimplemail.reset_mock()
+        self.app.post('/u/test-user/profile/send_user_message',
+                      params={'subject': 'test subject',
+                              'message': 'test message'})
+
+        sendsimplemail.post.assert_called_once_with(
+            cc=None,
+            text=u'test message',
+            toaddr=User.by_username('test-user').get_pref('email_address'),
+            fromaddr=User.by_username('test-admin').get_pref('email_address'),
+            reply_to=User.by_username('test-admin').get_pref('email_address'),
+            message_id=u'id',
+            subject=u'test subject')
+
+        check.return_value = False
+        response = self.app.get('/u/test-user/profile/send_message', status=200)
+        assert 'Sorry, you can send an email after' in response
+
+
