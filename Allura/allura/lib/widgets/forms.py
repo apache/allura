@@ -17,27 +17,28 @@
 
 import logging
 import warnings
+
 from pylons import app_globals as g
+from formencode import validators as fev
+import formencode
+import ew as ew_core
+import ew.jinja2_ew as ew
+from pytz import common_timezones, country_timezones, country_names
+from paste.deploy.converters import aslist
+import tg
+
 from allura.lib import validators as V
 from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
+from allura.lib.utils import LazyProperty
 from allura import model as M
-from datetime import datetime
 
-from formencode import validators as fev
-import formencode
-
-import ew as ew_core
-import ew.jinja2_ew as ew
-
-from pytz import common_timezones, country_timezones, country_names
 
 log = logging.getLogger(__name__)
 
-socialnetworks=['Facebook','Linkedin','Twitter','Google+']
-weekdays=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 class _HTMLExplanation(ew.InputField):
     template=ew.Snippet(
@@ -323,17 +324,23 @@ class RemoveTextValueForm(ForgeForm):
 class AddSocialNetworkForm(ForgeForm):
     defaults=dict(ForgeForm.defaults)
 
-    class fields(ew_core.NameList):
-        socialnetwork = ew.SingleSelectField(
-            label='Social network',
-            options=[ew.Option(py_value=name, label=name)
-                     for name in socialnetworks],
-            validator=formencode.All(
-                V.OneOfValidator(socialnetworks),
-                fev.UnicodeString(not_empty=True)))
-        accounturl = ew.TextField(
-            label='Account url',
-            validator=fev.UnicodeString(not_empty=True))
+    @property
+    def fields(self):
+        socialnetworks = aslist(tg.config.get('socialnetworks',
+                                              ['Facebook', 'Linkedin', 'Twitter', 'Google+']),
+                                ',')
+        return [
+            ew.SingleSelectField(
+                name='socialnetwork',
+                label='Social network',
+                options=[ew.Option(py_value=name, label=name)
+                         for name in socialnetworks]),
+            ew.TextField(
+                name='accounturl',
+                label='Account url',
+                validator=fev.UnicodeString(not_empty=True))
+        ]
+
 
 class RemoveSocialNetworkForm(ForgeForm):
     defaults=dict(ForgeForm.defaults, submit_text=None, show_errors=False)
