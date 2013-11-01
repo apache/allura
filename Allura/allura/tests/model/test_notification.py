@@ -79,6 +79,7 @@ class TestNotification(unittest.TestCase):
                 from_address='from_address',
                 reply_to_address='reply_to_address',
                 in_reply_to='in_reply_to',
+                references=['a'],
                 subject='subject',
                 text='text',
             )
@@ -91,6 +92,7 @@ class TestNotification(unittest.TestCase):
                 subject='subject',
                 message_id='_id',
                 in_reply_to='in_reply_to',
+                references=['a'],
                 sender='wiki@test.p.in.sf.net',
                 text='text footer',
             )
@@ -139,6 +141,7 @@ class TestNotification(unittest.TestCase):
                 from_address='from_address',
                 reply_to_address='reply_to_address',
                 in_reply_to='in_reply_to',
+                references=['a'],
                 subject='subject',
                 text='text',
             )
@@ -152,6 +155,7 @@ class TestNotification(unittest.TestCase):
                 subject='subject',
                 message_id='_id',
                 in_reply_to='in_reply_to',
+                references=['a'],
                 sender='wiki@test.p.in.sf.net',
                 text='text footer',
             )
