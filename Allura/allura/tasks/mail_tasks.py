@@ -43,6 +43,9 @@ def route_email(
     except: # pragma no cover
         log.exception('Parse Error: (%r,%r,%r)', peer, mailfrom, rcpttos)
         return
+    if mail_util.is_autoreply(msg):
+        log.info('Skipping autoreply message: %s', msg['headers'])
+        return
     mail_user = mail_util.identify_sender(peer, mailfrom, msg['headers'], msg)
     with h.push_config(c, user=mail_user):
         log.info('Received email from %s', c.user.username)

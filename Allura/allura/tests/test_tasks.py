@@ -355,6 +355,29 @@ class TestMailTasks(unittest.TestCase):
             assert args[0] == 'Page'
             assert len(args) == 2
 
+    @td.with_tool('test', 'Tickets', 'bugs')
+    def test_receive_autoresponse(self):
+        message = '''Date: Wed, 30 Oct 2013 01:38:40 -0700
+From: <test-admin@sf.net>
+To: <1@bugs.test.p.in.sf.net>
+Message-ID: <super-unique-id>
+Subject: Not here Re: Message notification
+Precedence: bulk
+X-Autoreply: yes
+Auto-Submitted: auto-replied
+
+I'm not here'''
+        import forgetracker
+        c.user = M.User.by_username('test-admin')
+        with mock.patch.object(forgetracker.tracker_main.ForgeTrackerApp, 'handle_message') as hm:
+            mail_tasks.route_email(
+                '0.0.0.0',
+                c.user.email_addresses[0],
+                ['1@bugs.test.p.in.sf.net'],
+                message)
+            assert_equal(hm.call_count, 0)
+
+
 class TestNotificationTasks(unittest.TestCase):
 
     def setUp(self):
