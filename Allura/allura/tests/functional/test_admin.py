@@ -929,13 +929,13 @@ class TestExport(TestController):
     def test_selected_one_tool(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': u'wiki'})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with([u'wiki'], 'test.zip')
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki'], 'test.zip', send_email=True)
 
     @mock.patch('allura.ext.admin.admin_main.export_tasks')
     def test_selected_multiple_tools(self, export_tasks):
         r = self.app.post('/admin/export', {'tools': [u'wiki', u'wiki2']})
         assert_in('ok', self.webflash(r))
-        export_tasks.bulk_export.post.assert_called_once_with([u'wiki', u'wiki2'], 'test.zip')
+        export_tasks.bulk_export.post.assert_called_once_with([u'wiki', u'wiki2'], 'test.zip', send_email=True)
 
     def test_export_in_progress(self):
         from allura.tasks import export_tasks
@@ -1025,4 +1025,4 @@ class TestRestExport(TestRestApiBase):
                 'filename': 'test.zip',
                 'status': 'in progress',
             })
-        bulk_export.post.assert_called_once_with(['tickets', 'discussion'], 'test.zip')
+        bulk_export.post.assert_called_once_with(['tickets', 'discussion'], 'test.zip', send_email=False)
