@@ -101,4 +101,32 @@ class TestUserProfile(TestController):
         response = self.app.get('/u/test-user/profile/send_message', status=200)
         assert 'Sorry, you can send an email after' in response
 
+    @td.with_user_project('test-user')
+    def test_send_message_for_anonymous(self):
+        self.app.get('/u/test-user/profile/send_message',
+                     extra_environ={'username': '*anonymous'},
+                     status=404)
+
+        self.app.post('/u/test-user/profile/send_user_message',
+                      params={'subject': 'test subject',
+                              'message': 'test message',
+                              'cc': 'on'},
+                      extra_environ={'username': '*anonymous'},
+                      status=404)
+
+    @td.with_user_project('test-user')
+    def test_link_to_send_message_form(self):
+        r = self.app.get('/u/test-user/profile',
+                         status=200)
+        assert '<a href="send_message">Send me a message</a>' in r
+
+        r = self.app.get('/u/test-user/profile',
+                     extra_environ={'username': '*anonymous'},
+                     status=200)
+
+        assert '<a href="send_message">Send me a message</a>' not in r
+
+
+
+
 

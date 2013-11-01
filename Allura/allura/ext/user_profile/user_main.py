@@ -36,8 +36,13 @@ from allura.model import User, Feed, ACE, ProjectRole
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post
+from allura.lib.widgets.user_profile import SendMessageForm
 
 log = logging.getLogger(__name__)
+
+
+class F(object):
+    send_message = SendMessageForm()
 
 
 class UserProfileApp(Application):
@@ -93,7 +98,8 @@ class UserProfileController(BaseController, FeedController):
         if not user:
             raise exc.HTTPNotFound()
         provider = AuthenticationProvider.get(request)
-        return dict(user=user, reg_date=provider.user_registration_date(user))
+        has_email = c.user.get_pref('email_address') is not None
+        return dict(user=user, reg_date=provider.user_registration_date(user), has_email=has_email)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -109,9 +115,9 @@ class UserProfileController(BaseController, FeedController):
             project.url())
 
     @expose('jinja:allura.ext.user_profile:templates/send_message.html')
-    def send_message(self, subject='', message='', cc=None, errors=None):
+    def send_message(self):
         user = c.project.user_project_of
-        if not user:
+        if not (user and c.user.get_pref('email_address')):
             raise exc.HTTPNotFound()
 
         time_interval = config['user_message.time_interval']
@@ -123,7 +129,7 @@ class UserProfileController(BaseController, FeedController):
             h, remainder = divmod(expire_seconds.total_seconds(), 3600)
             m, s = divmod(remainder, 60)
             expire_time = '%s:%s:%s' % (int(h), int(m), int(s))
-
+        c.form = F.send_message
         return dict(user=user, expire_time=expire_time)
 
     @require_post()
@@ -131,13 +137,10 @@ class UserProfileController(BaseController, FeedController):
     @validate(dict(subject=validators.NotEmpty,
                    message=validators.NotEmpty))
     def send_user_message(self, subject='', message='', cc=None):
+        user = c.project.user_project_of
+        if not (user and c.user.get_pref('email_address')):
+            raise exc.HTTPNotFound()
 
-        if c.form_errors:
-            error_msg = ''
-            for field, error in c.form_errors.iteritems():
-                error_msg += '%s: %s ' % (field, error)
-            flash(error_msg, 'error')
-            redirect(request.referer)
         time_interval = config['user_message.time_interval']
         max_messages = config['user_message.max_messages']
         if cc:

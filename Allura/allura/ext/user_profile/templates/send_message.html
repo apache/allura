@@ -32,38 +32,11 @@
 {% endblock %}
 
 {% block content %}
+    <div class="content">
     {%if not expire_time%}
-    <div class="grid-24">
-        <div class="grid-24">
-            <b>To:</b> <a href="{{user.url()}}">{{user.display_name|default(user.username)}}</a>
-        </div>
-        <div class="grid-24">
-            <b>From:</b> {{c.user.email_address_header()}}
-        </div>
-        <div class="clear">&nbsp;</div>
-        <form action="send_user_message" method="post">
-            <div class="grid-24">
-                <label for="subject"><b>Subject:</b></label>
-            </div>
-            <input class="grid-10" type="text" name="subject" id="subject">
-            <div class="grid-24">&nbsp;</div>
-            <div class="grid-24">
-                <label for="message"><b>Message:</b></label>
-            </div>
-            <textarea class="grid-10" name="message" id="message" style="height:100px;"></textarea>
-            <div class="grid-24">
-                <input type="checkbox" name="cc" id="ccsender">
-                <label for="ccsender">CC Sender</label>
-            </div>
-            <div class="grid-24">&nbsp;</div>
-            <div class="grid-24">
-                <input type="submit" value="Send Message">
-            </div>
-        </form>
-    </div>
+            {{c.form.display(method = 'POST', action='send_user_message', user=user)}}
     {% else %}
-    <div class="grid-24">
         <h2>Sorry, you can send an email after {{expire_time}}</h2>
-    </div>
     {% endif %}
+    </div>
 {% endblock %}
