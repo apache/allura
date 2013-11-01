@@ -198,6 +198,14 @@ class TestBlob(unittest.TestCase):
         _next.get_path.assert_called_with('path', create=False)
         assert_equal(nc, _next)
 
+    def test_pypeline_view(self):
+        blob = M.repo.Blob(Mock(), Mock(), Mock())
+        blob._id = 'blob1'
+        blob.path = Mock(return_value='path')
+        blob.name = 'INSTALL.mdown'
+        blob.extension = '.mdown'
+        assert_equal(blob.has_pypeline_view, True)
+
 
 class TestCommit(unittest.TestCase):
     def test_get_path_no_create(self):

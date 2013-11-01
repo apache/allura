@@ -54,6 +54,7 @@ README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
 VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
     '.rb','.phtml','.txt','.bat','.ps1','.xhtml','.css','.cfm','.jsp','.jspx',
     '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
+MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md', '.rst']
 
 DIFF_SIMILARITY_THRESHOLD = .5  # used for determining file renames
 
@@ -724,7 +725,7 @@ class Blob(object):
 
     @property
     def has_pypeline_view(self):
-        if README_RE.match(self.name) or self.extension in ['.md', '.rst']:
+        if README_RE.match(self.name) or self.extension in MARKDOWN_EXTENSIONS:
             return True
         return False
 
@@ -732,6 +733,7 @@ class Blob(object):
     def has_html_view(self):
         if (self.content_type.startswith('text/') or
             self.extension in VIEWABLE_EXTENSIONS or
+            self.extension in MARKDOWN_EXTENSIONS or
             self.extension in self.repo._additional_viewable_extensions or
             utils.is_text_file(self.text)):
             return True
