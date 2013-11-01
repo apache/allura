@@ -166,6 +166,12 @@ class TestRestApiBase(TestController):
 
     def _api_getpost(self, method, path, api_key=None, api_timestamp=None, api_signature=None,
                  wrap_args=None, user='test-admin', status=None, **params):
+        '''
+        If you need to use one of the method kwargs as a URL parameter,
+        pass params={...} as a dict instead of **kwargs
+        '''
+        if 'params' in params:
+            params = params['params']
         if wrap_args:
             params = {wrap_args: params}
         if status is None:

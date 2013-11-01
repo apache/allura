@@ -44,12 +44,14 @@ class TestTrackerApiBase(TestRestApiBase):
         return self.api_post(
             '/rest/p/test/bugs/new',
             wrap_args='ticket_form',
-            summary='test new ticket',
-            status=self.tracker_globals.open_status_names.split()[0],
-            labels='',
-            description='',
-            assigned_to='',
-            **{'custom_fields._milestone':''})
+            params=dict(
+                summary='test new ticket',
+                status=self.tracker_globals.open_status_names.split()[0],
+                labels='',
+                description='',
+                assigned_to='',
+                **{'custom_fields._milestone':''})
+            )
 
 
 class TestRestNewTicket(TestTrackerApiBase):
@@ -59,12 +61,14 @@ class TestRestNewTicket(TestTrackerApiBase):
         ticket_view = self.api_post(
             '/rest/p/test/bugs/new',
             wrap_args='ticket_form',
-            summary=summary,
-            status=self.tracker_globals.open_status_names.split()[0],
-            labels='foo,bar',
-            description='descr',
-            assigned_to='',
-            **{'custom_fields._milestone':''})
+            params=dict(
+                summary=summary,
+                status=self.tracker_globals.open_status_names.split()[0],
+                labels='foo,bar',
+                description='descr',
+                assigned_to='',
+                **{'custom_fields._milestone':''}
+            ))
         json = ticket_view.json['ticket']
         assert json['status'] == 'open', json
         assert json['summary'] == 'test new ticket', json
@@ -90,7 +94,7 @@ class TestRestUpdateTicket(TestTrackerApiBase):
                 'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
             del args[bad_key]
         args['private'] = str(args['private'])
-        ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', **h.encode_keys(args))
+        ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', params=h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
         assert int(json['ticket_num']) == 1
