@@ -99,7 +99,6 @@ def setup_unit_test():
     REGISTRY.register(g, Globals())
     REGISTRY.register(c, mock.Mock())
     REGISTRY.register(url, lambda:None)
-    REGISTRY.register(request, Request.blank('/', remote_addr='1.1.1.1'))
     REGISTRY.register(response, Response())
     REGISTRY.register(session, beaker.session.SessionObject({}))
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
