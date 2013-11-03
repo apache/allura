@@ -299,7 +299,7 @@ class GitImplementation(M.RepositoryImplementation):
         If id_only is True, returns only the commit ID, otherwise it returns
         detailed information about each commit.
         """
-        path = path.strip('/') if path else None
+        path = path.strip('/').encode("utf-8") if path else None
         if exclude is not None:
             revs.extend(['^%s' % e for e in exclude])
         args = ['--name-status', revs, '--', path]

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -279,6 +281,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'size': None,
              'rename_details': {}},
             ])
+
+    def test_log_unicode(self):
+        entries = list(self.repo.log(path=u'völundr', id_only=False))
+        assert_equal(entries, [])
 
     def test_log_file(self):
         entries = list(self.repo.log(path='README', id_only=False))
