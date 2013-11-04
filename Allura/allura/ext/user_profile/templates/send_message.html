@@ -34,7 +34,7 @@
 {% block content %}
     <div class="content">
     {%if not expire_time%}
-            {{c.form.display(method = 'POST', action='send_user_message', user=user)}}
+        {{c.form.display(method = 'POST', action='send_user_message', user=user)}}
     {% else %}
         <h2>Sorry, you can send an email after {{expire_time}}</h2>
     {% endif %}
