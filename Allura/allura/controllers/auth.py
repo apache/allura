@@ -161,7 +161,7 @@ class AuthController(BaseController):
     def forgotten_password(self, hash=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         if not provider:
-            redirect('/')
+            redirect(request.referer)
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
@@ -169,13 +169,13 @@ class AuthController(BaseController):
             user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
             if not user_record:
                 flash('Hash was not found')
-                redirect('/')
+                redirect(request.referer)
             hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
             if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
                 flash('Hash time was expired.')
-                redirect('/')
+                redirect(request.referer)
             if request.method == 'POST':
-                provider.set_password(user_record, None, kw['pw'])
+                user_record.set_password(kw['pw'])
                 user_record.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
                 flash('Password changed')
                 redirect('/auth/')
@@ -205,7 +205,7 @@ To reset your password on %s, please visit the following URL:
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[email],
             fromaddr=config['forgemail.return_path'],
-            reply_to='',
+            reply_to=config['forgemail.return_path'],
             subject='Password recovery',
             message_id=h.gen_message_id(),
             text=text)

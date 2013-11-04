@@ -135,11 +135,8 @@ class PasswordChangeBase(ForgeForm):
     @ew_core.core.validator
     def to_python(self, value, state):
         d = super(PasswordChangeBase, self).to_python(value, state)
-        try:
-            if d['pw'] != d['pw2']:
-                raise formencode.Invalid('Passwords must match', value, state)
-        except KeyError:
-            pass
+        if d.get('pw') != d.get('pw2'):
+            raise formencode.Invalid('Passwords must match', value, state)
         return d
 
 class PasswordChangeForm(PasswordChangeBase):
