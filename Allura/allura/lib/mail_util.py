@@ -187,7 +187,7 @@ class SMTPClient(object):
         # We send one message with multiple envelope recipients, so use a generic To: addr
         # It might be nice to refactor to send one message per recipient, and use the actual To: addr
         if len(addrs) == 1:
-            message['To'] = AddrHeader(addrs[0])
+            message['To'] = AddrHeader(h.really_unicode(addrs[0]))
         else:
             message['To'] = Header(reply_to)
         message['From'] = AddrHeader(fromaddr)
