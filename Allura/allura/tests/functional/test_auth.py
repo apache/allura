@@ -499,9 +499,16 @@ class TestPreferences(TestController):
         assert len(user.socialnetworks) == 1 and \
                {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks
 
-        #Add invalid social network account
+        #Add empty social network account
         r = self.app.post('/auth/user_info/contacts/add_social_network',
              params=dict(accounturl = accounturl, socialnetwork=''))
+        user = M.User.query.get(username='test-admin')
+        assert len(user.socialnetworks) == 1 and \
+               {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks
+
+        #Add invalid social network account
+        r = self.app.post('/auth/user_info/contacts/add_social_network',
+             params=dict(accounturl = accounturl, socialnetwork='invalid'))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
                {'socialnetwork':socialnetwork2, 'accounturl':accounturl2} in user.socialnetworks

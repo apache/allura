@@ -333,6 +333,7 @@ class AddSocialNetworkForm(ForgeForm):
             ew.SingleSelectField(
                 name='socialnetwork',
                 label='Social network',
+                validator=fev.UnicodeString(not_empty=True),
                 options=[ew.Option(py_value=name, label=name)
                          for name in socialnetworks]),
             ew.TextField(
