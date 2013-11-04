@@ -156,8 +156,21 @@ class AuthController(BaseController):
         c.form = F.registration_form
         return dict()
 
+    def _validate_hash(self, hash):
+        if not hash:
+            redirect(request.referer)
+        user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
+        if not user_record:
+            flash('Hash was not found')
+            redirect(request.referer)
+        hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
+        if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
+            flash('Hash time was expired.')
+            redirect(request.referer)
+        return user_record
+
+
     @expose('jinja:allura:templates/forgotten_password.html')
-    @validate(F.recover_password_change_form, error_handler=index)
     def forgotten_password(self, hash=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
         if not provider:
@@ -165,21 +178,19 @@ class AuthController(BaseController):
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
+            self._validate_hash(hash)
             c.recover_password_change_form = F.recover_password_change_form
-            user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
-            if not user_record:
-                flash('Hash was not found')
-                redirect(request.referer)
-            hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
-                flash('Hash time was expired.')
-                redirect(request.referer)
-            if request.method == 'POST':
-                user_record.set_password(kw['pw'])
-                user_record.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
-                flash('Password changed')
-                redirect('/auth/')
-        return dict()
+        return dict(hash=hash)
+
+    @expose()
+    @require_post()
+    @validate(F.recover_password_change_form, error_handler=forgotten_password)
+    def set_new_password(self, hash=None, pw=None, pw2=None):
+        user = self._validate_hash(hash)
+        user.set_password(pw)
+        user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
+        flash('Password changed')
+        redirect('/auth/')
 
     @expose()
     @require_post()
