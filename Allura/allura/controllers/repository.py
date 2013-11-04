@@ -431,8 +431,8 @@ class CommitBrowser(BaseController):
         self.tree = self.TreeBrowserClass(self._commit, tree=self._commit.tree)
 
     @expose('jinja:allura:templates/repo/commit.html')
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=DEFAULT_PAGE_LIMIT)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=DEFAULT_PAGE_LIMIT, if_invalid=DEFAULT_PAGE_LIMIT)))
     def index(self, page=0, limit=DEFAULT_PAGE_LIMIT, **kw):
         c.revision_widget = self.revision_widget
         c.page_list = self.page_list
@@ -481,8 +481,8 @@ class CommitBrowser(BaseController):
 
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def log(self, limit=25, path=None, **kw):
         is_file = False
         if path:

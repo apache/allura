@@ -138,8 +138,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @validate(dict(q=validators.UnicodeString(if_empty=None),
                    history=validators.StringBool(if_empty=False),
                    project=validators.StringBool(if_empty=False),
-                   limit=validators.Int(if_empty=None),
-                   page=validators.Int(if_empty=0)))
+                   limit=validators.Int(if_empty=None, if_invalid=None),
+                   page=validators.Int(if_empty=0, if_invalid=0)))
     def search(self, q=None, history=None, project=None, limit=None, page=0, **kw):
         c.search_results = self.W.search_results
         c.help_modal = self.W.search_help

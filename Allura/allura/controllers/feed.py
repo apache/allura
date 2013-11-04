@@ -72,8 +72,8 @@ class FeedController(object):
     @validate(dict(
             since=h.DateTimeConverter(if_empty=None, if_invalid=None),
             until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            page=V.Int(if_empty=None),
-            limit=V.Int(if_empty=None)))
+            page=V.Int(if_empty=None, if_invalid=None),
+            limit=V.Int(if_empty=None, if_invalid=None)))
     def feed(self, since=None, until=None, page=None, limit=None, **kw):
         """Return a utf8-encoded XML feed (RSS or Atom) to the browser.
         """

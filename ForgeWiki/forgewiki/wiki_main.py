@@ -348,8 +348,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @expose('jinja:forgewiki:templates/wiki/browse.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
                    show_deleted=validators.StringBool(if_empty=False),
-                   page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=None)))
+                   page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
     def browse_pages(self, sort='alpha', show_deleted=False, page=0, limit=None, **kw):
         'list of all pages in the wiki'
         c.page_list = W.page_list
@@ -390,8 +390,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
     @validate(dict(sort=validators.UnicodeString(if_empty='alpha'),
-                   page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+                   page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def browse_tags(self, sort='alpha', page=0, limit=None, **kw):
         'list of all labels in the wiki'
         c.page_list = W.page_list
@@ -474,9 +474,9 @@ class PageController(BaseController, FeedController):
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_view.html')
-    @validate(dict(version=validators.Int(if_empty=None),
-                   page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+    @validate(dict(version=validators.Int(if_empty=None, if_invalid=None),
+                   page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, version=None, page=0, limit=25, **kw):
         if not self.page:
             redirect(c.app.url+h.urlquote(self.title)+'/edit')
@@ -540,8 +540,8 @@ class PageController(BaseController, FeedController):
 
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_history.html')
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=None)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=None, if_invalid=None)))
     def history(self, page=0, limit=None, **kw):
         if not self.page:
             raise exc.HTTPNotFound
@@ -592,7 +592,7 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json')
     @require_post()
-    @validate(dict(version=validators.Int(if_empty=1)))
+    @validate(dict(version=validators.Int(if_empty=1, if_invalid=1)))
     def revert(self, version, **kw):
         if not self.page:
             raise exc.HTTPNotFound

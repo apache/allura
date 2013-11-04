@@ -83,7 +83,7 @@ search_validators = dict(
     history=validators.StringBool(if_empty=False),
     project=validators.StringBool(if_empty=False),
     limit=validators.Int(if_invalid=None),
-    page=validators.Int(if_empty=0),
+    page=validators.Int(if_empty=0, if_invalid=0),
     sort=validators.UnicodeString(if_empty=None),
     deleted=validators.StringBool(if_empty=False))
 
@@ -818,8 +818,8 @@ class RootController(BaseController, FeedController):
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/mass_edit.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   limit=validators.Int(if_empty=10),
-                   page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=10, if_invalid=10),
+                   page=validators.Int(if_empty=0, if_invalid=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def edit(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'update')
@@ -841,8 +841,8 @@ class RootController(BaseController, FeedController):
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/mass_move.html')
     @validate(dict(q=validators.UnicodeString(if_empty=None),
-                   limit=validators.Int(if_empty=10),
-                   page=validators.Int(if_empty=0),
+                   limit=validators.Int(if_empty=10, if_invalid=10),
+                   page=validators.Int(if_empty=0, if_invalid=0),
                    sort=validators.UnicodeString(if_empty='ticket_num_i asc')))
     def move(self, q=None, limit=None, page=None, sort=None, **kw):
         require_access(c.app, 'admin')
@@ -1212,8 +1212,8 @@ class TicketController(BaseController, FeedController):
     @with_trailing_slash
     @expose('jinja:forgetracker:templates/tracker/ticket.html')
     @validate(dict(
-            page=validators.Int(if_empty=0),
-            limit=validators.Int(if_empty=10)))
+            page=validators.Int(if_empty=0, if_invalid=0),
+            limit=validators.Int(if_empty=10, if_invalid=10)))
     def index(self, page=0, limit=10, deleted=False, **kw):
         ticket_visible = self.ticket and not self.ticket.deleted
         if ticket_visible or has_access(self.ticket, 'delete'):
@@ -1728,7 +1728,7 @@ class MilestoneController(BaseController):
     @expose('jinja:forgetracker:templates/tracker/milestone.html')
     @validate(validators=dict(
             limit=validators.Int(if_invalid=None),
-            page=validators.Int(if_empty=0),
+            page=validators.Int(if_empty=0, if_invalid=0),
             sort=validators.UnicodeString(if_empty=None),
             deleted=validators.StringBool(if_empty=False)))
     def index(self, q=None, columns=None, page=0, query=None, sort=None, deleted=False, **kw):
