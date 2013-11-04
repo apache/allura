@@ -776,14 +776,12 @@ To reset your password on %s, please visit the following URL:
             assert_equal(hash, '')
             assert_equal(hash_expiry, '')
 
-            #r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
-            #hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            #user.set_tool_data('AuthPasswordReset', hash_expiry=hash_expiry-datetime.timedelta(hours=1))
-            #ThreadLocalORMSession.flush_all()
-            # expected redirect with error here, but
-            # real db-record of hash expiry doesn't changes.
-            #r = self.app.post('/auth/forgotten_password/%s' % hash.encode('utf'), {'pw': '154321', 'pw2': '154321'})
-
+            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+            user = M.User.by_username('test-admin')
+            hash = user.get_tool_data('AuthPasswordReset', 'hash')
+            user.set_tool_data('AuthPasswordReset', hash_expiry= datetime.datetime(2000, 10, 10))
+            r = self.app.post('/auth/forgotten_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
+            assert_in('Hash time was expired', r.follow().body)
 
 
 class TestOAuth(TestController):
