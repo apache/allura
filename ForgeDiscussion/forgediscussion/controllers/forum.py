@@ -94,8 +94,8 @@ class ForumController(DiscussionController):
             raise exc.HTTPNotFound()
 
     @expose('jinja:forgediscussion:templates/index.html')
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, threads=None, limit=25, page=0, count=0, **kw):
         if self.discussion.deleted:
             redirect(self.discussion.url()+'deleted')
@@ -130,8 +130,8 @@ class ForumController(DiscussionController):
 class ForumThreadController(ThreadController):
 
     @expose('jinja:forgediscussion:templates/discussionforums/thread.html')
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, limit=25, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url()+'deleted')

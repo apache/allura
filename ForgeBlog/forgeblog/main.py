@@ -209,6 +209,8 @@ class RootController(BaseController, FeedController):
 
     @expose('jinja:forgeblog:templates/blog/index.html')
     @with_trailing_slash
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, page=0, limit=10, **kw):
         query_filter = dict(app_config_id=c.app.config._id)
         if not has_access(c.app, 'write')():
@@ -290,8 +292,8 @@ class PostController(BaseController, FeedController):
 
     @expose('jinja:forgeblog:templates/blog/post.html')
     @with_trailing_slash
-    @validate(dict(page=validators.Int(if_empty=0),
-                   limit=validators.Int(if_empty=25)))
+    @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
+                   limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, page=0, limit=25, **kw):
         if self.post.state == 'draft':
             require_access(self.post, 'write')

@@ -32,7 +32,7 @@ from allura import model as M
 # CommentController methods exposed:
 #     reply, delete
 
-class TestRootController(TestController):
+class Test(TestController):
 
     def _post(self, slug='', **kw):
         d = {
@@ -217,3 +217,11 @@ class TestRootController(TestController):
     def test_invalid_lookup(self):
         r = self.app.get('/blog/favicon.ico', status=404)
         assert_equal(r.status_int, 404)
+
+    def test_index_bad_url_params(self):
+        self.app.get('/blog/?limit=blah&page=2x', status=200)
+
+    def test_post_bad_url_params(self):
+        self._post()
+        d = self._blog_date()
+        self.app.get('/blog/%s/my-post/?limit=blah&page=2x' % d, status=200)
