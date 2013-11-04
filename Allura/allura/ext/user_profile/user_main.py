@@ -117,7 +117,8 @@ class UserProfileController(BaseController, FeedController):
     @expose('jinja:allura.ext.user_profile:templates/send_message.html')
     def send_message(self):
         user = c.project.user_project_of
-        if not (user and c.user.get_pref('email_address')):
+        both_have_emails = user and user.get_pref('email_address') and c.user.get_pref('email_address')
+        if not both_have_emails:
             raise exc.HTTPNotFound()
 
         time_interval = config['user_message.time_interval']
@@ -138,7 +139,8 @@ class UserProfileController(BaseController, FeedController):
                    message=validators.NotEmpty))
     def send_user_message(self, subject='', message='', cc=None):
         user = c.project.user_project_of
-        if not (user and c.user.get_pref('email_address')):
+        both_have_emails = user and user.get_pref('email_address') and c.user.get_pref('email_address')
+        if not both_have_emails:
             raise exc.HTTPNotFound()
 
         time_interval = config['user_message.time_interval']
