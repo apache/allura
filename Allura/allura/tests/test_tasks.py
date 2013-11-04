@@ -310,6 +310,38 @@ class TestMailTasks(unittest.TestCase):
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Sender: tickets@test.p.sf.net', body)
 
+    def test_email_references_header(self):
+        c.user = M.User.by_username('test-admin')
+        with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
+            mail_tasks.sendsimplemail(
+                fromaddr=str(c.user._id),
+                toaddr='test@mail.com',
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                references=['a', 'b', 'c'],
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+            assert_in('References: <a> <b> <c>', body)
+
+            _client.reset_mock()
+            mail_tasks.sendmail(
+                fromaddr=str(c.user._id),
+                destinations=[ str(c.user._id) ],
+                text=u'This is a test',
+                reply_to=u'noreply@sf.net',
+                subject=u'Test subject',
+                references=u'ref',
+                message_id=h.gen_message_id())
+            assert_equal(_client.sendmail.call_count, 1)
+            return_path, rcpts, body = _client.sendmail.call_args[0]
+            body = body.split('\n')
+            assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
+            assert_in('References: <ref>', body)
+
     @td.with_wiki
     def test_receive_email_ok(self):
         c.user = M.User.by_username('test-admin')

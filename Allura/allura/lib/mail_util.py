@@ -24,7 +24,7 @@ from email.MIMEText import MIMEText
 from email import header
 
 import tg
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool, asint, aslist
 from formencode import validators as fev
 from pylons import tmpl_context as c
 
@@ -201,10 +201,7 @@ class SMTPClient(object):
             if not references:
                 message['References'] = message['In-Reply-To']
         if references:
-            if isinstance(references, list):
-                references = [u'<%s>' % r for r in references]
-            else:
-                references = [references]
+            references = [u'<%s>' % r for r in aslist(references)]
             message['References'] = Header(*references)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
