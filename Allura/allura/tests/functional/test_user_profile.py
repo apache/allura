@@ -68,6 +68,8 @@ class TestUserProfile(TestController):
     def test_send_message(self, check, gen_message_id, sendsimplemail):
         check.return_value = True
         gen_message_id.return_value = 'id'
+        test_user = User.by_username('test-user')
+        test_user.set_pref('email_address', 'test-user@sf.net')
         response = self.app.get('/u/test-user/profile/send_message', status=200)
         assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
         self.app.post('/u/test-user/profile/send_user_message',
@@ -125,8 +127,3 @@ class TestUserProfile(TestController):
                      status=200)
 
         assert '<a href="send_message">Send me a message</a>' not in r
-
-
-
-
-
