@@ -94,16 +94,16 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         }
 
     LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
-            'Apache License 2.0': 'Apache Software License',
+            'Apache License 2.0': 'Apache License V2.0',
             'Artistic License/GPL': 'Artistic License',
             'Eclipse Public License 1.0': 'Eclipse Public License',
-            'GNU GPL v2': 'GNU General Public License (GPL)',
-            'GNU GPL v3': 'GNU General Public License (GPL)',
-            'GNU Lesser GPL': 'GNU Library or Lesser General Public License (LGPL)',
+            'GNU GPL v2': 'GNU General Public License version 2.0 (GPLv2)',
+            'GNU GPL v3': 'GNU General Public License version 3.0 (GPLv3)',
+            'GNU Lesser GPL': 'GNU Library or Lesser General Public License version 2.0 (LGPLv2)',
             'MIT License': 'MIT License',
             'Mozilla Public License 1.1': 'Mozilla Public License 1.1 (MPL 1.1)',
             'New BSD License': 'BSD License',
-            'Other Open Source': 'Other/Proprietary License',
+            'Other Open Source': 'Open Software License',
         })
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
