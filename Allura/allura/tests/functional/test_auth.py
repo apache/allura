@@ -26,7 +26,8 @@ from nose.tools import (
         assert_not_equal,
         assert_is_none,
         assert_is_not_none,
-        assert_in
+        assert_in,
+        assert_true
     )
 from pylons import tmpl_context as c
 from allura.tests import TestController
@@ -715,7 +716,7 @@ class TestPreferences(TestController):
     @patch('allura.lib.helpers.gen_message_id')
     def test_forgot_password_reset(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
-        password1 = user.password
+        old_pw_hash = user.password
 
         email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = False
@@ -746,15 +747,16 @@ class TestPreferences(TestController):
             assert hash is not None
             assert hash_expiry is not None
 
-            new_password = '154321'
-            r = self.app.post('/auth/forgotten_password/%s' % hash, {'pw': new_password, 'pw2': new_password})
+            r = self.app.get('/auth/forgotten_password/%s' % hash)
+            assert_in('New Password:', r)
+            assert_in('New Password (again):', r)
+            form = r.forms[0]
+            form['pw'] = form['pw2'] = new_password = '154321'
+            r = form.submit()
             user = M.User.query.get(username='test-admin')
-            password2 = user.password
-            assert_not_equal(password1, password2)
-            r = self.app.get('/auth/logout')
-            r = self.app.post('/auth/do_login', params=dict(
-                              username='test-admin', password=new_password))
-            assert 'Invalid login' not in str(r)
+            assert_not_equal(old_pw_hash, user.password)
+            provider = plugin.LocalAuthenticationProvider(None)
+            assert_true(provider._validate_password(user, new_password))
 
             text = '''
 To reset your password on %s, please visit the following URL:
@@ -779,8 +781,10 @@ To reset your password on %s, please visit the following URL:
             r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
             user = M.User.by_username('test-admin')
             hash = user.get_tool_data('AuthPasswordReset', 'hash')
-            user.set_tool_data('AuthPasswordReset', hash_expiry= datetime.datetime(2000, 10, 10))
-            r = self.app.post('/auth/forgotten_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
+            user.set_tool_data('AuthPasswordReset', hash_expiry=datetime.datetime(2000, 10, 10))
+            r = self.app.post('/auth/set_new_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
+            assert_in('Hash time was expired', r.follow().body)
+            r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
             assert_in('Hash time was expired', r.follow().body)
 
 
