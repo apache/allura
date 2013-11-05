@@ -2659,6 +2659,16 @@ div.attachment_thumb .file_type span {
 #ticket_search_results_holder {
   overflow: auto;
 }
+/* headers should never force a column to be too wide */ 
+#ticket_search_results_holder th {
+    overflow: hidden;
+    max-width: 1em;
+}
+/* tighten it up */
+#ticket_search_results_holder td {
+    padding-right: 5px;
+    padding-left: 5px;
+}
 
 /* Stats Graph */
 

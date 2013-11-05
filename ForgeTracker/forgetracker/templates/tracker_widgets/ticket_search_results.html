@@ -25,7 +25,7 @@
       <thead>
         <tr>
           {% for col in columns if col['active'] %}
-            <th data-sort="{{col['sort_name']}}">
+            <th data-sort="{{col['sort_name']}}" title="{{col['label']}}">
               {% if col['name'] == 'ticket_num' %}
                 #
               {% else %}
