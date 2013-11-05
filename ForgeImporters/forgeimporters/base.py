@@ -85,7 +85,8 @@ class ImportErrorHandler(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.importer.clear_pending(self.project)
+        if hasattr(self.importer, 'clear_pending'):
+            self.importer.clear_pending(self.project)
         if exc_type:
             g.post_event('import_tool_task_failed',
                 error=str(exc_val),
@@ -209,6 +210,7 @@ class ProjectImporter(BaseController):
 
     """
     source = None
+    tool_label = 'Project Info'
     process_validator = None
     index_template = None
 

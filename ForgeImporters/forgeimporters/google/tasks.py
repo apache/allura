@@ -22,14 +22,18 @@ from ming.orm import ThreadLocalORMSession
 
 from allura.lib.decorators import task
 
-from . import GoogleCodeProjectExtractor
+from forgeimporters.base import ImportErrorHandler
+from forgeimporters.google import GoogleCodeProjectExtractor
 
 
 @task
 def import_project_info(project_name):
-    extractor = GoogleCodeProjectExtractor(project_name, 'project_info')
-    extractor.get_short_description(c.project)
-    extractor.get_icon(c.project)
-    extractor.get_license(c.project)
-    ThreadLocalORMSession.flush_all()
-    g.post_event('project_updated')
+    from forgeimporters.google.project import GoogleCodeProjectImporter
+    importer = GoogleCodeProjectImporter(None)
+    with ImportErrorHandler(importer, project_name, c.project) as handler:
+        extractor = GoogleCodeProjectExtractor(project_name, 'project_info')
+        extractor.get_short_description(c.project)
+        extractor.get_icon(c.project)
+        extractor.get_license(c.project)
+        ThreadLocalORMSession.flush_all()
+        g.post_event('project_updated')

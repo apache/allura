@@ -22,13 +22,17 @@ from ming.orm import ThreadLocalORMSession
 
 from allura.lib.decorators import task
 
-from . import GitHubProjectExtractor
+from forgeimporters.base import ImportErrorHandler
+from forgeimporters.github import GitHubProjectExtractor
 
 
 @task
 def import_project_info(project_name):
-    extractor = GitHubProjectExtractor(project_name)
-    c.project.summary = extractor.get_summary()
-    c.project.external_homepage = extractor.get_homepage()
-    ThreadLocalORMSession.flush_all()
-    g.post_event('project_updated')
+    from forgeimporters.github.project import GitHubProjectImporter
+    importer = GitHubProjectImporter(None)
+    with ImportErrorHandler(importer, project_name, c.project) as handler:
+        extractor = GitHubProjectExtractor(project_name)
+        c.project.summary = extractor.get_summary()
+        c.project.external_homepage = extractor.get_homepage()
+        ThreadLocalORMSession.flush_all()
+        g.post_event('project_updated')
