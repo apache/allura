@@ -48,6 +48,10 @@ from feedparser import _HTMLSanitizer
 from ew import jinja2_ew as ew
 from ming.utils import LazyProperty
 
+
+MARKDOWN_EXTENSIONS = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
+
+
 def permanent_redirect(url):
     try:
         tg.redirect(url)

@@ -40,6 +40,7 @@ from tg.decorators import (
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
+from allura.lib import utils
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import (
         require_post,
@@ -115,7 +116,7 @@ class GitHubWikiImporter(ToolImporter):
     tool_option = {"import_history": "Import history"}
 
     mediawiki_exts = ['.wiki', '.mediawiki']
-    markdown_exts = ['.markdown', '.mdown', '.mkdn', '.mkd', '.md']
+    markdown_exts = utils.MARKDOWN_EXTENSIONS
     textile_exts = ['.textile']
     # List of supported formats https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
