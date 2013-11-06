@@ -164,7 +164,7 @@ class NeighborhoodController(object):
         ]
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to " + self.neighborhood.name,
-                    text=g.markdown.convert(self.neighborhood.homepage),
+                    text=g.markdown.cached_convert(self.neighborhood, 'homepage'),
                     projects=projects,
                     sort=sort,
                     limit=limit, page=page, count=count)

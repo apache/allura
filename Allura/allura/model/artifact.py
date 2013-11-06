@@ -37,7 +37,7 @@ from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 from .session import artifact_orm_session
 from .index import ArtifactReference
-from .types import ACL, ACE
+from .types import ACL, ACE, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
 
@@ -743,6 +743,7 @@ class Feed(MappedClass):
     link=FieldProperty(str)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
     description = FieldProperty(str)
+    description_cache = FieldProperty(MarkdownCache)
     unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
     author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
     author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)

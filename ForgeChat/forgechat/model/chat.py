@@ -22,6 +22,8 @@ from ming.orm import FieldProperty, Mapper
 from ming.orm.declarative import MappedClass
 
 from allura import model as M
+from allura.model.types import MarkdownCache
+
 
 class ChatChannel(MappedClass):
 
@@ -46,6 +48,8 @@ class ChatMessage(M.Artifact):
     sender = FieldProperty(str, if_missing='')
     channel = FieldProperty(str, if_missing='')
     text = FieldProperty(str, if_missing='')
+    text_cache = FieldProperty(MarkdownCache)
+
 
     def index_id(self):
         id = 'Chat-%s:%s:%s.%s' % (

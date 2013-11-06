@@ -42,6 +42,7 @@ from allura.lib import exceptions
 from allura.lib import security
 from allura.lib import validators as v
 from allura.lib.security import has_access
+from allura.model.types import MarkdownCache
 
 from .session import main_orm_session
 from .session import project_orm_session, project_doc_session
@@ -175,6 +176,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     short_description=FieldProperty(str, if_missing='')
     summary=FieldProperty(str, if_missing='')
     description=FieldProperty(str, if_missing='')
+    description_cache = FieldProperty(MarkdownCache)
     homepage_title=FieldProperty(str, if_missing='')
     external_homepage=FieldProperty(str, if_missing='')
     support_page=FieldProperty(str, if_missing='')
@@ -321,7 +323,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def description_html(self):
-        return g.markdown.convert(self.description)
+        return g.markdown.cached_convert(self, 'description')
 
     @property
     def parent_project(self):

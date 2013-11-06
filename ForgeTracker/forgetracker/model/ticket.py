@@ -584,6 +584,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     ticket_num = FieldProperty(int, required=True, allow_none=False)
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
+    description_cache = FieldProperty(MarkdownCache)
     reported_by_id = ForeignIdProperty(User, if_missing=lambda:c.user._id)
     assigned_to_id = ForeignIdProperty(User, if_missing=None)
     milestone = FieldProperty(str, if_missing='')

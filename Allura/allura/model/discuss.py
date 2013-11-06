@@ -51,6 +51,7 @@ class Discussion(Artifact, ActivityObject):
     shortname = FieldProperty(str)
     name = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
+    description_cache = FieldProperty(MarkdownCache)
     num_topics = FieldProperty(int, if_missing=0)
     num_posts = FieldProperty(int, if_missing=0)
     subscriptions = FieldProperty({str: bool})

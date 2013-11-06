@@ -95,7 +95,7 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
                 title=item.title,
                 author=item.author_name,
                 ago=h.ago(item.pubdate),
-                description=g.markdown.convert(item.description)))
+                description=g.markdown.cached_convert(item, 'description')))
         for item in feed)
     feeds = NeighborhoodFeeds(feeds=output)
     g.resource_manager.register(feeds)
@@ -115,7 +115,7 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
                 title=post.title,
                 author=post.author().display_name,
                 ago=h.ago(post.timestamp),
-                description=summary and '&nbsp;' or g.markdown.convert(post.text)))
+                description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
         for post in posts if post.app and
                              security.has_access(post, 'read', project=post.app.project)() and
                              security.has_access(post.app.project, 'read', project=post.app.project)())
@@ -143,7 +143,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
                 title=post.title,
                 author=post.author().display_name,
                 ago=h.ago(post.timestamp),
-                description=summary and '&nbsp;' or g.markdown.convert(post.text)))
+                description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
         for post in posts if security.has_access(post, 'read', project=post.app.project)() and
                              security.has_access(post.app.project, 'read', project=post.app.project)())
     posts = BlogPosts(posts=output)

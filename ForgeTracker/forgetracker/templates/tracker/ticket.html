@@ -142,7 +142,7 @@
   {{ c.vote_form.display(artifact=ticket) }}
 {% endif %}
 <div id="ticket_content">
-  {{g.markdown.convert(ticket.description)|safe}}
+  {{g.markdown.cached_convert(ticket, 'description')|safe}}
   {% if ticket.attachments %}
     <strong class="grid-18">{{ticket.attachments|length}} Attachments</strong>
     <div class="clear">

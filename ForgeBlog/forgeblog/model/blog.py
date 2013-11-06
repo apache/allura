@@ -29,6 +29,7 @@ from ming.orm.declarative import MappedClass
 
 from allura import model as M
 from allura.model.timeline import ActivityObject
+from allura.model.types import MarkdownCache
 from allura.lib import helpers as h
 from allura.lib import utils
 
@@ -105,6 +106,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     title = FieldProperty(str, if_missing='Untitled')
     text = FieldProperty(str, if_missing='')
+    text_cache = FieldProperty(MarkdownCache)
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     slug = FieldProperty(str)
     state = FieldProperty(schema.OneOf('draft', 'published'), if_missing='draft')
@@ -132,7 +134,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     @property
     def html_text(self):
-        return g.markdown.convert(self.text)
+        return g.markdown.cached_convert(self, 'text')
 
     @property
     def html_text_preview(self):

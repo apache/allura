@@ -88,6 +88,9 @@ class ForgeMarkdown(markdown.Markdown):
 
         """
         source_text = getattr(artifact, field_name)
+        # Check if contents macro and never cache
+        if "[[" in source_text:
+            return self.convert(source_text)
         cache_field_name = field_name + '_cache'
         cache = getattr(artifact, cache_field_name, None)
         if not cache:

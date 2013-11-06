@@ -81,7 +81,7 @@
             </span>
           </div>
           <div class="editable viewing">
-            <div class="viewer">{{g.markdown.convert(forum.description)|safe}}</div>
+            <div class="viewer">{{g.markdown.cached_convert(forum, 'description')|safe}}</div>
             <span class="editor multiline">
               {{lib.text_area('forum-%s.description' % loop.index0, 'Description', h.really_unicode(forum.description))}}
             </span>

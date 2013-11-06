@@ -37,6 +37,8 @@ from allura.model import (
         Shortlink,
 )
 from allura.model.timeline import ActivityObject
+from allura.model.types import MarkdownCache
+
 from allura.lib import helpers as h
 from allura.lib import utils
 
@@ -96,8 +98,10 @@ class Page(VersionedArtifact, ActivityObject):
         history_class = PageHistory
         unique_indexes = [('app_config_id', 'title')]
 
+
     title=FieldProperty(str)
     text=FieldProperty(schema.String, if_missing='')
+    text_cache = FieldProperty(MarkdownCache)
     viewable_by=FieldProperty([str])
     type_s = 'Wiki'
 
@@ -206,7 +210,7 @@ class Page(VersionedArtifact, ActivityObject):
     @property
     def html_text(self):
         """A markdown processed version of the page text"""
-        return g.markdown_wiki.convert(self.text)
+        return g.markdown_wiki.cached_convert(self, 'text')
 
     def authors(self):
         """All the users that have edited this page"""

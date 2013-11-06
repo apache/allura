@@ -598,6 +598,9 @@ class TestCachedMarkdown(unittest.TestCase):
             html = self.md.cached_convert(self.post, 'text')
             self.assertEqual(html, self.expected_html)
             self.assertFalse(convert_func.called)
+            self.post.text = u"text [[macro]] pass"
+            html = self.md.cached_convert(self.post, 'text')
+            self.assertTrue(convert_func.called)
 
     @patch.dict('allura.lib.app_globals.config', {})
     def test_no_threshold_defined(self):

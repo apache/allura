@@ -32,6 +32,7 @@ from allura.lib import plugin
 
 from .session import main_orm_session
 from .filesystem import File
+from .types import MarkdownCache
 
 log = logging.getLogger(__name__)
 
@@ -67,6 +68,7 @@ class Neighborhood(MappedClass):
     shortname_prefix = FieldProperty(str, if_missing='')
     css = FieldProperty(str, if_missing='')
     homepage = FieldProperty(str, if_missing='')
+    homepage_cache = FieldProperty(MarkdownCache)
     redirect = FieldProperty(str, if_missing='')
     projects = RelationProperty('Project')
     allow_browse = FieldProperty(bool, if_missing=True)

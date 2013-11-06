@@ -27,6 +27,7 @@ from ming.orm.declarative import MappedClass
 from allura.lib import helpers as h
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
+from .types import MarkdownCache
 
 log = logging.getLogger(__name__)
 
@@ -59,12 +60,14 @@ class OAuthConsumerToken(OAuthToken):
     user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
     name = FieldProperty(str)
     description = FieldProperty(str)
-    
+    description_cache = FieldProperty(MarkdownCache)
+
+
     user = RelationProperty('User')
 
     @property
     def description_html(self):
-        return g.markdown.convert(self.description)
+        return g.markdown.cached_convert(self, 'description')
 
     @property
     def consumer(self):
