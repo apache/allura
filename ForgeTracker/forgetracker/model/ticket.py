@@ -59,6 +59,7 @@ from allura.model import (
 )
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
+from allura.model.types import MarkdownCache
 
 from allura.lib import security
 from allura.lib.search import search_artifact, SearchError
