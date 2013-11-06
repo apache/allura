@@ -68,22 +68,22 @@ class GitHubMarkdownConverter(object):
         output. ``text`` is *not* code.
 
         """
-        _re = re.compile(r'(\s|^)(\S+)/(\S+)#(\d+)(\s|$)')
+        _re = re.compile(r'(\b)(\S+)/(\S+)#(\d+)(\b)')
         text = _re.sub(self._convert_user_repo_ticket, text)
 
-        _re = re.compile(r'(\s|^)(\S+)#(\d+)(\s|$)')
+        _re = re.compile(r'(\b)(\S+)#(\d+)(\b)')
         text = _re.sub(self._convert_user_ticket, text)
 
         _re = re.compile(r'(\S+\s+)(#\d+)')
         text = _re.sub(self._convert_ticket, text)
 
-        _re = re.compile(r'(\s|^)(\S+)/(\S+)@([0-9a-f]{40})(\s|$)')
+        _re = re.compile(r'(\b)(\S+)/(\S+)@([0-9a-f]{40})(\b)')
         text = _re.sub(self._convert_user_repo_sha, text)
 
-        _re = re.compile(r'(\s|^)(\S+)@([0-9a-f]{40})(\s|$)')
+        _re = re.compile(r'(\b)(\S+)@([0-9a-f]{40})(\b)')
         text = _re.sub(self._convert_user_sha, text)
 
-        _re = re.compile(r'(\s|^)([0-9a-f]{40})(\s|$)')
+        _re = re.compile(r'(\b)([0-9a-f]{40})(\b)')
         text = _re.sub(self._convert_sha, text)
 
         _re = re.compile(r'~~(.*)~~',)
