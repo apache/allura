@@ -6,8 +6,52 @@ class GitHubMarkdownConverter(object):
     def __init__(self, gh_user, gh_project):
         self.gh_project = '%s/%s' % (gh_user, gh_project)
         self.gh_base_url = u'https://github.com/'
+        self.code_patterns = ['```']
 
     def convert(self, text):
+        lines = self._parse_lines(text.split('\n'))
+        return '\n'.join(lines)
+
+    def _parse_lines(self, lines):
+        in_block = False
+        new_lines = []
+        for line in lines:
+            nextline = False
+            for p in self.code_patterns:
+                if line.lstrip().startswith(p):
+                    _re = re.compile(r'\```(.*)')
+                    syntax = _re.findall(line)[0]
+                    if syntax and not syntax.isspace():
+                        new_lines.append(self._codeblock_syntax(syntax))
+
+                    in_block = not in_block
+                    nextline = True
+                    break
+            if nextline:
+                continue
+
+            if in_block:
+                new_lines.append(self._handle_code(line))
+            else:
+                if line.lstrip().startswith('    '):
+                    new_lines.append(self._handle_code(line))
+                else:
+                    new_lines.append(self._handle_non_code(line))
+        return new_lines
+
+    def _handle_code(self, text):
+        """Return a string that will replace ``text`` in the final text
+        output. ``text`` is code.
+
+        """
+        text = '    ' + text
+        return text
+
+    def _handle_non_code(self, text):
+        """Return a string that will replace ``text`` in the final text
+        output. ``text`` is *not* code.
+
+        """
         _re = re.compile(r'(\s|^)(\S+)/(\S+)#(\d+)(\s|$)')
         text = _re.sub(self._convert_user_repo_ticket, text)
 
@@ -29,8 +73,6 @@ class GitHubMarkdownConverter(object):
         _re = re.compile(r'~~(.*)~~',)
         text = _re.sub(self._convert_strikethrough, text)
 
-        _re = re.compile(r'```\w*(.*?)```', re.DOTALL)
-        text = _re.sub(self._convert_codeblock, text)
         return text
 
     def _gh_commit_url(self, project, sha, title):
@@ -82,5 +124,5 @@ class GitHubMarkdownConverter(object):
     def _convert_strikethrough(self, m):
         return '<s>%s</s>' % m.group(1)
 
-    def _convert_codeblock(self, m):
-        return '~~~~%s~~~~'% m.group(1)
+    def _codeblock_syntax(self, text):
+        return '\n    :::%s' % text
