@@ -797,6 +797,16 @@ To reset your password on %s, please visit the following URL:
         r = self.app.post('/auth/set_new_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
         assert_in('Unable to process reset, please try again', r.follow().body)
 
+    @patch('allura.lib.plugin.AuthenticationProvider')
+    def test_provider_disabled(self, AP):
+        user = M.User.query.get(username='test-admin')
+        ap = AP.get()
+        ap.forgotten_password_process = False
+        ap.authenticate_request()._id = user._id
+        self.app.get('/auth/forgotten_password', status=404)
+        self.app.post('/auth/set_new_password', {'pw': 'foo', 'pw2': 'foo'}, status=404)
+        self.app.post('/auth/password_recovery_hash', {'email': 'foo'}, status=404)
+
 
 class TestOAuth(TestController):
 

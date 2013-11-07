@@ -173,6 +173,8 @@ class AuthController(BaseController):
     @expose('jinja:allura:templates/forgotten_password.html')
     def forgotten_password(self, hash=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
+        if not provider.forgotten_password_process:
+            raise wexc.HTTPNotFound()
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
@@ -184,6 +186,9 @@ class AuthController(BaseController):
     @require_post()
     @validate(F.recover_password_change_form, error_handler=forgotten_password)
     def set_new_password(self, hash=None, pw=None, pw2=None):
+        provider = plugin.AuthenticationProvider.get(request)
+        if not provider.forgotten_password_process:
+            raise wexc.HTTPNotFound()
         user = self._validate_hash(hash)
         user.set_password(pw)
         user.set_tool_data('AuthPasswordReset', hash='', hash_expiry='')
@@ -194,6 +199,9 @@ class AuthController(BaseController):
     @require_post()
     @validate(F.forgotten_password_form, error_handler=forgotten_password)
     def password_recovery_hash(self, email=None, **kw):
+        provider = plugin.AuthenticationProvider.get(request)
+        if not provider.forgotten_password_process:
+            raise wexc.HTTPNotFound()
         if not email:
             redirect('/')
         user_record = M.User.by_email_address(email)
