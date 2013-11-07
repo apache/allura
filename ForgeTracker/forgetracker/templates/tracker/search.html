@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends g.theme.master %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% do g.register_app_css('css/tracker.css') %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Search{% endblock %}
@@ -29,6 +30,7 @@
 {% endblock %}
 
 {% block actions %}
+  {{ lib.maximize_content_button() }}
   <a href="{{tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort))}}" title="Feed"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if allow_edit and count != 0 %}
   <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>

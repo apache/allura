@@ -3263,6 +3263,11 @@ ul.dropdown ul li a:hover {
     width: 100%;
 }
 
+.content-maximized #content_base .ticket-list
+{
+    width: 99%;
+}
+
 .content-maximized #content_base .diffbrowser {
     width: auto;
 }

@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends g.theme.master %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% do g.register_app_css('css/tracker.css') %}
 
@@ -25,6 +26,7 @@
 {% block header %}{{field.label}} {{milestone.name}}{% endblock %}
 
 {% block actions %}
+{{ lib.maximize_content_button() }}
 {% if allow_edit %}
   <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=url_sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
