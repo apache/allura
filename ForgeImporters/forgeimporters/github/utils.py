@@ -6,7 +6,7 @@ class GitHubMarkdownConverter(object):
     def __init__(self, gh_user, gh_project):
         self.gh_project = '%s/%s' % (gh_user, gh_project)
         self.gh_base_url = u'https://github.com/'
-        self.code_patterns = ['```']
+        self.code_patterns = ['```', '~~~~~']
 
     def convert(self, text):
         lines = self._parse_lines(text.split('\n'))
@@ -19,11 +19,15 @@ class GitHubMarkdownConverter(object):
             nextline = False
             for p in self.code_patterns:
                 if line.lstrip().startswith(p):
-                    _re = re.compile(r'\```(.*)')
-                    syntax = _re.findall(line)[0]
-                    if syntax and not syntax.isspace():
-                        new_lines.append(self._codeblock_syntax(syntax))
+                    # this is extreme, but due to display bugs
+                    # it's necessary
+                    new_lines.append('\n<br>\n')
 
+                    if p == '```':
+                        _re = re.compile(r'\```(.*)')
+                        syntax = _re.findall(line)[0]
+                        if syntax and not syntax.isspace():
+                            new_lines.append(self._codeblock_syntax(syntax))
                     in_block = not in_block
                     nextline = True
                     break
@@ -33,14 +37,9 @@ class GitHubMarkdownConverter(object):
             if in_block:
                 new_lines.append(self._handle_code(line))
             else:
-                _re = re.compile(r'`\s*(.*?)`')
-                is_inline_code = _re.findall(line)
-
                 if line.lstrip().startswith('    '):
                     # code block due to github syntax
                     continue
-                elif is_inline_code and not is_inline_code[0].isspace():
-                    new_lines.append(self._handle_inline_code(line))
                 else:
                     new_lines.append(self._handle_non_code(line))
         return new_lines
@@ -51,16 +50,6 @@ class GitHubMarkdownConverter(object):
 
         """
         text = '    ' + text
-        return text
-
-    def _handle_inline_code(self, text):
-        """Return a string that will replace ``text`` in the final text
-        output. ``text`` is inline code.
-
-        """
-        _re = re.compile(r'`(\s*)(.*?)`')
-        text = _re.sub(self._convert_inline_codeblock, text)
-
         return text
 
     def _handle_non_code(self, text):
@@ -83,10 +72,10 @@ class GitHubMarkdownConverter(object):
         _re = re.compile(r'(\b)(\S+)@([0-9a-f]{40})(\b)')
         text = _re.sub(self._convert_user_sha, text)
 
-        _re = re.compile(r'(\b)([0-9a-f]{40})(\b)')
+        _re = re.compile(r'(\s|^)([0-9a-f]{40})(\s|$)')
         text = _re.sub(self._convert_sha, text)
 
-        _re = re.compile(r'~~(.*)~~',)
+        _re = re.compile(r'~~(.*?)~~',)
         text = _re.sub(self._convert_strikethrough, text)
 
         return text
@@ -141,7 +130,7 @@ class GitHubMarkdownConverter(object):
         return '<s>%s</s>' % m.group(1)
 
     def _codeblock_syntax(self, text):
-        return '\n    :::%s' % text
+        return '    :::%s' % text
 
     def _convert_inline_codeblock(self, m):
         text = m.group(0)

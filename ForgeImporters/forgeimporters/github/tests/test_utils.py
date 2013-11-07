@@ -85,15 +85,22 @@ for (var i = 0; i < a.length; i++) {
     console.log(i);
 }
 ```'''
-        result = u'''~~~~
-print "Hello!"
-~~~~
+        result = u'''<br>
+
+    :::python
+    print "Hello!"
+
+<br>
+
 
 Two code blocks here!
 
-~~~~
-for (var i = 0; i < a.length; i++) {
-    console.log(i);
-}
-~~~~'''
+
+<br>
+
+    for (var i = 0; i < a.length; i++) {
+        console.log(i);
+    }
+
+<br>'''
         assert_equal(self.conv.convert(text).strip(), result)

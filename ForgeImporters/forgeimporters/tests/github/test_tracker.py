@@ -195,10 +195,14 @@ def hello(name):
 
 Hello
 
-~~~~
-def hello(name):
-    print "Hello, " + name
-~~~~'''
+
+<br>
+
+    :::python
+    def hello(name):
+        print "Hello, " + name
+
+<br>'''
         issue = {
             'body': body,
             'title': 'title',
@@ -229,10 +233,15 @@ def hello(name):
 
 Hello
 
-~~~~
-def hello(name):
-    print "Hello, " + name
-~~~~'''
+
+<br>
+
+    :::python
+    def hello(name):
+        print "Hello, " + name
+
+<br>
+'''
         issue = {'comments_url': '/comments'}
         extractor.iter_comments.return_value = [
                 {
