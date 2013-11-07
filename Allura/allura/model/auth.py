@@ -300,7 +300,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
     class __mongometa__:
         name='user'
         session = main_orm_session
-        indexes = [ 'tool_data.sfx.userid' ]
+        indexes = [ 'tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash' ]
         unique_indexes = [ 'username' ]
 
     _id=FieldProperty(S.ObjectId)

@@ -712,80 +712,90 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
 
+
+class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendmail')
     @patch('allura.lib.helpers.gen_message_id')
-    def test_forgot_password_reset(self, gen_message_id, sendmail):
+    def test_email_unconfirmed(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
-        old_pw_hash = user.password
-
         email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = False
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        assert hash is None
+
+    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_user_disabled(self, gen_message_id, sendmail):
+        user = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
         user.disabled = True
         ThreadLocalORMSession.flush_all()
         r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
         assert hash is None
 
+    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_password_reset(self, gen_message_id, sendmail):
         user = M.User.query.get(username='test-admin')
-        user.disabled = True
         email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
         email.confirmed = True
         ThreadLocalORMSession.flush_all()
+        old_pw_hash = user.password
         r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
         hash = user.get_tool_data('AuthPasswordReset', 'hash')
-        assert hash is None
+        hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+        assert hash is not None
+        assert hash_expiry is not None
 
+        r = self.app.get('/auth/forgotten_password/%s' % hash)
+        assert_in('New Password:', r)
+        assert_in('New Password (again):', r)
+        form = r.forms[0]
+        form['pw'] = form['pw2'] = new_password = '154321'
+        r = form.submit()
         user = M.User.query.get(username='test-admin')
-        user.disabled = False
-        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
-        email.confirmed = True
-        ThreadLocalORMSession.flush_all()
-        with push_config(config, **{'auth.recovery_hash_expiry_period': '600'}):
-            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
-            hash = user.get_tool_data('AuthPasswordReset', 'hash')
-            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            assert hash is not None
-            assert hash_expiry is not None
+        assert_not_equal(old_pw_hash, user.password)
+        provider = plugin.LocalAuthenticationProvider(None)
+        assert_true(provider._validate_password(user, new_password))
 
-            r = self.app.get('/auth/forgotten_password/%s' % hash)
-            assert_in('New Password:', r)
-            assert_in('New Password (again):', r)
-            form = r.forms[0]
-            form['pw'] = form['pw2'] = new_password = '154321'
-            r = form.submit()
-            user = M.User.query.get(username='test-admin')
-            assert_not_equal(old_pw_hash, user.password)
-            provider = plugin.LocalAuthenticationProvider(None)
-            assert_true(provider._validate_password(user, new_password))
-
-            text = '''
+        text = '''
 To reset your password on %s, please visit the following URL:
 
 %s/auth/forgotten_password/%s
 
 ''' % (config['site_name'], config['base_url'], hash)
 
-            sendmail.post.assert_called_once_with(
-                destinations=[email._id],
-                fromaddr=config['forgemail.return_path'],
-                reply_to='noreply@sourceforge.net',
-                subject='Password recovery',
-                message_id=gen_message_id(),
-                text=text)
-            user = M.User.query.get(username='test-admin')
-            hash = user.get_tool_data('AuthPasswordReset', 'hash')
-            hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
-            assert_equal(hash, '')
-            assert_equal(hash_expiry, '')
+        sendmail.post.assert_called_once_with(
+            destinations=[email._id],
+            fromaddr=config['forgemail.return_path'],
+            reply_to='noreply@sourceforge.net',
+            subject='Password recovery',
+            message_id=gen_message_id(),
+            text=text)
+        user = M.User.query.get(username='test-admin')
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        hash_expiry = user.get_tool_data('AuthPasswordReset', 'hash_expiry')
+        assert_equal(hash, '')
+        assert_equal(hash_expiry, '')
 
-            r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
-            user = M.User.by_username('test-admin')
-            hash = user.get_tool_data('AuthPasswordReset', 'hash')
-            user.set_tool_data('AuthPasswordReset', hash_expiry=datetime.datetime(2000, 10, 10))
-            r = self.app.post('/auth/set_new_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
-            assert_in('Hash time was expired', r.follow().body)
-            r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
-            assert_in('Hash time was expired', r.follow().body)
+    @patch('allura.tasks.mail_tasks.sendmail')
+    @patch('allura.lib.helpers.gen_message_id')
+    def test_hash_expired(self, gen_message_id, sendmail):
+        user = M.User.query.get(username='test-admin')
+        email = M.EmailAddress.query.find({'claimed_by_user_id': user._id}).first()
+        email.confirmed = True
+        ThreadLocalORMSession.flush_all()
+        r = self.app.post('/auth/password_recovery_hash', {'email': email._id})
+        user = M.User.by_username('test-admin')
+        hash = user.get_tool_data('AuthPasswordReset', 'hash')
+        user.set_tool_data('AuthPasswordReset', hash_expiry=datetime.datetime(2000, 10, 10))
+        r = self.app.get('/auth/forgotten_password/%s' % hash.encode('utf-8'))
+        assert_in('Unable to process reset, please try again', r.follow().body)
+        r = self.app.post('/auth/set_new_password/%s' % hash.encode('utf-8'), {'pw': '154321', 'pw2': '154321'})
+        assert_in('Unable to process reset, please try again', r.follow().body)
 
 
 class TestOAuth(TestController):

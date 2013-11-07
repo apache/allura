@@ -31,19 +31,20 @@ from allura import model as M
 class LoginForm(ForgeForm):
     submit_text='Login'
     style='wide'
-    class fields(ew_core.NameList):
-        username = ew.TextField(label='Username')
-        password = ew.PasswordField(label='Password')
-        link = ew.HTMLField(text='<a href="./forgotten_password">Forgot password?</a>')
+
+    @property
+    def fields(self):
+        fields = [
+            ew.TextField(name='username', label='Username'),
+            ew.PasswordField(name='password', label='Password')
+        ]
+        if plugin.AuthenticationProvider.get(request).forgotten_password_process:
+            # only show link if auth provider has method of recovering password
+            fields.append(ew.HTMLField(name='link', text='<a href="forgotten_password">Forgot password?</a>'))
+        return fields
 
     class hidden_fields(ew_core.NameList):
         return_to = ew.HiddenField()
-
-    def __init__(self, *args, **kw):
-        super(LoginForm, self).__init__(*args, **kw)
-        if not plugin.AuthenticationProvider.get(request).forgotten_password_process:
-            # auth provider has no method of recovering password - do not show the link
-            self.fields.link.text = ''
 
     @validator
     def validate(self, value, state=None):
@@ -68,16 +69,10 @@ class ForgottenPasswordForm(ForgeForm):
     @validator
     def validate(self, value, state=None):
         email = value['email']
-        record = M.EmailAddress.query.find({'_id': email}).first()
-        if not record or not record.confirmed:
+        email_record = M.EmailAddress.query.find({'_id': email}).first()
+        user = M.User.by_email_address(email)
+        if user is None or not email_record.confirmed:
             raise Invalid(
-                "Email doesn't exists",
-                dict(email=value['email']),
-                None)
-        user_record = M.User.by_email_address(email)
-        if not user_record or user_record.disabled:
-            raise Invalid(
-                "Email doesn't verified or user record disabled",
-                dict(email=value['email']),
-                None)
+                    'Unable to recover password for this email',
+                    {'email': email}, None)
         return value

@@ -157,24 +157,22 @@ class AuthController(BaseController):
         return dict()
 
     def _validate_hash(self, hash):
+        login_url = config.get('auth.login_url', '/auth/')
         if not hash:
-            redirect(request.referer)
+            redirect(login_url)
         user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
         if not user_record:
-            flash('Hash was not found')
-            redirect(request.referer)
+            flash('Unable to process reset, please try again')
+            redirect(login_url)
         hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
         if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
-            flash('Hash time was expired.')
-            redirect(request.referer)
+            flash('Unable to process reset, please try again')
+            redirect(login_url)
         return user_record
-
 
     @expose('jinja:allura:templates/forgotten_password.html')
     def forgotten_password(self, hash=None, **kw):
         provider = plugin.AuthenticationProvider.get(request)
-        if not provider:
-            redirect(request.referer)
         if not hash:
             c.forgotten_password_form = F.forgotten_password_form
         else:
