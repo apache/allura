@@ -16,6 +16,13 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+
+{% macro csrf_token() -%}
+  {% if request %}
+    <input name="_session_id" type="hidden" value="{{request.cookies['_session_id']}}">
+  {% endif %}
+{%- endmacro %}
+
 {% macro related_artifacts(artifact) -%}
   {% set related_artifacts = artifact.related_artifacts() %}
   {% if related_artifacts %}
