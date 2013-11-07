@@ -185,7 +185,7 @@ class TracRef3(Pattern):
 
     """
     pattern = re.compile(
-            Pattern.BEGIN + r'((source:)([^@#]+)(@(\d+))?(#L(\d+))?)' + Pattern.END)
+            Pattern.BEGIN + r'((source:)([^@#\s]+)(@(\w+))?(#L(\d+))?)' + Pattern.END)
 
     def __init__(self, app):
         super(Pattern, self).__init__()
