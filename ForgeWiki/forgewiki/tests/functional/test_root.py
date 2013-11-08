@@ -578,6 +578,20 @@ class TestRootController(TestController):
         req.forms[1].submit()
         assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get('/p/test/wiki/')
 
+    @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
+    def test_cached_html(self):
+        """Ensure cached html is not escaped."""
+        html = '<p><span>My Html</span></p>'
+        self.app.post('/wiki/cache/update', params={
+                'title': 'cache',
+                'text': html,
+                'labels': '',
+                'viewable_by-0.id': 'all'})
+        # first request caches html, second serves from cache
+        r = self.app.get('/wiki/cache/')
+        r = self.app.get('/wiki/cache/')
+        assert_true(html in r)
+
     def test_page_delete(self):
         self.app.post('/wiki/aaa/update', params={
                 'title':'aaa',

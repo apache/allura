@@ -593,10 +593,12 @@ class TestCachedMarkdown(unittest.TestCase):
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_valid_cache(self):
+        from jinja2 import Markup
         self.md.cached_convert(self.post, 'text')
         with patch.object(self.md, 'convert') as convert_func:
             html = self.md.cached_convert(self.post, 'text')
             self.assertEqual(html, self.expected_html)
+            self.assertIsInstance(html, Markup)
             self.assertFalse(convert_func.called)
             self.post.text = u"text [[macro]] pass"
             html = self.md.cached_convert(self.post, 'text')

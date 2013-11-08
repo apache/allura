@@ -105,7 +105,7 @@ class ForgeMarkdown(markdown.Markdown):
         if cache.md5 is not None:
             md5 = hashlib.md5(source_text.encode('utf-8')).hexdigest()
             if cache.md5 == md5:
-                return cache.html
+                return h.html.literal(cache.html)
 
         start = time.time()
         html = self.convert(source_text)
