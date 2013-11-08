@@ -184,7 +184,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 u'{body}').format(
                     creator=issue.get_issue_creator(),
                     owner=owner_line,
-                    body=h.plain2markdown(issue.get_issue_description(), preserve_multiple_spaces=True, has_html_entities=True),
+                    body=issue.get_issue_description(),
                 )
         ticket.add_multiple_attachments(issue.get_issue_attachments())
 

@@ -166,7 +166,7 @@ class TestTrackerImporter(TestCase):
             dt.strptime.side_effect = lambda s,f: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'summary')
-            self.assertEqual(ticket.description, '*Originally created by:* creator\n*Originally owned by:* owner\n\nmy \*description\* fool')
+            self.assertEqual(ticket.description, '*Originally created by:* creator\n*Originally owned by:* owner\n\nmy *description* fool')
             self.assertEqual(ticket.status, 'status')
             self.assertEqual(ticket.created_date, 'created_date')
             self.assertEqual(ticket.mod_date, 'mod_date')

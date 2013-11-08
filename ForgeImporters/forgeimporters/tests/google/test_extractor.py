@@ -170,22 +170,24 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self._p_soup.stop()
         self.assertEqual(gpe.get_issue_summary(), 'Test "Issue"')
         assert_equal(gpe.get_issue_description(),
-                'Test *Issue* for testing\n'
+                'Test \\*Issue\\* for testing\n'
                 '\n'
-                '  1. Test List\n'
-                '  2. Item\n'
+                '&nbsp; 1. Test List\n'
+                '&nbsp; 2. Item\n'
                 '\n'
-                '**Testing**\n'
+                '\\*\\*Testing\\*\\*\n'
                 '\n'
-                ' * Test list 2\n'
-                ' * Item\n'
+                ' \\* Test list 2\n'
+                ' \\* Item\n'
                 '\n'
-                '# Test Section\n'
+                '\\# Test Section\n'
                 '\n'
-                '    p = source.test_issue.post()\n'
-                '    p.count = p.count *5 #* 6\n'
-                '    if p.count &gt; 5:\n'
-                '        print "Not &lt; 5 &amp; != 5"\n'
+                '&nbsp;&nbsp;&nbsp; p = source.test\\_issue.post\\(\\)\n'
+                '&nbsp;&nbsp;&nbsp; p.count = p.count \\*5 \\#\\* 6\n'
+                '&nbsp;&nbsp;&nbsp; if p.count &gt; 5:\n'
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
+                '\n'
+                'References: [issue 1](#1), [r2]\n'
                 '\n'
                 'That\'s all'
             )
@@ -252,7 +254,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                     'author.name': 'john...@gmail.com',
                     'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:35:15 2013',
-                    'body': 'Test *comment* is a comment',
+                    'body': 'Test \\*comment\\* is a comment',
                     'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
                     'attachments': ['at2.txt'],
                 },
@@ -260,7 +262,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                     'author.name': 'john...@gmail.com',
                     'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:35:34 2013',
-                    'body': 'Another comment',
+                    'body': 'Another comment with references: [issue 2](#2), [r1]',
                     'updates': {},
                     'attachments': [],
                 },

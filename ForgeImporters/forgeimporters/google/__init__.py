@@ -52,6 +52,25 @@ def _as_text(node, chunks=None):
             _as_text(n, chunks)
     return ''.join(chunks)
 
+def _as_markdown(tag):
+    fragments = []
+    for fragment in tag:
+        if getattr(fragment, 'name', None) == 'a':
+            href = urlparse(fragment['href'])
+            qs = parse_qs(href.query)
+            if not href.netloc and 'id' in qs:
+                fragment = '[%s](#%s)' % (fragment.text, qs['id'][0])
+            elif not href.netloc and 'r' in qs:
+                fragment = '[r%s]' % qs['r'][0]
+            else:
+                fragment = h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+        elif getattr(fragment, 'name', None) == 'i':
+            fragment = '*%s*' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+        else:
+            fragment = h.plain2markdown(str(fragment), preserve_multiple_spaces=True, has_html_entities=True)
+        fragments.append(fragment)
+    return ''.join(fragments).strip()
+
 def csv_parser(page):
     lines = page.readlines()
     if not lines:
@@ -184,7 +203,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return bs.text
 
     def get_issue_description(self):
-        return _as_text(self.page.find(id='hc0').pre).strip()
+        return _as_markdown(self.page.find(id='hc0').pre)
 
     def get_issue_created_date(self):
         return self.page.find(id='hc0').find('span', 'date').get('title')
@@ -267,7 +286,7 @@ class Comment(object):
     def __init__(self, tag):
         self.author = UserLink(tag.find('span', 'author').find(True, 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
-        self.body = _as_text(tag.find('pre')).strip()
+        self.body = _as_markdown(tag.find('pre'))
         self._get_updates(tag)
         self.attachments = _get_attachments(tag)
 
@@ -287,7 +306,7 @@ class Comment(object):
                 u'{updates}'
             ).format(
                 author=self.author,
-                body=h.plain2markdown(self.body, preserve_multiple_spaces=True, has_html_entities=True),
+                body=self.body,
                 updates='\n'.join(
                         '**%s** %s' % (k,v)
                         for k,v in self.updates.items()

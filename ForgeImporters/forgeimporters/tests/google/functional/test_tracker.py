@@ -125,6 +125,8 @@ class TestGCTrackerImporter(TestCase):
                 '&nbsp;&nbsp;&nbsp; if p\\.count &gt; 5:\n'
                 '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
                 '\n'
+                'References: [issue 1](#1), [r2]\n'
+                '\n'
                 'That\'s all'
             )
         self.assertEqual(ticket.status, 'Started')
@@ -178,6 +180,8 @@ class TestGCTrackerImporter(TestCase):
                 '&nbsp;&nbsp;&nbsp; if p.count &gt; 5:\n'
                 '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
                 '\n'
+                'References: [issue 1](#1), [r2]\n'
+                '\n'
                 'That\'s all'
             )
 
@@ -217,7 +221,7 @@ class TestGCTrackerImporter(TestCase):
                     'text': (
                             '*Originally posted by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                             '\n'
-                            'Another comment\n\n'
+                            'Another comment with references: [issue 2](#2), [r1]\n\n'
                         ),
                 },
                 {
