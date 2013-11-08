@@ -202,16 +202,15 @@ class SMTPClient(object):
         self._client = None
 
     def sendmail(self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message,
-                 sender=None, references=None, cc=None):
-        if not addrs: return
-        # We send one message with multiple envelope recipients, so use a generic To: addr
-        # It might be nice to refactor to send one message per recipient, and use the actual To: addr
-        if len(addrs) == 1:
-            message['To'] = AddrHeader(h.really_unicode(addrs[0]))
+                 sender=None, references=None, cc=None, to=None):
+        if not addrs:
+            return
+        if to:
+            message['To'] = AddrHeader(h.really_unicode(to))
         else:
-            message['To'] = Header(reply_to)
+            message['To'] = AddrHeader(reply_to)
         message['From'] = AddrHeader(fromaddr)
-        message['Reply-To'] = Header(reply_to)
+        message['Reply-To'] = AddrHeader(reply_to)
         message['Subject'] = Header(subject)
         message['Message-ID'] = Header('<' + message_id + u'>')
         if sender:

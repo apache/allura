@@ -278,7 +278,7 @@ class TestMailTasks(unittest.TestCase):
             body = body.split('\n')
             assert_in('From: noreply@in.sf.net', body)
 
-    def test_email_sender_header(self):
+    def test_email_sender_to_headers(self):
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendsimplemail(
@@ -294,13 +294,14 @@ class TestMailTasks(unittest.TestCase):
             body = body.split('\n')
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Sender: tickets@test.p.sf.net', body)
+            assert_in('To: test@mail.com', body)
 
             _client.reset_mock()
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
                 destinations=[ str(c.user._id) ],
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=u'123@tickets.test.p.sf.net',
                 subject=u'Test subject',
                 sender=u'tickets@test.p.sf.net',
                 message_id=h.gen_message_id())
@@ -309,6 +310,7 @@ class TestMailTasks(unittest.TestCase):
             body = body.split('\n')
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Sender: tickets@test.p.sf.net', body)
+            assert_in('To: 123@tickets.test.p.sf.net', body)
 
     def test_email_references_header(self):
         c.user = M.User.by_username('test-admin')
