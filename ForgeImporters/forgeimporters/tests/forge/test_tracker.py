@@ -53,6 +53,7 @@ class TestTrackerImporter(TestCase):
                 'tickets': [
                         {
                                 'reported_by': 'rb1',
+                                'assigned_to': 'at1',
                                 'ticket_num': 1,
                                 'description': 'd1',
                                 'created_date': '2013-09-01',
@@ -68,6 +69,7 @@ class TestTrackerImporter(TestCase):
                             },
                         {
                                 'reported_by': 'rb2',
+                                'assigned_to': 'at2',
                                 'ticket_num': 100,
                                 'description': 'd2',
                                 'created_date': '2013-09-03',
@@ -83,9 +85,14 @@ class TestTrackerImporter(TestCase):
                             },
                     ],
             })
-        reporter = mock.Mock()
-        importer.get_user = mock.Mock(return_value=reporter)
-        importer.annotate = mock.Mock(side_effect=['ad1', 'ad2'])
+        anonymous = mock.Mock(_id=None, is_anonymous=lambda:True)
+        reporter = mock.Mock(is_anonymous=lambda:False)
+        author = mock.Mock(is_anonymous=lambda:False)
+        importer.get_user = mock.Mock(side_effect=[
+                reporter, author,
+                anonymous, anonymous,
+            ])
+        importer.annotate = mock.Mock(side_effect=['ad1', 'aad1', 'ad2', 'aad2'])
         importer.process_comments = mock.Mock()
         importer.process_bins = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
@@ -112,8 +119,10 @@ class TestTrackerImporter(TestCase):
                 foo='bar',
             )
         self.assertEqual(importer.annotate.call_args_list, [
-                mock.call('d1', reporter, 'rb1'),
-                mock.call('d2', reporter, 'rb2'),
+                mock.call('d1', author, 'at1', label=' owned'),
+                mock.call('ad1', reporter, 'rb1', label=' created'),
+                mock.call('d2', anonymous, 'at2', label=' owned'),
+                mock.call('ad2', anonymous, 'rb2', label=' created'),
             ])
         self.assertEqual(TM.Ticket.call_args_list, [
                 mock.call(
@@ -123,7 +132,7 @@ class TestTrackerImporter(TestCase):
                                 'app_config_id': 'orig_id',
                                 'source_id': 1,
                             },
-                        description='ad1',
+                        description='aad1',
                         created_date=datetime(2013, 9, 1),
                         mod_date=datetime(2013, 9, 2),
                         ticket_num=1,
@@ -134,6 +143,7 @@ class TestTrackerImporter(TestCase):
                         votes_down=1,
                         votes_up=2,
                         votes=1,
+                        assigned_to_id=author._id,
                     ),
                 mock.call(
                         app_config_id=app.config._id,
@@ -142,7 +152,7 @@ class TestTrackerImporter(TestCase):
                                 'app_config_id': 'orig_id',
                                 'source_id': 100,
                             },
-                        description='ad2',
+                        description='aad2',
                         created_date=datetime(2013, 9, 3),
                         mod_date=datetime(2013, 9, 4),
                         ticket_num=100,
@@ -153,6 +163,7 @@ class TestTrackerImporter(TestCase):
                         votes_down=3,
                         votes_up=5,
                         votes=2,
+                        assigned_to_id=None,
                     ),
             ])
         self.assertEqual(tickets[0].private, False)
@@ -211,16 +222,21 @@ class TestTrackerImporter(TestCase):
         self.assertEqual(importer.get_user('foo'), 'bar')
         self.assertEqual(M.User.anonymous.call_count, 0)
 
+        self.assertEqual(importer.get_user(None), 'anon')
+        self.assertEqual(M.User.anonymous.call_count, 1)
+
         M.User.by_username.return_value = None
         self.assertEqual(importer.get_user('foo'), 'anon')
-        self.assertEqual(M.User.anonymous.call_count, 1)
+        self.assertEqual(M.User.anonymous.call_count, 2)
 
     def test_annotate(self):
         importer = tracker.ForgeTrackerImporter()
         user = mock.Mock(_id=1)
+        user.is_anonymous.return_value = False
         self.assertEqual(importer.annotate('foo', user, 'bar'), 'foo')
-        user._id = None
+        user.is_anonymous.return_value = True
         self.assertEqual(importer.annotate('foo', user, 'bar'), '*Originally by:* bar\n\nfoo')
+        self.assertEqual(importer.annotate('foo', user, None), 'foo')
 
     @mock.patch.object(tracker, 'File')
     @mock.patch.object(tracker, 'c')
