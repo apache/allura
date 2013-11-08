@@ -104,7 +104,7 @@
         <div class="grid-18">
            {{user.get_pref('display_name')}}'s account(s):
            <ul>
-             {% for i in user.get_pref('socialnetworks') %}            
+             {% for i in user.get_pref('socialnetworks') %}
                 <li>{{i.socialnetwork}}: <a href="{{i.accounturl}}">{{i.accounturl}}</a></li>
              {% endfor %}
            </ul>
@@ -118,7 +118,7 @@
         <div class="grid-18">
            {{user.get_pref('display_name')}}'s website(s):
            <ul>
-             {% for i in user.get_pref('webpages') %}            
+             {% for i in user.get_pref('webpages') %}
                 <li><a href="{{i}}">{{i}}</a></li>
              {% endfor %}
            </ul>
@@ -132,7 +132,7 @@
         <div class="grid-18">
            {{user.get_pref('display_name')}}'s telephone number(s):
            <ul>
-             {% for i in user.get_pref('telnumbers') %}            
+             {% for i in user.get_pref('telnumbers') %}
                 <li>{{i}}</li>
              {% endfor %}
            </ul>
@@ -153,14 +153,14 @@
 
           {% if c.user.get_pref('timezone') %}
           <div class="grid-18" id="timeslotsconverted" style="visibility: visible; display:none;">
-             {{user.get_pref('display_name')}}'s availability time-slots. 
+             {{user.get_pref('display_name')}}'s availability time-slots.
              <div style="float:right;">
                See timeslots in:
-               <a href="JavaScript:void(0);" onclick="changeTimezone('utc')">UTC</a> | 
-               <a href="JavaScript:void(0);" onclick="changeTimezone('local')"> 
+               <a href="JavaScript:void(0);" onclick="changeTimezone('utc')">UTC</a> |
+               <a href="JavaScript:void(0);" onclick="changeTimezone('local')">
                   {{user.get_pref('display_name')}}'s local time
                </a> |
-               <b>Your local time</b> 
+               <b>Your local time</b>
              </div>
              <ul>
                {% for i in user.get_localized_availability(c.user.get_pref('timezone')) %}
@@ -171,13 +171,13 @@
           {% endif %}
 
           <div class="grid-18" id="timeslotsutc" style="visibility: visible; display:block;">
-             {{user.get_pref('display_name')}}'s availability time-slots. 
+             {{user.get_pref('display_name')}}'s availability time-slots.
              <div style="float:right;">
                See timeslots in:
-               <b>UTC</b> | 
-               <a href="JavaScript:void(0);" onclick="changeTimezone('local')"> 
+               <b>UTC</b> |
+               <a href="JavaScript:void(0);" onclick="changeTimezone('local')">
                   {{user.get_pref('display_name')}}'s local time
-               </a> 
+               </a>
                {% if c.user.get_pref('timezone') %} |
                   <a href="JavaScript:void(0);" onclick="changeTimezone('converted')">
                     Your local time
@@ -192,13 +192,13 @@
           </div>
 
           <div class="grid-18" id="timeslotslocal" style="visibility: visible; display:none;">
-             {{user.get_pref('display_name')}}'s availability time-slots. 
+             {{user.get_pref('display_name')}}'s availability time-slots.
              <div style="float:right;">
                See timeslots in:
-               <a href="JavaScript:void(0);" onclick="changeTimezone('utc')">UTC</a> | 
-               <b> 
+               <a href="JavaScript:void(0);" onclick="changeTimezone('utc')">UTC</a> |
+               <b>
                   {{user.get_pref('display_name')}}'s local time
-               </b> 
+               </b>
                {% if c.user.get_pref('timezone') %} |
                   <a href="JavaScript:void(0);" onclick="changeTimezone('converted')">
                     Your local time
@@ -228,11 +228,12 @@
         </div>
       </div>
     {% endif %}
- {% if has_email %}
+
+    {% if user.get_pref('email_address') and c.user.get_pref('email_address') %}
     <div class="grid-24">
-        <b><a href="send_message">Send me a message</a></b>
+      <b><a href="send_message">Send me a message</a></b>
     </div>
-  {% endif %}
+    {% endif %}
   </div><!-- end of Personal data section -->
   <div class="grid-24">
     <b>Current {{user.get_pref('display_name')}}'s skills list</b>

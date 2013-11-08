@@ -36,7 +36,8 @@
     {%if not expire_time%}
         {{c.form.display(method = 'POST', action='send_user_message', user=user)}}
     {% else %}
-        <h2>Sorry, you can send an email after {{expire_time}}</h2>
+      <h2>Sorry, messaging is rate-limited.</h2>
+      <p>You can send another message in: {{expire_time}}</p>
     {% endif %}
     </div>
 {% endblock %}

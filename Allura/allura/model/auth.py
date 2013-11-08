@@ -27,13 +27,12 @@ from email import header
 from hashlib import sha256
 import uuid
 from pytz import timezone
-from datetime import timedelta, date, datetime, time
+from datetime import timedelta, datetime, time
 
 import iso8601
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import flash
 
 from ming import schema as S
 from ming import Field, collection
@@ -334,7 +333,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         end_time=dict(h=int, m=int))])
     localization=FieldProperty(dict(city=str,country=str))
     timezone=FieldProperty(str)
-    send_emails_times=FieldProperty([S.DateTime])
+    sent_user_message_times=FieldProperty([S.DateTime])
     inactiveperiod=FieldProperty([dict(
         start_date=S.DateTime,
         end_date=S.DateTime)])
@@ -354,26 +353,46 @@ class User(MappedClass, ActivityNode, ActivityObject):
     #Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
 
-    def check_send_emails_times(self, time_interval, max_messages):
-        times = []
-        time_interval = timedelta(seconds=int(time_interval))
-        for t in self.send_emails_times:
-            if t + time_interval > datetime.utcnow():
-                times.append(t)
-        self.send_emails_times = times
-        return len(times) < int(max_messages)
+    def can_send_user_message(self):
+        """Return true if User is permitted to send a mesage to another user.
+
+        Returns False if User has exceeded the user message rate limit, in
+        which case another message may not be sent until sufficient time has
+        passed to clear the limit.
+
+        """
+        now = datetime.utcnow()
+        time_interval = timedelta(seconds=g.user_message_time_interval)
+        self.sent_user_message_times = [t for t in self.sent_user_message_times
+                if t + time_interval > now]
+        return len(self.sent_user_message_times) < g.user_message_max_messages
+
+    def time_to_next_user_message(self):
+        """Return a timedelta of the time remaining before this user can send
+        another user message.
+
+        Returns zero if user message can be sent immediately.
+
+        """
+        if self.can_send_user_message():
+            return 0
+        return self.sent_user_message_times[0] + \
+                timedelta(seconds=g.user_message_time_interval) - \
+                datetime.utcnow()
 
     def send_user_message(self, user, subject, message, cc):
+        """Send a user message (email) to ``user``.
+
+        """
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=user.get_pref('email_address'),
-            fromaddr=c.user.get_pref('email_address'),
-            reply_to=c.user.get_pref('email_address'),
+            fromaddr=self.get_pref('email_address'),
+            reply_to=self.get_pref('email_address'),
             message_id=h.gen_message_id(),
             subject=subject,
             text=message,
             cc=cc)
-        self.send_emails_times.append(datetime.utcnow())
-        flash("email sent")
+        self.sent_user_message_times.append(datetime.utcnow())
 
     @property
     def activity_name(self):
