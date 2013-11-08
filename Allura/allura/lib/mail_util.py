@@ -217,6 +217,7 @@ class SMTPClient(object):
             message['Sender'] = AddrHeader(sender)
         if cc:
             message['CC'] = AddrHeader(cc)
+            addrs.append(cc)
         if in_reply_to:
             if not isinstance(in_reply_to, basestring):
                 raise TypeError('Only strings are supported now, not lists')
