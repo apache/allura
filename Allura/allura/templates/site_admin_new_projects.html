@@ -34,6 +34,7 @@
     <label for="end-dt">To: </label><input type="text" name="end-dt" id="end-dt" value="{{ window_end.strftime('%Y/%m/%d %H:%M:%S') }}">
     </div>
     <div class="grid-3"><input type="submit" value="Filter"></div>
+    {{lib.csrf_token()}}
   </form>
   </div>
   {{ _paging() }}

@@ -47,6 +47,7 @@
 	</p>
     <input type="submit" name="invite" value="Invite!"/>
     <input type="submit" name="uninvite" value="Cancel Invitation!"/>
+    {{lib.csrf_token()}}
   </form>
 
 
@@ -62,5 +63,6 @@
       {% endfor %}
     </select>
     <input type="submit" value="Evict!"/>
+    {{lib.csrf_token()}}
   </form>
 {% endblock %}

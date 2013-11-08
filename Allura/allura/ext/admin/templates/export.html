@@ -56,6 +56,7 @@
       </div>
       {% endfor %}
       <p><div class="grid-19"><input type="submit" value="Export" {% if status == 'busy' %}disabled{% endif %}></div></p>
+      {{lib.csrf_token()}}
     </form>
   {% else %}
     There are no exportable tools in your project.

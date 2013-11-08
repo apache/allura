@@ -86,6 +86,7 @@
         <a href="#" class="btn link cancel_edit">Cancel</a>
       {% endif %}
     </div>
+    {{lib.csrf_token()}}
   </form>
 {% endblock %}
 

@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="post" action="{{action}}">
     {% if show_subject %}
     <div class="grid-19">&nbsp;</div>
@@ -46,4 +47,5 @@
     </div>
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
+  {{lib.csrf_token()}}
 </form>

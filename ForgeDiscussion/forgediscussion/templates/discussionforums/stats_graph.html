@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends g.theme.master %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / Stats{% endblock %}
 
@@ -37,6 +38,7 @@
           >{{forum.name}}</option>
     {% endfor %}
   </select>
+  {{lib.csrf_token()}}
 </form>
 
 <div id="stats-viz-container" class="project_stats">

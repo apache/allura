@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="GET" action=".">
   <div class="grid-10">
     <input type="text" name="q" value="{{q}}" class="search-query" title="Search App"/>
@@ -52,6 +53,7 @@
       <input id="search-history" type="checkbox" name="history"{% if history %} checked{% endif %}>
     {% endif %}
   </div>
+  {{lib.csrf_token()}}
 </form>
 <div style="clear:both">&nbsp;</div>
 {% if search_error %}

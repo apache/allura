@@ -37,5 +37,6 @@
               {% endfor %}
             </select>
             <input type="submit" value="Join Neighborhood"/>
+            {{lib.csrf_token()}}
           </form>
 {% endblock %}

@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div>
   <form method="post" action="{{action}}"
         enctype="multipart/form-data">
@@ -33,5 +34,6 @@
     <input type="file" class="text attachment_form_fields" style="display:none" multiple="True" name="{{att_name}}" {% if att_id %}id="{{att_id}}"{% endif %}/>
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
+    {{lib.csrf_token()}}
   </form>
 </div>

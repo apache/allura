@@ -79,6 +79,7 @@
     {% if task.state in ['error', 'complete'] %}
     <form id="resubmit-task-form" action="../resubmit/{{task._id}}" method="POST">
         <input type="submit" value="Re-Submit Task" />
+        {{lib.csrf_token()}}
     </form>
     {% endif %}
     <h2>Task Details</h2>

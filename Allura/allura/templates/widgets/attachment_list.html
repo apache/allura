@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div>
   {% if attachments %}
     {% set attachments = attachments|list %}
@@ -31,6 +32,7 @@
             <form method="post" action="{{att.url()}}">
               <input type="hidden" name="delete" value="True"/>
               <input type="submit" value="Delete File"/>
+              {{lib.csrf_token()}}
             </form>
             {% endif %}
           </div>
@@ -48,6 +50,7 @@
             <input type="submit" value="Delete File"/>
           </span>
           {% endif %}
+          {{lib.csrf_token()}}
         </form>
       </div>
     {% endfor %}

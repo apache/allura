@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}       
 <form method="post" action="{{action}}">
   {% for field in hidden_fields -%}
     {% set ctx=widget.context_for(field) -%}
@@ -33,4 +34,5 @@
     <input type="submit" value="Save"/>
     <input type="button" value="Cancel" id="cancel_new_bin"/>
   </div>
+  {{lib.csrf_token()}}
 </form>

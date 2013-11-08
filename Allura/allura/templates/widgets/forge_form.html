@@ -54,5 +54,5 @@
   {% endif %}
   {% if widget.antispam %}{% for fld in g.antispam.extra_fields() %}
   {{fld}}{% endfor %}{% endif %}
-  {{lib.csrf_token()}} 
+  {{lib.csrf_token()}}
 </form>

@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form {{widget.j2_attrs({'name':name, 'id':id, 'method':method, 'action':action, 'enctype':enctype})}}
       {{attrs|default({}, true)|xmlattr}}>
   <fieldset class="grid-19">
@@ -65,4 +66,5 @@
       {% endfor %}
     </tbody>
   </table>
+  {{lib.csrf_token()}}
 </form>

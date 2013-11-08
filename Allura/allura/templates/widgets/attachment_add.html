@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="post"
       action="{{action}}"
       enctype="multipart/form-data">
@@ -24,4 +25,5 @@
           <input type="file" class="text" name="{{name}}" multiple="True" id="{{name}}" style="margin-left:0"/><br/>
           <input type="submit" value="Attach files"/>
       </div>
+      {{lib.csrf_token()}}
 </form>

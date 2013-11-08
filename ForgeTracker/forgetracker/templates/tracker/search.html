@@ -74,6 +74,7 @@
     <input type="button" value="Update Search" id="save_search"/>
   {% endif %}
   <input type="submit" value="Search"/>
+  {{lib.csrf_token()}}
 </form>
 <a href="{{tg.url(c.app.url + 'search_help/')}}" target="_blank" class="btn search_help_modal"><b data-icon="{{g.icons['help'].char}}" class="ico {{g.icons['help'].css}}"></b> Help</a>
 

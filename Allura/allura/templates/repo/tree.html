@@ -59,6 +59,7 @@ form.tarball button:hover {
 <form class="tarball" action="{{ tarball_url }}" method="post">
   <input type="hidden" name="path" value="{{ path or '' }}" />
   <button><b data-icon="{{g.icons.folder.char}}" class="ico {{g.icons.folder.css}}" title="Snapshot"></b> Download Snapshot</button>
+  {{lib.csrf_token()}}
 </form>
 {% endif %}
 

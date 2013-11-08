@@ -17,6 +17,7 @@
        under the License.
 -#}
 {% extends 'forgewiki:templates/wiki/master.html' %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
@@ -57,6 +58,7 @@
     <input type="submit" value="Save">
     <input type="reset" value="Cancel">
 	</div>
+    {{lib.csrf_token()}}
 </form>
 <div class="grid-19">
   {{c.attachment_list.display(attachments=page.attachments, edit_mode=page_exists and h.has_access(page, 'edit')())}}

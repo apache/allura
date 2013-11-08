@@ -16,6 +16,8 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+
 {% set app = app or c.app %}
 <div>
     <h1 id="short-url-form-title" style="display:none"><span id="short-url-form-action-label">Add</span> Short URL</h1>
@@ -35,6 +37,7 @@
         <div class="grid-13"><div class="grid-13">&nbsp;</div>
         <input type="submit" value="Save">
         <a href="#" class="close">Cancel</a></div>
+        {{lib.csrf_token()}}
     </form>
 </div>
 

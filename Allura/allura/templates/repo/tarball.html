@@ -91,6 +91,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
       <p>We're having trouble finding that snapshot. Would you like to resubmit?</p>
       <input type="hidden" name="path" value="{{path}}" />
       <input type="submit" value="Resubmit Snapshot Request" />
+      {{lib.csrf_token()}}
     </form>
 </div>
 {% endblock %}

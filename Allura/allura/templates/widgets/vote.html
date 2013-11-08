@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set can_vote = c.user and c.user != c.user.anonymous()
                   and h.has_access(artifact, 'post')() %}
 {% set voted = artifact.user_voted(c.user) %}
@@ -44,6 +45,7 @@
   {% if can_vote %}
   <form action="{{ action }}" method="POST">
     {# csrf protection will be automatically inserted here (_session_id field) #}
+    {{lib.csrf_token()}}
   </form>
   {% endif %}
 </div>

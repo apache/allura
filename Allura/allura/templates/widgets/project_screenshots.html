@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set screenshots = project.get_screenshots() %}
 {% if screenshots.__len__() > 1 %}
 <p>Drag screenshots to sort.</p>
@@ -36,10 +37,12 @@
         <input type="hidden" value="{{ss._id}}" name="id">
         <input type="text" value="{{ss.caption}}" name="caption"><br>
         <input type="submit" value="Save Changes">
+        {{lib.csrf_token()}}
       </form>
       <form action="delete_screenshot" method="post">
         <input type="hidden" value="{{ss._id}}" name="id">
         <input type="submit" value="Delete">
+        {{lib.csrf_token()}}
       </form>
     </div>
     {% endif %}

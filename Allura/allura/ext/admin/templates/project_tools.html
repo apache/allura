@@ -73,6 +73,7 @@
     <div class="grid-13">
       <input type="submit" value="Save" name="new.install"> <a href="#" class="close btn link">Cancel</a>
     </div>
+    {{lib.csrf_token()}}
   </form>
   {{c.install_modal.display(content='<h1>Install <span id="install_tool_label">Tool</span></h1>')}}
 
@@ -108,6 +109,7 @@
                         {% if mount['ac'].load().uninstallable %}
                           <a href="#" class="mount_delete" data-mount-point="{{ mount['ac'].options.mount_point }}">Delete</a>
                         {% endif %}
+                        {{lib.csrf_token()}}
                       </form>
                     </li>
                     {% endif %}
@@ -131,6 +133,7 @@
                                  value="{{mount['sub'].shortname}}"/>
                           <input name="subproject-{{loop.index0}}.delete" type="hidden" value="Delete"/>
                           <a href="#" class="mount_delete" data-mount-point="{{ mount['sub'].shortname }}">Delete</a>
+                          {{lib.csrf_token()}}
                       </form>
                     </li>
                 </ul>
@@ -147,6 +150,7 @@
   <div class="grid-13">
     <input type="button" value="Delete" class="continue_delete"> <input type="button" value="Cancel" class="cancel_delete close">
   </div>
+  {{lib.csrf_token()}}
 </form>
 {{c.admin_modal.display(content='<h1 id="popup_title"></h1><div id="popup_contents"></div>')}}
 {{c.mount_delete.display(content='<h1>Confirm Delete</h1>')}}
@@ -158,6 +162,7 @@
         <input name="grouping_threshold" value="{{c.project.get_tool_data('allura', 'grouping_threshold', 1)}}"/>
     </label>
     <br/><input type="submit" value="Change"/>
+    {{lib.csrf_token()}}
 </form>
 {% endblock %}
 

@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form id="update-values" method="post" action="../update_tickets">
     {% for field in globals.custom_fields %}
       {% if field.name == '_milestone' %}
@@ -108,4 +109,5 @@
     </div>
     <div class="grid-12" id="result"></div>
     <input name="__search" type="hidden" value="" id="id_search" />
+    {{lib.csrf_token()}}
 </form>

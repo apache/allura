@@ -116,6 +116,7 @@
         <div class="grid-18">
         {{lib.submit_button('Save Changes')}}
         </div>
+        {{lib.csrf_token()}}
       </form>
   </div>
 
@@ -146,12 +147,14 @@
         </p>
         <form method="POST" action="del_api_token" class="grid-18">
           <input type="submit" value="Delete API Token">
+          {{lib.csrf_token()}}
         </form>
       {% else %}
         <p>No API token generated</p>
       {% endif %}
       <form method="POST" action="gen_api_token" class="grid-18">
         <input type="submit" value="(Re)generate API Token">
+        {{lib.csrf_token()}}
       </form>
   </div>
   {% endif %}

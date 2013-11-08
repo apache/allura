@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <h1>Block User</h1>
 <form action="block_user" method="POST">
     <label class="grid-13">User Name</label>
@@ -28,4 +29,5 @@
     <div class="grid-13">&nbsp;</div>
     <input type="submit" value="Save">
     <a href="#" class="close">Cancel</a>
+    {{lib.csrf_token()}}
 </form>

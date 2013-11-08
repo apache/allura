@@ -16,7 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{action}}">
     <input type="hidden" name="delete" value="True"/>
     <a href="" title="Flag as inappropriate or spam" class="flag_post ico-l"><b data-icon="{{g.icons['flag'].char}}" class="ico {{g.icons['flag'].css}}"></b> <span>Flag</span></a>
+    {{lib.csrf_token()}}
 </form>

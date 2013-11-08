@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{c.project.url()}}admin/{{app.config.options.mount_point}}/set_exfeed">
   <label class="grid-13">Existing external feeds:</label>
   <div class="grid-13">
@@ -42,4 +43,5 @@
       <input type="submit" value="Save"/>
     </div>
   {% endif %}
+  {{lib.csrf_token()}}
 </form>

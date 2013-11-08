@@ -57,6 +57,7 @@
                       <td>
                         <form action="{{award.longurl()}}/delete" method="post">
                           <input type="submit" value="Delete"/>
+                          {{lib.csrf_token()}}
                         </form>
                     </tr>
                   {% endfor %}
@@ -94,6 +95,7 @@
                 </tr>
               </tbody>
             </table>
+            {{lib.csrf_token()}}
           </form>
 
           {% if awards_count > 0 %}
@@ -126,6 +128,7 @@
                   </tr>
                 </tbody>
               </table>
+              {{lib.csrf_token()}}
             </form>
           </p>
           {% endif %}
@@ -150,6 +153,7 @@
                       <td>
                         <form action="{{grant.longurl()}}/revoke" method="post">
                           <input type="submit" value="Revoke"/>
+                          {{lib.csrf_token()}}
                         </form>
                     </tr>
                   {% endfor %}

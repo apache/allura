@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="update" enctype="multipart/form-data" id="metadata_form">
   <div class="grid-9">
     {{ widget.display_label(widget.fields.name) }}
@@ -170,4 +171,5 @@
   <div class="grid-15">
     <input type="submit" value="Save">
   </div>
+  {{lib.csrf_token()}}
 </form>

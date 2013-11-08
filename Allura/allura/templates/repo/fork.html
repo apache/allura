@@ -47,5 +47,6 @@
         <input type="submit" value="Fork"/>
       </div>
     {% endif %}
+    {{lib.csrf_token()}}
 </form>
 {% endblock %}

@@ -31,6 +31,7 @@
       <div class="grid-18"><input type="text" id="display_name" name="display_name"/></div>
       <label class="grid-4">&nbsp;</label>
       <div class="grid-18"><input type="submit" value="Setup Account"/></div>
+      {{lib.csrf_token()}}
     </form>
   </div>
 {% endblock %}

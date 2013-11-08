@@ -127,4 +127,5 @@
     {{widget.display_field_by_name('submit')|safe}}
     <a href="{{c.app.url}}" class="btn link cancel_form">Cancel</a>
   </div>
+  {{lib.csrf_token()}}
 </form>

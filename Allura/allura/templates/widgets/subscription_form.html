@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div {{attrs|default({}, true)|xmlattr}} class="discussion_subscription_form">
   <div class="clear"></div>
   <div class="pagination_size">{{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}</div>
@@ -26,6 +27,7 @@
     <input type="submit" value="Update email subscriptions"/>
     {% endif %}
     </p>
+    {{lib.csrf_token()}}
   </form>
   {{widget.fields['page_list'].display(limit=limit, page=page, count=count)}}
   {{widget.fields['page_size'].display(limit=limit, page=page, count=count)}}

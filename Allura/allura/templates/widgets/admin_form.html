@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="{{method}}"
        {% if enctype %}enctype="{{enctype}}"{% endif %}
       action="{{action}}">
@@ -42,4 +43,5 @@
     {% endfor %}
     <a href="#" class="close">Cancel</a>
   </div>
+  {{lib.csrf_token()}}
 </form>

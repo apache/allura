@@ -16,20 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="{{action}}">
     <input type="hidden" name="delete" value="True"/>
     <a href="" class="moderate_post little_link"><span>Delete</span></a>
+    {{lib.csrf_token()}}
 </form>
 <br/>
 {%if status == 'pending'%}
     <form method="POST" class="moderate_approve" action="{{action}}">
         <input type="hidden" name="approve" value="True"/>
         <a href="" class="moderate_post little_link"><span>Approve</span></a>
+        {{lib.csrf_token()}}
     </form>
     <br/>
 {%endif%}
     <form method="POST" class="moderate_spam" action="{{action}}">
         <input type="hidden" name="spam" value="True"/>
         <a href="" class="moderate_post little_link"><span>Spam</span></a>
+        {{lib.csrf_token()}}
     </form>
 <br/>
