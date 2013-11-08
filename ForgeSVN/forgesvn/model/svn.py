@@ -715,6 +715,9 @@ class SVNImplementation(M.RepositoryImplementation):
         rmtree(dest, ignore_errors=True)
         path = os.path.join(self._url, path)
         try:
+            # need to set system locale to handle all symbols in filename
+            import locale
+            locale.setlocale(locale.LC_ALL, '')
             self._svn.export(path,
                              dest,
                              revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit),

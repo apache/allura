@@ -96,13 +96,13 @@ class TestRootController(SVNTestController):
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
         data = json.loads(resp.body);
-        assert data['max_row'] == 4
+        assert data['max_row'] == 5
         assert data['next_column'] == 1
         for val in data['built_tree'].values():
             if val['url'] == '/p/test/src/1/':
                 assert val['short_id'] == '[r1]'
                 assert val['column'] == 0
-                assert val['row'] == 4
+                assert val['row'] == 5
                 assert val['message'] == 'Create readme'
 
     def test_feed(self):
@@ -203,6 +203,21 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tarball_status')
         assert '{"status": "ready"}' in r
         r = self.app.get('/src/3/tarball')
+        assert 'Your download will begin shortly' in r
+
+    @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
+    def test_tarball_cyrillic(self):
+        r = self.app.get('/src/6/tree/')
+        assert 'Download Snapshot' in r
+        r = self.app.post('/src/6/tarball').follow()
+        assert 'Checking snapshot status...' in r
+        r = self.app.get('/src/6/tarball')
+        assert 'Checking snapshot status...' in r
+        M.MonQTask.run_ready()
+        ThreadLocalORMSession.flush_all()
+        r = self.app.get('/src/6/tarball_status')
+        assert '{"status": "ready"}' in r
+        r = self.app.get('/src/6/tarball')
         assert 'Your download will begin shortly' in r
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')

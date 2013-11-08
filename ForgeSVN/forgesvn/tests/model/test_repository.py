@@ -81,19 +81,18 @@ class TestNewRepo(unittest.TestCase):
         self.rev.author_url
         self.rev.committer_url
         assert self.rev.tree._id == self.rev.tree_id
-        assert self.rev.summary == self.rev.message.splitlines()[0]
-        assert self.rev.shorthand_id() == '[r5]'
+        assert self.rev.shorthand_id() == '[r6]'
         assert self.rev.symbolic_ids == ([], [])
         assert self.rev.url() == (
-            '/p/test/src/5/')
+            '/p/test/src/6/')
         all_cis = list(self.repo.log(self.rev._id))
-        assert len(all_cis) == 5
+        assert len(all_cis) == 6
         self.rev.tree.ls()
         assert self.rev.tree.readme() == (
             'README', 'This is readme\nAnother Line\n')
         assert self.rev.tree.path() == '/'
         assert self.rev.tree.url() == (
-            '/p/test/src/5/tree/')
+            '/p/test/src/6/tree/')
         self.rev.tree.by_name['README']
         assert self.rev.tree.is_blob('README') == True
         assert self.rev.tree['a']['b']['c'].ls() == []
@@ -222,72 +221,94 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
 
     def test_log_id_only(self):
         entries = list(self.repo.log(id_only=True))
-        assert_equal(entries, [5, 4, 3, 2, 1])
+        assert_equal(entries, [6, 5, 4, 3, 2, 1])
 
     def test_log(self):
         entries = list(self.repo.log(id_only=False))
         assert_equal(entries, [
-            {'authored': {'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
-                          'email': '',
-                          'name': u'rick446'},
-             'committed': {'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
-                           'email': '',
-                           'name': u'rick446'},
-             'id': 5,
-             'message': u'Copied a => b',
-             'parents': [4],
+            {'parents': [5],
              'refs': ['HEAD'],
-             'size': 0,
-             'rename_details':{}},
-            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
-                          'email': '',
-                          'name': u'rick446'},
-             'committed': {'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
-                           'email': '',
-                           'name': u'rick446'},
-             'id': 4,
+             'committed': {
+                 'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
+                 'name': u'coldmind', 'email': ''},
+             'message': u'',
+             'rename_details': {},
+             'id': 6,
+             'authored': {
+                 'date': datetime(2013, 11, 8, 13, 38, 11, 152821),
+                 'name': u'coldmind',
+                 'email': ''
+             }, 'size': 0},
+            {'parents': [4],
+             'refs': [],
+             'committed': {
+                 'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
+                 'name': u'rick446',
+                 'email': ''},
+             'message': u'Copied a => b',
+             'rename_details': {},
+             'id': 5,
+             'authored': {
+                 'date': datetime(2010, 11, 18, 20, 14, 21, 515743),
+                 'name': u'rick446',
+                 'email': ''},
+             'size': 0},
+            {'parents': [3],
+             'refs': [],
+             'committed': {
+                 'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
+                 'name': u'rick446',
+                 'email': ''},
              'message': u'Remove hello.txt',
-             'parents': [3],
+             'rename_details': {},
+             'id': 4,
+             'authored': {
+                 'date': datetime(2010, 10, 8, 15, 32, 59, 383719),
+                 'name': u'rick446',
+                 'email': ''},
+             'size': 0},
+            {'parents': [2],
              'refs': [],
-             'size': 0,
-             'rename_details':{}},
-            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
-                          'email': '',
-                          'name': u'rick446'},
-             'committed': {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
-                           'email': '',
-                           'name': u'rick446'},
-             'id': 3,
+             'committed': {
+                 'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                 'name': u'rick446',
+                 'email': ''},
              'message': u'Modify readme',
-             'parents': [2],
+             'rename_details': {},
+             'id': 3,
+             'authored':
+                 {'date': datetime(2010, 10, 8, 15, 32, 48, 272296),
+                  'name': u'rick446',
+                  'email': ''},
+             'size': 0},
+            {'parents': [1],
              'refs': [],
-             'size': 0,
-             'rename_details':{}},
-            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
-                          'email': '',
-                          'name': u'rick446'},
-             'committed': {'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
-                           'email': '',
-                           'name': u'rick446'},
-             'id': 2,
+             'committed': {
+                 'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
+                 'name': u'rick446',
+                 'email': ''},
              'message': u'Add path',
-             'parents': [1],
+             'rename_details': {},
+             'id': 2,
+             'authored': {
+                 'date': datetime(2010, 10, 8, 15, 32, 36, 221863),
+                 'name': u'rick446',
+                 'email': ''},
+             'size': 0},
+            {'parents': [],
              'refs': [],
-             'size': 0,
-             'rename_details':{}},
-            {'authored': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
-                          'email': '',
-                          'name': u'rick446'},
-             'committed': {'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
-                           'email': '',
-                           'name': u'rick446'},
-             'id': 1,
+             'committed': {
+                 'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                 'name': u'rick446',
+                 'email': ''},
              'message': u'Create readme',
-             'parents': [],
-             'refs': [],
-             'size': 0,
-             'rename_details':{}},
-            ])
+             'rename_details': {},
+             'id': 1,
+             'authored': {
+                 'date': datetime(2010, 10, 8, 15, 32, 7, 238375),
+                 'name': u'rick446',
+                 'email': ''},
+             'size': 0}])
 
     def test_log_file(self):
         entries = list(self.repo.log(path='/README', id_only=False))
@@ -575,7 +596,7 @@ class TestSVNRev(unittest.TestCase):
     def test_log(self):
         # path only
         commits = list(self.repo.log(self.repo.head, id_only=True))
-        assert_equal(commits, [5, 4, 3, 2, 1])
+        assert_equal(commits, [6, 5, 4, 3, 2, 1])
         commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
         assert_equal(commits, [3, 1])
         commits = list(self.repo.log(1, 'README', id_only=True))
