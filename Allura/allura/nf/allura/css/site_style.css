@@ -2002,9 +2002,14 @@ nav .ico {
 .pad h2.dark small {
   text-transform: none;
   position: absolute;
-  right: 5px;
+  right: 0px;
   top: 5px;
+  padding-right: 5px;
   text-align: center;
+  background-color: #555555;
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
+  background-image: -moz-linear-gradient(top, #666666 0%, #555555 100%);
+  background-image: linear-gradient(top, #666666 0%, #555555 100%);
 }
 .pad h2.dark small a {
   margin: 0 10px;
@@ -2074,6 +2079,7 @@ nav .ico {
 .pad h2.title {
   font-weight: normal;
   margin-bottom: 1.5em;
+  white-space: nowrap;
 }
 .pad .paginate {
   margin: 0 0 0 20px;
