@@ -127,12 +127,17 @@ class ForgeTrackerImporter(ToolImporter):
             M.session.artifact_orm_session._get().skip_mod_date = True
             for ticket_json in tracker_json['tickets']:
                 reporter = self.get_user(ticket_json['reported_by'])
+                owner = self.get_user(ticket_json['assigned_to'])
                 with h.push_config(c, user=reporter, app=app):
                     self.max_ticket_num = max(ticket_json['ticket_num'], self.max_ticket_num)
                     ticket = TM.Ticket(
                             app_config_id=app.config._id,
                             import_id=import_id_converter.expand(ticket_json['ticket_num'], app),
-                            description=self.annotate(ticket_json['description'], reporter, ticket_json['reported_by']),
+                            description=self.annotate(
+                                self.annotate(
+                                    ticket_json['description'],
+                                    owner, ticket_json['assigned_to'], label=' owned'),
+                                reporter, ticket_json['reported_by'], label=' created'),
                             created_date=dateutil.parser.parse(ticket_json['created_date']),
                             mod_date=dateutil.parser.parse(ticket_json['mod_date']),
                             ticket_num=ticket_json['ticket_num'],
@@ -142,7 +147,8 @@ class ForgeTrackerImporter(ToolImporter):
                             labels=ticket_json['labels'],
                             votes_down=ticket_json['votes_down'],
                             votes_up=ticket_json['votes_up'],
-                            votes = ticket_json['votes_up'] - ticket_json['votes_down'],
+                            votes=ticket_json['votes_up'] - ticket_json['votes_down'],
+                            assigned_to_id=owner._id,
                         )
                     ticket.private = ticket_json['private']  # trigger the private property
                     self.process_comments(ticket, ticket_json['discussion_thread']['posts'])
@@ -170,14 +176,16 @@ class ForgeTrackerImporter(ToolImporter):
             M.session.artifact_orm_session._get().skip_mod_date = False
 
     def get_user(self, username):
+        if username is None:
+            return M.User.anonymous()
         user = M.User.by_username(username)
         if not user:
             user = M.User.anonymous()
         return user
 
-    def annotate(self, text, user, username):
-        if user._id is None:
-            return '*Originally by:* %s\n\n%s' % (username, text)
+    def annotate(self, text, user, username, label=''):
+        if username and user.is_anonymous():
+            return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
 
     def process_comments(self, ticket, comments):
