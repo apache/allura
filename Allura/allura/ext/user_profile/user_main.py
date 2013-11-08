@@ -92,14 +92,28 @@ class UserProfileController(BaseController, FeedController):
     def _check_security(self):
         require_access(c.project, 'read')
 
+    def _check_can_message(self, from_user, to_user):
+        if from_user is User.anonymous():
+            flash('You must be logged in to send user messages.', 'info')
+            redirect(request.referer)
+
+        if not (from_user and from_user.get_pref('email_address')):
+            flash('In order to send messages, you must have an email address '
+                    'associated with your account.', 'info')
+            redirect(request.referer)
+
+        if not (to_user and to_user.get_pref('email_address')):
+            flash('This user can not receive messages because they do not have '
+                    'an email address associated with their account.', 'info')
+            redirect(request.referer)
+
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
         user = c.project.user_project_of
         if not user:
             raise exc.HTTPNotFound()
         provider = AuthenticationProvider.get(request)
-        has_email = c.user.get_pref('email_address') is not None
-        return dict(user=user, reg_date=provider.user_registration_date(user), has_email=has_email)
+        return dict(user=user, reg_date=provider.user_registration_date(user))
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -116,41 +130,34 @@ class UserProfileController(BaseController, FeedController):
 
     @expose('jinja:allura.ext.user_profile:templates/send_message.html')
     def send_message(self):
-        user = c.project.user_project_of
-        both_have_emails = user and user.get_pref('email_address') and c.user.get_pref('email_address')
-        if not both_have_emails:
-            raise exc.HTTPNotFound()
+        """Render form for sending a message to another user.
 
-        time_interval = config['user_message.time_interval']
-        max_messages = config['user_message.max_messages']
-        expire_time = None
+        """
+        self._check_can_message(c.user, c.project.user_project_of)
 
-        if not c.user.check_send_emails_times(time_interval, max_messages):
-            expire_seconds = c.user.send_emails_times[0] + timedelta(seconds=int(time_interval)) - datetime.utcnow()
-            h, remainder = divmod(expire_seconds.total_seconds(), 3600)
-            m, s = divmod(remainder, 60)
-            expire_time = '%s:%s:%s' % (int(h), int(m), int(s))
+        delay = c.user.time_to_next_user_message()
+        expire_time = str(delay) if delay else None
         c.form = F.send_message
-        return dict(user=user, expire_time=expire_time)
+        return dict(user=c.project.user_project_of, expire_time=expire_time)
 
     @require_post()
     @expose()
     @validate(dict(subject=validators.NotEmpty,
                    message=validators.NotEmpty))
     def send_user_message(self, subject='', message='', cc=None):
-        user = c.project.user_project_of
-        both_have_emails = user and user.get_pref('email_address') and c.user.get_pref('email_address')
-        if not both_have_emails:
-            raise exc.HTTPNotFound()
+        """Handle POST for sending a message to another user.
 
-        time_interval = config['user_message.time_interval']
-        max_messages = config['user_message.max_messages']
+        """
+        self._check_can_message(c.user, c.project.user_project_of)
+
         if cc:
             cc = c.user.get_pref('email_address')
-        user = c.project.user_project_of
-        if c.user.check_send_emails_times(time_interval, max_messages):
-            c.user.send_user_message(user, subject, message, cc)
+        if c.user.can_send_user_message():
+            c.user.send_user_message(c.project.user_project_of, subject, message, cc)
+            flash("Message sent.")
         else:
-            flash("You can't send more than %s messages per %s seconds" % (max_messages, time_interval), 'error')
-        return redirect(user.url())
+            flash("You can't send more than %i messages per %i seconds" % (
+                c.user.user_message_max_messages,
+                c.user.user_message_time_interval), 'error')
+        return redirect(c.project.user_project_of.url())
 

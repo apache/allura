@@ -26,6 +26,7 @@ from webob import Request
 from mock import patch
 from datetime import datetime, timedelta
 
+from mock import patch
 from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 
@@ -33,7 +34,6 @@ from allura import model as M
 from allura.lib import plugin
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
-from allura.tasks import mail_tasks
 
 
 def setUp():
@@ -228,13 +228,15 @@ def test_user_projects_by_role():
     assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
 
-
-def test_check_send_emails_times():
+@patch.object(g, 'user_message_max_messages', 3)
+def test_check_sent_user_message_times():
     user1 = M.User.register(dict(username='test-user'), make_project=False)
     time1 = datetime.utcnow() - timedelta(minutes=30)
     time2 = datetime.utcnow() - timedelta(minutes=45)
     time3 = datetime.utcnow() - timedelta(minutes=70)
-    user1.send_emails_times = [time1, time2, time3]
-    assert not user1.check_send_emails_times(3600, 1)
-    assert_equal(len(user1.send_emails_times), 2)
-    assert user1.check_send_emails_times(3600, 3)
+    user1.sent_user_message_times = [time1, time2, time3]
+    assert user1.can_send_user_message()
+    assert_equal(len(user1.sent_user_message_times), 2)
+    user1.sent_user_message_times.append(
+            datetime.utcnow() - timedelta(minutes=15))
+    assert not user1.can_send_user_message()

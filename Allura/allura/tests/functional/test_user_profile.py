@@ -18,6 +18,7 @@
 from formencode.variabledecode import variable_encode
 
 import mock
+from nose.tools import assert_equal
 
 from allura.model import Project, User
 from allura.tests import decorators as td
@@ -64,12 +65,12 @@ class TestUserProfile(TestController):
     @td.with_user_project('test-user')
     @mock.patch('allura.tasks.mail_tasks.sendsimplemail')
     @mock.patch('allura.lib.helpers.gen_message_id')
-    @mock.patch('allura.model.User.check_send_emails_times')
+    @mock.patch('allura.model.User.can_send_user_message')
     def test_send_message(self, check, gen_message_id, sendsimplemail):
         check.return_value = True
         gen_message_id.return_value = 'id'
         test_user = User.by_username('test-user')
-        test_user.set_pref('email_address', 'test-user@sf.net')
+        test_user.set_pref('email_address', 'test-user@example.com')
         response = self.app.get('/u/test-user/profile/send_message', status=200)
         assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
         self.app.post('/u/test-user/profile/send_user_message',
@@ -101,23 +102,27 @@ class TestUserProfile(TestController):
 
         check.return_value = False
         response = self.app.get('/u/test-user/profile/send_message', status=200)
-        assert 'Sorry, you can send an email after' in response
+        assert 'Sorry, messaging is rate-limited' in response
 
     @td.with_user_project('test-user')
     def test_send_message_for_anonymous(self):
-        self.app.get('/u/test-user/profile/send_message',
+        r = self.app.get('/u/test-user/profile/send_message',
                      extra_environ={'username': '*anonymous'},
-                     status=404)
+                     status=302)
+        assert 'You must be logged in to send user messages.' in self.webflash(r)
 
-        self.app.post('/u/test-user/profile/send_user_message',
+        r = self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
                               'message': 'test message',
                               'cc': 'on'},
                       extra_environ={'username': '*anonymous'},
-                      status=404)
+                      status=302)
+        assert 'You must be logged in to send user messages.' in self.webflash(r)
 
     @td.with_user_project('test-user')
     def test_link_to_send_message_form(self):
+        User.by_username('test-admin').set_pref('email_address', 'admin@example.com')
+        User.by_username('test-user').set_pref('email_address', 'user@example.com')
         r = self.app.get('/u/test-user/profile',
                          status=200)
         assert '<a href="send_message">Send me a message</a>' in r

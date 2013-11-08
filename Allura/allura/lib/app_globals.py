@@ -448,6 +448,22 @@ class Globals(object):
         return asbool(config.get('debug')) == False
 
     @LazyProperty
+    def user_message_time_interval(self):
+        """The rolling window of time (in seconds) during which no more than
+        :meth:`user_message_max_messages` may be sent by any one user.
+
+        """
+        return int(config.get('user_message.time_interval', 3600))
+
+    @LazyProperty
+    def user_message_max_messages(self):
+        """The number of user messages that can be sent within
+        meth:`user_message_time_interval` before rate-limiting is enforced.
+
+        """
+        return int(config.get('user_message.max_messages', 20))
+
+    @LazyProperty
     def server_name(self):
         p1 = Popen(['hostname', '-s'], stdout=PIPE)
         server_name = p1.communicate()[0].strip()
