@@ -347,10 +347,14 @@ def test_save_importer_upload(giup, os):
 
 class TestFile(object):
 
-    @mock.patch.object(base, 'ProjectExtractor', mock.MagicMock)
-    def test_type(self):
+    @mock.patch.object(base, 'ProjectExtractor')
+    def test_type(self, PE):
+        PE().page = {
+                'content-type': 'image/png',
+                'data': 'data',
+            }
         f = base.File('http://example.com/barbaz.jpg')
         assert_equal(f.type, 'image/jpeg')
 
         f = base.File('http://example.com/barbaz')
-        assert_equal(f.type, 'application/octet-stream')
+        assert_equal(f.type, 'image/png')

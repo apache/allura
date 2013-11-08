@@ -513,6 +513,7 @@ class ImportAdminExtension(AdminExtension):
 
 def stringio_parser(page):
     return {
+            'content-type': page.info()['content-type'],
             'data': StringIO(page.read()),
         }
 
@@ -521,7 +522,15 @@ class File(object):
         extractor = ProjectExtractor(None, url, parser=stringio_parser)
         self.url = url
         self.filename = filename or os.path.basename(urlparse(url).path)
+        # try to get the mime-type from the filename first, because
+        # some files (e.g., attachements) may have the Content-Type header
+        # forced to encourage the UA to download / save the file
         self.type = guess_mime_type(self.filename)
+        if self.type == 'application/octet-stream':
+            # however, if that fails, fall back to the given mime-type,
+            # as some files (e.g., project icons) might have no file
+            # extension but return a valid Content-Type header
+            self.type = extractor.page['content-type']
         self.file = extractor.page['data']
 
 
