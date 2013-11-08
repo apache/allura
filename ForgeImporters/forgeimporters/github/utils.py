@@ -19,14 +19,9 @@ class GitHubMarkdownConverter(object):
             nextline = False
             for p in self.code_patterns:
                 if line.lstrip().startswith(p):
-                    # this is extreme, but due to display bugs
-                    # it's necessary
-                    new_lines.append('\n<br>\n')
-
                     if p == '```':
-                        _re = re.compile(r'\```(.*)')
-                        syntax = _re.findall(line)[0]
-                        if syntax and not syntax.isspace():
+                        syntax = line.lstrip().lstrip('`').strip()
+                        if syntax:
                             new_lines.append(self._codeblock_syntax(syntax))
                     in_block = not in_block
                     nextline = True
@@ -37,9 +32,22 @@ class GitHubMarkdownConverter(object):
             if in_block:
                 new_lines.append(self._handle_code(line))
             else:
-                if line.lstrip().startswith('    '):
+                _re = re.compile(r'`\s*(.*?)`')
+                inline_matches = _re.findall(line)
+
+                if line.startswith('    '):
                     # code block due to github syntax
-                    continue
+                    new_lines.append(line)
+                elif inline_matches and not inline_matches[0].isspace():
+                    # need to not handle inline blocks as a text
+                    for i, m in enumerate(inline_matches):
+                        line = line.replace('`%s`' % m, '<inline_block>%s</inline_block>' % i)
+
+                    line = self._handle_non_code(line)
+                    for i, m in enumerate(inline_matches):
+                        line = line.replace('<inline_block>%s</inline_block>' % i, inline_matches[i])
+
+                    new_lines.append(line)
                 else:
                     new_lines.append(self._handle_non_code(line))
         return new_lines
@@ -130,8 +138,4 @@ class GitHubMarkdownConverter(object):
         return '<s>%s</s>' % m.group(1)
 
     def _codeblock_syntax(self, text):
-        return '    :::%s' % text
-
-    def _convert_inline_codeblock(self, m):
-        text = m.group(0)
-        return '**%s**' % text
+        return '\n    :::%s' % text

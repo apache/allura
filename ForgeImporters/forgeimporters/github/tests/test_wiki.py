@@ -319,13 +319,8 @@ Our website is <http://sf.net>.
 [[Escaped Tag]]
 
 
-<br>
-
     :::python
     codeblock
-
-<br>
-
 
 ticket [#1]
 
