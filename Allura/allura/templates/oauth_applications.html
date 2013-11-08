@@ -105,7 +105,6 @@
                 <form method="POST" action="revoke_access_token" class="revoke_access_token">
                     <input type="hidden" name="_id" value="{{access_token._id}}"/>
                     <input type="submit" value="Revoke"/>
-                    {{lib.csrf_token()}}
                 </form>
             </td>
         </tr>
@@ -132,12 +131,10 @@
                 <form method="POST" action="deregister" class="deregister_consumer_token">
                     <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
                     <input type="submit" value="Deregister"/>
-                    {{lib.csrf_token()}}
                 </form>
                 <form method="POST" action="generate_access_token" class="generate_access_token">
                     <input type="hidden" name="_id" value="{{consumer_token._id}}"/>
                     <input type="submit" value="Generate Bearer Token"/>
-                    {{lib.csrf_token()}}
                 </form>
             </td>
         </tr>
