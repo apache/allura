@@ -16,10 +16,15 @@
 #       under the License.
 
 import logging
+import pymongo
 
 from ming import Session
 from ming.orm.base import state
 from ming.orm.ormsession import ThreadLocalORMSession, SessionExtension
+from contextlib import contextmanager
+
+from allura.lib.utils import chunked_list
+from allura.tasks import index_tasks
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +87,100 @@ class ArtifactSessionExtension(SessionExtension):
                 [obj.index_id() for obj in objects_deleted])
         if arefs:
             index_tasks.add_artifacts.post([aref._id for aref in arefs])
+
+class BatchIndexer(ArtifactSessionExtension):
+    """
+    Tracks needed search index operations over the life of a
+    :class:`ming.odm.session.ThreadLocalODMSession` session, and performs them
+    in a batch when :meth:`flush` is called.
+    """
+    to_delete = set()
+    to_add = set()
+
+    def __init__(self, session):
+        ArtifactSessionExtension.__init__(self, session)
+
+    def update_index(self, objects_deleted, arefs_added):
+        """
+        Caches adds and deletes for handling later.  Called after each flush of
+        the parent session.
+
+        :param objects_deleted: :class:`allura.model.artifact.Artifact`
+          instances that were deleted in the flush.
+
+        :param arefs_added: :class:`allura.model.artifact.ArtifactReference`
+          instances for all ``Artifact`` instances that were added or modified
+          in the flush.
+        """
+
+        from .index import ArtifactReference
+        del_index_ids = [obj.index_id() for obj in objects_deleted]
+        deleted_aref_ids = [aref._id for aref in
+            ArtifactReference.query.find(dict(_id={'$in': del_index_ids}))]
+        cls = self.__class__
+        cls.to_add -= set(deleted_aref_ids)
+        cls.to_delete |= set(del_index_ids)
+        cls.to_add |= set([aref._id for aref in arefs_added])
+
+    @classmethod
+    def flush(cls):
+        """
+        Creates indexing tasks for cached adds and deletes, and resets the
+        caches.
+
+        .. warning:: This method is NOT called automatically when the parent
+           session is flushed. It MUST be called explicitly.
+        """
+        # Post in chunks to avoid overflowing the max BSON document
+        # size when the Monq task is created:
+        # cls.to_delete - contains solr index ids which can easily be over
+        #                 100 bytes. Here we allow for 160 bytes avg, plus
+        #                 room for other document overhead.
+        # cls.to_add - contains BSON ObjectIds, which are 12 bytes each, so
+        #              we can easily put 1m in a doc with room left over.
+        if cls.to_delete:
+            for chunk in chunked_list(list(cls.to_delete), 100 * 1000):
+                cls._post(index_tasks.del_artifacts, chunk)
+
+        if cls.to_add:
+            for chunk in chunked_list(list(cls.to_add), 1000 * 1000):
+                cls._post(index_tasks.add_artifacts, chunk)
+        cls.to_delete = set()
+        cls.to_add = set()
+
+    @classmethod
+    def _post(cls, task_func, chunk):
+        """
+        Post task, recursively splitting and re-posting if the resulting
+        mongo document is too large.
+        """
+        try:
+            task_func.post(chunk)
+        except pymongo.errors.InvalidDocument as e:
+            # there are many types of InvalidDocument, only recurse if its expected to help
+            if str(e).startswith('BSON document too large'):
+                cls._post(task_func, chunk[:len(chunk) // 2])
+                cls._post(task_func, chunk[len(chunk) // 2:])
+            else:
+                raise
+
+
+@contextmanager
+def substitute_extensions(session, extensions=None):
+    """
+    Temporarily replace the extensions on a
+    :class:`ming.odm.session.ThreadLocalODMSession` session.
+    """
+    original_exts = session._kwargs.get('extensions', [])
+    def _set_exts(exts):
+        session.flush()
+        session.close()
+        session._kwargs['extensions'] = exts
+    _set_exts(extensions or [])
+    yield session
+    _set_exts(original_exts)
+
+
 
 main_doc_session = Session.by_name('main')
 project_doc_session = Session.by_name('project')

@@ -116,9 +116,11 @@ def object_from_path(path):
 @task(notifications_disabled=True)
 def import_tool(importer_path, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = object_from_path(importer_path)()
-    with ImportErrorHandler(importer, project_name, c.project) as handler:
+    with ImportErrorHandler(importer, project_name, c.project) as handler,\
+         M.session.substitute_extensions(M.artifact_orm_session, [M.session.BatchIndexer]):
         app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
+        M.session.BatchIndexer.flush()
         if app:
             handler.success(app)
 
