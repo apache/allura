@@ -28,11 +28,11 @@ import mock
 import PIL
 from mock import patch
 from nose.tools import assert_true, assert_false, assert_equal, assert_in
-from nose.tools import assert_raises, assert_not_in
+from nose.tools import assert_raises, assert_not_in, assert_items_equal
 from formencode.variabledecode import variable_encode
 from pylons import tmpl_context as c
 
-from alluratest.controller import TestController
+from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
 from forgewiki import model as wm
 from forgetracker import model as tm
@@ -2805,3 +2805,17 @@ class TestNotificationEmailGrouping(TrackerTestController):
         assert_equal(email.kwargs.message_id, ticket.url() + reply._id)
         assert_equal(email.kwargs.in_reply_to, top_level_comment_msg_id)
         assert_equal(email.kwargs.references, [ticket.message_id(), top_level_comment_msg_id])
+
+
+def test_status_passthru():
+    setup_basic_test()
+    c.project = M.Project.query.get(shortname='test')
+    c.user = M.User.by_username('test-admin')
+    c.project.install_app('tickets', mount_point='tsp',
+            open_status_names='foo bar', closed_status_names='qux baz')
+    ThreadLocalORMSession.flush_all()
+    app = c.project.app_instance('tsp')
+    assert_items_equal(app.globals.set_of_open_status_names, ['foo', 'bar'])
+    assert_items_equal(app.globals.set_of_closed_status_names, ['qux', 'baz'])
+    assert_not_in('open_status_names', app.config.options)
+    assert_not_in('closed_status_names', app.config.options)
