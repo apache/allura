@@ -25,7 +25,7 @@
 {% macro show_trove_base_cat(base) %}
   <h3>{{base.fullname}}</h3>
   <div id="trove_existing_{{base.shortname}}" class="trove_existing grid-19">
-    {% for cat in c.project.troves_by_type(base.shortname) %}
+    {% for cat in c.project.troves_by_type(base.shortname)|sort(attribute='fullpath') %}
     <div style="clear: both">
       <span class="trove_fullpath">{{cat.fullpath}}</span>
       <form id="delete_trove_{{base.shortname}}_{{cat.trove_cat_id}}"
@@ -97,8 +97,20 @@
               });
             }
             else{
-              $('#trove_existing_'+type).find('span.empty_msg').remove();
-              $('#trove_existing_'+type).prepend('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form></div>');
+              var $existing = $('#trove_existing_'+type);
+              $existing.find('span.empty_msg').remove();
+              var insertAfter = null;
+              $existing.children().each(function() {
+                if($('.trove_fullpath', this).text() < resp.trove_full_path) {
+                    insertAfter = this;
+                }
+              });
+              var $newItem = $('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form></div>');
+              if (insertAfter) {
+                $newItem.insertAfter(insertAfter);
+              } else {
+                $newItem.prependTo($existing);
+              }
             }
         });
       });
