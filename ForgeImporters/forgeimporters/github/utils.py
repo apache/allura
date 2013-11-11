@@ -18,9 +18,9 @@ class GitHubMarkdownConverter(object):
         for line in lines:
             nextline = False
             for p in self.code_patterns:
-                if line.lstrip().startswith(p):
+                if line.startswith(p):
                     if p == '```':
-                        syntax = line.lstrip().lstrip('`').strip()
+                        syntax = line.lstrip('`').strip()
                         if syntax:
                             new_lines.append(self._codeblock_syntax(syntax))
                     in_block = not in_block
@@ -31,22 +31,19 @@ class GitHubMarkdownConverter(object):
 
             if in_block:
                 new_lines.append(self._handle_code(line))
+            elif line.startswith('    '):
+                # indentation syntax code block - leave as is
+                new_lines.append(line)
             else:
-                _re = re.compile(r'`\s*(.*?)`')
+                _re = re.compile(r'`.*?`')
                 inline_matches = _re.findall(line)
-
-                if line.startswith('    '):
-                    # code block due to github syntax
-                    new_lines.append(line)
-                elif inline_matches and not inline_matches[0].isspace():
+                if inline_matches:
                     # need to not handle inline blocks as a text
                     for i, m in enumerate(inline_matches):
-                        line = line.replace('`%s`' % m, '<inline_block>%s</inline_block>' % i)
-
+                        line = line.replace(m, '<inline_block>%s</inline_block>' % i)
                     line = self._handle_non_code(line)
                     for i, m in enumerate(inline_matches):
-                        line = line.replace('<inline_block>%s</inline_block>' % i, inline_matches[i])
-
+                        line = line.replace('<inline_block>%s</inline_block>' % i, m)
                     new_lines.append(line)
                 else:
                     new_lines.append(self._handle_non_code(line))
@@ -71,7 +68,7 @@ class GitHubMarkdownConverter(object):
         _re = re.compile(r'(\b)(\S+)#(\d+)(\b)')
         text = _re.sub(self._convert_user_ticket, text)
 
-        _re = re.compile(r'(\S+\s+)(#\d+)')
+        _re = re.compile(r'(\s|^)(#\d+)')
         text = _re.sub(self._convert_ticket, text)
 
         _re = re.compile(r'(\b)(\S+)/(\S+)@([0-9a-f]{40})(\b)')

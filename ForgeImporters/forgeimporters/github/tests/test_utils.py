@@ -42,12 +42,7 @@ class TestGitHubMarkdownConverter(object):
         text = 'Ticket #1'
         result = self.conv.convert(text)
         assert_equal(result, 'Ticket [#1]')
-
-        # github treats '#' in the begining as a header
-        text = '#1'
-        assert_equal(self.conv.convert(text), '#1')
-        text = '  #1'
-        assert_equal(self.conv.convert(text), '  #1')
+        assert_equal(self.conv.convert('#1'), '[#1]')
 
     def test_convert_user_ticket(self):
         text = 'user#1'
@@ -72,6 +67,11 @@ class TestGitHubMarkdownConverter(object):
     def test_convert_strikethrough(self):
         text = '~~mistake~~'
         assert_equal(self.conv.convert(text), '<s>mistake</s>')
+
+    def test_inline_code_block(self):
+        text = u'This `~~some text~~` converts to this ~~strike out~~.'
+        result = u'This `~~some text~~` converts to this <s>strike out</s>.'
+        assert_equal(self.conv.convert(text).strip(), result)
 
     def test_convert_code_blocks(self):
         text = u'''```python
