@@ -390,13 +390,14 @@ class ProjectAdminController(BaseController):
             h.log_action(log, 'change project support page').info('')
             M.AuditLog.log('change project support page to %s', support_page)
             c.project.support_page = support_page
-        if twitter_handle != c.project.social_account('Twitter'):
+        old_twitter = c.project.social_account('Twitter')
+        if not old_twitter or twitter_handle != old_twitter.accounturl:
             h.log_action(log, 'change project twitter handle').info('')
             M.AuditLog.log('change project twitter handle to %s', twitter_handle)
             c.project.set_social_account('Twitter', twitter_handle)
-        if facebook_page != c.project.social_account('Facebook'):
-            parsed = urlparse(facebook_page)
-            if 'facebook.com' in parsed.netloc:
+        old_facebook = c.project.social_account('Facebook')
+        if not old_facebook or facebook_page != old_facebook.accounturl:
+            if not facebook_page or 'facebook.com' in urlparse(facebook_page).netloc:
                 h.log_action(log, 'change project facebook page').info('')
                 M.AuditLog.log('change project facebook page to %s', facebook_page)
                 c.project.set_social_account('Facebook', facebook_page)
