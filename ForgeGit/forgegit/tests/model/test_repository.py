@@ -452,6 +452,10 @@ class TestGitImplementation(unittest.TestCase):
                 'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
             })
 
+    def test_last_commit_ids_threaded(self):
+        with h.push_config(tg.config, lcd_thread_chunk_size=1):
+            self.test_last_commit_ids()
+
 
 class TestGitCommit(unittest.TestCase):
 

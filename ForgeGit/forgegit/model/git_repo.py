@@ -27,6 +27,8 @@ from datetime import datetime
 from glob import glob
 import gzip
 from time import time
+from threading import Thread
+from Queue import Queue
 
 import tg
 import git
@@ -34,7 +36,7 @@ import gitdb
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 
 from ming.base import Object
 from ming.orm import Mapper, session, mapper
@@ -502,27 +504,46 @@ class GitImplementation(M.RepositoryImplementation):
         """
         Find the ID of the last commit to touch each path.
         """
-        result = {}
-        paths = set(paths)
-        orig_commit_id = commit_id = commit._id
+        if not paths:
+            return {}
         timeout = float(tg.config.get('lcd_timeout', 60))
         start_time = time()
-        while paths and commit_id:
-            if time() - start_time > timeout:
-                log.error('last_commit_ids timeout for %s on %s', orig_commit_id, ', '.join(paths))
-                return result
-            lines = self._git.git.log(
-                    orig_commit_id, '--', *paths,
-                    pretty='format:%H',
-                    name_only=True,
-                    max_count=1,
-                    no_merges=True).split('\n')
-            commit_id = lines[0]
-            changes = set(lines[1:])
-            changed = prefix_paths_union(paths, changes)
-            for path in changed:
-                result[path] = commit_id
-            paths -= changed
+        paths = list(set(paths))  # remove dupes
+        result = {}  # will be appended to from each thread
+        chunks = Queue()
+        lcd_chunk_size = asint(tg.config.get('lcd_thread_chunk_size', 10))
+        num_threads = 0
+        for s in range(0, len(paths), lcd_chunk_size):
+            chunks.put(paths[s:s+lcd_chunk_size])
+            num_threads += 1
+        def get_ids():
+            paths = set(chunks.get())
+            commit_id = commit._id
+            while paths and commit_id:
+                if time() - start_time > timeout:
+                    log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
+                    break
+                lines = self._git.git.log(
+                        commit._id, '--', *paths,
+                        pretty='format:%H',
+                        name_only=True,
+                        max_count=1,
+                        no_merges=True).split('\n')
+                commit_id = lines[0]
+                changes = set(lines[1:])
+                changed = prefix_paths_union(paths, changes)
+                for path in changed:
+                    result[path] = commit_id
+                paths -= changed
+            chunks.task_done()
+            return
+        if num_threads == 1:
+            get_ids()
+        else:
+            for i in range(num_threads):
+                t = Thread(target=get_ids)
+                t.start()
+            chunks.join()
         return result
 
 class _OpenedGitBlob(object):
