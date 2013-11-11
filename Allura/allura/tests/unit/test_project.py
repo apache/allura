@@ -74,3 +74,11 @@ class TestProject(unittest.TestCase):
         actual = [(e.label, e.url, len(e.matching_urls)) for e in entries]
         self.assertEqual(expected, actual)
         self.assertEqual(entries[0].matching_urls, expected_ticket_urls)
+
+    def test_social_account(self):
+        p = M.Project()
+        self.assertIsNone(p.social_account('Twitter'))
+
+        p.set_social_account('Twitter', 'http://twitter.com/allura')
+        self.assertEqual(p.social_account('Twitter').accounturl, 'http://twitter.com/allura')
+        self.assertEqual(p.twitter_handle, 'http://twitter.com/allura')
