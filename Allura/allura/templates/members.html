@@ -34,7 +34,7 @@
     {%for user in users%}
     <tr>
         <td>{{ user.display_name }}</td>
-        <td><a href="{% if not user.is_anonymous() %}{{ user.url }}{% endif %}">{{ user.username }}</a></td>
+        <td><a href="{{ user.url }}">{{ user.username }}</a></td>
         <td>{{user.roles}}</td>
     </tr>
     {%endfor%}
