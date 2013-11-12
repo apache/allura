@@ -36,6 +36,8 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.orm.ormsession import ThreadLocalORMSession
 
+from tg import config as tg_config
+
 from allura.model import (
         ACE,
         DENY_ALL,
@@ -407,7 +409,7 @@ class Globals(MappedClass):
         mail = dict(
             sender = c.project.app_instance(self.app_config).email_address,
             fromaddr = str(c.user._id),
-            reply_to = str(c.user._id),
+            reply_to = tg_config['forgemail.return_path'],
             subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
                                                            self.app_config.options.mount_point,
                                                            c.user.display_name),
