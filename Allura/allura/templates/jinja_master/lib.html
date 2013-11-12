@@ -60,7 +60,7 @@
 
 {% macro user_link(email, name, size=16) -%}
     {% set user = h.find_user(email) -%}
-    {% if user %}<a href="{{user.url()}}">{% endif -%}
+    {% if user %}<a href="{% if not user.is_anonymous() %}{{user.url()}}{% endif %}">{% endif -%}
         {{ email_gravatar(email, name, size) }} {{ name }}
     {%- if user %}</a>{% endif -%}
 {%- endmacro %}

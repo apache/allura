@@ -74,7 +74,9 @@
     {% if ticket %}
       <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
     {% else %}
-      <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+      {% if not c.user.is_anonymous() %}
+        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
+      {% endif %}
     {% endif %}
   </div>
   <div style="clear:both">&nbsp;</div>
@@ -111,8 +113,8 @@
   <div class="reply discussion-post" style="position:relative;{% if not show_comment %} display:none{% endif %}">
     <div class="grid-2 tcenter">
       <p class="gravatar">
-      {{lib.gravatar(c.user, size=48)}}<br>
-      <small><a href="{{c.user.url()}}">{{c.user.display_name}}</a></small>
+        {{lib.gravatar(c.user, size=48)}}<br>
+        <small><a href="{% if not c.user.is_anonymous() %}{{c.user.url()}}{% enif %}">{{c.user.display_name}}</a></small>
       </p>
     </div>
     <div class="grid-16">
