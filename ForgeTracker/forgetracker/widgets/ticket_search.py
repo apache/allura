@@ -41,7 +41,20 @@ class TicketSearchResults(ew_core.SimpleForm):
         page_size = ffw.PageSize()
         lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
+    @property
+    def filters(self):
+        return {
+            '_milestone': [{'value': 'm1', 'label': 'M1', 'selected': False},
+                           {'value': 'm1', 'label': 'M1', 'selected': True}],
+            'status': [{'value': 'm1', 'label': 'M1', 'selected': False}],
+            'assigned_to': [{'value': 'm1', 'label': 'M1', 'selected': False}],
+            'reported_by': [{'value': 'm1', 'label': 'M1', 'selected': False}],
+        }
+
     def resources(self):
+        yield ew.JSLink('tracker_js/jquery.multiselect.min.js')
+        yield ew.CSSLink('allura/css/smoothness/jquery-ui-1.8.4.custom.css')
+        yield ew.CSSLink('tracker_css/jquery.multiselect.css')
         yield ew.JSLink('tracker_js/ticket-list.js')
         yield ew.CSSLink('tracker_css/ticket-list.css')
         for r in super(TicketSearchResults, self).resources():

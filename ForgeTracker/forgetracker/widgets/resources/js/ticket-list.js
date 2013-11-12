@@ -30,7 +30,7 @@
                           '&sort=' + encodeURIComponent(sort);
     }
 
-    $('th[data-sort]').click(function(){
+    $('.ticket-filter a[data-sort]').click(function(){
         var old_sort = sort.split(' '),
             new_dir = {'asc':'desc', 'desc':'asc'}[old_sort[1]],
             new_sort = $(this).attr('data-sort');
@@ -53,4 +53,25 @@
             });
         }
     }).disableSelection();
+
+    $('.ticket-list th[data-filter-toggle]').click(function() {
+      var column = $(this).attr('data-filter-toggle');
+      var filter_selector = '.ticket-filter[data-column="' + column + '"]';
+      var filter = $(this).parents('.ticket-list').find(filter_selector);
+      var visible = filter.is(':visible');
+      $('.ticket-filter').hide();
+      if (!visible) {
+        filter.show();
+      }
+    });
+
+    $('.ticket-filter select').multiselect({
+        selectedText: function() {
+          return 'Filtering by ' + $(this.element[0]).attr('data-label');
+        }
+    });
+    $('.ticket-filter .close').click(function(e) {
+      e.preventDefault();
+      $('.ticket-filter').hide();
+    });
 })();

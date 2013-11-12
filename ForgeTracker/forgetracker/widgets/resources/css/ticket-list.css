@@ -22,3 +22,8 @@
     padding: 0;
     list-style-type: none;
 }
+
+.ticket-filter { display: none; }
+.ticket-filter a[data-sort] { cursor: pointer; }
+.ticket-list th[data-filter-toggle] { cursor: pointer; }
+.ticket-list th[data-filter-toggle]:hover { text-decoration: underline; }

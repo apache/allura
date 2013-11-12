@@ -25,7 +25,7 @@
       <thead>
         <tr>
           {% for col in columns if col['active'] %}
-            <th data-sort="{{col['sort_name']}}" title="{{col['label']}}">
+            <th title="{{col['label']}}" data-filter-toggle="{{col['name']}}">
               {% if col['name'] == 'ticket_num' %}
                 #
               {% else %}
@@ -37,6 +37,28 @@
             <a href="#" id="col_menu" title="Select Columns"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
           </th>
         </tr>
+
+        {% for col in columns if col['active'] %}
+          <tr class="ticket-filter" data-column="{{col['name']}}">
+            <th colspan="{{columns|length + 1}}">
+              <p><a data-sort="{{col['sort_name']}}" title="{{col['label']}}">Toggle sort by {{col['label']}}</a></p>
+              <p>Filter by {{col['label']}}</p>
+              {% if col['name'] in widget.filters.keys() %}
+                <p>
+                  <select name="filter-{{col['name']}}" data-label="{{col['label']}}" multiple="multiple">
+                    {% for o in widget.filters[col['name']] %}
+                      <option value="{{o['value']}}"{% if o['selected'] %} selected="selected"{% endif %}>{{o['label']}}</label>
+                    {% endfor %}
+                  </select>
+                  <input type="submit" value="Ok" name="filter-{{col['name']}}">
+                  <a href="#" class="close btn link">Cancel</a>
+                </p>
+                <div style="clear:both;"></div>
+              {% endif %}
+            </th>
+          </tr>
+        {% endfor %}
+
       </thead>
       <tbody>
         {% for t in tickets %}

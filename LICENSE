@@ -234,6 +234,8 @@ under the MIT license.  For details, see the individual files:
     Allura/allura/public/nf/js/jquery.flot.js
     Allura/allura/public/nf/js/jquery.maxlength.min.js
     allura/public/nf/js/jquery.viewport.js
+    ForgeTracker/forgetracker/widgets/resources/js/jquery.multiselect.min.js
+    ForgeTracker/forgetracker/widgets/resources/css/jquery.multiselect.css
 
 Blueprint, which is available under the MIT license.
 For details, see Allura/allura/public/nf/css/blueprint/
