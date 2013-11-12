@@ -41,7 +41,7 @@ class TestGCTrackerImporter(TestCase):
     def _make_extractor(self, html):
         with mock.patch.object(base.h, 'urlopen') as urlopen:
             urlopen.return_value = ''
-            extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+            extractor = google.GoogleCodeProjectExtractor('allura-google-importer', 'project_info')
         extractor.page = BeautifulSoup(html)
         extractor.url = "http://test/issue/?id=1"
         return extractor
@@ -241,7 +241,7 @@ class TestGCTrackerImporter(TestCase):
                     'text': (
                             '*Originally posted by:* [john...@gmail.com](http://code.google.com/u/101557263855536553789/)\n'
                             '\n'
-                            'Oh, I forgot one\n'
+                            'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)\n'
                             '\n'
                             '**Labels:** OpSys-OSX'
                         ),

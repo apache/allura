@@ -124,7 +124,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def _make_extractor(self, html):
         from BeautifulSoup import BeautifulSoup
         with mock.patch.object(base.ProjectExtractor, 'urlopen'):
-            extractor = google.GoogleCodeProjectExtractor('my-project')
+            extractor = google.GoogleCodeProjectExtractor('allura-google-importer')
         extractor.page = BeautifulSoup(html)
         extractor.get_page = lambda pagename: extractor.page
         extractor.url="http://test/source/browse"
@@ -278,7 +278,7 @@ class TestGoogleCodeProjectExtractor(TestCase):
                     'author.name': 'john...@gmail.com',
                     'author.url': 'http://code.google.com/u/101557263855536553789/',
                     'created_date': 'Thu Aug  8 15:36:57 2013',
-                    'body': 'Oh, I forgot one',
+                    'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
                     'updates': {'Labels:': 'OpSys-OSX'},
                     'attachments': [],
                 },
@@ -390,7 +390,7 @@ class TestComment(TestCase):
     def test_init(self):
         from BeautifulSoup import BeautifulSoup
         html = BeautifulSoup(self.html)
-        comment = google.Comment(html.find('div', 'issuecomment'))
+        comment = google.Comment(html.find('div', 'issuecomment'), 'pychess')
         self.assertEqual(comment.updates, {
             u'Summary:': u'Make PyChess keyboard accessible',
             u'Status:': u'Accepted',

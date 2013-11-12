@@ -52,21 +52,41 @@ def _as_text(node, chunks=None):
             _as_text(n, chunks)
     return ''.join(chunks)
 
-def _as_markdown(tag):
+def _as_markdown(tag, project_name):
     fragments = []
     for fragment in tag:
         if getattr(fragment, 'name', None) == 'a':
             href = urlparse(fragment['href'])
             qs = parse_qs(href.query)
-            if not href.netloc and 'id' in qs:
+            gc_link = not href.netloc or href.netloc == 'code.google.com'
+            target_project = href.path.split('/')[2]
+            internal_link = target_project == project_name
+            if gc_link and internal_link and 'id' in qs:
+                # rewrite issue 123 project-internal issue links
                 fragment = '[%s](#%s)' % (fragment.text, qs['id'][0])
-            elif not href.netloc and 'r' in qs:
+            elif gc_link and internal_link and 'r' in qs:
+                # rewrite r123 project-internal revision links
                 fragment = '[r%s]' % qs['r'][0]
+            elif gc_link:
+                # preserve GC-internal links (probably issue PROJECT:123 inter-project issue links)
+                fragment = '[%s](%s)' % (
+                        h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True),
+                        urljoin('https://code.google.com/p/%s/issues/' % project_name, fragment['href']),
+                    )
             else:
+                # un-link all others
                 fragment = h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
         elif getattr(fragment, 'name', None) == 'i':
+            # preserve styling of "(No comment was entered for this change.)" messages
             fragment = '*%s*' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+        elif getattr(fragment, 'name', None) == 'b':
+            # preserve styling of issue template
+            fragment = '**%s**' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+        elif getattr(fragment, 'name', None) == 'br':
+            # preserve forced line-breaks
+            fragment = '\n'
         else:
+            # convert all others to plain MD
             fragment = h.plain2markdown(str(fragment), preserve_multiple_spaces=True, has_html_entities=True)
         fragments.append(fragment)
     return ''.join(fragments).strip()
@@ -203,7 +223,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return bs.text
 
     def get_issue_description(self):
-        return _as_markdown(self.page.find(id='hc0').pre)
+        return _as_markdown(self.page.find(id='hc0').pre, self.project_name)
 
     def get_issue_created_date(self):
         return self.page.find(id='hc0').find('span', 'date').get('title')
@@ -211,7 +231,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     def get_issue_mod_date(self):
         comments = self.page.findAll('div', 'issuecomment')
         if comments:
-            last_update = Comment(comments[-1])
+            last_update = Comment(comments[-1], self.project_name)
             return last_update.created_date
         else:
             return self.get_issue_created_date()
@@ -250,7 +270,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
 
     def iter_comments(self):
         for comment in self.page.findAll('div', 'issuecomment'):
-            yield Comment(comment)
+            yield Comment(comment, self.project_name)
 
 class UserLink(object):
     def __init__(self, tag):
@@ -283,10 +303,10 @@ def _get_attachments(tag):
         return []
 
 class Comment(object):
-    def __init__(self, tag):
+    def __init__(self, tag, project_name):
         self.author = UserLink(tag.find('span', 'author').find(True, 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
-        self.body = _as_markdown(tag.find('pre'))
+        self.body = _as_markdown(tag.find('pre'), project_name)
         self._get_updates(tag)
         self.attachments = _get_attachments(tag)
 
