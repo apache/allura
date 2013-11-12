@@ -114,7 +114,7 @@
     <div class="grid-2 tcenter">
       <p class="gravatar">
         {{lib.gravatar(c.user, size=48)}}<br>
-        <small><a href="{% if not c.user.is_anonymous() %}{{c.user.url()}}{% enif %}">{{c.user.display_name}}</a></small>
+        <small><a href="{% if not c.user.is_anonymous() %}{{c.user.url()}}{% endif %}">{{c.user.display_name}}</a></small>
       </p>
     </div>
     <div class="grid-16">
