@@ -236,6 +236,7 @@ class TestTrackerImporter(TestCase):
         self.assertEqual(importer.annotate('foo', user, 'bar'), 'foo')
         user.is_anonymous.return_value = True
         self.assertEqual(importer.annotate('foo', user, 'bar'), '*Originally by:* bar\n\nfoo')
+        self.assertEqual(importer.annotate('foo', user, 'nobody'), 'foo')
         self.assertEqual(importer.annotate('foo', user, None), 'foo')
 
     @mock.patch.object(tracker, 'File')
