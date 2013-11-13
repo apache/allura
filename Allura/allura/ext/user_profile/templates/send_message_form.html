@@ -16,6 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div class="editbox">
     <div class="grid-19">
         <b>To:</b> <a href="{{user.url()}}">{{user.display_name|default(user.username)}}</a>
@@ -25,6 +26,7 @@
     </div>
     <div class="grid-19">&nbsp;</div>
     <form method="{{method}}" action="{{action}}">
+        {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
         <div class="grid-19">
             <label class="cr">Subject:</label>
             {{widget.display_field(widget.fields.subject)}}

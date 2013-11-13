@@ -108,7 +108,7 @@
                     insertAfter = this;
                 }
               });
-              var $newItem = $('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form>{{lib.csrf_token()}}</div>');
+              var $newItem = $('<div><span class="trove_fullpath">'+resp.trove_full_path+'</span> <form class="trove_deleter"><input type="hidden" name="type" value="'+type+'"><input type="hidden" name="trove" value="'+new_id+'">'+del_btn+'</form></div>');
               if (insertAfter) {
                 $newItem.insertAfter(insertAfter);
               } else {

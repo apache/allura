@@ -16,7 +16,6 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="get">
   {% for k,v in widget.url_params.iteritems() %}
     <input type="hidden" name="{{k}}" value="{{v}}"/>
@@ -35,5 +34,4 @@
   {% endif %}
   result{% if limit|int != 1 %}s{% endif %} of {{count}} </strong></p>
   {% endif %}
-  {{lib.csrf_token()}}
 </form>

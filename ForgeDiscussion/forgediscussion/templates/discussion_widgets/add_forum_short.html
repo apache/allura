@@ -48,7 +48,7 @@
     <input type="submit" id="new_forum.create" name="new_forum.create" value="Save">
     <a id="add_forum_cancel" class="btn link">Cancel</a>
   </div>
-  {{lib.csrf_token()}}
+  {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
 </form>
 <script type="text/javascript">
   {% for field in widget.fields %}

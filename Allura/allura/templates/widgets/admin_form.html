@@ -43,5 +43,5 @@
     {% endfor %}
     <a href="#" class="close">Cancel</a>
   </div>
-  {{lib.csrf_token()}}
+  {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
 </form>

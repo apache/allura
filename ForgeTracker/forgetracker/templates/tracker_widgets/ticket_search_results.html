@@ -17,7 +17,6 @@
        under the License.
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
-{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <div id="ticket_search_results_holder" style="clear:both">
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
@@ -104,7 +103,6 @@
       {% if h.has_access(c.app, 'configure') %}
           <a href="{{c.project.url()}}admin/{{c.app.config.options.mount_point}}/fields">Change field settings permanently.</a>
       {% endif %}
-      {{lib.csrf_token()}}
     </form>
     {{widget.fields['lightbox'].display()}}
   {% endif %}

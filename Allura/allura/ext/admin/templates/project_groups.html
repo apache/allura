@@ -45,7 +45,6 @@
 {% endmacro %}
 
 {% block content %}
-              {{lib.csrf_token()}}
 <p>Project permissions are assigned to groups of users. Add users to a group appropriate to the role they fill in your project. <a href="#" id="show_help">more...</a></p>
 <div id="help_text" style="display:none">
 <p>By default, your project has three groups of progressively more privileged users (Member, Developer, and Admin groups). There are also catch alls for any logged in user (Authenticated) and any user even if they aren't logged in (Anonymous). Permissions allowed to a less privileged group are inherited by more privileged ones.</p>
@@ -85,7 +84,6 @@
               <input type="text" placeholder="type a username">
               <input type="submit" value="Save" class="nofloat">
               <a href="#" class="cancel_link">cancel</a>
-              {{lib.csrf_token()}}
             </form>
           </li>
           <li class="adder">

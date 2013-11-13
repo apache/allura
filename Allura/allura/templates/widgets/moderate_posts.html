@@ -66,5 +66,5 @@
       {% endfor %}
     </tbody>
   </table>
-  {{lib.csrf_token()}}
+  {% if method.upper() == 'POST' %}{{lib.csrf_token()}}{% endif %}
 </form>
