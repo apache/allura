@@ -59,7 +59,8 @@ def _as_markdown(tag, project_name):
             href = urlparse(fragment['href'])
             qs = parse_qs(href.query)
             gc_link = not href.netloc or href.netloc == 'code.google.com'
-            target_project = href.path.split('/')[2]
+            path_parts = href.path.split('/')
+            target_project = path_parts[2] if gc_link and len(path_parts) >= 3 else ''
             internal_link = target_project == project_name
             if gc_link and internal_link and 'id' in qs:
                 # rewrite issue 123 project-internal issue links
@@ -74,8 +75,8 @@ def _as_markdown(tag, project_name):
                         urljoin('https://code.google.com/p/%s/issues/' % project_name, fragment['href']),
                     )
             else:
-                # un-link all others
-                fragment = h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+                # convert all other links to Markdown syntax
+                fragment = '[%s](%s)' % (fragment.text, fragment['href'])
         elif getattr(fragment, 'name', None) == 'i':
             # preserve styling of "(No comment was entered for this change.)" messages
             fragment = '*%s*' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
