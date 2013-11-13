@@ -184,7 +184,7 @@ class ForgeTrackerImporter(ToolImporter):
         return user
 
     def annotate(self, text, user, username, label=''):
-        if username and user.is_anonymous():
+        if username and user.is_anonymous() and username != 'nobody':
             return '*Originally%s by:* %s\n\n%s' % (label, username, text)
         return text
 
