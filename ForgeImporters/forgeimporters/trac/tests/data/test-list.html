@@ -1,0 +1,343 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  
+  
+
+  
+
+
+  
+
+  <head>
+    <title>
+          #390 (Closing main view does not clear list of scans)
+     – OpenMS
+    </title>
+        <link rel="search" href="/apps/trac/open-ms/search" />
+        <link rel="prev" href="/apps/trac/open-ms/ticket/389" title="Ticket #389" />
+        <link rel="last" href="/apps/trac/open-ms/ticket/633" title="Ticket #633" />
+        <link rel="help" href="/apps/trac/open-ms/wiki/TracGuide" />
+        <link rel="alternate" href="/apps/trac/open-ms/ticket/390?format=csv" type="text/csv" class="csv" title="Comma-delimited Text" /><link rel="alternate" href="/apps/trac/open-ms/ticket/390?format=tab" type="text/tab-separated-values" class="tab" title="Tab-delimited Text" /><link rel="alternate" href="/apps/trac/open-ms/ticket/390?format=rss" type="application/rss+xml" class="rss" title="RSS Feed" />
+        <link rel="next" href="/apps/trac/open-ms/ticket/391" title="Ticket #391" />
+        <link rel="start" href="/apps/trac/open-ms/wiki" />
+        <link rel="stylesheet" href="/apps/trac/open-ms/chrome/common/css/trac.css" type="text/css" /><link rel="stylesheet" href="/apps/trac/open-ms/chrome/common/css/ticket.css" type="text/css" />
+        <link rel="first" href="/apps/trac/open-ms/ticket/1" title="Ticket #1" />
+        <link rel="shortcut icon" href="/apps/trac/open-ms/chrome/common/trac.ico" type="image/x-icon" />
+        <link rel="icon" href="/apps/trac/open-ms/chrome/common/trac.ico" type="image/x-icon" />
+      <link type="application/opensearchdescription+xml" rel="search" href="/apps/trac/open-ms/search/opensearch" title="Search OpenMS" />
+    <script type="text/javascript" src="/apps/trac/open-ms/chrome/common/js/jquery.js"></script><script type="text/javascript" src="/apps/trac/open-ms/chrome/common/js/trac.js"></script><script type="text/javascript" src="/apps/trac/open-ms/chrome/common/js/search.js"></script>
+    <!--[if lt IE 7]>
+    <script type="text/javascript" src="/apps/trac/open-ms/chrome/common/js/ie_pre7_hacks.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="/apps/trac/open-ms/chrome/common/js/wikitoolbar.js"></script><script type="text/javascript">
+      jQuery(document).ready(function($) {
+        $("div.description").find("h1,h2,h3,h4,h5,h6").addAnchor("Link to this section");
+        $("#changelog h3.change").addAnchor("Link to this change");
+        /* only enable control elements for the currently selected action */
+        var actions = $("#action input[name='action']");
+        function updateActionFields() {
+          actions.each(function () {
+            $(this).siblings().find("*[@id]").enable($(this).checked());
+            $(this).siblings().filter("*[@id]").enable($(this).checked());
+          });
+        }
+        actions.click(updateActionFields);
+        updateActionFields();
+      });
+    </script>
+  <link type="text/css" href="/apps/trac/open-ms/chrome/site/ha-css/default2.css" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="http://static.sourceforge.net/css/develop/hosted.php?secure=0&amp;1383143209" media="all" />
+
+    <!-- BEGIN: AdSolution-Tag 4.2: Global-Code [PLACE IN HTML-HEAD-AREA!] -->
+    <!-- DoubleClick Random Number -->
+    <script type="text/javascript">
+      dfp_ord=Math.random()*10000000000000000;
+      dfp_tile = 1;
+    </script>
+        
+    <!-- End DoubleClick Random Number -->
+    <!-- END: AdSolution-Tag 4.2: Global-Code -->
+
+</head>
+  <body>
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-32013-36']);
+  _gaq.push(['_trackPageview']);
+  _gaq.push(['t2._setAccount', 'UA-36130941-3']);
+  _gaq.push(['t2._trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+<div id="sf_header">
+    <div class="sfh_n">
+        <ol class="sfh_n_ol">
+            <li class="sfh_n_li"><span><a href="/" id="sf_logo"><strong>SourceForge</strong></a></span></li>
+            <li class="sfh_n_li"><span><a href="/projects/open-ms" title="Summary page hosted on SourceForge.net">Summary</a></span></li>
+            <li class="sfh_n_li"><span><a href="/projects/open-ms/files" title="Files available for download">Files</a></span></li>                            <li class="sfh_n_li"><span><a href="/projects/open-ms/support">Support</a></span></li>
+                        <li class="sfh_n_li"><span><a href="/support">Report Spam</a></span></li>
+                            <li class="sfh_n_li right"><span><a href="/user/registration/" title="Get a SourceForge.net account">Create account</a></span></li>
+                <li class="sfh_n_li right"><span><a href="/account/login.php" title="Log in and gain access to additional features">Log in</a></span></li>
+                    </ol>
+    </div>
+</div>
+<div id="fad1happ" class="ads">
+   <script type="text/javascript">
+   //<![CDATA[
+    document.write('<script src="http://ad.doubleclick.net/adj/ostg.sourceforge/cons_hosted_apps_p11_spons;pg=default;sz=728x90;tile='+dfp_tile+';tpc=project;tpc=open-ms;ord='+dfp_ord+'?" type="text/javascript"><\/script>');
+     dfp_tile++;
+    //]]>
+    </script>
+</div>
+    
+
+        <div id="doc3" class="yui-t6">
+                <div id="bd">
+                        <a name="content"></a>
+<!-- End Header -->
+    <div id="banner">
+      <div id="header">
+        <h1><a href="http://sourceforge.net/projects/open-ms/">OpenMS</a></h1>
+      </div>
+      <form id="search" action="/apps/trac/open-ms/search" method="get">
+        <div>
+          <label for="proj-search">Search:</label>
+          <input type="text" id="proj-search" name="q" size="18" value="" />
+          <input type="submit" value="Search" />
+        </div>
+      </form>
+      <div id="metanav" class="nav">
+    <ul>
+      <li class="first"><a href="/apps/trac/open-ms/prefs">Preferences</a></li><li><a href="/apps/trac/open-ms/wiki/TracGuide">Help/Guide</a></li><li class="last"><a href="/apps/trac/open-ms/about">About Trac</a></li>
+    </ul>
+  </div>
+    </div>
+    <div id="mainnav" class="nav">
+    <ul>
+      <li class="first"><a href="/apps/trac/open-ms/wiki">Wiki</a></li><li><a href="/apps/trac/open-ms/timeline">Timeline</a></li><li><a href="/apps/trac/open-ms/roadmap">Roadmap</a></li><li><a href="/apps/trac/open-ms/browser">Browse Source</a></li><li class="active"><a href="/apps/trac/open-ms/report">View Tickets</a></li><li class="last"><a href="/apps/trac/open-ms/search">Search</a></li>
+    </ul>
+  </div>
+    <div id="main">
+      <div id="ctxtnav" class="nav">
+        <h2>Context Navigation</h2>
+          <ul>
+            <li class="first "><span>&larr; <a class="prev" href="/apps/trac/open-ms/ticket/389" title="Ticket #389">Previous Ticket</a></span></li><li class="last"><span><a class="next" href="/apps/trac/open-ms/ticket/391" title="Ticket #391">Next Ticket</a> &rarr;</span></li>
+          </ul>
+        <hr />
+      </div>
+    <div id="content" class="ticket">
+      <h1>
+              Ticket #390
+          <span class="status">(closed defect: fixed)</span>
+      </h1>
+      <!-- Do not show the ticket (pre)view when the user first comes to the "New Ticket" page.
+           Wait until they hit preview. -->
+        <!-- Ticket Box (ticket fields along with description) -->
+        <div id="ticket">
+          <div class="date">
+            <p>Opened <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-01-24T14%3A35%3A23Z%2B0000&amp;precision=second" title="2012-01-24T14:35:23Z+0000 in Timeline">22 months</a> ago</p>
+            <p>Last modified <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-10-17T16%3A33%3A22Z%2B0000&amp;precision=second" title="2012-10-17T16:33:22Z+0000 in Timeline">13 months</a> ago</p>
+          </div>
+          <!-- use a placeholder if it's a new ticket -->
+          <h2 class="summary searchable">Closing main view does not clear list of scans</h2>
+          <table class="properties">
+            <tr>
+              <th id="h_reporter">Reported by:</th>
+              <td headers="h_reporter" class="searchable">hendrikweisser</td>
+              <th id="h_owner">Owned by:</th>
+              <td headers="h_owner">hroest
+              </td>
+            </tr>
+            <tr>
+                <th id="h_priority">
+                  Priority:
+                </th>
+                <td headers="h_priority">
+                      major
+                </td>
+                <th id="h_milestone">
+                  Milestone:
+                </th>
+                <td headers="h_milestone">
+                      <a class="milestone" href="/apps/trac/open-ms/milestone/Good%20Ideas%20for%20upcoming%20releases">Good Ideas for upcoming releases</a>
+                </td>
+            </tr><tr>
+                <th id="h_component">
+                  Component:
+                </th>
+                <td headers="h_component">
+                      TOPPView
+                </td>
+                <th id="h_version">
+                  Version:
+                </th>
+                <td headers="h_version">
+                      1.9
+                </td>
+            </tr><tr>
+                <th id="h_keywords">
+                  Keywords:
+                </th>
+                <td headers="h_keywords" class="searchable">
+                </td>
+                <th id="h_cc">
+                  Cc:
+                </th>
+                <td headers="h_cc" class="searchable">
+                      timosachsenberg
+                </td>
+            </tr>
+          </table>
+            <div class="description">
+              <h3 id="comment:description">
+                Description
+              </h3>
+              <div class="searchable">
+                <p>
+To reproduce:<br />
+- open an mzML file<br />
+- scans are listed in the "Scan view" to the right<br />
+- close the main view (right-click on the tab with the filename, select "Close")<br />
+- main view closes, but "Scan view" is not cleared<br />
+</p>
+<p>
+By itself, this is not a big problem. However, if the "Identification view" was used before closing the main file, switching from "Scan view" to "Identification view" in the "Views" window will crash TOPPView.<br />
+</p>
+
+              </div>
+            </div>
+        </div>
+          <h2>Change History</h2>
+          <div id="changelog">
+            <form method="get" action="#comment" class="printableform">
+              <div class="change">
+                <h3 class="change" id="comment:1">
+                  Changed <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-01-24T15%3A16%3A55Z%2B0000&amp;precision=second" title="2012-01-24T15:16:55Z+0000 in Timeline">22 months</a> ago by cbielow
+                </h3>
+      <div class="comment searchable">
+        <p>
+duplicate of:<br />
+- <a class="closed ticket" href="/apps/trac/open-ms/ticket/316" title="defect: SpectraViewWidget is not cleaned up when last layer is deleted (closed: duplicate)">#316</a><br />
+- <a class="closed ticket" href="/apps/trac/open-ms/ticket/283" title="defect: TOPPView: Scan view widget does not clear after closing last file (closed: duplicate)">#283</a><br />
+</p>
+<p>
+Closing the other two as this is the most comprehensive description!<br />
+</p>
+
+      </div>
+              </div>
+            </form><form method="get" action="#comment" class="printableform">
+              <div class="change">
+                <h3 class="change" id="comment:2">
+                  Changed <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-09-18T08%3A30%3A38Z%2B0000&amp;precision=second" title="2012-09-18T08:30:38Z+0000 in Timeline">14 months</a> ago by hroest
+                </h3>
+      <ul class="changes">
+        <li>
+          <strong>milestone</strong>
+              changed from <em>Bug-Reports</em> to <em>Release 1.10</em>
+        </li>
+      </ul>
+      <div class="comment searchable">
+        <p>
+maybe related to <a class="closed ticket" href="/apps/trac/open-ms/ticket/391" title="defect: TOPPView crashes when opening a file in Identification view (closed: fixed)">#391</a> which is also a problem with the identification view?<br />
+</p>
+
+      </div>
+              </div>
+            </form><form method="get" action="#comment" class="printableform">
+              <div class="change">
+                <h3 class="change" id="comment:3">
+                  Changed <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-09-18T11%3A46%3A21Z%2B0000&amp;precision=second" title="2012-09-18T11:46:21Z+0000 in Timeline">14 months</a> ago by aiche
+                </h3>
+      <ul class="changes">
+        <li>
+          <strong>owner</strong>
+            changed from <em>all</em> to <em>hroest</em>
+        </li><li>
+          <strong>status</strong>
+              changed from <em>new</em> to <em>assigned</em>
+        </li><li>
+          <strong>milestone</strong>
+              changed from <em>Release 1.10</em> to <em>Good Ideas for upcoming releases</em>
+        </li>
+      </ul>
+      <div class="comment searchable">
+        
+      </div>
+              </div>
+            </form><form method="get" action="#comment" class="printableform">
+              <div class="change">
+                <h3 class="change" id="comment:4">
+                  Changed <a class="timeline" href="/apps/trac/open-ms/timeline?from=2012-10-17T16%3A33%3A22Z%2B0000&amp;precision=second" title="2012-10-17T16:33:22Z+0000 in Timeline">13 months</a> ago by timosachsenberg
+                </h3>
+      <ul class="changes">
+        <li>
+          <strong>status</strong>
+              changed from <em>assigned</em> to <em>closed</em>
+        </li><li>
+          <strong>resolution</strong>
+              set to <em>fixed</em>
+        </li>
+      </ul>
+      <div class="comment searchable">
+        <p>
+fixed in rev. 10330<br />
+</p>
+
+      </div>
+              </div>
+            </form>
+          </div>
+      <div id="help">
+        <strong>Note:</strong> See
+        <a href="/apps/trac/open-ms/wiki/TracTickets">TracTickets</a> for help on using
+        tickets.
+      </div>
+    </div>
+    <div id="altlinks">
+      <h3>Download in other formats:</h3>
+      <ul>
+        <li class="first">
+          <a rel="nofollow" href="/apps/trac/open-ms/ticket/390?format=csv" class="csv">Comma-delimited Text</a>
+        </li><li>
+          <a rel="nofollow" href="/apps/trac/open-ms/ticket/390?format=tab" class="tab">Tab-delimited Text</a>
+        </li><li class="last">
+          <a rel="nofollow" href="/apps/trac/open-ms/ticket/390?format=rss" class="rss">RSS Feed</a>
+        </li>
+      </ul>
+    </div>
+    </div>
+    <div id="footer" lang="en" xml:lang="en"><hr />
+      <a id="tracpowered" href="http://trac.edgewall.org/"><img src="/apps/trac/open-ms/chrome/common/trac_logo_mini.png" height="30" width="107" alt="Trac Powered" /></a>
+      <p class="left">
+        Powered by <a href="/apps/trac/open-ms/about"><strong>Trac 0.11.2.1</strong></a><br />
+        By <a href="http://www.edgewall.org/">Edgewall Software</a>.
+      </p>
+      <p class="right"></p>
+    </div>
+<!-- Footer -->
+                </div>
+        </div>
+<!-- End Footer -->
+
+    
+<p class="copyright">&copy; 2013 SourceForge. All Rights Reserved.
+SourceForge is a <a href="http://www.diceholdingsinc.com/phoenix.zhtml?c=211152&p=irol-landing">Dice Holdings, Inc.</a> company &nbsp;
+<a href="http://slashdotmedia.com/terms-of-use">Terms of Use</a> -
+<a href="http://slashdotmedia.com/privacy-statement/">Privacy Policy</a> -
+<a href="http://slashdotmedia.com/opt-out-choices">Cookies/Opt Out</a>
+</p>
+    
+    <script type="text/javascript">
+        pageTracker._trackPageview();
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+id,summary,reporter,owner,description,type,status,priority,milestone,component,version,resolution,keywords,cc
+390,Closing main view does not clear list of scans,hendrikweisser,hroest,"To reproduce:
+- open an mzML file
+- scans are listed in the ""Scan view"" to the right
+- close the main view (right-click on the tab with the filename, select ""Close"")
+- main view closes, but ""Scan view"" is not cleared
+
+By itself, this is not a big problem. However, if the ""Identification view"" was used before closing the main file, switching from ""Scan view"" to ""Identification view"" in the ""Views"" window will crash TOPPView.",defect,closed,major,Good Ideas for upcoming releases,TOPPView,1.9,fixed,,timosachsenberg
