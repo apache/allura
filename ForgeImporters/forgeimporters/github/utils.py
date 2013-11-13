@@ -6,7 +6,7 @@ class GitHubMarkdownConverter(object):
     def __init__(self, gh_user, gh_project):
         self.gh_project = '%s/%s' % (gh_user, gh_project)
         self.gh_base_url = u'https://github.com/'
-        self.code_patterns = ['```', '~~~~~']
+        self.code_patterns = ['```', '~~~']
 
     def convert(self, text):
         lines = self._parse_lines(text.split('\n'))
@@ -15,10 +15,13 @@ class GitHubMarkdownConverter(object):
     def _parse_lines(self, lines):
         in_block = False
         new_lines = []
-        for line in lines:
+        for i, line in enumerate(lines):
             nextline = False
             for p in self.code_patterns:
                 if line.startswith(p):
+                    prev_line = lines[i-1].strip() if (i-1) >= 0 else ''
+                    if len(prev_line) > 0 and not in_block:
+                        new_lines.append('')
                     if p == '```':
                         syntax = line.lstrip('`').strip()
                         if syntax:
@@ -135,4 +138,4 @@ class GitHubMarkdownConverter(object):
         return '<s>%s</s>' % m.group(1)
 
     def _codeblock_syntax(self, text):
-        return '\n    :::%s' % text
+        return '    :::%s' % text

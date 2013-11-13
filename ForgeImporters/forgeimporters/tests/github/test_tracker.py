@@ -195,7 +195,6 @@ def hello(name):
 
 Hello
 
-
     :::python
     def hello(name):
         print "Hello, " + name'''
@@ -229,7 +228,6 @@ def hello(name):
         body_converted = '''*Originally posted by:* [me](https://github.com/me)
 
 Hello
-
 
     :::python
     def hello(name):

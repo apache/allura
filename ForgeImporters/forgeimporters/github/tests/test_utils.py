@@ -95,3 +95,35 @@ Two code blocks here!
     }'''
 
         assert_equal(self.conv.convert(text).strip(), result)
+
+    def test_code_blocks_without_newline_before(self):
+        text = u'''
+There are some code snippet:
+```
+print 'Hello'
+```
+Pretty cool, ha?'''
+
+        result = u'''
+There are some code snippet:
+
+    print 'Hello'
+Pretty cool, ha?'''
+        assert_equal(self.conv.convert(text).strip(), result.strip())
+        text = text.replace('```', '~~~')
+        assert_equal(self.conv.convert(text).strip(), result.strip())
+
+        text = u'''
+There are some code snippet:
+```python
+print 'Hello'
+```
+Pretty cool, ha?'''
+
+        result = u'''
+There are some code snippet:
+
+    :::python
+    print 'Hello'
+Pretty cool, ha?'''
+        assert_equal(self.conv.convert(text).strip(), result.strip())
