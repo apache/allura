@@ -146,19 +146,23 @@ class TracExport(object):
         ticket_fields['class'] = 'ARTIFACT'
         ticket = self.remap_fields(ticket_fields)
 
-        # Use RSS export to get ticket description and comments
+        # Use HTML export to get ticket description and comments
         import html2text
         html2text.BODY_WIDTH = 0
-        url = self.full_url(self.TICKET_URL % id, 'rss')
+        url = self.full_url(self.TICKET_URL % id)
         self.log_url(url)
-        d = feedparser.parse(urlopen(url))
-        ticket['description'] = html2text.html2text(d.feed.description)
+        d = BeautifulSoup(urlopen(url))
+        desc = d.find('div', 'description').find('div', 'searchable')
+        ticket['description'] = html2text.html2text(desc.renderContents('utf8').decode('utf8')) if desc else ''
         comments = []
-        for comment in d['entries']:
+        for comment in d.findAll('form', action='#comment'):
             c = {}
-            c['submitter'] = getattr(comment, 'author', None)
-            c['date'] = comment.updated_parsed
-            c['comment'] = html2text.html2text(comment.summary)
+            c['submitter'] = re.sub(r'.* by ', '', comment.find('h3', 'change').text).strip()
+            c['date'] = self.trac2z_date(comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
+            changes = str(comment.find('ul', 'changes') or '')
+            body = comment.find('div', 'comment')
+            body = body.renderContents('utf8').decode('utf8') if body else ''
+            c['comment'] = html2text.html2text(changes + body)
             c['class'] = 'COMMENT'
             comments.append(c)
         ticket['comments'] = comments

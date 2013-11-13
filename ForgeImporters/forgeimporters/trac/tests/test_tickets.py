@@ -17,9 +17,10 @@
 
 import json
 import os
+from datetime import datetime
 
 from unittest import TestCase
-from mock import Mock, patch
+from mock import Mock, patch, MagicMock
 from ming.orm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 
@@ -203,3 +204,25 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
         import_support = TracImportSupport()
         self.assertEqual(import_support.get_slug_by_id('204', '1'), comments[0].slug)
         self.assertEqual(import_support.get_slug_by_id('204', '2'), comments[1].slug)
+
+    @with_tracker
+    def test_list(self):
+        from allura.scripts.trac_export import TracExport, DateJSONEncoder
+        csv_fp = open(os.path.dirname(__file__) + '/data/test-list.csv')
+        html_fp = open(os.path.dirname(__file__) + '/data/test-list.html')
+        with patch.object(TracExport, 'next_ticket_ids', return_value=[(390, {})]):
+            te = TracExport('url', do_attachments=False)
+            te.exhausted = True
+            te.csvopen = lambda s: csv_fp
+        with patch('allura.scripts.trac_export.urlopen', return_value=html_fp):
+            json_data = {
+                    'class': 'PROJECT',
+                    'trackers': {'default': {'artifacts': list(te)}},
+                }
+        TracImportSupport().perform_import(
+                json.dumps(json_data, cls=DateJSONEncoder),
+                '{"user_map": {}}')
+        ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
+                                    ticket_num=390)
+        self.assertIn('To reproduce:  \n\\- open an mzML file', ticket.description)
+        self.assertIn('duplicate of:  \n\\- [#316](316)', ticket.discussion_thread.find_posts()[0].text)
