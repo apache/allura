@@ -31,6 +31,8 @@
 
 {% block header %}#{{ticket.ticket_num}} {{ticket.summary}}{% if ticket.deleted %}<span> (deleted)</span>{% endif %}{% endblock %}
 
+{% set editable = h.has_access(ticket, 'update') and not ticket.deleted %}
+
 {% block actions %}
 <a href="{{ticket.url()}}feed.rss" title="Follow this Ticket"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if c.user and c.user != c.user.anonymous() %}
@@ -39,7 +41,7 @@
 {% if h.has_access(ticket.app, 'admin') %}
   <a href="move" title="Move"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Move</a>
 {% endif %}
-{% if h.has_access(ticket, 'update') and not ticket.deleted%}
+{% if editable %}
   <a href="#" title="Edit" class="edit_ticket"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b> Edit</a>
   {%if h.has_access(ticket, 'delete') and not ticket.deleted%}
     <a class="post-link" href="./delete" title="Delete"><b data-icon="{{g.icons['delete'].char}}" class="ico {{g.icons['delete'].css}}" title="Delete"></b></a>
@@ -51,10 +53,12 @@
 
 {% block edit_box %}
 <div class="editbox">
+  {% if editable %}
   <div class="form_holder" style="display: none">
     {{c.ticket_form.display(action='%supdate_ticket_from_widget' % ticket.url(),
       value=ticket, ticket=ticket, show_comment=True)}}
   </div>
+  {% endif %}
   <div class="view_holder">
       {% if '_milestone' in ticket.custom_fields %}
         <div class="grid-4">
