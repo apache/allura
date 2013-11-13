@@ -324,7 +324,7 @@ Our website is <http://sf.net>.
 
 ticket [#1]
 
-#1 header
+[#1] header
 
 sha [aaaaaa]'''
         assert_equal(f(source, 'test.md').strip(), result)
