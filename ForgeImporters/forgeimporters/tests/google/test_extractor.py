@@ -21,7 +21,9 @@ from urllib2 import HTTPError
 
 import mock
 from datadiff.tools import assert_equal
+from IPython.testing.decorators import skipif, module_not_available
 
+from allura.tests.decorators import without_module
 from forgeimporters import google
 from forgeimporters import base
 
@@ -159,7 +161,44 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(list(gpe.iter_comments()), [])
         self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 14:56:23 2013')
 
+    @without_module('html2text')
     def test_get_issue_basic_fields(self):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
+        self.assertEqual(gpe.get_issue_creator().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
+        self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_status(), 'Started')
+        self._p_soup.stop()
+        self.assertEqual(gpe.get_issue_summary(), 'Test "Issue"')
+        assert_equal(gpe.get_issue_description(),
+                'Test \\*Issue\\* for testing\n'
+                '\n'
+                '&nbsp; 1\\. Test List\n'
+                '&nbsp; 2\\. Item\n'
+                '\n'
+                '\\*\\*Testing\\*\\*\n'
+                '\n'
+                ' \\* Test list 2\n'
+                ' \\* Item\n'
+                '\n'
+                '\\# Test Section\n'
+                '\n'
+                '&nbsp;&nbsp;&nbsp; p = source\\.test\\_issue\\.post\\(\\)\n'
+                '&nbsp;&nbsp;&nbsp; p\\.count = p\\.count \\*5 \\#\\* 6\n'
+                '&nbsp;&nbsp;&nbsp; if p\\.count &gt; 5:\n'
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
+                '\n'
+                'References: [issue 1](#1), [r2]\n'
+                '\n'
+                'That\'s all'
+            )
+        self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
+        self.assertEqual(gpe.get_issue_stars(), 1)
+
+    @skipif(module_not_available('html2text'))
+    def test_get_issue_basic_fields_html2text(self):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
@@ -243,8 +282,58 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
 
+    @without_module('html2text')
     @mock.patch.object(base, 'StringIO')
     def test_iter_comments(self, StringIO):
+        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        gpe = self._make_extractor(test_issue)
+        comments = list(gpe.iter_comments())
+        self.assertEqual(len(comments), 4)
+        expected = [
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:35:15 2013',
+                    'body': 'Test \\*comment\\* is a comment',
+                    'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                    'attachments': ['at2.txt'],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:35:34 2013',
+                    'body': 'Another comment with references: [issue 2](#2), [r1]',
+                    'updates': {},
+                    'attachments': [],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:36:39 2013',
+                    'body': 'Last comment',
+                    'updates': {},
+                    'attachments': ['at4.txt', 'at1.txt'],
+                },
+                {
+                    'author.name': 'john...@gmail.com',
+                    'author.url': 'http://code.google.com/u/101557263855536553789/',
+                    'created_date': 'Thu Aug  8 15:36:57 2013',
+                    'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                    'updates': {'Labels:': 'OpSys-OSX'},
+                    'attachments': [],
+                },
+            ]
+        for actual, expected in zip(comments, expected):
+            self.assertEqual(actual.author.name, expected['author.name'])
+            self.assertEqual(actual.author.url, expected['author.url'])
+            self.assertEqual(actual.created_date, expected['created_date'])
+            self.assertEqual(actual.body, expected['body'])
+            self.assertEqual(actual.updates, expected['updates'])
+            self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
+
+    @skipif(module_not_available('html2text'))
+    @mock.patch.object(base, 'StringIO')
+    def test_iter_comments_html2text(self, StringIO):
         test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         comments = list(gpe.iter_comments())
