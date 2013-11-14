@@ -88,7 +88,7 @@ def _as_markdown(tag, project_name):
             fragment = '\n'
         else:
             # convert all others to plain MD
-            fragment = h.plain2markdown(str(fragment), preserve_multiple_spaces=True, has_html_entities=True)
+            fragment = h.plain2markdown(unicode(fragment), preserve_multiple_spaces=True, has_html_entities=True)
         fragments.append(fragment)
     return ''.join(fragments).strip()
 

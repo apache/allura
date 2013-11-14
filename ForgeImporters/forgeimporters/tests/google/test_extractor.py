@@ -22,6 +22,7 @@ from urllib2 import HTTPError
 import mock
 from datadiff.tools import assert_equal
 from IPython.testing.decorators import skipif, module_not_available
+from BeautifulSoup import BeautifulSoup
 
 from allura.tests.decorators import without_module
 from forgeimporters import google
@@ -484,3 +485,13 @@ class TestComment(TestCase):
             u'Summary:': u'Make PyChess keyboard accessible',
             u'Status:': u'Accepted',
             })
+
+
+class TestAsMarkdown(TestCase):
+    def soup(self, tag):
+        return BeautifulSoup(u'<pre>%s</pre>' % tag).first()
+
+    def test_unicode(self):
+        tag = self.soup(u'\ua000 foo <a href="http://example.com/">bar</a>')
+        res = google._as_markdown(tag, 'pn')
+        self.assertEqual(res, u'\ua000 foo [bar](http://example.com/)')
