@@ -288,3 +288,4 @@ class TestTicketModel(TrackerTestWithModel):
         assert_in('related_artifacts', json_keys)  # from Artifact
         assert_in('votes_up', json_keys)  # VotableArtifact
         assert_in('ticket_num', json_keys)  # Ticket
+        assert ticket.__json__()['assigned_to'] is None

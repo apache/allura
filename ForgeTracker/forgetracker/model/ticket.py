@@ -1014,7 +1014,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             summary=self.summary,
             description=self.description,
             reported_by=self.reported_by_username,
-            assigned_to=self.assigned_to_username,
+            assigned_to=self.assigned_to_id and self.assigned_to_username or None,
             reported_by_id=self.reported_by_id and str(self.reported_by_id) or None,
             assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
             status=self.status,
