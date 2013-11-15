@@ -667,12 +667,17 @@ class RootController(BaseController, FeedController):
         for fld in c.app.globals.milestone_fields:
             if fld.name == field_name:
                 for new in milestones:
+                    exists_milestones = [m.name for m in fld.milestones]
+                    new['new_name'] = new['new_name'].replace("/", "-")
+                    if (new['new_name'] in exists_milestones) and (new['new_name'] != new['old_name']):
+                        flash('The milestone "%s" exists' % new['new_name'], 'error')
+                        redirect('milestones')
                     for m in fld.milestones:
                         if m.name == new['old_name']:
                             if new['new_name'] == '':
                                 flash('You must name the milestone.','error')
                             else:
-                                m.name = new['new_name'].replace("/", "-")
+                                m.name = new['new_name']
                                 m.description = new['description']
                                 m.due_date = new['due_date']
                                 m.complete = new['complete'] == 'Closed'
@@ -692,7 +697,7 @@ class RootController(BaseController, FeedController):
                                     update_counts = True
                     if new['old_name'] == '' and new['new_name'] != '':
                         fld.milestones.append(dict(
-                            name=new['new_name'].replace("/", "-"),
+                            name=new['new_name'],
                             description = new['description'],
                             due_date = new['due_date'],
                             complete = new['complete'] == 'Closed'))

@@ -158,6 +158,35 @@ class TestMilestones(TrackerTestController):
         assert '<option value="3.0">3.0</option>' in closed
         assert '<option value="4.0">4.0</option>' in closed
 
+    def test_dublicate_milestone(self):
+        self.new_ticket(summary='bar', _milestone='1.0', status='closed')
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Closed',
+            'milestones-0.due_date':''
+        }
+        r = self.app.post('/bugs/update_milestones', d)
+        assert 'error' in self.webflash(r)
+
+        p = M.Project.query.get(shortname='test')
+        app = p.app_instance('bugs')
+        assert len(app.globals.milestone_fields[0]['milestones']) == 2
+
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'2.0',
+            'milestones-0.new_name':'1.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Closed',
+            'milestones-0.due_date':''
+        }
+        r = self.app.post('/bugs/update_milestones', d)
+        assert 'error' in self.webflash(r)
+        assert app.globals.milestone_fields[0]['milestones'][1]['name'] == '2.0'
+
 
 def post_install_create_ticket_permission(app):
     """Set to authenticated permission to create tickets but not update"""
