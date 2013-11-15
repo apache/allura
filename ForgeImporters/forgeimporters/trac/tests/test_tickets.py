@@ -155,16 +155,31 @@ class TestTracImportSupport(TestCase):
     def test_link_processing(self):
         import_support = TracImportSupport()
         import_support.get_slug_by_id = lambda ticket, comment: '123'
-        result = import_support.link_processing('''\
-                test link [[2496]](http://testlink.com)
-                test ticket ([#201](http://sourceforge.net/apps/trac/sourceforge/ticket/201))
-                Replying to [someuser](http://sourceforge.net/apps/trac/sourceforge/ticket/204#comment:1)
-                #200 unchanged''')
+        cases = {
+                'test link [[2496]](http://testlink.com)':
+                "test link [\[2496\]](http://testlink.com)",
 
-        assert "test link [\[2496\]](http://testlink.com)" in result
-        assert 'test ticket ([#201](201))' in result
-        assert 'Replying to [someuser](204/#123)' in result
-        assert '#200 unchanged' in result, result
+                'test ticket ([#201](http://site.net/apps/trac/project/ticket/201))':
+                'test ticket ([#201](201))',
+
+                'Replying to [someuser](http://site.net/apps/trac/project/ticket/204#comment:1)':
+                'Replying to [someuser](204/#123)',
+
+                '**description** modified ([diff](http://site.net/apps/trac/project/ticket/205?action=diff&version=1))':
+                '**description** modified ([diff](205))',
+
+                'Fixed in [r1000](http://site.net/apps/trac/project/changeset/1000)':
+                'Fixed in [r1000](r1000)',
+
+                '[[Double brackets]](1) the [[whole way]](2).':
+                '[\[Double brackets\]](1) the [\[whole way\]](2).',
+
+                '#200 unchanged':
+                '#200 unchanged',
+            }
+        for input, expected in cases.items():
+            actual = import_support.link_processing(input)
+            self.assertEqual(actual, expected)
 
 
 class TestTracImportSupportFunctional(TestRestApiBase, TestCase):

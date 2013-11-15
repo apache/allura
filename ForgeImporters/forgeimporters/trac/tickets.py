@@ -189,6 +189,9 @@ class TracImportSupport(ImportSupport):
         else:
             return text
 
+    def changeset_link(self, m):
+        return '(r%s)' % m.group(1)
+
     def brackets_escaping(self, m):
         """Escape double brackets."""
         return '[\[%s\]]' % m.groups()[0]
@@ -203,11 +206,13 @@ class TracImportSupport(ImportSupport):
 
         """
         comment_pattern = re.compile('\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
-        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)\)')
-        brackets_pattern = re.compile('\[\[(.*)\]\]')
+        ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)(?:\?[^)]*)?\)')
+        changeset_pattern = re.compile(r'(?<=\])\(\S*/changeset/(\d+)(?:\?[^]]*)?\)')
+        brackets_pattern = re.compile('\[\[([^]]*)\]\]')
 
         text = comment_pattern.sub(self.comment_link, text)
         text = ticket_pattern.sub(self.ticket_link, text)
+        text = changeset_pattern.sub(self.changeset_link, text)
         text = brackets_pattern.sub(self.brackets_escaping, text)
         return text
 
