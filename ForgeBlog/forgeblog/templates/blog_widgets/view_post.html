@@ -21,7 +21,7 @@
 {{value.html_text|safe}}
 {{lib.related_artifacts(value)}}
 <em class="grid-19">
-  Posted by <a href="{{base_post.author().url()}}">{{lib.gravatar_or_name(base_post.author(), size=16)}}</a> {{lib.abbr_date(value.timestamp)}}
+  Posted by {% if not base_post.author().is_anonymous() %}<a href="{{base_post.author().url()}}">{{lib.gravatar_or_name(base_post.author(), size=16)}}</a> {% else %}{{lib.gravatar_or_name(base_post.author(), size=16)}}{% endif%} {{lib.abbr_date(value.timestamp)}}
   {% if value.state != 'published' %}
 	<span>| {{value.state.capitalize()}}</span>
   {% endif %}

@@ -61,7 +61,7 @@
         <td>
           {% if forum.last_post %}
           <a href="{{forum.last_post.url_paginated()}}">{{h.text.truncate(h.really_unicode(forum.last_post.subject or '(no subject)'),75)}}</a><br>
-          by <a href="{{forum.last_post.author().url()}}">{{forum.last_post.author().display_name}}</a><br>
+          by {% if not %}<a href="{{forum.last_post.author().url()}}">{{forum.last_post.author().display_name}}</a>{% else %}{{forum.last_post.author().display_name}}{% endif %}<br>
           {{h.ago(forum.last_post.mod_date)}}
           {% else %}
           No posts yet

@@ -60,9 +60,15 @@
 
 {% macro user_link(email, name, size=16) -%}
     {% set user = h.find_user(email) -%}
-    {% if user %}<a href="{% if not user.is_anonymous() %}{{user.url()}}{% endif %}">{% endif -%}
-        {{ email_gravatar(email, name, size) }} {{ name }}
-    {%- if user %}</a>{% endif -%}
+    {% if user %}
+        {% if not user.is_anonymous() %}
+            <a href="{{user.url()}}">
+                {{ email_gravatar(email, name, size) }} {{ name }}
+            </a>
+        {% else %}
+            {{ email_gravatar(email, name, size) }} {{ name }}
+        {% endif %}
+    {% endif %}
 {%- endmacro %}
 
 {% macro file_field(name, label) %}
@@ -115,7 +121,7 @@
 {% macro post_summary(post) %}
   {% if post %}
     <span>
-      by <a href="{{post.author().url()}}">{{post.author().display_name}}</a>
+      by {% if not post.author().is_anonymous() %}<a href="{{post.author().url()}}">{{post.author().display_name}}</a>{% else %}{{post.author().display_name}}{% endif %}
       {{abbr_date(post.timestamp)}}
     </span>
   {% endif %}
