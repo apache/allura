@@ -58,7 +58,7 @@
             {{lib.gravatar(c.user, size=48)}}<br>
             <small>
                     {% if c.user.is_anonymous() %}
-                        {% c.user.display_name %}
+                        {{ c.user.display_name }}
                     {% else %}
                         <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
                     {% endif %}
