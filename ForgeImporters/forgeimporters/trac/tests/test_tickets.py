@@ -241,3 +241,4 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
                                     ticket_num=390)
         self.assertIn('To reproduce:  \n\\- open an mzML file', ticket.description)
         self.assertIn('duplicate of:  \n\\- [#316](316)', ticket.discussion_thread.find_posts()[0].text)
+        self.assertIn('will crash TOPPView.', ticket.description)

@@ -152,6 +152,7 @@ class TracExport(object):
         url = self.full_url(self.TICKET_URL % id)
         self.log_url(url)
         d = BeautifulSoup(urlopen(url))
+        self.clean_missing_wiki_links(d)
         desc = d.find('div', 'description').find('div', 'searchable')
         ticket['description'] = html2text.html2text(desc.renderContents('utf8').decode('utf8')) if desc else ''
         comments = []
@@ -268,6 +269,10 @@ class TracExport(object):
             if id >= self.start_id:
                 break
         return self.get_ticket(id, extra)
+
+    def clean_missing_wiki_links(self, doc):
+        for link in doc.findAll('a', 'missing wiki'):
+            link.string = link.string.rstrip('?')
 
 
 class DateJSONEncoder(json.JSONEncoder):
