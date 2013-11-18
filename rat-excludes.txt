@@ -38,3 +38,5 @@ ForgeGit/forgegit/data/post-receive_tmpl
 ForgeSVN/forgesvn/tests/data/
 ForgeImporters/forgeimporters/tests/data/google/empty-issue.html
 ForgeImporters/forgeimporters/tests/data/google/test-issue.html
+ForgeImporters/forgeimporters/trac/tests/data/test-list.csv
+ForgeImporters/forgeimporters/trac/tests/data/test-list.html
