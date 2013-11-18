@@ -920,7 +920,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                             };
                             $.getJSON('suggest_name', data, function(result){
                                 $unixname_input.val(result.suggested_name);
-                                $url_fragment.html(result.suggested_name);
+                                $url_fragment.text(result.suggested_name);
                                 check_names();
                             });
                         } else {
@@ -932,7 +932,7 @@ class NeighborhoodAddProjectForm(ForgeForm):
                     manual = true;
                 });
                 $unixname_input.keyup(function(){
-                    $url_fragment.html($unixname_input.val());
+                    $url_fragment.text($unixname_input.val());
                     delay(check_names, 500);
                 });
             });
