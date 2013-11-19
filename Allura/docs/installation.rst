@@ -18,12 +18,12 @@
 Installation
 =================
 
-Easy Setup
+Installation
 ---------------
 
-Our easy setup instructions are in our INSTALL.markdown file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown
+Our step-by-step setup instructions are in our INSTALL.markdown file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown  You should be able to get Allura up and running in well under an hour by following those instructions.
 
-You should be able to get Allura up and running in well under an hour by following those instructions.
+For a faster and easier setup, see our `Vagrant/VirtualBox installation guide <https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/>`_
 
 Enabling inbound email
 ----------------------
