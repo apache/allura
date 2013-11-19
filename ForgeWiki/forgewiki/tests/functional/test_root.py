@@ -243,6 +243,80 @@ class TestRootController(TestController):
         assert 'Subscribe' in response
         response = self.app.get('/wiki/tést/diff?v1=0&v2=0')
         assert 'tést' in response
+        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
+
+                                            ~~~~~
+                                            php removeUnusedAccounts.php --delete
+                                            ~~~~~
+
+                                            #### 6) Import image (and other) files into your Mediawiki install ####
+
+                                            Upload the backup of your data files to the project web.
+
+                                            ~~~~~
+                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.sourceforge.net:
+                                            ~~~~~
+
+                                            In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:
+
+                                            ~~~~~
+                                            cd wiki
+                                            mkdir oldimages
+                                            cd oldimages
+                                            tar -xvzf ../../../projectname_mediawiki_files.tar.gz
+                                            mv projectname/* ../images/
+                                            cd ..
+                                            rm -r oldimages
+                                            # Now fix permissons. Wrong permissions may cause massive slowdown!
+                                            chown yournick:apache images/ --recursive
+                                            chmod 775 images/ --recursive
+                                            ~~~~~
+
+                                            **TODO: FIXME:** The following can't be quite correct:
+
+                                            Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
+
+                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
+        self.app.post('/wiki/testdiff/update', params=d)
+        d = dict(title='testdiff', text="""**Optionally**, you may also want to remove all the unused accounts that have accumulated (one was created for *every* logged in SF-user who has visited your MediaWiki hosted app):
+
+                                            ~~~~~
+                                            php removeUnusedAccounts.php --delete
+                                            ~~~~~
+
+                                            #### 6) Import image (and other) files into your Mediawiki install ####
+
+                                            Upload the backup of your data files to the project web.
+
+                                            ~~~~~
+                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.sourceforge.net:
+                                            ~~~~~
+
+                                            In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:
+
+                                            ~~~~~
+                                            cd wiki
+                                            mkdir oldimages
+                                            cd oldimages
+                                            tar -xvzf ../../../projectname_mediawiki_files.tar.gz
+                                            mv projectname/* ../images/
+                                            cd ..
+                                            rm -r oldimages
+                                            # Now fix permissions. Wrong permissions may cause a massive slowdown!
+                                            chown yournick:apache images/ --recursive
+                                            chmod 775 images/ --recursive
+                                            ~~~~~
+
+                                            **TODO: FIXME:** The following can't be quite correct:
+
+                                            Now hit your wiki a few times from a browser. Initially, it will be dead slow, as it is trying to build thumbnails for the images. And it will time out, a lot. Keep hitting reload, until it works.
+
+                                            **Note:** The logo shown in the sidebar is no longer stored as an object in the wiki (as it was in the Hosted App installation). Rather save it as a regular file, then edit LocalSettings.php, adding""")
+        self.app.post('/wiki/testdiff/update', params=d)
+        response = self.app.get('/wiki/testdiff/diff?v1=1&v2=2')
+        assert '# Now fix <del> permissons. </del> <ins> permissions. </ins> Wrong permissions may cause <ins> a </ins> massive slowdown!' in response
+        response = self.app.get('/wiki/testdiff/diff?v1=2&v2=1')
+        assert '# Now fix <del> permissions. </del> <ins> permissons. </ins> Wrong permissions may cause <del> a </del> massive slowdown!' in response
 
     def test_page_raw(self):
         self.app.post(
