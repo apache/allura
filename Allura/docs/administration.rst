@@ -80,7 +80,7 @@ Site Notifications
 
 Allura has support for site-wide notifications that appear below the site header,
 but there is currently no UI for managing them.  They can easily be inserted via
-manual mongo queries, however:
+manual mongo queries, however::
 
     > db.site_notification.insert({
     ... active: true,
