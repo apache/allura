@@ -42,9 +42,7 @@ Before we begin, you'll need to install some system packages.
 
     ~$ sudo aptitude install git-core default-jre-headless python-dev libssl-dev libldap2-dev libsasl2-dev libjpeg8-dev zlib1g-dev
 
-To install MongoDB 2.2.3, follow the instructions here:
-
-   <http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>
+To install MongoDB, follow the instructions here: <http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/>
 
 Optional, for SVN support:
 
@@ -148,6 +146,7 @@ register a new project in your own forge, visit /p/add_project
 
 * Read more documentation: <http://allura.sourceforge.net/docs/>
     * Including how to enable extra features: <http://allura.sourceforge.net/docs/installation.html>
+* Ask questions and discuss Allura on the <http://mail-archives.apache.org/mod_mbox/incubator-allura-dev/>
 * Run the test suite (slow): `$ ALLURA_VALIDATION=none ./run_tests`
 * File bug reports at <https://sourceforge.net/p/allura/tickets/new/> (login required)
 * Contribute code according to this guide: <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>
