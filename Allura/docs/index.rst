@@ -20,7 +20,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Introducing the *Allura* Platform:
+Introduction
 =====================================================================
 
 .. toctree::
@@ -28,7 +28,7 @@ Introducing the *Allura* Platform:
 
    intro
 
-Getting Started
+Running Allura
 =====================================================================
 
 .. toctree::
@@ -36,29 +36,29 @@ Getting Started
 
    installation
    administration
-   platform_tour
    scm_host
    migration
 
-Writing a Allura based app
-=====================================================================
-
-.. toctree::
-   :maxdepth: 3
-
-   tutorials/wiki-tool
-
-Inside the Platform Components
+Developing Allura
 =====================================================================
 
 .. toctree::
    :maxdepth: 3
 
    platform
+   platform_tour
    guides/message_bus
    guides/email
    guides/permissions
+
+Extending Allura
+=====================================================================
+
+.. toctree::
+   :maxdepth: 3
+
    extending
+   tutorials/tool
 
 API Documentation
 ==================
@@ -69,19 +69,12 @@ API Documentation
 
    api/*
 
-Frequently Asked Questions
+Background Info
 =====================================================================
 .. toctree::
    :maxdepth: 1
 
    faq
-
-Project References
-=====================================================================
-
-.. toctree::
-   :maxdepth: 1
-
    online
 
 Indices and tables
