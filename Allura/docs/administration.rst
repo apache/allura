@@ -93,3 +93,18 @@ user closes it manually.  An `impressions` value of 0 will show the notification
 indefinitely (until closed).  The notification content can contain HTML.  Only the
 most recent notification will be shown, unless it has `active:false`, in which case
 no notification will be shown.
+
+
+Using Projects and Tools
+------------------------
+
+We currently don't have any further documentation for basic operations of managing
+users, projects, and tools on Allura.  However, SourceForge has help docs that cover
+these functions https://sourceforge.net/p/forge/documentation/Docs%20Home/  Note
+that this documentation also covers some SourceForge features that are not part of Allura.
+
+
+Public API Documentation
+------------------------
+
+Allura's web api is currently documented at https://sourceforge.net/p/forge/documentation/Allura%20API/
