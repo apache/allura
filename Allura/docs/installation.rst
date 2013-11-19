@@ -18,15 +18,21 @@
 Installation
 =================
 
-Installation
----------------
+Install
+-------
 
 Our step-by-step setup instructions are in our INSTALL.markdown file.  You can read it online at https://forge-allura.apache.org/p/allura/git/ci/master/tree/INSTALL.markdown  You should be able to get Allura up and running in well under an hour by following those instructions.
 
 For a faster and easier setup, see our `Vagrant/VirtualBox installation guide <https://forge-allura.apache.org/p/allura/wiki/Install%20and%20Run%20Allura%20-%20Vagrant/>`_
 
+Configuring Optional Features
+-----------------------------
+
+The `development.ini` file has many options you can explore and configure.  It is geared towards development, so you will want to review
+carefully and make changes for production use.
+
 Enabling inbound email
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 Allura can listen for email messages and update tools and artifacts.  For example, every ticket has an email address, and
 emails sent to that address will be added as comments on the ticket.  To set up the SMTP listener, run::
@@ -37,9 +43,8 @@ By default this uses port 8825.  Depending on your mail routing, you may need to
 And if the port is in use, this command will fail.  You can check the log file for any errors.
 To change the port number, edit `development.ini` and change `forgemail.port` to the appropriate port number for your environment.
 
-
 Enabling RabbitMQ
------------------
+^^^^^^^^^^^^^^^^^^
 
 For faster notification of background jobs, you can use RabbitMQ.  Assuming a base setup from the INSTALL, run these commands
 to install rabbitmq and set it up::
