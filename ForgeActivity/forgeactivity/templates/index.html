@@ -37,7 +37,7 @@
 {% endblock %}
 
 {% macro activity_obj(o) %}
-  <a href="{{o['activity_url']}}">{{o['activity_name']}}</a>
+  <a href="{{o.activity_url}}">{{o.activity_name}}</a>
 {% endmacro %}
 
 {% block content %}
@@ -47,8 +47,8 @@
   {% else %}
     <ul>
         {% for a in timeline %}
-        <li>{{activity_obj(a['actor'])}} {{a['verb']}} {{activity_obj(a['obj'])}} {% if a.get('target') %}on {{activity_obj(a['target'])}}{% endif %} {{h.ago(a['published'])}}</li>
-        <!-- Score: {{ a.get('score') }} -->
+        <li>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %} {{h.ago(a.published)}}</li>
+        <!-- Score: {{ a.score }} -->
         {% endfor %}
     </ul>
   {% endif %}

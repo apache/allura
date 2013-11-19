@@ -146,5 +146,7 @@ setup(
     [easy_widgets.engines]
     jinja = allura.config.app_cfg:JinjaEngine
 
+    [activitystream.storage]
+    driver = activitystream.storage.mingstorage:MingStorage
     """,
 )
