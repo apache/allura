@@ -18,17 +18,10 @@
 Creating your first Allura Tool
 =====================================================================
 
-Adding your Allura Tool to a Allura Install
-=====================================================================
+Tim Van Steenburgh has written a `series of posts guiding you through
+writing an Allura tool <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/>`_.
+There is also a `companion git repo <https://sourceforge.net/u/vansteenburgh/plugin-tutorial/ci/master/tree/>`_.
 
-Writing a Wiki Tool Part 1: Pages
-=====================================================================
-
-Writing a wiki Tool Part 2: Links
-=====================================================================
-
-Writing a wiki Tool Part 3: Revisions
-=====================================================================
 
 Testing your Tool
 ===========================
@@ -63,25 +56,3 @@ set to the `test-admin` user to avoid authentication issues.
 The framework used to generate the WSGI environment for testing your tools is
 provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you can
 find further documentation for the `.get()` and `.post()` methods.
-
-Testing Allura models is also straightforward, though it usually requires
-setting the pylons context object `c` before your test.  An example of this
-technique follows::
-
-    import mock
-    from pylons import tmpl_context as c, app_globals as g
-
-    from allura.lib.app_globals import Globals
-    from allura import model as M
-
-    def setUp():
-        g._push_object(Globals())
-        c._push_object(mock.Mock())
-        g.set_project('projects/test')
-        g.set_app('hello')
-        c.user = M.User.query.get(username='test-admin')
-
-Testing the tasks and events is  similar to testing models.  Generally, you will
-simply want to call your `@task` and `@event_handler` methods directly rather
-than setting up a full mocking infrastructure, though it is possible to use the
-MonQTask model in the allura model if you wish to do more functional/integration testing.
