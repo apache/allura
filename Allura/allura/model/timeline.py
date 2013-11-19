@@ -63,7 +63,7 @@ def perm_check(user):
         """Return True if c.user has 'read' access to this activity,
         otherwise return False.
         """
-        extras_dict = activity['obj'].get('activity_extras')
+        extras_dict = activity.obj.activity_extras
         if not extras_dict: return True
         allura_id = extras_dict.get('allura_id')
         if not allura_id: return True
