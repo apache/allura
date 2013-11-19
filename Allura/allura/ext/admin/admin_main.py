@@ -732,6 +732,7 @@ class ProjectAdminRestController(BaseController):
            (All arguments are required.)
 
            Usage example::
+           
                 POST to:
                /rest/p/testproject/admin/install_tool/
 
