@@ -79,11 +79,11 @@ Configure OpenLDAP in the Chroot
     $ sudo cp Allura/ldap-setup.py Allura/ldap-userconfig.py /var/chroots/scm
     $ sudo chmod +x /var/chroots/scm/ldap-*.py
 
-#. Log in to the chroot environment:
+#. Log in to the chroot environment::
 
     # schroot -c scm -u root
 
-#. Run the setup script, following the prompts.
+#. Run the setup script, following the prompts::
 
     (scm) # python /ldap-setup.py
 
@@ -111,37 +111,37 @@ Update the chroot ssh configuration
 Setup the Custom FUSE Driver
 -------------------------------------
 
-#. Copy the accessfs script into the chroot environment
+#. Copy the accessfs script into the chroot environment::
 
     $ sudo cp fuse/accessfs.py /var/chroots/scm
 
-#. Configure allura to point to the chrooted scm environment
+#. Configure allura to point to the chrooted scm environment::
 
     $ sudo ln -s /var/chroots/scm /git
     $ sudo ln -s /var/chroots/scm /hg
     $ sudo ln -s /var/chroots/scm /svn
 
-#. Log in to the chroot environment & install packages:
+#. Log in to the chroot environment & install packages::
 
     # schroot -c scm -u root
     (scm) # apt-get install python-fuse
 
-#. Create the SCM directories
+#. Create the SCM directories::
 
     (scm) # mkdir /scm /scm-repo
 
-#. Mount the FUSE filesystem
+#. Mount the FUSE filesystem::
 
     (scm) # python /accessfs.py /scm-repo -o allow_other -s -o root=/scm
 
-#. Start the SSH daemon
+#. Start the SSH daemon::
 
     (scm) # /etc/init.d/ssh start
 
 Configure Allura to Use the LDAP Server
 ------------------------------------------------
 
-Set the following values in your .ini file:
+Set the following values in your .ini file::
 
     auth.method = ldap
 
