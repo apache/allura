@@ -1021,7 +1021,7 @@ class ImportIdConverter(object):
     def simplify(self, import_id):
         if hasattr(import_id, 'get'):
             return import_id.get('source_id')
-        return None
+        return import_id
 
     def expand(self, source_id, app_instance):
         import_id = {
