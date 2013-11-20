@@ -36,7 +36,6 @@ class SearchApp(Application):
     all the rich, creamy goodness that is installable apps.
     '''
     __version__ = version.__version__
-    installable = False
     hidden = True
     sitemap=[]
 

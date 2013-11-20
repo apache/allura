@@ -98,7 +98,6 @@ class ForgeUserStatsApp(Application):
         'admin': 'Toggle stats visibility.',
     }
     ordinal=15
-    installable=False
     config_options = Application.config_options
     default_external_feeds = []
     icons={

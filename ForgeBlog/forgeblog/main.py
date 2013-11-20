@@ -90,7 +90,7 @@ class ForgeBlogApp(Application):
         'admin': 'Set permissions. Enable/disable commenting.',
     }
     ordinal=14
-    installable=True
+    max_instances = 1
     exportable = True
     config_options = Application.config_options
     default_external_feeds = []

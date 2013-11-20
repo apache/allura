@@ -34,7 +34,6 @@ log = logging.getLogger(__name__)
 
 class ProjectHomeApp(Application):
     __version__ = version.__version__
-    installable = False
     tool_label = 'home'
     default_mount_label='Project Home'
     icons={

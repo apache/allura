@@ -64,7 +64,6 @@ class ForgeShortUrlApp(Application):
     default_mount_point = 'url'
     sitemap = []
     ordinal = 14
-    installable = False
     icons = {
         24: 'images/ext_24.png',
         32: 'images/ext_32.png',

@@ -224,7 +224,7 @@ class Application(object):
         'configure': 'Set label and options. Requires admin permission.',
         'admin': 'Set permissions.',
     }
-    installable = True
+    max_instances = 0
     searchable = False
     exportable = False
     DiscussionClass = model.Discussion
@@ -320,6 +320,14 @@ class Application(object):
 
         """
         return self.config.parent_security_context()
+
+    @property
+    def installable(self):
+        """Return list of app what can be installed.
+
+        """
+        tools_list = [tool.tool_name.lower() for tool in self.project.app_configs]
+        return tools_list.count(self.tool_label.lower()) < self.max_instances
 
     @classmethod
     def validate_mount_point(cls, mount_point):
@@ -475,7 +483,7 @@ class Application(object):
         not be installed directly by a user, but may be uninstalled).
 
         """
-        return self.installable
+        return self.max_instances > 0
 
     def main_menu(self):
         """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`

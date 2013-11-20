@@ -75,8 +75,8 @@ class AdminApp(Application):
     a functioning allura project.
     '''
     __version__ = version.__version__
-    installable=False
     _installable_tools = None
+    max_instances = 0
     tool_label = 'admin'
     icons={
         24:'images/admin_24.png',
@@ -100,12 +100,22 @@ class AdminApp(Application):
     @staticmethod
     def installable_tools_for(project):
         cls = AdminApp
-        if cls._installable_tools is None:
-            tools = [dict(name=k, app=v) for k,v in g.entry_points['tool'].iteritems()]
-            tools.sort(key=lambda t:(t['app'].status_int(), t['app'].ordinal))
-            cls._installable_tools = [ t for t in tools if t['app'].installable ]
-        return [ t for t in cls._installable_tools
-            if t['app'].status in project.allowed_tool_status ]
+
+        limited_tools = []
+        for tool in project.app_configs:
+            if not project.app_instance(tool).installable:
+                if tool.tool_name not in limited_tools:
+                    limited_tools.append(tool.tool_name)
+
+        tools = []
+        for k, v in g.entry_points['tool'].iteritems():
+            if k not in limited_tools and v.max_instances > 0:
+                tools.append(dict(name=k, app=v))
+        tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
+        cls._installable_tools = [t for t in tools]
+        return [t for t in cls._installable_tools
+            if t['app'].status in project.allowed_tool_status]
+
 
     @staticmethod
     def exportable_tools_for(project):
@@ -759,7 +769,6 @@ class ProjectAdminRestController(BaseController):
             return {'success': False,
                     'info': 'All arguments required.'
                     }
-
         installable_tools = AdminApp.installable_tools_for(c.project)
         tools_names = [t['name'] for t in installable_tools]
         if not tool in tools_names:

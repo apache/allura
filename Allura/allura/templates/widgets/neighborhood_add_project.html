@@ -50,6 +50,7 @@
     {% if not neighborhood.project_template %}
     {% for opt in widget.fields.tools.options %}
         {% set tool = g.entry_points["tool"][opt.html_value] %}
+        {% if tool.max_instances > 0 %}
         <div class="tool">
             <img src="{{ g.theme.app_icon_url(tool, 48) }}" alt="{{ opt.label }} icon">
             <input checked type="checkbox" value="{{ opt.html_value }}"
@@ -58,6 +59,7 @@
             <h1><label for="{{ widget.context_for(widget.fields.tools)['rendered_name'] }}_{{ opt.html_value }}">{{ opt.label }}</label></h1>
             <p>{{ tool.tool_description }}</p>
         </div>
+        {% endif %}
     {% endfor %}
     {% endif %}
     {% if h.has_access(neighborhood, 'admin') and not neighborhood.project_template and neighborhood.features['private_projects'] %}

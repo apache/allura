@@ -41,7 +41,6 @@ class ForgeActivityApp(Application):
     """Project Activity page for projects."""
     __version__ = version.__version__
     default_mount_point = 'activity'
-    installable = False
     searchable = False
 
     def __init__(self, project, config):

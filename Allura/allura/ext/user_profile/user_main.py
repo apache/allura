@@ -47,7 +47,6 @@ class F(object):
 
 class UserProfileApp(Application):
     __version__ = version.__version__
-    installable = False
     tool_label = 'Profile'
     icons={
         24:'images/home_24.png',
