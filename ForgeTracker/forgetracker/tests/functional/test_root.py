@@ -158,7 +158,7 @@ class TestMilestones(TrackerTestController):
         assert '<option value="3.0">3.0</option>' in closed
         assert '<option value="4.0">4.0</option>' in closed
 
-    def test_dublicate_milestone(self):
+    def test_duplicate_milestone(self):
         self.new_ticket(summary='bar', _milestone='1.0', status='closed')
         d = {
             'field_name':'_milestone',

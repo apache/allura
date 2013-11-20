@@ -670,7 +670,7 @@ class RootController(BaseController, FeedController):
                     exists_milestones = [m.name for m in fld.milestones]
                     new['new_name'] = new['new_name'].replace("/", "-")
                     if (new['new_name'] in exists_milestones) and (new['new_name'] != new['old_name']):
-                        flash('The milestone "%s" exists' % new['new_name'], 'error')
+                        flash('The milestone "%s" already exists.' % new['new_name'], 'error')
                         redirect('milestones')
                     for m in fld.milestones:
                         if m.name == new['old_name']:
