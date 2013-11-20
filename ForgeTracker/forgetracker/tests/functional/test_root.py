@@ -1748,7 +1748,21 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/bugs/1/update_ticket', {'summary': 'should fail'},
                       extra_environ=env, status=403)
 
-    def test_imported_tickets_redirect(self):
+    def test_import_id_string_redirect(self):
+        self.new_ticket(summary='Imported ticket')
+        ticket = tm.Ticket.query.get(ticket_num=1)
+        ticket.import_id = '42000'
+        ticket.app_config.options['import_id'] = 'sometracker'
+        ThreadLocalORMSession.flush_all()
+
+        # expect permanent redirect to /p/test/bugs/1/
+        r = self.app.get('/p/test/bugs/42000/', status=301).follow()
+        assert r.request.path == '/p/test/bugs/1/', r.request.path
+
+        # not found and has not import_id
+        self.app.get('/p/test/bugs/42042/', status=404)
+
+    def test_import_id_dict_redirect(self):
         self.new_ticket(summary='Imported ticket')
         ticket = tm.Ticket.query.get(ticket_num=1)
         ticket.import_id = {'source_id': '42000'}

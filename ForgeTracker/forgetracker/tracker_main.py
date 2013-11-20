@@ -1188,10 +1188,12 @@ class TicketController(BaseController, FeedController):
             self.ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
                                                     ticket_num=self.ticket_num)
             if self.ticket is None:
-                self.ticket = TM.Ticket.query.get(
-                        app_config_id = c.app.config._id,
-                        import_id = ImportIdConverter.get().expand(ticket_num, c.app),
-                    )
+                self.ticket = TM.Ticket.query.find({
+                        'app_config_id': c.app.config._id,
+                        'import_id': {'$in': [
+                            ImportIdConverter.get().expand(ticket_num, c.app),
+                            ticket_num]},
+                        }).first()
                 if self.ticket is not None:
                     utils.permanent_redirect(self.ticket.url())
                 else:

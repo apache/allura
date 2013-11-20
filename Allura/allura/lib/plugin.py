@@ -1027,5 +1027,7 @@ class ImportIdConverter(object):
         import_id = {
                 'source_id': source_id,
             }
-        import_id.update(app_instance.config.options.get('import_id', {}))
+        app_import_id = app_instance.config.options.get('import_id', {})
+        if isinstance(app_import_id, dict):
+            import_id.update(app_import_id)
         return import_id
