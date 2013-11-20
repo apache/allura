@@ -23,6 +23,7 @@ from unittest import TestCase
 from mock import Mock, patch, MagicMock
 from ming.orm import ThreadLocalORMSession
 from pylons import tmpl_context as c
+from IPython.testing.decorators import module_not_available, skipif
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tracker
@@ -221,6 +222,7 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
         self.assertEqual(import_support.get_slug_by_id('204', '2'), comments[1].slug)
 
     @with_tracker
+    @skipif(module_not_available('html2text'))
     def test_list(self):
         from allura.scripts.trac_export import TracExport, DateJSONEncoder
         csv_fp = open(os.path.dirname(__file__) + '/data/test-list.csv')
