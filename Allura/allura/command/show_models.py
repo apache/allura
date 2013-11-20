@@ -200,6 +200,7 @@ class EnsureIndexCommand(base.Command):
 
     def command(self):
         from allura import model as M
+        from activitystream.storage.mingstorage import activity_orm_session
         self.basic_setup()
         main_indexes = defaultdict(lambda: defaultdict(list))  # by db, then collection name
         project_indexes = defaultdict(list)  # by collection name
@@ -212,8 +213,8 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('... skipping abstract class %s', cls)
                 continue
             base.log.info('... for class %s', cls)
-            if session(cls) in (
-                M.main_orm_session, M.repository_orm_session, M.task_orm_session):
+            if session(cls) in (M.main_orm_session, M.repository_orm_session,
+                    M.task_orm_session, activity_orm_session):
                 idx = main_indexes[session(cls)][cname]
             else:
                 idx = project_indexes[cname]
