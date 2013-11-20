@@ -23,6 +23,7 @@ from formencode import validators as fev
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
+import dateutil.parser
 
 from tg import (
         expose,
@@ -168,8 +169,8 @@ class GoogleCodeTrackerImporter(ToolImporter):
     def process_fields(self, ticket, issue):
         ticket.summary = issue.get_issue_summary()
         ticket.status = issue.get_issue_status()
-        ticket.created_date = datetime.strptime(issue.get_issue_created_date(), '%c')
-        ticket.mod_date = datetime.strptime(issue.get_issue_mod_date(), '%c')
+        ticket.created_date = dateutil.parser.parse(issue.get_issue_created_date())
+        ticket.mod_date = dateutil.parser.parse(issue.get_issue_mod_date())
         ticket.votes_up = issue.get_issue_stars()
         ticket.votes = issue.get_issue_stars()
         owner = issue.get_issue_owner()
@@ -209,7 +210,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
             p = ticket.discussion_thread.add_post(
                     text = comment.annotated_text,
                     ignore_security = True,
-                    timestamp = datetime.strptime(comment.created_date, '%c'),
+                    timestamp = dateutil.parser.parse(comment.created_date),
                 )
             p.add_multiple_attachments(comment.attachments)
 

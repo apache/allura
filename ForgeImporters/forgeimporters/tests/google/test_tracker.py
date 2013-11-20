@@ -162,17 +162,17 @@ class TestTrackerImporter(TestCase):
                 get_issue_owner=lambda:'owner',
             )
         importer = tracker.GoogleCodeTrackerImporter()
-        with mock.patch.object(tracker, 'datetime') as dt:
-            dt.strptime.side_effect = lambda s,f: s
+        with mock.patch.object(tracker, 'dateutil') as dt:
+            dt.parser.parse.side_effect = lambda s: s
             importer.process_fields(ticket, issue)
             self.assertEqual(ticket.summary, 'summary')
             self.assertEqual(ticket.description, '*Originally created by:* creator\n*Originally owned by:* owner\n\nmy *description* fool')
             self.assertEqual(ticket.status, 'status')
             self.assertEqual(ticket.created_date, 'created_date')
             self.assertEqual(ticket.mod_date, 'mod_date')
-            self.assertEqual(dt.strptime.call_args_list, [
-                    mock.call('created_date', '%c'),
-                    mock.call('mod_date', '%c'),
+            self.assertEqual(dt.parser.parse.call_args_list, [
+                    mock.call('created_date'),
+                    mock.call('mod_date'),
                 ])
 
     def test_process_labels(self):
