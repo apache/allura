@@ -47,7 +47,7 @@ class SVNTestController(TestController):
         c.app.repo.name = name
         c.app.repo.refresh()
         if os.path.isdir(c.app.repo.tarball_path):
-            shutil.rmtree(c.app.repo.tarball_path)
+            shutil.rmtree(c.app.repo.tarball_path.encode('utf-8'))
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
 

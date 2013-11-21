@@ -424,7 +424,7 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.path.isfile(os.path.join(tmpdir, "svn/t/te/test/testsvn/test-src-1.zip"))
         tarball_zip = ZipFile(os.path.join(tmpdir, 'svn/t/te/test/testsvn/test-src-1.zip'), 'r')
         assert_equal(tarball_zip.namelist(), ['test-src-1/', 'test-src-1/README'])
-        shutil.rmtree(self.repo.tarball_path, ignore_errors=True)
+        shutil.rmtree(self.repo.tarball_path.encode('utf-8'), ignore_errors=True)
 
     @onlyif(os.path.exists(tg.config.get('scm.repos.tarball.zip_binary', '/usr/bin/zip')), 'zip binary is missing')
     def test_tarball_aware_of_tags(self):
