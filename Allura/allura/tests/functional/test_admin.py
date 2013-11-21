@@ -47,6 +47,7 @@ from allura.lib.plugin import AdminExtension
 from allura.ext.admin.admin_main import AdminApp
 from allura.lib.security import has_access
 
+from forgetracker.tracker_main import ForgeTrackerApp
 from forgewiki.model import Page
 
 @contextmanager
@@ -1055,7 +1056,7 @@ class TestRestInstallTool(TestRestApiBase):
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
         assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'], 'Incorrect tool name.')
+        assert_equals(r.json['info'], 'Incorrect tool name, or limit is reached.')
 
     def test_bad_mount(self):
         r = self.api_get('/rest/p/test/')
@@ -1093,19 +1094,21 @@ class TestRestInstallTool(TestRestApiBase):
         assert_equals(audit_log.message, 'install tool ticketsmount1')
 
     def test_tool_exists(self):
-        r = self.api_get('/rest/p/test/')
-        tools_names = [t['name'] for t in r.json['tools']]
-        assert 'tickets' not in tools_names
+        with mock.patch.object(ForgeTrackerApp, 'max_instances') as mi:
+            mi.__get__ = mock.Mock(return_value=2)
+            r = self.api_get('/rest/p/test/')
+            tools_names = [t['name'] for t in r.json['tools']]
+            assert 'tickets' not in tools_names
 
-        data = {
-            'tool': 'tickets',
-            'mount_point': 'ticketsmount1',
-            'mount_label': 'tickets_label1'
-        }
-        c.project.install_app('tickets', mount_point=data['mount_point'])
-        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+            data = {
+                'tool': 'tickets',
+                'mount_point': 'ticketsmount1',
+                'mount_label': 'tickets_label1'
+            }
+            c.project.install_app('tickets', mount_point=data['mount_point'])
+            r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+            assert_equals(r.json['success'], False)
+            assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
 
     def test_unauthorized(self):
         r = self.api_get('/rest/p/test/')

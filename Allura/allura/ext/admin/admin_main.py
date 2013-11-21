@@ -773,7 +773,7 @@ class ProjectAdminRestController(BaseController):
         tools_names = [t['name'] for t in installable_tools]
         if not tool in tools_names:
             return {'success': False,
-                    'info': 'Incorrect tool name.'
+                    'info': 'Incorrect tool name, or limit is reached.'
                     }
         if not h.re_tool_mount_point.match(mount_point) or c.project.app_instance(mount_point) is not None:
             return {'success': False,
