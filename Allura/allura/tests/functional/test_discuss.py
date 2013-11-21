@@ -139,6 +139,10 @@ class TestDiscuss(TestController):
         self.app.get(thread_url, status=403, # forbidden
                      extra_environ=dict(username=non_admin))
 
+    def test_spam_link(self):
+        r = self._make_post('Test post')
+        assert '<span>Spam</span>' in r
+
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_moderate(self, submit_spam):
         r = self._make_post('Test post')
