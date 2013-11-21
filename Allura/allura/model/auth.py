@@ -31,6 +31,7 @@ from datetime import timedelta, datetime, time
 
 import iso8601
 import pymongo
+from tg import config
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 
@@ -384,13 +385,20 @@ class User(MappedClass, ActivityNode, ActivityObject):
         """Send a user message (email) to ``user``.
 
         """
+        tmpl = g.jinja2_env.get_template('allura:ext/user_profile/templates/message.html')
+        tmpl_context = {
+            'message_text': message,
+            'site_name': config['site_name'],
+            'base_url': config['base_url'],
+            'username': c.user.username,
+        }
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=user.get_pref('email_address'),
             fromaddr=self.get_pref('email_address'),
             reply_to=self.get_pref('email_address'),
             message_id=h.gen_message_id(),
             subject=subject,
-            text=message,
+            text=tmpl.render(tmpl_context),
             cc=cc)
         self.sent_user_message_times.append(datetime.utcnow())
 

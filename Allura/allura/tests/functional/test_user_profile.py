@@ -80,7 +80,7 @@ class TestUserProfile(TestController):
 
         sendsimplemail.post.assert_called_once_with(
             cc=User.by_username('test-admin').get_pref('email_address'),
-            text=u'test message',
+            text=u'test message\n--\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or at http://localhost/u/test-admin/profile/send_message\n',
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
@@ -93,7 +93,7 @@ class TestUserProfile(TestController):
 
         sendsimplemail.post.assert_called_once_with(
             cc=None,
-            text=u'test message',
+            text=u'test message\n--\nThis message was sent to you via the Allura web mail form.  You may reply to this message directly, or at http://localhost/u/test-admin/profile/send_message\n',
             toaddr=User.by_username('test-user').get_pref('email_address'),
             fromaddr=User.by_username('test-admin').get_pref('email_address'),
             reply_to=User.by_username('test-admin').get_pref('email_address'),
