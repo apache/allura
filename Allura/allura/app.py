@@ -185,8 +185,9 @@ class Application(object):
     :cvar list permissions: Named permissions used by instances of this
         Application. Default is [].
     :cvar dict permissions_desc: Descriptions of the named permissions.
-    :cvar bool installable: Default is True, Application can be installed in
-        projects.
+    :cvar int max_instances: Specifies the number of tools of this type
+        that can be added to the project. Zero indicates the system tool or one that
+        can not be added to the project by the user. Default value is 0.
     :cvar bool hidden: Default is False, Application is not hidden from the
         list of a project's installed tools.
     :cvar str tool_description: Text description of this Application.
@@ -323,7 +324,11 @@ class Application(object):
 
     @property
     def installable(self):
-        """Return list of app what can be installed.
+        """Checks whether to add a tool to the project.
+
+        Return True if app can be installed.
+
+        :rtype: bool
 
         """
         tools_list = [tool.tool_name.lower() for tool in self.project.app_configs]
