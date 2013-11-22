@@ -74,7 +74,7 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
 Configure OpenLDAP in the Chroot
 --------------------------------------------------------------
 
-#. Copy the ldap-setup script into the chroot environment
+#. Copy the ldap-setup script into the chroot environment::
 
     $ sudo cp Allura/ldap-setup.py Allura/ldap-userconfig.py /var/chroots/scm
     $ sudo chmod +x /var/chroots/scm/ldap-*.py

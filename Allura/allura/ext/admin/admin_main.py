@@ -728,26 +728,27 @@ class ProjectAdminRestController(BaseController):
     def install_tool(self, tool=None, mount_point=None, mount_label=None, **kw):
         """API for installing tools in current project.
 
-           Requires a valid tool, mount point and mount label names.
-           (All arguments are required.)
+        Requires a valid tool, mount point and mount label names.
+        (All arguments are required.)
 
-           Usage example::
-                POST to:
-               /rest/p/testproject/admin/install_tool/
+        Usage example::
 
-               with params:
-               {
-                    'tool': 'tickets',
-                    'mount_point': 'mountpoint',
-                    'mount_label': 'mountlabel'
-               }
+            POST to:
+            /rest/p/testproject/admin/install_tool/
 
-           Example output (in successful case)::
+            with params:
+            {
+                'tool': 'tickets',
+                'mount_point': 'mountpoint',
+                'mount_label': 'mountlabel'
+            }
 
-                {
-                    "info": "Tool tickets with mount_point mountpoint and mount_label mountlabel was created.",
-                    "success": true
-                }
+        Example output (in successful case)::
+
+            {
+                "info": "Tool tickets with mount_point mountpoint and mount_label mountlabel was created.",
+                "success": true
+            }
 
         """
         controller = ProjectAdminController()

@@ -21,5 +21,4 @@
 --------------------------------
 
 .. automodule:: allura.app
-
     :members:

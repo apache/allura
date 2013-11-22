@@ -25,13 +25,15 @@ from allura.lib.decorators import task
 
 @task
 def install_app(*args, **kwargs):
-    '''
-    Install an application directly onto c.project, bypassing the UI and any app
-    constraints like installable=False
-    '''
+    """Install an application directly onto c.project, bypassing the UI and
+    any app constraints like ``installable=False``.
+
+    """
     c.project.install_app(*args, **kwargs)
 
 install_app.__doc__ += '''
-    Arguments: ''' + inspect.formatargspec(*inspect.getargspec(
+    Arguments::
+
+        ''' + inspect.formatargspec(*inspect.getargspec(
         M.Project.install_app
     )).replace('self, ','')
