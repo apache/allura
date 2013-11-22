@@ -22,13 +22,20 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email import header
 
+import mock
 from nose.tools import raises, assert_equal, assert_false, assert_true
 from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
 
-from allura.lib.mail_util import parse_address, parse_message, Header, is_autoreply
+from allura.lib.mail_util import (
+        parse_address,
+        parse_message,
+        Header,
+        is_autoreply,
+        identify_sender,
+    )
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
 
@@ -172,3 +179,36 @@ class TestIsAutoreply(object):
     def test_return_path(self):
         self.msg['headers']['Return-Path'] = '<>'
         assert_true(is_autoreply(self.msg))
+
+class TestIdentifySender(object):
+    @mock.patch('allura.model.EmailAddress')
+    def test_arg(self, EA):
+        EA.canonical = lambda e:e
+        EA.query.get.side_effect = [mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        assert_equal(identify_sender(None, 'arg', None, None), 'user')
+        EA.query.get.assert_called_once_with(_id='arg')
+
+    @mock.patch('allura.model.EmailAddress')
+    def test_header(self, EA):
+        EA.canonical = lambda e:e
+        EA.query.get.side_effect = [None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        assert_equal(identify_sender(None, 'arg', {'From': 'from'}, None), 'user')
+        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg'), mock.call(_id='from')])
+
+    @mock.patch('allura.model.User')
+    @mock.patch('allura.model.EmailAddress')
+    def test_no_header(self, EA, User):
+        anon = User.anonymous()
+        EA.canonical = lambda e:e
+        EA.query.get.side_effect = [None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        assert_equal(identify_sender(None, 'arg', {}, None), anon)
+        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg')])
+
+    @mock.patch('allura.model.User')
+    @mock.patch('allura.model.EmailAddress')
+    def test_no_match(self, EA, User):
+        anon = User.anonymous()
+        EA.canonical = lambda e:e
+        EA.query.get.side_effect = [None, None]
+        assert_equal(identify_sender(None, 'arg', {'From': 'from'}, None), anon)
+        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg'), mock.call(_id='from')])
