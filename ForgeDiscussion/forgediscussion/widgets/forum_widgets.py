@@ -24,6 +24,7 @@ import ew.jinja2_ew as ew
 from allura.lib import validators as V
 from allura.lib.widgets import discuss as DW
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.forms import CsrfForm
 from allura.lib.widgets.subscriptions import SubscribeForm
 
 from forgediscussion import model as M
@@ -46,7 +47,7 @@ class _ForumsTable(ew.TableField):
         subscribed=ew.Checkbox(suppress_label=True, show_label=True)
     fields.insert(0, _ForumSummary())
 
-class ForumSubscriptionForm(ew.SimpleForm):
+class ForumSubscriptionForm(CsrfForm):
     class fields(ew_core.NameList):
         forums=_ForumsTable()
         page_list=ffw.PageList()
@@ -95,22 +96,24 @@ class _ForumSelector(ew.SingleSelectField):
     def from_python(self, value, state):
         return value.shortname
 
-class ModerateThread(ew.SimpleForm):
+class ModerateThread(CsrfForm):
     submit_text='Save Changes'
     class fields(ew_core.NameList):
         discussion=_ForumSelector(label='New Forum')
         flags=ew.CheckboxSet(options=['Sticky', 'Announcement'])
+
     class buttons(ew_core.NameList):
         delete=ew.SubmitButton(label='Delete Thread')
 
-class ModeratePost(ew.SimpleForm):
+
+class ModeratePost(CsrfForm):
     submit_text=None
     fields=[
         ew.FieldSet(legend='Promote post to its own thread', fields=[
                 ew.TextField(name='subject', label='Thread title'),
                 ew.SubmitButton(name='promote', label='Promote to thread')])]
 
-class PromoteToThread(ew.SimpleForm):
+class PromoteToThread(CsrfForm):
     submit_text=None
     fields=[
         ew.TextField(name='subject', label='Thread title'),

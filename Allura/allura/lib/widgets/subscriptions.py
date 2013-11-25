@@ -22,6 +22,7 @@ import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
 from allura.lib.widgets import form_fields as ffw
+from allura.lib.widgets.forms import CsrfForm
 from allura import model as M
 
 from .form_fields import SubmitButton
@@ -44,7 +45,7 @@ class _SubscriptionTable(ew.TableField):
         # unsubscribe = SubmitButton()
         subscribed = ew.Checkbox(suppress_label=True)
 
-class SubscriptionForm(ew.SimpleForm):
+class SubscriptionForm(CsrfForm):
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text='Save')

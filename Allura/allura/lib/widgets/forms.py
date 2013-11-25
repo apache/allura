@@ -957,3 +957,14 @@ class MoveTicketForm(ForgeForm):
         self.fields.tracker.options = (
             [ew.Option(py_value=v, label=l, selected=s)
              for v, l, s in sorted(trackers, key=lambda x: x[1])])
+
+
+class CsrfForm(ew.SimpleForm):
+    @property
+    def hidden_fields(self):
+        return [ew.HiddenField(name='_session_id')]
+    def context_for(self, field):
+        ctx = super(CsrfForm, self).context_for(field)
+        if field.name == '_session_id':
+            ctx['value'] = tg.request.cookies['_session_id']
+        return ctx

@@ -34,7 +34,7 @@ class NullValidator(fev.FancyValidator):
     def _from_python(self, value, state): return value
 
 # Discussion forms
-class ModerateThread(ew.SimpleForm):
+class ModerateThread(ff.CsrfForm):
     defaults=dict(
         ew.SimpleForm.defaults,
         submit_text=None)
@@ -453,6 +453,6 @@ class Discussion(HierWidget):
         discussion_header=DiscussionHeader(),
         edit_post=EditPost(submit_text='New Topic'),
         subscription_form=SubscriptionForm())
-    
+
     def resources(self):
         for r in super(Discussion, self).resources(): yield r

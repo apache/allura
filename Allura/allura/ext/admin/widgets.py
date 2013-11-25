@@ -110,12 +110,14 @@ class PermissionCard(CardField):
         return role._id
 
 
-class GroupSettings(ew.SimpleForm):
+class GroupSettings(ff.CsrfForm):
     submit_text=None
 
-    class hidden_fields(ew_core.NameList):
-        _id = ew.HiddenField(
-            validator=V.Ming(M.ProjectRole))
+    @property
+    def hidden_fields(self):
+        f = super(GroupSettings, self).hidden_fields
+        f.append(ew.HiddenField(name='_id', validator=V.Ming(M.ProjectRole)))
+        return f
 
     class fields(ew_core.NameList):
         name = ew.InputField(label='Name')
