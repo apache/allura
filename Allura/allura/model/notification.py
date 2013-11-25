@@ -242,7 +242,7 @@ class Notification(MappedClass):
     @classmethod
     def _references(cls, artifact, post):
         msg_ids = []
-        while post.parent_id:
+        while post and post.parent_id:
             msg_ids.append(artifact.url() + post.parent_id)
             post = post.parent
         msg_ids.append(artifact.message_id())

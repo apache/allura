@@ -34,7 +34,7 @@ from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
-RE_MESSAGE_ID = re.compile(r'<(.*)>')
+RE_MESSAGE_ID = re.compile(r'<(?:[^>]*/)?([^>]*)>')
 config = ConfigProxy(
     common_suffix='forgemail.domain',
     return_path='forgemail.return_path')

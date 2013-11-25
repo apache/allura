@@ -35,6 +35,7 @@ from allura.lib.mail_util import (
         Header,
         is_autoreply,
         identify_sender,
+        _parse_message_id,
     )
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
@@ -212,3 +213,10 @@ class TestIdentifySender(object):
         EA.query.get.side_effect = [None, None]
         assert_equal(identify_sender(None, 'arg', {'From': 'from'}, None), anon)
         assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg'), mock.call(_id='from')])
+
+
+def test_parse_message_id():
+    assert_equal(_parse_message_id('<de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>, </p/libjpeg-turbo/patches/54/de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>'), [
+            'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
+            'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
+        ])
