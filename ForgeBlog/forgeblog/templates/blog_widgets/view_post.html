@@ -21,7 +21,7 @@
 {{value.html_text|safe}}
 {{lib.related_artifacts(value)}}
 <em class="grid-19">
-  Posted by {{lib.user_link(value.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
+  Posted by {{lib.user_link(base_post.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
   {% if value.state != 'published' %}
 	<span>| {{value.state.capitalize()}}</span>
   {% endif %}
