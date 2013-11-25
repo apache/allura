@@ -107,6 +107,10 @@ class UserProfileController(BaseController, FeedController):
                     'an email address associated with their account.', 'info')
             redirect(request.referer)
 
+        if not to_user.allow_user_message:
+            flash('This user has disabled user message', 'info')
+            redirect(request.referer)
+
     @expose('jinja:allura.ext.user_profile:templates/user_index.html')
     def index(self, **kw):
         user = c.project.user_project_of

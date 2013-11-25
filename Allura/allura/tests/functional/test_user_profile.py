@@ -132,3 +132,19 @@ class TestUserProfile(TestController):
                      status=200)
 
         assert '<a href="send_message">Send me a message</a>' not in r
+
+    @td.with_user_project('test-user')
+    def test_allow_user_message(self):
+        User.by_username('test-admin').set_pref('email_address', 'admin@example.com')
+        test_user = User.by_username('test-user')
+        test_user.set_pref('email_address', 'user@example.com')
+        test_user.allow_user_message = False
+        r = self.app.get('/u/test-user/profile')
+        assert '<a href="send_message">Send me a message</a>' not in r
+        r = self.app.get('/u/test-user/profile/send_message', status=302)
+        assert 'This user has disabled user message' in self.webflash(r)
+
+
+
+
+

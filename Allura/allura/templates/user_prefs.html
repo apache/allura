@@ -158,4 +158,16 @@
       </form>
   </div>
   {% endif %}
+<div class="grid-20">
+    <h2>User Messages</h2>
+    <form method="POST" action="user_message">
+    <div class="grid-19">
+        <input type="checkbox" id="allow_user_message" name="allow_user_message" {% if c.user.allow_user_message %} checked {% endif %}>
+        <label for="allow_user_message">Allow user messages</label>
+    </div>
+    <label class="grid-4">&nbsp;</label>
+    <div class="grid-19">
+        <input class="submit" type="submit" value="Save">
+    </div>
+</div>
 {% endblock %}

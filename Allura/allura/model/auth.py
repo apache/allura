@@ -353,6 +353,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     #Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
+    allow_user_message = FieldProperty(bool, if_missing=True)
 
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.

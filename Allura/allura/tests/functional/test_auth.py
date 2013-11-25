@@ -712,6 +712,14 @@ class TestPreferences(TestController):
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
 
+    @td.with_user_project('test-admin')
+    def test_user_message(self):
+        assert M.User.query.get(username='test-admin').allow_user_message
+        self.app.post('/auth/preferences/user_message')
+        assert not M.User.query.get(username='test-admin').allow_user_message
+        self.app.post('/auth/preferences/user_message', params={'allow_user_message': 'on'})
+        assert M.User.query.get(username='test-admin').allow_user_message
+
 
 class TestPasswordReset(TestController):
     @patch('allura.tasks.mail_tasks.sendmail')

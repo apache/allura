@@ -507,6 +507,12 @@ class PreferencesController(BaseController):
         flash('Key uploaded')
         redirect('.')
 
+    @expose()
+    @require_post()
+    def user_message(self, allow_user_message=None):
+        c.user.allow_user_message = allow_user_message is not None
+        redirect(request.referer)
+
 class UserInfoController(BaseController):
 
     def __init__(self, *args, **kwargs):
