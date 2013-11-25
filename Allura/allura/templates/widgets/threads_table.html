@@ -51,7 +51,7 @@
             <a href="{{thread.url()}}" class="btn ico"><b data-icon="{{g.icons['pin'].char}}" class="ico {{g.icons['pin'].css}}"></b> <span>Sticky</span></a>
           {% endif %}
           <h3><a href="{{thread.url()}}">{{thread.subject and h.text.truncate(thread.subject, 72) or '(no subject)'}}</a></h3>
-          <span>By {% if not author.is_anonymous() %}<a href="{{author.url()}}">{{author.display_name}}</a>{% else %}{{author.display_name}}{% endif %}</span> on {{thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
+          <span>By {{lib.user_link(author, avatar=False)}}</span> on {{thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
         </td> 
         {% endif %}
         <td>{{thread.num_replies}}</td> 
@@ -62,7 +62,7 @@
           {% set author = thread.last_post.author() %}
           <td>
           <p class="gravatar sm">
-            By {{lib.gravatar(author, size=16)}}{% if not author.is_anonymous() %}<a href="{{author.url()}}">{{author.display_name}}</a>{% else %}{{author.display_name}}{% endif %}<br />on {{thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
+            By {{lib.gravatar(author, size=16)}} {{lib.user_link(author, avatar=False)}}<br />on {{thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
           </p>
           </td> 
         {% endif %}

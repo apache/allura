@@ -73,11 +73,7 @@
   <div class="grid-9 gravatar sm">
     <label class="simple">Authors: </label>
     {% for author in page.authors() %}
-      {% if not author.is_anonymous() %}
-        <a href="{{author.url()}}">{{lib.gravatar(author, size=16)}}</a>
-      {% else %}
-        {{lib.gravatar(author, size=16)}}
-      {% endif %}
+      {{lib.user_link(author, avatar=True)}}
     {% endfor %}
   </div>
    {% if page.attachments %}

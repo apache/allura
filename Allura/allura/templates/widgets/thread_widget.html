@@ -57,11 +57,7 @@
           <p class="gravatar">
             {{lib.gravatar(c.user, size=48)}}<br>
             <small>
-                    {% if c.user.is_anonymous() %}
-                        {{ c.user.display_name }}
-                    {% else %}
-                        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-                    {% endif %}
+               {{lib.user_link(c.user, avatar=False)}}
             </small>
           </p>
         </div>

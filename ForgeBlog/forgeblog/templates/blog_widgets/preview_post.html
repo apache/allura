@@ -23,7 +23,7 @@
   </h3>
   {{value.html_text_preview|safe}}
   <em class="grid-19">
-    Posted by {% if not value.author().is_anonymous() %}<a href="{{value.author().url()}}">{{lib.gravatar_or_name(value.author(), size=16)}}</a>{% else %}{{lib.gravatar_or_name(value.author(), size=16)}}{% endif%} {{lib.abbr_date(value.timestamp)}}
+    Posted by {{lib.user_link(value.author(), avatar=True)}} {{lib.abbr_date(value.timestamp)}}
     {% if value.state != 'published' %}
       <span>| {{value.state.capitalize()}}</span>
     {% endif %}

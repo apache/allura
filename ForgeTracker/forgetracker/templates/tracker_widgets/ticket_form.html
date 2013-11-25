@@ -74,11 +74,7 @@
     {% if ticket %}
       <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
     {% else %}
-      {% if not c.user.is_anonymous() %}
-        <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-        {% else %}
-          {{c.user.display_name}}
-      {% endif %}
+      {{lib.user_link(c.user, avatar=False)}}
     {% endif %}
   </div>
   <div style="clear:both">&nbsp;</div>
@@ -117,11 +113,7 @@
       <p class="gravatar">
         {{lib.gravatar(c.user, size=48)}}<br>
         <small>
-          {% if c.user.is_anonymous() %}
-             {{ c.user.display_name }}
-          {% else %}
-             <a href="{{c.user.url()}}">{{c.user.display_name}}</a>
-          {% endif %}
+          {{lib.user_link(c.user, avatar=False)}}
         </small>
       </p>
     </div>

@@ -71,6 +71,24 @@
     {% endif %}
 {%- endmacro %}
 
+{% macro user_link(user, avatar=False, size=16) -%}
+    {% if user %}
+        {% if not user.is_anonymous() %}
+            {% if avatar %}
+                <a href="{{user.url()}}">
+                    {{ lib.gravatar_or_name(user, size) }}
+                </a>
+            {% else %}
+                <a href="{{user.url()}}">
+                    {{ h.really_unicode(user.display_name) }}
+                </a>
+            {% endif %}
+        {% else %}
+            {{ h.really_unicode(user.display_name) }}
+        {% endif %}
+    {% endif %}
+{%- endmacro %}
+
 {% macro file_field(name, label) %}
   {% if label %}
   <label for="{{name}}">{{label}}</label>
@@ -121,7 +139,7 @@
 {% macro post_summary(post) %}
   {% if post %}
     <span>
-      by {% if not post.author().is_anonymous() %}<a href="{{post.author().url()}}">{{post.author().display_name}}</a>{% else %}{{post.author().display_name}}{% endif %}
+      by {{lib.user_link(post.author(), avatar=False)}}
       {{abbr_date(post.timestamp)}}
     </span>
   {% endif %}
