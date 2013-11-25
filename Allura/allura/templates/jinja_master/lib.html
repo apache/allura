@@ -58,7 +58,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro user_link(email, name, size=16) -%}
+{% macro email_link(email, name, size=16) -%}
     {% set user = h.find_user(email) -%}
     {% if user %}
         {% if not user.is_anonymous() %}

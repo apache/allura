@@ -16,7 +16,7 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-{% from 'allura:templates/jinja_master/lib.html' import user_link, abbr_date with context %}
+{% from 'allura:templates/jinja_master/lib.html' import email_link, abbr_date with context %}
 {% set app = app or c.app %}
 {% set path = request.params.get('path', '')%}
 <div>
@@ -50,9 +50,9 @@
                 {%if is_file %}
                     ({{ commit.size|filesizeformat if commit.size else 'None' }})
                 {% endif %}
-                by {{ user_link(commit.authored.email, commit.authored.name) }}
+                by {{ email_link(commit.authored.email, commit.authored.name) }}
                 {%- if commit.committed.email != commit.authored.email %},
-                pushed by {{ user_link(commit.committed.email, commit.committed.name) }}
+                pushed by {{ email_link(commit.committed.email, commit.committed.name) }}
                 {% endif %}
                 {{g.markdown_commit.convert(commit.message)}}
                 {% if commit.rename_details %}
