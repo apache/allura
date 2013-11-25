@@ -18,6 +18,7 @@
 -#}
 {% extends 'forgewiki:templates/wiki/master.html' %}
 {% do g.register_forge_css('css/forge/hilite.css', compress=False) %}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 
 {% block title %}{{c.project.name}} / {{c.app.config.options.mount_label}} / {{page.title}}{% endblock %}
 
