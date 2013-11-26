@@ -1,7 +1,7 @@
 # requirements for all deployment environments
 
 pytz==2012j
-ActivityStream==0.1.4
+ActivityStream==0.1.6
 BeautifulSoup==3.2.0
 chardet==1.0.1
 colander==0.9.3

@@ -190,7 +190,7 @@ def validate_html5_chunk(html):
 
     html = '''<!DOCTYPE html>
     <html>
-    <head><title></title></head>
+    <head><title>Not empty</title></head>
     <body>
     %s
     </body></html>''' % html
