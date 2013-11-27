@@ -20,6 +20,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from itertools import groupby
 
+from paste.deploy.converters import asbool
 from pylons import tmpl_context as c, app_globals as g
 from pymongo.errors import DuplicateKeyError, InvalidDocument
 
@@ -200,7 +201,11 @@ class EnsureIndexCommand(base.Command):
 
     def command(self):
         from allura import model as M
-        from activitystream.storage.mingstorage import activity_orm_session
+        main_session_classes = [M.main_orm_session, M.repository_orm_session,
+                M.task_orm_session]
+        if asbool(self.config.get('activitystream.recording.enabled', False)):
+            from activitystream.storage.mingstorage import activity_orm_session
+            main_session_classes.append(activity_orm_session)
         self.basic_setup()
         main_indexes = defaultdict(lambda: defaultdict(list))  # by db, then collection name
         project_indexes = defaultdict(list)  # by collection name
@@ -213,8 +218,7 @@ class EnsureIndexCommand(base.Command):
                 base.log.info('... skipping abstract class %s', cls)
                 continue
             base.log.info('... for class %s', cls)
-            if session(cls) in (M.main_orm_session, M.repository_orm_session,
-                    M.task_orm_session, activity_orm_session):
+            if session(cls) in main_session_classes:
                 idx = main_indexes[session(cls)][cname]
             else:
                 idx = project_indexes[cname]

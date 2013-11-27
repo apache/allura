@@ -24,6 +24,7 @@ from multiprocessing import Process
 import pylons
 from paste.script import command
 from paste.deploy import appconfig
+from paste.deploy.converters import asbool
 from paste.registry import Registry
 
 import activitystream
@@ -95,7 +96,8 @@ class Command(command.Command):
             from allura import model
             M=model
             ming.configure(**conf)
-            activitystream.configure(**conf)
+            if asbool(conf.get('activitystream.recording.enabled', False)):
+                activitystream.configure(**conf)
             pylons.tmpl_context.user = M.User.anonymous()
         else:
             # Probably being called from another script (websetup, perhaps?)

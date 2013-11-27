@@ -24,6 +24,7 @@ import logging
 import activitystream
 from tg import config
 import pylons
+from paste.deploy.converters import asbool
 from paste.registry import Registry
 
 log = logging.getLogger(__name__)
@@ -39,7 +40,8 @@ def setup_schema(command, conf, vars):
     REGISTRY.register(pylons.app_globals, config['pylons.app_globals'])
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
     ming.configure(**conf)
-    activitystream.configure(**conf)
+    if asbool(conf.get('activitystream.recording.enabled', False)):
+        activitystream.configure(**conf)
     # Nothing to do
     log.info('setup_schema called')
 
