@@ -142,6 +142,8 @@ class TestDiscuss(TestController):
     def test_spam_link(self):
         r = self._make_post('Test post')
         assert '<span>Spam</span>' in r
+        r = self.app.get('/wiki/_discuss/', extra_environ={'username': 'test-user-1'})
+        assert '<span>Spam</span>' not in r, 'User without moderate perm must not see Spam link'
 
     @patch('allura.controllers.discuss.g.spam_checker.submit_spam')
     def test_moderate(self, submit_spam):
