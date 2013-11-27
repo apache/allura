@@ -137,7 +137,7 @@
 {% macro post_summary(post) %}
   {% if post %}
     <span>
-      by {{user_link(post.author(), avatar=False)}}
+      by {{user_link(post.author())}}
       {{abbr_date(post.timestamp)}}
     </span>
   {% endif %}

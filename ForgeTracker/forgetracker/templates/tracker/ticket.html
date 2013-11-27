@@ -105,7 +105,11 @@
               <label class="simple">{{field.label}}:</label>
               {% if field.type == 'user' %}
                 {% set user = ticket.get_custom_user(field.name) %}
-                {{lib.user_link(user, avatar=False)}}
+                {% if user and not user.is_anonymous() %}
+                  {{lib.user_link(user, avatar=False)}}
+                {% else %}
+                  nobody
+                {% endif %}
               {% elif field.type == 'milestone' %}
                 <a href="{{c.app.url}}{{field.name[1:]}}/{{ticket.custom_fields[field.name]}}">{{ticket.custom_fields[field.name]}}</a>
               {% else %}

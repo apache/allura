@@ -20,16 +20,16 @@
 
 <div{{ {'id': div_id}|xmlattr }}>
   <table class="forum-list clear">
-    <thead> 
-      <tr> 
-        <th><span class="ico ico-mail" title="Subscriptions" data-icon="M"></span></th> 
-        <th class="topic">Topic</th> 
-        <th>Posts</th> 
-        <th>Views</th> 
-        <th>Last Post</th> 
-      </tr> 
-    </thead> 
-    <tbody class="forum-list"> 
+    <thead>
+      <tr>
+        <th><span class="ico ico-mail" title="Subscriptions" data-icon="M"></span></th>
+        <th class="topic">Topic</th>
+        <th>Posts</th>
+        <th>Views</th>
+        <th>Last Post</th>
+      </tr>
+    </thead>
+    <tbody class="forum-list">
       {% for thread in value %}
       <tr>
         <td>
@@ -51,10 +51,10 @@
             <a href="{{thread.url()}}" class="btn ico"><b data-icon="{{g.icons['pin'].char}}" class="ico {{g.icons['pin'].css}}"></b> <span>Sticky</span></a>
           {% endif %}
           <h3><a href="{{thread.url()}}">{{thread.subject and h.text.truncate(thread.subject, 72) or '(no subject)'}}</a></h3>
-          <span>By {{lib.user_link(author, avatar=False)}}</span> on {{thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
-        </td> 
+          <span>By {{lib.user_link(author)}}</span> on {{thread.first_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
+        </td>
         {% endif %}
-        <td>{{thread.num_replies}}</td> 
+        <td>{{thread.num_replies}}</td>
         <td>{{thread.num_views}}</td>
         {% if not thread.last_post %}
         <td>&nbsp;</td>
@@ -62,13 +62,13 @@
           {% set author = thread.last_post.author() %}
           <td>
           <p class="gravatar sm">
-            By {{lib.gravatar(author, size=16)}} {{lib.user_link(author, avatar=False)}}<br />on {{thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
+            By {{lib.gravatar(author, size=16)}} {{lib.user_link(author)}}<br />on {{thread.last_post.timestamp.strftime('%a %b %d, %Y %I:%M %p')}}
           </p>
-          </td> 
+          </td>
         {% endif %}
-      </tr> 
+      </tr>
       {% endfor %}
-    </tbody> 
+    </tbody>
   </table>
 
 </div>

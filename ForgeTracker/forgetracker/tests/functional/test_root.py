@@ -2384,7 +2384,7 @@ class TestCustomUserField(TrackerTestController):
         ticket_view = self.new_ticket(summary='test custom fields', **kw).follow()
         # summary header shows 'nobody'
         assert ticket_view.html.findAll('label', 'simple',
-            text='Code Review:')[1].parent.parent.text == 'Code Review:'
+            text='Code Review:')[1].parent.parent.text == 'Code Review:nobody'
         # form input is blank
         select = ticket_view.html.find('select',
             dict(name='ticket_form.custom_fields._code_review'))

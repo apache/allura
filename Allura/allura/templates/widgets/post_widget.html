@@ -35,7 +35,7 @@
         {% set size = value.parent and 32 or 48 %}
         {{lib.gravatar(value.author(), size=size)}}<br>
         <small>
-            {{lib.user_link(value.author(), avatar=False)}}
+            {{lib.user_link(value.author())}}
         </small>
         <br>
         <small>{{lib.abbr_date(value.timestamp)}}</small>
@@ -128,7 +128,7 @@
               <p class="gravatar">
                 {{lib.gravatar(c.user, size=32)}}<br>
                 <small>
-                    {{lib.user_link(c.user, avatar=False)}}
+                    {{lib.user_link(c.user)}}
                 </small>
               </p>
             </div>

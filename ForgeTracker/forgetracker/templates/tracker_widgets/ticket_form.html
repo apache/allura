@@ -51,7 +51,7 @@
   </div>
   <div class="grid-6">
     {{widget.display_field_by_name('private')}}
-  </div>  
+  </div>
   <div style="clear:both">&nbsp;</div>
   <div class="grid-6">
     <label class="simple">Updated:</label>
@@ -74,7 +74,7 @@
     {% if ticket %}
       <a href="{{ticket.reported_by.url()}}">{{ticket.reported_by.display_name}}</a>
     {% else %}
-      {{lib.user_link(c.user, avatar=False)}}
+      {{lib.user_link(c.user)}}
     {% endif %}
   </div>
   <div style="clear:both">&nbsp;</div>
@@ -113,7 +113,7 @@
       <p class="gravatar">
         {{lib.gravatar(c.user, size=48)}}<br>
         <small>
-          {{lib.user_link(c.user, avatar=False)}}
+          {{lib.user_link(c.user)}}
         </small>
       </p>
     </div>
