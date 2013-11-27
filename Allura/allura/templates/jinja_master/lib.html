@@ -74,15 +74,13 @@
 {% macro user_link(user, avatar=False, size=16) -%}
     {% if user %}
         {% if not user.is_anonymous() %}
-            {% if avatar %}
-                <a href="{{user.url()}}">
+            <a href="{{user.url()}}">
+                {% if avatar %}
                     {{ gravatar_or_name(user, size) }}
-                </a>
-            {% else %}
-                <a href="{{user.url()}}">
+                {% else %}
                     {{ h.really_unicode(user.display_name) }}
-                </a>
-            {% endif %}
+                {% endif %}
+            </a>
         {% else %}
             {{ h.really_unicode(user.display_name) }}
         {% endif %}
