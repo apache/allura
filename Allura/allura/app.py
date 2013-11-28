@@ -332,7 +332,7 @@ class Application(object):
 
         """
         tools_list = [tool.tool_name.lower() for tool in self.project.app_configs]
-        return tools_list.count(self.tool_label.lower()) < self.max_instances
+        return tools_list.count(self.config.tool_name.lower()) < self.max_instances
 
     @classmethod
     def validate_mount_point(cls, mount_point):
