@@ -319,7 +319,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
     preferences=FieldProperty(dict(
             results_per_page=int,
             email_address=str,
-            email_format=str))
+            email_format=str,
+            allow_user_messages=bool))
 
     #Personal data
     sex=FieldProperty(
@@ -353,7 +354,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     #Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
-    allow_user_message = FieldProperty(bool, if_missing=True)
 
     def can_send_user_message(self):
         """Return true if User is permitted to send a mesage to another user.

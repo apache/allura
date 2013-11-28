@@ -714,11 +714,11 @@ class TestPreferences(TestController):
 
     @td.with_user_project('test-admin')
     def test_user_message(self):
-        assert M.User.query.get(username='test-admin').allow_user_message
+        assert M.User.query.get(username='test-admin').get_pref('allow_user_messages')
         self.app.post('/auth/preferences/user_message')
-        assert not M.User.query.get(username='test-admin').allow_user_message
-        self.app.post('/auth/preferences/user_message', params={'allow_user_message': 'on'})
-        assert M.User.query.get(username='test-admin').allow_user_message
+        assert not M.User.query.get(username='test-admin').get_pref('allow_user_messages')
+        self.app.post('/auth/preferences/user_message', params={'allow_user_messages': 'on'})
+        assert M.User.query.get(username='test-admin').get_pref('allow_user_messages')
 
 
 class TestPasswordReset(TestController):

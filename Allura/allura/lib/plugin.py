@@ -949,6 +949,9 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
 
     def get_pref(self, user, pref_name):
         if pref_name in user.preferences:
+            if pref_name == 'allow_user_messages' and user.preferences[pref_name] is None:
+                # allow_user_messages should be True by default
+                user.preferences[pref_name] = True
             return user.preferences[pref_name]
         else:
             return getattr(user, pref_name)
