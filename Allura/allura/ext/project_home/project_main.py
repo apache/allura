@@ -36,6 +36,7 @@ class ProjectHomeApp(Application):
     __version__ = version.__version__
     tool_label = 'home'
     default_mount_label='Project Home'
+    max_instances = 0
     icons={
         24:'images/home_24.png',
         32:'images/home_32.png',

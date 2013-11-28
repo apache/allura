@@ -89,7 +89,6 @@ class ForgeWikiApp(Application):
         'delete': 'Delete wiki pages.',
         'admin': 'Set permissions. Configure options. Set wiki home page.',
     }
-    max_instances = 1
     searchable=True
     exportable=True
     tool_label='Wiki'

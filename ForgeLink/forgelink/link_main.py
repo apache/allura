@@ -54,7 +54,6 @@ class ForgeLinkApp(Application):
     tool_label='External Link'
     default_mount_label='Link name'
     default_mount_point='link'
-    max_instances = 1
     ordinal=1
     icons={
         24:'images/ext_24.png',

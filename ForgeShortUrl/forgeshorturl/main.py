@@ -58,6 +58,7 @@ class ForgeShortUrlApp(Application):
         'update': 'Edit/remove existing short url. Requires admin permission.',
         'view_private': 'View private short urls.',
     }
+    max_instances = 0
     searchable = True
     tool_label = 'URL shortener'
     default_mount_label = 'URL shortener'

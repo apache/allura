@@ -59,7 +59,6 @@ class ForgeSVNApp(RepositoryApp):
     tool_description="""
         Enterprise-class centralized version control for the masses.
     """
-    max_instances = 1
     ordinal=4
     forkable=False
     default_branch_name='HEAD'

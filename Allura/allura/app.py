@@ -187,7 +187,7 @@ class Application(object):
     :cvar dict permissions_desc: Descriptions of the named permissions.
     :cvar int max_instances: Specifies the number of tools of this type
         that can be added to the project. Zero indicates the system tool or one that
-        can not be added to the project by the user. Default value is 0.
+        can not be added to the project by the user. Default value is 30 (sane 'unlimited' value).
     :cvar bool hidden: Default is False, Application is not hidden from the
         list of a project's installed tools.
     :cvar str tool_description: Text description of this Application.
@@ -225,7 +225,7 @@ class Application(object):
         'configure': 'Set label and options. Requires admin permission.',
         'admin': 'Set permissions.',
     }
-    max_instances = 0
+    max_instances = 30
     searchable = False
     exportable = False
     DiscussionClass = model.Discussion

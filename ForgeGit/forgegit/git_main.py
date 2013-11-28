@@ -51,7 +51,6 @@ class ForgeGitApp(RepositoryApp):
         handle everything from small to very large projects with speed
         and efficiency.
     """
-    max_instances = 1
     ordinal=2
     forkable=True
 

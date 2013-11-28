@@ -54,7 +54,6 @@ class W:
 
 class ForgeDiscussionApp(Application):
     __version__ = version.__version__
-    max_instances = 1
     permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
     permissions_desc = {
         'configure': 'Create new forums.',

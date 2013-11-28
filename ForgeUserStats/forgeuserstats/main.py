@@ -97,6 +97,7 @@ class ForgeUserStatsApp(Application):
         'read': 'View user stats.',
         'admin': 'Toggle stats visibility.',
     }
+    max_instances = 0
     ordinal=15
     config_options = Application.config_options
     default_external_feeds = []

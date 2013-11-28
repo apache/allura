@@ -50,7 +50,6 @@ class ForgeChatApp(Application):
     default_mount_label='Chat'
     default_mount_point='chat'
     ordinal=13
-    max_instances = 1
     permissions = ['configure', 'read' ]
     permissions_desc = {
         'configure': 'Set monitored IRC channel. Requires admin permission.',
