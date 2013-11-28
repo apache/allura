@@ -49,6 +49,7 @@ from allura.lib.security import has_access
 
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgewiki.model import Page
+from forgewiki.wiki_main import ForgeWikiApp
 
 @contextmanager
 def audits(*messages):
@@ -1111,23 +1112,25 @@ class TestRestInstallTool(TestRestApiBase):
             assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
 
     def test_tool_installation_limit(self):
-        r = self.api_get('/rest/p/test/')
-        tools_names = [t['name'] for t in r.json['tools']]
-        assert 'wiki' not in tools_names
+        with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
+            mi.__get__ = mock.Mock(return_value=1)
+            r = self.api_get('/rest/p/test/')
+            tools_names = [t['name'] for t in r.json['tools']]
+            assert 'wiki' not in tools_names
 
-        data = {
-            'tool': 'wiki',
-            'mount_point': 'wikimount',
-            'mount_label': 'wiki_label'
-        }
-        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], True)
+            data = {
+                'tool': 'wiki',
+                'mount_point': 'wikimount',
+                'mount_label': 'wiki_label'
+            }
+            r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+            assert_equals(r.json['success'], True)
 
-        data['mount_point'] = 'wikimount1'
-        data['mount_label'] = 'wiki_label1'
-        r = self.api_post('/rest/p/test/admin/install_tool/', **data)
-        assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'], 'Incorrect tool name, or limit is reached.')
+            data['mount_point'] = 'wikimount1'
+            data['mount_label'] = 'wiki_label1'
+            r = self.api_post('/rest/p/test/admin/install_tool/', **data)
+            assert_equals(r.json['success'], False)
+            assert_equals(r.json['info'], 'Incorrect tool name, or limit is reached.')
 
     def test_unauthorized(self):
         r = self.api_get('/rest/p/test/')
