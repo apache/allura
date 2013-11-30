@@ -186,10 +186,13 @@ class ThreadController(BaseController, FeedController):
                     limit=int(limit),
                     show_moderate=kw.get('show_moderate'))
 
+    def error_handler(self, *args, **kwargs):
+        redirect(request.referer)
+
     @h.vardec
     @expose()
     @require_post()
-    @validate(pass_validator, error_handler=index)
+    @validate(pass_validator, error_handler=error_handler)
     @utils.AntiSpam.validate('Spambot protection engaged')
     def post(self, **kw):
         require_access(self.thread, 'post')
@@ -310,10 +313,13 @@ class PostController(BaseController):
             return dict(discussion=self.post.discussion,
                         post=post)
 
+    def error_handler(self, *args, **kwargs):
+        redirect(request.referer)
+
     @h.vardec
     @expose()
     @require_post()
-    @validate(pass_validator, error_handler=index)
+    @validate(pass_validator, error_handler=error_handler)
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post(redir='.')
     def reply(self, file_info=None, **kw):
@@ -326,7 +332,7 @@ class PostController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    @validate(pass_validator, error_handler=index)
+    @validate(pass_validator, error_handler=error_handler)
     def moderate(self, **kw):
         require_access(self.post.thread, 'moderate')
         if kw.pop('delete', None):
@@ -342,7 +348,7 @@ class PostController(BaseController):
     @h.vardec
     @expose()
     @require_post()
-    @validate(pass_validator, error_handler=index)
+    @validate(pass_validator, error_handler=error_handler)
     def flag(self, **kw):
         self.W.flag_post.to_python(kw, None)
         if c.user._id not in self.post.flagged_by:
