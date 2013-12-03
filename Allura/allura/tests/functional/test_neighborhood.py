@@ -731,8 +731,8 @@ class TestNeighborhood(TestController):
             antispam=True,
             extra_environ=dict(username='root'))
         r = self.app.get('/adobe/testtemp/admin/tools')
-        assert '<a href="/adobe/testtemp/wiki/" class="ui-icon-tool-wiki">' in r
-        assert '<a href="/adobe/testtemp/admin/" class="ui-icon-tool-admin">' in r
+        assert r.html.find('div', id='top_nav').find('a', href='/adobe/testtemp/wiki/'), r.html
+        assert r.html.find('div', id='top_nav').find('a', href='/adobe/testtemp/admin/'), r.html
 
     def test_name_suggest(self):
         r = self.app.get('/p/suggest_name?project_name=My+Moz')
@@ -824,7 +824,7 @@ class TestNeighborhood(TestController):
     @td.with_user_project('test-user')
     def test_profile_topnav_menu(self):
         r = self.app.get('/u/test-user/', extra_environ=dict(username='test-user')).follow()
-        assert '<a href="/u/test-user/profile/" class="ui-icon-tool-profile">' in r, r
+        assert r.html.find('div', id='top_nav').find('a', href='/u/test-user/profile/'), r.html
 
     def test_user_project_creates_on_demand(self):
         M.User.register(dict(username='donald-duck'), make_project=False)

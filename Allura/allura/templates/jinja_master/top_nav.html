@@ -20,7 +20,8 @@
 <ul class="dropdown">
   {% for s in c.project.grouped_navbar_entries() %}
     <li class="{% if s.matches_url(request) %}selected{% endif %}">
-        <a href="{{s.url}}" class="ui-icon-{{s.ui_icon or 'admin'}}">
+        <a href="{{s.url}}"
+          style="background-repeat: no-repeat; background-image: url({{ g.theme.app_icon_url((s.tool_name or 'admin').lower(), 32) }});">
             {{s.label}}
         </a>
         {% set grouped_tool_count = s.matching_urls|length %}
