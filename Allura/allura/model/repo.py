@@ -41,6 +41,7 @@ from allura.lib import helpers as h
 from .auth import User
 from .session import main_doc_session, project_doc_session
 from .session import repository_orm_session
+from .timeline import ActivityObject
 
 log = logging.getLogger(__name__)
 
@@ -164,10 +165,20 @@ class RepoObject(object):
             r = cls.query.get(_id=id)
         return r, isnew
 
-class Commit(RepoObject):
+class Commit(RepoObject, ActivityObject):
     type_s = 'Commit'
     # Ephemeral attrs
     repo=None
+
+    @property
+    def activity_name(self):
+        return self.shorthand_id()
+
+    def has_activity_access(self, perm, user):
+        """Commits have no ACLs and are therefore always viewable by any user.
+
+        """
+        return True
 
     def set_context(self, repo):
         self.repo = repo
