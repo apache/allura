@@ -114,7 +114,13 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     @property
     def activity_name(self):
-        return 'blog post %s' % self.title
+        return 'a blog post'
+
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(summary=self.title)
+        return d
 
     def author(self):
         '''The author of the first snapshot of this BlogPost'''

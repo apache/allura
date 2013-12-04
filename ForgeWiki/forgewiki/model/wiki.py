@@ -107,7 +107,13 @@ class Page(VersionedArtifact, ActivityObject):
 
     @property
     def activity_name(self):
-        return 'wiki page %s' % self.title
+        return 'a wiki page'
+
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(summary=self.title)
+        return d
 
     def __json__(self):
         return dict(super(Page, self).__json__(),
