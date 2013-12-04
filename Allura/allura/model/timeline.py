@@ -67,7 +67,7 @@ def perm_check(user):
         if not extras_dict: return True
         allura_id = extras_dict.get('allura_id')
         if not allura_id: return True
-        classname, _id = allura_id.split(':')
+        classname, _id = allura_id.split(':', 1)
         cls = Mapper.by_classname(classname).mapped_class
         try:
             _id = bson.ObjectId(_id)
