@@ -407,6 +407,12 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return self.display_name or self.username
 
     @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(icon_url=self.icon_url())
+        return d
+
+    @property
     def stats(self):
         if 'userstats' in g.entry_points['stats']:
             from forgeuserstats.model.stats import UserStats

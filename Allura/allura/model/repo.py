@@ -186,6 +186,8 @@ class Commit(RepoObject, ActivityObject):
 
     def has_activity_access(self, perm, user, activity):
         """
+        Check access against the original app.
+
         Commits have no ACLs and are therefore always viewable by any user, if
         they have access to the tool.
         """

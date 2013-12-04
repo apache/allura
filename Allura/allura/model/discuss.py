@@ -18,6 +18,7 @@
 import logging
 from datetime import datetime
 
+import jinja2
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
@@ -491,6 +492,16 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
         return artifact_access and security.has_access(self, perm, user,
                 self.project)
+
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        summary = jinja2.Markup.escape(
+                g.markdown.cached_convert(self, 'text')).striptags()
+        if len(summary) > 80:
+            summary = summary[:80] + '...'
+        d.update(summary=summary)
+        return d
 
     def index(self):
         result = super(Post, self).index()

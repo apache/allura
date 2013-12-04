@@ -600,6 +600,12 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def activity_name(self):
         return 'ticket #%s' % self.ticket_num
 
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(summary=self.summary)
+        return d
+
     @classmethod
     def new(cls):
         '''Create a new ticket, safely (ensuring a unique ticket_num'''

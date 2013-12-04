@@ -40,17 +40,38 @@
   <a href="{{o.activity_url}}">{{o.activity_name}}</a>
 {% endmacro %}
 
+{% macro icon(o, size, className) -%}
+  {% if o.activity_extras.get('icon_url') %}
+    <img src="{{ o.activity_extras.get('icon_url') }}"
+         alt="{{ o.activity_name }}"
+         title="{{ o.activity_name }}"
+         class="emboss{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}">
+  {% else %}
+    <b data-icon="{{g.icons['user'].char}}" class="ico emboss {{g.icons['user'].css}}{% if size %} x{{size}}{% endif %}{% if className %} {{className}}{% endif %}"></b>
+  {% endif %}
+{%- endmacro %}
+
 {% block content %}
-  <div class="grid-23">
+<div class="activity">
   {% if not timeline %}
     No activity to display.
   {% else %}
-    <ul>
+    <ul class="timeline">
         {% for a in timeline %}
-        <li>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %} {{h.ago(a.published)}}</li>
-        <!-- Score: {{ a.score }} -->
+        <li>
+          <article>
+            <time datetime="{{a.published}}" title="{{a.published}}">{{h.ago(a.published, show_date_after=None)}}</time>
+            <h1>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %}</h1>
+            {% if a.obj.activity_extras.get('summary') %}
+            <p>
+              {{ icon(a.actor, 16, 'avatar') }}
+              {{ a.obj.activity_extras.get('summary') }}
+            </p>
+            {% endif %}
+          </article>
+        </li>
         {% endfor %}
     </ul>
   {% endif %}
-  </div>
+</div>
 {% endblock %}

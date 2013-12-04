@@ -47,6 +47,7 @@ class ForgeActivityApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ForgeActivityController()
+        g.register_app_css('css/activity.css', app=self)
 
     def main_menu(self): # pragma no cover
         return []
