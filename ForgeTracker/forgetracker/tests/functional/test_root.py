@@ -187,6 +187,21 @@ class TestMilestones(TrackerTestController):
         assert 'error' in self.webflash(r)
         assert app.globals.milestone_fields[0]['milestones'][1]['name'] == '2.0'
 
+    def test_default_milestone(self):
+        self.new_ticket(summary='bar', _milestone='1.0', status='closed')
+        d = {
+            'field_name':'_milestone',
+            'milestones-0.old_name':'2.0',
+            'milestones-0.new_name':'2.0',
+            'milestones-0.description':'',
+            'milestones-0.complete':'Open',
+            'milestones-0.default':'on',
+            'milestones-0.due_date':''
+        }
+        self.app.post('/bugs/update_milestones', d)
+        r = self.app.get('/bugs/new/')
+        assert '<option selected value="2.0">2.0</option>' in r
+
 
 def post_install_create_ticket_permission(app):
     """Set to authenticated permission to create tickets but not update"""

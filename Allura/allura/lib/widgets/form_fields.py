@@ -217,6 +217,13 @@ class AttachmentAdd(ew_core.Widget):
 class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}
 
+
+class Radio(ew.InputField):
+    defaults=dict(
+        ew.InputField.defaults,
+        field_type='radio')
+
+
 class AutoResizeTextarea(ew.TextArea):
     defaults=dict(
         ew.TextArea.defaults,

@@ -30,6 +30,7 @@
   <table>
     <thead>
       <tr>
+        <th>Default</th>
         <th>Name</th>
         <th>Summary</th>
         <th>Status</th>
@@ -41,6 +42,7 @@
     <tbody>
       {% for m in milestones %}
       <tr class="{{loop.index0%2 and 'even' or ''}}">
+        <td><input type="radio" name="milestones-{{loop.index0}}.default" disabled="disabled" {%if m.default %} checked {%endif%}>
         <td class="view">
           <input type="hidden" name="milestones-{{loop.index0}}.old_name" value="{{m.name}}">
           <strong><a href="{{c.app.url}}milestone/{{h.urlquote(m.name)}}/">{{m.name}}</a></strong></td>
@@ -128,8 +130,13 @@
         $('td.edit', $row).show();
         $save_controls.show();
         $add_button.hide();
+        $(':radio').prop('disabled', false);
         $(this).css({opacity: 0.5});
         return false;
+      });
+      $(':radio').click(function(){
+          $('input:radio').attr("checked", false);
+          $(this).attr("checked", true);
       });
       $('a.cancel_edit').click(function(){
         $('td.view', $form).show();
@@ -137,6 +144,7 @@
         $save_controls.hide();
         $add_button.show();
         $new_row.hide();
+        $(':radio').prop('disabled', true);
         $('input', $new_row).val('');
         $('a.edit_milestone').css({opacity: 1});
         return false;
@@ -154,3 +162,5 @@
   }
 </style>
 {% endblock %}
+
+

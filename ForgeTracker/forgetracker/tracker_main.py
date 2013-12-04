@@ -391,8 +391,8 @@ class ForgeTrackerApp(Application):
                     label='Milestone',
                     type='milestone',
                     milestones=[
-                        dict(name='1.0', complete=False, due_date=None),
-                        dict(name='2.0', complete=False, due_date=None)]) ])
+                        dict(name='1.0', complete=False, due_date=None, default=True),
+                        dict(name='2.0', complete=False, due_date=None, default=False)]) ])
         self.globals.update_bin_counts()
         # create default search bins
         TM.Bin(summary='Open Tickets', terms=self.globals.not_closed_query,
@@ -454,6 +454,7 @@ class ForgeTrackerApp(Application):
                         due_date=m.get('due_date'),
                         description=m.get('description'),
                         complete=m.get('complete'),
+                        default=m.get('default'),
                         total=d['hits'],
                         closed=d['closed']))
         return milestones
@@ -681,6 +682,7 @@ class RootController(BaseController, FeedController):
                                 m.description = new['description']
                                 m.due_date = new['due_date']
                                 m.complete = new['complete'] == 'Closed'
+                                m.default = new.get('default', False)
                                 if new['old_name'] != m.name:
                                     q = '%s:"%s"' % (fld.name, new['old_name'])
                                     # search_artifact() limits results to 10

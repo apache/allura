@@ -58,3 +58,15 @@
     }
   </style>
 {% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("input[value='on'][type='radio']").attr("checked", true);
+        $(":radio").click(function(){
+            $(":radio").attr("checked", false);
+            $(this).attr("checked", true);
+        });
+    });
+</script>
+{% endblock %}

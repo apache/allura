@@ -173,6 +173,7 @@ class TicketCustomField(object):
             options.append(ew.Option(
                 label=m.name,
                 py_value=m.name,
+                selected=getattr(m, 'default', False),
                 complete=bool(m.complete)))
 
         ssf = MilestoneField(
