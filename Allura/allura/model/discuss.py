@@ -496,10 +496,14 @@ class Post(Message, VersionedArtifact, ActivityObject):
     @property
     def activity_extras(self):
         d = ActivityObject.activity_extras.fget(self)
+        # For activity summary, convert Post text to html,
+        # strip all tags, and truncate near the 80 char mark
+        LEN = 80
         summary = jinja2.Markup.escape(
                 g.markdown.cached_convert(self, 'text')).striptags()
-        if len(summary) > 80:
-            summary = summary[:80] + '...'
+        if len(summary) > LEN:
+            split = max(summary.find(' ', LEN), LEN)
+            summary = summary[:split] + '...'
         d.update(summary=summary)
         return d
 

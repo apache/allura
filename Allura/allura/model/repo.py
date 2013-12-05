@@ -172,6 +172,10 @@ class Commit(RepoObject, ActivityObject):
     # Ephemeral attrs
     repo=None
 
+    def __init__(self, **kw):
+        for k, v in kw.iteritems():
+            setattr(self, k, v)
+
     @property
     def activity_name(self):
         return self.shorthand_id()

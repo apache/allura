@@ -46,8 +46,7 @@ class ForgeActivityApp(Application):
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
-        self.root = ForgeActivityController()
-        g.register_app_css('css/activity.css', app=self)
+        self.root = ForgeActivityController(self)
 
     def main_menu(self): # pragma no cover
         return []
@@ -68,6 +67,17 @@ class W:
     follow_toggle = FollowToggle()
 
 class ForgeActivityController(BaseController):
+    def __init__(self, app, *args, **kw):
+        super(ForgeActivityController, self).__init__(*args, **kw)
+        self.app = app
+
+    def _before(self, *args, **kw):
+        """Runs before each request to this controller.
+
+        """
+        # register the custom css for our tool
+        g.register_app_css('css/activity.css', app=self.app)
+
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
     def index(self, **kw):

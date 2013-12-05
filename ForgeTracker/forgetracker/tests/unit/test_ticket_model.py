@@ -77,6 +77,11 @@ class TestTicketModel(TrackerTestWithModel):
         else:
             raise AssertionError('Expected schema.Invalid to be thrown')
 
+    def test_activity_extras(self):
+        t = Ticket(summary='my ticket', ticket_num=12)
+        assert_in('allura_id', t.activity_extras)
+        assert_equal(t.activity_extras['summary'], t.summary)
+
     def test_private_ticket(self):
         from pylons import tmpl_context as c
         from allura.model import ProjectRole, User

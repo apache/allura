@@ -16,8 +16,10 @@
 #       under the License.
 
 from mock import patch
+from textwrap import dedent
 from tg import config
 
+import dateutil.parser
 from nose.tools import assert_equal
 
 from alluratest.controller import TestController
@@ -47,6 +49,73 @@ class TestActivityController(TestController):
         self.app.cookies['activitystream.enabled'] = 'true'
         resp = self.app.get('/activity/')
         assert 'No activity to display.' in resp
+
+    @td.with_tool('test', 'activity')
+    @patch('forgeactivity.main.g.director')
+    def test_index_html(self, director):
+        from activitystream.storage.base import StoredActivity
+        from bson import ObjectId
+        director.get_timeline.return_value = [StoredActivity(**{
+            "_id" : ObjectId("529fa331033c5e6406d8b338"),
+            "obj" : {
+                    "activity_extras" : {
+                            "allura_id" : "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.sourceforge.net",
+                            "summary" : "Just wanted to leave a comment on this..."
+                    },
+                    "activity_url" : "/p/test/tickets/_discuss/thread/08e74efd/ed7c/",
+                    "activity_name" : "a comment"
+            },
+            "target" : {
+                    "activity_extras" : {
+                            "allura_id" : "Ticket:529f57a6033c5e5985db2efa",
+                            "summary" : "Make activitystream timeline look better"
+                    },
+                    "activity_url" : "/p/test/tickets/34/",
+                    "activity_name" : "ticket #34"
+            },
+            "actor" : {
+                    "activity_extras" : {
+                            "icon_url" : "/u/test-admin/user_icon",
+                            "allura_id" : "User:521f96cb033c5e2587adbdff"
+                    },
+                    "activity_url" : "/u/test-admin/",
+                    "activity_name" : "Administrator 1",
+                    "node_id" : "User:521f96cb033c5e2587adbdff"
+            },
+            "verb" : "posted",
+            "published" : dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score" : 1386193699,
+            "node_id" : "Project:527a6584033c5e62126f5a60",
+            "owner_id" : "Project:527a6584033c5e62126f5a60"
+        })]
+        r = self.app.get('/p/test/activity/')
+        timeline = r.html.find('ul', 'timeline')
+        assert_equal(1, len(timeline.findAll('li')))
+        activity = timeline.find('li')
+        assert_equal(activity.time['title'], "2013-12-04 21:48:19")
+        h1 = """\
+        <h1>
+        <a href="/u/test-admin/">
+         Administrator 1
+        </a>
+        posted
+        <a href="/p/test/tickets/_discuss/thread/08e74efd/ed7c/">
+         a comment
+        </a>
+        on
+        <a href="/p/test/tickets/34/">
+         ticket #34
+        </a>
+        </h1>
+        """
+        assert_equal(dedent(h1), activity.h1.prettify())
+        p = """\
+        <p>
+        <img src="/u/test-admin/user_icon" alt="Administrator 1" title="Administrator 1" class="emboss x16 avatar" />
+        Just wanted to leave a comment on this...
+        </p>
+        """
+        assert_equal(dedent(p), activity.p.prettify())
 
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')

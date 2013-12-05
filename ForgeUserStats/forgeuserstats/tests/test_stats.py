@@ -51,11 +51,11 @@ class TestStats(TestController):
         assert user.stats.tot_logins_count == 1 + init_logins
         assert user.stats.getLastMonthLogins() == 1 + init_logins
 
+    @td.with_user_project('test-admin')
     @td.with_tool('test', 'wiki', mount_point='wiki', mount_label='wiki', username='test-admin')
     def test_wiki_stats(self):
         initial_artifacts = c.user.stats.getArtifacts()
         initial_wiki = c.user.stats.getArtifacts(art_type="Wiki")
-
         self.app.post('/wiki/TestPage/update',
             params=dict(title='TestPage', text='some text'),
             extra_environ=dict(username=str(c.user.username)))

@@ -9,21 +9,21 @@
   padding: 20px;
   border-bottom: 1px solid #eee;
 }
-.activity ul.timeline li article time {
+.activity ul.timeline li time {
   font-size: 12px;
   color: #777;
 }
-.activity ul.timeline li article h1 {
+.activity ul.timeline li h1 {
   padding: 0;
   font-size: 16px;
   line-height: 32px;
 }
-.activity ul.timeline li article p {
+.activity ul.timeline li p {
   padding: 0;
   vertical-align: top;
   font-size: 14px;
 }
-.activity ul.timeline li article p .avatar {
+.activity ul.timeline li p .avatar {
   display: inline-block;
   margin: 0 8px 8px 0;
 }

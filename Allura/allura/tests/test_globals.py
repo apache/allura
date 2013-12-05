@@ -188,7 +188,7 @@ def test_macro_neighborhood_feeds():
             r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
         assert 'test content' in r
 
-@with_setup(teardown=setUp) # reset everything we changed
+@with_setup(setUp, setUp) # start clean and reset everything we change
 def test_macro_members():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)

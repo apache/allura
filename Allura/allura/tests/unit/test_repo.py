@@ -208,6 +208,13 @@ class TestBlob(unittest.TestCase):
 
 
 class TestCommit(unittest.TestCase):
+    def test_activity_extras(self):
+        commit = M.repo.Commit()
+        commit.shorthand_id = MagicMock(return_value='abcdef')
+        commit.message = 'commit msg'
+        self.assertIn('allura_id', commit.activity_extras)
+        self.assertEqual(commit.activity_extras['summary'], commit.summary)
+
     def test_get_path_no_create(self):
         commit = M.repo.Commit()
         commit.get_tree = MagicMock()
