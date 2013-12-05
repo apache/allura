@@ -37,8 +37,10 @@ from ming.orm import mapper, session
 
 from allura.lib import utils
 from allura.lib import helpers as h
+from allura.lib.security import has_access
 
 from .auth import User
+from .project import AppConfig, Project
 from .session import main_doc_session, project_doc_session
 from .session import repository_orm_session
 from .timeline import ActivityObject
@@ -174,10 +176,25 @@ class Commit(RepoObject, ActivityObject):
     def activity_name(self):
         return self.shorthand_id()
 
-    def has_activity_access(self, perm, user):
+    @property
+    def activity_extras(self):
+        d = ActivityObject.activity_extras.fget(self)
+        d.update(summary=self.summary)
+        if self.repo:
+            d.update(app_config_id=self.repo.app.config._id)
+        return d
+
+    def has_activity_access(self, perm, user, activity):
         """Commits have no ACLs and are therefore always viewable by any user.
 
         """
+        app_config_id = activity.obj.activity_extras.get('app_config_id')
+        if app_config_id:
+            app_config = AppConfig.query.get(_id=app_config_id)
+            if app_config:
+                project = Project.query.get(_id=app_config.project_id)
+                app = app_config.load()(project, app_config)
+                return has_access(app, perm, user, project)
         return True
 
     def set_context(self, repo):
