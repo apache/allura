@@ -59,16 +59,14 @@
     <ul class="timeline">
         {% for a in timeline %}
         <li>
-          <article>
-            <time datetime="{{a.published}}" title="{{a.published}}">{{h.ago(a.published, show_date_after=None)}}</time>
-            <h1>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %}</h1>
-            {% if a.obj.activity_extras.get('summary') %}
-            <p>
-              {{ icon(a.actor, 16, 'avatar') }}
-              {{ a.obj.activity_extras.get('summary') }}
-            </p>
-            {% endif %}
-          </article>
+          <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
+          <h1>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %}</h1>
+          {% if a.obj.activity_extras.get('summary') %}
+          <p>
+            {{ icon(a.actor, 16, 'avatar') }}
+            {{ a.obj.activity_extras.get('summary') }}
+          </p>
+          {% endif %}
         </li>
         {% endfor %}
     </ul>

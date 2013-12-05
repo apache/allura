@@ -16,7 +16,7 @@
 #       under the License.
 
 from datetime import datetime
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_true
 from pylons import tmpl_context as c
 
 from forgeblog import model as M
@@ -33,6 +33,8 @@ class TestBlogPost(BlogTestWithModel):
         assert_equal(post.title, 'test')
         assert_equal(post.text, 'test message')
         assert_equal(post.state, 'published')
+        assert_equal(post.activity_extras['summary'], post.title)
+        assert_true('allura_id' in post.activity_extras)
 
 
 class TestFeed(BlogTestWithModel):

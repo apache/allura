@@ -39,3 +39,14 @@ class TestPostModel(WithDatabase):
         with h.push_config(c, user=M.User()):
             self.post.approve()
         assert self.post.status == 'ok'
+
+    def test_activity_extras(self):
+        self.post.text = """\
+This is a **bold thing**, 40 chars here.
+* Here's the first item in our list.
+* And here's the second item."""
+        assert 'allura_id' in self.post.activity_extras
+        summary = self.post.activity_extras['summary']
+        assert summary == "This is a bold thing, 40 chars here. " + \
+                          "Here's the first item in our list. " + \
+                          "And here's..."
