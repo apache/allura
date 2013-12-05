@@ -36,11 +36,7 @@ class MilestonesAdmin(ffw.SortableTable):
         repetitions=0)
     fields = [
         ew.HiddenField(name='old_name'),
-
-        ffw.Radio(
-            name='default',
-            label='Default'),
-
+        ffw.Radio(name='default', label='Default', css_class='default-milestone'),
         ew.Checkbox(name='complete', show_label=True, suppress_label=True),
         ew.TextField(name='name',
         attrs={'style':'width: 80px'}),
