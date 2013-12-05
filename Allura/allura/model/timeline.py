@@ -51,7 +51,7 @@ class ActivityObject(base.ActivityObjectBase):
         """
         return "%s:%s" % (self.__class__.__name__, self._id)
 
-    def has_activity_access(self, perm, user):
+    def has_activity_access(self, perm, user, activity):
         """Return True if user has perm access to this object, otherwise
         return False.
         """
@@ -74,5 +74,5 @@ def perm_check(user):
         except bson.errors.InvalidId:
             pass
         obj = cls.query.get(_id=_id)
-        return obj and obj.has_activity_access('read', user)
+        return obj and obj.has_activity_access('read', user, activity)
     return _perm_check

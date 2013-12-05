@@ -476,7 +476,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
     def activity_name(self):
         return 'a comment'
 
-    def has_activity_access(self, perm, user):
+    def has_activity_access(self, perm, user, activity):
         """Return True if user has perm access to this object, otherwise
         return False.
 
