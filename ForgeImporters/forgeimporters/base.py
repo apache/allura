@@ -120,6 +120,7 @@ def import_tool(importer_path, project_name=None, mount_point=None, mount_label=
          M.session.substitute_extensions(M.artifact_orm_session, [M.session.BatchIndexer]):
         app = importer.import_tool(c.project, c.user, project_name=project_name,
                 mount_point=mount_point, mount_label=mount_label, **kw)
+        M.artifact_orm_session.flush()
         M.session.BatchIndexer.flush()
         if app:
             handler.success(app)
