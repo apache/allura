@@ -64,7 +64,7 @@ class ProjectImportForm(schema.Schema):
         self.add_field('project_shortname', provider.shortname_validator)
         self.allow_extra_fields = True
 
-    neighborhood = fev.PlainText(not_empty=True)
+    neighborhood = fev.NotEmpty()
     project_name = fev.UnicodeString(not_empty=True, max=40)
 
 
