@@ -518,25 +518,28 @@ class GitImplementation(M.RepositoryImplementation):
             num_threads += 1
         def get_ids():
             paths = set(chunks.get())
-            commit_id = commit._id
-            while paths and commit_id:
-                if time() - start_time > timeout:
-                    log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
-                    break
-                lines = self._git.git.log(
-                        commit._id, '--', *paths,
-                        pretty='format:%H',
-                        name_only=True,
-                        max_count=1,
-                        no_merges=True).split('\n')
-                commit_id = lines[0]
-                changes = set(lines[1:])
-                changed = prefix_paths_union(paths, changes)
-                for path in changed:
-                    result[path] = commit_id
-                paths -= changed
-            chunks.task_done()
-            return
+            try:
+                commit_id = commit._id
+                while paths and commit_id:
+                    if time() - start_time > timeout:
+                        log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
+                        break
+                    lines = self._git.git.log(
+                            commit._id, '--', *paths,
+                            pretty='format:%H',
+                            name_only=True,
+                            max_count=1,
+                            no_merges=True).split('\n')
+                    commit_id = lines[0]
+                    changes = set(lines[1:])
+                    changed = prefix_paths_union(paths, changes)
+                    for path in changed:
+                        result[path] = commit_id
+                    paths -= changed
+            except Exception as e:
+                log.exception('Error in Git thread: %s', e)
+            finally:
+                chunks.task_done()
         if num_threads == 1:
             get_ids()
         else:
