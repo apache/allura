@@ -159,8 +159,12 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             return
         icon_name = urllib.unquote(urlparse(icon_url).path).split('/')[-1]
         icon = File(icon_url, icon_name)
+        filetype = icon.type
+        # work around Google Code giving us bogus file type
+        if filetype.startswith('text/html'):
+            filetype = 'image/png'
         M.ProjectFile.save_image(
-            icon_name, icon.file, icon.type,
+            icon_name, icon.file, filetype,
             square=True, thumbnail_size=(48,48),
             thumbnail_meta={'project_id': project._id, 'category': 'icon'})
 
