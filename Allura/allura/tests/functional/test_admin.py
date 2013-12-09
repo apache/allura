@@ -1123,3 +1123,48 @@ class TestRestInstallTool(TestRestApiBase):
                              params=data)
         assert_equals(r.status, '401 Unauthorized')
 
+    def test_order(self):
+        def get_labels():
+            project = M.Project.query.get(shortname='test')
+            labels = []
+            for mount in project.ordered_mounts(include_hidden=True):
+                if 'ac' in mount:
+                    labels.append(mount['ac'].options.mount_label)
+                elif 'sub' in mount:
+                    labels.append(mount['sub'].name)
+            return labels
+        assert_equals(get_labels(), ['Admin', 'Search', 'Activity', 'A Subproject'])
+
+        data = [
+                {
+                    'tool': 'tickets',
+                    'mount_point': 'ticketsmount1',
+                    'mount_label': 'ta',
+                },
+                {
+                    'tool': 'tickets',
+                    'mount_point': 'ticketsmount2',
+                    'mount_label': 'tc',
+                    'order': 'last'
+                },
+                {
+                    'tool': 'tickets',
+                    'mount_point': 'ticketsmount3',
+                    'mount_label': 'tb',
+                    'order': 'alpha_tool'
+                },
+                {
+                    'tool': 'tickets',
+                    'mount_point': 'ticketsmount4',
+                    'mount_label': 't1',
+                    'order': 'first'
+                },
+            ]
+        for datum in data:
+            r = self.api_post('/rest/p/test/admin/install_tool/', **datum)
+            assert_equals(r.json['success'], True)
+            assert_equals(r.json['info'],
+                         'Tool %s with mount_point %s and mount_label %s was created.'
+                         % (datum['tool'], datum['mount_point'], datum['mount_label']))
+
+        assert_equals(get_labels(), ['t1', 'Admin', 'Search', 'Activity', 'A Subproject', 'ta', 'tb', 'tc'])
