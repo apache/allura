@@ -1000,13 +1000,43 @@ def plain2markdown(text, preserve_multiple_spaces=False, has_html_entities=False
 
 
 def iter_entry_points(group, *a, **kw):
-    '''
-    yield entry points that have not been disabled in the config
-    '''
-    disabled = aslist(tg.config.get('disable_entry_points.' + group), sep=',')
-    for ep in pkg_resources.iter_entry_points(group, *a, **kw):
-        if ep.name not in disabled:
-            yield ep
+    """Yields entry points that have not been disabled in the config.
+
+    If ``group`` is "allura" (Allura tool entry points), this function also
+    checks for multiple entry points with the same name. If there are
+    multiple entry points with the same name, and one of them is a subclass
+    of the other(s), it will be yielded, and the other entry points with that
+    name will be ignored. If a subclass is not found, an ImportError will be
+    raised.
+
+    This treatment of "allura" entry points allows tool authors to subclass
+    another tool while reusing the original entry point name.
+
+    """
+    def active_eps():
+        disabled = aslist(tg.config.get('disable_entry_points.' + group), sep=',')
+        return [ep for ep in pkg_resources.iter_entry_points(group, *a, **kw)
+                if ep.name not in disabled]
+    def unique_eps(entry_points):
+        by_name = defaultdict(list)
+        for ep in entry_points:
+            by_name[ep.name].append(ep)
+        for name, eps in by_name.iteritems():
+            ep_count = len(eps)
+            if ep_count == 1:
+                yield eps[0]
+            else:
+                yield subclass(eps)
+    def subclass(entry_points):
+        loaded = dict((ep, ep.load()) for ep in entry_points)
+        for ep, cls in loaded.iteritems():
+            others = loaded.values()[:]
+            others.remove(cls)
+            if all([issubclass(cls, other) for other in others]):
+                return ep
+        raise ImportError('Ambiguous [allura] entry points detected. ' +
+                'Multiple entry points with name "%s".' % entry_points[0].name)
+    return iter(unique_eps(active_eps()) if group == 'allura' else active_eps())
 
 
 # http://stackoverflow.com/a/1060330/79697
