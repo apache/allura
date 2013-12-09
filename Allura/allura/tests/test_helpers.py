@@ -22,6 +22,7 @@ from os import path
 from datetime import datetime
 
 from mock import Mock, patch
+import tg
 from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
@@ -444,3 +445,46 @@ def test_login_overlay():
     with td.raises(HTTPUnauthorized):
         with h.login_overlay(exceptions=['foobar']):
             raise HTTPUnauthorized()
+
+class TestIterEntryPoints(TestCase):
+    def _make_ep(self, name, cls):
+        m = Mock()
+        m.name = name
+        m.load.return_value = cls
+        return m
+
+    @patch('allura.lib.helpers.pkg_resources')
+    @patch.dict(h.tg.config, {'disable_entry_points.allura': 'myapp'})
+    def test_disabled(self, pkg_resources):
+        pkg_resources.iter_entry_points.return_value = [
+                self._make_ep('myapp', object)]
+        self.assertEqual([], list(h.iter_entry_points('allura')))
+
+    @patch('allura.lib.helpers.pkg_resources')
+    def test_subclassed_ep(self, pkg_resources):
+        class App(object): pass
+        class BetterApp(App): pass
+
+        pkg_resources.iter_entry_points.return_value = [
+                self._make_ep('myapp', App),
+                self._make_ep('myapp', BetterApp)]
+
+        eps = list(h.iter_entry_points('allura'))
+        self.assertEqual(len(eps), 1)
+        self.assertEqual(BetterApp, eps[0].load())
+
+    @patch('allura.lib.helpers.pkg_resources')
+    def test_ambiguous_eps(self, pkg_resources):
+        class App(object): pass
+        class BetterApp(App): pass
+        class BestApp(object): pass
+
+        pkg_resources.iter_entry_points.return_value = [
+                self._make_ep('myapp', App),
+                self._make_ep('myapp', BetterApp),
+                self._make_ep('myapp', BestApp)]
+
+        self.assertRaisesRegexp(ImportError,
+                'Ambiguous \[allura\] entry points detected. '
+                'Multiple entry points with name "myapp".',
+                list, h.iter_entry_points('allura'))
