@@ -370,9 +370,7 @@ class ProjectController(FeedController):
         activity_enabled = config.get('activitystream.enabled', False)
         activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
-        if activity_enabled and c.project.app_instance('activity'):
-            redirect('activity/')
-        elif mount is not None:
+        if mount is not None:
             if 'ac' in mount:
                 redirect(mount['ac'].options.mount_point + '/')
             elif 'sub' in mount:

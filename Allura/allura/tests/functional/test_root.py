@@ -94,23 +94,6 @@ class TestRootController(TestController):
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
         assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
 
-    def test_project_redirect(self):
-        with push_config(config, **{'activitystream.enabled': 'false'}):
-            resp = self.app.get('/p/test2/')
-            assert_equal(resp.status_int, 302)
-            assert_equal(resp.location, 'http://localhost/p/test2/admin/')
-
-        with push_config(config, **{'activitystream.enabled': 'true'}):
-            resp = self.app.get('/p/test2/')
-            assert_equal(resp.status_int, 302)
-            assert_equal(resp.location, 'http://localhost/p/test2/activity/')
-
-        with push_config(config, **{'activitystream.enabled': 'false'}):
-            self.app.cookies['activitystream.enabled'] = 'true'
-            resp = self.app.get('/p/test2/')
-            assert_equal(resp.status_int, 302)
-            assert_equal(resp.location, 'http://localhost/p/test2/activity/')
-
     def test_neighborhood_home(self):
         # Install home app
         nb = M.Neighborhood.query.get(name='Adobe')
