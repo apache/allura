@@ -43,19 +43,11 @@ class ForgeActivityApp(Application):
     default_mount_point = 'activity'
     installable = False
     searchable = False
-    hidden = True
-    sitemap=[]
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ForgeActivityController(self)
         self.api_root = ForgeActivityRestController(self)
-
-    def main_menu(self): # pragma no cover
-        return []
-
-    def sidebar_menu(self): # pragma no cover
-        return []
 
     def admin_menu(self): # pragma no cover
         return []
