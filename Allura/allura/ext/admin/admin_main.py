@@ -21,6 +21,7 @@ from datetime import datetime
 from urlparse import urlparse
 import json
 import os
+from operator import itemgetter
 
 import pkg_resources
 from pylons import tmpl_context as c, app_globals as g
@@ -725,7 +726,7 @@ class ProjectAdminRestController(BaseController):
 
     @expose('json:')
     @require_post()
-    def install_tool(self, tool=None, mount_point=None, mount_label=None, **kw):
+    def install_tool(self, tool=None, mount_point=None, mount_label=None, order=None, **kw):
         """API for installing tools in current project.
 
         Requires a valid tool, mount point and mount label names.
@@ -740,7 +741,8 @@ class ProjectAdminRestController(BaseController):
             {
                 'tool': 'tickets',
                 'mount_point': 'mountpoint',
-                'mount_label': 'mountlabel'
+                'mount_label': 'mountlabel',
+                'order': 'first|last|alpha_tool'
             }
 
         Example output (in successful case)::
@@ -769,10 +771,47 @@ class ProjectAdminRestController(BaseController):
                     'info': 'Incorrect mount point name, or mount point already exists.'
                     }
 
+        if order is None:
+            order = 'last'
+        mounts = [{
+                'ordinal': ac.options.ordinal,
+                'label': ac.options.mount_label,
+                'mount': ac.options.mount_point,
+                'type': ac.tool_name.lower(),
+            } for ac in c.project.app_configs]
+        subs = {p.shortname: p for p in M.Project.query.find({'parent_id': c.project._id})}
+        for sub in subs.values():
+            mounts.append({
+                    'ordinal': sub.ordinal,
+                    'mount': sub.shortname,
+                    'type': 'sub-project',
+                })
+        mounts.sort(key=itemgetter('ordinal'))
+        if order == 'first':
+            ordinal = 0
+        elif order == 'last':
+            ordinal = len(mounts)
+        elif order == 'alpha_tool':
+            tool = tool.lower()
+            for i, mount in enumerate(mounts):
+                if mount['type'] == tool and mount['label'] > mount_label:
+                    ordinal = i
+                    break
+            else:
+                ordinal = len(mounts)
+        mounts.insert(ordinal, {'ordinal': ordinal, 'type': 'new'})
+        for i, mount in enumerate(mounts):
+            if mount['type'] == 'new':
+                pass
+            elif mount['type'] == 'sub-project':
+                subs[mount['mount']].ordinal = i
+            else:
+                c.project.app_config(mount['mount']).options.ordinal = i
+
         data = {
             'install': 'install',
             'ep_name': tool,
-            'ordinal': len(installable_tools) + len(c.project.direct_subprojects),
+            'ordinal': ordinal,
             'mount_point': mount_point,
             'mount_label': mount_label
         }
