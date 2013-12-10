@@ -20,6 +20,7 @@ import logging
 
 import pkg_resources
 
+from allura.app import Application
 from allura.lib.helpers import iter_entry_points
 
 log = logging.getLogger(__name__)
@@ -33,11 +34,22 @@ def register_ew_resources(manager):
         'allura', pkg_resources.resource_filename('allura', 'public/nf'))
     for ep in iter_entry_points('allura'):
         try:
+            # Allow derived tools to "inherit" static resources from a parent.
+            module_name = ep.module_name
+            resource_path = os.path.join('nf', ep.name.lower())
+            if not pkg_resources.resource_exists(module_name, resource_path):
+                for cls in [c for c in ep.load().__mro__[1:]
+                        if issubclass(c, Application)]:
+                    module_name = cls.__module__
+                    if pkg_resources.resource_exists(module_name, resource_path):
+                        break
+                else:
+                    continue
+
             manager.register_directory(
                 'tool/%s' % ep.name.lower(),
                 pkg_resources.resource_filename(
-                    ep.module_name,
-                    os.path.join('nf', ep.name.lower())))
+                    module_name, resource_path))
         except ImportError:
             log.warning('Cannot import entry point %s', ep)
             raise
