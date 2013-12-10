@@ -20,6 +20,8 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
+from forgetracker.search import choices_for_filter
+
 
 
 class TicketSearchResults(ew_core.SimpleForm):
@@ -43,13 +45,10 @@ class TicketSearchResults(ew_core.SimpleForm):
 
     @property
     def filters(self):
-        return {
-            '_milestone': [{'value': 'm1', 'label': 'M1', 'selected': False},
-                           {'value': 'm1', 'label': 'M1', 'selected': True}],
-            'status': [{'value': 'm1', 'label': 'M1', 'selected': False}],
-            'assigned_to': [{'value': 'm1', 'label': 'M1', 'selected': False}],
-            'reported_by': [{'value': 'm1', 'label': 'M1', 'selected': False}],
-        }
+        return {name: [{'value': val,
+                        'label': '%s (%s)' % (val, count),
+                        'selected': False} for val, count in field]
+                for name, field in choices_for_filter().iteritems()}
 
     def resources(self):
         yield ew.JSLink('tracker_js/jquery.multiselect.min.js')

@@ -42,8 +42,8 @@
           <tr class="ticket-filter" data-column="{{col['name']}}">
             <th colspan="{{columns|length + 1}}">
               <p><a data-sort="{{col['sort_name']}}" title="{{col['label']}}">Toggle sort by {{col['label']}}</a></p>
-              <p>Filter by {{col['label']}}</p>
               {% if col['name'] in widget.filters.keys() %}
+                <p>Filter by {{col['label']}}</p>
                 <p>
                   <select name="filter-{{col['name']}}" data-label="{{col['label']}}" multiple="multiple">
                     {% for o in widget.filters[col['name']] %}
