@@ -96,12 +96,9 @@ class RestController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        api_token = self._authenticate_request()
-        c.api_token = api_token
-        if api_token:
-            c.user = api_token.user
-        else:
-            c.user = M.User.anonymous()
+        c.api_token = self._authenticate_request()
+        if c.api_token:
+            c.user = c.api_token.user
         neighborhood = M.Neighborhood.query.get(url_prefix = '/' + name + '/')
         if not neighborhood: raise exc.HTTPNotFound, name
         return NeighborhoodRestController(neighborhood), remainder
