@@ -47,6 +47,7 @@ class ForgeActivityApp(Application):
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = ForgeActivityController(self)
+        self.api_root = ForgeActivityRestController(self)
 
     def main_menu(self): # pragma no cover
         return []
@@ -132,3 +133,45 @@ class ForgeActivityController(BaseController):
             success=True,
             message=W.follow_toggle.success_message(follow),
             following=follow)
+
+
+class ForgeActivityRestController(BaseController):
+    def __init__(self, app, *args, **kw):
+        super(ForgeActivityRestController, self).__init__(*args, **kw)
+        self.app = app
+
+    @expose('json:')
+    def index(self, **kw):
+        activity_enabled = config.get('activitystream.enabled', False)
+        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = asbool(activity_enabled)
+        if not activity_enabled:
+            raise exc.HTTPNotFound()
+
+        c.follow_toggle = W.follow_toggle
+        if c.project.is_user_project:
+            followee = c.project.user_project_of
+            actor_only = followee != c.user
+        else:
+            followee = c.project
+            actor_only = False
+
+        following = g.director.is_connected(c.user, followee)
+        timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
+                limit=kw.get('limit', 100), actor_only=actor_only,
+                filter_func=perm_check(c.user))
+        return {
+                'following': following,
+                'followee': {
+                    'activity_name': followee.shortname,
+                    'activity_url': followee.url(),
+                    'activity_extras': {},
+                },
+                'timeline': [{
+                        'published': '%s UTC' % a.published,
+                        'actor': a.actor._deinstrument(),
+                        'verb': a.verb,
+                        'obj': a.obj._deinstrument(),
+                        'target': a.target._deinstrument(),
+                    } for a in timeline],
+            }
