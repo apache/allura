@@ -87,10 +87,10 @@
   <div>
     You'll receive an email when the import is finished.
     Import time varies depending on the amount of data being imported.
-    {% if config['doc.url.importers'] %}
+    {% if config['doc.url.importers.{}'.format(importer.source)] %}
         <br/><br/>
         For more information on what will be imported and post-import configuration,
-        please see the <a href="{{ config['doc.url.importers'] }}">import documentation</a>.
+        please see the <a href="{{ config['doc.url.importers.{}'.format(importer.source)] }}">{{importer.source}} import documentation</a>.
     {% endif %}
   </div>
 
