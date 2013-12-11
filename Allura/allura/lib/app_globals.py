@@ -470,6 +470,16 @@ class Globals(object):
         p1.wait()
         return server_name
 
+    @LazyProperty
+    def tool_icon_css(self):
+        css = ''
+        for tool_name in self.entry_points['tool']:
+            for size in (24, 32, 48):
+                url = self.theme.app_icon_url(tool_name.lower(), size)
+                css += '.ui-icon-tool-%s-%i {background: url(%s) no-repeat;}\n' % (
+                        tool_name, size, url)
+        return css
+
     @property
     def resource_manager(self):
         return ew_core.widget_context.resource_manager

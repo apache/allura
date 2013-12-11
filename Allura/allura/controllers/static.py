@@ -41,3 +41,8 @@ class NewForgeController(object):
         else:
             html = g.markdown.convert(markdown)
         return html
+
+    @expose()
+    def tool_icon_css(self):
+        response.content_type = 'text/css'
+        return g.tool_icon_css
