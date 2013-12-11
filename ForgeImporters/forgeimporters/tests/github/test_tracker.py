@@ -117,11 +117,13 @@ class TestTrackerImporter(TestCase):
     def test_get_attachments(self):
         importer = tracker.GitHubTrackerImporter()
         body = 'hello\n' \
-        '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n'
+        '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
+        '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
         new_body, attachments = importer._get_attachments(body)
         self.assertEqual(new_body, 'hello\n')
-        self.assertEqual(len(attachments), 1)
+        self.assertEqual(len(attachments), 2)
         self.assertEqual(attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
+        self.assertEqual(attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
 
     def test_process_comments(self):
         ticket = mock.Mock()

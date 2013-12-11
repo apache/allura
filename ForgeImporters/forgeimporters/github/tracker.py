@@ -245,7 +245,7 @@ class GitHubTrackerImporter(ToolImporter):
         # usual syntax is
         # ![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n
         REGEXP = r'!\[[\w0-9]+?\]\(((?:https?:\/\/)?[\da-z\.-]+\.[a-z\.]{2,6}'\
-            '(?:[\/\w\.-]+)*.(jpg|jpeg|png|gif))\)\r\n'
+            '(?:[\/%\w\.-]+)*.(jpg|jpeg|png|gif))\)(\r\n){0,1}'
         attachments = []
 
         try:
