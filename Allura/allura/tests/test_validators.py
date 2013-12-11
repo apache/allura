@@ -23,6 +23,7 @@ from allura import model as M
 from allura.lib import validators as v
 from allura.lib.decorators import task
 from alluratest.controller import setup_basic_test
+from allura.websetup.bootstrap import create_user
 
 
 def setUp():
@@ -186,6 +187,13 @@ class TestPathValidator(unittest.TestCase):
     def test_valid_project(self):
         project = M.Project.query.get(shortname='test')
         d = self.val.to_python('/p/test')
+        self.assertEqual(d['project'], project)
+        self.assertTrue('app' not in d)
+
+    def test_project_in_nbhd_with_prefix(self):
+        create_user('myuser', make_project=True)
+        project = M.Project.query.get(shortname='u/myuser')
+        d = self.val.to_python('/u/myuser')
         self.assertEqual(d['project'], project)
         self.assertTrue('app' not in d)
 

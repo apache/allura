@@ -152,7 +152,8 @@ class PathValidator(fev.FancyValidator):
         if not nbhd:
             raise fe.Invalid('Invalid neighborhood: %s' % nbhd_url_prefix, value, state)
 
-        project = M.Project.query.get(shortname=project_name, neighborhood_id=nbhd._id)
+        project = M.Project.query.get(shortname=nbhd.shortname_prefix + project_name,
+                neighborhood_id=nbhd._id)
         if not project:
             raise fe.Invalid('Invalid project: %s' % project_name, value, state)
 
