@@ -18,17 +18,19 @@
 import logging
 
 from pylons import tmpl_context as c, app_globals as g
-from pylons import request
+from pylons import request, response
 from tg import expose, validate, config
 from tg.decorators import with_trailing_slash
 from paste.deploy.converters import asbool
 from webob import exc
+from webhelpers import feedgenerator as FG
 
 from allura.app import Application
 from allura import version
 from allura.controllers import BaseController
 from allura.lib.security import require_authenticated
 from allura.model.timeline import perm_check
+from allura.lib import helpers as h
 
 from .widgets.follow import FollowToggle
 
@@ -71,6 +73,8 @@ class ForgeActivityController(BaseController):
     def __init__(self, app, *args, **kw):
         super(ForgeActivityController, self).__init__(*args, **kw)
         self.app = app
+        setattr(self, 'feed.atom', self.feed)
+        setattr(self, 'feed.rss', self.feed)
 
     def _before(self, *args, **kw):
         """Runs before each request to this controller.
@@ -79,9 +83,7 @@ class ForgeActivityController(BaseController):
         # register the custom css for our tool
         g.register_app_css('css/activity.css', app=self.app)
 
-    @expose('jinja:forgeactivity:templates/index.html')
-    @with_trailing_slash
-    def index(self, **kw):
+    def _get_activities_data(self, **kw):
         activity_enabled = config.get('activitystream.enabled', False)
         activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
@@ -101,6 +103,43 @@ class ForgeActivityController(BaseController):
                 limit=kw.get('limit', 100), actor_only=actor_only,
                 filter_func=perm_check(c.user))
         return dict(followee=followee, following=following, timeline=timeline)
+
+    @expose('jinja:forgeactivity:templates/index.html')
+    @with_trailing_slash
+    def index(self, **kw):
+        return self._get_activities_data(**kw)
+
+    @with_trailing_slash
+    @expose()
+    def feed(self, **kw):
+        data = self._get_activities_data(**kw)
+        response.headers['Content-Type'] = ''
+        response.content_type = 'application/xml'
+        d = {
+                'title': 'Activity for %s' % data['followee'].shortname,
+                'link': h.absurl(self.app.url),
+                'description': 'Recent activity for %s' % data['followee'].shortname,
+                'language': u'en',
+            }
+        if request.environ['PATH_INFO'].endswith('.atom'):
+            feed = FG.Atom1Feed(**d)
+        else:
+            feed = FG.Rss201rev2Feed(**d)
+        for t in data['timeline']:
+            url = h.absurl(t.obj.activity_url.encode('utf-8'))
+            feed.add_item(title=u'%s %s %s%s' % (
+                                t.actor.activity_name,
+                                t.verb,
+                                t.obj.activity_name,
+                                ' on %s' % t.target.activity_name if t.target.activity_name else '',
+                            ),
+                          link=url,
+                          pubdate=t.published,
+                          description=t.obj.activity_extras.summary,
+                          unique_id=url,
+                          author_name=t.actor.activity_name,
+                          author_link=h.absurl(t.actor.activity_url))
+        return feed.writeString('utf-8')
 
     @expose('json:')
     @validate(W.follow_toggle)
@@ -142,29 +181,12 @@ class ForgeActivityRestController(BaseController):
 
     @expose('json:')
     def index(self, **kw):
-        activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
-        activity_enabled = asbool(activity_enabled)
-        if not activity_enabled:
-            raise exc.HTTPNotFound()
-
-        c.follow_toggle = W.follow_toggle
-        if c.project.is_user_project:
-            followee = c.project.user_project_of
-            actor_only = followee != c.user
-        else:
-            followee = c.project
-            actor_only = False
-
-        following = g.director.is_connected(c.user, followee)
-        timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
-                limit=kw.get('limit', 100), actor_only=actor_only,
-                filter_func=perm_check(c.user))
+        data = self.app.root._get_activities_data(**kw)
         return {
-                'following': following,
+                'following': data['following'],
                 'followee': {
-                    'activity_name': followee.shortname,
-                    'activity_url': followee.url(),
+                    'activity_name': data['followee'].shortname,
+                    'activity_url': data['followee'].url(),
                     'activity_extras': {},
                 },
                 'timeline': [{
@@ -173,5 +195,5 @@ class ForgeActivityRestController(BaseController):
                         'verb': a.verb,
                         'obj': a.obj._deinstrument(),
                         'target': a.target._deinstrument(),
-                    } for a in timeline],
+                    } for a in data['timeline']],
             }
