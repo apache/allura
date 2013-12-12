@@ -42,7 +42,7 @@
   vertical-align: top;
   font-size: 14px;
 }
-.activity ul.timeline li p .avatar {
-  display: inline-block;
-  margin: 0 8px 8px 0;
+.activity ul.timeline li .avatar {
+  float: left;
+  margin: 10px 10px 0 0;
 }
