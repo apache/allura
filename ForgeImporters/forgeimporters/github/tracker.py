@@ -235,7 +235,7 @@ class GitHubTrackerImporter(ToolImporter):
         for milestone in self.open_milestones:
             global_milestones['milestones'].append({
                 'name': milestone[0],
-                'due_date': unicode(milestone[1].date()),
+                'due_date': unicode(milestone[1].date()) if milestone[1] else None,
                 'complete': False,
             })
         return [global_milestones]
