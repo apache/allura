@@ -95,6 +95,7 @@ class TestActivityController(TestController):
         assert_equal(activity.time['title'], "2013-12-04 21:48:19")
         h1 = """\
         <h1>
+        <img src="/u/test-admin/user_icon" alt="Administrator 1" title="Administrator 1" class="emboss x32 avatar" />
         <a href="/u/test-admin/">
          Administrator 1
         </a>
@@ -111,7 +112,6 @@ class TestActivityController(TestController):
         assert_equal(dedent(h1), activity.h1.prettify())
         p = """\
         <p>
-        <img src="/u/test-admin/user_icon" alt="Administrator 1" title="Administrator 1" class="emboss x16 avatar" />
         Just wanted to leave a comment on this...
         </p>
         """
