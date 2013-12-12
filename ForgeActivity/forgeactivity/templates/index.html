@@ -60,10 +60,12 @@
         {% for a in timeline %}
         <li>
           <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
-          <h1>{{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %}</h1>
+          <h1>
+              {{ icon(a.actor, 32, 'avatar') }}
+              {{activity_obj(a.actor)}} {{a.verb}} {{activity_obj(a.obj)}} {% if a.target.activity_name %}on {{activity_obj(a.target)}}{% endif %}
+          </h1>
           {% if a.obj.activity_extras.get('summary') %}
           <p>
-            {{ icon(a.actor, 16, 'avatar') }}
             {{ a.obj.activity_extras.get('summary') }}
           </p>
           {% endif %}
