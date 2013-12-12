@@ -2345,55 +2345,6 @@ div.attachment_thumb .file_type span {
   color: #666;
 }
 
-/* forge tool icons */
-.ui-icon-tool-home, .ui-icon-tool-profile {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-wiki {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-git, .ui-icon-tool-svn, .ui-icon-tool-hg {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-stats {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-admin, .ui-icon-admin {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-discussion {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-tickets {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-link {
-  background-repeat: no-repeat;
-}
-.ui-icon-tool-shorturl {
-  background-repeat: no-repeat;
-}
-
-
-.ui-icon-tool-blog {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-chat {
-  background-repeat: no-repeat;
-}
-
-.ui-icon-tool-hosted_apps {
-  background-repeat: no-repeat;
-}
-
 /* Cards */
 .installable_tool {
   margin-top: 10px;
@@ -2665,7 +2616,7 @@ div.attachment_thumb .file_type span {
 #ticket_search_results_holder {
   overflow: auto;
 }
-/* headers should never force a column to be too wide */ 
+/* headers should never force a column to be too wide */
 #ticket_search_results_holder th {
     overflow: hidden;
     max-width: 1em;
@@ -2709,7 +2660,7 @@ div.attachment_thumb .file_type span {
 
 #stats-viz .xaxis {
   text-align: center;
-} 
+}
 #stats-viz .yaxis {
   -webkit-transform: rotate(270deg);  -moz-transform: rotate(270deg);
   -ms-transform: rotate(270deg);
@@ -2717,11 +2668,11 @@ div.attachment_thumb .file_type span {
   transform: rotate(270deg);
   max-width: 1em;
 }
-  
+
 #project_stats_holder {
   width: 600px;
   height: 350px;
-} 
+}
 #project_stats_holder div.legend table {
   width: auto;
 }
