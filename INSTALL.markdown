@@ -114,6 +114,17 @@ We have a custom config ready for use.
     (env-allura)~/src/apache-solr-4.2.1/example/$ nohup java -jar start.jar > ~/logs/solr.log &
 
 
+### Create code repo directories
+
+The default configuration stores repos in `/srv`, so we need to create those directories:
+
+    sudo mkdir /srv/{git,svn,hg}
+    sudo chown $USER /srv/{git,svn,hg}
+
+If you don't have `sudo` permission or just want to store them somewhere else, change the `/srv` paths in `development.ini`
+
+If you want to set up remote access to the repositories, see <http://allura.sourceforge.net/docs/scm_host.html>
+
 ### Allura task processing
 
 Allura uses a background task service called "taskd" to do async tasks like sending emails, and indexing data into solr, etc.  Let's get it running
