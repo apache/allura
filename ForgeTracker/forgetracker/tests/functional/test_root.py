@@ -572,11 +572,11 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get(ticket_view.request.url, extra_environ=env)
         assert 'Private Ticket' not in r
         # ... and it doesn't appear in the feed
-        r = self.app.get('/p/test/bugs/feed.atom')
+        r = self.app.get('/p/test/bugs/feed.atom', extra_environ=env)
         assert 'Private Ticket' not in r
         # ... or in the API ...
-        r = self.app.get('/rest/p/test/bugs/2/', status=401)
-        r = self.app.get('/rest/p/test/bugs/')
+        r = self.app.get('/rest/p/test/bugs/2/', extra_environ=env, status=401)
+        r = self.app.get('/rest/p/test/bugs/', extra_environ=env)
         assert 'Private Ticket' not in r
 
         # update private ticket

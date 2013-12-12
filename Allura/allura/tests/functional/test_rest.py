@@ -191,7 +191,7 @@ class TestRestHome(TestRestApiBase):
                      status=401)
         self.app.get('/rest/p/test/wiki/Home/',
                      extra_environ={'username': 'test-user-0'},
-                     status=401)
+                     status=403)
 
     def test_index(self):
         eps = {
