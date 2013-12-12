@@ -50,9 +50,10 @@ class TestProjectHome(TestController):
 
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
-        assert_equal(len(menu[1]['children']), 2)
-        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[1]['children'], menu[1]['children']
-        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[1]['children'], menu[1]['children']
+        wikis = menu[-2]['children']
+        assert_equal(len(wikis), 2)
+        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
+        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
 
     @td.with_wiki
     def test_project_group_nav_more_than_ten(self):
