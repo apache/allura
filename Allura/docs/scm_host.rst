@@ -15,8 +15,108 @@
        specific language governing permissions and limitations
        under the License.
 
-SCM (Git, Mercurial, Subversion) Hosting Installation
+Git and Subversion Hosting Installation
 ==========================================================
+
+Allura can manage and display Git and SVN repositories, but it doesn't
+automatically run the git and svn services for you.  Here we'll describe how
+to set up standard git and svn services to work with Allura, so that you can
+checkout and commit code with those repositories.
+
+Git
+--------------
+
+We'll cover the basics to get you going.  For additional options and details,
+see http://git-scm.com/docs/git-http-backend and http://git-scm.com/book/en/Git-on-the-Server
+and subsequent chapters.  The instructions here assume an
+Ubuntu system, but should be similar on other systems::
+
+    sudo a2enmod proxy rewrite
+    sudo vi /etc/apache2/sites-available/default
+    # and add the following within the <VirtualHost block
+
+    SetEnv GIT_PROJECT_ROOT /srv/git
+    SetEnv GIT_HTTP_EXPORT_ALL
+    ProxyPass /git/ !
+    ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
+
+    RewriteCond %{QUERY_STRING} service=git-receive-pack [OR]
+    RewriteCond %{REQUEST_URI} /git-receive-pack$
+    RewriteRule ^/git/ - [E=AUTHREQUIRED:yes]
+
+    <LocationMatch "^/git/">
+        Order Deny,Allow
+        Deny from env=AUTHREQUIRED
+
+        AuthType Basic
+        AuthName "Git Access"
+        Require group committers
+        Satisfy Any
+    </LocationMatch>
+
+    sudo service apache2 reload
+
+To test that it's working, run: `git ls-remote http://localhost/git/p/test/git/`
+(if using vagrant, use localhost:8088 on your host machine).  If there is no output,
+that is fine (it'll list git heads once the repo has commits in it).
+
+Note that this has no authentication and is suitable for development only.
+
+If you want to run a separate readonly git service, using the git protocol instead of http,
+run: `git daemon --reuseaddr --export-all --base-path=/srv/git /srv/git`  It can
+be accessed at `git://localhost/p/test/git`
+
+Depending on the hostname and ports you use, you may need to change the `scm.host.*`
+settings in `development.ini`.
+
+
+Subversion
+--------------
+
+
+Temp Notes:
+--------------
+
+
+STRUCTURE:
+separate authentication (ldap, allura) vs authorization (via allura API)
+different protocol (svn:// & git:// vs http)
+    http://svnbook.red-bean.com/en/1.8/svn.serverconfig.choosing.html
+    http://git-scm.com/book/ch4-1.html
+
+TODO:
+    disable scm.host.https* in .ini?
+    remove /home/vagrant/scm/ symlinks?
+
+SVN
+    `sudo aptitude install libapache2-svn`
+    test http://localhost:80/ (8088 if vagrant)
+    `vi /etc/apache2/mods-available/dav_svn.conf`
+        uncomment things
+        Have to do a location & parentpath for each project, e.g "test" project
+        <Location /svn/p/test>
+        SVNParentPath /srv/svn/p/test
+        todo: Auth* directives
+    `service apache2 reload`
+    test http://localhost:80/svn/p/test/code/ (8088 if vagrant)
+    Now can change scm.host.(https|https_anon).svn to "http://localhost:80/svn$path/" (8088 if vagrant) for checkout instructions
+        scm.host.(ro|rw) are intended for svn:// protocol
+    make SVNParentPath recursive:
+        http://subversion.tigris.org/issues/show_bug.cgi?id=3588
+        https://sourceforge.net/p/allura/pastebin/517557273e5e837ec65122c1
+        latest: https://trac.sdot.me/git/?p=srpmtree.git;a=blob_plain;f=subversion-recursive-parentpath.patch;hb=refs/heads/sog/subversion
+        need to update it for trunk/1.8.x
+        http://subversion.apache.org/docs/community-guide/general.html#patches
+        http://subversion.apache.org/docs/community-guide/conventions.html
+
+    svnserve shouldn't have parentpath restrictions, it allows complete access to a dir
+        svnserve -d -r /srv/svn -R
+        test: svn info svn://localhost/p/test/code/
+        killall svnserve
+        more info: http://svnbook.red-bean.com/en/1.8/svn.serverconfig.svnserve.html
+
+
+~~~~~~~
 
 The following instructions assume you are using a version of Ubuntu Linux with
 support for schroot and debootstrap.  We will use a chroot jail to allow users to
