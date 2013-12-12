@@ -20,7 +20,7 @@ import logging
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from tg import expose, validate, config
-from tg.decorators import with_trailing_slash
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import asbool
 from webob import exc
 from webhelpers import feedgenerator as FG
@@ -109,7 +109,7 @@ class ForgeActivityController(BaseController):
     def index(self, **kw):
         return self._get_activities_data(**kw)
 
-    @with_trailing_slash
+    @without_trailing_slash
     @expose()
     def feed(self, **kw):
         data = self._get_activities_data(**kw)
@@ -135,7 +135,7 @@ class ForgeActivityController(BaseController):
                             ),
                           link=url,
                           pubdate=t.published,
-                          description=t.obj.activity_extras.summary,
+                          description=t.obj.activity_extras.get('summary'),
                           unique_id=url,
                           author_name=t.actor.activity_name,
                           author_link=h.absurl(t.actor.activity_url))
