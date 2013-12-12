@@ -169,5 +169,7 @@
     <div class="grid-19">
         <input class="submit" type="submit" value="Save">
     </div>
+    {{ lib.csrf_token() }}
+    </form>
 </div>
 {% endblock %}
