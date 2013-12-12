@@ -102,9 +102,9 @@ class ForgeUserStatsApp(Application):
     config_options = Application.config_options
     default_external_feeds = []
     icons={
-        24:'../../tool/userstats/images/stats_24.png',
-        32:'../../tool/userstats/images/stats_32.png',
-        48:'../../tool/userstats/images/stats_48.png'
+        24:'userstats/images/stats_24.png',
+        32:'userstats/images/stats_32.png',
+        48:'userstats/images/stats_48.png'
     }
     root = ForgeUserStatsController()
 

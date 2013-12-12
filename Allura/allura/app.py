@@ -15,11 +15,13 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import os
 import logging
 from urllib import basejoin
 from cStringIO import StringIO
 from collections import defaultdict
 
+import pkg_resources
 from tg import expose, redirect, flash, validate
 from tg.decorators import without_trailing_slash
 from pylons import request, app_globals as g, tmpl_context as c
@@ -347,17 +349,22 @@ class Application(object):
         return self.status_map.index(self.status)
 
     @classmethod
-    def icon_url(self, size):
+    def icon_url(cls, size):
         """Return URL for icon of the given ``size``.
 
         Subclasses can define their own icons by overriding
-        :attr:`icons` or by overriding this method (which, by default,
-        returns the URLs defined in :attr:`icons`).
+        :attr:`icons`.
 
         """
-        resource = self.icons.get(size)
+        resource = cls.icons.get(size)
         if resource:
-            return g.theme_href(resource)
+            f = getattr(cls, '_icon_url_maker', None)
+            if not f:
+                f = (g.forge_static if pkg_resources.resource_exists(
+                    cls.__module__, os.path.join('nf', resource))
+                    else g.theme_href)
+                setattr(cls, '_icon_url_maker', f)
+            return f(resource)
         return ''
 
     def has_access(self, user, topic):
