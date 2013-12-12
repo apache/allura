@@ -229,7 +229,7 @@
       </div>
     {% endif %}
 
-    {% if user.get_pref('email_address') and c.user.get_pref('email_address') and user.get_pref('allow_user_messages') %}
+    {% if user.get_pref('email_address') and c.user.get_pref('email_address') and not user.get_pref('disable_user_messages') %}
     <div class="grid-24">
       <b><a href="send_message">Send me a message</a></b>
     </div>

@@ -509,8 +509,8 @@ class PreferencesController(BaseController):
 
     @expose()
     @require_post()
-    def user_message(self, allow_user_messages=None):
-        c.user.set_pref('allow_user_messages', allow_user_messages is not None)
+    def user_message(self, allow_user_messages=False):
+        c.user.set_pref('disable_user_messages', not allow_user_messages)
         redirect(request.referer)
 
 class UserInfoController(BaseController):

@@ -107,7 +107,7 @@ class UserProfileController(BaseController, FeedController):
                     'an email address associated with their account.', 'info')
             redirect(request.referer)
 
-        if not to_user.get_pref('allow_user_messages'):
+        if to_user.get_pref('disable_user_messages'):
             flash('This user has disabled direct email messages', 'info')
             redirect(request.referer)
 

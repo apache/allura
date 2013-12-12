@@ -320,7 +320,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             results_per_page=int,
             email_address=str,
             email_format=str,
-            allow_user_messages=bool))
+            disable_user_messages=bool))
 
     #Personal data
     sex=FieldProperty(
