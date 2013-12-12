@@ -143,3 +143,12 @@ file { '/svn':
   owner => "vagrant",
   group => "vagrant",
 }
+
+# create SCM repo dirs
+file { [ "/srv/git", "/srv/hg", "/srv/svn" ]:
+  ensure => "directory",
+  owner => "vagrant",
+  group => "vagrant",
+  mode   => 770,
+}
+
