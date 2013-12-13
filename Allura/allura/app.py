@@ -356,16 +356,34 @@ class Application(object):
         :attr:`icons`.
 
         """
-        resource = cls.icons.get(size)
+        cached = getattr(cls, '_icon_url_cache', {}).get(size)
+        if cached is not None:
+            return cached
+
+        if not hasattr(cls, '_icon_url_cache'):
+            setattr(cls, '_icon_url_cache', {})
+
+        resource, url = cls.icons.get(size), ''
         if resource:
-            f = getattr(cls, '_icon_url_maker', None)
-            if not f:
-                f = (g.forge_static if pkg_resources.resource_exists(
-                    cls.__module__, os.path.join('nf', resource))
-                    else g.theme_href)
-                setattr(cls, '_icon_url_maker', f)
-            return f(resource)
-        return ''
+            resource_path = os.path.join('nf', resource)
+            url = (g.forge_static(resource) if cls.has_resource(resource_path)
+                    else g.theme_href(resource))
+        cls._icon_url_cache[size] = url
+        return url
+
+    @classmethod
+    def has_resource(cls, resource_path):
+        """Determine whether this Application has the resource pointed to by
+        ``resource_path``.
+
+        If the resource is not found for the immediate class, its parents
+        will be searched. The return value is the class that "owns" the
+        resource, or None if the resource is not found.
+
+        """
+        for klass in [o for o in cls.__mro__ if issubclass(o, Application)]:
+            if pkg_resources.resource_exists(klass.__module__, resource_path):
+                return klass
 
     def has_access(self, user, topic):
         """Return True if ``user`` can send email to ``topic``.

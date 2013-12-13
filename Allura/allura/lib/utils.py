@@ -37,6 +37,7 @@ from formencode import Invalid
 from tg.decorators import before_validate
 from pylons import response
 from pylons import tmpl_context as c
+from pylons.controllers.util import etag_cache
 from paste.deploy.converters import asbool, asint
 from paste.httpheaders import CACHE_CONTROL, EXPIRES
 from webhelpers.html import literal
@@ -479,6 +480,8 @@ def take_while_true(source):
 
 def serve_file(fp, filename, content_type, last_modified=None, cache_expires=None, size=None, embed=True):
     '''Sets the response headers and serves as a wsgi iter'''
+    if filename and last_modified:
+        etag_cache('{0}?{1}'.format(filename, last_modified))
     pylons.response.headers['Content-Type'] = ''
     pylons.response.content_type = content_type.encode('utf-8')
     pylons.response.cache_expires = cache_expires or asint(tg.config.get('files_expires_header_secs', 60 * 60))
