@@ -128,7 +128,7 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
-                f._id.generation_time))
+                f._id.generation_time).encode('utf-8'))
             assert_equal([ 'test1' ], response_body)
             assert_equal(response.content_type, f.content_type)
             assert 'Content-Disposition' not in response.headers
@@ -141,7 +141,7 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
-                f._id.generation_time))
+                f._id.generation_time).encode('utf-8'))
             assert_equal([ 'test1' ], response_body)
             assert_equal(response.content_type, f.content_type)
             assert_equal(response.headers['Content-Disposition'],
