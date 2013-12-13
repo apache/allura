@@ -15,16 +15,17 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
-import mimetypes
-import pkg_resources
-from tg import expose, redirect, flash, config, validate, request, response
-from tg.decorators import with_trailing_slash, without_trailing_slash
+from cStringIO import StringIO
+
+from tg import expose
+from tg.decorators import without_trailing_slash
 from webob import exc
 
 from pylons import tmpl_context as c, app_globals as g
+from pylons.controllers.util import etag_cache
 from allura.lib import helpers as h
-from allura import model as M
+from allura.lib import utils
+
 
 class NewForgeController(object):
 
@@ -44,5 +45,9 @@ class NewForgeController(object):
 
     @expose()
     def tool_icon_css(self):
-        response.content_type = 'text/css'
-        return g.tool_icon_css
+        """Serve stylesheet containing icon urls for every installed tool.
+
+        """
+        etag_cache('tool_icon_css?' + str(g.server_start))
+        return utils.serve_file(StringIO(g.tool_icon_css),
+                'tool_icon_css', 'text/css', last_modified=g.server_start)
