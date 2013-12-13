@@ -115,40 +115,9 @@ file { '/home/vagrant/env-allura/lib/python2.7/site-packages/pysvn':
 }
 
 # create SCM repo dirs
-file { [ "/home/vagrant/scm", "/home/vagrant/scm/git", "/home/vagrant/scm/hg", "/home/vagrant/scm/svn" ]:
-  ensure => "directory",
-  owner => "vagrant",
-  group => "vagrant",
-  mode   => 777,
-}
-
-# create symlinks to repo dirs
-file { '/git':
-  ensure => "link",
-  target => "/home/vagrant/scm/git",
-  owner => "vagrant",
-  group => "vagrant",
-}
-
-file { '/hg':
-  ensure => "link",
-  target => "/home/vagrant/scm/hg",
-  owner => "vagrant",
-  group => "vagrant",
-}
-
-file { '/svn':
-  ensure => "link",
-  target => "/home/vagrant/scm/svn",
-  owner => "vagrant",
-  group => "vagrant",
-}
-
-# create SCM repo dirs
 file { [ "/srv/git", "/srv/hg", "/srv/svn" ]:
   ensure => "directory",
   owner => "vagrant",
   group => "vagrant",
   mode   => 770,
 }
-
