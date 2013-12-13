@@ -139,7 +139,6 @@ class Globals(object):
         self.__dict__ = self.__shared_state
         if self.__shared_state: return
         self.allura_templates = pkg_resources.resource_filename('allura', 'templates')
-        self.server_start = datetime.datetime.utcnow()
         # Setup SOLR
         self.solr_server = aslist(config.get('solr.server'), ',')
         # skip empty strings in case of extra commas
@@ -472,8 +471,9 @@ class Globals(object):
 
     @LazyProperty
     def tool_icon_css(self):
-        """Return a string of CSS containing class names and icon urls for
-        every installed tool.
+        """Return a (css, md5) tuple, where ``css`` is a string of CSS
+        containing class names and icon urls for every installed tool, and
+        ``md5`` is the md5 hexdigest of ``css``.
 
         """
         css = ''
@@ -482,7 +482,7 @@ class Globals(object):
                 url = self.theme.app_icon_url(tool_name.lower(), size)
                 css += '.ui-icon-tool-%s-%i {background: url(%s) no-repeat;}\n' % (
                         tool_name, size, url)
-        return css
+        return css, hashlib.md5(css).hexdigest()
 
     @property
     def resource_manager(self):

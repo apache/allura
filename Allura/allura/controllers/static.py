@@ -22,7 +22,6 @@ from tg.decorators import without_trailing_slash
 from webob import exc
 
 from pylons import tmpl_context as c, app_globals as g
-from pylons.controllers.util import etag_cache
 from allura.lib import helpers as h
 from allura.lib import utils
 
@@ -48,5 +47,6 @@ class NewForgeController(object):
         """Serve stylesheet containing icon urls for every installed tool.
 
         """
-        return utils.serve_file(StringIO(g.tool_icon_css),
-                'tool_icon_css', 'text/css', last_modified=g.server_start)
+        css, md5 = g.tool_icon_css
+        return utils.serve_file(StringIO(css), 'tool_icon_css', 'text/css',
+                last_modified=md5)
