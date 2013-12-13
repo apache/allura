@@ -278,7 +278,8 @@ class ValidatingTestApp(PostParamCheckingTestApp):
         content_type = resp.headers['Content-Type']
         if content_type.startswith('text/html'):
             if val_params['validate_chunk']:
-                validate_html5_chunk(content)
+                if Config.instance().validation_enabled('html5'):
+                    validate_html5_chunk(content)
             else:
                 validate_page(resp)
         elif content_type.split(';', 1)[0] in ('text/plain', 'text/x-python', 'application/octet-stream'):
