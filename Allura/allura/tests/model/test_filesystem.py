@@ -22,7 +22,7 @@ from unittest import TestCase
 from cStringIO import StringIO
 from io import BytesIO
 
-from pylons import tmpl_context as c
+from pylons import tmpl_context as c, app_globals as g
 from ming.orm import session, Mapper
 from nose.tools import assert_equal
 from mock import patch
@@ -124,8 +124,11 @@ class TestFile(TestCase):
         f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
-                patch('allura.lib.utils.pylons.response', Response()) as response:
+                patch('allura.lib.utils.pylons.response', Response()) as response, \
+                patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
+            etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
+                f._id.generation_time))
             assert_equal([ 'test1' ], response_body)
             assert_equal(response.content_type, f.content_type)
             assert 'Content-Disposition' not in response.headers
@@ -134,8 +137,11 @@ class TestFile(TestCase):
         f = File.from_data(u'te s\u0b6e1.txt', 'test1')
         self.session.flush()
         with patch('allura.lib.utils.tg.request', Request.blank('/')), \
-                patch('allura.lib.utils.pylons.response', Response()) as response:
+                patch('allura.lib.utils.pylons.response', Response()) as response, \
+                patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
+            etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
+                f._id.generation_time))
             assert_equal([ 'test1' ], response_body)
             assert_equal(response.content_type, f.content_type)
             assert_equal(response.headers['Content-Disposition'],
