@@ -48,6 +48,5 @@ class NewForgeController(object):
         """Serve stylesheet containing icon urls for every installed tool.
 
         """
-        etag_cache('tool_icon_css?' + str(g.server_start))
         return utils.serve_file(StringIO(g.tool_icon_css),
                 'tool_icon_css', 'text/css', last_modified=g.server_start)
