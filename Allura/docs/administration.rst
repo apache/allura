@@ -70,9 +70,11 @@ from an Allura server.  They do require various python packages to be installed
 and possibly a local Allura codebase set up.
 
 One such script is `wiki-copy.py` which reads the wiki pages from one Allura wiki
-instance and uploads them to another Allura wiki instance.  It can be run as::
+instance and uploads them to another Allura wiki instance.  It can be run as:
 
-$ python scripts/wiki-copy.py --help
+.. code-block:: console
+
+    $ python scripts/wiki-copy.py --help
 
 
 Site Notifications
@@ -80,7 +82,9 @@ Site Notifications
 
 Allura has support for site-wide notifications that appear below the site header,
 but there is currently no UI for managing them.  They can easily be inserted via
-manual mongo queries, however::
+manual mongo queries, however:
+
+.. code-block:: console
 
     > db.site_notification.insert({
     ... active: true,
