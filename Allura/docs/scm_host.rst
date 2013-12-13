@@ -15,6 +15,8 @@
        specific language governing permissions and limitations
        under the License.
 
+.. _scm_hosting:
+
 Git and Subversion Hosting Installation
 ==========================================================
 
@@ -29,11 +31,16 @@ Git
 We'll cover the basics to get you going.  For additional options and details,
 see http://git-scm.com/docs/git-http-backend and http://git-scm.com/book/en/Git-on-the-Server
 and subsequent chapters.  The instructions here assume an
-Ubuntu system, but should be similar on other systems::
+Ubuntu system, but should be similar on other systems.
+
+.. code-block:: console
 
     sudo a2enmod proxy rewrite
     sudo vi /etc/apache2/sites-available/default
-    # and add the following within the <VirtualHost block
+
+And add the following text within the `<VirtualHost>` block:
+
+.. code-block:: apache
 
     SetEnv GIT_PROJECT_ROOT /srv/git
     SetEnv GIT_HTTP_EXPORT_ALL
@@ -53,6 +60,10 @@ Ubuntu system, but should be similar on other systems::
         Require group committers
         Satisfy Any
     </LocationMatch>
+
+Then exit vim (`<esc> :wq`) and run:
+
+.. code-block:: shell-session
 
     sudo service apache2 reload
 
@@ -129,7 +140,9 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
 
 #. Install debootstrap schroot
 
-#. Append the following text to the file /etc/schroot/schroot.conf::
+#. Append the following text to the file /etc/schroot/schroot.conf
+
+.. code-block:: ini
 
     [scm]
     description=Ubuntu Chroot for SCM Hosting
@@ -137,7 +150,9 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
     directory=/var/chroots/scm
     script-config=scm/config
 
-#. Create a directory /etc/schroot/scm and populate it with some files::
+#. Create a directory /etc/schroot/scm and populate it with some files:
+
+.. code-block:: console
 
     # mkdir /etc/schroot/scm
     # cat > /etc/schroot/scm/config <<EOF
@@ -161,12 +176,16 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
     hosts
     EOF
 
-#. Create a directory /var/chroots/scm and create the bootstrap environment.  (You may substitute a mirror from the  `ubuntu mirror list`_ for archive.ubuntu.com::
+#. Create a directory /var/chroots/scm and create the bootstrap environment.  (You may substitute a mirror from the  `ubuntu mirror list`_ for archive.ubuntu.com)
+
+.. code-block:: console
 
     $ sudo mkdir -p /var/chroots/scm
     $ sudo debootstrap --variant=buildd --arch amd64 --components=main,universe --include=git,mercurial,subversion,openssh-server,slapd,ldap-utils,ldap-auth-client,curl maverick /var/chroots/scm http://archive.ubuntu.com/ubuntu/
 
-#. Test that the chroot is installed by entering it::
+#. Test that the chroot is installed by entering it:
+
+.. code-block:: console
 
     # schroot -c scm -u root
     (scm) # logout
@@ -174,20 +193,26 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
 Configure OpenLDAP in the Chroot
 --------------------------------------------------------------
 
-#. Copy the ldap-setup script into the chroot environment::
+#. Copy the ldap-setup script into the chroot environment:
+
+.. code-block:: console
 
     $ sudo cp Allura/ldap-setup.py Allura/ldap-userconfig.py /var/chroots/scm
     $ sudo chmod +x /var/chroots/scm/ldap-*.py
 
-#. Log in to the chroot environment::
+#. Log in to the chroot environment:
+
+.. code-block:: console
 
     # schroot -c scm -u root
 
-#. Run the setup script, following the prompts::
+#. Run the setup script, following the prompts:
+
+.. code-block:: console
 
     (scm) # python /ldap-setup.py
 
-In particular, you will need to anwer the following questions (substitute your custom suffix if you are not using dc=localdomain):
+In particular, you will need to answer the following questions (substitute your custom suffix if you are not using dc=localdomain):
 
 * Should debconf manage LDAP configuration? **yes**
 * LDAP server Uniform Resource Identifier: **ldapi:///**
@@ -203,7 +228,9 @@ In particular, you will need to anwer the following questions (substitute your c
 Update the chroot ssh configuration
 -------------------------------------------------
 
-* Update the file /var/chroot/scm/etc/ssh/sshd_config, changing the port directive::
+* Update the file /var/chroot/scm/etc/ssh/sshd_config, changing the port directive:
+
+.. code-block:: guess
 
     # Port 22
     Port 8022
@@ -211,37 +238,51 @@ Update the chroot ssh configuration
 Setup the Custom FUSE Driver
 -------------------------------------
 
-#. Copy the accessfs script into the chroot environment::
+#. Copy the accessfs script into the chroot environment:
+
+.. code-block:: console
 
     $ sudo cp fuse/accessfs.py /var/chroots/scm
 
-#. Configure allura to point to the chrooted scm environment::
+#. Configure allura to point to the chrooted scm environment:
+
+.. code-block:: console
 
     $ sudo ln -s /var/chroots/scm /git
     $ sudo ln -s /var/chroots/scm /hg
     $ sudo ln -s /var/chroots/scm /svn
 
-#. Log in to the chroot environment & install packages::
+#. Log in to the chroot environment & install packages:
+
+.. code-block:: console
 
     # schroot -c scm -u root
     (scm) # apt-get install python-fuse
 
-#. Create the SCM directories::
+#. Create the SCM directories:
+
+.. code-block:: console
 
     (scm) # mkdir /scm /scm-repo
 
-#. Mount the FUSE filesystem::
+#. Mount the FUSE filesystem:
+
+.. code-block:: console
 
     (scm) # python /accessfs.py /scm-repo -o allow_other -s -o root=/scm
 
-#. Start the SSH daemon::
+#. Start the SSH daemon:
+
+.. code-block:: console
 
     (scm) # /etc/init.d/ssh start
 
 Configure Allura to Use the LDAP Server
 ------------------------------------------------
 
-Set the following values in your .ini file::
+Set the following values in your .ini file:
+
+.. code-block:: ini
 
     auth.method = ldap
 

@@ -40,7 +40,9 @@ A listing of available 3rd-party extensions is at https://forge-allura.apache.or
 
 To disable any Allura entry point, simply add an entry in your ``.ini`` config file
 with names and values corresponding to entry points defined in any ``setup.py`` file.
-For example if you have ForgeImporter set up, but want to disable the google code importers::
+For example if you have ForgeImporter set up, but want to disable the google code importers:
+
+.. code-block:: ini
 
     disable_entry_points.allura.project_importers = google-code
     disable_entry_points.allura.importers = google-code-tracker, google-code-repo
