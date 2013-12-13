@@ -23,22 +23,30 @@ Git and Subversion Hosting Installation
 Allura can manage and display Git and SVN repositories, but it doesn't
 automatically run the git and svn services for you.  Here we'll describe how
 to set up standard git and svn services to work with Allura, so that you can
-checkout and commit code with those repositories.
+checkout and commit code with those repositories.  The instructions here assume
+an Ubuntu system, but should be similar on other systems.
+
+.. note::
+
+    For developing with Allura or simple testing of Allura, you do not need to run
+    these services.  You can use local filesystem access to git and svn, which
+    works with no additional configuration.
 
 Git
 --------------
 
 We'll cover the basics to get you going.  For additional options and details,
 see http://git-scm.com/docs/git-http-backend and http://git-scm.com/book/en/Git-on-the-Server
-and subsequent chapters.  The instructions here assume an
-Ubuntu system, but should be similar on other systems.
+and subsequent chapters.
 
-.. code-block:: console
+.. code-block:: bash
 
+    sudo mkdir /srv/git
+    sudo chown allura:allura /srv/git  # or other user, as needed (e.g. "vagrant")
     sudo a2enmod proxy rewrite
     sudo vi /etc/apache2/sites-available/default
 
-And add the following text within the `<VirtualHost>` block:
+And add the following text within the :code:`<VirtualHost>` block:
 
 .. code-block:: apache
 
@@ -47,89 +55,135 @@ And add the following text within the `<VirtualHost>` block:
     ProxyPass /git/ !
     ScriptAlias /git/ /usr/lib/git-core/git-http-backend/
 
-    RewriteCond %{QUERY_STRING} service=git-receive-pack [OR]
-    RewriteCond %{REQUEST_URI} /git-receive-pack$
-    RewriteRule ^/git/ - [E=AUTHREQUIRED:yes]
+    # no authentication required at all - for testing purposes
+    SetEnv REMOTE_USER=git-allura
 
-    <LocationMatch "^/git/">
-        Order Deny,Allow
-        Deny from env=AUTHREQUIRED
-
-        AuthType Basic
-        AuthName "Git Access"
-        Require group committers
-        Satisfy Any
-    </LocationMatch>
-
-Then exit vim (`<esc> :wq`) and run:
+Then exit vim (:kbd:`<esc> :wq`) and run:
 
 .. code-block:: shell-session
 
     sudo service apache2 reload
 
-To test that it's working, run: `git ls-remote http://localhost/git/p/test/git/`
-(if using vagrant, use localhost:8088 on your host machine).  If there is no output,
-that is fine (it'll list git heads once the repo has commits in it).
+To test that it's working, run: :command:`git ls-remote http://localhost/git/p/test/git/`
+(if using Vagrant, use :code:`localhost:8088` from your host machine).
+If there is no output, that is fine (it's an empty repo).
 
-Note that this has no authentication and is suitable for development only.
+.. warning::
 
+    This configuration has no authentication and is suitable for development only.
+
+Now you will want to change the :samp:`scm.host.{*}.git`
+settings in :file:`development.ini`, so that the proper commands are shown to your visitors
+when they browse the code repo web pages.
+
+Read-only `git://`
+^^^^^^^^^^^^^^^^^^^^^^^^^
 If you want to run a separate readonly git service, using the git protocol instead of http,
-run: `git daemon --reuseaddr --export-all --base-path=/srv/git /srv/git`  It can
-be accessed at `git://localhost/p/test/git`
-
-Depending on the hostname and ports you use, you may need to change the `scm.host.*`
-settings in `development.ini`.
+run: :program:`git daemon --reuseaddr --export-all --base-path=/srv/git /srv/git`  It can
+be accessed at :code:`git://localhost/p/test/git`
 
 
 Subversion
 --------------
 
+These instructions will cover the recommended easiest way to run Subversion with Allura.
+For an overview of other options, see http://svnbook.red-bean.com/en/1.8/svn.serverconfig.choosing.html
+and subsequent chapters.
 
-Temp Notes:
---------------
+.. code-block:: bash
+
+    sudo mkdir /srv/svn
+    sudo chown allura:allura /srv/svn  # or other user, as needed (e.g. "vagrant")
+
+    cat > /srv/svn/svnserve.conf <<EOF
+    [general]
+    realm = My Site SVN
+    # no authentication required at all - for testing purposes
+    anon-access = write
+    EOF
+
+    svnserve -d -r /srv/svn --log-file /tmp/svnserve.log --config-file /srv/svn/svnserve.conf
+
+Test by running: :command:`svn info svn://localhost/p/test/code/`.  If you need to kill it,
+run :command:`killall svnserve`  More info at http://svnbook.red-bean.com/en/1.8/svn.serverconfig.svnserve.html
+
+.. warning::
+
+    This configuration has no authentication and is suitable for development only.
+
+Now you will want to change the :samp:`scm.host.{*}.svn`
+settings in :file:`development.ini`, so that the proper commands are shown to your visitors
+when they browse the code repo web pages.
+
+Alternate Setup with HTTP
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To use SVN over HTTP, you will need to patch and compile an Apache module, so
+that all svn repos can by dynamically served.
+
+.. warning::
+
+    Not easy.
+
+.. code-block:: console
+
+    sudo aptitude install libapache2-svn
+
+Test accessing http://localhost/ (`localhost:8088` if using Vagrant).
+
+Now we'll configure Apache to serve a single project's repositories and make sure
+that works.
+
+.. code-block:: console
+
+    sudo vi /etc/apache2/mods-available/dav_svn.conf
+
+Uncomment and change to :code:`<Location /svn/p/test>`.  Set
+:code:`SVNParentPath /srv/svn/p/test`  Then run:
+
+.. code-block:: console
+
+    sudo service apache2 reload
+
+Test at http://localhost/svn/p/test/code/ (`localhost:8088` if using Vagrant)
+
+That configuration works only for the repositories in a single project.  You must either
+create a new configuration for each project within Allura, or compile a patch
+to make `SVNParentPath` be recursive.  The patch is at http://pastie.org/8550810
+and must be applied to the source of Subversion 1.7's mod_dav_svn and then
+recompiled and installed.  (See http://subversion.tigris.org/issues/show_bug.cgi?id=3588
+for the request to include this patch in Subversion itself).  Once that is working,
+you can modify :file:`dav_svn.conf` to look like:
+
+.. code-block:: apache
+
+    <Location /svn>
+      DAV svn
+      SVNParentPath /srv/svn
+      ...
+
+Then Apache SVN will serve repositories for all Allura project and subprojects.
+
+.. warning::
+
+    This configuration has no authentication and is suitable for development only.
 
 
-STRUCTURE:
-separate authentication (ldap, allura) vs authorization (via allura API)
-different protocol (svn:// & git:// vs http)
-    http://svnbook.red-bean.com/en/1.8/svn.serverconfig.choosing.html
-    http://git-scm.com/book/ch4-1.html
 
-TODO:
-    disable scm.host.https* in .ini?
-    remove /home/vagrant/scm/ symlinks?
+Configuring Git/SVN/Hg to use Allura auth via LDAP and ssh
+============================================================
 
-SVN
-    `sudo aptitude install libapache2-svn`
-    test http://localhost:80/ (8088 if vagrant)
-    `vi /etc/apache2/mods-available/dav_svn.conf`
-        uncomment things
-        Have to do a location & parentpath for each project, e.g "test" project
-        <Location /svn/p/test>
-        SVNParentPath /srv/svn/p/test
-        todo: Auth* directives
-    `service apache2 reload`
-    test http://localhost:80/svn/p/test/code/ (8088 if vagrant)
-    Now can change scm.host.(https|https_anon).svn to "http://localhost:80/svn$path/" (8088 if vagrant) for checkout instructions
-        scm.host.(ro|rw) are intended for svn:// protocol
-    make SVNParentPath recursive:
-        http://subversion.tigris.org/issues/show_bug.cgi?id=3588
-        https://sourceforge.net/p/allura/pastebin/517557273e5e837ec65122c1
-        latest: https://trac.sdot.me/git/?p=srpmtree.git;a=blob_plain;f=subversion-recursive-parentpath.patch;hb=refs/heads/sog/subversion
-        need to update it for trunk/1.8.x
-        http://subversion.apache.org/docs/community-guide/general.html#patches
-        http://subversion.apache.org/docs/community-guide/conventions.html
+The following instructions will use a chroot, a custom FUSE driver, and LDAP.
+Once completed, an ssh-based configuration of Git, SVN, or Hg that has repos in
+the chroot directory will authenticate the users against LDAP and authorize via an Allura API.
+Allura will be configured to authenticate against LDAP as well.
 
-    svnserve shouldn't have parentpath restrictions, it allows complete access to a dir
-        svnserve -d -r /srv/svn -R
-        test: svn info svn://localhost/p/test/code/
-        killall svnserve
-        more info: http://svnbook.red-bean.com/en/1.8/svn.serverconfig.svnserve.html
+.. note::
 
+    The previous git & svn configuration instructions are not ssh-based, so will not work with this configuration.
+    You'll have to reconfigure git & svn to use ssh:// instead of http or svn protocols.
 
-~~~~~~~
-
-The following instructions assume you are using a version of Ubuntu Linux with
+We assume you are using a version of Ubuntu with
 support for schroot and debootstrap.  We will use a chroot jail to allow users to
 access their repositories via ssh.
 
@@ -138,9 +192,9 @@ Install a chroot environment
 
 These instructions are based on the documentation in `Debootstrap Chroot`_.  and `OpenLDAPServer`_.
 
-#. Install debootstrap schroot
+Install debootstrap and schroot: :program:`aptitude install debootstrap schroot`
 
-#. Append the following text to the file /etc/schroot/schroot.conf
+Append the following text to the file :file:`/etc/schroot/schroot.conf`
 
 .. code-block:: ini
 
@@ -150,7 +204,7 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
     directory=/var/chroots/scm
     script-config=scm/config
 
-#. Create a directory /etc/schroot/scm and populate it with some files:
+Create a directory :file:`/etc/schroot/scm` and populate it with some files:
 
 .. code-block:: console
 
@@ -176,14 +230,14 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
     hosts
     EOF
 
-#. Create a directory /var/chroots/scm and create the bootstrap environment.  (You may substitute a mirror from the  `ubuntu mirror list`_ for archive.ubuntu.com)
+Create a directory :file:`/var/chroots/scm` and create the bootstrap environment.  (You may substitute a mirror from the  `ubuntu mirror list`_ for archive.ubuntu.com)
 
 .. code-block:: console
 
     $ sudo mkdir -p /var/chroots/scm
     $ sudo debootstrap --variant=buildd --arch amd64 --components=main,universe --include=git,mercurial,subversion,openssh-server,slapd,ldap-utils,ldap-auth-client,curl maverick /var/chroots/scm http://archive.ubuntu.com/ubuntu/
 
-#. Test that the chroot is installed by entering it:
+Test that the chroot is installed by entering it:
 
 .. code-block:: console
 
@@ -193,20 +247,20 @@ These instructions are based on the documentation in `Debootstrap Chroot`_.  and
 Configure OpenLDAP in the Chroot
 --------------------------------------------------------------
 
-#. Copy the ldap-setup script into the chroot environment:
+Copy the ldap-setup script into the chroot environment:
 
 .. code-block:: console
 
     $ sudo cp Allura/ldap-setup.py Allura/ldap-userconfig.py /var/chroots/scm
     $ sudo chmod +x /var/chroots/scm/ldap-*.py
 
-#. Log in to the chroot environment:
+Log in to the chroot environment:
 
 .. code-block:: console
 
     # schroot -c scm -u root
 
-#. Run the setup script, following the prompts:
+Run the setup script, following the prompts:
 
 .. code-block:: console
 
@@ -228,7 +282,7 @@ In particular, you will need to answer the following questions (substitute your 
 Update the chroot ssh configuration
 -------------------------------------------------
 
-* Update the file /var/chroot/scm/etc/ssh/sshd_config, changing the port directive:
+* Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port directive:
 
 .. code-block:: guess
 
@@ -238,40 +292,40 @@ Update the chroot ssh configuration
 Setup the Custom FUSE Driver
 -------------------------------------
 
-#. Copy the accessfs script into the chroot environment:
+Copy the accessfs script into the chroot environment:
 
 .. code-block:: console
 
     $ sudo cp fuse/accessfs.py /var/chroots/scm
 
-#. Configure allura to point to the chrooted scm environment:
+Configure allura to point to the chrooted scm environment:
 
 .. code-block:: console
 
-    $ sudo ln -s /var/chroots/scm /git
-    $ sudo ln -s /var/chroots/scm /hg
-    $ sudo ln -s /var/chroots/scm /svn
+    $ sudo ln -s /var/chroots/scm /srv/git
+    $ sudo ln -s /var/chroots/scm /srv/hg
+    $ sudo ln -s /var/chroots/scm /srv/svn
 
-#. Log in to the chroot environment & install packages:
+Log in to the chroot environment & install packages:
 
 .. code-block:: console
 
     # schroot -c scm -u root
     (scm) # apt-get install python-fuse
 
-#. Create the SCM directories:
+Create the SCM directories:
 
 .. code-block:: console
 
     (scm) # mkdir /scm /scm-repo
 
-#. Mount the FUSE filesystem:
+Mount the FUSE filesystem:
 
 .. code-block:: console
 
     (scm) # python /accessfs.py /scm-repo -o allow_other -s -o root=/scm
 
-#. Start the SSH daemon:
+Start the SSH daemon:
 
 .. code-block:: console
 
