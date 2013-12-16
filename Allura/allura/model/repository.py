@@ -288,7 +288,16 @@ class RepositoryImplementation(object):
             for i in range(num_threads):
                 t = Thread(target=get_ids)
                 t.start()
-            chunks.join()
+            # reimplement chunks.join() but with a timeout
+            # see: http://bugs.python.org/issue9634
+            # (giving threads a bit of extra cleanup time in case they timeout)
+            chunks.all_tasks_done.acquire()
+            try:
+                endtime = time() + timeout + 0.5
+                while chunks.unfinished_tasks and endtime > time():
+                    chunks.all_tasks_done.wait(endtime - time())
+            finally:
+                chunks.all_tasks_done.release()
         return result
 
 class Repository(Artifact, ActivityObject):
