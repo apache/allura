@@ -32,6 +32,8 @@ from collections import defaultdict
 from itertools import izip
 from urlparse import urljoin
 from urllib import quote
+from threading import Thread
+from Queue import Queue
 
 import tg
 from paste.deploy.converters import asbool, asint
@@ -244,6 +246,50 @@ class RepositoryImplementation(object):
     @property
     def tags(self):
         raise NotImplementedError, 'tags'
+
+    def last_commit_ids(self, commit, paths):
+        """
+        Find the ID of the last commit to touch each path.
+        """
+        if not paths:
+            return {}
+        timeout = float(tg.config.get('lcd_timeout', 60))
+        start_time = time()
+        paths = list(set(paths))  # remove dupes
+        result = {}  # will be appended to from each thread
+        chunks = Queue()
+        lcd_chunk_size = asint(tg.config.get('lcd_thread_chunk_size', 10))
+        num_threads = 0
+        for s in range(0, len(paths), lcd_chunk_size):
+            chunks.put(paths[s:s+lcd_chunk_size])
+            num_threads += 1
+        def get_ids():
+            paths = set(chunks.get())
+            try:
+                commit_id = commit._id
+                while paths and commit_id:
+                    if time() - start_time > timeout:
+                        log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
+                        break
+                    commit_id, changes = self._get_last_commit(commit._id, paths)
+                    if commit_id is None:
+                        break
+                    changed = prefix_paths_union(paths, changes)
+                    for path in changed:
+                        result[path] = commit_id
+                    paths -= changed
+            except Exception as e:
+                log.exception('Error in SCM thread: %s', e)
+            finally:
+                chunks.task_done()
+        if num_threads == 1:
+            get_ids()
+        else:
+            for i in range(num_threads):
+                t = Thread(target=get_ids)
+                t.start()
+            chunks.join()
+        return result
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
