@@ -456,13 +456,14 @@ class TestGitImplementation(unittest.TestCase):
         with h.push_config(tg.config, lcd_thread_chunk_size=1):
             self.test_last_commit_ids()
 
-    def test_last_commit_ids_threaded_error(self):
-        with h.push_config(tg.config, lcd_thread_chunk_size=1):
+    @mock.patch('forgegit.model.git_repo.GitImplementation._git', new_callable=mock.PropertyMock)
+    def test_last_commit_ids_threaded_error(self, _git):
+        with h.push_config(tg.config, lcd_thread_chunk_size=1, lcd_timeout=2):
             repo_dir = pkg_resources.resource_filename(
                 'forgegit', 'tests/data/testrename.git')
             repo = mock.Mock(full_fs_path=repo_dir)
+            _git.side_effect = ValueError
             impl = GM.git_repo.GitImplementation(repo)
-            impl._git = None
             lcds = impl.last_commit_ids(mock.Mock(_id='13951944969cf45a701bf90f83647b309815e6d5'), ['f2.txt', 'f3.txt'])
             self.assertEqual(lcds, {})
 
