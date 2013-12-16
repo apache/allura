@@ -62,7 +62,6 @@
 {% block extra_js %}
 <script type="text/javascript">
     $(document).ready(function () {
-        $(":radio.default-milestone[value='on']").attr("checked", true);
         $(":radio.default-milestone").click(function(){
             $(":radio.default-milestone").attr("checked", false);
             $(this).attr("checked", true);
