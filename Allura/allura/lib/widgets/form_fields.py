@@ -218,7 +218,7 @@ class SubmitButton(ew.SubmitButton):
     attrs={'class':'ui-state-default ui-button ui-button-text'}
 
 
-class Radio(ew.Checkbox):
+class Radio(ew.InputField):
     template=ew_core.render.Snippet('''<input {% if value %} checked{% endif %} {{widget.j2_attrs({
         'id':id,
         'type':field_type,
@@ -228,7 +228,7 @@ class Radio(ew.Checkbox):
         'value':value},
         attrs)}}>''', 'jinja2')
     defaults=dict(
-        ew.Checkbox.defaults,
+        ew.InputField.defaults,
         field_type='radio')
 
 
