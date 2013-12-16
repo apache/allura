@@ -5,7 +5,7 @@ amqplib==0.6.1
 kombu==1.0.4
 coverage==3.5a1-20110413
 ForgeHg==0.1.18
-ForgePastebin==0.2.7
+ForgePastebin==0.3.0
 GoogleCodeWikiImporter==0.4.7
 mechanize==0.2.4
 mercurial==1.4.3
