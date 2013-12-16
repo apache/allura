@@ -169,7 +169,6 @@ class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
     attachment_list = ffw.AttachmentList()
-    ticket_search_results = TicketSearchResults()
     mass_edit = MassEdit()
     mass_edit_form = MassEditForm()
     bin_form = BinForm()
@@ -666,7 +665,7 @@ class RootController(BaseController, FeedController):
             solr_col = _mongo_col_to_solr_col(sort_split[0])
             result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.subscribe_form = W.subscribe_form
-        c.ticket_search_results = W.ticket_search_results
+        c.ticket_search_results = TicketSearchResults()
         return result
 
     @without_trailing_slash
@@ -768,7 +767,7 @@ class RootController(BaseController, FeedController):
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
         result['deleted'] = deleted
-        c.ticket_search_results = W.ticket_search_results
+        c.ticket_search_results = TicketSearchResults()
         return result
 
     @with_trailing_slash
@@ -1844,6 +1843,6 @@ class MilestoneController(BaseController):
             sort_split = sort.split(' ')
             solr_col = _mongo_col_to_solr_col(sort_split[0])
             result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
-        c.ticket_search_results = W.ticket_search_results
+        c.ticket_search_results = TicketSearchResults()
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
