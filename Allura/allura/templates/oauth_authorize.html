@@ -38,6 +38,7 @@
   <input type="hidden" name="oauth_token" value="{{oauth_token}}"/>
   <input type="submit" name="no" value="No, do not authorize {{ consumer.name }}">
   <input type="submit" name="yes" value="Yes, authorize {{ consumer.name }}"><br>
+  {{lib.csrf_token()}}
 </form>
 <br style="clear:both"/>
 <h2>{{consumer.name}}</h2>
