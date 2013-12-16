@@ -478,10 +478,12 @@ def take_while_true(source):
         x = source()
 
 
-def serve_file(fp, filename, content_type, last_modified=None, cache_expires=None, size=None, embed=True):
+def serve_file(fp, filename, content_type, last_modified=None, cache_expires=None, size=None, embed=True, etag=None):
     '''Sets the response headers and serves as a wsgi iter'''
-    if filename and last_modified:
-        etag_cache(u'{0}?{1}'.format(filename, last_modified).encode('utf-8'))
+    if not etag and filename and last_modified:
+        etag = u'{0}?{1}'.format(filename, last_modified).encode('utf-8')
+    if etag:
+        etag_cache(etag)
     pylons.response.headers['Content-Type'] = ''
     pylons.response.content_type = content_type.encode('utf-8')
     pylons.response.cache_expires = cache_expires or asint(tg.config.get('files_expires_header_secs', 60 * 60))

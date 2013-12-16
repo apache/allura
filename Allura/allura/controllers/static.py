@@ -49,4 +49,4 @@ class NewForgeController(object):
         """
         css, md5 = g.tool_icon_css
         return utils.serve_file(StringIO(css), 'tool_icon_css', 'text/css',
-                last_modified=md5)
+                etag=md5)
