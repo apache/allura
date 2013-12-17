@@ -42,7 +42,7 @@ from allura.websetup.schema import REGISTRY
 #from allura.lib.custom_middleware import environ as ENV, MagicalC
 from .validation import ValidatingTestApp
 
-DFL_APP_NAME = 'main_without_authn'
+DFL_APP_NAME = 'main'
 
 # these are all helpers & base classes, and should never
 # be considered test cases when imported into some test module
