@@ -27,5 +27,3 @@ class TestController(alluratest.controller.TestController):
     Base functional test case for the controllers.
 
     """
-
-    application_under_test = 'main_without_authn'
