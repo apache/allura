@@ -1156,7 +1156,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if q:
                 matches = search_artifact(
                     cls, q, short_timeout=True,
-                    rows=limit, sort=refined_sort, start=start, fl='ticket_num_i', **kw)
+                    rows=limit, sort=refined_sort, start=start, fl='ticket_num_i',
+                    filter=filter, **kw)
             else:
                 matches = None
             solr_error = None

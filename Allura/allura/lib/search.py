@@ -78,7 +78,7 @@ def search(q, short_timeout=False, ignore_errors=True, **kw):
                               (match.group(1) if match else e))
 
 
-def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
+def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filter=None, **kw):
     """Performs SOLR search.
 
     Raises SearchError if SOLR returns an error.
@@ -93,7 +93,10 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw)
     fq = [
         'type_s:%s' % fields['type_s'],
         'project_id_s:%s' % c.project._id,
-        'mount_point_s:%s' % c.app.config.options.mount_point]
+        'mount_point_s:%s' % c.app.config.options.mount_point ]
+    for name, values in (filter or {}).iteritems():
+        field_name = name + '_s' if name != '_milestone' else 'milestone_s'
+        fq.append(' OR '.join('%s:%s' % (field_name, v) for v in values))
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
