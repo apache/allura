@@ -499,16 +499,32 @@ class GitImplementation(M.RepositoryImplementation):
         session(self._repo).flush(self._repo)
 
     def _get_last_commit(self, commit_id, paths):
-        output = self._git.git.log(
-                commit_id, '--', *paths,
-                pretty='format:%H',
-                name_only=True,
-                max_count=1)
-        if not output:
-            return None, set()
-        else:
+        # git apparently considers merge commits to have "touched" a path
+        # if the path is changed in either branch being merged, even though
+        # the --name-only output doesn't include those files.  So, we have
+        # to filter out the merge commits that don't actually include any
+        # of the referenced paths in the list of files.
+        files = []
+        # don't skip first commit we're called with because it might be
+        # a valid change commit; however...
+        skip = 0
+        while commit_id and not files:
+            output = self._git.git.log(
+                    commit_id, '--', *paths,
+                    pretty='format:%H',
+                    name_only=True,
+                    max_count=1,
+                    skip=skip)
             lines = output.split('\n')
-            return lines[0], set(lines[1:])
+            commit_id = lines[0]
+            files = prefix_paths_union(paths, set(lines[1:]))
+            # *do* skip subsequent merge commits or we'll get stuck on an infinite
+            # loop matching and then diregarding the merge commit over and over
+            skip = 1
+        if commit_id:
+            return commit_id, files
+        else:
+            return None, set()
 
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096

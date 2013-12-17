@@ -142,45 +142,6 @@ class RepositoryImplementation(object):
         '''Create a tarball for the revision'''
         raise NotImplementedError, 'tarball'
 
-    def last_commit_ids(self, commit, paths):
-        '''
-        Return a mapping {path: commit_id} of the _id of the last
-        commit to touch each path, starting from the given commit.
-        '''
-        orig_commit = commit
-        timeout = float(config.get('lcd_timeout', 60))
-        start_time = time()
-        paths = set(paths)
-        result = {}
-        seen_commits = set()
-        while paths and commit:
-            if time() - start_time > timeout:
-                log.error('last_commit_ids timeout for %s on %s', orig_commit._id, ', '.join(paths))
-                return result
-            seen_commits.add(commit._id)
-            changed = paths & set(commit.changed_paths)
-            result.update({path: commit._id for path in changed})
-            paths = paths - changed
-
-            # Hacky work-around for DiffInfoDocs previously having been
-            # computed wrong (not including children of added trees).
-            # Can be removed once all projects have had diffs / LCDs refreshed.
-            parent = commit.get_parent()
-            if parent and parent._id in seen_commits:
-                log.error('last_commit_ids loop detected at %s for %s on %s', parent._id, orig_commit._id, ', '.join(paths))
-                return result  # sanity check for bad data (loops)
-            if parent:
-                changed = set([path for path in paths if not parent.has_path(path)])
-                result.update({path: commit._id for path in changed})
-                paths = paths - changed
-            else:
-                result.update({path: commit._id for path in paths})
-                paths = set()
-            # end hacky work-around
-
-            commit = parent
-        return result
-
     def is_empty(self):
         '''Determine if the repository is empty by checking the filesystem'''
         raise NotImplementedError, 'is_empty'
@@ -248,9 +209,17 @@ class RepositoryImplementation(object):
         raise NotImplementedError, 'tags'
 
     def last_commit_ids(self, commit, paths):
-        """
-        Find the ID of the last commit to touch each path.
-        """
+        '''
+        Return a mapping {path: commit_id} of the _id of the last
+        commit to touch each path, starting from the given commit.
+
+        Chunks the set of paths based on lcd_thread_chunk_size and
+        runs each chunk (if more than one) in a separate thread.
+
+        Each thread will call :meth:`_get_last_commit` to get the
+        commit ID and list of changed files for the last commit
+        to touch any file in a given chunk.
+        '''
         if not paths:
             return {}
         timeout = float(tg.config.get('lcd_timeout', 60))
@@ -299,6 +268,17 @@ class RepositoryImplementation(object):
             finally:
                 chunks.all_tasks_done.release()
         return result
+
+    def _get_last_commit(self, commit_id, paths):
+        """
+        For a given commit ID and set of paths / files,
+        use the SCM to determine the last commit to touch
+        any of the given paths / files.
+
+        Should return a tuple containing the ID of the
+        commit and the list of all files changed in the commit.
+        """
+        raise NotImplementedError('_get_last_commit')
 
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
