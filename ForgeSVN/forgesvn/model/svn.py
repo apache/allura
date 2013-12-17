@@ -683,6 +683,19 @@ class SVNImplementation(M.RepositoryImplementation):
                 entries[path] = self._oid(info.last_changed_rev.number)
         return entries
 
+    def get_changes(self, oid):
+        rev = self._revision(oid)
+        try:
+            log_entry = self._svn.log(
+                self._url,
+                revision_start=rev,
+                limit=1,
+                discover_changed_paths=True)[0]
+        except pysvn.ClientError:
+            log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+            log_entry = Object(date='', message='', changed_paths=[])
+        return [p.path for p in log_entry.changed_paths]
+
     def _path_to_root(self, path, rev=None):
         '''Return tag/branch/trunk root for given path inside svn repo'''
         if path:

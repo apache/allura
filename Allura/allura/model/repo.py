@@ -430,18 +430,17 @@ class Commit(RepoObject, ActivityObject):
             If the file /foo/bar is changed in the commit,
             this would return ['', 'foo', 'foo/bar']
         '''
-        diff_info = DiffInfoDoc.m.get(_id=self._id)
-        diffs = set()
-        if diff_info:
-            for d in diff_info.differences:
-                node = d.name.strip('/')
-                diffs.add(node)
-                node_path = os.path.dirname(node)
-                while node_path:
-                    diffs.add(node_path)
-                    node_path = os.path.dirname(node_path)
-                diffs.add('')  # include '/' if there are any changes
-        return diffs
+        changes = self.repo.get_changes(self._id)
+        changed_paths = set()
+        for c in changes:
+            node = c.strip('/')
+            changed_paths.add(node)
+            node_path = os.path.dirname(node)
+            while node_path:
+                changed_paths.add(node_path)
+                node_path = os.path.dirname(node_path)
+            changed_paths.add('')  # include '/' if there are any changes
+        return changed_paths
 
     @LazyProperty
     def added_paths(self):

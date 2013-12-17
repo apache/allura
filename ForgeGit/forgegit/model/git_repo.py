@@ -526,6 +526,13 @@ class GitImplementation(M.RepositoryImplementation):
         else:
             return None, set()
 
+    def get_changes(self, commit_id):
+        return self._git.git.log(
+                commit_id,
+                name_only=True,
+                pretty='format:',
+                max_count=1).splitlines()[1:]
+
 class _OpenedGitBlob(object):
     CHUNK_SIZE=4096
 
