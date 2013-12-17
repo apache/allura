@@ -33,6 +33,7 @@ from webob import Request, Response
 import ew
 from ming.orm import ThreadLocalORMSession
 import ming.orm
+import pkg_resources
 
 from allura import model as M
 import allura.lib.security
@@ -56,7 +57,7 @@ def get_config_file(config=None):
     try:
         conf_dir = tg.config.here
     except AttributeError:
-        conf_dir = os.getcwd()
+        conf_dir = pkg_resources.resource_filename('Allura', '..')
     return os.path.join(conf_dir, config)
 
 
