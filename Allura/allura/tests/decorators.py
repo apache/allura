@@ -26,6 +26,7 @@ import tg
 from paste.deploy.converters import asbool
 
 from allura import model as M
+import allura.config.middleware
 
 
 def with_user_project(username):
@@ -120,3 +121,28 @@ def without_module(*module_names):
                 return func(*a, **kw)
         return wrapped
     return _without_module
+
+
+class patch_middleware_config(object):
+    '''
+    Context manager that patches the configuration used during middleware
+    setup for Allura
+    '''
+
+    def __init__(self, new_configs):
+        self.new_configs = new_configs
+
+    def __enter__(self):
+        self._make_app = allura.config.middleware.make_app
+
+        def make_app(global_conf, full_stack=True, **app_conf):
+            app_conf.update(self.new_configs)
+            return self._make_app(global_conf, full_stack, **app_conf)
+
+        allura.config.middleware.make_app = make_app
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_t):
+        allura.config.middleware.make_app = self._make_app
+        return self
