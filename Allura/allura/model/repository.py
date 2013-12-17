@@ -280,6 +280,12 @@ class RepositoryImplementation(object):
         """
         raise NotImplementedError('_get_last_commit')
 
+    def get_changes(self, commit_id):
+        """
+        Return the list of files changed by a given commit.
+        """
+        raise NotImplemented('get_changes')
+
 class Repository(Artifact, ActivityObject):
     BATCH_SIZE=100
     class __mongometa__:
@@ -387,6 +393,8 @@ class Repository(Artifact, ActivityObject):
         return self._impl.compute_tree_new(commit, path)
     def last_commit_ids(self, commit, paths):
         return self._impl.last_commit_ids(commit, paths)
+    def get_changes(self, commit_id):
+        return self._impl.get_changes(commit_id)
     def is_empty(self):
         return self._impl.is_empty()
     def is_file(self, path, rev=None):
