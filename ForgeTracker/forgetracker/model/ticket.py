@@ -1123,7 +1123,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             **kw)
 
     @classmethod
-    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, show_deleted=False, **kw):
+    def paged_search(cls, app_config, user, q, limit=None, page=0, sort=None, show_deleted=False,
+                     filter=None, **kw):
         """Query tickets from Solr, filtering for 'read' permission, sorting and paginating the result.
 
         See also paged_query which does a mongo search.
@@ -1147,6 +1148,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         limit, page, start = g.handle_paging(limit, page, default=25)
         count = 0
         tickets = []
+        if filter is None: filter = {}
         refined_sort = sort if sort else 'ticket_num_i desc'
         if 'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
@@ -1185,6 +1187,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         count = count - 1
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
+                    filter=json.dumps(filter),
                     solr_error=solr_error, **kw)
 
     def get_mail_footer(self, notification, toaddr):

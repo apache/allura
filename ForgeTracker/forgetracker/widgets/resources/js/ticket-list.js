@@ -27,7 +27,8 @@
         window.location = '?q=' + q +
                           '&limit=' + limit +
                           '&page=' + page +
-                          '&sort=' + encodeURIComponent(sort);
+                          '&sort=' + encodeURIComponent(sort) +
+                          '&filter=' + encodeURIComponent(JSON.stringify(filter));
     }
 
     $('.ticket-filter a[data-sort]').click(function(){
@@ -74,4 +75,30 @@
       e.preventDefault();
       $('.ticket-filter').hide();
     });
+    $('.ticket-filter .apply-filters').click(function() {
+      filter = {};
+      $('.ticket-filter select').each(function() {
+        var val = $(this).val();
+        if (val) {
+          var name = this.name.replace(/^filter-/, '');
+          filter[name] = val;
+        }
+      });
+      requery();
+    });
+
+    function select_active_filter() {
+      for (var name in filter) {
+        var fname = 'filter-' + name;
+        var $select = $('select[name="' + fname + '"]');
+        var $options = $select.find('option');
+        $options.each(function() {
+          if (filter[name].indexOf($(this).val()) != -1) {
+            $(this).attr("selected", "selected");
+          }
+        });
+        $select.multiselect('refresh');
+      }
+    }
+    select_active_filter();
 })();

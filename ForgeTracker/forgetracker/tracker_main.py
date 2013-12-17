@@ -81,6 +81,7 @@ search_validators = dict(
     limit=validators.Int(if_invalid=None),
     page=validators.Int(if_empty=0, if_invalid=0),
     sort=validators.UnicodeString(if_empty=None),
+    filter=V.JsonConverter(if_empty={}),
     deleted=validators.StringBool(if_empty=False))
 
 
@@ -743,7 +744,8 @@ class RootController(BaseController, FeedController):
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/search.html')
     @validate(validators=search_validators)
-    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None, deleted=False, **kw):
+    def search(self, q=None, query=None, project=None, columns=None, page=0, sort=None,
+               deleted=False, filter=None, **kw):
         require(has_access(c.app, 'read'))
 
         if query and not q:
@@ -754,10 +756,9 @@ class RootController(BaseController, FeedController):
             bin = TM.Bin.query.find(
                 dict(app_config_id=c.app.config._id, terms=q)).first()
         if project:
-            redirect(c.project.url() + 'search?' +
-                     urlencode(dict(q=q, history=kw.get('history'))))
-        result = TM.Ticket.paged_search(
-            c.app.config, c.user, q, page=page, sort=sort, show_deleted=deleted, **kw)
+            redirect(c.project.url() + 'search?' + urlencode(dict(q=q, history=kw.get('history'))))
+        result = TM.Ticket.paged_search(c.app.config, c.user, q, page=page, sort=sort,
+                                        show_deleted=deleted, filter=filter, **kw)
         result['columns'] = columns or solr_columns()
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
