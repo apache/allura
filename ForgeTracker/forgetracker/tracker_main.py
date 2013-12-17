@@ -702,7 +702,9 @@ class RootController(BaseController, FeedController):
                             name=new['new_name'],
                             description = new['description'],
                             due_date = new['due_date'],
-                            complete = new['complete'] == 'Closed'))
+                            complete = new['complete'] == 'Closed',
+                            default = new.get('default', False),
+                        ))
                         update_counts = True
         if update_counts:
             c.app.globals.invalidate_bin_counts()
