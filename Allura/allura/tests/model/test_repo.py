@@ -103,6 +103,10 @@ class TestLastCommit(unittest.TestCase):
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
         self.repo.rev_to_commit_id = lambda rev: rev
         self.repo.log = self._log
+        self._changes = defaultdict(list)
+        self.repo.get_changes = lambda _id: self._changes[_id]
+        self._last_commits = [(None, set())]
+        self.repo._get_last_commit = lambda i, p: self._last_commits.pop()
         lcids = M.repository.RepositoryImplementation.last_commit_ids.__func__
         self.repo.last_commit_ids = lambda *a, **k: lcids(self.repo, *a, **k)
         c.lcid_cache = {}
@@ -151,12 +155,9 @@ class TestLastCommit(unittest.TestCase):
             )
         commit.tree = self._build_tree(commit, '/', tree_paths)
         commit.get_tree = lambda c: commit.tree
-        diffinfo = M.repo.DiffInfoDoc(dict(
-                _id=commit._id,
-                differences=[{'name': p} for p in diff_paths or tree_paths],
-            ))
-        diffinfo.m.save()
+        self._changes[commit._id].extend(diff_paths or tree_paths)
         self.repo._commits[commit._id] = commit
+        self._last_commits.append((commit._id, set(diff_paths or tree_paths)))
         return commit
 
     def _log(self, revs, path, id_only=True):
@@ -344,7 +345,7 @@ class TestLastCommit(unittest.TestCase):
         self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.commit_id, commit3._id)
         self.assertEqual(lcd.path, '')
-        self.assertEqual(len(lcd.entries), 2)
+        self.assertEqual(len(lcd.entries), 3)
         self.assertEqual(lcd.by_name['dir1'], commit2._id)
         self.assertEqual(lcd.by_name['file2'], commit3._id)
 
