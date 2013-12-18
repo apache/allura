@@ -953,7 +953,7 @@ class TestOAuth(TestController):
                 user_id=user._id,
             )
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/rest/oauth/do_authorize', params={'no': '1', 'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'no': '1', 'oauth_token': 'api_key'})
         assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key'))
 
     def test_do_authorize_oob(self):
@@ -970,7 +970,7 @@ class TestOAuth(TestController):
                 user_id=user._id,
             )
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert_is_not_none(r.html.find(text=re.compile('^PIN: ')))
 
     def test_do_authorize_cb(self):
@@ -987,7 +987,7 @@ class TestOAuth(TestController):
                 user_id=user._id,
             )
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert r.location.startswith('http://my.domain.com/callback?oauth_token=api_key&oauth_verifier=')
 
     def test_do_authorize_cb_params(self):
@@ -1004,7 +1004,7 @@ class TestOAuth(TestController):
                 user_id=user._id,
             )
         ThreadLocalORMSession.flush_all()
-        r = self.app.get('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
+        r = self.app.post('/rest/oauth/do_authorize', params={'yes': '1', 'oauth_token': 'api_key'})
         assert r.location.startswith('http://my.domain.com/callback?myparam=foo&oauth_token=api_key&oauth_verifier=')
 
     @mock.patch('allura.controllers.rest.oauth.Request')

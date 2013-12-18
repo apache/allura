@@ -34,6 +34,7 @@ from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import plugin
 from allura.lib.exceptions import Invalid
+from allura.lib.decorators import require_post
 
 log = logging.getLogger(__name__)
 action_logger = h.log_action(log, 'API:')
@@ -191,6 +192,7 @@ class OAuthNegotiator(object):
             consumer=rtok.consumer_token)
 
     @expose('jinja:allura:templates/oauth_authorize_ok.html')
+    @require_post()
     def do_authorize(self, yes=None, no=None, oauth_token=None):
         security.require_authenticated()
         rtok = M.OAuthRequestToken.query.get(api_key=oauth_token)
