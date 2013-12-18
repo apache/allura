@@ -99,8 +99,6 @@ class AdminApp(Application):
 
     @staticmethod
     def installable_tools_for(project):
-        cls = AdminApp
-
         limited_tools = []
         for tool in project.app_configs:
             if not project.app_instance(tool).installable:
@@ -112,8 +110,7 @@ class AdminApp(Application):
             if k not in limited_tools and v.max_instances > 0:
                 tools.append(dict(name=k, app=v))
         tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
-        cls._installable_tools = [t for t in tools]
-        return [t for t in cls._installable_tools
+        return [t for t in tools
             if t['app'].status in project.allowed_tool_status]
 
 
