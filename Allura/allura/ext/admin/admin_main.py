@@ -629,7 +629,7 @@ class ProjectAdminController(BaseController):
                     require_access(c.project, 'admin')
                     installable_tools = AdminApp.installable_tools_for(c.project)
                     if not ep_name.lower() in [t['name'].lower() for t in installable_tools]:
-                        flash('Intallation limit exceeded.', 'error')
+                        flash('Installation limit exceeded.', 'error')
                         return
                     mount_point = new['mount_point'] or ep_name
                     M.AuditLog.log('install tool %s', mount_point)
