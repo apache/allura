@@ -270,11 +270,17 @@ class TestProjectAdmin(TestController):
         BUILTIN_APPS = ['activity', 'blog', 'discussion', 'git', 'link',
                 'shorturl', 'svn', 'tickets', 'userstats', 'wiki']
         self.app.get('/admin/')
+        project = M.Project.query.get(shortname='test')
         for i, ep in enumerate(pkg_resources.iter_entry_points('allura')):
-            app = ep.load()
+            App = ep.load()
+            tool = ep.name
+            cfg = M.AppConfig(
+                    project_id=project._id,
+                    tool_name=tool,
+                    options={'mount_point': '', 'mount_label': ''})
+            app = App(project, cfg)
             if not app.installable or ep.name.lower() not in BUILTIN_APPS:
                 continue
-            tool = ep.name
             with audits('install tool test-%d' % i):
                 self.app.post('/admin/update_mounts', params={
                         'new.install':'install',
