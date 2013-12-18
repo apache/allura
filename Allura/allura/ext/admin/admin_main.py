@@ -100,17 +100,11 @@ class AdminApp(Application):
 
     @staticmethod
     def installable_tools_for(project):
-        limited_tools = []
-        for tool in project.app_configs:
-            if not project.app_instance(tool).installable:
-                if tool.tool_name not in limited_tools:
-                    limited_tools.append(tool.tool_name)
-
         tools = []
         for name, App in g.entry_points['tool'].iteritems():
             cfg = M.AppConfig(project_id=project._id, tool_name=name)
             app = App(project, cfg)
-            if name not in limited_tools and app.installable:
+            if app.installable:
                 tools.append(dict(name=name, app=App))
             session(cfg).expunge(cfg)  # prevent from saving temporary config to db
         tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
