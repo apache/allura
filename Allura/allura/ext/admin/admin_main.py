@@ -32,6 +32,7 @@ from tg.decorators import with_trailing_slash, without_trailing_slash
 from webob import exc
 from bson import ObjectId
 from ming.orm.ormsession import ThreadLocalORMSession
+from ming.odm import session
 
 from allura.app import Application, DefaultAdminController, SitemapEntry
 from allura.lib import helpers as h
@@ -106,13 +107,15 @@ class AdminApp(Application):
                     limited_tools.append(tool.tool_name)
 
         tools = []
-        for k, v in g.entry_points['tool'].iteritems():
-            if k not in limited_tools and v.max_instances > 0:
-                tools.append(dict(name=k, app=v))
+        for name, App in g.entry_points['tool'].iteritems():
+            cfg = M.AppConfig(project_id=project._id, tool_name=name)
+            app = App(project, cfg)
+            if name not in limited_tools and app.installable:
+                tools.append(dict(name=name, app=App))
+            session(cfg).expunge(cfg)  # prevent from saving temporary config to db
         tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
         return [t for t in tools
             if t['app'].status in project.allowed_tool_status]
-
 
     @staticmethod
     def exportable_tools_for(project):

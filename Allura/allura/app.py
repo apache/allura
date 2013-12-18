@@ -488,7 +488,7 @@ class Application(object):
         not be installed directly by a user, but may be uninstalled).
 
         """
-        return self.max_instances > 0
+        return self.installable
 
     def main_menu(self):
         """Return a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
