@@ -18,10 +18,15 @@
 #       under the License.
 
 import json
-from pprint import pprint
+import logging
+import random
+import string
 
 from pylons import tmpl_context as c
 from testfixtures import LogCapture
+from mock import patch
+import timermiddleware
+from ming.odm import ThreadLocalODMSession
 
 from allura import model as M
 from allura.lib.helpers import push_config
@@ -35,16 +40,22 @@ def main():
     test = TestController()
     setup(test)
     url = generate_wiki_thread(test)
-    load_page(test, url)
-    load_page(test, url)
+    ThreadLocalODMSession.close_all()  # make sure ODM sessions won't get re-used
     load_page(test, url)
     test.tearDown()
 
 
 def setup(test):
     # includes setting up mim
-    with patch_middleware_config({'stats.sample_rate': 1}):
-       test.setUp()
+    with patch_middleware_config({'stats.sample_rate': 1,
+                                  'stats.debug_line_length': 1000,
+                                  }), \
+         patch('timermiddleware.log.isEnabledFor', return_value=True):  # can't set this via logging configuration since setUp() will load a logging config and then start using it before we have a good place to tweak it
+        test.setUp()
+
+    tmw_log = logging.getLogger('timermiddleware')
+    tmw_log.disabled = 0  # gets disabled when .ini file is loaded; dumb.
+    tmw_log.setLevel(logging.DEBUG)
 
 
 def generate_wiki_thread(test):
@@ -65,16 +76,31 @@ def generate_wiki_thread(test):
         with push_config(c, user=M.User.query.get(username='test-user')):
             thread.add_post(text='I disagree')
 
+    ThreadLocalODMSession.flush_all()
+
     url = '/p/test/wiki/_discuss/thread/{}/'.format(thread._id)
     return url
 
 
-def load_page(test, url):
-    with LogCapture('stats') as l:
-        print url, test.app.get(url, extra_environ=dict(username='*anonymous')).status
-    for r in l.records:
-        timings = json.loads(r.message)
+def load_page(test, url, verbose=False, debug_html=False):
+
+    with LogCapture('stats') as stats, LogCapture('timermiddleware') as calls:
+        resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
+        print url, resp.status
+        if debug_html:
+            debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(10)]))
+            with open(debug_filename, 'w') as out:
+                out.write(resp.body)
+            print debug_filename
+
+    if verbose:
+        for r in calls.records:
+            print r.getMessage()
+
+    for r in stats.records:
+        timings = json.loads(r.getMessage())
         print json.dumps(timings['call_counts'])
+
 
 if __name__ == '__main__':
     main()
