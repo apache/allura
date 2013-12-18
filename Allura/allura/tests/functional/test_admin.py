@@ -24,7 +24,7 @@ from contextlib import contextmanager
 
 import tg
 import PIL
-from nose.tools import assert_equals, assert_in, assert_not_in, assert_raises
+from nose.tools import assert_equals, assert_in, assert_not_in
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from pylons import tmpl_context as c, app_globals as g
@@ -43,8 +43,6 @@ from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura import model as M
 from allura.app import SitemapEntry
-from allura.lib import exceptions
-from allura.lib import helpers as h
 from allura.lib.plugin import AdminExtension
 from allura.ext.admin.admin_main import AdminApp
 from allura.lib.security import has_access
@@ -67,6 +65,11 @@ def audits(*messages):
             message=re.compile(message))).count(), 'Could not find "%s"' % message
 
 class TestProjectAdmin(TestController):
+
+    def get_available_tools(self):
+        r = self.app.get('/admin/tools')
+        available_tools = r.html.findAll('a', {'class': 'install_trig'})
+        return [' '.join(opt.find('span').string.strip().split()) for opt in available_tools]
 
     def test_admin_controller(self):
         self.app.get('/admin/')
@@ -301,6 +304,29 @@ class TestProjectAdmin(TestController):
         # check using sets, because their may be more tools installed by default
         # that we don't know about
         assert len(set(expected_tools) - set(tool_strings)) == 0, tool_strings
+
+    def test_tool_installation_limit(self):
+        with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
+            mi.__get__ = mock.Mock(return_value=1)
+
+            available_tools = self.get_available_tools()
+            assert_in('Wiki', available_tools)
+            r = self.app.post('/admin/update_mounts/', params={
+                    'new.install': 'install',
+                    'new.ep_name': 'Wiki',
+                    'new.ordinal': '1',
+                    'new.mount_point': 'wiki',
+                    'new.mount_label': 'Wiki'})
+            available_tools = self.get_available_tools()
+            assert_not_in('Wiki', available_tools)
+            r = self.app.post('/admin/update_mounts/', params={
+                    'new.install': 'install',
+                    'new.ep_name': 'Wiki',
+                    'new.ordinal': '1',
+                    'new.mount_point': 'wiki2',
+                    'new.mount_label': 'Wiki 2'})
+            assert 'error' in self.webflash(r)
+            assert 'limit exceeded' in self.webflash(r)
 
     def test_grouping_threshold(self):
         r = self.app.get('/admin/tools')
@@ -1112,19 +1138,6 @@ class TestRestInstallTool(TestRestApiBase):
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert_equals(r.json['success'], False)
             assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
-
-    def test_install_app_limit_exhaust(self):
-        import forgewiki
-        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'max_instances') as mi:
-            mi.__get__ = mock.Mock(return_value=1)
-
-            data = {
-                'mount_point': 'wiki2',
-                'mount_label': 'wiki2'
-            }
-            # with h.push_config(c, user=M.User.query.get(username='test-admin')):
-            # c.project.install_app('wiki', mount_point='wiki1', mount_label='wiki1', ordinal=0)
-            assert_raises(exceptions.ToolError, c.project.install_app, 'wiki', **data)
 
     def test_tool_installation_limit(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
