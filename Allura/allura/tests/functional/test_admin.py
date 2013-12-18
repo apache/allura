@@ -24,7 +24,7 @@ from contextlib import contextmanager
 
 import tg
 import PIL
-from nose.tools import assert_equals, assert_in, assert_not_in
+from nose.tools import assert_equals, assert_in, assert_not_in, assert_raises
 from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from pylons import tmpl_context as c, app_globals as g
@@ -43,6 +43,8 @@ from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase
 from allura import model as M
 from allura.app import SitemapEntry
+from allura.lib import exceptions
+from allura.lib import helpers as h
 from allura.lib.plugin import AdminExtension
 from allura.ext.admin.admin_main import AdminApp
 from allura.lib.security import has_access
@@ -1110,6 +1112,19 @@ class TestRestInstallTool(TestRestApiBase):
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert_equals(r.json['success'], False)
             assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+
+    def test_install_app_limit_exhaust(self):
+        import forgewiki
+        with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'max_instances') as mi:
+            mi.__get__ = mock.Mock(return_value=1)
+
+            data = {
+                'mount_point': 'wiki2',
+                'mount_label': 'wiki2'
+            }
+            # with h.push_config(c, user=M.User.query.get(username='test-admin')):
+            # c.project.install_app('wiki', mount_point='wiki1', mount_label='wiki1', ordinal=0)
+            assert_raises(exceptions.ToolError, c.project.install_app, 'wiki', **data)
 
     def test_tool_installation_limit(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
