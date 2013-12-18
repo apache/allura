@@ -32,20 +32,8 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura.lib import helpers as h
 
+
 class TestNeighborhood(TestController):
-
-    def setUp(self):
-        # change the override_root config value to change which root controller the test uses
-        self._make_app = allura.config.middleware.make_app
-        def make_app(global_conf, full_stack=True, **app_conf):
-            app_conf['override_root'] = 'basetest_neighborhood_root'
-            return self._make_app(global_conf, full_stack, **app_conf)
-        allura.config.middleware.make_app = make_app
-        super(TestNeighborhood, self).setUp()
-
-    def tearDown(self):
-        super(TestNeighborhood, self).tearDown()
-        allura.config.middleware.make_app = self._make_app
 
     def test_home_project(self):
         r = self.app.get('/adobe/wiki/')
