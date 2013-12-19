@@ -98,6 +98,10 @@ class MockSOLR(object):
         def docs(self):
             return self
 
+        @property
+        def facets(self):
+            return {'facet_fields': {}}
+
     def __init__(self):
         self.db = {}
 
