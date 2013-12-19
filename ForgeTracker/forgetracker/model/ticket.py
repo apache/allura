@@ -1191,6 +1191,30 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     filter=json.dumps(filter),
                     solr_error=solr_error, **kw)
 
+    @classmethod
+    def paged_query_or_search(cls, app_config, user, query, search_query, filter,
+                              limit=None, page=0, sort=None, **kw):
+        """Switch between paged_query and paged_search based on filter.
+
+        query - query in mongo syntax
+        search_query - query in solr syntax
+        """
+        solr_sort = None
+        if sort:
+            from forgetracker.tracker_main import _mongo_col_to_solr_col
+            sort_split = sort.split(' ')
+            solr_col = _mongo_col_to_solr_col(sort_split[0])
+            solr_sort = '%s %s' % (solr_col, sort_split[1])
+        if not filter:
+            result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
+        else:
+            result = cls.paged_search(app_config, user, search_query, filter=filter,
+                                      sort=solr_sort, limit=limit, page=page, **kw)
+
+        result['sort'] = sort
+        result['url_sort'] = solr_sort if solr_sort else ''
+        return result
+
     def get_mail_footer(self, notification, toaddr):
         if toaddr and toaddr == self.monitoring_email:
             return MailFooter.monitored(

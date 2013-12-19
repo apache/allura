@@ -638,18 +638,23 @@ class RootController(BaseController, FeedController):
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/index.html')
-    @validate(dict(deleted=validators.StringBool(if_empty=False)))
-    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', deleted=False, **kw):
+    @validate(dict(deleted=validators.StringBool(if_empty=False),
+                   filter=V.JsonConverter(if_empty={})))
+    def index(self, limit=25, columns=None, page=0, sort='ticket_num desc', deleted=False, filter=None, **kw):
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]
 
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)
-        result = TM.Ticket.paged_query(c.app.config, c.user,
-                                       c.app.globals.not_closed_mongo_query,
-                                       sort=sort, limit=int(limit),
-                                       page=page, deleted={'$in': show_deleted}, **kw)
+        result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
+                                                 c.app.globals.not_closed_mongo_query,
+                                                 c.app.globals.not_closed_query,
+                                                 filter,
+                                                 sort=sort, limit=int(limit), page=page,
+                                                 deleted={'$in': show_deleted},
+                                                 show_deleted=deleted, **kw)
+
         result['columns'] = columns or mongo_columns()
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
@@ -659,12 +664,7 @@ class RootController(BaseController, FeedController):
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
         result['url_q'] = c.app.globals.not_closed_query
-        result['url_sort'] = ''
         result['deleted'] = deleted
-        if sort:
-            sort_split = sort.split(' ')
-            solr_col = _mongo_col_to_solr_col(sort_split[0])
-            result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.subscribe_form = W.subscribe_form
         c.ticket_search_results = TicketSearchResults()
         return result
@@ -1805,24 +1805,48 @@ class MilestoneController(BaseController):
         self.milestone = m
         self.progress_key = '%s:%s' % (fld.name, m.name.replace(':', '\:'))
         self.mongo_query = {
+<<<<<<< HEAD
             'custom_fields.%s' % fld.name: m.name}
+=======
+            'custom_fields.%s' % fld.name: m.name }
+        self.solr_query = '%s:%s' % (_mongo_col_to_solr_col(fld.name), m.name)
+>>>>>>> [#4019] ticket:481 Switch mongo/solr query based on filter
 
     @with_trailing_slash
     @h.vardec
     @expose('jinja:forgetracker:templates/tracker/milestone.html')
     @validate(validators=dict(
+<<<<<<< HEAD
         limit=validators.Int(if_invalid=None),
         page=validators.Int(if_empty=0, if_invalid=0),
         sort=validators.UnicodeString(if_empty=None),
         deleted=validators.StringBool(if_empty=False)))
     def index(self, q=None, columns=None, page=0, query=None, sort=None, deleted=False, **kw):
+=======
+            limit=validators.Int(if_invalid=None),
+            page=validators.Int(if_empty=0, if_invalid=0),
+            sort=validators.UnicodeString(if_empty=''),
+            filter=V.JsonConverter(if_empty={}),
+            deleted=validators.StringBool(if_empty=False)))
+    def index(self, q=None, columns=None, page=0, query=None, sort=None,
+              deleted=False, filter=None, **kw):
+>>>>>>> [#4019] ticket:481 Switch mongo/solr query based on filter
         require(has_access(c.app, 'read'))
         show_deleted = [False]
         if deleted and has_access(c.app, 'delete'):
             show_deleted = [False, True]
 
+<<<<<<< HEAD
         result = TM.Ticket.paged_query(c.app.config, c.user,
                                        self.mongo_query, page=page, sort=sort, deleted={'$in': show_deleted}, **kw)
+=======
+        result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
+                                                 self.mongo_query,
+                                                 self.solr_query,
+                                                 filter, sort=sort, page=page,
+                                                 deleted={'$in': show_deleted},
+                                                 show_deleted=deleted, **kw)
+>>>>>>> [#4019] ticket:481 Switch mongo/solr query based on filter
         result['columns'] = columns or mongo_columns()
         result[
             'sortable_custom_fields'] = c.app.globals.sortable_custom_fields_shown_in_search()
@@ -1839,11 +1863,6 @@ class MilestoneController(BaseController):
             total=progress['hits'],
             closed=progress['closed'],
             q=self.progress_key)
-        result['url_sort'] = ''
-        if sort:
-            sort_split = sort.split(' ')
-            solr_col = _mongo_col_to_solr_col(sort_split[0])
-            result['url_sort'] = '%s %s' % (solr_col, sort_split[1])
         c.ticket_search_results = TicketSearchResults()
         c.auto_resize_textarea = W.auto_resize_textarea
         return result
