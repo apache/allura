@@ -146,7 +146,9 @@ setup(
     [easy_widgets.engines]
     jinja = allura.config.app_cfg:JinjaEngine
 
-    [activitystream.storage]
-    driver = activitystream.storage.mingstorage:MingStorage
+    [activitystream]
+    storage = activitystream.storage.mingstorage:MingStorage
+    director = allura.model.timeline:Director
+    aggregator = allura.model.timeline:Aggregator
     """,
 )

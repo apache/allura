@@ -21,7 +21,9 @@ from tg import config
 
 import dateutil.parser
 from nose.tools import assert_equal
+from pylons import app_globals as g
 
+from allura import model as M
 from alluratest.controller import TestController
 from allura.tests import decorators as td
 
@@ -148,3 +150,23 @@ class TestActivityController(TestController):
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].shortname == 'test'
         assert director.get_timeline.call_args[1]['actor_only'] == False
+
+    @td.with_tracker
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_background_aggregation(self):
+        self.app.get('/u/test-admin/activity/follow?follow=True',
+                extra_environ=dict(username='test-user-1'))
+        # new ticket, creates activity
+        d = {'ticket_form.summary': 'New Ticket'}
+        self.app.post('/bugs/save_ticket', params=d)
+        orig_create_timeline = g.director.aggregator.create_timeline
+        with patch.object(g.director.aggregator, 'create_timeline') as create_timeline:
+            create_timeline.side_effect = orig_create_timeline
+            M.MonQTask.run_ready()
+            # 3 aggregations: 1 actor, 1 follower, 1 project
+            assert_equal(create_timeline.call_count, 3)
+            create_timeline.reset_mock()
+            self.app.get('/u/test-admin/activity/')
+            self.app.get('/u/test-user-1/activity/')
+            assert_equal(create_timeline.call_count, 0)

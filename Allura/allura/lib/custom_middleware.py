@@ -188,8 +188,14 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import pymongo
         import socket
         import urllib2
+        import activitystream
 
         return self.entry_point_timers() + [
+            Timer('activitystream.director.{method_name}', allura.model.timeline.Director,
+                'create_activity', 'create_timeline', 'get_timeline'),
+            Timer('activitystream.aggregator.{method_name}', allura.model.timeline.Aggregator, '*'),
+            Timer('activitystream.node_manager.{method_name}', activitystream.managers.NodeManager, '*'),
+            Timer('activitystream.activity_manager.{method_name}', activitystream.managers.ActivityManager, '*'),
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
