@@ -67,9 +67,12 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     def __init__(self):
         for n in M.Neighborhood.query.find():
-            if n.url_prefix.startswith('//'): continue
+            if n.url_prefix.startswith('//'):
+                continue
             n.bind_controller(self)
-        self.p_nbhd = M.Neighborhood.query.get(name='Projects')
+            if n.url_prefix == '/p/':
+                self.p_nbhd = n
+
         proxy_root = RootController()
         self.dispatch = DispatchTest()
         self.security = SecurityTests()
