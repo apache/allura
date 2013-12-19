@@ -192,7 +192,8 @@ class AlluraTimerMiddleware(TimerMiddleware):
         return self.entry_point_timers() + [
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
-            Timer('ming', ming.odm.odmsession.ODMCursor, 'next'),  # FIXME: this may captures timings ok, but is misleading for counts
+            Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
+                  debug_each_call=False),
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
                 'get'),
             Timer('ming', ming.schema.Document, 'validate',
