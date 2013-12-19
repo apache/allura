@@ -280,6 +280,10 @@ class Globals(object):
                     return False
                 def create_activity(self, *a, **kw):
                     pass
+                def create_timeline(self, *a, **kw):
+                    pass
+                def create_timelines(self, *a, **kw):
+                    pass
                 def get_timeline(self, *a, **kw):
                     return []
             return NullActivityStreamDirector()

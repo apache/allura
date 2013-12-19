@@ -16,18 +16,48 @@
 #       under the License.
 
 import bson
+import logging
 from ming.odm import Mapper
-from activitystream import base
+
+from activitystream import ActivityDirector
+from activitystream.base import NodeBase, ActivityObjectBase
+from activitystream.managers import Aggregator as BaseAggregator
+
 from allura.lib import security
+from allura.tasks.activity_tasks import create_timelines
+
+log = logging.getLogger(__name__)
 
 
-class ActivityNode(base.NodeBase):
+class Director(ActivityDirector):
+    """Overrides the default ActivityDirector to kick off background
+    timeline aggregations after an activity is created.
+
+    """
+    def create_activity(self, actor, verb, obj, target=None,
+            related_nodes=None):
+        from allura.model.project import Project
+        super(Director, self).create_activity(actor, verb, obj,
+                target=target, related_nodes=related_nodes)
+        # aggregate actor and follower's timelines
+        create_timelines.post(actor.node_id)
+        # aggregate project and follower's timelines
+        for node in [obj, target] + (related_nodes or []):
+            if isinstance(node, Project):
+                create_timelines.post(node.node_id)
+
+
+class Aggregator(BaseAggregator):
+    pass
+
+
+class ActivityNode(NodeBase):
     @property
     def node_id(self):
         return "%s:%s" % (self.__class__.__name__, self._id)
 
 
-class ActivityObject(base.ActivityObjectBase):
+class ActivityObject(ActivityObjectBase):
     @property
     def activity_name(self):
         """Override this for each Artifact type."""
