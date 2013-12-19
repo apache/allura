@@ -23,12 +23,22 @@
       $this.html($this.html().replace(/\//gi,'/&#8203;'));
     });
 
-    function requery(){
-        window.location = '?q=' + q +
+    function requery() {
+        var location = '?q=' + q +
                           '&limit=' + limit +
                           '&page=' + page +
                           '&sort=' + encodeURIComponent(sort) +
                           '&filter=' + encodeURIComponent(JSON.stringify(filter));
+        // preserve displayed columns, when filter changes
+        $('#col_list_form input').each(function() {
+            if (this.name.indexOf('columns-') == 0) {
+                var inp = $(this);
+                var val = inp.val();
+                if (inp.is(':checkbox') && !inp.is(':checked')) { val = ''; }
+                location += '&' + this.name + '=' + encodeURIComponent(val);
+            }
+        });
+        window.location = location;
     }
 
     $('.ticket-filter a[data-sort]').click(function(){
