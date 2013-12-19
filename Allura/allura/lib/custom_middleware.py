@@ -194,8 +194,7 @@ class AlluraTimerMiddleware(TimerMiddleware):
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
                   debug_each_call=False),
-            Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find',
-                'get'),
+            Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find'),
             Timer('ming', ming.schema.Document, 'validate',
                 debug_each_call=False),
             Timer('ming', ming.schema.FancySchemaItem, '_validate_required',
