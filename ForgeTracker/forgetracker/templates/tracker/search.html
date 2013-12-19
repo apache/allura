@@ -33,10 +33,10 @@
   {{ lib.maximize_content_button() }}
   <a href="{{tg.url(c.app.url+'search_feed/', dict(q=q, limit=limit, sort=sort))}}" title="Feed"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% if allow_edit and count != 0 %}
-  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
+  <a href="{{tg.url(c.app.url+'edit/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter))}}" title="Bulk Edit"><b data-icon="{{g.icons['pencil'].char}}" class="ico {{g.icons['pencil'].css}}"></b></a>
 {% endif %}
 {% if allow_move and count != 0 %}
-  <a href="{{tg.url(c.app.url + 'move/', dict(q=q, limit=limit, sort=sort, page=page))}}" title="Bulk Move"><b data-icon="" class=""></b>Bulk Move</a>
+  <a href="{{tg.url(c.app.url + 'move/', dict(q=q, limit=limit, sort=sort, page=page, filter=filter))}}" title="Bulk Move"><b data-icon="" class=""></b>Bulk Move</a>
 {% endif %}
 {% endblock %}
 
