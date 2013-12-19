@@ -44,89 +44,76 @@ def bulk_export(tools, filename=None, send_email=True):
     '''
     # it's very handy to use c.* within a @task,
     # but let's be explicit and keep it separate from the main code
-    return _bulk_export(c.project, tools, c.user, filename, send_email)
+    return BulkExport().process(c.project, tools, c.user, filename, send_email)
 
 
-def _bulk_export(project, tools, user, filename=None, send_email=True):
-    export_filename = filename or project.bulk_export_filename()
-    export_path = create_export_dir(project, export_filename)
-    not_exported_tools = []
-    for tool in tools or []:
-        app = project.app_instance(tool)
-        if not app:
-            log.info('Can not load app for %s mount point. Skipping.' % tool)
-            not_exported_tools.append(tool)
-            continue
-        if not app.exportable:
-            log.info('Tool %s is not exportable. Skipping.' % tool)
-            not_exported_tools.append(tool)
-            continue
-        log.info('Exporting %s...' % tool)
+class BulkExport(object):
+    def process(self, project, tools, user, filename=None, send_email=True):
+        export_filename = filename or project.bulk_export_filename()
+        export_path = self.get_export_path(project.bulk_export_path(), export_filename)
+        if not os.path.exists(export_path):
+            os.makedirs(export_path)
+        apps = [project.app_instance(tool) for tool in tools]
+        exportable = self.filter_exportable(apps)
+        results = [self.export(export_path, app) for app in exportable]
+        exported = self.filter_successful(results)
+        if exported:
+            zipdir(export_path, os.path.join(os.path.dirname(export_path), export_filename))
+        shutil.rmtree(export_path)
+
+        if not user:
+            log.info('No user. Skipping notification.')
+            return
+        if not send_email:
+            return
+
+        tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
+        instructions = tg.config.get('bulk_export_download_instructions', '')
+        instructions = instructions.format(
+                project=project.shortname,
+                filename=export_filename,
+                c=c,
+            )
+        exported_names = [a.config.options.mount_point for a in exported]
+        tmpl_context = {
+            'instructions': instructions,
+            'project': project,
+            'tools': exported_names,
+            'not_exported_tools': list(set(tools) - set(exported_names)),
+        }
+        email = {
+            'sender': unicode(tg.config['forgemail.return_path']),
+            'fromaddr': unicode(tg.config['forgemail.return_path']),
+            'reply_to': unicode(tg.config['forgemail.return_path']),
+            'message_id': h.gen_message_id(),
+            'destinations': [unicode(user._id)],
+            'subject': u'Bulk export for project %s completed' % project.shortname,
+            'text': tmpl.render(tmpl_context),
+        }
+        mail_tasks.sendmail.post(**email)
+
+    def get_export_path(self, export_base_path, export_filename):
+        """Create temporary directory for export files"""
+        # Name temporary directory after project shortname,
+        # thus zipdir() will use proper prefix inside the archive.
+        tmp_dir_suffix = os.path.splitext(export_filename)[0]
+        path = os.path.join(export_base_path, tmp_dir_suffix)
+        return path
+
+    def filter_exportable(self, apps):
+        return [app for app in apps if app and app.exportable]
+
+    def export(self, export_path, app):
+        tool = app.config.options.mount_point
+        json_file = os.path.join(export_path, '%s.json' % tool)
         try:
-            json_file = os.path.join(export_path, '%s.json' % tool)
             with open(json_file, 'w') as f:
                 app.bulk_export(f)
-        except:
-            log.error('Something went wrong during export of %s' % tool, exc_info=True)
-            not_exported_tools.append(tool)
-            continue
+        except Exception as e:
+            log.error('Error exporting: %s on %s', tool, app.project.shortname, exc_info=True)
+            return None
+        else:
+            return app
 
-    if tools and len(not_exported_tools) < len(tools):
-        # If that fails, we need to let it fail
-        # there won't be a valid zip file for the user to get.
-        zip_and_cleanup(export_path, export_filename)
-    else:
-        log.error('Nothing to export')
-        return None
-
-    if not user:
-        log.info('No user. Skipping notification.')
-        return
-    if not send_email:
-        return
-
-    tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
-    instructions = tg.config.get('bulk_export_download_instructions', '')
-    instructions = instructions.format(
-            project=project.shortname,
-            filename=export_filename,
-            c=c,
-        )
-    tmpl_context = {
-        'instructions': instructions,
-        'project': project,
-        'tools': list(set(tools) - set(not_exported_tools)),
-        'not_exported_tools': not_exported_tools,
-    }
-    email = {
-        'sender': unicode(tg.config['forgemail.return_path']),
-        'fromaddr': unicode(tg.config['forgemail.return_path']),
-        'reply_to': unicode(tg.config['forgemail.return_path']),
-        'message_id': h.gen_message_id(),
-        'destinations': [unicode(user._id)],
-        'subject': u'Bulk export for project %s completed' % project.shortname,
-        'text': tmpl.render(tmpl_context),
-    }
-    mail_tasks.sendmail.post(**email)
-
-
-def create_export_dir(project, export_filename):
-    """Create temporary directory for export files"""
-    # Name temporary directory after project shortname,
-    # thus zipdir() will use proper prefix inside the archive.
-    tmp_dir_suffix = os.path.splitext(export_filename)[0]
-    path = os.path.join(project.bulk_export_path(), tmp_dir_suffix)
-    if not os.path.exists(path):
-        os.makedirs(path)
-    return path
-
-
-def zip_and_cleanup(export_path, export_filename):
-    """
-    Zip exported data for a given path and filename.
-    Copy it to proper location. Remove temporary files.
-    """
-    zipdir(export_path, os.path.join(os.path.dirname(export_path), export_filename))
-
-    # cleanup
-    shutil.rmtree(export_path)
+    def filter_successful(self, results):
+        return [result for result in results if result is not None]
