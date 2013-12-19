@@ -20,7 +20,16 @@ from pylons import tmpl_context as c
 from allura.lib.search import search
 
 
-def choices_for_filter():
+FACET_PARAMS = {
+    'facet': 'true',
+    'facet.field': ['milestone_s', 'status_s', 'assigned_to_s', 'reported_by_s'],
+    'facet.limit': -1,
+    'facet.sort': 'index',
+    'facet.mincount': 1,
+}
+
+
+def query_filter_choices():
     params = {
         'short_timeout': True,
         'fq': [
@@ -28,13 +37,15 @@ def choices_for_filter():
             'mount_point_s:%s' % c.app.config.options.mount_point
             ],
         'rows': 0,
-        'facet': 'true',
-        'facet.field': ['milestone_s', 'status_s', 'assigned_to_s', 'reported_by_s'],
-        'facet.limit': -1,
-        'facet.sort': 'index',
-        'facet.mincount': 1,
     }
+    params.update(FACET_PARAMS)
     result = search(None, **params)
+    return get_facets(result)
+
+
+def get_facets(solr_hit):
+    if solr_hit is None:
+        return {}
     def reformat(field):
         name, val = field
         name = name[:-2] if name != 'milestone_s' else '_milestone'
@@ -42,4 +53,4 @@ def choices_for_filter():
         for i in range(0, len(val), 2):
             new_val.append((val[i], val[i+1]))
         return name, new_val
-    return dict(map(reformat, result.facets['facet_fields'].iteritems()))
+    return dict(map(reformat, solr_hit.facets['facet_fields'].iteritems()))

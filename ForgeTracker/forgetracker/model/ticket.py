@@ -69,6 +69,7 @@ from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.tasks import mail_tasks
+from forgetracker import search as tsearch
 
 
 log = logging.getLogger(__name__)
@@ -1154,10 +1155,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             refined_sort += ',ticket_num_i asc'
         try:
             if q:
+                # also query for choices for filter options right away
+                params = kw.copy()
+                params.update(tsearch.FACET_PARAMS)
                 matches = search_artifact(
                     cls, q, short_timeout=True,
                     rows=limit, sort=refined_sort, start=start, fl='ticket_num_i',
-                    filter=filter, **kw)
+                    filter=filter, **params)
             else:
                 matches = None
             solr_error = None
@@ -1189,6 +1193,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     filter=json.dumps(filter),
+                    filter_choices=tsearch.get_facets(matches),
                     solr_error=solr_error, **kw)
 
     @classmethod
@@ -1207,6 +1212,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_sort = '%s %s' % (solr_col, sort_split[1])
         if not filter:
             result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
+            result['filter_choices'] = tsearch.query_filter_choices()
         else:
             result = cls.paged_search(app_config, user, search_query, filter=filter,
                                       sort=solr_sort, limit=limit, page=page, **kw)

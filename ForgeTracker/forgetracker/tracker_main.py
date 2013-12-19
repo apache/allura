@@ -666,7 +666,7 @@ class RootController(BaseController, FeedController):
         result['url_q'] = c.app.globals.not_closed_query
         result['deleted'] = deleted
         c.subscribe_form = W.subscribe_form
-        c.ticket_search_results = TicketSearchResults()
+        c.ticket_search_results = TicketSearchResults(result['filter_choices'])
         return result
 
     @without_trailing_slash
@@ -768,7 +768,7 @@ class RootController(BaseController, FeedController):
         result['help_msg'] = c.app.config.options.get(
             'TicketHelpSearch', '').strip()
         result['deleted'] = deleted
-        c.ticket_search_results = TicketSearchResults()
+        c.ticket_search_results = TicketSearchResults(result['filter_choices'])
         return result
 
     @with_trailing_slash
@@ -1863,6 +1863,6 @@ class MilestoneController(BaseController):
             total=progress['hits'],
             closed=progress['closed'],
             q=self.progress_key)
-        c.ticket_search_results = TicketSearchResults()
+        c.ticket_search_results = TicketSearchResults(result['filter_choices'])
         c.auto_resize_textarea = W.auto_resize_textarea
         return result

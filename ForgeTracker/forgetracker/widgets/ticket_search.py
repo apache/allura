@@ -20,7 +20,6 @@ import ew.jinja2_ew as ew
 
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
-from forgetracker.search import choices_for_filter
 
 
 
@@ -43,12 +42,12 @@ class TicketSearchResults(ew_core.SimpleForm):
         page_size = ffw.PageSize()
         lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
-    def __init__(self, *args, **kw):
+    def __init__(self, filters, *args, **kw):
         super(TicketSearchResults, self).__init__(*args, **kw)
         self.filters = {name: [{'value': val,
                             'label': '%s (%s)' % (val, count),
                             'selected': False} for val, count in field]
-                        for name, field in choices_for_filter().iteritems()}
+                        for name, field in filters.iteritems()}
 
     def resources(self):
         yield ew.JSLink('tracker_js/jquery.multiselect.min.js')
