@@ -22,7 +22,7 @@ from allura.lib.search import search
 
 FACET_PARAMS = {
     'facet': 'true',
-    'facet.field': ['milestone_s', 'status_s', 'assigned_to_s', 'reported_by_s'],
+    'facet.field': ['_milestone_s', 'status_s', 'assigned_to_s', 'reported_by_s'],
     'facet.limit': -1,
     'facet.sort': 'index',
     'facet.mincount': 1,
@@ -48,7 +48,7 @@ def get_facets(solr_hit):
         return {}
     def reformat(field):
         name, val = field
-        name = name[:-2] if name != 'milestone_s' else '_milestone'
+        name = name[:-2]
         new_val = []
         for i in range(0, len(val), 2):
             new_val.append((val[i], val[i+1]))

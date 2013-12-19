@@ -95,7 +95,7 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         'project_id_s:%s' % c.project._id,
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     for name, values in (filter or {}).iteritems():
-        field_name = name + '_s' if name != '_milestone' else 'milestone_s'
+        field_name = name + '_s'
         fq.append(' OR '.join('%s:%s' % (field_name, v) for v in values))
     if not history:
         fq.append('is_history_b:False')
