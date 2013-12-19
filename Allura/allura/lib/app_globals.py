@@ -469,7 +469,7 @@ class Globals(object):
         p1.wait()
         return server_name
 
-    @LazyProperty
+    @property
     def tool_icon_css(self):
         """Return a (css, md5) tuple, where ``css`` is a string of CSS
         containing class names and icon urls for every installed tool, and
