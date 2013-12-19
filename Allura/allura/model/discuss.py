@@ -531,7 +531,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
 
     @property
     def parent(self):
-        return self.query.get(_id=self.parent_id)
+        if self.parent_id:
+            return self.query.get(_id=self.parent_id)
 
     @property
     def subject(self):
