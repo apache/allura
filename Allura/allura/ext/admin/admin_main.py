@@ -612,41 +612,41 @@ class ProjectAdminController(BaseController):
                 options = c.project.app_config(p['mount_point']).options
                 options.mount_label = p['mount_label']
                 options.ordinal = int(p['ordinal'])
-        try:
-            if new and new.get('install'):
-                ep_name = new.get('ep_name', None)
-                if not ep_name:
-                    require_access(c.project, 'create')
-                    mount_point = new['mount_point'].lower() or h.nonce()
-                    M.AuditLog.log('create subproject %s', mount_point)
-                    h.log_action(log, 'create subproject').info(
-                        'create subproject %s', mount_point,
-                        meta=dict(mount_point=mount_point,name=new['mount_label']))
-                    sp = c.project.new_subproject(mount_point)
-                    sp.name = new['mount_label']
-                    sp.ordinal = int(new['ordinal'])
-                else:
-                    require_access(c.project, 'admin')
-                    installable_tools = AdminApp.installable_tools_for(c.project)
-                    if not ep_name.lower() in [t['name'].lower() for t in installable_tools]:
-                        flash('Installation limit exceeded.', 'error')
-                        return
-                    mount_point = new['mount_point'] or ep_name
-                    M.AuditLog.log('install tool %s', mount_point)
-                    h.log_action(log, 'install tool').info(
-                        'install tool %s', mount_point,
-                        meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
-                    c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
-        except forge_exc.ForgeError, exc:
-            flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
-                  'error')
+        if new and new.get('install'):
+            ep_name = new.get('ep_name', None)
+            if not ep_name:
+                require_access(c.project, 'create')
+                mount_point = new['mount_point'].lower() or h.nonce()
+                M.AuditLog.log('create subproject %s', mount_point)
+                h.log_action(log, 'create subproject').info(
+                    'create subproject %s', mount_point,
+                    meta=dict(mount_point=mount_point,name=new['mount_label']))
+                sp = c.project.new_subproject(mount_point)
+                sp.name = new['mount_label']
+                sp.ordinal = int(new['ordinal'])
+            else:
+                require_access(c.project, 'admin')
+                installable_tools = AdminApp.installable_tools_for(c.project)
+                if not ep_name.lower() in [t['name'].lower() for t in installable_tools]:
+                    flash('Installation limit exceeded.', 'error')
+                    return
+                mount_point = new['mount_point'] or ep_name
+                M.AuditLog.log('install tool %s', mount_point)
+                h.log_action(log, 'install tool').info(
+                    'install tool %s', mount_point,
+                    meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
+                c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
         g.post_event('project_updated')
 
     @h.vardec
     @expose()
     @require_post()
     def update_mounts(self, subproject=None, tool=None, new=None, **kw):
-        self._update_mounts(subproject, tool, new, **kw)
+        try:
+            self._update_mounts(subproject, tool, new, **kw)
+        except forge_exc.ForgeError, exc:
+            flash('%s: %s' % (exc.__class__.__name__, exc.args[0]),
+                  'error')
         redirect('tools')
 
     @expose('jinja:allura.ext.admin:templates/export.html')
@@ -773,9 +773,9 @@ class ProjectAdminRestController(BaseController):
             return {'success': False,
                     'info': 'Incorrect tool name, or limit is reached.'
                     }
-        if not h.re_tool_mount_point.match(mount_point) or c.project.app_instance(mount_point) is not None:
+        if c.project.app_instance(mount_point) is not None:
             return {'success': False,
-                    'info': 'Incorrect mount point name, or mount point already exists.'
+                    'info': 'Mount point already exists.',
                     }
 
         if order is None:
@@ -822,7 +822,12 @@ class ProjectAdminRestController(BaseController):
             'mount_point': mount_point,
             'mount_label': mount_label
         }
-        controller._update_mounts(new=data)
+        try:
+            controller._update_mounts(new=data)
+        except forge_exc.ForgeError as e:
+            return {'success': False,
+                    'info': str(e),
+                    }
         return {'success': True,
                 'info': 'Tool %s with mount_point %s and mount_label %s was created.'
                         % (tool, mount_point, mount_label)

@@ -1105,7 +1105,7 @@ class TestRestInstallTool(TestRestApiBase):
         }
         r = self.api_post('/rest/p/test/admin/install_tool/', **data)
         assert_equals(r.json['success'], False)
-        assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+        assert_equals(r.json['info'], 'Mount point "tickets_mount1" is invalid')
 
     def test_install_tool_ok(self):
         r = self.api_get('/rest/p/test/')
@@ -1143,7 +1143,7 @@ class TestRestInstallTool(TestRestApiBase):
             c.project.install_app('tickets', mount_point=data['mount_point'])
             r = self.api_post('/rest/p/test/admin/install_tool/', **data)
             assert_equals(r.json['success'], False)
-            assert_equals(r.json['info'], 'Incorrect mount point name, or mount point already exists.')
+            assert_equals(r.json['info'], 'Mount point already exists.')
 
     def test_tool_installation_limit(self):
         with mock.patch.object(ForgeWikiApp, 'max_instances') as mi:
