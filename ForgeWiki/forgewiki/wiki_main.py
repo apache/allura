@@ -228,12 +228,6 @@ class ForgeWikiApp(Application):
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
-        try:
-            page = request.path_info.split(self.url)[-1].split('/')[-2]
-            page = h.really_unicode(page)
-            page = WM.Page.query.find(dict(app_config_id=self.config._id, title=page, deleted=False)).first()
-        except:
-            page = None
         return self.create_common_wiki_menu(has_access(self, 'create'),c.app.url,'add_wiki_page')
 
     def install(self, project):
