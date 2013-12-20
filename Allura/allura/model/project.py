@@ -257,7 +257,11 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         return result
 
     def troves_by_type(self, trove_type):
-        return TroveCategory.query.find({'_id':{'$in':getattr(self,'trove_%s' % trove_type)}}).all()
+        troves = getattr(self, 'trove_%s' % trove_type)
+        if troves:
+            return TroveCategory.query.find({'_id':{'$in': troves}}).all()
+        else:
+            return []
 
     def all_troves(self):
         '''
