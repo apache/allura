@@ -37,7 +37,7 @@ from allura.lib import helpers as h
 from allura.lib.security import require, has_access, require_access
 from allura import model
 from allura.controllers import BaseController
-from allura.lib.decorators import require_post, event_handler
+from allura.lib.decorators import require_post, event_handler, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
 
 log = logging.getLogger(__name__)
@@ -369,22 +369,15 @@ class Application(object):
         :attr:`icons`.
 
         """
-        cached = getattr(cls, '_icon_url_cache', {}).get(size)
-        if cached is not None:
-            return cached
-
-        if not hasattr(cls, '_icon_url_cache'):
-            setattr(cls, '_icon_url_cache', {})
-
         resource, url = cls.icons.get(size), ''
         if resource:
             resource_path = os.path.join('nf', resource)
             url = (g.forge_static(resource) if cls.has_resource(resource_path)
                     else g.theme_href(resource))
-        cls._icon_url_cache[size] = url
         return url
 
     @classmethod
+    @memoize
     def has_resource(cls, resource_path):
         """Determine whether this Application has the resource pointed to by
         ``resource_path``.
