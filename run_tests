@@ -20,12 +20,26 @@
 import argparse
 from copy import copy
 from glob import glob
+import multiprocessing
 from multiprocessing.pool import ThreadPool
 import subprocess
 import sys
 import threading
 import textwrap
 
+CPUS = multiprocessing.cpu_count()
+CONCURRENT_SUITES = (CPUS // 4) or CPUS
+CONCURRENT_TESTS = (CPUS // CONCURRENT_SUITES) or 1
+PROC_TIMEOUT = 120
+
+ALT_PKG_PATHS = {
+        'Allura': 'allura/tests/',
+        }
+
+NOT_MULTIPROC_SAFE = [
+        'ForgeGit',
+        'ForgeSVN',
+        ]
 
 def run_one(cmd, **popen_kwargs):
     print '{} running {} {}'.format(threading.current_thread(), cmd, popen_kwargs)
@@ -76,7 +90,7 @@ def run_many(cmds, processes=None):
 
 
 def get_packages():
-    packages = [p.split('/')[0] for p in glob("*/setup.py")]
+    packages = sorted([p.split('/')[0] for p in glob("*/setup.py")])
 
     # make it first, to catch syntax errors
     packages.remove('AlluraTest')
@@ -95,16 +109,26 @@ def check_packages(packages):
 
 
 def run_tests_in_parallel(options, nosetests_args):
+    def get_pkg_path(pkg):
+        return ALT_PKG_PATHS.get(pkg, '')
+    def get_multiproc_args(pkg):
+        return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
+                    procs_per_suite=options.concurrent_tests,
+                    proc_timeout=PROC_TIMEOUT)
+                if pkg not in NOT_MULTIPROC_SAFE else '')
+
     cmds = []
     for package in check_packages(options.packages):
         cover_package = package.lower()
         our_nosetests_args = copy(nosetests_args)
         our_nosetests_args.append('--cover-package={}'.format(cover_package))
-        cmd = "nosetests {nosetests_args}".format(
+        cmd = "nosetests {pkg_path} {nosetests_args} {multiproc_args}".format(
+            pkg_path=get_pkg_path(package),
             nosetests_args=' '.join(our_nosetests_args),
+            multiproc_args=get_multiproc_args(package),
         )
         cmds.append((cmd, dict(cwd=package)))
-    return run_many(cmds, processes=options.num_processes)
+    return run_many(cmds, processes=options.concurrent_suites)
 
 
 def parse_args():
@@ -113,8 +137,12 @@ def parse_args():
                                         All additional arguments are passed along to nosetests
                                           (e.g. -v --with-coverage)
                                         Note: --cover-package will be set automatically to the appropriate value'''))
-    parser.add_argument('-n', help='Number of processes to use at once. Default: # CPUs',
-                        dest='num_processes', type=int, default=None)
+    parser.add_argument('-n', help='Number of test suites to run concurrently in separate '
+                                   'processes. Default: # CPUs / 4',
+                        dest='concurrent_suites', type=int, default=CONCURRENT_SUITES)
+    parser.add_argument('-m', help='Number of tests to run concurrently in separate '
+                                   'processes, per suite. Default: # CPUs / # concurrent suites',
+                        dest='concurrent_tests', type=int, default=CONCURRENT_TESTS)
     parser.add_argument('-p', help='List of packages to run tests on. Default: all',
                         dest='packages', choices=get_packages(), default=get_packages(),
                         nargs='+')
