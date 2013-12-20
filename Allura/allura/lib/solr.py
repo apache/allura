@@ -114,6 +114,7 @@ class MockSOLR(object):
         pass
 
     def search(self, q, fq=None, **kw):
+        if q is None: q = ''  # shlex will hang on None
         if isinstance(q, unicode):
             q = q.encode('latin-1')
         # Parse query
