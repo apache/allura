@@ -39,10 +39,14 @@ from forgewiki import model as WM
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
-                                     description='Count number of expensive calls (mongo, markdown, etc) for a standard page.')
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter,
+        description='Count number of expensive calls (mongo, markdown, etc) for a standard page.\n'
+                    'Currently its a _discuss URL with a few posts on it.  This exercises core logic\n'
+                    '(project & tool lookup, security, discussion thread, main template, etc) but\n'
+                    'intentionally avoids most tool-specific code.')
     parser.add_argument('--verbose', '-v', action='store_true', default=False,
-                        help='Show call details')
+                        help='Show call details.  Note that Timers with debug_each_call=False (like ming\'s Cursor.next) are not displayed in verbose mode (but they are counted).')
     parser.add_argument('--debug-html', action='store_true', default=False,
                         help='Save HTML responses as local files')
     parser.add_argument('--data-file', default='call_counts.csv', type=argparse.FileType('a'),
