@@ -17,10 +17,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import argparse
 import json
 import logging
 import random
 import string
+import csv
 
 from pylons import tmpl_context as c
 from testfixtures import LogCapture
@@ -36,12 +38,32 @@ from allura.tests.decorators import patch_middleware_config
 from forgewiki import model as WM
 
 
-def main():
+def parse_args():
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+                                     description='Count number of expensive calls (mongo, markdown, etc) for a standard page.')
+    parser.add_argument('--verbose', '-v', action='store_true', default=False,
+                        help='Show call details')
+    parser.add_argument('--debug-html', action='store_true', default=False,
+                        help='Save HTML responses as local files')
+    parser.add_argument('--data-file', default='call_counts.csv', type=argparse.FileType('a'),
+                        help='CSV file that is appended to')
+    parser.add_argument('--id', default='',
+                        help='An identifier for this run.  Examples:\n'
+                             '`git rev-parse --short HEAD` for current hash\n'
+                             '`git log -1 --oneline` for hash + message')
+    return parser.parse_args()
+
+
+def main(args):
     test = TestController()
     setup(test)
+
     url = generate_wiki_thread(test)
     ThreadLocalODMSession.close_all()  # make sure ODM sessions won't get re-used
-    load_page(test, url)
+
+    counts = count_page(test, url, verbose=args.verbose, debug_html=args.debug_html)
+    print json.dumps(counts)
+    write_csv(counts, args.id, args.data_file)
     test.tearDown()
 
 
@@ -67,7 +89,7 @@ def generate_wiki_thread(test):
 
     page = WM.Page.query.get(app_config_id=app.config._id, title='Home')
     thread = page.discussion_thread
-    # create 3 posts by 2 users
+    # create a few posts by a few users
     with push_config(c, user=M.User.query.get(username='test-admin'),
                         app=app,
                         project=project):
@@ -75,6 +97,8 @@ def generate_wiki_thread(test):
         thread.add_post(text="But it's not **super** helpful")
         with push_config(c, user=M.User.query.get(username='test-user')):
             thread.add_post(text='I disagree')
+        with push_config(c, user=M.User.query.get(username='test-user-1')):
+            thread.add_post(text='But what about foo?')
 
     ThreadLocalODMSession.flush_all()
 
@@ -82,7 +106,7 @@ def generate_wiki_thread(test):
     return url
 
 
-def load_page(test, url, verbose=False, debug_html=False):
+def count_page(test, url, verbose=False, debug_html=False):
 
     with LogCapture('stats') as stats, LogCapture('timermiddleware') as calls:
         resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
@@ -97,10 +121,24 @@ def load_page(test, url, verbose=False, debug_html=False):
         for r in calls.records:
             print r.getMessage()
 
-    for r in stats.records:
-        timings = json.loads(r.getMessage())
-        print json.dumps(timings['call_counts'])
+    assert len(stats.records) == 1
+    timings = json.loads(stats.records[0].getMessage())
+    del timings['call_counts']['total']  # total is always 1, which is misleading
+    return timings['call_counts']
+
+
+def write_csv(counts, id, data_file):
+    cols = sorted(counts.keys())
+    row = counts
+    if id:
+        cols = ['id'] + cols
+        row = dict(counts, id=id)
+    csv_out = csv.DictWriter(data_file, cols)
+    if data_file.tell() == 0:
+        csv_out.writeheader()
+    csv_out.writerow(row)
+    data_file.close()
 
 
 if __name__ == '__main__':
-    main()
+    main(parse_args())
