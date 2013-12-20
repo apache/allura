@@ -21,6 +21,10 @@
 
 import alluratest.controller
 
+# HACK: prevents test suite from crashing when running under the nose
+#       MultiProcessing plugin
+import socket
+socket.setdefaulttimeout(None)
 
 class TestController(alluratest.controller.TestController):
     """
