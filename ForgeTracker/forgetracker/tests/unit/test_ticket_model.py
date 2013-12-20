@@ -19,6 +19,7 @@ from pylons import tmpl_context as c
 from datetime import datetime
 import urllib2
 
+import mock
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 from ming import schema
@@ -310,3 +311,24 @@ class TestTicketModel(TrackerTestWithModel):
         assert_in('votes_up', json_keys)  # VotableArtifact
         assert_in('ticket_num', json_keys)  # Ticket
         assert ticket.__json__()['assigned_to'] is None
+
+    @mock.patch('forgetracker.model.ticket.tsearch')
+    @mock.patch.object(Ticket, 'paged_search')
+    @mock.patch.object(Ticket, 'paged_query')
+    def test_paged_query_or_search(self, query, search, tsearch):
+        app_cfg, user = mock.Mock(), mock.Mock()
+        mongo_query = 'mongo query'
+        solr_query = 'solr query'
+        kw = {'kw1': 'test1', 'kw2': 'test2'}
+        filter = None
+        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter, **kw)
+        query.assert_called_once_with(app_cfg, user, mongo_query, sort=None, limit=None, page=0, **kw)
+        tsearch.query_filter_choices.assert_called_once()
+        assert_equal(search.call_count, 0)
+        query.reset_mock(), search.reset_mock(), tsearch.reset_mock()
+
+        filter = {'status': 'unread'}
+        Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter, **kw)
+        search.assert_called_once_with(app_cfg, user, solr_query, filter=filter, sort=None, limit=None, page=0, **kw)
+        assert_equal(query.call_count, 0)
+        assert_equal(tsearch.query_filter_choices.call_count, 0)
