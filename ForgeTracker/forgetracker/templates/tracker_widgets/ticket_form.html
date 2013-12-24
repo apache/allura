@@ -23,7 +23,7 @@
     <div id="new-ticket-help-msg" class="grid-19 info">{{g.markdown.convert(help_msg)}}</div>
   {% endif %}
   <div class="grid-18">
-      {{widget.display_field_by_name('summary')|safe}}
+      <label class="new-ticket-title">Create Ticket:</label>{{widget.display_field_by_name('summary')|safe}}
   </div>
     {% if widget.fields['_milestone'] %}
       <div class="grid-6">

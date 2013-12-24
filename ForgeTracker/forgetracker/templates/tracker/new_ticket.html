@@ -35,11 +35,19 @@
 <style type="text/css">
   input[name='ticket_form.summary']{
     top: 5px;
+    left: 100px;
     position: absolute;
     z-index: 21;
   }
   .markdown_edit textarea {
     height: 100px;
+  }
+
+  .new-ticket-title {
+    top: 9px;
+    position: absolute;
+    z-index: 21;
+    color: #FFFFFF !important;
   }
 </style>
 {% endblock %}
@@ -47,7 +55,7 @@
 {% block extra_js %}
 <script type="text/javascript">
   $(document).ready(function(){
-    $('input[name="ticket_form.summary"]').focus();
+    $('input[name="q"]').focus();
   });
 </script>
 {% endblock %}
