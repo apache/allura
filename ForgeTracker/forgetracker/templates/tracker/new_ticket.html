@@ -55,7 +55,8 @@
 {% block extra_js %}
 <script type="text/javascript">
   $(document).ready(function(){
-    $('input[name="q"]').focus();
+    $('input[name="ticket_form.summary"]').focus();
   });
+  $('input[name="ticket_form.summary"]').keypress(function(event) { return event.keyCode != 13; });
 </script>
 {% endblock %}
