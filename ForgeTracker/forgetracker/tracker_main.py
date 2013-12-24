@@ -1726,7 +1726,7 @@ class MilestoneController(BaseController):
         self.root = root
         self.field = fld
         self.milestone = m
-        self.progress_key = '%s:%s' % (fld.name, m.name)
+        self.progress_key = '%s:%s' % (fld.name, m.name.replace(':', '\:'))
         self.mongo_query = {
             'custom_fields.%s' % fld.name: m.name }
 
