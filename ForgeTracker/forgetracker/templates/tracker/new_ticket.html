@@ -25,7 +25,7 @@
 {% block edit_box %}
 <div class="editbox">
   <div class="form_holder">
-      {{c.ticket_form.display(action=action, value=dict(description=description, 
+      {{c.ticket_form.display(action=action, value=dict(description=description,
                               summary=summary, labels=labels), help_msg=help_msg)}}
   </div>
 </div>
@@ -33,21 +33,17 @@
 
 {% block extra_css %}
 <style type="text/css">
-  input[name='ticket_form.summary']{
-    top: 5px;
-    left: 100px;
-    position: absolute;
-    z-index: 21;
-  }
   .markdown_edit textarea {
     height: 100px;
   }
 
   .new-ticket-title {
-    top: 9px;
+    top: 5px;
     position: absolute;
     z-index: 21;
-    color: #FFFFFF !important;
+  }
+  .new-ticket-title label {
+    color: #ffffff;
   }
 </style>
 {% endblock %}
