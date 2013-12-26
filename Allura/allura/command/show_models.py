@@ -228,24 +228,11 @@ class EnsureIndexCommand(base.Command):
             db = odm_session.impl.db
             for name, indexes in db_indexes.iteritems():
                 self._update_indexes(db[name], indexes)
-        base.log.info('Updating indexes for project DBs')
-        configured_dbs = set()
-        for projects in utils.chunked_find(M.Project):
-            for p in projects:
-                db = p.database_uri
-                if db in configured_dbs: continue
-                configured_dbs.add(db)
-                c.project = p
-                db = M.project_doc_session.db
-                base.log.info('... DB: %s', db)
-                for name, indexes in project_indexes.iteritems():
-                    self._update_indexes(db[name], indexes)
-        if not configured_dbs:
-            # e.g. during bootstrap with no projects
-            db = M.project_doc_session.db
-            base.log.info('... default DB: %s', db)
-            for name, indexes in project_indexes.iteritems():
-                self._update_indexes(db[name], indexes)
+        base.log.info('Updating indexes for project DB')
+        db = M.project_doc_session.db
+        base.log.info('... DB: %s', db)
+        for name, indexes in project_indexes.iteritems():
+            self._update_indexes(db[name], indexes)
         base.log.info('Done updating indexes')
 
     def _update_indexes(self, collection, indexes):

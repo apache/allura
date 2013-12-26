@@ -188,7 +188,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     export_controlled=FieldProperty(bool, if_missing=False)
     export_control_type=FieldProperty(str, if_missing=None)
     database=FieldProperty(S.Deprecated)
-    database_uri=FieldProperty(str)
+    database_uri=FieldProperty(S.Deprecated)
     is_root=FieldProperty(bool)
     acl = FieldProperty(ACL(permissions=_perms_init))
     neighborhood_invitations=FieldProperty([S.ObjectId])
@@ -233,7 +233,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         return self.parent_project
 
     @classmethod
-    def default_database_uri(cls, shortname):
+    def database_uri(cls):
         return config.get('ming.project.uri')
 
     @LazyProperty

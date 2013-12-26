@@ -431,14 +431,12 @@ class ProjectRegistrationProvider(object):
         from allura import model as M
         shortname = '--init--'
         name = 'Home Project for %s' % neighborhood.name
-        database_uri = M.Project.default_database_uri(shortname)
         p = M.Project(neighborhood_id=neighborhood._id,
                     shortname=shortname,
                     name=name,
                     short_description='',
                     description=('You can edit this description in the admin page'),
                     homepage_title = '# ' + name,
-                    database_uri=database_uri,
                     last_updated = datetime.utcnow(),
                     is_nbhd_project=True,
                     is_root=True)
@@ -514,7 +512,6 @@ class ProjectRegistrationProvider(object):
                     short_description='',
                     description=('You can edit this description in the admin page'),
                     homepage_title=shortname,
-                    database_uri=M.Project.default_database_uri(shortname),
                     last_updated = datetime.utcnow(),
                     is_nbhd_project=False,
                     is_root=True)
@@ -620,7 +617,6 @@ class ProjectRegistrationProvider(object):
             neighborhood_id=project.neighborhood_id,
             shortname=shortname,
             name=project_name or name,
-            database_uri=project.database_uri,
             last_updated = datetime.utcnow(),
             is_root=False,
             ordinal=ordinal,
