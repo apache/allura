@@ -38,7 +38,7 @@ c_project =  main_db.project
 c_user = main_db.user
 c_project_role = main_db.project_role
 c.project = Object(
-    database_uri=c_project.find().next()['database_uri'])
+    database_uri=M.Project.database_uri())
 
 project_db = M.project_doc_session.db
 c_app_config = project_db.config
@@ -171,7 +171,7 @@ def _project_role(project_id, name=None, user_id=None):
         roles=[])
     c_project_role.save(doc)
     return doc
-                                 
+
 
 def simple_acl_update(doc, collection_name):
     '''Update dict-style to list-style ACL'''
