@@ -15,14 +15,14 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+import re
+import sys
 import logging
-from tg import config
 from ming.orm import session
 
 from . import base
 
 from allura import model as M
-from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +33,33 @@ class CreateTroveCategoriesCommand(base.Command):
     summary = 'Remove any existing trove categories and load new ones'
     parser = base.Command.standard_parser(verbose=True)
 
-    def create_trove_cat(self,cat_data):
-        M.TroveCategory(trove_cat_id=cat_data[0], trove_parent_id=cat_data[1],
-                        shortname=cat_data[2], fullname=cat_data[3], fullpath=cat_data[4],
-                        show_as_skill=cat_data[5])
+    # NOTE: order is important
+    # To add new migration append it's name to following list,
+    # and cretate method m__<migration_name>
+    migrations = [
+        'add_agpl_and_lppl',
+        'sync',
+        'set_parent_only',
+        'add_license',
+        'set_show_as_skills',
+    ]
+
+    def create_trove_cat(self, cat_data):
+        data = {'trove_cat_id': cat_data[0],
+                'trove_parent_id': cat_data[1],
+                'shortname': cat_data[2],
+                'fullname': cat_data[3],
+                'fullpath': cat_data[4]}
+        if len(cat_data) > 5:
+            data['show_as_skill'] = cat_data[5]
+        M.TroveCategory(**data)
+
+    def update_trove_cat(self, trove_cat_id, attr_dict):
+        t = M.TroveCategory.query.get(trove_cat_id=trove_cat_id)
+        if not t:
+            sys.exit("Couldn't find TroveCategory with trove_cat_id=%s" % trove_cat_id)
+        for k, v in attr_dict.iteritems():
+            setattr(t, k, v)
 
     def command(self):
         self.basic_setup()
@@ -671,7 +694,7 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat((116,113,"cdaudio","CD Audio","Topic :: Multimedia :: Sound/Audio :: CD Audio",True))
         self.create_trove_cat((117,116,"cdplay","CD Playing","Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Playing",True))
         self.create_trove_cat((99,18,"multimedia","Multimedia","Topic :: Multimedia",True))
-        self.create_trove_cat((670,14,"agpl","Affero GNU Public License ","License :: OSI-Approved Open Source :: Affero GNU Public License",True))
+        self.create_trove_cat((670,14,"agpl","Affero GNU Public License","License :: OSI-Approved Open Source :: Affero GNU Public License",True))
         self.create_trove_cat((862,14,"lppl","LaTeX Project Public License","License :: OSI-Approved Open Source :: LaTeX Project Public License",True))
         self.create_trove_cat((655,432,"win64","64-bit MS Windows","Operating System :: Grouping and Descriptive Categories :: 64-bit MS Windows",True))
         self.create_trove_cat((657,418,"vista","Vista","Operating System :: Modern (Vendor-Supported) Desktop Operating Systems :: Vista",True))
@@ -684,3 +707,324 @@ class CreateTroveCategoriesCommand(base.Command):
         self.create_trove_cat((866,534,"secpros","Security Professionals","Intended Audience :: by End-User Class :: Security Professionals",False))
         self.create_trove_cat((867,535,"secindustry","Security","Intended Audience :: by Industry or Sector :: Security",False))
         session(M.TroveCategory).flush()
+
+        for name in self.migrations:
+            getattr(self, 'm__' + name)()
+            session(M.TroveCategory).flush()
+
+    def m__add_agpl_and_lppl(self):
+        M.TroveCategory(trove_cat_id=670,
+                        trove_parent_id=14,
+                        shortname="agpl",
+                        fullname="Affero GNU Public License",
+                        fullpath="License :: OSI-Approved Open Source :: Affero GNU Public License")
+        M.TroveCategory(trove_cat_id=862,
+                        trove_parent_id=14,
+                        shortname="lppl",
+                        fullname="LaTeX Project Public License",
+                        fullpath="License :: OSI-Approved Open Source :: LaTeX Project Public License")
+        M.TroveCategory(trove_cat_id=655,
+                        trove_parent_id=432,
+                        shortname="win64",
+                        fullname="64-bit MS Windows",
+                        fullpath="Operating System :: Grouping and Descriptive Categories :: 64-bit MS Windows")
+        M.TroveCategory(trove_cat_id=657,
+                        trove_parent_id=418,
+                        shortname="vista",
+                        fullname="Vista",
+                        fullpath="Operating System :: Modern (Vendor-Supported) Desktop Operating Systems :: Vista")
+        M.TroveCategory(trove_cat_id=851,
+                        trove_parent_id=418,
+                        shortname="win7",
+                        fullname="Windows 7",
+                        fullpath="Operating System :: Modern (Vendor-Supported) Desktop Operating Systems :: Windows 7")
+        M.TroveCategory(trove_cat_id=728,
+                        trove_parent_id=315,
+                        shortname="android",
+                        fullname="Android",
+                        fullpath="Operating System :: Handheld/Embedded Operating Systems :: Android")
+        M.TroveCategory(trove_cat_id=780,
+                        trove_parent_id=315,
+                        shortname="ios",
+                        fullname="Apple iPhone",
+                        fullpath="Operating System :: Handheld/Embedded Operating Systems :: Apple iPhone")
+        M.TroveCategory(trove_cat_id=863,
+                        trove_parent_id=534,
+                        shortname="architects",
+                        fullname="Architects",
+                        fullpath="Intended Audience :: by End-User Class :: Architects")
+        M.TroveCategory(trove_cat_id=864,
+                        trove_parent_id=534,
+                        shortname="auditors",
+                        fullname="Auditors",
+                        fullpath="Intended Audience :: by End-User Class :: Auditors")
+        M.TroveCategory(trove_cat_id=865,
+                        trove_parent_id=534,
+                        shortname="testers",
+                        fullname="Testers",
+                        fullpath="Intended Audience :: by End-User Class :: Testers")
+        M.TroveCategory(trove_cat_id=866,
+                        trove_parent_id=534,
+                        shortname="secpros",
+                        fullname="Security Professionals",
+                        fullpath="Intended Audience :: by End-User Class :: Security Professionals")
+        M.TroveCategory(trove_cat_id=867,
+                        trove_parent_id=535,
+                        shortname="secindustry",
+                        fullname="Security",
+                        fullpath="Intended Audience :: by Industry or Sector :: Security")
+
+    def m__sync(self):
+        self.create_trove_cat((639,14,"cpal","Common Public Attribution License 1.0 (CPAL)","License :: OSI-Approved Open Source :: Common Public Attribution License 1.0 (CPAL)"))
+        self.create_trove_cat((640,99,"dvd","DVD","Topic :: Multimedia :: DVD"))
+        self.create_trove_cat((641,576,"workflow","Workflow","Topic :: Office/Business :: Enterprise :: Workflow"))
+        self.create_trove_cat((642,292,"linuxdrivers","Linux","Topic :: System :: Hardware :: Hardware Drivers :: Linux"))
+        self.create_trove_cat((643,582,"uml","UML","Topic :: Software Development :: Design :: UML"))
+        self.create_trove_cat((644,92,"cms","CMS Systems","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CMS Systems"))
+        self.create_trove_cat((645,92,"blogging","Blogging","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Blogging"))
+        self.create_trove_cat((646,52,"subversion","Subversion","Topic :: Software Development :: Version Control :: Subversion"))
+        self.create_trove_cat((647,612,"webservices","Web Services","Topic :: Formats and Protocols :: Protocols :: Web Services"))
+        self.create_trove_cat((648,554,"json","JSON","Topic :: Formats and Protocols :: Data Formats :: JSON"))
+        self.create_trove_cat((649,100,"imagegalleries","Image Galleries","Topic :: Multimedia :: Graphics :: Image Galleries"))
+        self.create_trove_cat((650,612,"ajax","AJAX","Topic :: Formats and Protocols :: Protocols :: AJAX"))
+        self.create_trove_cat((651,92,"wiki","Wiki","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Wiki"))
+        self.create_trove_cat((652,45,"appservers","Application Servers","Topic :: Software Development :: Application Servers"))
+        self.create_trove_cat((653,20,"rssreaders","RSS Feed Readers","Topic :: Communications :: RSS Feed Readers"))
+        self.create_trove_cat((654,129,"ecommerce","E-Commerce / Shopping","Topic :: Office/Business :: E-Commerce / Shopping"))
+        self.create_trove_cat((656,99,"htpc","Home Theater PC","Topic :: Multimedia :: Home Theater PC"))
+        self.create_trove_cat((658,22,"jabber","Jabber","Topic :: Communications :: Chat :: Jabber"))
+        self.create_trove_cat((659,576,"enterprisebpm","Business Performance Management","Topic :: Office/Business :: Enterprise :: Business Performance Management"))
+        self.create_trove_cat((660,576,"enterprisebi","Business Intelligence","Topic :: Office/Business :: Enterprise :: Business Intelligence"))
+        self.create_trove_cat((661,75,"budgetingandforecasting","Budgeting and Forecasting","Topic :: Office/Business :: Financial :: Budgeting and Forecasting"))
+        self.create_trove_cat((662,497,"ingres","Ingres","Database Environment :: Network-based DBMS :: Ingres"))
+        self.create_trove_cat((663,92,"socialnetworking","Social Networking","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Social Networking"))
+        self.create_trove_cat((664,199,"virtualization","Virtualization","Operating System :: Virtualization"))
+        self.create_trove_cat((665,664,"vmware","VMware","Operating System :: Virtualization :: VMware"))
+        self.create_trove_cat((666,664,"xen","Xen","Operating System :: Virtualization :: Xen"))
+        self.create_trove_cat((667,247,"voip","VoIP","Topic :: Communications :: Telephony :: VoIP"))
+        self.create_trove_cat((668,92,"ticketing","Ticketing Systems","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Ticketing Systems"))
+        self.create_trove_cat((669,315,"blackberryos","Blackberry RIM OS","Operating System :: Handheld/Embedded Operating Systems :: Blackberry RIM OS"))
+        self.create_trove_cat((671,14,"ms-pl","Microsoft Public License","License :: OSI-Approved Open Source :: Microsoft Public License"))
+        self.create_trove_cat((672,14,"ms-rl","Microsoft Reciprocal License","License :: OSI-Approved Open Source :: Microsoft Reciprocal License"))
+        self.create_trove_cat((673,576,"bsm","Business Service Management","Topic :: Office/Business :: Enterprise :: Business Service Management"))
+        self.create_trove_cat((674,673,"servicesupport","Service Support","Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Support"))
+        self.create_trove_cat((675,673,"serviceassurance","Service Assurance","Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Assurance"))
+        self.create_trove_cat((676,673,"serviceautomation","Service Automation","Topic :: Office/Business :: Enterprise :: Business Service Management :: Service Automation"))
+        self.create_trove_cat((677,14,"artisticv2","Artistic License 2.0","License :: OSI-Approved Open Source :: Artistic License 2.0"))
+        self.create_trove_cat((678,14,"boostlicense","Boost Software License (BSL1.0)","License :: OSI-Approved Open Source :: Boost Software License (BSL1.0)"))
+        self.create_trove_cat((679,14,"gplv3","GNU General Public License version 3.0 (GPLv3)","License :: OSI-Approved Open Source :: GNU General Public License version 3.0 (GPLv3)"))
+        self.create_trove_cat((680,14,"lgplv3","GNU Library or ""Lesser"" General Public License version 3.0 (LGPLv3)","License :: OSI-Approved Open Source :: GNU Library or ""Lesser"" General Public License version 3.0 (LGPLv3)"))
+        self.create_trove_cat((681,14,"isclicense","ISC License","License :: OSI-Approved Open Source :: ISC License"))
+        self.create_trove_cat((682,14,"multicslicense","Multics License","License :: OSI-Approved Open Source :: Multics License"))
+        self.create_trove_cat((683,14,"ntplicense","NTP License","License :: OSI-Approved Open Source :: NTP License"))
+        self.create_trove_cat((684,14,"nposl3","Non-Profit Open Software License 3.0 (Non-Profit OSL 3.0)","License :: OSI-Approved Open Source :: Non-Profit Open Software License 3.0 (Non-Profit OSL 3.0)"))
+        self.create_trove_cat((685,14,"rpl15","Reciprocal Public License 1.5 (RPL1.5)","License :: OSI-Approved Open Source :: Reciprocal Public License 1.5 (RPL1.5)"))
+        self.create_trove_cat((686,14,"splicense2","Simple Public License 2.0","License :: OSI-Approved Open Source :: Simple Public License 2.0"))
+        self.create_trove_cat((687,673,"cmdb","Configuration Management Database (CMDB)","Topic :: Office/Business :: Enterprise :: Business Service Management :: Configuration Management Database (CMDB)"))
+        self.create_trove_cat((688,18,"mobileapps","Mobile","Topic :: Mobile"))
+        self.create_trove_cat((689,315,"winmobile","Windows Mobile","Operating System :: Handheld/Embedded Operating Systems :: Windows Mobile"))
+        self.create_trove_cat((690,315,"brew","BREW (Binary Runtime Environment for Wireless)","Operating System :: Handheld/Embedded Operating Systems :: BREW (Binary Runtime Environment for Wireless)"))
+        self.create_trove_cat((691,315,"j2me","J2ME (Java Platform, Micro Edition)","Operating System :: Handheld/Embedded Operating Systems :: J2ME (Java Platform, Micro Edition)"))
+        self.create_trove_cat((692,315,"maemo","Maemo","Operating System :: Handheld/Embedded Operating Systems :: Maemo"))
+        self.create_trove_cat((693,315,"limo","LiMo (Linux Mobile)","Operating System :: Handheld/Embedded Operating Systems :: LiMo (Linux Mobile)"))
+        self.create_trove_cat((694,160,"clean","Clean","Programming Language :: Clean"))
+        self.create_trove_cat((695,160,"lasso","Lasso","Programming Language :: Lasso"))
+        self.create_trove_cat((696,160,"turing","Turing","Programming Language :: Turing"))
+        self.create_trove_cat((697,160,"glsl","GLSL (OpenGL Shading Language)","Programming Language :: GLSL (OpenGL Shading Language)"))
+        self.create_trove_cat((698,160,"lazarus","Lazarus","Programming Language :: Lazarus"))
+        self.create_trove_cat((699,160,"freepascal","Free Pascal","Programming Language :: Free Pascal"))
+        self.create_trove_cat((700,160,"scriptol","Scriptol","Programming Language :: Scriptol"))
+        self.create_trove_cat((701,160,"pl-i","PL/I (Programming Language One)","Programming Language :: PL/I (Programming Language One)"))
+        self.create_trove_cat((702,160,"oz","Oz","Programming Language :: Oz"))
+        self.create_trove_cat((703,160,"limbo","Limbo","Programming Language :: Limbo"))
+        self.create_trove_cat((704,160,"scala","Scala","Programming Language :: Scala"))
+        self.create_trove_cat((705,160,"blitzmax","BlitzMax","Programming Language :: BlitzMax"))
+        self.create_trove_cat((706,160,"xbaseclipper","XBase/Clipper","Programming Language :: XBase/Clipper"))
+        self.create_trove_cat((707,160,"curl","Curl","Programming Language :: Curl"))
+        self.create_trove_cat((708,160,"flex","Flex","Programming Language :: Flex"))
+        self.create_trove_cat((709,160,"mathematica","Mathematica","Programming Language :: Mathematica"))
+        self.create_trove_cat((710,160,"visualdataflex","Visual DataFlex","Programming Language :: Visual DataFlex"))
+        self.create_trove_cat((711,160,"fenix","Fenix","Programming Language :: Fenix"))
+        self.create_trove_cat((713,456,"vexi","Vexi","User Interface :: Graphical :: Vexi"))
+        self.create_trove_cat((714,160,"kaya","Kaya","Programming Language :: Kaya"))
+        self.create_trove_cat((715,160,"transcript-revolution","Transcript/Revolution","Programming Language :: Transcript/Revolution"))
+        self.create_trove_cat((716,160,"haXe","haXe","Programming Language :: haXe"))
+        self.create_trove_cat((717,160,"proglangmeta","Project is a programming language","Programming Language :: Project is a programming language"))
+        self.create_trove_cat((718,634,"msxb360","Microsoft Xbox 360","Operating System :: Other Operating Systems :: Console-based Platforms :: Microsoft Xbox 360"))
+        self.create_trove_cat((719,634,"nintendogc","Nintendo GameCube","Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo GameCube"))
+        self.create_trove_cat((720,634,"nintendowii","Nintendo Wii","Operating System :: Other Operating Systems :: Console-based Platforms :: Nintendo Wii"))
+        self.create_trove_cat((721,634,"sonyps3","Sony PlayStation 3","Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation 3"))
+        self.create_trove_cat((722,634,"sonypsp","Sony PlayStation Portable (PSP)","Operating System :: Other Operating Systems :: Console-based Platforms :: Sony PlayStation Portable (PSP)"))
+        self.create_trove_cat((723,160,"scilab","Scilab","Programming Language :: Scilab"))
+        self.create_trove_cat((724,160,"scicos","Scicos","Programming Language :: Scicos"))
+        self.create_trove_cat((725,534,"management","Management","Intended Audience :: by End-User Class :: Management"))
+        self.create_trove_cat((726,71,"edadministration","Administration","Topic :: Education :: Administration"))
+        self.create_trove_cat((727,97,"mechcivileng","Mechanical and Civil Engineering","Topic :: Scientific/Engineering :: Mechanical and Civil Engineering"))
+        self.create_trove_cat((729,535,"audienceengineering","Engineering","Intended Audience :: by Industry or Sector :: Engineering"))
+        self.create_trove_cat((730,274,"basque","Basque (Euskara)","Translations :: Basque (Euskara)"))
+        self.create_trove_cat((731,14,"classpath","GNU General Public License with Classpath exception (Classpath::License)","License :: OSI-Approved Open Source :: GNU General Public License with Classpath exception (Classpath::License)"))
+        self.create_trove_cat((732,727,"caddcam","Computer-aided technologies (CADD/CAM/CAE)","Topic :: Scientific/Engineering :: Mechanical and Civil Engineering :: Computer-aided technologies (CADD/CAM/CAE)"))
+        self.create_trove_cat((733,576,"humanresources","Human Resources","Topic :: Office/Business :: Enterprise :: Human Resources"))
+        self.create_trove_cat((734,554,"mcml","Media Center Markup Language (MCML)","Topic :: Formats and Protocols :: Data Formats :: Media Center Markup Language (MCML)"))
+        self.create_trove_cat((735,461,"nsis","Nullsoft Scriptable Install System (NSIS)","User Interface :: Plugins :: Nullsoft Scriptable Install System (NSIS)"))
+        self.create_trove_cat((736,97,"scada","SCADA","Topic :: Scientific/Engineering :: SCADA"))
+        self.create_trove_cat((737,461,"autohotkey","AutoHotkey","User Interface :: Plugins :: AutoHotkey"))
+        self.create_trove_cat((738,160,"autoit","AutoIt","Programming Language :: AutoIt"))
+        self.create_trove_cat((739,132,"humanitarianism","Humanitarianism","Topic :: Religion and Philosophy :: Humanitarianism"))
+        self.create_trove_cat((740,129,"insurance","Insurance","Topic :: Office/Business :: Insurance"))
+        self.create_trove_cat((741,97,"linguistics","Linguistics","Topic :: Scientific/Engineering :: Linguistics"))
+        self.create_trove_cat((742,741,"machinetranslation","Machine Translation","Topic :: Scientific/Engineering :: Linguistics :: Machine Translation"))
+        self.create_trove_cat((743,43,"antispam","Anti-Spam","Topic :: Security :: Anti-Spam"))
+        self.create_trove_cat((744,43,"antivirus","Anti-Virus","Topic :: Security :: Anti-Virus"))
+        self.create_trove_cat((745,43,"antimalware","Anti-Malware","Topic :: Security :: Anti-Malware"))
+        self.create_trove_cat((746,554,"autocaddxf","AutoCAD DXF","Topic :: Formats and Protocols :: Data Formats :: AutoCAD DXF"))
+        self.create_trove_cat((747,75,"billing","Billing","Topic :: Office/Business :: Financial :: Billing"))
+        self.create_trove_cat((748,576,"processmanagement","Business Process Management","Topic :: Office/Business :: Enterprise :: Business Process Management"))
+        self.create_trove_cat((749,136,"embedded","Embedded systems","Topic :: System :: Embedded systems"))
+        self.create_trove_cat((750,456,"magicui","Magic User Interface (MUI)","User Interface :: Graphical :: Magic User Interface (MUI)"))
+        self.create_trove_cat((751,237,"xul","XUL","User Interface :: Web-based :: XUL"))
+        self.create_trove_cat((752,80,"flightsim","Flight simulator","Topic :: Games/Entertainment :: Flight simulator"))
+        self.create_trove_cat((753,63,"vivim","Vi/Vim","Topic :: Text Editors :: Vi/Vim"))
+        self.create_trove_cat((754,45,"sourceanalysis","Source code analysis","Topic :: Software Development :: Source code analysis"))
+        self.create_trove_cat((755,45,"sourcebrowsing","Source code browsing","Topic :: Software Development :: Source code browsing"))
+        self.create_trove_cat((756,576,"plm","Product lifecycle management (PLM)","Topic :: Office/Business :: Enterprise :: Product lifecycle management (PLM)"))
+        self.create_trove_cat((757,274,"breton","Breton","Translations :: Breton"))
+        self.create_trove_cat((758,498,"db4o","db4objects (db4o)","Database Environment :: File-based DBMS :: db4objects (db4o)"))
+        self.create_trove_cat((759,497,"nexusdb","NexusDB","Database Environment :: Network-based DBMS :: NexusDB"))
+        self.create_trove_cat((760,160,"prism","Prism","Programming Language :: Prism"))
+        self.create_trove_cat((761,45,"collaborative","Collaborative development tools","Topic :: Software Development :: Collaborative development tools"))
+        self.create_trove_cat((762,91,"pluginsaddons","Plugins and add-ons","Topic :: Internet :: WWW/HTTP :: Browsers :: Plugins and add-ons"))
+        self.create_trove_cat((763,456,"winaero","Windows Aero","User Interface :: Graphical :: Windows Aero"))
+        self.create_trove_cat((764,45,"agile","Agile development tools","Topic :: Software Development :: Agile development tools"))
+        self.create_trove_cat((765,535,"agriculture","Agriculture","Intended Audience :: by Industry or Sector :: Agriculture"))
+        self.create_trove_cat((766,100,"animation","Animation","Topic :: Multimedia :: Graphics :: Animation"))
+        self.create_trove_cat((767,45,"assemblers","Assemblers","Topic :: Software Development :: Assemblers"))
+        self.create_trove_cat((768,535,"automotive","Automotive","Intended Audience :: by Industry or Sector :: Automotive"))
+        self.create_trove_cat((769,554,"CSV","Comma-separated values (CSV)","Topic :: Formats and Protocols :: Data Formats :: Comma-separated values (CSV)"))
+        self.create_trove_cat((770,45,"softdevlibraries","Libraries","Topic :: Software Development :: Libraries"))
+        self.create_trove_cat((771,45,"sourcereview","Source code review","Topic :: Software Development :: Source code review"))
+        self.create_trove_cat((772,80,"hobbies","Hobbies","Topic :: Games/Entertainment :: Hobbies"))
+        self.create_trove_cat((773,772,"collectionmanage","Collection management","Topic :: Games/Entertainment :: Hobbies :: Collection management"))
+        self.create_trove_cat((774,80,"multiplayer","Multiplayer","Topic :: Games/Entertainment :: Multiplayer"))
+        self.create_trove_cat((775,80,"mmorpg","MMORPG","Topic :: Games/Entertainment :: MMORPG"))
+        self.create_trove_cat((776,97,"mapping","Mapping","Topic :: Scientific/Engineering :: Mapping"))
+        self.create_trove_cat((777,776,"gps","GPS (Global Positioning System)","Topic :: Scientific/Engineering :: Mapping :: GPS (Global Positioning System)"))
+        self.create_trove_cat((778,43,"passwordmanage","Password manager","Topic :: Security :: Password manager"))
+        self.create_trove_cat((779,315,"linksyswrt54g","Linksys WRT54G series","Operating System :: Handheld/Embedded Operating Systems :: Linksys WRT54G series"))
+        self.create_trove_cat((781,576,"medhealth","Medical/Healthcare","Topic :: Office/Business :: Enterprise :: Medical/Healthcare"))
+        self.create_trove_cat((782,45,"bined","Binary editors","Topic :: Software Development :: Binary editors"))
+        self.create_trove_cat((783,99,"mmcatalog","Cataloguing","Topic :: Multimedia :: Cataloguing"))
+        self.create_trove_cat((784,113,"composition","Composition","Topic :: Multimedia :: Sound/Audio :: Composition"))
+        self.create_trove_cat((785,772,"cooking","Cooking","Topic :: Games/Entertainment :: Hobbies :: Cooking"))
+        self.create_trove_cat((786,136,"cron","Cron and scheduling","Topic :: System :: Cron and scheduling"))
+        self.create_trove_cat((787,638,"recovery","Data recovery","Topic :: System :: Storage :: Data recovery"))
+        self.create_trove_cat((788,87,"otherfile","Other file transfer protocol","Topic :: Internet :: Other file transfer protocol"))
+        self.create_trove_cat((789,581,"digpreserve","Digital preservation","Topic :: Education :: Library :: Digital preservation"))
+        self.create_trove_cat((790,251,"directconnect","Direct Connect","Topic :: Communications :: File Sharing :: Direct Connect"))
+        self.create_trove_cat((791,129,"dtp","Desktop Publishing","Topic :: Office/Business :: Desktop Publishing"))
+        self.create_trove_cat((792,580,"etl","ETL","Topic :: Office/Business :: Enterprise :: Data Warehousing :: ETL"))
+        self.create_trove_cat((793,55,"fonts","Fonts","Topic :: Desktop Environment :: Fonts"))
+        self.create_trove_cat((794,80,"gameframeworks","Game development framework","Topic :: Games/Entertainment :: Game development framework"))
+        self.create_trove_cat((795,100,"handrec","Handwriting recognition","Topic :: Multimedia :: Graphics :: Handwriting recognition"))
+        self.create_trove_cat((796,136,"homeauto","Home Automation","Topic :: System :: Home Automation"))
+        self.create_trove_cat((797,63,"translation","Computer Aided Translation (CAT)","Topic :: Text Editors :: Computer Aided Translation (CAT)"))
+        self.create_trove_cat((798,136,"osdistro","OS distribution","Topic :: System :: OS distribution"))
+        self.create_trove_cat((799,798,"livecd","Live CD","Topic :: System :: OS distribution :: Live CD"))
+        self.create_trove_cat((800,497,"lotusnotes","Lotus Notes/Domino","Database Environment :: Network-based DBMS :: Lotus Notes/Domino"))
+        self.create_trove_cat((801,160,"lotusscript","LotusScript","Programming Language :: LotusScript"))
+        self.create_trove_cat((802,133,"machinelearning","Machine Learning","Topic :: Scientific/Engineering :: Artificial Intelligence :: Machine Learning"))
+        self.create_trove_cat((803,106,"metadata","Metadata editors","Topic :: Multimedia :: Graphics :: Editors :: Metadata editors"))
+        self.create_trove_cat((804,236,"riscos","RISC OS","Operating System :: Other Operating Systems :: RISC OS"))
+        self.create_trove_cat((805,282,"politics","Politics","Topic :: Social sciences :: Politics"))
+        self.create_trove_cat((806,80,"sports","Sports","Topic :: Games/Entertainment :: Sports"))
+        self.create_trove_cat((807,282,"psychology","Psychology","Topic :: Social sciences :: Psychology"))
+        self.create_trove_cat((808,458,"ogre3d","Ogre3D","User Interface :: Toolkits/Libraries :: Ogre3D"))
+        self.create_trove_cat((809,45,"orm","ORM (Object-relational mapping)","Topic :: Software Development :: ORM (Object-relational mapping)"))
+        self.create_trove_cat((810,575,"perftest","Performance Testing","Topic :: Software Development :: Testing :: Performance Testing"))
+        self.create_trove_cat((811,75,"personalfinance","Personal finance","Topic :: Office/Business :: Financial :: Personal finance"))
+        self.create_trove_cat((812,499,"pearmdb2","PHP Pear::MDB2","Database Environment :: Database API :: PHP Pear::MDB2"))
+        self.create_trove_cat((813,461,"intellij","IntelliJ","User Interface :: Plugins :: IntelliJ"))
+        self.create_trove_cat((814,554,"postscript","PostScript","Topic :: Formats and Protocols :: Data Formats :: PostScript"))
+        self.create_trove_cat((815,100,"fractals","Fractals and Procedural Generation","Topic :: Multimedia :: Graphics :: Fractals and Procedural Generation"))
+        self.create_trove_cat((816,554,"w3cvoice","W3C Voice","Topic :: Formats and Protocols :: Data Formats :: W3C Voice"))
+        self.create_trove_cat((817,97,"quantumcomp","Quantum Computing","Topic :: Scientific/Engineering :: Quantum Computing"))
+        self.create_trove_cat((818,129,"reportgen","Report Generators","Topic :: Office/Business :: Report Generators"))
+        self.create_trove_cat((819,581,"research","Research","Topic :: Education :: Library :: Research"))
+        self.create_trove_cat((820,87,"ssh","SSH (Secure SHell)","Topic :: Internet :: SSH (Secure SHell)"))
+        self.create_trove_cat((821,554,"semantic","Semantic Web (RDF, OWL, etc.)","Topic :: Formats and Protocols :: Data Formats :: Semantic Web (RDF, OWL, etc.)"))
+        self.create_trove_cat((822,90,"socialbookmarking","Social Bookmarking","Topic :: Internet :: WWW/HTTP :: Social Bookmarking"))
+        self.create_trove_cat((823,20,"synchronization","Synchronization","Topic :: Communications :: Synchronization"))
+        self.create_trove_cat((824,45,"templates","Templates","Topic :: Software Development :: Templates"))
+        self.create_trove_cat((825,97,"testmeasure","Test and Measurement","Topic :: Scientific/Engineering :: Test and Measurement"))
+        self.create_trove_cat((826,98,"statistics","Statistics","Topic :: Scientific/Engineering :: Mathematics :: Statistics"))
+        self.create_trove_cat((827,129,"knowledgemanagement","Knowledge Management","Topic :: Office/Business :: Knowledge Management"))
+        self.create_trove_cat((828,147,"unattended","Unattended","Topic :: System :: Installation/Setup :: Unattended"))
+        self.create_trove_cat((829,457,"emailinterface","Email-based interface","User Interface :: Textual :: Email-based interface"))
+        self.create_trove_cat((830,282,"voting","Voting","Topic :: Social sciences :: Voting"))
+        self.create_trove_cat((831,27,"webconferencing","Web Conferencing","Topic :: Communications :: Conferencing :: Web Conferencing"))
+        self.create_trove_cat((832,27,"videoconferencing","Video Conferencing","Topic :: Communications :: Conferencing :: Video Conferencing"))
+        self.create_trove_cat((833,160,"objectivec2","Objective-C 2.0","Programming Language :: Objective-C 2.0"))
+        self.create_trove_cat((834,274,"georgian","Georgian","Translations :: Georgian"))
+        self.create_trove_cat((835,499,"adonet","ADO.NET","Database Environment :: Database API :: ADO.NET"))
+        self.create_trove_cat((836,554,"xbrl","XBRL","Topic :: Formats and Protocols :: Data Formats :: XBRL"))
+        self.create_trove_cat((837,461,"excel","Excel","User Interface :: Plugins :: Excel"))
+        self.create_trove_cat((838,160,"visualbasicforapplications","Visual Basic for Applications (VBA)","Programming Language :: Visual Basic for Applications (VBA)"))
+        self.create_trove_cat((839,160,"booprogramminglang","Boo","Programming Language :: Boo"))
+        self.create_trove_cat((840,52,"git","Git","Topic :: Software Development :: Version Control :: Git"))
+        self.create_trove_cat((841,52,"mercurial","Mercurial","Topic :: Software Development :: Version Control :: Mercurial"))
+        self.create_trove_cat((842,52,"bazaar","Bazaar","Topic :: Software Development :: Version Control :: Bazaar"))
+        self.create_trove_cat((843,14,"eupublicense","European Union Public License","License :: OSI-Approved Open Source :: European Union Public License"))
+        self.create_trove_cat((844,14,"ipafontlicense","IPA Font License","License :: OSI-Approved Open Source :: IPA Font License"))
+        self.create_trove_cat((845,14,"miroslicense","MirOS License","License :: OSI-Approved Open Source :: MirOS License"))
+        self.create_trove_cat((846,14,"openfontlicense11","Open Font License 1.1 (OFL 1.1)","License :: OSI-Approved Open Source :: Open Font License 1.1 (OFL 1.1)"))
+        self.create_trove_cat((847,80,"realtimetactical","Real Time Tactical","Topic :: Games/Entertainment :: Real Time Tactical"))
+        self.create_trove_cat((848,160,"algol68","ALGOL 68","Programming Language :: ALGOL 68"))
+        self.create_trove_cat((849,92,"groupware","Groupware","Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Groupware"))
+        self.create_trove_cat((850,576,"businesscontinuity","Business Continuity","Topic :: Office/Business :: Enterprise :: Business Continuity"))
+        self.create_trove_cat((852,554,"teiformat","TEI","Topic :: Formats and Protocols :: Data Formats :: TEI"))
+        self.create_trove_cat((853,160,"clarion","Clarion","Programming Language :: Clarion"))
+        self.create_trove_cat((854,576,"sales","Sales","Topic :: Office/Business :: Enterprise :: Sales"))
+        self.create_trove_cat((855,97,"buildingauto","Building Automation","Topic :: Scientific/Engineering :: Building Automation"))
+        self.create_trove_cat((856,129,"businessmodelling","Modelling","Topic :: Office/Business :: Modelling"))
+        self.create_trove_cat((857,150,"routing","Routing","Topic :: System :: Networking :: Routing"))
+        self.create_trove_cat((858,97,"medicalphysics","Medical Physics","Topic :: Scientific/Engineering :: Medical Physics"))
+        self.create_trove_cat((859,71,"edlanguage","Languages","Topic :: Education :: Languages"))
+        self.create_trove_cat((860,97,"molecularmech","Molecular Mechanics","Topic :: Scientific/Engineering :: Molecular Mechanics"))
+        self.create_trove_cat((861,148,"loganalysis","Log Analysis","Topic :: System :: Logging :: Log Analysis"))
+
+    def m__set_parent_only(self):
+        parent_only_ids = [1, 225, 274, 160, 496, 6, 13, 199, 18, 535, 534, 14, 611, 612, 432, 500, 426, 315, 418, 236, 457, 458, 456, 497, 499, 498]
+        troves = M.TroveCategory.query.find(dict(trove_cat_id={'$in': parent_only_ids})).all()
+        for t in troves:
+            t.parent_only = True
+
+    def m__add_license(self):
+        self.update_trove_cat(16, dict(fullname="GNU Library or Lesser General Public License version 2.0 (LGPLv2)", fullpath="License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 2.0 (LGPLv2)"))
+        self.update_trove_cat(15, dict(fullname="GNU General Public License version 2.0 (GPLv2)", fullpath="License :: OSI-Approved Open Source :: GNU General Public License version 2.0 (GPLv2)"))
+        self.update_trove_cat(670, dict(trove_cat_id=628, fullname="Affero GNU Public License"))
+
+        self.create_trove_cat((868,13,"ccal","Creative Commons Attribution License","License :: Creative Commons Attribution License"))
+        self.create_trove_cat((869,868,"ccaslv2","Creative Commons Attribution ShareAlike License V2.0","License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V2.0"))
+        self.create_trove_cat((870,868,"ccaslv3","Creative Commons Attribution ShareAlike License V3.0","License :: Creative Commons Attribution License :: Creative Commons Attribution ShareAlike License V3.0"))
+        self.create_trove_cat((871,868,"ccanclv2","Creative Commons Attribution Non-Commercial License V2.0","License :: Creative Commons Attribution License :: Creative Commons Attribution Non-Commercial License V2.0"))
+        self.create_trove_cat((680,14,"lgplv3","GNU Library or Lesser General Public License version 3.0 (LGPLv3)","License :: OSI-Approved Open Source :: GNU Library or Lesser General Public License version 3.0 (LGPLv3)"))
+        self.create_trove_cat((679,14,"gplv3","GNU General Public License version 3.0 (GPLv3)","License :: OSI-Approved Open Source :: GNU General Public License version 3.0 (GPLv3)"))
+        M.TroveCategory(trove_cat_id=905,
+                        trove_parent_id=14,
+                        shortname='mpl20',
+                        fullname='Mozilla Public License 2.0 (MPL 2.0)',
+                        fullpath='License :: OSI-Approved Open Source :: Mozilla Public License 2.0 (MPL 2.0)')
+
+    def m__set_show_as_skills(self):
+        categories_regex = '|'.join([
+            'Translations',
+            'Programming Language',
+            'User Interface',
+            'Database Environment',
+            'Operating System',
+            'Topic',
+        ])
+        M.TroveCategory.query.update(
+            {'fullname': re.compile(r'^(%s)' % categories_regex)},
+            {'$set': {'show_as_skill': True}},
+            multi=True)
