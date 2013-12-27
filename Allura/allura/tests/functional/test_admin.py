@@ -520,17 +520,17 @@ class TestProjectAdmin(TestController):
         # add a cat
         with audits('add trove root_database: Database Environment :: Database API'):
             form = r.forms['add_trove_root_database']
-            form['new_trove'].value = '499'
+            form['new_trove'].value = '506'
             r = form.submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' not in r
-        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' in r
+        assert '<span class="trove_fullpath">Database Environment :: Database API :: Python Database API</span>' in r
         # delete the cat
         with audits('remove trove root_database: Database Environment :: Database API'):
-            r = r.forms['delete_trove_root_database_499'].submit().follow()
+            r = r.forms['delete_trove_root_database_506'].submit().follow()
         # make sure it worked
         assert 'No Database Environment categories have been selected.' in r
-        assert '<span class="trove_fullpath">Database Environment :: Database API</span>' not in r
+        assert '<span class="trove_fullpath">Database Environment :: Database API :: Python Database API</span>' not in r
 
     def test_add_remove_label(self):
         r = self.app.get('/admin/trove')
