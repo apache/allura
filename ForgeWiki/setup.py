@@ -42,8 +42,5 @@ setup(name='ForgeWiki',
       # -*- Entry points: -*-
       [allura]
       Wiki=forgewiki.wiki_main:ForgeWikiApp
-
-      [paste.paster_command]
-      wiki2markdown = forgewiki.command.wiki2markdown:Wiki2MarkDownCommand
       """,
       )
