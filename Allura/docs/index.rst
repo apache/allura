@@ -39,14 +39,16 @@ Getting Started
    platform_tour
    scm_host
    migration
+   contributing
 
-Writing a Allura based app
+Writing an Allura-based app
 =====================================================================
 
-.. toctree::
-   :maxdepth: 3
-
-   tutorials/wiki-tool
+* `Getting Started <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-1-getting-started/>`_
+* `Forms, Artifacts, and Testing <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-2-creating-our-first-paste/>`_
+* `Adding a Custom Icon <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-3-adding-a-custom-icon/>`_
+* `Adding a Sidebar Menu <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/adding-a-sidebar-menu/>`_
+* `Adding Custom CSS <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-5-adding-custom-css/>`_
 
 Inside the Platform Components
 =====================================================================

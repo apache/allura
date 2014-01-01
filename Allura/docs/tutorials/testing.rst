@@ -15,23 +15,8 @@
        specific language governing permissions and limitations
        under the License.
 
-Creating your first Allura Tool
-=====================================================================
-
-Adding your Allura Tool to a Allura Install
-=====================================================================
-
-Writing a Wiki Tool Part 1: Pages
-=====================================================================
-
-Writing a wiki Tool Part 2: Links
-=====================================================================
-
-Writing a wiki Tool Part 3: Revisions
-=====================================================================
-
-Testing your Tool
-===========================
+Writing Tests for Allura Tools
+==============================
 
 Testing the controllers and models of an Allura tool is fairly
 straightforward.  Generally, you should follow the example of tests in the
