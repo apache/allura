@@ -45,11 +45,14 @@ Developing Allura
 .. toctree::
    :maxdepth: 3
 
+   contributing
    platform
    platform_tour
    guides/message_bus
    guides/email
    guides/permissions
+   tutorials/testing
+
 
 Extending Allura
 =====================================================================
@@ -58,7 +61,13 @@ Extending Allura
    :maxdepth: 3
 
    extending
-   tutorials/tool
+
+* Writing an Allura-based app
+    * `Getting Started <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-1-getting-started/>`_
+    * `Forms, Artifacts, and Testing <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/06/part-2-creating-our-first-paste/>`_
+    * `Adding a Custom Icon <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-3-adding-a-custom-icon/>`_
+    * `Adding a Sidebar Menu <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/adding-a-sidebar-menu/>`_
+    * `Adding Custom CSS <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-5-adding-custom-css/>`_
 
 API Documentation
 ==================
