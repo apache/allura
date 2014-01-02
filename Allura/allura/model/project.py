@@ -232,10 +232,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''ACL processing should proceed up the project hierarchy.'''
         return self.parent_project
 
-    @classmethod
-    def database_uri(cls):
-        return config.get('ming.project.uri')
-
     @LazyProperty
     def allowed_tool_status(self):
         return ['production'] + self._extra_tool_status
