@@ -20,7 +20,7 @@
 import sys
 from optparse import OptionParser
 
-from forgewiki.scripts.wiki_from_trac.extractors import WikiExporter
+from tracwikiimporter.scripts.wiki_from_trac.extractors import WikiExporter
 
 
 def parse_options():
