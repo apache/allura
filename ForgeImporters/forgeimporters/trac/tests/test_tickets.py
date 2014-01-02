@@ -17,7 +17,7 @@
 
 import json
 import os
-from datetime import datetime
+import sys
 
 from unittest import TestCase
 from mock import Mock, patch, MagicMock
@@ -39,14 +39,33 @@ from forgeimporters.trac.tickets import (
 )
 
 
+
 class TestTracTicketImporter(TestCase):
+
+    def mock_tracwikiimporter(self):
+        if module_not_available('tracwikiimporter'):
+            tracwikiimporter_mock = MagicMock(name='tracwikiimporter')
+            tracwikiimporter_mock.scripts = MagicMock(name='tracwikiimporter.scripts')
+            tracwikiimporter_mock.scripts.trac_export = MagicMock(name='tracwikiimporter.scripts.trac_export')
+            tracwikiimporter_mock.scripts.trac_export.DateJSONEncoder.return_value.encode = json.dumps
+            sys.modules['tracwikiimporter'] = tracwikiimporter_mock
+            sys.modules['tracwikiimporter.scripts'] = tracwikiimporter_mock.scripts
+            sys.modules['tracwikiimporter.scripts.trac_export'] = tracwikiimporter_mock.scripts.trac_export
+            self.tracwikiimporter_mocked = True
+
+    def tearDown(self):
+        if getattr(self, 'tracwikiimporter_mocked', False):
+            sys.modules.pop('tracwikiimporter', None)
+            sys.modules.pop('tracwikiimporter', None)
+            sys.modules.pop('tracwikiimporter.scripts.trac_export', None)
+            self.tracwikiimporter_mocked = False
 
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.g')
     @patch('forgeimporters.trac.tickets.AuditLog')
     @patch('forgeimporters.trac.tickets.TracImportSupport')
-    @patch('forgeimporters.trac.tickets.export')
-    def test_import_tool(self, export, ImportSupport, AuditLog, g, session):
+    @patch('forgeimporters.trac.tickets.c')
+    def test_import_tool(self, c, ImportSupport, AuditLog, g, session):
         user_map = {"orig_user": "new_user"}
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
@@ -56,54 +75,57 @@ class TestTracTicketImporter(TestCase):
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        export.return_value = []
-        res = importer.import_tool(project, user,
-                                   mount_point='bugs',
-                                   mount_label='Bugs',
-                                   trac_url='http://example.com/trac/url',
-                                   user_map=json.dumps(user_map),
-                                   )
-        self.assertEqual(res, app)
-        project.install_app.assert_called_once_with(
-            'Tickets', mount_point='bugs', mount_label='Bugs',
-            open_status_names='new assigned accepted reopened',
-            closed_status_names='closed',
-            import_id={
-                'source': 'Trac',
-                'trac_url': 'http://example.com/trac/url/',
-            })
-        export.assert_called_once_with('http://example.com/trac/url/')
-        ImportSupport.return_value.perform_import.assert_called_once_with(
-            json.dumps(export.return_value),
-            json.dumps({
-                "user_map": user_map,
-                "usernames_match": False,
-            }),
-        )
-        AuditLog.log.assert_called_once_with(
-            'import tool bugs from http://example.com/trac/url/',
-            project=project, user=user, url='foo')
-        g.post_event.assert_called_once_with('project_updated')
+        self.mock_tracwikiimporter()
+        with patch('tracwikiimporter.scripts.trac_export.export', create=True) as export:
+            export.return_value = []
+            res = importer.import_tool(project, user,
+                                       mount_point='bugs',
+                                       mount_label='Bugs',
+                                       trac_url='http://example.com/trac/url',
+                                       user_map=json.dumps(user_map),
+                                       )
+            self.assertEqual(res, app)
+            project.install_app.assert_called_once_with(
+                'Tickets', mount_point='bugs', mount_label='Bugs',
+                open_status_names='new assigned accepted reopened',
+                closed_status_names='closed',
+                import_id={
+                    'source': 'Trac',
+                    'trac_url': 'http://example.com/trac/url/',
+                })
+            export.assert_called_once_with('http://example.com/trac/url/')
+            ImportSupport.return_value.perform_import.assert_called_once_with(
+                json.dumps(export.return_value),
+                json.dumps({
+                    "user_map": user_map,
+                    "usernames_match": False,
+                }),
+            )
+            AuditLog.log.assert_called_once_with(
+                'import tool bugs from http://example.com/trac/url/',
+                project=project, user=user, url='foo')
+            g.post_event.assert_called_once_with('project_updated')
 
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.h')
-    @patch('forgeimporters.trac.tickets.export')
-    def test_import_tool_failure(self, export, h, session):
+    def test_import_tool_failure(self, h, session):
         importer = TracTicketImporter()
         app = Mock(name='ForgeTrackerApp')
         project = Mock(name='Project', shortname='myproject')
         project.install_app.return_value = app
         user = Mock(name='User', _id='id')
-        export.side_effect = ValueError
+        self.mock_tracwikiimporter()
+        with patch('tracwikiimporter.scripts.trac_export.export', create=True) as export:
+            export.side_effect = ValueError
 
-        self.assertRaises(ValueError, importer.import_tool, project, user,
-                          mount_point='bugs',
-                          mount_label='Bugs',
-                          trac_url='http://example.com/trac/url',
-                          user_map=None,
-                          )
+            self.assertRaises(ValueError, importer.import_tool, project, user,
+                              mount_point='bugs',
+                              mount_label='Bugs',
+                              trac_url='http://example.com/trac/url',
+                              user_map=None,
+                              )
 
-        h.make_app_admin_only.assert_called_once_with(app)
+            h.make_app_admin_only.assert_called_once_with(app)
 
 
 class TestTracTicketImportController(TestController, TestCase):

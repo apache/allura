@@ -39,10 +39,6 @@ from allura.lib.decorators import require_post
 from allura.lib import validators as v
 from allura.lib import helpers as h
 from allura.model import AuditLog
-from tracwikiimporter.scripts.trac_export import (
-    export,
-    DateJSONEncoder,
-)
 
 from forgeimporters.base import (
     ToolImporter,
@@ -121,6 +117,7 @@ class TracTicketImporter(ToolImporter):
         session(app.config).flush(app.config)
         session(app.globals).flush(app.globals)
         try:
+            from tracwikiimporter.scripts.trac_export import export, DateJSONEncoder
             with h.push_config(c, app=app):
                 TracImportSupport().perform_import(
                     json.dumps(export(trac_url), cls=DateJSONEncoder),
