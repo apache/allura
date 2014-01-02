@@ -39,7 +39,7 @@ from allura.lib.decorators import require_post
 from allura.lib import validators as v
 from allura.lib import helpers as h
 from allura.model import AuditLog
-from allura.scripts.trac_export import (
+from tracwikiimporter.scripts.trac_export import (
     export,
     DateJSONEncoder,
 )

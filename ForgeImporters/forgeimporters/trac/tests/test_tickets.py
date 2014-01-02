@@ -238,15 +238,16 @@ class TestTracImportSupportFunctional(TestRestApiBase, TestCase):
 
     @with_tracker
     @skipif(module_not_available('html2text'))
+    @skipif(module_not_available('tracwikiimporter'))
     def test_list(self):
-        from allura.scripts.trac_export import TracExport, DateJSONEncoder
+        from tracwikiimporter.scripts.trac_export import TracExport, DateJSONEncoder
         csv_fp = open(os.path.dirname(__file__) + '/data/test-list.csv')
         html_fp = open(os.path.dirname(__file__) + '/data/test-list.html')
         with patch.object(TracExport, 'next_ticket_ids', return_value=[(390, {})]):
             te = TracExport('url', do_attachments=False)
             te.exhausted = True
             te.csvopen = lambda s: csv_fp
-        with patch('allura.scripts.trac_export.urlopen', return_value=html_fp):
+        with patch('tracwikiimporter.scripts.trac_export.urlopen', return_value=html_fp):
             json_data = {
                 'class': 'PROJECT',
                 'trackers': {'default': {'artifacts': list(te)}},

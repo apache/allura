@@ -18,5 +18,5 @@
 #       under the License.
 
 if __name__ == '__main__':
-    from allura.scripts.trac_export import main
+    from tracwikiimporter.scripts.trac_export import main
     main()
