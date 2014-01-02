@@ -119,7 +119,7 @@ Alternate Setup with HTTP
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To use SVN over HTTP, you will need to patch and compile an Apache module, so
-that all svn repos can by dynamically served.
+that all svn repos can be dynamically served.
 
 .. warning::
 
@@ -162,7 +162,7 @@ you can modify :file:`dav_svn.conf` to look like:
       SVNParentPath /srv/svn
       ...
 
-Then Apache SVN will serve repositories for all Allura project and subprojects.
+Then Apache SVN will serve repositories for all Allura projects and subprojects.
 
 .. warning::
 
@@ -282,7 +282,7 @@ In particular, you will need to answer the following questions (substitute your 
 Update the chroot ssh configuration
 -------------------------------------------------
 
-* Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port directive:
+Update the file :file:`/var/chroot/scm/etc/ssh/sshd_config`, changing the port directive:
 
 .. code-block:: guess
 
