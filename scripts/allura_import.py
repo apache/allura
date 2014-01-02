@@ -20,7 +20,7 @@ from optparse import OptionParser
 
 from allura.lib.import_api import AlluraImportApiClient
 from forgetracker.scripts.import_tracker import import_tracker
-from forgewiki.scripts.wiki_from_trac.loaders import import_wiki
+from tracwikiimporter.scripts.wiki_from_trac.loaders import import_wiki
 
 
 def main():
