@@ -57,7 +57,7 @@ def get_config_file(config=None):
     try:
         conf_dir = tg.config.here
     except AttributeError:
-        conf_dir = pkg_resources.resource_filename('Allura', '..')
+        conf_dir = pkg_resources.resource_filename('allura', '..')
     return os.path.join(conf_dir, config)
 
 
