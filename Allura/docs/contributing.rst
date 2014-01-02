@@ -193,13 +193,16 @@ When writing code for Allura, don't forget that you'll need to also create
 tests that cover behaviour that you've added or changed. You may find this
 :doc:`short guide <tutorials/testing>` helpful.
 
-Submitting a Merge Request
---------------------------
-Before submitting a merge request, make sure your changes conform to our
-`contribution guidelines <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>`_.
-Once your changes are finished and tested, submit them to be merged back into
-the main repo:
+..  Commenting out merge request instructions until we have forking working
+    on forge-allura.apache.org
 
-* Fork the main Allura repo from here: https://forge-allura.apache.org/p/allura/git/ci/master/tree/
-* Commit and push your changes to your fork
-* Submit a Merge Request from your fork
+    Submitting a Merge Request
+    --------------------------
+    Before submitting a merge request, make sure your changes conform to our
+    `contribution guidelines <https://forge-allura.apache.org/p/allura/wiki/Contributing%20Code/>`_.
+    Once your changes are finished and tested, submit them to be merged back into
+    the main repo:
+
+    * Fork the main Allura repo from here: https://forge-allura.apache.org/p/allura/git/ci/master/tree/
+    * Commit and push your changes to your fork
+    * Submit a Merge Request from your fork
