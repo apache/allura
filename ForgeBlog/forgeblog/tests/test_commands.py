@@ -18,22 +18,20 @@
 from datetime import datetime, timedelta
 from pylons import tmpl_context as c, app_globals as g
 from datadiff.tools import assert_equal
-
 from IPython.testing.decorators import module_not_available, skipif
+import pkg_resources
+import mock
+import feedparser
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
-from allura.lib import security
-from allura.lib import helpers as h
 from forgeblog import model as BM
 
-import mock
 
-import feedparser
+test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
 
-test_config = 'test.ini#main'
 
 def setUp():
     setup_basic_test()

@@ -20,6 +20,7 @@ from datadiff.tools import assert_equal
 from ming.orm import ThreadLocalORMSession
 from mock import Mock, call, patch
 import pymongo
+import pkg_resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import base, script, set_neighborhood_features, \
@@ -29,7 +30,8 @@ from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
 
-test_config = 'test.ini#main'
+test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
+
 
 class EmptyClass(object): pass
 
@@ -41,8 +43,8 @@ def setUp(self):
 
 def test_script():
     cmd = script.ScriptCommand('script')
-    cmd.run([test_config, 'allura/tests/tscript.py' ])
-    assert_raises(ValueError, cmd.run, [test_config, 'allura/tests/tscript_error.py' ])
+    cmd.run([test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py') ])
+    assert_raises(ValueError, cmd.run, [test_config, pkg_resources.resource_filename('allura','tests/tscript_error.py') ])
 
 def test_set_neighborhood_max_projects():
     neighborhood = M.Neighborhood.query.find().first()

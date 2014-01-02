@@ -17,6 +17,7 @@
 
 from ming.orm import session
 from nose.tools import assert_equal, assert_not_equal
+import pkg_resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from forgetracker.command import fix_discussion
@@ -24,7 +25,8 @@ from allura.tests.decorators import with_tracker
 from allura import model as M
 from forgetracker import model as TM
 
-test_config = 'test.ini#main'
+
+test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
 
 
 def setUp(self):
