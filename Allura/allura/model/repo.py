@@ -83,20 +83,6 @@ TreeDoc = collection(
     Field('blob_ids', [dict(name=str, id=str)]),
     Field('other_ids', [dict(name=str, id=str, type=SObjType)]))
 
-LastCommitDoc_old = collection(
-    'repo_last_commit', project_doc_session,
-    Field('_id', str),
-    Field('object_id', str, index=True),
-    Field('name', str),
-    Field('commit_info', dict(
-        id=str,
-        date=datetime,
-        author=str,
-        author_email=str,
-        author_url=str,
-        shortlink=str,
-        summary=str)))
-
 # Information about the last commit to touch a tree
 LastCommitDoc = collection(
     'repo_last_commit', main_doc_session,
@@ -555,22 +541,9 @@ class Tree(RepoObject):
     def ls(self):
         '''
         List the entries in this tree, with historical commit info for
-        each node.  Eventually, ls_old can be removed and this can be
-        replaced with the following:
-
-            return self._lcd_map(LastCommit.get(self))
+        each node.
         '''
-        # look for existing new format first
-        last_commit = LastCommit.get(self, create=False)
-        if last_commit:
-            return self._lcd_map(last_commit)
-        # otherwise, try old format
-        old_style_results = self.ls_old()
-        if old_style_results:
-            log.info('Using old-style results from ls_old()')
-            return old_style_results
-        # finally, use the new implentation that auto-vivifies
-        last_commit = LastCommit.get(self, create=True)
+        last_commit = LastCommit.get(self)
         # ensure that the LCD is saved, even if
         # there is an error later in the request
         if last_commit:
@@ -613,64 +586,6 @@ class Tree(RepoObject):
                                 summary=commit_info['summary'],
                             ),
                     ))
-        return results
-
-    def ls_old(self):
-        # Load last commit info
-        id_re = re.compile("^{0}:{1}:".format(
-            self.repo._id,
-            re.escape(h.really_unicode(self.path()).encode('utf-8'))))
-        lc_index = dict(
-            (lc.name, lc.commit_info)
-            for lc in LastCommitDoc_old.m.find(dict(_id=id_re)))
-
-        # FIXME: Temporarily fall back to old, semi-broken lookup behavior until refresh is done
-        oids = [ x.id for x in chain(self.tree_ids, self.blob_ids, self.other_ids) ]
-        id_re = re.compile("^{0}:".format(self.repo._id))
-        lc_index.update(dict(
-            (lc.object_id, lc.commit_info)
-            for lc in LastCommitDoc_old.m.find(dict(_id=id_re, object_id={'$in': oids}))))
-        # /FIXME
-
-        if not lc_index:
-            # allow fallback to new method instead
-            # of showing a bunch of Nones
-            return []
-
-        results = []
-        def _get_last_commit(name, oid):
-            lc = lc_index.get(name, lc_index.get(oid, None))
-            if lc is None:
-                lc = dict(
-                    author=None,
-                    author_email=None,
-                    author_url=None,
-                    date=None,
-                    id=None,
-                    href=None,
-                    shortlink=None,
-                    summary=None)
-            if 'href' not in lc:
-                lc['href'] = self.repo.url_for_commit(lc['id'])
-            return lc
-        for x in sorted(self.tree_ids, key=lambda x:x.name):
-            results.append(dict(
-                    kind='DIR',
-                    name=x.name,
-                    href=x.name + '/',
-                    last_commit=_get_last_commit(x.name, x.id)))
-        for x in sorted(self.blob_ids, key=lambda x:x.name):
-            results.append(dict(
-                    kind='FILE',
-                    name=x.name,
-                    href=x.name,
-                    last_commit=_get_last_commit(x.name, x.id)))
-        for x in sorted(self.other_ids, key=lambda x:x.name):
-            results.append(dict(
-                    kind=x.type,
-                    name=x.name,
-                    href=None,
-                    last_commit=_get_last_commit(x.name, x.id)))
         return results
 
     def path(self):
@@ -840,13 +755,13 @@ class LastCommit(RepoObject):
             return None
 
     @classmethod
-    def get(cls, tree, create=True):
+    def get(cls, tree):
         '''Find or build the LastCommitDoc for the given tree.'''
         cache = getattr(c, 'model_cache', '') or ModelCache()
         path = tree.path().strip('/')
         last_commit_id = cls._last_commit_id(tree.commit, path)
         lcd = cache.get(cls, {'path': path, 'commit_id': last_commit_id})
-        if lcd is None and create:
+        if lcd is None:
             commit = cache.get(Commit, {'_id': last_commit_id})
             commit.set_context(tree.repo)
             lcd = cls._build(commit.get_path(path))
