@@ -62,18 +62,11 @@
 {% block extra_js %}
 <script type="text/javascript">
     $(document).ready(function () {
-        $(":radio.default-milestone").click(function(){
+        $(document).on('click', ":radio.default-milestone", function(){
             // page can contain more that one milestone field,
             // so we should touch only radio buttons corresponding to given field
-            var name_prefix = $(this).attr("name").match(/custom_fields-\d+/)[0];
-            var all_radios = $(":radio.default-milestone");
-            var radios = all_radios.filter(function(radio) {
-                if (this.name.slice(0, name_prefix.length) == name_prefix) {
-                    return true;
-                }
-                return false;
-            });
-            radios.attr("checked", false);
+            var parent_table = $(this).closest('table');
+            $(":radio.default-milestone", parent_table).attr("checked", false);
             $(this).attr("checked", true);
         });
     });
