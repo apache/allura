@@ -49,21 +49,25 @@ The framework used to generate the WSGI environment for testing your tools is
 provided by the `WebTest <http://pythonpaste.org/webtest/>`_ module, where you can
 find further documentation for the `.get()` and `.post()` methods.
 
-Testing Allura models is also straightforward, though it usually requires
-setting the pylons context object `c` before your test.  An example of this
-technique follows::
+Testing Allura models is also straightforward, though you will often
+need to setup pylons global objects before your test. If the code under test
+uses pylons globals (like `g` and `c`), but your test doesn't require the
+fully-loaded wsgi app, you can do something like this:
 
-    import mock
-    from pylons import tmpl_context as c, app_globals as g
+.. code-block:: python
 
-    from allura.lib.app_globals import Globals
+    from pylons import tmpl_context as c
+
+    from alluratest.controller import setup_unit_test
+    from allura.lib import helpers a h
     from allura import model as M
 
     def setUp():
-        g._push_object(Globals())
-        c._push_object(mock.Mock())
-        g.set_project('projects/test')
-        g.set_app('hello')
+        # set up pylons globals
+        setup_unit_test()
+
+        # set c.project and c.app
+        h.set_context('test', 'wiki', neighborhood='Projects'):
         c.user = M.User.query.get(username='test-admin')
 
 Testing the tasks and events is  similar to testing models.  Generally, you will
