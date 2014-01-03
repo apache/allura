@@ -56,7 +56,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         var delay = 500;
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
-                if (data.status !== 'na') {
+                if (data.status === 'complete') {
                     spinner.stop();
                     $('#snapshot_status h2').hide();
                     $('#snapshot_status h2.' + data.status).show();
@@ -64,12 +64,12 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                         window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
                     {% endif %}
                 } else {
+                    if (data.status === 'na' || data.status === 'error') {
+                        // something went wrong
+                        $('#snapshot_status form').show();
+                    }
                     if (delay < 60000){
                         delay = delay * 2;
-                    }
-                    if (delay >= 16000) {
-                      // we've been waiting at least 15 seconds
-                      $('#snapshot_status form').show();
                     }
                     window.setTimeout(check_status, delay);
                 }

@@ -466,10 +466,11 @@ class CommitBrowser(BaseController):
             raise exc.HTTPNotFound()
         rev = self._commit.url().split('/')[-2]
         status = c.app.repo.get_tarball_status(rev, path)
-        if status is None and request.method == 'POST':
+        if status in (None, 'error') and request.method == 'POST':
             allura.tasks.repo_tasks.tarball.post(revision=rev, path=path)
             redirect('tarball' + '?path={0}'.format(path) if path else '')
-        return dict(commit=self._commit, revision=rev, status=status or 'na')
+        status = 'na' if status in (None, 'error') else status
+        return dict(commit=self._commit, revision=rev, status=status)
 
     @expose('json:')
     def tarball_status(self, path=None, **kw):

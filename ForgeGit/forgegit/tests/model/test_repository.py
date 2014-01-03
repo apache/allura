@@ -24,6 +24,8 @@ import unittest
 import pkg_resources
 import datetime
 
+import pymongo
+
 import mock
 from pylons import tmpl_context as c, app_globals as g
 import tg
@@ -34,6 +36,7 @@ from testfixtures import TempDirectory
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
+from allura.tasks.repo_tasks import tarball
 from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 from allura import model as M
@@ -394,13 +397,37 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         if os.path.isdir(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/")):
             os.removedirs(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/"))
         self.repo.tarball('HEAD')
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
-        os.rename(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"),
-                  os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
-        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
-        os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'complete')
+
+        os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
-        os.makedirs(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD"))
+
+    def test_tarball_status_task(self):
+        assert_equal(self.repo.get_tarball_status('HEAD'), None)
+
+        # create tarball task in MonQTask and check get_tarball_status
+        tarball.post('HEAD', '')
+
+        # task created
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
+
+        task = M.MonQTask.query.find({
+            'task_name': 'allura.tasks.repo_tasks.tarball',
+            '$or': [
+                {'kwargs':
+                    {'path': '',
+                     'revision': 'HEAD'}},
+                    {'args':['HEAD', '']}]
+            }).sort([('time_queue', pymongo.DESCENDING),]).limit(1).first()
+
+        # task is running
+        task.state = 'busy'
+        task.query.session.flush_all()
+        assert_equal(self.repo.get_tarball_status('HEAD'), 'busy')
+
+        # when state is complete, but file don't exists, then status is None
+        task.state = 'complete'
+        task.query.session.flush_all()
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
 
     def test_is_empty(self):

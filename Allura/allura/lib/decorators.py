@@ -59,7 +59,8 @@ def task(*args, **kw):
                     kw.get('notifications_disabled') else h.null_contextmanager)
             with cm(project):
                 from allura import model as M
-                return M.MonQTask.post(func, args, kwargs, delay=delay)
+                task_obj = M.MonQTask.post(func, args, kwargs, delay=delay)
+            return task_obj
         # if decorating a class, have to make it a staticmethod
         # or it gets a spurious cls argument
         func.post = staticmethod(post) if inspect.isclass(func) else post

@@ -124,8 +124,9 @@ def tarball(revision=None, path=None):
     log = logging.getLogger(__name__)
     if revision:
         repo = c.app.repo
-        status = repo.get_tarball_status(revision, path)
-        if status:
+        status = repo.get_tarball_status(revision, path,
+            task_id=tarball.task_id)
+        if status in ('busy', 'complete'):
             log.info('Skipping snapshot for repository: %s:%s rev %s because it is already %s' %
                      (c.project.shortname, c.app.config.options.mount_point, revision, status))
         else:

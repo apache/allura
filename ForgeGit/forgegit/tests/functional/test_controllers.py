@@ -352,9 +352,9 @@ class TestRootController(_TestCase):
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')
-        assert '{"status": "ready"}' in r
+        assert '{"status": "complete"}' in r
         r = self.app.get('/p/test/src-git/ci/master/tarball_status')
-        assert '{"status": "ready"}' in r
+        assert '{"status": "complete"}' in r
         r = self.app.get('/p/test/src-git/ci/master/tarball')
         assert 'Your download will begin shortly' in r
 
