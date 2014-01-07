@@ -112,6 +112,9 @@ def run_tests_in_parallel(options, nosetests_args):
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
     def get_multiproc_args(pkg):
+        if '--with-coverage' in nosetests_args:
+            # coverage and multiproc plugins not compatible
+            return ''
         return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
                     procs_per_suite=options.concurrent_tests,
                     proc_timeout=PROC_TIMEOUT)
