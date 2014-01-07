@@ -398,6 +398,8 @@ td, td img {
   white-space: nowrap;
 }
 
+.hide {display:none;}
+
 blockquote {
   border-left: 1px solid #cccccc;
   margin-left: 1em;
