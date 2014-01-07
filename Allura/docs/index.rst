@@ -39,6 +39,14 @@ Running Allura
    scm_host
    migration
 
+Using Allura
+=====================================================================
+
+.. toctree::
+   :maxdepth: 2
+
+   using
+
 Developing Allura
 =====================================================================
 
