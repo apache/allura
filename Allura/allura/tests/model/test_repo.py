@@ -327,7 +327,7 @@ class TestLastCommit(unittest.TestCase):
         commit1 = self._add_commit('Commit 1', ['file1'])
         commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
         commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
-        with h.push_config(config, lcd_timeout=0):
+        with h.push_config(config, lcd_timeout=-1000):
             lcd = M.repo.LastCommit.get(commit3.tree)
         self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.commit_id, commit3._id)

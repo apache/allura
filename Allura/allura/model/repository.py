@@ -237,7 +237,7 @@ class RepositoryImplementation(object):
             try:
                 commit_id = commit._id
                 while paths and commit_id:
-                    if time() - start_time > timeout:
+                    if time() - start_time >= timeout:
                         log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
                         break
                     commit_id, changes = self._get_last_commit(commit._id, paths)
