@@ -109,16 +109,22 @@ def check_packages(packages):
 
 
 def run_tests_in_parallel(options, nosetests_args):
+    # coverage and multiproc plugins not compatible
+    use_multiproc = '--with-coverage' not in nosetests_args
+
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
     def get_multiproc_args(pkg):
-        if '--with-coverage' in nosetests_args:
-            # coverage and multiproc plugins not compatible
+        if not use_multiproc:
             return ''
         return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
                     procs_per_suite=options.concurrent_tests,
                     proc_timeout=PROC_TIMEOUT)
                 if pkg not in NOT_MULTIPROC_SAFE else '')
+    def get_concurrent_suites():
+        if use_multiproc or '-n' in sys.argv:
+            return options.concurrent_suites
+        return CPUS
 
     cmds = []
     for package in check_packages(options.packages):
@@ -131,7 +137,7 @@ def run_tests_in_parallel(options, nosetests_args):
             multiproc_args=get_multiproc_args(package),
         )
         cmds.append((cmd, dict(cwd=package)))
-    return run_many(cmds, processes=options.concurrent_suites)
+    return run_many(cmds, processes=get_concurrent_suites())
 
 
 def parse_args():
