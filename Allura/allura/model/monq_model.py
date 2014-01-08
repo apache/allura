@@ -81,6 +81,7 @@ class MonQTask(MappedClass):
                 'kwargs.revision', 'kwargs.path'
             ],
             'args',
+            'time_queue',
         ]
 
     _id = FieldProperty(S.ObjectId)

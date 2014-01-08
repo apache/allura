@@ -29,7 +29,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {{ super() }}
 <script type="text/javascript">$(function() {
     {% set path = request.params.get('path', '') %}
-    {% if status == 'ready' %}
+    {% if status == 'complete' %}
         {% if 'no-redirect' not in request.params %}
             $(document).ready(function() {
                 window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
@@ -56,6 +56,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
         var delay = 500;
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
+                console.log(data)
                 if (data.status === 'complete') {
                     spinner.stop();
                     $('#snapshot_status h2').hide();
