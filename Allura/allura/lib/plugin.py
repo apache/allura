@@ -923,7 +923,7 @@ class UserPreferencesProvider(object):
         '''
         raise NotImplementedError, 'get_pref'
 
-    def save_pref(self, user, pref_name, pref_value):
+    def set_pref(self, user, pref_name, pref_value):
         '''
         :param user: a :class:`User <allura.model.auth.User>`
         :param str pref_name:
