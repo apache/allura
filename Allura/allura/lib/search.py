@@ -29,6 +29,7 @@ from pylons import request
 from pysolr import SolrError
 
 from allura.lib import helpers as h
+from allura.lib.solr import escape_solr_arg
 from allura.model import ArtifactReference
 from .markdown_extensions import ForgeExtension
 
@@ -96,7 +97,7 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, filte
         'mount_point_s:%s' % c.app.config.options.mount_point ]
     for name, values in (filter or {}).iteritems():
         field_name = name + '_s'
-        fq.append(' OR '.join('%s:%s' % (field_name, v) for v in values))
+        fq.append(' OR '.join('%s:%s' % (field_name, escape_solr_arg(v)) for v in values))
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)

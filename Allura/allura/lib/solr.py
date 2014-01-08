@@ -21,6 +21,43 @@ from tg import config
 from paste.deploy.converters import asbool
 import pysolr
 
+escape_rules = {'+': r'\+',
+               '-': r'\-',
+               '&': r'\&',
+               '|': r'\|',
+               '!': r'\!',
+               '(': r'\(',
+               ')': r'\)',
+               '{': r'\{',
+               '}': r'\}',
+               '[': r'\[',
+               ']': r'\]',
+               '^': r'\^',
+               '~': r'\~',
+               '*': r'\*',
+               '?': r'\?',
+               ':': r'\:',
+               '"': r'\"',
+               ';': r'\;'}
+
+
+def escaped_seq(term):
+    """ Yield the next string based on the
+        next character (either this char
+        or escaped version """
+    for char in term:
+        if char in escape_rules.keys():
+            yield escape_rules[char]
+        else:
+            yield char
+
+
+def escape_solr_arg(term):
+    """ Apply escaping to the passed in query terms
+        escaping special characters like : , etc"""
+    term = term.replace('\\', r'\\')   # escape \ first
+    return "".join([nextStr for nextStr in escaped_seq(term)])
+
 
 def make_solr_from_config(push_servers, query_server=None, **kwargs):
     """

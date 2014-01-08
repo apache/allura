@@ -27,3 +27,12 @@ class TestArtifact(unittest.TestCase):
         query = 'foo:1 AND bar:2 AND foo_bar_baz:3'
         q = M.Artifact.translate_query(query, fields)
         self.assertEqual(q, 'foo_s:1 AND bar_ws:2 AND foo_bar_baz:3')
+
+        query = '!status:wont-fix OR !status:closed'
+        q = M.Artifact.translate_query(query, fields)
+        self.assertEqual(q, '!status:wont\-fix OR !status:closed')
+
+        query = '!status:wont-fix OR !status:closed AND _milestone::'
+        fields = ['_milestone_s']
+        q = M.Artifact.translate_query(query, fields)
+        self.assertEqual(q, '!status:wont\-fix OR !status:closed AND _milestone_s:\:')

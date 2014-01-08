@@ -48,6 +48,7 @@ def get_facets(solr_hit):
         return {}
     def reformat(field):
         name, val = field
+        # drop "_s"
         name = name[:-2]
         new_val = []
         for i in range(0, len(val), 2):

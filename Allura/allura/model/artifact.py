@@ -31,8 +31,11 @@ from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
 from allura.lib import security
+
+from allura.lib.solr import escape_solr_arg
 from .session import main_orm_session
 from .session import project_orm_session
+
 from .session import artifact_orm_session
 from .index import ArtifactReference
 from .types import ACL, MarkdownCache
@@ -130,9 +133,18 @@ class Artifact(MappedClass):
     def translate_query(cls, q, fields):
         """Return a translated Solr query (``q``), where generic field
         identifiers are replaced by the 'strongly typed' versions defined in
-        ``fields``.
+        ``fields``. Escape arguments
 
         """
+        new_q = []
+        for part in q.split(' '):
+            if ':' in part:
+                field, val = part.split(':', 1)
+                new_q.append('%s:%s' % (field, escape_solr_arg(val)))
+            else:
+                new_q.append(escape_solr_arg(part))
+        q = ' '.join(new_q)
+
         for f in fields:
             if '_' in f:
                 base, typ = f.rsplit('_', 1)

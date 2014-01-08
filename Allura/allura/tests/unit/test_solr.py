@@ -24,7 +24,7 @@ from markupsafe import Markup
 from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test
-from allura.lib.solr import Solr
+from allura.lib.solr import Solr, escape_solr_arg
 from allura.lib.search import solarize, search_app
 
 
@@ -203,3 +203,8 @@ class TestSearch_app(unittest.TestCase):
                 'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
             }]
         ))
+
+    def test_escape_solr_arg(self):
+        text = 'milestone_s:: wont-fix'
+        escaped_text = escape_solr_arg(text)
+        assert_equal(escaped_text, 'milestone_s\:\: wont\-fix')
