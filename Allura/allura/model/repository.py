@@ -579,13 +579,11 @@ class Repository(Artifact, ActivityObject):
         '''Find any new commits in the repository and update'''
         try:
             log.info('... %r analyzing', self)
-            self.status = 'analyzing'
-            session(self).flush(self)
+            self.set_status('analyzing')
             refresh_repo(self, all_commits, notify, new_clone)
         finally:
             log.info('... %s ready', self)
-            self.status = 'ready'
-            session(self).flush(self)
+            self.set_status('ready')
 
     def push_upstream_context(self):
         project, rest=h.find_project(self.upstream_repo.name)
@@ -613,6 +611,26 @@ class Repository(Artifact, ActivityObject):
 
     def rev_to_commit_id(self, rev):
         raise NotImplementedError, 'rev_to_commit_id'
+
+    def set_status(self, status):
+        '''
+        Update (and flush) the repo status indicator.
+
+        Updates to the repo status (or any Repository field) are considered
+        project updates (because Repositories are Artifacts; see
+        `Artifact.__metaclass__.before_save`) and thus change `last_updated`
+        on `c.project`, which causes `c.project` to be flushed.
+
+        Because repo status changes can come at the end or middle of a long
+        operation, `c.project` can be quite stale, so this flushes and reloads
+        `c.project`.
+        '''
+        from allura.model import Project
+        session(c.project).flush(c.project)
+        session(c.project).expunge(c.project)
+        c.project = Project.query.get(_id=c.project._id)
+        self.status = status
+        session(self).flush(self)
 
 class MergeRequest(VersionedArtifact, ActivityObject):
     statuses=['open', 'merged', 'rejected']

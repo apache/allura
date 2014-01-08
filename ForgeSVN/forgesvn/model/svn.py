@@ -191,7 +191,7 @@ class SVNImplementation(M.RepositoryImplementation):
                                  cwd=self._repo.fs_path)
         if not skip_special_files:
             self._setup_special_files()
-        self._repo.status = 'ready'
+        self._repo.set_status('ready')
         # make first commit with dir structure
         if default_dirs:
             tmp_working_dir = tempfile.mkdtemp(prefix='allura-svn-r1-',
@@ -225,8 +225,7 @@ class SVNImplementation(M.RepositoryImplementation):
         p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate(input='p\n')
         if p.returncode != 0:
-            self._repo.status = 'ready'
-            session(self._repo).flush(self._repo)
+            self._repo.set_status('ready')
             raise SVNCalledProcessError(cmd, p.returncode, stdout, stderr)
         return stdout, stderr
 
@@ -246,8 +245,7 @@ class SVNImplementation(M.RepositoryImplementation):
                               'hooks', hook_name)
             os.remove(fn)
 
-        self._repo.status = 'importing'
-        session(self._repo).flush(self._repo)
+        self._repo.set_status('importing')
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
 

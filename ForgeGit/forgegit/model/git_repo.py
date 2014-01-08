@@ -138,7 +138,7 @@ class GitImplementation(M.RepositoryImplementation):
             shared='all')
         self.__dict__['_git'] = repo
         self._setup_special_files()
-        self._repo.status = 'ready'
+        self._repo.set_status('ready')
 
     def can_hotcopy(self, source_url):
         enabled = asbool(tg.config.get('scm.git.hotcopy', True))
@@ -148,8 +148,7 @@ class GitImplementation(M.RepositoryImplementation):
 
     def clone_from(self, source_url):
         '''Initialize a repo as a clone of another'''
-        self._repo.status = 'cloning'
-        session(self._repo).flush(self._repo)
+        self._repo.set_status('cloning')
         log.info('Initialize %r as a clone of %s',
                  self._repo, source_url)
         try:
@@ -170,8 +169,7 @@ class GitImplementation(M.RepositoryImplementation):
             self.__dict__['_git'] = repo
             self._setup_special_files(source_url)
         except:
-            self._repo.status = 'ready'
-            session(self._repo).flush(self._repo)
+            self._repo.set_status('ready')
             raise
 
     def commit(self, rev):
