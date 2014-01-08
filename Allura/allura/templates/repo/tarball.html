@@ -64,9 +64,13 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
                         window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
                     {% endif %}
                 } else {
+                    $('#snapshot_status h2').hide();
                     if (data.status === 'na' || data.status === 'error') {
+                        spinner.stop();
                         // something went wrong
                         $('#snapshot_status form').show();
+                    } else {
+                        $('#snapshot_status h2.busy').show();
                     }
                     if (delay < 60000){
                         delay = delay * 2;
@@ -85,7 +89,7 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 {% set path = request.params.get('path', '') %}
 <div id='snapshot_status'>
     <h2 class="busy">Generating snapshot...</h2>
-    <h2 class="ready">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
+    <h2 class="complete">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
     <h2 class="na">Checking snapshot status...</h2>
     <form action="tarball" method="post">
       <p>We're having trouble finding that snapshot. Would you like to resubmit?</p>
