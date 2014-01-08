@@ -398,7 +398,7 @@ td, td img {
   white-space: nowrap;
 }
 
-.hide {display:none;}
+.hidden {display:none;}
 
 blockquote {
   border-left: 1px solid #cccccc;
