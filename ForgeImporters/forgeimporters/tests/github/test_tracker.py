@@ -17,6 +17,7 @@
 
 from datetime import datetime
 from unittest import TestCase
+from urllib2 import HTTPError
 import mock
 
 from ...github import tracker
@@ -80,9 +81,11 @@ class TestTrackerImporter(TestCase):
         }
         importer = tracker.GitHubTrackerImporter()
         importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        extractor = mock.Mock()
+        extractor.urlopen().read.return_value = 'data'
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
-            importer.process_fields(ticket, issue)
+            importer.process_fields(extractor, ticket, issue)
             self.assertEqual(ticket.summary, 'title')
             self.assertEqual(ticket.description, '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
             self.assertEqual(ticket.status, 'New')
@@ -116,14 +119,28 @@ class TestTrackerImporter(TestCase):
 
     def test_get_attachments(self):
         importer = tracker.GitHubTrackerImporter()
+        extractor = mock.Mock()
+        extractor.urlopen().read.return_value = 'data'
         body = 'hello\n' \
         '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
         '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
-        new_body, attachments = importer._get_attachments(body)
+        new_body, attachments = importer._get_attachments(extractor, body)
         self.assertEqual(new_body, 'hello\n')
         self.assertEqual(len(attachments), 2)
         self.assertEqual(attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
         self.assertEqual(attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
+        self.assertEqual(attachments[0].file.read(), 'data')
+        self.assertEqual(attachments[1].file.read(), 'data')
+
+    def test_get_attachments_404(self):
+        importer = tracker.GitHubTrackerImporter()
+        extractor = mock.Mock()
+        extractor.urlopen.side_effect = HTTPError('url', 404, 'mock', None, None)
+        body = 'hello\n' \
+            '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n'
+        new_body, attachments = importer._get_attachments(extractor, body)
+        self.assertIsNotNone(attachments[0])
+        assert not hasattr(attachments[0], 'file')
 
     def test_process_comments(self):
         ticket = mock.Mock()
@@ -213,9 +230,11 @@ Hello
         }
         importer = tracker.GitHubTrackerImporter()
         importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        extractor = mock.Mock()
+        extractor.urlopen().read.return_value = 'data'
         with mock.patch.object(tracker, 'datetime') as dt:
             dt.strptime.side_effect = lambda s,f: s
-            importer.process_fields(ticket, issue)
+            importer.process_fields(extractor, ticket, issue)
         self.assertEqual(ticket.description.strip(), body_converted.strip())
 
     def test_github_markdown_converted_in_comments(self):

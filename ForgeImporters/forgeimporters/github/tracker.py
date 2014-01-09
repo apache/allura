@@ -16,7 +16,9 @@
 #       under the License.
 
 import re
+import logging
 from datetime import datetime
+from urllib2 import HTTPError
 
 try:
     from cStringIO import StringIO
@@ -50,6 +52,9 @@ from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.base import ToolImportForm
 from forgeimporters.github.utils import GitHubMarkdownConverter
+
+
+log = logging.getLogger(__name__)
 
 
 class GitHubTrackerImportForm(ToolImportForm):
@@ -127,7 +132,7 @@ class GitHubTrackerImporter(ToolImporter):
                         ticket_num=ticket_num,
                         import_id=import_id_converter.expand(ticket_num, app)
                     )
-                    self.process_fields(ticket, issue)
+                    self.process_fields(extractor, ticket, issue)
                     self.process_comments(extractor, ticket, issue)
                     self.process_events(extractor, ticket, issue)
                     self.process_milestones(ticket, issue)
@@ -153,7 +158,7 @@ class GitHubTrackerImporter(ToolImporter):
     def get_user_link(self, user):
         return u'[{0}](https://github.com/{0})'.format(user)
 
-    def process_fields(self, ticket, issue):
+    def process_fields(self, extractor, ticket, issue):
         ticket.summary = issue['title']
         ticket.status = issue['state']
         ticket.created_date = self.parse_datetime(issue['created_at'])
@@ -164,7 +169,7 @@ class GitHubTrackerImporter(ToolImporter):
         else:
             owner_line = ''
         # body processing happens here
-        body, attachments = self._get_attachments(issue['body'])
+        body, attachments = self._get_attachments(extractor, issue['body'])
         ticket.add_multiple_attachments(attachments)
         ticket.description = (
                 u'*Originally created by:* {creator}\n'
@@ -179,7 +184,7 @@ class GitHubTrackerImporter(ToolImporter):
 
     def process_comments(self, extractor, ticket, issue):
         for comment in extractor.iter_comments(issue):
-            body, attachments = self._get_attachments(comment['body'])
+            body, attachments = self._get_attachments(extractor, comment['body'])
             if comment['user']:
                 posted_by = u'*Originally posted by:* {}\n\n'.format(
                     self.get_user_link(comment['user']['login']))
@@ -240,7 +245,7 @@ class GitHubTrackerImporter(ToolImporter):
             })
         return [global_milestones]
 
-    def _get_attachments(self, body):
+    def _get_attachments(self, extractor, body):
         # at github, attachments are images only and are included into comment's body
         # usual syntax is
         # ![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n
@@ -258,19 +263,30 @@ class GitHubTrackerImporter(ToolImporter):
             body = body.replace(match.group(0), '')
             # stripping url and extension
             attachments.append(Attachment(
+                extractor,
                 match.group(1),  # url
                 'attach{}.{}'.format(i + 1, match.group(2)) # extension
             ))
         return (body, attachments)
 
 class Attachment(object):
-    def __init__(self, url, filename):
+    def __init__(self, extractor, url, filename):
         self.url = url
         self.filename = filename
         self.type = None
+        file = self.get_file(extractor)
+        if file:
+            # don't set unless valid (add_multiple_attachments uses hasattr)
+            self.file = file
 
-    @property
-    def file(self):
-        fp_ish = GitHubProjectExtractor.urlopen(self.url)
-        fp = StringIO(fp_ish.read())
-        return fp
+    def get_file(self, extractor):
+        try:
+            fp_ish = extractor.urlopen(self.url)
+            fp = StringIO(fp_ish.read())
+            return fp
+        except HTTPError as e:
+            if e.code == 404:
+                log.error('Unable to load attachment: %s', self.url)
+                return None
+            else:
+                raise
