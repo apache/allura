@@ -95,6 +95,36 @@ class RepoImplTestBase(object):
         self.assertEqual(run.parent_commit_ids, [])
 
 
+class RepoTestBase(unittest.TestCase):
+    def setUp(self):
+        setup_basic_test()
+
+    @mock.patch('allura.model.repository.Repository.url')
+    def test_refresh_url(self, url):
+        url.return_value = '/p/test/repo'
+        c.app = mock.Mock(**{'config._id': 'deadbeef'})
+        repo = M.repository.Repository()
+        cases = [
+            [
+                None,
+                'http://localhost:8080/auth/refresh_repo/p/test/repo',
+            ],
+            [
+                'https://somewhere.com',
+                'https://somewhere.com/auth/refresh_repo/p/test/repo',
+            ],
+            [
+                'http://somewhere.com/',
+                'http://somewhere.com/auth/refresh_repo/p/test/repo',
+            ]]
+        for base_url, result in cases:
+            values = {}
+            if base_url:
+                values['base_url'] = base_url
+            with mock.patch.dict(config, values, clear=True):
+                self.assertEqual(result, repo.refresh_url())
+
+
 class TestLastCommit(unittest.TestCase):
     def setUp(self):
         setup_basic_test()

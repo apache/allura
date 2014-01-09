@@ -417,8 +417,7 @@ class GitImplementation(M.RepositoryImplementation):
     def _setup_hooks(self, source_path=None):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
-            url=tg.config.get('base_url', 'http://localhost:8080')
-            + '/auth/refresh_repo' + self._repo.url())
+            url=self._repo.refresh_url())
         fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-receive')
         with open(fn, 'w') as fp:
             fp.write(text)
