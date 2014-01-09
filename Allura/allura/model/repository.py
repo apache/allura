@@ -498,6 +498,13 @@ class Repository(Artifact, ActivityObject):
     def url(self):
         return self.app_config.url()
 
+    def refresh_url(self):
+        return '/'.join([
+                tg.config.get('base_url', 'http://localhost:8080').rstrip('/'),
+                'auth/refresh_repo',
+                self.url().lstrip('/'),
+            ])
+
     def shorthand_id(self):
         return self.name
 

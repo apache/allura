@@ -630,8 +630,7 @@ class SVNImplementation(M.RepositoryImplementation):
         # setup a post-commit hook to notify Allura of changes to the repo
         # the hook should also call the user-defined post-commit-user hook
         text = self.post_receive_template.substitute(
-            url=tg.config.get('base_url', 'http://localhost:8080')
-            + '/auth/refresh_repo' + self._repo.url())
+            url=self._repo.refresh_url())
         fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
