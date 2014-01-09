@@ -357,31 +357,20 @@ class Repository(Artifact, ActivityObject):
                          filename)
         return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
-    def get_tarball_status(self, revision, path=None, task_id=None):
+    def get_tarball_status(self, revision, path=None):
         pathname = os.path.join(self.tarball_path, self.tarball_filename(revision, path))
         filename = '%s%s' % (pathname, '.zip')
-        tmpfilename = '%s%s' % (pathname, '.tmp')
-
-        # check for state of task in MonQTask
-        path = '' if path is None else path
-        task_query = MonQTask.query.find({
-            'task_name': 'allura.tasks.repo_tasks.tarball',
-            '$or': [
-                {'kwargs.path': path, 'kwargs.revision': revision},
-                {'args':[revision, path]}]})
-        task = task_query.sort(
-            [('time_queue', pymongo.DESCENDING),]).limit(1).first()
-
         if os.path.isfile(filename):
             return 'complete'
 
-        if not task or \
-            (task.state == 'complete' and not os.path.isfile(filename)):
-            return None
-        if task.state == 'busy' and str(task._id) == task_id:
-            return 'self'
+        # file doesn't exist, check for busy task
+        task = MonQTask.query.get(**{
+            'task_name': 'allura.tasks.repo_tasks.tarball',
+            'args': [revision, path or ''],
+            'state': {'$in': ['busy', 'ready']},
+            })
 
-        return task.state
+        return task.state if task else None
 
 
     def __repr__(self): # pragma no cover

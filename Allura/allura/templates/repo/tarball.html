@@ -53,25 +53,27 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
             left: 10 // Left position relative to parent in px
         };
         var spinner = new Spinner(opts).spin($('#snapshot_status')[0]);
-        var delay = 500;
+        var delay = 500, elapsed = 0;
+        $('#snapshot_status h2.busy').show();
         function check_status() {
             $.get('{{commit.url()}}tarball_status?path={{path}}', function(data) {
                 if (data.status === 'complete') {
                     spinner.stop();
                     $('#snapshot_status h2').hide();
-                    $('#snapshot_status h2.' + data.status).show();
+                    $('#snapshot_status h2.complete').show();
                     {% if 'no-redirect' not in request.params %}
                         window.location.href = '{{c.app.repo.tarball_url(revision, path)}}';
                     {% endif %}
                 } else {
-                    $('#snapshot_status h2').hide();
-                    if (data.status === 'na' || data.status === 'error') {
-                        spinner.stop();
+                    if (data.status === 'ready' || data.status === 'busy') {
+                        // keep waiting
+                    } else if (data.status === 'error' || elapsed > 5000) {
                         // something went wrong
+                        spinner.stop();
+                        $('#snapshot_status h2').hide();
                         $('#snapshot_status form').show();
-                    } else {
-                        $('#snapshot_status h2.busy').show();
                     }
+                    elapsed += delay;
                     if (delay < 60000){
                         delay = delay * 2;
                     }
@@ -90,7 +92,6 @@ Commit <a href="{{commit.url()}}">{{commit.shorthand_id()}}</a> {{commit_labels(
 <div id='snapshot_status'>
     <h2 class="busy">Generating snapshot...</h2>
     <h2 class="complete">Your download will begin shortly, or use this <a href="{{c.app.repo.tarball_url(revision, path)}}">direct link</a>.</h2>
-    <h2 class="na">Checking snapshot status...</h2>
     <form action="tarball" method="post">
       <p>We're having trouble finding that snapshot. Would you like to resubmit?</p>
       <input type="hidden" name="path" value="{{path}}" />

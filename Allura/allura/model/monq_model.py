@@ -76,12 +76,7 @@ class MonQTask(MappedClass):
                 # have an index on task_name
                 'state', 'task_name', 'time_queue'
             ],
-            [
-                # used while user quering snapsot
-                'kwargs.revision', 'kwargs.path'
-            ],
             'args',
-            'time_queue',
         ]
 
     _id = FieldProperty(S.ObjectId)
@@ -252,7 +247,6 @@ class MonQTask(MappedClass):
         old_cuser = getattr(c, 'user', None)
         try:
             func = self.function
-            func.task_id = str(self._id)
             c.project = M.Project.query.get(_id=self.context.project_id)
             c.app = None
             if c.project:

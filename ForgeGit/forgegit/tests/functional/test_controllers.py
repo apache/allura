@@ -346,9 +346,9 @@ class TestRootController(_TestCase):
         assert '/p/test/src-git/ci/master/tarball' in r
         assert 'Download Snapshot' in r
         r = self.app.post('/p/test/src-git/ci/master/tarball').follow()
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         r = self.app.get('/p/test/src-git/ci/master/tarball')
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get(ci + 'tarball_status')

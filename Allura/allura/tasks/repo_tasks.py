@@ -120,13 +120,12 @@ def reclone_repo(*args, **kwargs):
         g.post_event('repo_clone_task_failed', source_url, source_path, traceback.format_exc())
 
 @task
-def tarball(revision=None, path=None):
+def tarball(revision, path):
     log = logging.getLogger(__name__)
     if revision:
         repo = c.app.repo
-        status = repo.get_tarball_status(revision, path,
-            task_id=tarball.task_id)
-        if status in ('busy', 'complete'):
+        status = repo.get_tarball_status(revision, path)
+        if status == 'complete':
             log.info('Skipping snapshot for repository: %s:%s rev %s because it is already %s' %
                      (c.project.shortname, c.app.config.options.mount_point, revision, status))
         else:

@@ -411,14 +411,11 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         # task created
         assert_equal(self.repo.get_tarball_status('HEAD'), 'ready')
 
-        task = M.MonQTask.query.find({
+        task = M.MonQTask.query.get(**{
             'task_name': 'allura.tasks.repo_tasks.tarball',
-            '$or': [
-                {'kwargs':
-                    {'path': '',
-                     'revision': 'HEAD'}},
-                    {'args':['HEAD', '']}]
-            }).sort([('time_queue', pymongo.DESCENDING),]).limit(1).first()
+            'args': ['HEAD', ''],
+            'state': {'$in': ['busy', 'ready']},
+            })
 
         # task is running
         task.state = 'busy'
