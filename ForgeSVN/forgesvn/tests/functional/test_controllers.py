@@ -195,13 +195,13 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/3/tree/')
         assert 'Download Snapshot' in r
         r = self.app.post('/src/3/tarball').follow()
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         r = self.app.get('/src/3/tarball')
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/src/3/tarball_status')
-        assert '{"status": "ready"}' in r
+        assert '{"status": "complete"}' in r
         r = self.app.get('/src/3/tarball')
         assert 'Your download will begin shortly' in r
 
@@ -210,13 +210,13 @@ class TestRootController(SVNTestController):
         r = self.app.get('/src/6/tree/')
         assert 'Download Snapshot' in r
         r = self.app.post('/src/6/tarball').follow()
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         r = self.app.get('/src/6/tarball')
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/src/6/tarball_status')
-        assert '{"status": "ready"}' in r
+        assert '{"status": "complete"}' in r
         r = self.app.get('/src/6/tarball')
         assert 'Your download will begin shortly' in r
 
@@ -236,39 +236,39 @@ class TestRootController(SVNTestController):
         assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert_equal(r.json['status'], 'na')
+        assert_equal(r.json['status'], None)
         r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/tags/tag-1.0')).follow()
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert_equal(r.json['status'], 'na')
+        assert_equal(r.json['status'], None)
         r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/trunk/')).follow()
-        assert 'Checking snapshot status...' in r
+        assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
-        assert_equal(r.json['status'], 'na')
+        assert_equal(r.json['status'], None)
 
         # All of the following also should be ready because...
         # ...this is essentially the same as trunk snapshot
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk/some/path/')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
         r = self.app.get('/p/test/svn-tags/19/tarball_status')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
         # ...the same as trunk, 'cause concrete tag isn't specified
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
         # ...the same as trunk, 'cause concrete branch isn't specified
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
         # ...this is essentially the same as tag snapshot
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
-        assert_equal(r.json['status'], 'ready')
+        assert_equal(r.json['status'], 'complete')
 
 
 class TestImportController(SVNTestController):
