@@ -37,7 +37,7 @@ mediawiki==0.0.1
 
 # development
 blessings==1.3
-nose-progressive==1.3
+nose-progressive==1.5
 pyprof2calltree==1.1.0
 repoze.profile==1.3
 
