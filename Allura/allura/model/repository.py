@@ -626,9 +626,11 @@ class Repository(Artifact, ActivityObject):
         `c.project`.
         '''
         from allura.model import Project
-        session(c.project).flush(c.project)
-        session(c.project).expunge(c.project)
-        c.project = Project.query.get(_id=c.project._id)
+        project_session = session(c.project)
+        if project_session:
+            session(c.project).flush(c.project)
+            session(c.project).expunge(c.project)
+            c.project = Project.query.get(_id=c.project._id)
         self.status = status
         session(self).flush(self)
 
