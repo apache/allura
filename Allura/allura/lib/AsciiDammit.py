@@ -23,7 +23,6 @@ __date__ = "$Date: 2009/04/28 10:45:03 $"
 __license__ = "Public domain"
 
 import re
-import string
 import types
 
 CHARS = {'\x80': ('EUR', 'euro'),

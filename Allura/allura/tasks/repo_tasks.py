@@ -47,7 +47,7 @@ def clone(cloned_from_path, cloned_from_name, cloned_from_url):
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
-    except Exception, e:
+    except Exception:
         g.post_event('repo_clone_task_failed', cloned_from_url,
                      cloned_from_path, traceback.format_exc())
 
@@ -126,7 +126,7 @@ def reclone_repo(*args, **kwargs):
             c.user, c.app.repo, 'created',
             text='Repository %s/%s created' % (
                 c.project.shortname, c.app.config.options.mount_point))
-    except Exception, e:
+    except Exception:
         g.post_event('repo_clone_task_failed', source_url,
                      source_path, traceback.format_exc())
 

@@ -16,23 +16,20 @@
 #       under the License.
 
 import logging
-from pprint import pformat
 
 import pkg_resources
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators
-from tg import expose, redirect, validate, response, config, flash
+from tg import expose, redirect, validate, flash
 from webob import exc
-from datetime import timedelta, datetime
 
 from allura import version
 from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
-from allura.lib.helpers import DateTimeConverter
 from allura.lib.security import require_access
 from allura.lib.plugin import AuthenticationProvider
-from allura.model import User, Feed, ACE, ProjectRole
+from allura.model import User, ACE, ProjectRole
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
 from allura.lib.decorators import require_post

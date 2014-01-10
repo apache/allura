@@ -15,14 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from pylons import tmpl_context as c
 
 from forgetracker.tests.unit import TrackerTestWithModel
 from forgetracker.widgets import ticket_form
-from forgetracker.model import Globals
 
 
 class TestTicketForm(TrackerTestWithModel):

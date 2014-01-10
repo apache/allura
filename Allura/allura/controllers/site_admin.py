@@ -16,10 +16,8 @@
 #       under the License.
 
 import re
-import json
 import logging
 from datetime import datetime, timedelta
-from collections import defaultdict
 
 from tg import expose, validate, flash, config, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
@@ -27,7 +25,7 @@ from ming.orm import session
 import pymongo
 import bson
 import tg
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound
@@ -284,11 +282,11 @@ class TaskManagerController(object):
         now = datetime.utcnow()
         try:
             page_num = int(page_num)
-        except ValueError as e:
+        except ValueError:
             page_num = 1
         try:
             minutes = int(minutes)
-        except ValueError as e:
+        except ValueError:
             minutes = 1
         start_dt = now - timedelta(minutes=(page_num - 1) * minutes)
         end_dt = now - timedelta(minutes=page_num * minutes)
@@ -327,7 +325,7 @@ class TaskManagerController(object):
     def view(self, task_id):
         try:
             task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
-        except bson.errors.InvalidId as e:
+        except bson.errors.InvalidId:
             task = None
         if task:
             task.project = M.Project.query.get(_id=task.context.project_id)
@@ -364,7 +362,7 @@ class TaskManagerController(object):
     def resubmit(self, task_id):
         try:
             task = M.monq_model.MonQTask.query.get(_id=bson.ObjectId(task_id))
-        except bson.errors.InvalidId as e:
+        except bson.errors.InvalidId:
             task = None
         if task is None:
             raise HTTPNotFound()

@@ -17,7 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 import operator
 import shutil
 import sys
@@ -33,7 +32,6 @@ from nose.tools import assert_in
 from ming.orm import FieldProperty, Mapper
 from ming.orm import ThreadLocalORMSession
 from testfixtures import LogCapture
-from IPython.testing.decorators import onlyif
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 

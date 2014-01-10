@@ -20,12 +20,10 @@ import json
 import logging
 from pprint import pformat
 from urllib import unquote
-from datetime import datetime
 
 # Non-stdlib imports
-from tg import expose, validate, redirect, response, flash, jsonify
+from tg import expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from tg.controllers import RestController
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
 from formencode import validators

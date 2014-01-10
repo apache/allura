@@ -22,10 +22,7 @@ Remove the subject FieldProperty from all ForumPost objects. [#2071]
 import logging
 import sys
 
-from ming.orm import state
-
 from allura import model as M
-from forgediscussion import model as DM
 
 log = logging.getLogger(__name__)
 

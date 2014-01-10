@@ -16,11 +16,9 @@
 #       under the License.
 
 import logging
-from collections import defaultdict
 from datetime import datetime
 from urlparse import urlparse
 import json
-import os
 from operator import itemgetter
 
 import pkg_resources
@@ -286,7 +284,7 @@ class ProjectAdminController(BaseController):
                 raise ValueError('Invalid threshold')
             c.project.set_tool_data(
                 'allura', grouping_threshold=grouping_threshold)
-        except ValueError as e:
+        except ValueError:
             flash('Invalid threshold', 'error')
         redirect('tools')
 

@@ -93,7 +93,7 @@ class TestRootController(SVNTestController):
         self.app.get('/svn/')
 
     def test_commit_browser(self):
-        resp = self.app.get('/src/commit_browser')
+        self.app.get('/src/commit_browser')
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
@@ -156,7 +156,7 @@ class TestRootController(SVNTestController):
         assert 'var hash = window.location.hash.substring(1);' in resp
 
     def test_invalid_file(self):
-        resp = self.app.get('/src/1/tree/READMEz', status=404)
+        self.app.get('/src/1/tree/READMEz', status=404)
 
     def test_diff(self):
         resp = self.app.get('/src/3/tree/README?diff=2')
@@ -292,7 +292,7 @@ class TestImportController(SVNTestController):
 
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     def test_do_import(self, tasks):
-        r = self.app.post('/p/test/admin/src/importer/do_import',
+        self.app.post('/p/test/admin/src/importer/do_import',
                           {'checkout_url': 'http://fake.svn/'})
         assert not tasks.reclone.post.called
 
@@ -304,7 +304,7 @@ class TestImportController(SVNTestController):
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_do_import_empty_repo(self, tasks):
-        r = self.app.post('/p/test/admin/empty/importer/do_import',
+        self.app.post('/p/test/admin/empty/importer/do_import',
                           {'checkout_url': 'http://fake.svn/'})
         assert tasks.reclone.post.called
 

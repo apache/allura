@@ -183,7 +183,7 @@ class ForgeTrackerImporter(ToolImporter):
             app.globals.invalidate_bin_counts()
             ThreadLocalORMSession.flush_all()
             return app
-        except Exception as e:
+        except Exception:
             h.make_app_admin_only(app)
             raise
         finally:

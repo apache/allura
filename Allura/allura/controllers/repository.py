@@ -16,11 +16,9 @@
 #       under the License.
 
 import os
-import json
 import logging
-import re
 import difflib
-from urllib import quote, unquote, quote_plus
+from urllib import quote, unquote
 from collections import defaultdict
 from itertools import islice
 
@@ -28,7 +26,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from webob import exc
 import tg
-from tg import redirect, expose, flash, url, validate
+from tg import redirect, expose, flash, validate
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from tg import session as web_session
 from formencode import validators
@@ -53,7 +51,6 @@ from allura.controllers.base import DispatchIndex
 from allura.controllers.feed import FeedController, FeedArgs
 from allura.lib.diff import HtmlSideBySideDiff
 from paste.deploy.converters import asbool
-from allura.app import SitemapEntry
 from .base import BaseController
 
 log = logging.getLogger(__name__)

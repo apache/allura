@@ -28,7 +28,7 @@ import tg
 from paste.script import command
 from paste.deploy.converters import asint
 
-from ming.orm import session, ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession
 
 import allura
 from allura.command import base

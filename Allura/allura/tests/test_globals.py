@@ -24,11 +24,10 @@ import allura
 import unittest
 import hashlib
 from mock import patch
-from urllib import quote
 
 from bson import ObjectId
 
-from nose.tools import with_setup, assert_equal, assert_in, assert_not_in
+from nose.tools import with_setup, assert_equal, assert_in
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.orm import ThreadLocalORMSession
@@ -551,9 +550,8 @@ def test_hideawards_macro():
     project = M.Project.query.get(
         neighborhood_id=p_nbhd._id, shortname=u'test')
 
-    award_grant = M.AwardGrant(award=award,
-                               granted_by_neighborhood=p_nbhd,
-                               granted_to_project=project)
+    M.AwardGrant(award=award, granted_by_neighborhood=p_nbhd,
+            granted_to_project=project)
 
     ThreadLocalORMSession.flush_all()
 

@@ -15,16 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import logging
-import string
-import os
-from urllib import urlencode
-
-import bson
-from tg import expose, session, flash, redirect, validate, config
-from tg.decorators import with_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from tg import expose, flash, redirect, validate
 from string import digits, lowercase
 
 from allura.lib.security import require_authenticated
@@ -32,7 +23,6 @@ from allura import model as M
 from allura.lib.decorators import require_post
 from allura.controllers import BaseController
 from allura.lib.widgets import forms
-from allura.model import TroveCategory
 
 
 class F(object):

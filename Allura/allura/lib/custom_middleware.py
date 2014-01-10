@@ -18,7 +18,6 @@
 import os
 import re
 import logging
-from contextlib import contextmanager
 
 import tg
 import pkg_resources

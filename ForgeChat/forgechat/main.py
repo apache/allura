@@ -24,7 +24,7 @@ from datetime import date, time, datetime, timedelta
 # Non-stdlib imports
 from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 from formencode import validators
 
 # Pyforge-specific imports

@@ -79,7 +79,6 @@ class TestSecurity(TestController):
     @td.with_wiki
     def test_all_allowed(self):
         wiki = c.project.app_instance('wiki')
-        page = WM.Page.query.get(app_config_id=wiki.config._id)
         admin_role = M.ProjectRole.by_name('Admin')
         dev_role = M.ProjectRole.by_name('Developer')
         member_role = M.ProjectRole.by_name('Member')

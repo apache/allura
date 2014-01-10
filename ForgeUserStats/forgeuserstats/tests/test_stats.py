@@ -18,7 +18,6 @@
 import pkg_resources
 import unittest
 
-from pylons import app_globals as g
 from pylons import tmpl_context as c
 
 from alluratest.controller import TestController, setup_basic_test, setup_global_objects
@@ -27,7 +26,6 @@ from allura.lib import helpers as h
 from allura.model import User
 from allura import model as M
 
-from forgewiki import model as WM
 from forgetracker import model as TM
 
 
@@ -48,7 +46,7 @@ class TestStats(TestController):
     def test_login(self):
         user = User.by_username('test-user')
         init_logins = user.stats.tot_logins_count
-        r = self.app.post('/auth/do_login', params=dict(
+        self.app.post('/auth/do_login', params=dict(
             username=user.username, password='foo'))
 
         assert user.stats.tot_logins_count == 1 + init_logins
@@ -102,7 +100,7 @@ class TestStats(TestController):
         initial_tickets_artifacts = c.user.stats.getArtifacts(
             art_type="Ticket")
 
-        r = self.app.post('/tickets/save_ticket',
+        self.app.post('/tickets/save_ticket',
                           params={'ticket_form.summary': 'test',
                                   'ticket_form.assigned_to': str(c.user.username)},
                           extra_environ=dict(username=str(c.user.username)))
@@ -120,7 +118,7 @@ class TestStats(TestController):
         assert tickets_artifacts[
             'modified'] == initial_tickets_artifacts['modified']
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
+        self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
                           params={'ticket_form.ticket_num': ticketnum,
                                   'ticket_form.summary': 'footext3',
                                   'ticket_form.status': 'closed'},
@@ -137,7 +135,7 @@ class TestStats(TestController):
         assert tickets_artifacts[
             'modified'] == initial_tickets_artifacts['modified'] + 1
 
-        r = self.app.post('/tickets/save_ticket',
+        self.app.post('/tickets/save_ticket',
                           params={'ticket_form.summary': 'test2'},
                           extra_environ=dict(username=str(c.user.username)))
 
@@ -154,7 +152,7 @@ class TestStats(TestController):
         assert tickets_artifacts[
             'modified'] == initial_tickets_artifacts['modified'] + 1
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
+        self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
                           params={'ticket_form.ticket_num': ticketnum,
                                   'ticket_form.summary': 'test2',
                                   'ticket_form.assigned_to': str(c.user.username)},
@@ -171,7 +169,7 @@ class TestStats(TestController):
         assert tickets_artifacts[
             'modified'] == initial_tickets_artifacts['modified'] + 2
 
-        r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
+        self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
                           params={'ticket_form.ticket_num': ticketnum,
                                   'ticket_form.summary': 'test2',
                                   'ticket_form.assigned_to': 'test-user'},
@@ -197,7 +195,7 @@ class TestGitCommit(TestController, unittest.TestCase):
 
         user = User.by_username('test-admin')
         user.set_password('testpassword')
-        addr = M.EmailAddress.upsert('rcopeland@geek.net')
+        M.EmailAddress.upsert('rcopeland@geek.net')
         user.claim_address('rcopeland@geek.net')
         self.setup_with_tools()
 

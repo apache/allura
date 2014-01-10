@@ -25,7 +25,6 @@ from ming.orm import ThreadLocalORMSession
 from allura import model as M
 from allura.lib import utils
 from forgewiki import model as WM
-from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger(__name__)
 

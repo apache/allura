@@ -531,7 +531,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
             convtime2 = loctime2.astimezone(chosentimezone)
 
             dif_days_start = convtime1.weekday() - today.weekday()
-            dif_days_end = convtime2.weekday() - today.weekday()
             index = (week_day.index(t['week_day']) + dif_days_start) % 7
             week_day_start = week_day[index]
             week_day_end = week_day[index]

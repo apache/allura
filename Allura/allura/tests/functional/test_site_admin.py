@@ -46,7 +46,7 @@ class TestSiteAdmin(TestController):
         assert cells[0].contents[0] == 'Adobe', cells[0].contents[0]
 
     def test_tickets_access(self):
-        r = self.app.get('/nf/admin/api_tickets', extra_environ=dict(
+        self.app.get('/nf/admin/api_tickets', extra_environ=dict(
             username='test-user'), status=403)
 
     def test_new_projects_access(self):
@@ -110,7 +110,7 @@ class TestSiteAdmin(TestController):
         r = self.app.get('/nf/admin/task_manager',
                          extra_environ=dict(username='*anonymous'), status=302)
         import math
-        task = M.MonQTask.post(math.ceil, (12.5,))
+        M.MonQTask.post(math.ceil, (12.5,))
         r = self.app.get('/nf/admin/task_manager?page_num=1')
         assert 'math.ceil' in r, r
 

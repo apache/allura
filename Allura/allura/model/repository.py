@@ -15,28 +15,23 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import os
 import stat
-import errno
 import mimetypes
 import logging
 import string
 import re
 from subprocess import Popen, PIPE
-from difflib import SequenceMatcher
 from hashlib import sha1
 from datetime import datetime
 from time import time
 from collections import defaultdict
-from itertools import izip
 from urlparse import urljoin
-from urllib import quote
 from threading import Thread
 from Queue import Queue
 
 import tg
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asint
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 import pymongo
@@ -45,17 +40,13 @@ import pymongo.errors
 from ming import schema as S
 from ming.utils import LazyProperty
 from ming.orm import FieldProperty, session, Mapper
-from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
 from allura.lib import utils
 
-from .artifact import Artifact, VersionedArtifact, Feed
+from .artifact import Artifact, VersionedArtifact
 from .auth import User
-from .session import repository_orm_session, project_orm_session
-from .notification import Notification
 from .repo_refresh import refresh_repo, unknown_commit_ids as unknown_commit_ids_repo
-from .repo import CommitRunDoc, QSIZE
 from .timeline import ActivityObject
 from .monq_model import MonQTask
 

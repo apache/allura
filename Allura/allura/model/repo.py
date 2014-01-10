@@ -17,7 +17,6 @@
 
 import os
 import re
-import sys
 import logging
 from hashlib import sha1
 from itertools import chain
@@ -40,8 +39,8 @@ from allura.lib import helpers as h
 from allura.lib.security import has_access
 
 from .auth import User
-from .project import AppConfig, Project
-from .session import main_doc_session, project_doc_session
+from .project import AppConfig
+from .session import main_doc_session
 from .session import repository_orm_session
 from .timeline import ActivityObject
 
@@ -255,7 +254,7 @@ class Commit(RepoObject, ActivityObject):
                 return None
             ci.set_context(self.repo)
             return ci
-        except IndexError as e:
+        except IndexError:
             return None
 
     def climb_commit_tree(self, predicate=None):
@@ -716,12 +715,12 @@ class Blob(object):
         if prev is not None:
             try:
                 prev = prev.get_path(path, create=False)
-            except KeyError as e:
+            except KeyError:
                 prev = None
         if next is not None:
             try:
                 next = next.get_path(path, create=False)
-            except KeyError as e:
+            except KeyError:
                 next = None
         return dict(
             prev=prev,

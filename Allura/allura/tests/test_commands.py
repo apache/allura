@@ -26,7 +26,6 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import base, script, set_neighborhood_features, \
     create_neighborhood, show_models, taskd_cleanup
 from allura import model as M
-from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
 

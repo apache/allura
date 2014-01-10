@@ -30,7 +30,6 @@ from webob import exc as wexc
 
 import allura.tasks.repo_tasks
 from allura import model as M
-from allura.model.project import TroveCategory
 from allura.lib import validators as V
 from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_access
@@ -45,7 +44,6 @@ from allura.lib.widgets import (
     LoginForm,
     ForgottenPasswordForm)
 from allura.lib.widgets import forms
-from allura.lib import exceptions as exc
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)

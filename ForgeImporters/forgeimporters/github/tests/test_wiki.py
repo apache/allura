@@ -18,7 +18,7 @@
 #       under the License.
 
 from unittest import TestCase
-from nose.tools import assert_equal, assert_not_in
+from nose.tools import assert_equal
 from mock import Mock, patch, call
 from ming.odm import ThreadLocalORMSession
 
@@ -589,5 +589,5 @@ class TestGitHubWikiImportController(TestController, TestCase):
     @with_wiki
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
-        r = self.app.get(self.url)
+        self.app.get(self.url)
         oauth_begin.assert_called_once()

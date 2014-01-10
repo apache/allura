@@ -64,7 +64,6 @@ class ProjectHomeApp(Application):
     @property
     @h.exceptionless([], log)
     def sitemap(self):
-        menu_id = 'Home'
         return [
             SitemapEntry('Home', '..')]
 

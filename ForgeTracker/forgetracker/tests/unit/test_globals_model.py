@@ -21,7 +21,6 @@ import mock
 from nose.tools import assert_equal
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
-from bson import ObjectId
 
 import forgetracker
 from forgetracker.model import Globals

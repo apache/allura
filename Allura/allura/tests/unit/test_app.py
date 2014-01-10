@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
 from unittest import TestCase
 
 from allura.app import Application

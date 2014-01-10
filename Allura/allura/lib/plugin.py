@@ -50,7 +50,6 @@ from ming.orm import ThreadLocalORMSession
 from allura.lib import helpers as h
 from allura.lib import security
 from allura.lib import exceptions as forge_exc
-from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 

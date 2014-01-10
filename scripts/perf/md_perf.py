@@ -47,11 +47,7 @@ sys     0m1.112s
 
 import argparse
 import cProfile
-import re
-import sys
 import time
-
-from mock import patch
 
 try:
     import re2

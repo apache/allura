@@ -16,11 +16,10 @@
 #       under the License.
 
 from unittest import TestCase
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 from ming.odm import ThreadLocalORMSession
 
 from allura.tests import TestController
-from allura.tests.decorators import with_tool
 from allura import model as M
 
 
@@ -32,7 +31,6 @@ test_project_with_repo = 'test2'
 from forgeimporters.google.code import (
     get_repo_url,
     GoogleRepoImporter,
-    GoogleRepoImportController,
 )
 
 

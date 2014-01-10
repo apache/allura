@@ -15,8 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import pylons
-
 import ew as ew_core
 import ew.jinja2_ew as ew
 

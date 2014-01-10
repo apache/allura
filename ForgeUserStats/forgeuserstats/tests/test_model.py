@@ -41,8 +41,6 @@ with_git = td.with_tool(test_project_with_repo, 'Git',
 class TestUserStats(unittest.TestCase):
 
     def setUp(self):
-        from allura.model import User
-
         setup_basic_test()
         setup_global_objects()
         self.user = User.by_username('test-user-2')

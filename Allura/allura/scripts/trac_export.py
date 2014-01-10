@@ -28,7 +28,6 @@ import re
 from optparse import OptionParser
 from itertools import islice
 
-import feedparser
 from BeautifulSoup import BeautifulSoup, NavigableString
 import dateutil.parser
 import pytz

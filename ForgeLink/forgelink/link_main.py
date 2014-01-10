@@ -20,9 +20,8 @@ import logging
 import json
 
 # Non-stdlib imports
-import pkg_resources
-from tg import expose, validate, redirect, response, flash, jsonify
-from pylons import tmpl_context as c, app_globals as g
+from tg import expose, redirect, flash, jsonify
+from pylons import tmpl_context as c
 from pylons import request
 
 # Pyforge-specific imports

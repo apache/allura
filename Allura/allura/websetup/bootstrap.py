@@ -37,7 +37,6 @@ import allura
 from allura.lib import plugin
 from allura.lib import helpers as h
 from allura import model as M
-from allura.websetup import schema
 from allura.command import EnsureIndexCommand
 from allura.command import CreateTroveCategoriesCommand
 

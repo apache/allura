@@ -25,7 +25,7 @@ from ming.orm import ThreadLocalORMSession
 import mock
 import bson
 
-from alluratest.controller import setup_basic_test, setup_global_objects, REGISTRY
+from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.model.notification import MailFooter
 from allura.lib import helpers as h
@@ -190,7 +190,7 @@ class TestPostNotifications(unittest.TestCase):
 
     def test_post_user_notification(self):
         u = M.User.query.get(username='test-admin')
-        n = M.Notification.post_user(u, self.pg, 'metadata')
+        M.Notification.post_user(u, self.pg, 'metadata')
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         flash_msgs = list(h.pop_user_notifications(u))

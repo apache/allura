@@ -16,17 +16,11 @@
 #       under the License.
 
 import logging
-import re
-
-from pylons import tmpl_context as c
-
 from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 
 from allura.lib import utils
-from forgetracker import model as TM
-from forgewiki.wiki_main import ForgeWikiApp
 
 log = logging.getLogger(__name__)
 

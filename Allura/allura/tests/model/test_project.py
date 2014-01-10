@@ -20,7 +20,7 @@
 """
 Model tests for project
 """
-from nose.tools import with_setup, assert_equals, assert_in
+from nose.tools import assert_equals, assert_in
 from pylons import tmpl_context as c
 from ming.orm.ormsession import ThreadLocalORMSession
 

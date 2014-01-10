@@ -17,12 +17,10 @@
 
 from unittest import TestCase
 import pkg_resources
-from functools import wraps
 from datetime import datetime
 
 from BeautifulSoup import BeautifulSoup
 import mock
-from ming.orm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from IPython.testing.decorators import module_not_available, skipif
 from datadiff.tools import assert_equal
@@ -30,11 +28,9 @@ from datadiff.tools import assert_equal
 from alluratest.controller import setup_basic_test
 from allura.tests.decorators import without_module
 from allura import model as M
-from allura.lib import helpers as h
 from forgetracker import model as TM
 from forgeimporters import base
 from forgeimporters import google
-from forgeimporters.google import tracker
 
 
 class TestGCTrackerImporter(TestCase):

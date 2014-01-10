@@ -25,18 +25,16 @@ import time
 from datetime import datetime, timedelta
 from cgi import FieldStorage
 
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
-from nose.tools import assert_raises, assert_equals, with_setup
+from pylons import tmpl_context as c
+from nose.tools import assert_equals, with_setup
 import mock
 from mock import patch
 from nose.tools import assert_equal
 
 from ming.orm import session, ThreadLocalORMSession
-from webob import Request, Response, exc
+from webob import exc
 
 from allura import model as M
-from allura.lib.app_globals import Globals
 from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_global_objects
@@ -88,7 +86,7 @@ def test_thread_methods():
     p0 = t.post('This is a post')
     p1 = t.post('This is another post')
     time.sleep(0.25)
-    p2 = t.post('This is a reply', parent_id=p0._id)
+    t.post('This is a reply', parent_id=p0._id)
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
     d = M.Discussion.query.get(shortname='test')
@@ -283,7 +281,7 @@ def test_discussion_delete():
              discussion_id=d._id,
              thread_id=t._id,
              post_id=p._id)
-    r = M.ArtifactReference.from_artifact(d)
+    M.ArtifactReference.from_artifact(d)
     rid = d.index_id()
     ThreadLocalORMSession.flush_all()
     d.delete()
@@ -323,11 +321,11 @@ def test_post_permission_check():
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     c.user = M.User.anonymous()
     try:
-        p1 = t.post('This post will fail the check.')
+        t.post('This post will fail the check.')
         assert False, "Expected an anonymous post to fail."
     except exc.HTTPUnauthorized:
         pass
-    p2 = t.post('This post will pass the check.', ignore_security=True)
+    t.post('This post will pass the check.', ignore_security=True)
 
 
 @with_setup(setUp, tearDown)
@@ -493,8 +491,7 @@ def test_thread_subject_not_included_in_text_checked(spam_checker):
     spam_checker.check.return_value = False
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
-    admin = M.User.by_username('test-admin')
-    post = t.post('Hello')
+    t.post('Hello')
     spam_checker.check.assert_called_once()
     assert_equal(spam_checker.check.call_args[0][0], 'Hello')
 
@@ -502,9 +499,9 @@ def test_thread_subject_not_included_in_text_checked(spam_checker):
 def test_post_count():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
-    p1 = M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
-    p2 = M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
-    p3 = M.Post(discussion_id=d._id, thread_id=t._id, status='pending')
+    M.Post(discussion_id=d._id, thread_id=t._id, status='spam')
+    M.Post(discussion_id=d._id, thread_id=t._id, status='ok')
+    M.Post(discussion_id=d._id, thread_id=t._id, status='pending')
     ThreadLocalORMSession.flush_all()
     assert_equal(t.post_count, 2)
 

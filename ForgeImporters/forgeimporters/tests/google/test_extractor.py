@@ -139,7 +139,6 @@ class TestGoogleCodeProjectExtractor(TestCase):
             fullname='Other/Proprietary License')
 
     def _make_extractor(self, html):
-        from BeautifulSoup import BeautifulSoup
         with mock.patch.object(base.ProjectExtractor, 'urlopen'):
             extractor = google.GoogleCodeProjectExtractor(
                 'allura-google-importer')

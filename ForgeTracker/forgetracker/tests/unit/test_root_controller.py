@@ -22,7 +22,7 @@ from allura.lib import helpers as h
 from allura.model import User
 from pylons import tmpl_context as c
 from forgetracker.tests.unit import TrackerTestWithModel
-from forgetracker.model import Ticket, Globals
+from forgetracker.model import Ticket
 from forgetracker import tracker_main
 import unittest
 

@@ -264,7 +264,7 @@ class NeighborhoodRestController(object):
         try:
             provider.shortname_validator.to_python(
                 name, check_allowed=False, neighborhood=self._neighborhood)
-        except Invalid as e:
+        except Invalid:
             raise exc.HTTPNotFound, name
         name = self._neighborhood.shortname_prefix + name
         project = M.Project.query.get(

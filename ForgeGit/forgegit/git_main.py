@@ -28,8 +28,6 @@ import git
 
 # Pyforge-specific imports
 import allura.tasks.repo_tasks
-from allura.lib import helpers as h
-from allura import model as M
 from allura.controllers.repository import RepoRootController, RefsController, CommitsController
 from allura.controllers.repository import MergeRequestsController, RepoRestController
 from allura.lib.repository import RepositoryApp
@@ -89,7 +87,7 @@ class ForgeGitApp(RepositoryApp):
     def install(self, project):
         '''Create repo object for this tool'''
         super(ForgeGitApp, self).install(project)
-        repo = GM.Repository(
+        GM.Repository(
             name=self.config.options.mount_point + '.git',
             tool='git',
             status='initializing',

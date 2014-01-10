@@ -32,7 +32,6 @@ from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import exceptions as forge_exc
-from allura.lib.utils import LazyProperty
 from allura import model as M
 
 

@@ -33,13 +33,11 @@ from ming.base import Object
 from ming.orm import session, ThreadLocalORMSession
 from testfixtures import TempDirectory
 from IPython.testing.decorators import onlyif
-import pysvn
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.model.repo_refresh import send_notifications
 from allura.lib import helpers as h
-from allura.tests import decorators as td
 from allura.tests.model.test_repo import RepoImplTestBase
 
 from forgesvn import model as SM

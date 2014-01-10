@@ -83,7 +83,6 @@ class ArtifactSessionExtension(SessionExtension):
 
     def update_index(self, objects_deleted, arefs):
         # Post delete and add indexing operations
-        from allura.tasks import index_tasks
         if objects_deleted:
             index_tasks.del_artifacts.post(
                 [obj.index_id() for obj in objects_deleted])

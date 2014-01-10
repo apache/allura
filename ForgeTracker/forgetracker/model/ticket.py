@@ -69,7 +69,6 @@ from allura.lib import utils
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.tasks import mail_tasks
-from paste.deploy.converters import asbool
 
 
 log = logging.getLogger(__name__)

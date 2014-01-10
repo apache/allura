@@ -20,15 +20,12 @@ import logging
 import re
 from datetime import datetime, timedelta
 from urllib import urlencode, unquote
-from urllib2 import urlopen
 from webob import exc
 import json
-from itertools import ifilter, imap
-import jinja2
 
 # Non-stdlib imports
 import pkg_resources
-from tg import expose, validate, redirect, flash, url, config, jsonify
+from tg import expose, validate, redirect, flash, url, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from paste.deploy.converters import aslist
 from pylons import tmpl_context as c, app_globals as g
@@ -38,7 +35,6 @@ from bson import ObjectId
 from bson.son import SON
 from bson.errors import InvalidId
 from webhelpers import feedgenerator as FG
-from paste.deploy.converters import asbool
 
 from ming import schema
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -62,7 +58,6 @@ from allura.controllers import AppDiscussionController, AppDiscussionRestControl
 from allura.controllers import attachments as ac
 from allura.controllers import BaseController
 from allura.controllers.feed import FeedArgs, FeedController
-from allura.tasks import mail_tasks
 
 # Local imports
 from forgetracker import model as TM

@@ -26,7 +26,6 @@ import tg
 import pkg_resources
 from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
-from datadiff.tools import assert_equal
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -101,7 +100,7 @@ class TestRootController(_TestCase):
         self.app.get('/git/')
 
     def test_commit_browser(self):
-        resp = self.app.get('/src-git/commit_browser')
+        self.app.get('/src-git/commit_browser')
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
@@ -158,7 +157,7 @@ class TestRootController(_TestCase):
         assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' not in r
 
     def test_tags(self):
-        resp = self.app.get('/src-git/ref/master~/tags/')
+        self.app.get('/src-git/ref/master~/tags/')
 
     def _get_ci(self):
         r = self.app.get('/src-git/ref/master/')

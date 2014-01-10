@@ -25,8 +25,7 @@ from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
 from ming.orm.declarative import MappedClass
 
 from allura.lib import helpers as h
-from .session import main_doc_session, main_orm_session
-from .session import project_doc_session, project_orm_session
+from .session import main_orm_session
 from .types import MarkdownCache
 
 log = logging.getLogger(__name__)

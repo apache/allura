@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import expose, redirect, flash, config, validate, request
+from tg import expose, validate, request
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from formencode import validators as V
 from pylons import tmpl_context as c

@@ -18,7 +18,6 @@
 import argparse
 import logging
 from tempfile import NamedTemporaryFile
-from tg.decorators import cached_property
 
 from forgewiki.scripts.wiki_from_trac.extractors import WikiExporter
 from forgewiki.scripts.wiki_from_trac.loaders import load_data

@@ -52,7 +52,7 @@ from allura.lib import security
 from allura.lib.utils import take_while_true
 import allura.tasks.mail_tasks
 
-from .session import main_orm_session, project_orm_session
+from .session import main_orm_session
 from .auth import User
 
 

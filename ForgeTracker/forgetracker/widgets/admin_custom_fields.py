@@ -21,10 +21,6 @@ import ew.jinja2_ew as ew
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as f
 
-from pylons import tmpl_context as c
-from forgetracker import model
-from formencode import validators as fev
-
 
 class MilestonesAdmin(ffw.SortableTable):
     defaults = dict(

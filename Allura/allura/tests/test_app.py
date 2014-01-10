@@ -15,16 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re
-import unittest
-
 from pylons import tmpl_context as c, app_globals as g
 import mock
 from ming.base import Object
 
 from allura import app
 from allura.lib.app_globals import Globals
-from allura import model as M
 
 
 def setUp():

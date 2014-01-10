@@ -20,7 +20,7 @@ import ew.jinja2_ew as ew
 from ew.core import validator
 
 from pylons import request
-from formencode import Invalid, validators
+from formencode import Invalid
 from webob import exc
 
 from .forms import ForgeForm

@@ -19,12 +19,10 @@ import os
 import os.path
 import logging
 import shutil
-from tempfile import mkstemp
 
 import tg
 from pylons import app_globals as g, tmpl_context as c
 
-from allura import model as M
 from allura.tasks import mail_tasks
 from allura.lib.decorators import task
 from allura.lib import helpers as h
@@ -113,7 +111,7 @@ class BulkExport(object):
         try:
             with open(json_file, 'w') as f:
                 app.bulk_export(f)
-        except Exception as e:
+        except Exception:
             log.error('Error exporting: %s on %s', tool,
                       app.project.shortname, exc_info=True)
             return None

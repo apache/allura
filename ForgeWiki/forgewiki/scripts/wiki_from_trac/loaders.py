@@ -16,7 +16,6 @@
 #       under the License.
 
 import json
-from optparse import OptionParser
 
 from allura.lib.import_api import AlluraImportApiClient
 

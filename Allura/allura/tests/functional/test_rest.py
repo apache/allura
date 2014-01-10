@@ -18,7 +18,6 @@
 #       under the License.
 
 from datetime import datetime, timedelta
-import json
 
 from pylons import app_globals as g
 import mock

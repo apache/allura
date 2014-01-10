@@ -17,8 +17,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-
-import json
 import sys
 from optparse import OptionParser
 

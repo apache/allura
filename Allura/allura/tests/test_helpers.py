@@ -19,10 +19,10 @@
 
 from unittest import TestCase
 from os import path
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 from mock import Mock, patch
-import tg
 from pylons import tmpl_context as c
 from nose.tools import eq_, assert_equals
 from IPython.testing.decorators import skipif, module_not_available
@@ -187,8 +187,6 @@ def test_encode_keys():
 
 
 def test_ago():
-    from datetime import datetime, timedelta
-    import time
     assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
     assert_equals(h.ago_ts(time.time() - 60 * 60 * 2), '2 hours ago')
     d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()

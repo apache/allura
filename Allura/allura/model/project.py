@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os
 import logging
 from collections import Counter, OrderedDict
 from datetime import datetime
@@ -45,7 +44,7 @@ from allura.lib.security import has_access
 from allura.model.types import MarkdownCache
 
 from .session import main_orm_session
-from .session import project_orm_session, project_doc_session
+from .session import project_orm_session
 from .neighborhood import Neighborhood
 from .auth import ProjectRole, User
 from .timeline import ActivityNode, ActivityObject
@@ -688,7 +687,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         try:
             provider.shortname_validator.to_python(
                 name, check_allowed=False, neighborhood=self.neighborhood)
-        except exceptions.Invalid as e:
+        except exceptions.Invalid:
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
 

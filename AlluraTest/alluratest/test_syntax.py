@@ -16,7 +16,6 @@
 #       under the License.
 
 import os.path
-from glob import glob
 from subprocess import Popen, PIPE
 import sys
 

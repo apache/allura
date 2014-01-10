@@ -15,11 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import argparse
 import logging
-import re
-from math import pow, log10
 from datetime import datetime
 from contextlib import contextmanager
 
@@ -28,7 +25,6 @@ from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession, session
 
 from allura import model as M
-from allura.lib import helpers as h
 from allura.lib.utils import chunked_find
 from allura.tasks.repo_tasks import refresh
 from allura.scripts import ScriptTask

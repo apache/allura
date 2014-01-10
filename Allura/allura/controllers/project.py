@@ -19,16 +19,14 @@ import re
 import logging
 from datetime import datetime, timedelta
 from urllib import unquote
-from itertools import chain, islice
 
 from bson import ObjectId
-from tg import expose, flash, redirect, validate, request, response, config
-from tg.decorators import with_trailing_slash, without_trailing_slash, override_template
+from tg import expose, flash, redirect, validate, request, config
+from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from paste.deploy.converters import asbool
 from webob import exc
 import pymongo
-from formencode import validators
 from formencode.api import Invalid
 
 from ming.utils import LazyProperty

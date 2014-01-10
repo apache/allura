@@ -15,10 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from formencode.variabledecode import variable_encode
-
 import mock
-from nose.tools import assert_equal
 
 from allura.model import Project, User
 from allura.tests import decorators as td
@@ -34,7 +31,7 @@ class TestUserProfile(TestController):
         assert 'OpenIDs' in response
 
     def test_wrong_profile(self):
-        response = self.app.get('/u/no-such-user/profile/', status=404)
+        self.app.get('/u/no-such-user/profile/', status=404)
 
     @td.with_user_project('test-admin')
     @td.with_user_project('test-user')

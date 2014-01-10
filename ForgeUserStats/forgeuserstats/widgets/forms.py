@@ -15,10 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from allura.lib import validators as V
 from allura.lib.widgets.forms import ForgeForm
-
-from formencode import validators as fev
 
 import ew as ew_core
 import ew.jinja2_ew as ew

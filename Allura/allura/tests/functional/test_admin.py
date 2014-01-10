@@ -18,7 +18,6 @@
 import re
 import os
 import allura
-import shutil
 import pkg_resources
 import StringIO
 from contextlib import contextmanager
@@ -30,8 +29,6 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose
 from pylons import tmpl_context as c, app_globals as g
 import mock
-from BeautifulSoup import BeautifulSoup
-from webtest.app import AppError
 
 
 try:
@@ -46,10 +43,8 @@ from allura import model as M
 from allura.app import SitemapEntry
 from allura.lib.plugin import AdminExtension
 from allura.ext.admin.admin_main import AdminApp
-from allura.lib.security import has_access
 
 from forgetracker.tracker_main import ForgeTrackerApp
-from forgewiki.model import Page
 from forgewiki.wiki_main import ForgeWikiApp
 
 

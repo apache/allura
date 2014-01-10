@@ -18,21 +18,16 @@
 #-*- python -*-
 import logging
 from pylons import tmpl_context as c
-import formencode
-from formencode import validators
-from webob import exc
 from datetime import datetime
 
 from allura.app import Application, SitemapEntry
 from allura.lib import helpers as h
-from allura.lib.security import has_access
 from allura import model as M
 from allura.eventslistener import EventsListener
 from model.stats import UserStats
 from controllers.userstats import ForgeUserStatsController
 
 from forgeuserstats import version
-from forgeuserstats.controllers.userstats import ForgeUserStatsController
 
 from ming.orm import session
 
@@ -55,7 +50,7 @@ class UserStatsListener(EventsListener):
         stats.addModifiedArtifact(art_type, art_datetime, project)
 
     def newUser(self, user):
-        stats = UserStats.create(user)
+        UserStats.create(user)
 
     def ticketEvent(self, event_type, ticket, project, user):
         if user is None:

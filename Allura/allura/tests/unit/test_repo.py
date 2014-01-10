@@ -17,7 +17,7 @@
 
 import datetime
 import unittest
-from mock import patch, Mock, MagicMock, call
+from mock import patch, Mock, MagicMock
 from nose.tools import assert_equal
 
 from pylons import tmpl_context as c

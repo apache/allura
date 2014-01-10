@@ -19,10 +19,8 @@ import os
 from cStringIO import StringIO
 import logging
 
-import pylons
 import PIL
 from gridfs import GridFS
-from tg import config
 
 from ming import schema
 from ming.orm import session, FieldProperty

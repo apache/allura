@@ -15,7 +15,7 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import expose, validate, redirect, flash, request, config
+from tg import expose, validate, redirect, flash, request
 from tg.decorators import without_trailing_slash
 
 from allura.app import Application, SitemapEntry, DefaultAdminController

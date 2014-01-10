@@ -262,8 +262,6 @@ class PackagePathLoader(jinja2.BaseLoader):
         - path/to/template.html
         - module:path/to/template.html
         '''
-        src = None
-
         # look in all of the customized search locations...
         try:
             parts = [self.override_root] + template.split(':')

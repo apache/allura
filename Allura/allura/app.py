@@ -30,14 +30,14 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from formencode import validators as V
 
-from ming.orm import session, state
+from ming.orm import session
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
-from allura.lib.security import require, has_access, require_access
+from allura.lib.security import has_access, require_access
 from allura import model
 from allura.controllers import BaseController
-from allura.lib.decorators import require_post, event_handler, memoize
+from allura.lib.decorators import require_post, memoize
 from allura.lib.utils import permanent_redirect, ConfigProxy
 
 log = logging.getLogger(__name__)

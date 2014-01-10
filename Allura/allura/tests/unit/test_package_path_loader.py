@@ -16,10 +16,9 @@
 #       under the License.
 
 from unittest import TestCase
-from collections import defaultdict
 
 import jinja2
-from nose.tools import assert_equal, assert_in, assert_raises
+from nose.tools import assert_equal, assert_raises
 import mock
 
 from allura.lib.package_path_loader import PackagePathLoader

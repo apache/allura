@@ -32,7 +32,7 @@ from ming.orm import mapper, session, ThreadLocalORMSession
 from allura.lib import utils
 from allura.lib import helpers as h
 from allura.model.repo import CommitDoc, TreeDoc, TreesDoc, DiffInfoDoc
-from allura.model.repo import LastCommitDoc, CommitRunDoc
+from allura.model.repo import CommitRunDoc
 from allura.model.repo import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 from allura.model.auth import User

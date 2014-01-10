@@ -61,7 +61,6 @@ class AkismetSpamFilter(SpamFilter):
         kw['comment_type'] = content_type
         if artifact:
             kw['permalink'] = artifact.url()
-            log_msg = artifact.url()
         user = user or c.user
         if user:
             kw['comment_author'] = user.display_name or user.username

@@ -26,7 +26,6 @@ from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,
                                          create_app_config,
                                          create_neighborhood)
-from allura.model.project import Neighborhood
 
 
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
@@ -102,7 +101,7 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       neighborhood=nbhd)
 
     def test_proper_exception_when_id_lookup(self):
-        nbhd = create_neighborhood()
+        create_neighborhood()
         assert_raises(NoSuchProjectError,
                       set_context,
                       ObjectId(),

@@ -21,7 +21,7 @@ from allura.command import base
 
 from bson import ObjectId
 from allura import model as M
-from allura.lib import plugin, exceptions
+from allura.lib import exceptions
 from ming.orm import session
 
 # Example usage:

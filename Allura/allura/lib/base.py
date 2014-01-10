@@ -20,7 +20,7 @@
 """The base Controller API."""
 from webob import exc
 import pylons
-from tg import TGController, config
+from tg import TGController
 
 __all__ = ['WsgiDispatchController']
 

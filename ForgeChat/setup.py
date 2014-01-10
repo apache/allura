@@ -16,8 +16,6 @@
 #       under the License.
 
 from setuptools import setup, find_packages
-import sys
-import os
 
 from forgechat.version import __version__
 

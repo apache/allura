@@ -16,9 +16,6 @@
 #       under the License.
 
 from collections import defaultdict
-from datetime import datetime
-
-from formencode import validators as fev
 
 from pylons import tmpl_context as c
 from pylons import app_globals as g
@@ -152,7 +149,7 @@ class GoogleCodeTrackerImporter(ToolImporter):
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app
-        except Exception as e:
+        except Exception:
             h.make_app_admin_only(app)
             raise
         finally:

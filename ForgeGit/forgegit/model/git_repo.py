@@ -16,17 +16,10 @@
 #       under the License.
 
 import os
-import sys
 import shutil
 import string
 import logging
-import random
-import itertools
-from collections import namedtuple
 from datetime import datetime
-from glob import glob
-import gzip
-from time import time
 
 import tg
 import git
@@ -34,14 +27,13 @@ import gitdb
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pymongo.errors import DuplicateKeyError
-from paste.deploy.converters import asbool, asint
+from paste.deploy.converters import asbool
 
 from ming.base import Object
-from ming.orm import Mapper, session, mapper
+from ming.orm import Mapper, session
 from ming.utils import LazyProperty
 
 from allura.lib import helpers as h
-from allura.lib import utils
 from allura.model.repository import topological_sort, prefix_paths_union
 from allura import model as M
 
@@ -489,7 +481,7 @@ class GitImplementation(M.RepositoryImplementation):
         try:
             node = ci.tree / path
             return node.type == 'blob'
-        except KeyError as e:
+        except KeyError:
             return False
 
     @LazyProperty

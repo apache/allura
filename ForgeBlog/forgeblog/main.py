@@ -17,7 +17,6 @@
 
 #-*- python -*-
 import logging
-from datetime import datetime
 import urllib2
 import json
 
@@ -25,13 +24,12 @@ import json
 import pymongo
 from tg import config, expose, validate, redirect, flash, jsonify
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request, response
+from pylons import tmpl_context as c
+from pylons import request
 from paste.deploy.converters import asbool
 import formencode
 from formencode import validators
 from webob import exc
-from urllib import unquote
 
 from ming.orm import session
 
@@ -157,7 +155,6 @@ class ForgeBlogApp(Application):
         return links
 
     def admin_menu(self):
-        import sys
         admin_url = c.project.url() + 'admin/' + \
             self.config.options.mount_point + '/'
         # temporarily disabled until some bugs are fixed
@@ -256,7 +253,6 @@ class RootController(BaseController, FeedController):
     @without_trailing_slash
     def new(self, **kw):
         require_access(c.app, 'write')
-        now = datetime.utcnow()
         post = dict(
             state='published')
         c.form = W.new_post_form

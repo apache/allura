@@ -119,6 +119,6 @@ class TestGitHubImportController(TestController, TestCase):
     @with_git
     @patch.object(GitHubOAuthMixin, 'oauth_begin')
     def test_oauth(self, oauth_begin):
-        r = self.app.get(
+        self.app.get(
             '/p/{}/admin/ext/import/github-repo/'.format(test_project_with_repo))
         oauth_begin.assert_called_once()

@@ -15,14 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import tmpl_context as c, app_globals as g
 from formencode import validators as fev
 
 import ew as ew_core
 import ew.jinja2_ew as ew
 
 from allura.lib import validators as V
-from allura.lib import helpers as h
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M

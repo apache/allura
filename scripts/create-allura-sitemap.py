@@ -39,7 +39,7 @@ from pylons import tmpl_context as c
 
 from allura import model as M
 from allura.lib import security, utils
-from ming.orm import session, ThreadLocalORMSession
+from ming.orm import ThreadLocalORMSession
 
 MAX_SITEMAP_URLS = 50000
 BASE_URL = 'http://sourceforge.net'

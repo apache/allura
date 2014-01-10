@@ -178,7 +178,7 @@ class GitHubWikiImporter(ToolImporter):
                 url=self.app.url)
             g.post_event('project_updated')
             return self.app
-        except Exception as e:
+        except Exception:
             h.make_app_admin_only(self.app)
             raise
         finally:

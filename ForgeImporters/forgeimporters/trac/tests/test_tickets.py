@@ -17,10 +17,9 @@
 
 import json
 import os
-from datetime import datetime
 
 from unittest import TestCase
-from mock import Mock, patch, MagicMock
+from mock import Mock, patch
 from ming.orm import ThreadLocalORMSession
 from pylons import tmpl_context as c
 from IPython.testing.decorators import module_not_available, skipif

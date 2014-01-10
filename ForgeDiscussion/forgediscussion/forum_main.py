@@ -18,14 +18,12 @@
 #-*- python -*-
 import logging
 import urllib
-from itertools import islice
 import json
 
 # Non-stdlib imports
-import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect, flash, url, validate, jsonify
+from tg import expose, redirect, flash, validate, jsonify
 from tg.decorators import with_trailing_slash
 from bson import ObjectId
 from ming import schema

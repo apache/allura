@@ -21,11 +21,8 @@
 Model tests for neighborhood
 """
 from nose.tools import with_setup
-from pylons import tmpl_context as c
-from ming.orm.ormsession import ThreadLocalORMSession
 
 from allura import model as M
-from allura.lib import helpers as h
 from allura.tests import decorators as td
 from alluratest.controller import setup_basic_test, setup_global_objects
 

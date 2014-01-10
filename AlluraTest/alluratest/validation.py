@@ -20,7 +20,7 @@
 """
 Functions to syntax-validate output content
 """
-from os import path, environ, getcwd
+from os import path
 import os
 import sys
 import logging
@@ -30,17 +30,9 @@ import json
 import urllib2
 import re
 
-import tg
-import mock
-import beaker.session
-from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
-from pylons import tmpl_context as c, app_globals as g
-from pylons import url, request, response, session
 import webtest
 from webtest import TestApp
-from webob import Request, Response
-from nose.tools import ok_, assert_true, assert_false
+from nose.tools import ok_
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
 from ming.utils import LazyProperty

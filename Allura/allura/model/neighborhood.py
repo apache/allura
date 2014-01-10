@@ -21,7 +21,7 @@ import logging
 from collections import OrderedDict
 
 from ming import schema as S
-from ming.orm import FieldProperty, RelationProperty, ForeignIdProperty
+from ming.orm import FieldProperty, RelationProperty
 from ming.orm.declarative import MappedClass
 from ming.utils import LazyProperty
 

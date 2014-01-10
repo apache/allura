@@ -20,10 +20,8 @@ import urllib
 from urllib2 import HTTPError
 from urlparse import urlparse, urljoin, parse_qs
 from collections import defaultdict
-from contextlib import closing
 import logging
 import os
-import re
 
 from BeautifulSoup import BeautifulSoup
 from formencode import validators as fev

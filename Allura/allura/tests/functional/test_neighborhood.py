@@ -474,7 +474,7 @@ class TestNeighborhood(TestController):
         assert 'adobe-1 evicted to Projects' in r
 
     def test_home(self):
-        r = self.app.get('/adobe/')
+        self.app.get('/adobe/')
 
     def test_register(self):
         r = self.app.get('/adobe/register', status=405)
@@ -912,7 +912,7 @@ class TestNeighborhood(TestController):
         self.app.get('/u/donald-duck/')
 
     def test_disabled_user_has_no_user_project(self):
-        user = M.User.register(dict(username='donald-duck'))
+        M.User.register(dict(username='donald-duck'))
         self.app.get('/u/donald-duck/')  # assert it's there
         M.User.query.update(dict(username='donald-duck'),
                             {'$set': {'disabled': True}})

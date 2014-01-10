@@ -45,7 +45,7 @@ class TestActivityController(TestController):
 
     def test_index_disabled(self):
         config['activitystream.enabled'] = 'false'
-        resp = self.app.get('/activity/', status=404)
+        self.app.get('/activity/', status=404)
 
     def test_index_override(self):
         config['activitystream.enabled'] = 'false'
@@ -130,7 +130,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-admin')
     @patch('forgeactivity.main.g.director')
     def test_viewing_own_user_project(self, director):
-        resp = self.app.get('/u/test-admin/activity/')
+        self.app.get('/u/test-admin/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].username == 'test-admin'
         assert director.get_timeline.call_args[1]['actor_only'] == False
@@ -139,7 +139,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     @patch('forgeactivity.main.g.director')
     def test_viewing_other_user_project(self, director):
-        resp = self.app.get('/u/test-user-1/activity/')
+        self.app.get('/u/test-user-1/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].username == 'test-user-1'
         assert director.get_timeline.call_args[1]['actor_only'] == True
@@ -147,7 +147,7 @@ class TestActivityController(TestController):
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_viewing_project_activity(self, director):
-        resp = self.app.get('/p/test/activity/')
+        self.app.get('/p/test/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].shortname == 'test'
         assert director.get_timeline.call_args[1]['actor_only'] == False

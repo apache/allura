@@ -415,5 +415,5 @@ def embed(url=None):
     consumer.addEndpoint(endpoint)
     try:
         return jinja2.Markup('<div class="grid-20">%s</div>' % consumer.embed(url)['html'])
-    except oembed.OEmbedNoEndpoint as e:
+    except oembed.OEmbedNoEndpoint:
         return '[[embed url=%s]]' % url

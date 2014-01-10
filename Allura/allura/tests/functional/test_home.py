@@ -83,7 +83,6 @@ class TestProjectHome(TestController):
     def test_user_subproject_home_not_profile(self):
         u_proj = M.Project.query.get(shortname='u/test-admin')
         u_proj.new_subproject('sub1')
-        from ming.orm.ormsession import ThreadLocalORMSession
         ThreadLocalORMSession.flush_all()
 
         r = self.app.get('/u/test-admin/sub1/')
@@ -104,10 +103,10 @@ class TestProjectHome(TestController):
         assert j == {'users': []}
 
     def test_user_search_noparam(self):
-        r = self.app.get('/p/test/user_search', status=400)
+        self.app.get('/p/test/user_search', status=400)
 
     def test_user_search_shortparam(self):
-        r = self.app.get('/p/test/user_search?term=ad', status=400)
+        self.app.get('/p/test/user_search?term=ad', status=400)
 
     def test_users(self):
         r = self.app.get('/p/test/users', status=200)

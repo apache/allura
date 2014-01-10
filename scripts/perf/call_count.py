@@ -27,7 +27,6 @@ import csv
 from pylons import tmpl_context as c
 from testfixtures import LogCapture
 from mock import patch
-import timermiddleware
 from ming.odm import ThreadLocalODMSession
 
 from allura import model as M

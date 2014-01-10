@@ -18,10 +18,10 @@
 from urllib import unquote
 from webob import exc
 
-from tg import expose, request, response, redirect
+from tg import expose, request, redirect
 from ming.utils import LazyProperty
 
-from allura.lib.security import require, has_access, require_access
+from allura.lib.security import require_access
 from .base import BaseController
 
 

@@ -22,7 +22,7 @@ from unittest import TestCase
 from cStringIO import StringIO
 from io import BytesIO
 
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 from ming.orm import session, Mapper
 from nose.tools import assert_equal
 from mock import patch

@@ -17,7 +17,6 @@
 
 import calendar
 from datetime import datetime
-import re
 
 import feedparser
 from bson import ObjectId
@@ -30,7 +29,6 @@ from pylons import tmpl_context as c
 
 from allura import model as M
 from forgeblog import model as BM
-from forgeblog import version
 from forgeblog.main import ForgeBlogApp
 from allura.lib import exceptions
 from allura.lib.helpers import exceptionless

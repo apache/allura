@@ -15,10 +15,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from functools import partial
 from nose.tools import assert_equals, assert_raises, assert_is_none, assert_is
 from mock import Mock, MagicMock, patch
-from formencode import Invalid
 from datetime import timedelta
 
 from allura import model as M

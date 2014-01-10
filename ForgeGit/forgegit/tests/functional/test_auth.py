@@ -31,7 +31,7 @@ class TestGitUserPermissions(TestController):
     disallow = dict(allow_read=False, allow_write=False, allow_create=False)
 
     def test_unknown_project(self):
-        r = self._check_repo('/git/foo/bar', status=404)
+        self._check_repo('/git/foo/bar', status=404)
 
     def test_unknown_app(self):
         r = self._check_repo('/git/test/bar')
@@ -64,7 +64,7 @@ class TestGitUserPermissions(TestController):
         assert r == self.read, r
 
     def test_unknown_user(self):
-        r = self._check_repo(
+        self._check_repo(
             '/git/test.p/src-git.git',
             username='test-usera',
             status=404)

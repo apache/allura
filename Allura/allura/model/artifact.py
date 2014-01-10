@@ -16,11 +16,9 @@
 #       under the License.
 
 import logging
-import cPickle as pickle
 from collections import defaultdict
 from datetime import datetime
 
-import bson
 import pymongo
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
@@ -33,11 +31,11 @@ from webhelpers import feedgenerator as FG
 
 from allura.lib import helpers as h
 from allura.lib import security
-from .session import main_doc_session, main_orm_session
-from .session import project_doc_session, project_orm_session
+from .session import main_orm_session
+from .session import project_orm_session
 from .session import artifact_orm_session
 from .index import ArtifactReference
-from .types import ACL, ACE, MarkdownCache
+from .types import ACL, MarkdownCache
 from .project import AppConfig
 from .notification import MailFooter
 

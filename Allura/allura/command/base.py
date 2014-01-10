@@ -16,10 +16,8 @@
 #       under the License.
 
 import os
-import sys
 import logging
 import shlex
-from multiprocessing import Process
 
 import pylons
 from paste.script import command

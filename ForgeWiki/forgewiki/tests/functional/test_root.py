@@ -20,7 +20,6 @@
 import os
 import StringIO
 import allura
-import json
 
 import PIL
 from nose.tools import assert_true, assert_equal, assert_in

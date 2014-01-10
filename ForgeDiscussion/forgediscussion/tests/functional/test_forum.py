@@ -25,9 +25,8 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
 import pkg_resources
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 from nose.tools import assert_equal, assert_in
-from ming.orm import ThreadLocalORMSession
 
 from allura import model as M
 from allura.tasks import mail_tasks
@@ -317,27 +316,26 @@ class TestForum(TestController):
         assert_equal(len(r.html.findAll('a', rel='nofollow')), 1)
 
     def test_forum_search(self):
-        r = self.app.get('/discussion/search')
-        r = self.app.get('/discussion/search', params=dict(q='foo'))
+        self.app.get('/discussion/search')
+        self.app.get('/discussion/search', params=dict(q='foo'))
 
     def test_render_markdown_syntax(self):
-        summary = 'test render markdown syntax'
         r = self.app.get('/discussion/markdown_syntax')
         assert 'Markdown Syntax' in r
 
     def test_forum_subscribe(self):
-        r = self.app.post('/discussion/subscribe', params={
+        self.app.post('/discussion/subscribe', params={
             'forum-0.shortname': 'testforum',
             'forum-0.subscribed': 'on',
         })
-        r = self.app.post('/discussion/subscribe', params={
+        self.app.post('/discussion/subscribe', params={
             'forum-0.shortname': 'testforum',
             'forum-0.subscribed': '',
         })
 
     def test_forum_index(self):
-        r = self.app.get('/discussion/testforum/')
-        r = self.app.get('/discussion/testforum/childforum/')
+        self.app.get('/discussion/testforum/')
+        self.app.get('/discussion/testforum/childforum/')
 
     def test_threads_with_zero_posts(self):
         # Make sure that threads with zero posts (b/c all posts have been
@@ -587,7 +585,6 @@ class TestForum(TestController):
                     'value') and field['value'] or ''
         self.app.post(str(subscribe_url), params=params)
         self.app.get('/discussion/general/subscribe_to_forum?subscribe=True')
-        url = thread.request.url
         f = thread.html.find(
             'div', {'class': 'row reply_post_form'}).find('form')
         rep_url = f.get('action')
@@ -598,7 +595,7 @@ class TestForum(TestController):
                 params[field['name']] = field.has_key(
                     'value') and field['value'] or ''
         params[f.find('textarea')['name']] = 'Reply 2'
-        thread_reply = self.app.post(str(rep_url), params=params)
+        self.app.post(str(rep_url), params=params)
         assert M.Notification.query.find(
             dict(subject='[test:discussion] Re: Post subject')).count() == 1
 
@@ -630,7 +627,6 @@ class TestForum(TestController):
         r = self.app.post('/discussion/save_new_topic', params=params).follow()
         url = r.request.url
         thread_id = url.rstrip('/').rsplit('/', 1)[-1]
-        thread = FM.ForumThread.query.get(_id=thread_id)
         r = self.app.post(url + 'moderate', params=dict(
             flags='Announcement',
             discussion='testforum'))
@@ -676,8 +672,6 @@ class TestForum(TestController):
         params[f.find('select')['name']] = 'testforum'
         params[f.find('input', {'style': 'width: 90%'})['name']] = 'topic2'
         r = self.app.post('/discussion/save_new_topic', params=params).follow()
-        url2 = r.request.url
-        tid2 = url2.rstrip('/').rsplit('/', 1)[-1]
 
         # Check that threads are ordered in reverse creation order
         r = self.app.get('/discussion/testforum/')

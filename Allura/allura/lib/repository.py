@@ -16,12 +16,11 @@
 #       under the License.
 
 import logging
-import shutil
 from urllib import quote
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
-from tg import expose, redirect, url
+from tg import expose, redirect
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from bson import ObjectId
 

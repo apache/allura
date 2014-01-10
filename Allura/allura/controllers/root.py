@@ -19,25 +19,14 @@
 
 """Main Controller"""
 import logging
-import string
-import os
-from datetime import datetime
-from collections import defaultdict
 
-import pkg_resources
-from tg import expose, flash, redirect, session, config, response, request, config
-from tg.decorators import with_trailing_slash, without_trailing_slash
+from tg import expose, request, config
+from tg.decorators import with_trailing_slash
 from tg.flash import TGFlash
-from pylons import tmpl_context as c, app_globals as g
-from pylons import cache
+from pylons import tmpl_context as c
 
-import ew
-import ming
-
-import allura
 from allura.app import SitemapEntry
 from allura.lib.base import WsgiDispatchController
-from allura.lib import helpers as h
 from allura.lib import plugin
 from allura.controllers.error import ErrorController
 from allura import model as M
@@ -47,7 +36,6 @@ from .trovecategories import TroveCategoryController
 from .search import SearchController, ProjectBrowseController
 from .static import NewForgeController
 from .site_admin import SiteAdminController
-from .project import NeighborhoodController, HostNeighborhoodController
 from .rest import RestController
 
 __all__ = ['RootController']

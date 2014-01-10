@@ -21,7 +21,7 @@ from tg import expose
 from tg.decorators import without_trailing_slash
 from webob import exc
 
-from pylons import tmpl_context as c, app_globals as g
+from pylons import app_globals as g
 from allura.lib import helpers as h
 from allura.lib import utils
 

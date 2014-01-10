@@ -22,7 +22,7 @@ import urllib2
 from ming.orm.ormsession import ThreadLocalORMSession
 from ming.orm import session
 from ming import schema
-from nose.tools import raises, assert_raises, assert_equal, assert_in
+from nose.tools import raises, assert_equal, assert_in
 
 from forgetracker.model import Ticket, TicketAttachment
 from forgetracker.tests.unit import TrackerTestWithModel
@@ -87,9 +87,8 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(t.activity_extras['summary'], t.summary)
 
     def test_private_ticket(self):
-        from pylons import tmpl_context as c
-        from allura.model import ProjectRole, User
-        from allura.model import ACE, ALL_PERMISSIONS, DENY_ALL
+        from allura.model import ProjectRole
+        from allura.model import ACE, DENY_ALL
         from allura.lib.security import Credentials, has_access
         from allura.websetup import bootstrap
 

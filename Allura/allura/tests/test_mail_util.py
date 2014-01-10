@@ -20,7 +20,6 @@
 import unittest
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
-from email import header
 
 import mock
 from nose.tools import raises, assert_equal, assert_false, assert_true

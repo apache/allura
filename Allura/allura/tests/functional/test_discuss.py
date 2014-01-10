@@ -177,7 +177,7 @@ class TestDiscuss(TestController):
         thread_link = [a for a in home.html.findAll('a')
                        if 'thread' in a['href']][0]['href']
         # just make sure it doesn't 500
-        r = self.app.get('%s?limit=50&page=0' % thread_link)
+        self.app.get('%s?limit=50&page=0' % thread_link)
 
     @patch('allura.controllers.discuss.g.director.create_activity')
     def test_edit_post(self, create_activity):

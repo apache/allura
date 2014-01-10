@@ -15,14 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import logging
 
-from tg import config
-from pylons import tmpl_context as c
-
 from allura import model as M
-from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 

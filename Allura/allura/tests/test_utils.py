@@ -58,10 +58,9 @@ class TestConfigProxy(unittest.TestCase):
 class TestChunkedIterator(unittest.TestCase):
 
     def setUp(self):
-        from allura import model as M
         setup_unit_test()
         for i in range(10):
-            p = M.User.upsert('sample-user-%d' % i)
+            M.User.upsert('sample-user-%d' % i)
 
     def test_can_iterate(self):
         chunks = list(utils.chunked_find(M.User, {}, 2))

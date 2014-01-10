@@ -23,7 +23,6 @@ from tg import expose, validate
 from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
-from allura.lib import helpers as h
 
 from .. import base
 from . import tasks

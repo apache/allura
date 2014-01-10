@@ -146,7 +146,7 @@ class TestRestIndex(TestTrackerApiBase):
     def test_move_ticket_redirect(self):
         p = M.Project.query.get(shortname='test')
         dummy_tracker = p.app_instance('dummy')
-        r = self.app.post(
+        self.app.post(
             '/p/test/bugs/1/move',
             params={'tracker': str(dummy_tracker.config._id)}).follow()
 

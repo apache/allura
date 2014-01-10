@@ -30,7 +30,6 @@ from tg.decorators import (
 )
 
 from allura.lib.decorators import require_post
-from allura.lib import helpers as h
 from allura.controllers import BaseController
 from allura import model as M
 

@@ -18,20 +18,14 @@
 #       under the License.
 
 """Main Controller"""
-import os
 import logging
 from urllib import unquote
 
-import pkg_resources
 from pylons import tmpl_context as c
-from pylons import request, response
+from pylons import request
 from webob import exc
 from tg import expose
-from tg.decorators import without_trailing_slash
 
-import ming.orm.ormsession
-
-import allura
 from allura.lib.base import WsgiDispatchController
 from allura.lib.security import require, require_authenticated, require_access, has_access
 from allura.lib import helpers as h
@@ -39,10 +33,6 @@ from allura.lib import plugin
 from allura import model as M
 from .root import RootController
 from .project import ProjectController
-from .auth import AuthController
-from .static import NewForgeController
-from .search import SearchController
-from .error import ErrorController
 from .rest import RestController
 
 __all__ = ['RootController']
@@ -91,7 +81,6 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         c.memoize_cache = {}
         count = 20
         while c.project is None:
-            import sys
             import time
             time.sleep(0.5)
             log.warning('Project "test" not found, retrying...')

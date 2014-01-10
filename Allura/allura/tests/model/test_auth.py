@@ -26,7 +26,6 @@ from webob import Request
 from mock import patch
 from datetime import datetime, timedelta
 
-from mock import patch
 from pymongo.errors import DuplicateKeyError
 from ming.orm.ormsession import ThreadLocalORMSession
 

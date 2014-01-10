@@ -16,23 +16,17 @@
 #       under the License.
 
 from datetime import datetime
-import pymongo
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
 from tg import config
 from paste.deploy.converters import asbool
 
-import bson
 from ming import schema as S
-from ming import Field, Index, collection
-from ming.orm import session, state, Mapper
+from ming.orm import Mapper
 from ming.orm import FieldProperty
 from ming.orm.declarative import MappedClass
-from datetime import datetime, timedelta
+from datetime import timedelta
 import difflib
 
 from allura.model.session import main_orm_session
-from allura.lib import helpers as h
 
 
 class Stats(MappedClass):
@@ -194,8 +188,6 @@ class Stats(MappedClass):
     # to which programming language should be credited a line of code modified
     # within a project including two or more languages.
     def getCommitsByLanguage(self):
-        langlist = []
-        by_lang = {}
         i = getElementIndex(self.general, category=None)
         if i is None:
             return dict(number=0, lines=0)

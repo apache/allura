@@ -17,8 +17,8 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-
-from sys import stdin, stdout
+import types
+from sys import stdout
 import hmac
 import hashlib
 from datetime import datetime
@@ -26,7 +26,6 @@ import os
 import urllib
 from urllib2 import urlopen, HTTPError
 from urlparse import urlparse, urljoin
-import urllib
 from optparse import OptionParser
 from ConfigParser import ConfigParser
 

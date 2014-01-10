@@ -24,8 +24,6 @@ import unittest
 import pkg_resources
 import datetime
 
-import pymongo
-
 import mock
 from pylons import tmpl_context as c, app_globals as g
 import tg

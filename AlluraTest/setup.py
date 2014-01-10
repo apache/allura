@@ -16,8 +16,6 @@
 #       under the License.
 
 from setuptools import setup, find_packages
-import sys
-import os
 
 setup(name='AlluraTest',
       version='0.1',

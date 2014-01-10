@@ -23,7 +23,7 @@ import calendar
 from collections import OrderedDict
 
 
-from tg import expose, validate, redirect, flash, response, jsonify
+from tg import expose, validate, redirect, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request
@@ -131,7 +131,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
             headers=dict(Subject=subject)))[0]
-        post = thd.post(subject, text)
+        thd.post(subject, text)
         flash('Message posted')
         redirect(thd.url())
 

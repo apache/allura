@@ -15,11 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import logging
 
 from pylons import tmpl_context as c
-from ming.orm import session
 from ming.orm.ormsession import ThreadLocalORMSession
 
 from forgeblog import model as BM

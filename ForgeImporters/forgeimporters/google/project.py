@@ -17,8 +17,6 @@
 
 import logging
 
-from formencode import validators as fev
-
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
 

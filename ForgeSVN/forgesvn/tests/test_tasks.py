@@ -23,11 +23,10 @@ import os
 
 import tg
 import mock
-from pylons import tmpl_context as c, app_globals as g
-from ming.orm import ThreadLocalORMSession
+from pylons import tmpl_context as c
 from paste.deploy.converters import asbool
 
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import setup_basic_test
 
 from allura import model as M
 from allura.lib import helpers as h

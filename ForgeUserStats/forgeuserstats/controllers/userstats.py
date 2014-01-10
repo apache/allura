@@ -25,7 +25,6 @@ from pylons import tmpl_context as c
 from allura.lib.security import require_access
 from forgeuserstats.widgets.forms import StatsPreferencesForm
 from allura.lib.decorators import require_post
-from allura.lib import validators as V
 
 stats_preferences_form = StatsPreferencesForm()
 
@@ -200,7 +199,6 @@ class ForgeUserStatsController(BaseController):
 def _getDataForCategory(category, stats):
     totcommits = stats.getCommits(category)
     tottickets = stats.getTickets(category)
-    averagetime = tottickets.get('averagesolvingtime')
     artifacts_by_type = stats.getArtifactsByType(category)
     totartifacts = artifacts_by_type.get(None)
     if totartifacts:
@@ -211,8 +209,6 @@ def _getDataForCategory(category, stats):
     lm_artifacts_by_type = stats.getLastMonthArtifactsByType(category)
     lm_totartifacts = stats.getLastMonthArtifacts(category)
     lm_tickets = stats.getLastMonthTickets(category)
-
-    averagetime = lm_tickets.get('averagesolvingtime')
 
     days = (datetime.utcnow() - stats.start_date).days
     if days >= 30:

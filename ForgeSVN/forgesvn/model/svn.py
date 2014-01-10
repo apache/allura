@@ -15,7 +15,6 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import sys
 import re
 import os
 import shutil
@@ -36,7 +35,7 @@ from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.base import Object
-from ming.orm import Mapper, FieldProperty, session
+from ming.orm import Mapper, FieldProperty
 from ming.utils import LazyProperty
 
 from allura import model as M

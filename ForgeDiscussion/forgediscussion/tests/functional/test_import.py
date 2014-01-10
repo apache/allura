@@ -21,10 +21,10 @@ from datetime import datetime, timedelta
 from nose.tools import assert_equal
 
 import ming
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 
 from allura import model as M
-from alluratest.controller import TestController, TestRestApiBase
+from alluratest.controller import TestRestApiBase
 
 
 class TestImportController(TestRestApiBase):  # TestController):

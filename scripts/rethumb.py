@@ -16,19 +16,14 @@
 #       under the License.
 
 import sys
-import time
 
 import PIL
-import tg
 from pylons import tmpl_context as c
-from paste.deploy.converters import asint
 
-from ming.orm import mapper, ThreadLocalORMSession, session, state, Mapper
+from ming.orm import ThreadLocalORMSession, state, Mapper
 
 from allura.command import base
 from allura.lib.helpers import iter_entry_points
-
-import forgetracker.model
 
 
 class RethumbCommand(base.Command):

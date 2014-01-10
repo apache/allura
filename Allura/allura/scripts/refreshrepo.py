@@ -17,7 +17,6 @@
 
 import argparse
 import logging
-import re
 
 import faulthandler
 from pylons import tmpl_context as c
