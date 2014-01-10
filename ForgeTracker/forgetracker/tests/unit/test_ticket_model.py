@@ -323,7 +323,7 @@ class TestTicketModel(TrackerTestWithModel):
         filter = None
         Ticket.paged_query_or_search(app_cfg, user, mongo_query, solr_query, filter, **kw)
         query.assert_called_once_with(app_cfg, user, mongo_query, sort=None, limit=None, page=0, **kw)
-        tsearch.query_filter_choices.assert_called_once()
+        tsearch.query_filter_choices.assert_called_once_with('solr query')
         assert_equal(search.call_count, 0)
         query.reset_mock(), search.reset_mock(), tsearch.reset_mock()
 

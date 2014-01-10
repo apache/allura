@@ -29,7 +29,7 @@ FACET_PARAMS = {
 }
 
 
-def query_filter_choices():
+def query_filter_choices(arg=None):
     params = {
         'short_timeout': True,
         'fq': [
@@ -39,7 +39,7 @@ def query_filter_choices():
         'rows': 0,
     }
     params.update(FACET_PARAMS)
-    result = search(None, **params)
+    result = search(arg, **params)
     return get_facets(result)
 
 
