@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 
 class AkismetSpamFilter(SpamFilter):
+
     """Spam checking implementation via Akismet service.
 
     To enable Akismet spam filtering in your Allura instance, first
@@ -47,10 +48,12 @@ class AkismetSpamFilter(SpamFilter):
         spam.method = akismet
         spam.key = <your Akismet key here>
     """
+
     def __init__(self, config):
         if not AKISMET_AVAILABLE:
             raise ImportError('akismet not available')
-        self.service = akismet.Akismet(config.get('spam.key'), config.get('base_url'))
+        self.service = akismet.Akismet(
+            config.get('spam.key'), config.get('base_url'))
         self.service.verify_key()
 
     def get_data(self, text, artifact=None, user=None, content_type='comment', **kw):
@@ -62,7 +65,8 @@ class AkismetSpamFilter(SpamFilter):
         user = user or c.user
         if user:
             kw['comment_author'] = user.display_name or user.username
-            kw['comment_author_email'] = user.email_addresses[0] if user.email_addresses else ''
+            kw['comment_author_email'] = user.email_addresses[
+                0] if user.email_addresses else ''
         user_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
         kw['user_ip'] = user_ip.split(',')[0].strip()
         kw['user_agent'] = request.headers.get('USER_AGENT')
@@ -93,8 +97,8 @@ class AkismetSpamFilter(SpamFilter):
 
     def submit_ham(self, text, artifact=None, user=None, content_type='comment'):
         self.service.submit_ham(text,
-                                 data=self.get_data(text=text,
-                                                    artifact=artifact,
-                                                    user=user,
-                                                    content_type=content_type),
-                                 build_data=False)
+                                data=self.get_data(text=text,
+                                                   artifact=artifact,
+                                                   user=user,
+                                                   content_type=content_type),
+                                build_data=False)

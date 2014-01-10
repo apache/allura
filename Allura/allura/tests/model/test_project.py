@@ -36,9 +36,11 @@ def setUp():
     setup_basic_test()
     setup_with_tools()
 
+
 @td.with_wiki
 def setup_with_tools():
     setup_global_objects()
+
 
 def test_project():
     assert_equals(type(c.project.sidebar_menu()), list)
@@ -51,8 +53,10 @@ def test_project():
     assert_in(old_proj, list(c.project.parent_iter()))
     h.set_context('test', 'wiki', neighborhood='Projects')
     adobe_nbhd = M.Neighborhood.query.get(name='Adobe')
-    p = M.Project.query.get(shortname='adobe-1', neighborhood_id=adobe_nbhd._id)
-    # assert 'http' in p.url() # We moved adobe into /adobe/, not http://adobe....
+    p = M.Project.query.get(
+        shortname='adobe-1', neighborhood_id=adobe_nbhd._id)
+    # assert 'http' in p.url() # We moved adobe into /adobe/, not
+    # http://adobe....
     assert_in(p.script_name, p.url())
     assert_equals(c.project.shortname, 'test')
     assert_in('<p>', c.project.description_html)
@@ -90,11 +94,13 @@ def test_project():
     c.project.breadcrumbs()
     c.app.config.breadcrumbs()
 
+
 def test_subproject():
     project = M.Project.query.get(shortname='test')
     with td.raises(ToolError):
         with patch('allura.lib.plugin.ProjectRegistrationProvider') as Provider:
-            Provider.get().shortname_validator.to_python.side_effect = Invalid('name', 'value', {})
+            Provider.get().shortname_validator.to_python.side_effect = Invalid(
+                'name', 'value', {})
             # name doesn't validate
             sp = project.new_subproject('test-proj-nose')
     sp = project.new_subproject('test-proj-nose')
@@ -102,6 +108,7 @@ def test_subproject():
     ThreadLocalORMSession.flush_all()
     sp.delete()
     ThreadLocalORMSession.flush_all()
+
 
 @td.with_wiki
 def test_anchored_tools():
@@ -119,6 +126,7 @@ def test_set_ordinal_to_admin_tool():
         sm = c.project.sitemap()
         assert_equals(sm[-1].tool_name, 'admin')
 
+
 def test_users_and_roles():
     p = M.Project.query.get(shortname='test')
     sub = p.direct_subprojects[0]
@@ -126,6 +134,7 @@ def test_users_and_roles():
     assert p.users_with_role('Admin') == [u]
     assert p.users_with_role('Admin') == sub.users_with_role('Admin')
     assert p.users_with_role('Admin') == p.admins()
+
 
 def test_project_disabled_users():
     p = M.Project.query.get(shortname='test')
@@ -136,5 +145,3 @@ def test_project_disabled_users():
     ThreadLocalORMSession.flush_all()
     users = p.users()
     assert users == []
-
-

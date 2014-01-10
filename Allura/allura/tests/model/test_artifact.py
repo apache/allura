@@ -41,21 +41,28 @@ from allura.websetup.schema import REGISTRY
 from alluratest.controller import setup_basic_test, setup_unit_test
 from forgewiki import model as WM
 
+
 class Checkmessage(M.Message):
+
     class __mongometa__:
-        name='checkmessage'
+        name = 'checkmessage'
+
     def url(self):
         return ''
+
     def __init__(self, **kw):
         super(Checkmessage, self).__init__(**kw)
         if self.slug is not None and self.full_slug is None:
-            self.full_slug = datetime.utcnow().strftime('%Y%m%d%H%M%S') + ':' + self.slug
+            self.full_slug = datetime.utcnow().strftime(
+                '%Y%m%d%H%M%S') + ':' + self.slug
 Mapper.compile_all()
+
 
 def setUp():
     setup_basic_test()
     setup_unit_test()
     setup_with_tools()
+
 
 @td.with_wiki
 def setup_with_tools():
@@ -68,8 +75,10 @@ def setup_with_tools():
     Checkmessage.project = c.project
     Checkmessage.app_config = c.app.config
 
+
 def tearDown():
     ThreadLocalORMSession.close_all()
+
 
 @with_setup(setUp, tearDown)
 def test_artifact():
@@ -103,13 +112,14 @@ def test_artifact():
     assert 'TestPage' in pg.shorthand_id()
     assert pg.link_text() == pg.shorthand_id()
 
+
 @with_setup(setUp, tearDown)
 def test_artifactlink():
     pg = WM.Page(title='TestPage2')
     q = M.Shortlink.query.find(dict(
-            project_id=c.project._id,
-            app_config_id=c.app.config._id,
-            link=pg.shorthand_id()))
+        project_id=c.project._id,
+        app_config_id=c.app.config._id,
+        link=pg.shorthand_id()))
     assert q.count() == 0
     ThreadLocalORMSession.flush_all()
     M.MonQTask.run_ready()
@@ -130,19 +140,26 @@ def test_artifactlink():
     ThreadLocalORMSession.flush_all()
     assert q.count() == 0
 
+
 @with_setup(setUp, tearDown)
 def test_gen_messageid():
-    assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net', h.gen_message_id())
+    assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net',
+                    h.gen_message_id())
+
 
 @with_setup(setUp, tearDown)
 def test_gen_messageid_with_id_set():
     oid = ObjectId()
-    assert re.match(r'%s.wiki@test.p.sourceforge.net' % str(oid), h.gen_message_id(oid))
+    assert re.match(r'%s.wiki@test.p.sourceforge.net' %
+                    str(oid), h.gen_message_id(oid))
+
 
 @with_setup(setUp, tearDown)
 def test_artifact_messageid():
     p = WM.Page(title='T')
-    assert re.match(r'%s.wiki@test.p.sourceforge.net' % str(p._id), p.message_id())
+    assert re.match(r'%s.wiki@test.p.sourceforge.net' %
+                    str(p._id), p.message_id())
+
 
 @with_setup(setUp, tearDown)
 def test_versioning():
@@ -177,6 +194,6 @@ def test_versioning():
 def test_messages_unknown_lookup():
     from bson import ObjectId
     m = Checkmessage()
-    m.author_id = ObjectId() # something new
+    m.author_id = ObjectId()  # something new
     assert type(m.author()) == M.User, type(m.author())
     assert m.author() == M.User.anonymous()

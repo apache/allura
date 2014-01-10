@@ -27,6 +27,7 @@ from alluratest.controller import TestRestApiBase
 
 from forgetracker import model as TM
 
+
 class TestTrackerApiBase(TestRestApiBase):
 
     def setUp(self):
@@ -34,8 +35,8 @@ class TestTrackerApiBase(TestRestApiBase):
         self.setup_with_tools()
 
     @td.with_tool('test', 'Tickets', 'bugs',
-            TicketMonitoringEmail='test@localhost',
-            TicketMonitoringType='AllTicketChanges')
+                  TicketMonitoringEmail='test@localhost',
+                  TicketMonitoringType='AllTicketChanges')
     def setup_with_tools(self):
         h.set_context('test', 'bugs', neighborhood='Projects')
         self.tracker_globals = c.app.globals
@@ -50,8 +51,8 @@ class TestTrackerApiBase(TestRestApiBase):
                 labels='',
                 description='',
                 assigned_to='',
-                **{'custom_fields._milestone':''})
-            )
+                **{'custom_fields._milestone': ''})
+        )
 
 
 class TestRestNewTicket(TestTrackerApiBase):
@@ -67,7 +68,7 @@ class TestRestNewTicket(TestTrackerApiBase):
                 labels='foo,bar',
                 description='descr',
                 assigned_to='',
-                **{'custom_fields._milestone':''}
+                **{'custom_fields._milestone': ''}
             ))
         json = ticket_view.json['ticket']
         assert json['status'] == 'open', json
@@ -80,6 +81,7 @@ class TestRestNewTicket(TestTrackerApiBase):
     def test_invalid_ticket(self):
         self.app.get('/rest/p/test/bugs/2', status=404)
 
+
 class TestRestUpdateTicket(TestTrackerApiBase):
 
     def setUp(self):
@@ -91,10 +93,11 @@ class TestRestUpdateTicket(TestTrackerApiBase):
         args = dict(self.ticket_args, summary='test update ticket', labels='',
                     assigned_to=self.ticket_args['assigned_to_id'] or '')
         for bad_key in ('ticket_num', 'assigned_to_id', 'created_date',
-                'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
+                        'reported_by', 'reported_by_id', '_id', 'votes_up', 'votes_down'):
             del args[bad_key]
         args['private'] = str(args['private'])
-        ticket_view = self.api_post('/rest/p/test/bugs/1/save', wrap_args='ticket_form', params=h.encode_keys(args))
+        ticket_view = self.api_post(
+            '/rest/p/test/bugs/1/save', wrap_args='ticket_form', params=h.encode_keys(args))
         assert ticket_view.status_int == 200, ticket_view.showbrowser()
         json = ticket_view.json['ticket']
         assert int(json['ticket_num']) == 1
@@ -112,13 +115,18 @@ class TestRestIndex(TestTrackerApiBase):
         assert len(tickets.json['tickets']) == 1, tickets.json
         assert (tickets.json['tickets'][0]
                 == dict(ticket_num=1, summary='test new ticket')), tickets.json['tickets'][0]
-        assert tickets.json['tracker_config']['options']['mount_point'] == 'bugs'
-        assert tickets.json['tracker_config']['options']['TicketMonitoringType'] == 'AllTicketChanges'
+        assert tickets.json['tracker_config'][
+            'options']['mount_point'] == 'bugs'
+        assert tickets.json['tracker_config']['options'][
+            'TicketMonitoringType'] == 'AllTicketChanges'
         assert not tickets.json['tracker_config']['options']['EnableVoting']
-        assert tickets.json['tracker_config']['options']['TicketMonitoringEmail'] == 'test@localhost'
-        assert tickets.json['tracker_config']['options']['mount_label'] == 'Tickets'
+        assert tickets.json['tracker_config']['options'][
+            'TicketMonitoringEmail'] == 'test@localhost'
+        assert tickets.json['tracker_config'][
+            'options']['mount_label'] == 'Tickets'
         assert tickets.json['saved_bins'][0]['sort'] == 'mod_date_dt desc'
-        assert tickets.json['saved_bins'][0]['terms'] == '!status:wont-fix && !status:closed'
+        assert tickets.json['saved_bins'][0][
+            'terms'] == '!status:wont-fix && !status:closed'
         assert tickets.json['saved_bins'][0]['summary'] == 'Changes'
         assert len(tickets.json['saved_bins'][0]) == 4
         assert tickets.json['milestones'][0]['name'] == '1.0'
@@ -126,10 +134,13 @@ class TestRestIndex(TestTrackerApiBase):
 
     def test_ticket_index_noauth(self):
         tickets = self.api_get('/rest/p/test/bugs', user='*anonymous')
-        assert 'TicketMonitoringEmail' not in tickets.json['tracker_config']['options']
+        assert 'TicketMonitoringEmail' not in tickets.json[
+            'tracker_config']['options']
         # make sure it didn't get removed from the db too
-        ticket_config = M.AppConfig.query.get(project_id=c.project._id, tool_name='tickets')
-        assert_equal(ticket_config.options.get('TicketMonitoringEmail'), 'test@localhost')
+        ticket_config = M.AppConfig.query.get(
+            project_id=c.project._id, tool_name='tickets')
+        assert_equal(ticket_config.options.get('TicketMonitoringEmail'),
+                     'test@localhost')
 
     @td.with_tool('test', 'Tickets', 'dummy')
     def test_move_ticket_redirect(self):
@@ -154,22 +165,29 @@ class TestRestDiscussion(TestTrackerApiBase):
         r = self.api_get('/rest/p/test/bugs/_discuss/')
         assert len(r.json['discussion']['threads']) == 1, r.json
         for t in r.json['discussion']['threads']:
-            r = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % t['_id'])
+            r = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
+                             t['_id'])
             assert len(r.json['thread']['posts']) == 0, r.json
 
     def test_post(self):
-        discussion = self.api_get('/rest/p/test/bugs/_discuss/').json['discussion']
-        post = self.api_post('/rest/p/test/bugs/_discuss/thread/%s/new' % discussion['threads'][0]['_id'],
-                             text='This is a comment', wrap_args=None)
-        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % discussion['threads'][0]['_id'])
+        discussion = self.api_get(
+            '/rest/p/test/bugs/_discuss/').json['discussion']
+        post = self.api_post(
+            '/rest/p/test/bugs/_discuss/thread/%s/new' % discussion['threads'][0]['_id'],
+            text='This is a comment', wrap_args=None)
+        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
+                              discussion['threads'][0]['_id'])
         assert len(thread.json['thread']['posts']) == 1, thread.json
         assert post.json['post']['text'] == 'This is a comment', post.json
         reply = self.api_post(
-            '/rest/p/test/bugs/_discuss/thread/%s/%s/reply' % (thread.json['thread']['_id'], post.json['post']['slug']),
+            '/rest/p/test/bugs/_discuss/thread/%s/%s/reply' % (thread.json['thread']
+                                                               ['_id'], post.json['post']['slug']),
             text='This is a reply', wrap_args=None)
         assert reply.json['post']['text'] == 'This is a reply', reply.json
-        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' % discussion['threads'][0]['_id'])
+        thread = self.api_get('/rest/p/test/bugs/_discuss/thread/%s/' %
+                              discussion['threads'][0]['_id'])
         assert len(thread.json['thread']['posts']) == 2, thread.json
+
 
 class TestRestSearch(TestTrackerApiBase):
 
@@ -180,7 +198,7 @@ class TestRestSearch(TestTrackerApiBase):
         ])
         r = self.api_get('/rest/p/test/bugs/search')
         assert_equal(r.status_int, 200)
-        assert_equal(r.json, {'tickets':[
+        assert_equal(r.json, {'tickets': [
             {'summary': 'our test ticket', 'ticket_num': 5},
         ]})
 
@@ -188,18 +206,20 @@ class TestRestSearch(TestTrackerApiBase):
     def test_some_criteria(self, paged_search):
         q = 'labels:testing && status:open'
         paged_search.return_value = dict(tickets=[
-                TM.Ticket(ticket_num=5, summary='our test ticket'),
-            ],
+            TM.Ticket(ticket_num=5, summary='our test ticket'),
+        ],
             sort='status',
             limit=2,
             count=1,
             page=0,
             q=q,
         )
-        r = self.api_get('/rest/p/test/bugs/search', q=q, sort='status', limit='2')
+        r = self.api_get('/rest/p/test/bugs/search',
+                         q=q, sort='status', limit='2')
         assert_equal(r.status_int, 200)
-        assert_equal(r.json, {'limit': 2, 'q': q, 'sort':'status', 'count': 1,
-                               'page': 0, 'tickets':[
-                {'summary': 'our test ticket', 'ticket_num': 5},
-            ]
-        })
+        assert_equal(r.json, {'limit': 2, 'q': q, 'sort': 'status', 'count': 1,
+                              'page': 0, 'tickets': [
+                                  {'summary': 'our test ticket',
+                                   'ticket_num': 5},
+                              ]
+                              })

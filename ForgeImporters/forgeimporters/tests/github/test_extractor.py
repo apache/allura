@@ -93,11 +93,11 @@ class TestGitHubProjectExtractor(TestCase):
         self.assertIsNone(self.extractor.get_next_page_url(''))
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next", <https://api.github.com/repositories/8560576/issues?state=open&page=10>; rel="last"'
         self.assertEqual(self.extractor.get_next_page_url(link),
-                'https://api.github.com/repositories/8560576/issues?state=open&page=2')
+                         'https://api.github.com/repositories/8560576/issues?state=open&page=2')
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=2>; rel="next"'
         self.assertEqual(self.extractor.get_next_page_url(link),
-                'https://api.github.com/repositories/8560576/issues?state=open&page=2')
+                         'https://api.github.com/repositories/8560576/issues?state=open&page=2')
 
         link = '<https://api.github.com/repositories/8560576/issues?state=open&page=1>; rel="prev"'
         self.assertIsNone(self.extractor.get_next_page_url(link))
@@ -110,7 +110,7 @@ class TestGitHubProjectExtractor(TestCase):
 
     def test_iter_issues(self):
         issues = list(self.extractor.iter_issues())
-        all_issues = zip((1,2), self.CLOSED_ISSUES_LIST)
+        all_issues = zip((1, 2), self.CLOSED_ISSUES_LIST)
         all_issues += zip((3, 4, 5), self.OPENED_ISSUES_LIST)
         all_issues += zip((6, 7, 8), self.OPENED_ISSUES_LIST_PAGE2)
         self.assertEqual(issues, all_issues)
@@ -118,18 +118,21 @@ class TestGitHubProjectExtractor(TestCase):
     def test_iter_comments(self):
         mock_issue = {'comments_url': '/issues/1/comments'}
         comments = list(self.extractor.iter_comments(mock_issue))
-        self.assertEqual(comments, self.ISSUE_COMMENTS + self.ISSUE_COMMENTS_PAGE2)
+        self.assertEqual(comments, self.ISSUE_COMMENTS +
+                         self.ISSUE_COMMENTS_PAGE2)
 
     def test_iter_events(self):
         mock_issue = {'events_url': '/issues/1/events'}
         events = list(self.extractor.iter_events(mock_issue))
-        self.assertEqual(events, self.ISSUE_EVENTS + self.ISSUE_EVENTS_PAGE2[:1])
+        self.assertEqual(events, self.ISSUE_EVENTS +
+                         self.ISSUE_EVENTS_PAGE2[:1])
 
     def test_has_wiki(self):
         assert self.extractor.has_wiki()
 
     def test_get_wiki_url(self):
-        self.assertEqual(self.extractor.get_page_url('wiki_url'), 'https://github.com/test_project.wiki')
+        self.assertEqual(self.extractor.get_page_url('wiki_url'),
+                         'https://github.com/test_project.wiki')
 
     @patch('forgeimporters.base.h.urlopen')
     def test_urlopen(self, urlopen):
@@ -173,7 +176,9 @@ class TestGitHubProjectExtractor(TestCase):
             'Rate limit exceeded (10 requests/hour). '
             'Sleeping until 2013-10-25 09:32:02 UTC'
         )
-        sleep.reset_mock(); urlopen.reset_mock(); log.warn.reset_mock()
+        sleep.reset_mock()
+        urlopen.reset_mock()
+        log.warn.reset_mock()
         response_ok = StringIO('{}')
         response_ok.info = lambda: {}
         urlopen.side_effect = [response_ok]
@@ -192,6 +197,7 @@ class TestGitHubProjectExtractor(TestCase):
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': '1382693522',
         }
+
         def urlopen_side_effect(*a, **kw):
             mock_resp = StringIO('{}')
             mock_resp.info = lambda: {}

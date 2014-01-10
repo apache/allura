@@ -24,15 +24,16 @@ from allura.tests.decorators import with_tool
 from allura import model as M
 
 
-# important to be distinct from 'test' which ForgeSVN uses, so that the tests can run in parallel and not clobber each other
+# important to be distinct from 'test' which ForgeSVN uses, so that the
+# tests can run in parallel and not clobber each other
 test_project_with_repo = 'test2'
 
 
 from forgeimporters.google.code import (
-        get_repo_url,
-        GoogleRepoImporter,
-        GoogleRepoImportController,
-        )
+    get_repo_url,
+    GoogleRepoImporter,
+    GoogleRepoImportController,
+)
 
 
 class TestGetRepoUrl(TestCase):
@@ -72,24 +73,25 @@ class TestGoogleRepoImporter(TestCase):
         GoogleRepoImporter().import_tool(p, u, project_name='project_name')
         get_repo_url.assert_called_once_with('project_name', 'git')
         p.install_app.assert_called_once_with('Git',
-                mount_point='code',
-                mount_label='Code',
-                init_from_url='http://remote/clone/url/',
-                import_id={
-                        'source': 'Google Code',
-                        'project_name': 'project_name',
-                    },
-            )
+                                              mount_point='code',
+                                              mount_label='Code',
+                                              init_from_url='http://remote/clone/url/',
+                                              import_id={
+                                                  'source': 'Google Code',
+                                                  'project_name': 'project_name',
+                                              },
+                                              )
         M.AuditLog.log.assert_called_once_with(
-                'import tool code from project_name on Google Code',
-                project=p, user=u, url='foo')
+            'import tool code from project_name on Google Code',
+            project=p, user=u, url='foo')
         g.post_event.assert_called_once_with('project_updated')
 
 
 class TestGoogleRepoImportController(TestController, TestCase):
 
     def test_index(self):
-        r = self.app.get('/p/{}/admin/ext/import/google-code-repo/'.format(test_project_with_repo))
+        r = self.app.get(
+            '/p/{}/admin/ext/import/google-code-repo/'.format(test_project_with_repo))
         self.assertIsNotNone(r.html.find(attrs=dict(name="gc_project_name")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_label")))
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
@@ -99,16 +101,21 @@ class TestGoogleRepoImportController(TestController, TestCase):
     def test_create(self, import_tool, extractor):
         extractor.return_value.get_repo_type.return_value = 'git'
         params = dict(gc_project_name='poop',
-                mount_label='mylabel',
-                mount_point='mymount',
-                )
-        r = self.app.post('/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
-                params,
-                status=302)
-        self.assertEqual(r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
-        self.assertEqual(u'mymount', import_tool.post.call_args[1]['mount_point'])
-        self.assertEqual(u'mylabel', import_tool.post.call_args[1]['mount_label'])
-        self.assertEqual(u'poop', import_tool.post.call_args[1]['project_name'])
+                      mount_label='mylabel',
+                      mount_point='mymount',
+                      )
+        r = self.app.post(
+            '/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
+            params,
+            status=302)
+        self.assertEqual(
+            r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
+        self.assertEqual(
+            u'mymount', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(
+            u'mylabel', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual(
+            u'poop', import_tool.post.call_args[1]['project_name'])
 
     @patch('forgeimporters.google.code.GoogleCodeProjectExtractor')
     @patch('forgeimporters.base.import_tool')
@@ -118,11 +125,12 @@ class TestGoogleRepoImportController(TestController, TestCase):
         project.set_tool_data('GoogleRepoImporter', pending=1)
         ThreadLocalORMSession.flush_all()
         params = dict(gc_project_name='poop',
-                mount_label='mylabel',
-                mount_point='mymount',
-                )
-        r = self.app.post('/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
-                params,
-                status=302).follow()
+                      mount_label='mylabel',
+                      mount_point='mymount',
+                      )
+        r = self.app.post(
+            '/p/{}/admin/ext/import/google-code-repo/create'.format(test_project_with_repo),
+            params,
+            status=302).follow()
         self.assertIn('Please wait and try again', r)
         self.assertEqual(import_tool.post.call_count, 0)

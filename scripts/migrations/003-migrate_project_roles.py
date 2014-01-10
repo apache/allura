@@ -24,7 +24,8 @@ from allura import model as M
 
 log = logging.getLogger(__name__)
 
-log.info('Moving project roles in database %s to main DB', M.Project.database_uri())
+log.info('Moving project roles in database %s to main DB',
+         M.Project.database_uri())
 for opr in M.OldProjectRole.query.find():
     pr = M.ProjectRole(**state(opr).document)
 session(opr).clear()

@@ -57,8 +57,9 @@ from forgeblog import widgets
 
 log = logging.getLogger(__name__)
 
+
 class W:
-    thread=w.Thread(
+    thread = w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
     pager = widgets.BlogPager()
@@ -73,30 +74,31 @@ class W:
     search_results = SearchResults()
     help_modal = SearchHelp()
 
+
 class ForgeBlogApp(Application):
     __version__ = version.__version__
-    tool_label='Blog'
-    tool_description="""
+    tool_label = 'Blog'
+    tool_description = """
         Share exciting news and progress updates with your
         community.
     """
-    default_mount_label='Blog'
-    default_mount_point='blog'
+    default_mount_label = 'Blog'
+    default_mount_point = 'blog'
     permissions = ['configure', 'read', 'write',
-                    'unmoderated_post', 'post', 'moderate', 'admin']
+                   'unmoderated_post', 'post', 'moderate', 'admin']
     permissions_desc = {
         'read': 'View blog entries.',
         'write': 'Create new blog entry.',
         'admin': 'Set permissions. Enable/disable commenting.',
     }
-    ordinal=14
+    ordinal = 14
     exportable = True
     config_options = Application.config_options
     default_external_feeds = []
-    icons={
-        24:'images/blog_24.png',
-        32:'images/blog_32.png',
-        48:'images/blog_48.png'
+    icons = {
+        24: 'images/blog_24.png',
+        32: 'images/blog_32.png',
+        48: 'images/blog_48.png'
     }
 
     def __init__(self, project, config):
@@ -114,12 +116,14 @@ class ForgeBlogApp(Application):
             else:
                 external_feeds = self.default_external_feeds
             return external_feeds
+
         def fset(self, new_external_feeds):
             globals = BM.Globals.query.get(app_config_id=self.config._id)
             if globals is not None:
                 globals.external_feeds = new_external_feeds
             elif len(new_external_feeds) > 0:
-                globals = BM.Globals(app_config_id=self.config._id, external_feeds=new_external_feeds)
+                globals = BM.Globals(
+                    app_config_id=self.config._id, external_feeds=new_external_feeds)
             if globals is not None:
                 session(globals).flush()
 
@@ -132,7 +136,7 @@ class ForgeBlogApp(Application):
         menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     @property
     def show_discussion(self):
@@ -147,21 +151,23 @@ class ForgeBlogApp(Application):
         links = [
             SitemapEntry('Home', base),
             SitemapEntry('Search', base + 'search'),
-            ]
+        ]
         if has_access(self, 'write')():
-            links += [ SitemapEntry('New Post', base + 'new') ]
+            links += [SitemapEntry('New Post', base + 'new')]
         return links
 
     def admin_menu(self):
         import sys
-        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
+        admin_url = c.project.url() + 'admin/' + \
+            self.config.options.mount_point + '/'
         # temporarily disabled until some bugs are fixed
         links = super(ForgeBlogApp, self).admin_menu(force_options=True)
         # We don't want external feeds in menu unless they're enabled
         if asbool(config.get('forgeblog.exfeed', 'false')):
-            links.insert(0, SitemapEntry('External feeds', admin_url + 'exfeed', className='admin_modal'))
+            links.insert(0, SitemapEntry('External feeds',
+                         admin_url + 'exfeed', className='admin_modal'))
         return links
-        #return super(ForgeBlogApp, self).admin_menu(force_options=True)
+        # return super(ForgeBlogApp, self).admin_menu(force_options=True)
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -180,7 +186,7 @@ class ForgeBlogApp(Application):
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
-            ]
+        ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -197,6 +203,7 @@ class ForgeBlogApp(Application):
                 f.write(',')
             json.dump(post, f, cls=jsonify.GenericJSON, indent=2)
         f.write(']}')
+
 
 class RootController(BaseController, FeedController):
 
@@ -264,7 +271,6 @@ class RootController(BaseController, FeedController):
         post = BM.BlogPost.new(**kw)
         redirect(h.really_unicode(post.url()).encode('utf-8'))
 
-
     @with_trailing_slash
     @expose('jinja:allura:templates/markdown_syntax_dialog.html')
     def markdown_syntax_dialog(self, **kw):
@@ -280,6 +286,7 @@ class RootController(BaseController, FeedController):
         if post is None:
             raise exc.HTTPNotFound()
         return PostController(post), rest
+
 
 class PostController(BaseController, FeedController):
 
@@ -341,7 +348,7 @@ class PostController(BaseController, FeedController):
             self.post.delete()
             flash('Post deleted', 'info')
             redirect(h.really_unicode(c.app.url).encode('utf-8'))
-        for k,v in kw.iteritems():
+        for k, v in kw.iteritems():
             setattr(self.post, k, v)
         self.post.commit()
         redirect('.')
@@ -379,13 +386,16 @@ class PostController(BaseController, FeedController):
             self.post.url())
 
     def _get_version(self, version):
-        if not version: return self.post
+        if not version:
+            return self.post
         try:
             return self.post.get_version(version)
         except ValueError:
             raise exc.HTTPNotFound()
 
+
 class BlogAdminController(DefaultAdminController):
+
     def __init__(self, app):
         self.app = app
 
@@ -399,9 +409,11 @@ class BlogAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_options(self, show_discussion=False):
-        self.app.config.options['show_discussion'] = show_discussion and True or False
+        self.app.config.options[
+            'show_discussion'] = show_discussion and True or False
         flash('Blog options updated')
-        redirect(h.really_unicode(c.project.url()+'admin/tools').encode('utf-8'))
+        redirect(h.really_unicode(c.project.url() + 'admin/tools')
+                 .encode('utf-8'))
 
     @without_trailing_slash
     @expose('jinja:forgeblog:templates/blog/admin_exfeed.html')
@@ -442,12 +454,14 @@ class BlogAdminController(DefaultAdminController):
         self.app.external_feeds_list = exfeed_list
         flash('External feeds updated')
         if len(invalid_list) > 0:
-            flash('Invalid link(s): %s' % ','.join(link for link in invalid_list), 'error')
+            flash('Invalid link(s): %s' %
+                  ','.join(link for link in invalid_list), 'error')
 
-        redirect(c.project.url()+'admin/tools')
+        redirect(c.project.url() + 'admin/tools')
 
 
 class RootRestController(BaseController):
+
     def __init__(self):
         self._discuss = AppDiscussionRestController()
 
@@ -472,7 +486,8 @@ class RootRestController(BaseController):
             post_titles = []
             for post in posts:
                 if has_access(post, 'read')():
-                    post_titles.append({'title': post.title, 'url': h.absurl('/rest' + post.url())})
+                    post_titles.append(
+                        {'title': post.title, 'url': h.absurl('/rest' + post.url())})
             return dict(posts=post_titles, count=result['count'], limit=result['limit'], page=result['page'])
 
     @expose()

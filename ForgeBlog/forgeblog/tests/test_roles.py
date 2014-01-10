@@ -22,6 +22,7 @@ from allura import model as M
 from allura.lib import security
 from allura.lib import helpers as h
 
+
 def setUp():
     setup_basic_test()
     setup_global_objects()
@@ -29,10 +30,12 @@ def setUp():
     c.project.install_app('blog', 'blog')
     g.set_app('blog')
 
+
 def test_role_assignments():
     admin = M.User.by_username('test-admin')
     user = M.User.by_username('test-user')
     anon = M.User.anonymous()
+
     def check_access(perm):
         pred = security.has_access(c.app, perm)
         return pred(user=admin), pred(user=user), pred(user=anon)

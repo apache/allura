@@ -30,8 +30,9 @@ log = logging.getLogger(__name__)
 from openid import oidutil
 oidutil.log = log.info
 
+
 def verify_oid(oid_url, failure_redirect=None, return_to=None,
-                  **kw):
+               **kw):
     '''Step 1 of OID verification -- redirect to provider site'''
     log.info('Trying to login via %s', oid_url)
     realm = config.get('openid.realm', 'http://localhost:8080/')
@@ -43,7 +44,7 @@ def verify_oid(oid_url, failure_redirect=None, return_to=None,
         log.exception('Error in openid login')
         flash(str(ex[0]), 'error')
         redirect(failure_redirect)
-    if req is None: # pragma no cover
+    if req is None:  # pragma no cover
         flash('No openid services found for <code>%s</code>' % oid_url,
               'error')
         redirect(failure_redirect)
@@ -54,7 +55,8 @@ def verify_oid(oid_url, failure_redirect=None, return_to=None,
         session.save()
         redirect(redirect_url)
     else:
-        return dict(kw, form=req.formMarkup(realm, return_to=return_to))    
+        return dict(kw, form=req.formMarkup(realm, return_to=return_to))
+
 
 def process_oid(failure_redirect=None):
     oidconsumer = consumer.Consumer(g.oid_session(), g.oid_store)
@@ -84,7 +86,7 @@ def process_oid(failure_redirect=None):
             # way their account with you is not compromised if their
             # i-name registration expires and is bought by someone else.
             message += ("  This is an i-name, and its persistent ID is %s"
-                        % info.endpoint.canonicalID )
+                        % info.endpoint.canonicalID)
         flash(message, 'info')
     elif info.status == consumer.CANCEL:
         # cancelled
@@ -109,5 +111,6 @@ def process_oid(failure_redirect=None):
         flash(message, 'error')
         redirect(failure_redirect)
     session.save()
-    oid_obj = M.OpenId.upsert(info.identity_url, display_identifier=display_identifier)
+    oid_obj = M.OpenId.upsert(
+        info.identity_url, display_identifier=display_identifier)
     return oid_obj

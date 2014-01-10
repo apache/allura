@@ -15,9 +15,12 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re, urllib, hashlib
+import re
+import urllib
+import hashlib
 
-_wrapped_email=re.compile(r'.*<(.+)>')
+_wrapped_email = re.compile(r'.*<(.+)>')
+
 
 def id(email):
     """Turn an email address into a Gravatar id as per <http://gravatar.com/site/implement/url>
@@ -32,6 +35,7 @@ def id(email):
     if match:
         email = match.group(1)
     return hashlib.md5(email.strip().lower().encode('utf8')).hexdigest()
+
 
 def url(email=None, gravatar_id=None, **kw):
     """Build a complete gravatar URL with our favorite defaults.
@@ -73,8 +77,10 @@ def url(email=None, gravatar_id=None, **kw):
     assert gravatar_id or email
     if gravatar_id is None:
         gravatar_id = id(email)
-    if 'r' not in kw and 'rating' not in kw: kw['r'] = 'pg'
+    if 'r' not in kw and 'rating' not in kw:
+        kw['r'] = 'pg'
     return ('https://secure.gravatar.com/avatar/%s?%s' % (gravatar_id, urllib.urlencode(kw)))
+
 
 def for_user(user):
     return url(user.get_pref('email_address'))

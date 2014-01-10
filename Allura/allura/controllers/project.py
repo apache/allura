@@ -54,16 +54,20 @@ from .static import NewForgeController
 
 log = logging.getLogger(__name__)
 
+
 class W:
     resize_editor = ffw.AutoResizeTextarea()
     project_summary = plw.ProjectSummary()
-    add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(antispam=True)
+    add_project = plugin.ProjectRegistrationProvider.get().add_project_widget(
+        antispam=True)
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
     project_select = ffw.NeighborhoodProjectSelect
     neighborhood_overview_form = ff.NeighborhoodOverviewForm()
 
+
 class NeighborhoodController(object):
+
     '''Manages a neighborhood of projects.
     '''
 
@@ -71,7 +75,8 @@ class NeighborhoodController(object):
         self.neighborhood = neighborhood
         self.neighborhood_name = self.neighborhood.name
         self.prefix = self.neighborhood.shortname_prefix
-        self.browse = NeighborhoodProjectBrowseController(neighborhood=self.neighborhood)
+        self.browse = NeighborhoodProjectBrowseController(
+            neighborhood=self.neighborhood)
         self._admin = NeighborhoodAdminController(self.neighborhood)
         self._moderate = NeighborhoodModerateController(self.neighborhood)
         self.import_project = ProjectImporterController(self.neighborhood)
@@ -84,17 +89,20 @@ class NeighborhoodController(object):
         pname = unquote(pname)
         provider = plugin.ProjectRegistrationProvider.get()
         try:
-            provider.shortname_validator.to_python(pname, check_allowed=False, neighborhood=self.neighborhood)
+            provider.shortname_validator.to_python(
+                pname, check_allowed=False, neighborhood=self.neighborhood)
         except Invalid:
             project = None
         else:
-            project = M.Project.query.get(shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
+            project = M.Project.query.get(
+                shortname=self.prefix + pname, neighborhood_id=self.neighborhood._id)
         if project is None and self.prefix == 'u/':
             # create user-project if it is missing
             user = M.User.query.get(username=pname, disabled=False)
             if user:
                 project = self.neighborhood.register_project(
-                    plugin.AuthenticationProvider.get(request).user_project_shortname(user),
+                    plugin.AuthenticationProvider.get(
+                        request).user_project_shortname(user),
                     user=user, user_project=True)
         if project is None:
             # look for neighborhood tools matching the URL
@@ -141,10 +149,10 @@ class NeighborhoodController(object):
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)
         pq = M.Project.query.find(dict(
-                neighborhood_id=self.neighborhood._id,
-                deleted=False,
-                is_nbhd_project=False,
-                ))
+            neighborhood_id=self.neighborhood._id,
+            deleted=False,
+            is_nbhd_project=False,
+        ))
         if sort == 'alpha':
             pq.sort('name')
         else:
@@ -152,11 +160,13 @@ class NeighborhoodController(object):
         count = pq.count()
         nb_max_projects = self.neighborhood.get_max_projects()
         projects = pq.skip(start).limit(int(limit)).all()
-        categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
+        categories = M.ProjectCategory.query.find(
+            {'parent_id': None}).sort('name').all()
         c.custom_sidebar_menu = []
         if h.has_access(self.neighborhood, 'register')() and (nb_max_projects is None or count < nb_max_projects):
             c.custom_sidebar_menu += [
-                SitemapEntry('Add a Project', self.neighborhood.url() + 'add_project', ui_icon=g.icons['plus']),
+                SitemapEntry('Add a Project', self.neighborhood.url()
+                             + 'add_project', ui_icon=g.icons['plus']),
                 SitemapEntry('')
             ]
         c.custom_sidebar_menu = c.custom_sidebar_menu + [
@@ -164,7 +174,8 @@ class NeighborhoodController(object):
         ]
         return dict(neighborhood=self.neighborhood,
                     title="Welcome to " + self.neighborhood.name,
-                    text=g.markdown.cached_convert(self.neighborhood, 'homepage'),
+                    text=g.markdown.cached_convert(
+                        self.neighborhood, 'homepage'),
                     projects=projects,
                     sort=sort,
                     limit=limit, page=page, count=count)
@@ -175,7 +186,8 @@ class NeighborhoodController(object):
         c.project = self.neighborhood.neighborhood_project
         require_access(self.neighborhood, 'register')
         c.add_project = W.add_project
-        form_data.setdefault('tools', [u'Wiki',u'Git',u'Tickets',u'Discussion'])
+        form_data.setdefault(
+            'tools', [u'Wiki', u'Git', u'Tickets', u'Discussion'])
         form_data['neighborhood'] = self.neighborhood.name
         return dict(neighborhood=self.neighborhood, form_data=form_data)
 
@@ -183,7 +195,7 @@ class NeighborhoodController(object):
     def suggest_name(self, project_name=''):
         provider = plugin.ProjectRegistrationProvider.get()
         return dict(suggested_name=provider.suggest_name(project_name,
-            self.neighborhood))
+                                                         self.neighborhood))
 
     @expose('json:')
     @validate(W.add_project)
@@ -195,27 +207,33 @@ class NeighborhoodController(object):
     @validate(W.add_project, error_handler=add_project)
     @utils.AntiSpam.validate('Spambot protection engaged')
     @require_post()
-    def register(self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
-                 private_project=None, tools=None, **kw):
+    def register(
+            self, project_unixname=None, project_description=None, project_name=None, neighborhood=None,
+            private_project=None, tools=None, **kw):
         require_access(self.neighborhood, 'register')
         if private_project:
             require_access(self.neighborhood, 'admin')
         neighborhood = M.Neighborhood.query.get(name=neighborhood)
 
-        project_description = h.really_unicode(project_description or '').encode('utf-8')
+        project_description = h.really_unicode(
+            project_description or '').encode('utf-8')
         project_name = h.really_unicode(project_name or '').encode('utf-8')
-        project_unixname = h.really_unicode(project_unixname or '').encode('utf-8').lower()
+        project_unixname = h.really_unicode(
+            project_unixname or '').encode('utf-8').lower()
         try:
             c.project = neighborhood.register_project(project_unixname,
-                    project_name=project_name, private_project=private_project)
+                                                      project_name=project_name, private_project=private_project)
         except exceptions.ProjectOverlimitError:
-            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
+            flash(
+                "You have exceeded the maximum number of projects you are allowed to create", 'error')
             redirect('add_project')
         except exceptions.ProjectRatelimitError:
-            flash("Project creation rate limit exceeded.  Please try again later.", 'error')
+            flash(
+                "Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('add_project')
         except Exception as e:
-            log.error('error registering project: %s', project_unixname, exc_info=True)
+            log.error('error registering project: %s',
+                      project_unixname, exc_info=True)
             flash('Internal Error. Please try again later.', 'error')
             redirect('add_project')
 
@@ -250,11 +268,13 @@ class NeighborhoodController(object):
 
 
 class NeighborhoodProjectBrowseController(ProjectBrowseController):
+
     def __init__(self, neighborhood=None, category_name=None, parent_category=None):
         self.neighborhood = neighborhood
-        super(NeighborhoodProjectBrowseController, self).__init__(category_name=category_name, parent_category=parent_category)
+        super(NeighborhoodProjectBrowseController, self).__init__(
+            category_name=category_name, parent_category=parent_category)
         self.nav_stub = '%sbrowse/' % self.neighborhood.url()
-        self.additional_filters = {'neighborhood_id':self.neighborhood._id}
+        self.additional_filters = {'neighborhood_id': self.neighborhood._id}
 
     @expose()
     def _lookup(self, category_name, *remainder):
@@ -268,7 +288,8 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
         c.project_summary = W.project_summary
         c.page_list = W.page_list
         limit, page, start = g.handle_paging(limit, page)
-        projects, count = self._find_projects(sort=sort, limit=limit, start=start)
+        projects, count = self._find_projects(
+            sort=sort, limit=limit, start=start)
         title = self._build_title()
         c.custom_sidebar_menu = self._build_nav()
         return dict(projects=projects,
@@ -278,7 +299,9 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
                     sort=sort,
                     limit=limit, page=page, count=count)
 
+
 class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController):
+
     '''Neighborhood controller with support for use as a root controller, for
     instance, when using adobe.sourceforge.net (if this is allowed).
     '''
@@ -288,15 +311,18 @@ class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController)
     nf = NewForgeController()
     search = SearchController()
 
+
 class ToolListController(object):
+
     """Renders a list of all tools of a given type in the current project."""
 
     @expose('jinja:allura:templates/tool_list.html')
     def _default(self, tool_name, *args, **kw):
         tool_name = tool_name.lower()
         entries = [e for e in c.project.sitemap()
-                if e.tool_name and e.tool_name.lower() == tool_name]
+                   if e.tool_name and e.tool_name.lower() == tool_name]
         return dict(entries=entries, type=g.entry_points['tool'][tool_name].tool_label if entries else None)
+
 
 class ProjectController(FeedController):
 
@@ -309,18 +335,20 @@ class ProjectController(FeedController):
     def _nav(self):
         menu = []
         for s in c.project.grouped_navbar_entries():
-            entry = dict(name=s.label, url=s.url, icon=s.ui_icon, tool_name=s.tool_name)
+            entry = dict(name=s.label, url=s.url,
+                         icon=s.ui_icon, tool_name=s.tool_name)
             if s.children:
                 entry['children'] = [dict(name=child.label, url=child.url, icon=child.ui_icon, tool_name=child.tool_name)
-                                    for child in s.children]
+                                     for child in s.children]
             menu.append(entry)
         return dict(menu=menu)
 
     @expose()
     def _lookup(self, name, *remainder):
         name = unquote(name)
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
-                                         neighborhood_id=c.project.neighborhood_id)
+        subproject = M.Project.query.get(
+            shortname=c.project.shortname + '/' + name,
+            neighborhood_id=c.project.neighborhood_id)
         if subproject:
             c.project = subproject
             c.app = None
@@ -341,13 +369,14 @@ class ProjectController(FeedController):
         admins = []
         developers = []
         for user in c.project.users():
-            roles = M.ProjectRole.query.find({'_id': {'$in': M.ProjectRole.by_user(user).roles}})
+            roles = M.ProjectRole.query.find(
+                {'_id': {'$in': M.ProjectRole.by_user(user).roles}})
             roles = set([r.name for r in roles])
             u = dict(
-                    display_name=user.display_name,
-                    username=user.username,
-                    url=user.url(),
-                    roles=', '.join(sorted(roles)))
+                display_name=user.display_name,
+                username=user.username,
+                url=user.url(),
+                roles=', '.join(sorted(roles)))
             if 'Admin' in roles:
                 admins.append(u)
             elif 'Developer' in roles:
@@ -368,7 +397,8 @@ class ProjectController(FeedController):
     def index(self, **kw):
         mount = c.project.first_mount_visible(c.user)
         activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = request.cookies.get(
+            'activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
         if mount is not None:
             if 'ac' in mount:
@@ -412,10 +442,10 @@ class ProjectController(FeedController):
             g.credentials,
             g.credentials.project_roles(project_id=c.project.root_project._id).named)
         users = M.User.query.find({
-                '_id': {'$in': named_roles.userids_that_reach},
-                'display_name': re.compile(r'(?i)%s' % re.escape(term)),
-                'disabled': False,
-            }).sort('username').limit(10).all()
+            '_id': {'$in': named_roles.userids_that_reach},
+            'display_name': re.compile(r'(?i)%s' % re.escape(term)),
+            'disabled': False,
+        }).sort('username').limit(10).all()
         return dict(
             users=[
                 dict(
@@ -433,6 +463,7 @@ class ProjectController(FeedController):
             } for u in c.project.users()]
         }
 
+
 class ScreenshotsController(object):
 
     @expose()
@@ -442,6 +473,7 @@ class ScreenshotsController(object):
         else:
             filename = unquote(request.path.rsplit('/', 1)[-1])
         return ScreenshotController(filename), args
+
 
 class ScreenshotController(object):
 
@@ -462,7 +494,8 @@ class ScreenshotController(object):
             project_id=c.project._id,
             category='screenshot',
             filename=self.filename)
-        if not f: raise exc.HTTPNotFound
+        if not f:
+            raise exc.HTTPNotFound
         return f
 
     @LazyProperty
@@ -471,8 +504,10 @@ class ScreenshotController(object):
             project_id=c.project._id,
             category='screenshot_thumb',
             filename=self.filename)
-        if not f: raise exc.HTTPNotFound
+        if not f:
+            raise exc.HTTPNotFound
         return f
+
 
 def set_nav(neighborhood):
     project = neighborhood.neighborhood_project
@@ -485,7 +520,9 @@ def set_nav(neighborhood):
             SitemapEntry('Overview', admin_url + 'overview'),
             SitemapEntry('Awards', admin_url + 'accolades')]
 
+
 class NeighborhoodAdminController(object):
+
     def __init__(self, neighborhood):
         self.neighborhood = neighborhood
         self.awards = NeighborhoodAwardsController(self.neighborhood)
@@ -532,11 +569,14 @@ class NeighborhoodAdminController(object):
     @expose('jinja:allura:templates/neighborhood_admin_accolades.html')
     def accolades(self):
         set_nav(self.neighborhood)
-        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
+        awards = M.Award.query.find(
+            dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         awards_count = len(awards)
-        grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
+        grants = M.AwardGrant.query.find(
+            dict(granted_by_neighborhood_id=self.neighborhood._id))
         grants_count = grants.count()
-        c.project_select = W.project_select(self.neighborhood.url() + '_admin/project_search')
+        c.project_select = W.project_select(
+            self.neighborhood.url() + '_admin/project_search')
         return dict(
             awards=awards,
             awards_count=awards_count,
@@ -551,31 +591,31 @@ class NeighborhoodAdminController(object):
         nbhd = self.neighborhood
         c.project = nbhd.neighborhood_project
         h.log_if_changed(nbhd, 'name', name,
-                        'change neighborhood name to %s' % name)
+                         'change neighborhood name to %s' % name)
         nbhd_redirect = kw.pop('redirect', '')
         h.log_if_changed(nbhd, 'redirect', nbhd_redirect,
-                        'change neighborhood redirect to %s' % nbhd_redirect)
+                         'change neighborhood redirect to %s' % nbhd_redirect)
         h.log_if_changed(nbhd, 'homepage', homepage,
-                        'change neighborhood homepage to %s' % homepage)
+                         'change neighborhood homepage to %s' % homepage)
         h.log_if_changed(nbhd, 'css', css,
-                        'change neighborhood css to %s' % css)
+                         'change neighborhood css to %s' % css)
         h.log_if_changed(nbhd, 'project_template', project_template,
-                        'change neighborhood project template to %s'
-                        % project_template)
+                         'change neighborhood project template to %s'
+                         % project_template)
         allow_browse = kw.get('allow_browse', False)
         h.log_if_changed(nbhd, 'allow_browse', allow_browse,
-                        'change neighborhood allow browse to %s'
-                        % allow_browse)
+                         'change neighborhood allow browse to %s'
+                         % allow_browse)
         show_title = kw.get('show_title', False)
         h.log_if_changed(nbhd, 'show_title', show_title,
-                        'change neighborhood show title to %s' % show_title)
+                         'change neighborhood show title to %s' % show_title)
         project_list_url = kw.get('project_list_url', '')
         h.log_if_changed(nbhd, 'project_list_url', project_list_url,
-                        'change neighborhood project list url to %s'
-                        % project_list_url)
+                         'change neighborhood project list url to %s'
+                         % project_list_url)
         tracking_id = kw.get('tracking_id', '')
         h.log_if_changed(nbhd, 'tracking_id', tracking_id,
-                        'update neighborhood tracking_id')
+                         'update neighborhood tracking_id')
         anchored_tools = kw.get('anchored_tools', '')
         validate_tools = dict()
         result = True
@@ -585,13 +625,14 @@ class NeighborhoodAdminController(object):
                     (tool.split(':')[0].lower(), tool.split(':')[1])
                     for tool in anchored_tools.replace(' ', '').split(','))
             except Exception:
-                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
+                flash('Anchored tools "%s" is invalid' %
+                      anchored_tools, 'error')
                 result = False
-
 
         for tool in validate_tools.keys():
             if tool not in g.entry_points['tool']:
-                flash('Anchored tools "%s" is invalid' % anchored_tools,'error')
+                flash('Anchored tools "%s" is invalid' %
+                      anchored_tools, 'error')
                 result = False
         if result:
             h.log_if_changed(nbhd, 'anchored_tools', anchored_tools,
@@ -616,6 +657,7 @@ class NeighborhoodAdminController(object):
             neighborhood=self.neighborhood,
         )
 
+
 class NeighborhoodStatsController(object):
 
     def __init__(self, neighborhood):
@@ -624,14 +666,16 @@ class NeighborhoodStatsController(object):
     @with_trailing_slash
     @expose('jinja:allura:templates/neighborhood_stats.html')
     def index(self, **kw):
-        delete_count = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=True)).count()
+        delete_count = M.Project.query.find(
+            dict(neighborhood_id=self.neighborhood._id, deleted=True)).count()
         public_count = 0
         private_count = 0
         last_updated_30 = 0
         last_updated_60 = 0
         last_updated_90 = 0
         today_date = datetime.today()
-        if M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)).count() < 20000: # arbitrary limit for efficiency
+        # arbitrary limit for efficiency
+        if M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)).count() < 20000:
             for p in M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False)):
                 if p.private:
                     private_count = private_count + 1
@@ -660,7 +704,8 @@ class NeighborhoodStatsController(object):
     def adminlist(self, sort='alpha', limit=25, page=0, **kw):
         limit, page, start = g.handle_paging(limit, page)
 
-        pq = M.Project.query.find(dict(neighborhood_id=self.neighborhood._id, deleted=False))
+        pq = M.Project.query.find(
+            dict(neighborhood_id=self.neighborhood._id, deleted=False))
         if sort == 'alpha':
             pq.sort('name')
         else:
@@ -670,10 +715,12 @@ class NeighborhoodStatsController(object):
 
         entries = []
         for proj in projects:
-            admin_role = M.ProjectRole.query.get(project_id=proj.root_project._id, name='Admin')
+            admin_role = M.ProjectRole.query.get(
+                project_id=proj.root_project._id, name='Admin')
             if admin_role is None:
                 continue
-            user_role_list = M.ProjectRole.query.find(dict(project_id=proj.root_project._id, name=None)).all()
+            user_role_list = M.ProjectRole.query.find(
+                dict(project_id=proj.root_project._id, name=None)).all()
             for ur in user_role_list:
                 if ur.user is not None and admin_role._id in ur.roles:
                     entries.append({'project': proj, 'user': ur.user})
@@ -686,6 +733,7 @@ class NeighborhoodStatsController(object):
                     neighborhood=self.neighborhood,
                     )
 
+
 class NeighborhoodModerateController(object):
 
     def __init__(self, neighborhood):
@@ -697,7 +745,8 @@ class NeighborhoodModerateController(object):
     @expose('jinja:allura:templates/neighborhood_moderate.html')
     def index(self, **kw):
         c.project = self.neighborhood.neighborhood_project
-        other_nbhds = list(M.Neighborhood.query.find(dict(_id={'$ne':self.neighborhood._id})).sort('name'))
+        other_nbhds = list(M.Neighborhood.query.find(
+            dict(_id={'$ne': self.neighborhood._id})).sort('name'))
         return dict(neighborhood=self.neighborhood,
                     neighborhoods=other_nbhds)
 
@@ -729,7 +778,8 @@ class NeighborhoodModerateController(object):
     @expose()
     @require_post()
     def evict(self, pid):
-        p = M.Project.query.get(shortname=pid, neighborhood_id=self.neighborhood._id, deleted=False)
+        p = M.Project.query.get(
+            shortname=pid, neighborhood_id=self.neighborhood._id, deleted=False)
         if p is None:
             flash("Cannot evict  %s; it's not in the neighborhood"
                   % pid, 'error')
@@ -744,6 +794,7 @@ class NeighborhoodModerateController(object):
         flash('%s evicted to Projects' % pid)
         redirect('.')
 
+
 class NeighborhoodAwardsController(object):
 
     def __init__(self, neighborhood=None):
@@ -753,7 +804,8 @@ class NeighborhoodAwardsController(object):
     @expose('jinja:allura:templates/awards.html')
     def index(self, **kw):
         require_access(self.neighborhood, 'admin')
-        awards = M.Award.query.find(dict(created_by_neighborhood_id=self.neighborhood._id)).all()
+        awards = M.Award.query.find(
+            dict(created_by_neighborhood_id=self.neighborhood._id)).all()
         return dict(awards=awards or [], count=len(awards))
 
     @expose('jinja:allura:templates/award_not_found.html')
@@ -763,7 +815,8 @@ class NeighborhoodAwardsController(object):
     @expose('jinja:allura:templates/grants.html')
     def grants(self, **kw):
         require_access(self.neighborhood, 'admin')
-        grants = M.AwardGrant.query.find(dict(granted_by_neighborhood_id=self.neighborhood._id))
+        grants = M.AwardGrant.query.find(
+            dict(granted_by_neighborhood_id=self.neighborhood._id))
         count = grants.count()
         return dict(grants=grants or [], count=count)
 
@@ -793,7 +846,7 @@ class NeighborhoodAwardsController(object):
     def grant(self, grant=None, recipient=None):
         require_access(self.neighborhood, 'admin')
         grant_q = M.Award.query.find(dict(short=grant,
-            created_by_neighborhood_id=self.neighborhood._id)).first()
+                                          created_by_neighborhood_id=self.neighborhood._id)).first()
         recipient_q = M.Project.query.find(dict(
             neighborhood_id=self.neighborhood._id, shortname=recipient,
             deleted=False)).first()
@@ -807,13 +860,14 @@ class NeighborhoodAwardsController(object):
                 g.post_event('project_updated')
         redirect(request.referer)
 
+
 class AwardController(object):
 
     def __init__(self, neighborhood=None, award_id=None):
         self.neighborhood = neighborhood
         if award_id:
             self.award = M.Award.query.find(dict(_id=ObjectId(award_id),
-                created_by_neighborhood_id=self.neighborhood._id)).first()
+                                                 created_by_neighborhood_id=self.neighborhood._id)).first()
 
     @with_trailing_slash
     @expose('jinja:allura:templates/award.html')
@@ -874,6 +928,7 @@ class AwardController(object):
             self.award.delete()
         redirect(request.referer)
 
+
 class GrantController(object):
 
     def __init__(self, neighborhood=None, award=None, recipient=None):
@@ -882,9 +937,9 @@ class GrantController(object):
             self.recipient = recipient.replace('_', '/')
             self.award = M.Award.query.get(_id=award._id)
             self.project = M.Project.query.find(dict(shortname=self.recipient,
-                neighborhood_id=self.neighborhood._id)).first()
+                                                     neighborhood_id=self.neighborhood._id)).first()
             self.grant = M.AwardGrant.query.get(award_id=self.award._id,
-                granted_to_project_id=self.project._id)
+                                                granted_to_project_id=self.project._id)
 
     @with_trailing_slash
     @expose('jinja:allura:templates/grant.html')
@@ -915,7 +970,9 @@ class GrantController(object):
             g.post_event('project_updated')
         redirect(request.referer)
 
+
 class ProjectImporterController(object):
+
     def __init__(self, neighborhood, *a, **kw):
         super(ProjectImporterController, self).__init__(*a, **kw)
         self.neighborhood = neighborhood

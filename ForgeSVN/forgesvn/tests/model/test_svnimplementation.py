@@ -40,7 +40,7 @@ class TestSVNImplementation(object):
     @patch('allura.model.repo.Tree.upsert')
     @patch('allura.model.repo.Tree.query.get')
     def _test_compute_tree_new(self, path, tree_get, tree_upsert, treesdoc_partial, lcd_partial):
-        repo = Mock(fs_path=g.tmpdir+'/')
+        repo = Mock(fs_path=g.tmpdir + '/')
         repo.name = 'code'
         impl = SVNImplementation(repo)
         impl._svn.info2 = Mock()
@@ -52,10 +52,10 @@ class TestSVNImplementation(object):
 
         tree_id = impl.compute_tree_new(commit, path)
 
-        assert_equal(impl._svn.info2.call_args[0][0], 'file://'+g.tmpdir+'/code/trunk/foo')
+        assert_equal(impl._svn.info2.call_args[0]
+                     [0], 'file://' + g.tmpdir + '/code/trunk/foo')
         treesdoc_partial.assert_called()
         lcd_partial.assert_called()
-
 
     def test_last_commit_ids(self):
         self._test_last_commit_ids('/trunk/foo/')
@@ -64,7 +64,7 @@ class TestSVNImplementation(object):
         self._test_last_commit_ids('trunk/foo')
 
     def _test_last_commit_ids(self, path):
-        repo = Mock(fs_path=g.tmpdir+'/')
+        repo = Mock(fs_path=g.tmpdir + '/')
         repo.name = 'code'
         repo._id = '5057636b9c1040636b81e4b1'
         impl = SVNImplementation(repo)
@@ -76,11 +76,12 @@ class TestSVNImplementation(object):
         entries = impl.last_commit_ids(commit, [path])
 
         assert_equal(entries, {path.strip('/'): '5057636b9c1040636b81e4b1:1'})
-        assert_equal(impl._svn.info2.call_args[0][0], 'file://'+g.tmpdir+'/code/trunk')
+        assert_equal(impl._svn.info2.call_args[0]
+                     [0], 'file://' + g.tmpdir + '/code/trunk')
 
     @patch('forgesvn.model.svn.svn_path_exists')
     def test__path_to_root(self, path_exists):
-        repo = Mock(fs_path=g.tmpdir+'/')
+        repo = Mock(fs_path=g.tmpdir + '/')
         repo.name = 'code'
         repo._id = '5057636b9c1040636b81e4b1'
         impl = SVNImplementation(repo)
@@ -91,15 +92,20 @@ class TestSVNImplementation(object):
         assert_equal(impl._path_to_root('/some/path/'), '')
         assert_equal(impl._path_to_root('some/path'), '')
         # tags
-        assert_equal(impl._path_to_root('/some/path/tags/1.0/some/dir'), 'some/path/tags/1.0')
-        assert_equal(impl._path_to_root('/some/path/tags/1.0/'), 'some/path/tags/1.0')
+        assert_equal(impl._path_to_root('/some/path/tags/1.0/some/dir'),
+                     'some/path/tags/1.0')
+        assert_equal(impl._path_to_root('/some/path/tags/1.0/'),
+                     'some/path/tags/1.0')
         assert_equal(impl._path_to_root('/some/path/tags/'), '')
         # branches
-        assert_equal(impl._path_to_root('/some/path/branches/b1/dir'), 'some/path/branches/b1')
-        assert_equal(impl._path_to_root('/some/path/branches/b1/'), 'some/path/branches/b1')
+        assert_equal(impl._path_to_root('/some/path/branches/b1/dir'),
+                     'some/path/branches/b1')
+        assert_equal(impl._path_to_root('/some/path/branches/b1/'),
+                     'some/path/branches/b1')
         assert_equal(impl._path_to_root('/some/path/branches/'), '')
         # trunk
-        assert_equal(impl._path_to_root('/some/path/trunk/some/dir/'), 'some/path/trunk')
+        assert_equal(impl._path_to_root('/some/path/trunk/some/dir/'),
+                     'some/path/trunk')
         assert_equal(impl._path_to_root('/some/path/trunk'), 'some/path/trunk')
         # with fallback to trunk
         path_exists.return_value = True

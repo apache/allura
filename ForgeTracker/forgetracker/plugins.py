@@ -21,4 +21,3 @@ from tg import config
 from pylons import app_globals as g
 
 log = logging.getLogger(__name__)
-

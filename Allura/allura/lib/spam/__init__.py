@@ -23,7 +23,9 @@ log = logging.getLogger(__name__)
 
 
 class SpamFilter(object):
+
     """Defines the spam checker interface and provides a default no-op impl."""
+
     def __init__(self, config):
         pass
 

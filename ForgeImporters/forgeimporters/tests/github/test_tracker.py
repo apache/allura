@@ -25,6 +25,7 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
 class TestTrackerImporter(TestCase):
+
     @mock.patch.object(tracker, 'g')
     @mock.patch.object(tracker, 'c')
     @mock.patch.object(tracker, 'ThreadLocalORMSession')
@@ -37,7 +38,7 @@ class TestTrackerImporter(TestCase):
         importer.process_fields = mock.Mock()
         importer.process_milestones = mock.Mock()
         importer.process_comments = mock.Mock()
-        importer.postprocess_milestones= mock.Mock()
+        importer.postprocess_milestones = mock.Mock()
         project, user = mock.Mock(), mock.Mock()
         app = project.install_app.return_value
         app.config.options.mount_point = 'mount_point'
@@ -45,25 +46,26 @@ class TestTrackerImporter(TestCase):
         gpe.iter_issues.return_value = [(50, mock.Mock()), (100, mock.Mock())]
 
         importer.import_tool(project, user, project_name='project_name',
-                mount_point='mount_point', mount_label='mount_label', user_name='me')
+                             mount_point='mount_point', mount_label='mount_label', user_name='me')
 
-        project.install_app.assert_called_once_with('tickets', 'mount_point', 'mount_label',
-                EnableVoting=False,
-                open_status_names='open',
-                closed_status_names='closed',
-                import_id={
-                    'source': 'GitHub',
-                    'project_name': 'me/project_name',
-                }
-            )
+        project.install_app.assert_called_once_with(
+            'tickets', 'mount_point', 'mount_label',
+            EnableVoting=False,
+            open_status_names='open',
+            closed_status_names='closed',
+            import_id={
+                'source': 'GitHub',
+                'project_name': 'me/project_name',
+            }
+        )
         gpe.iter_issues.assert_called_once()
         self.assertEqual(tlos.flush_all.call_args_list, [
-                mock.call(),
-                mock.call(),
-            ])
+            mock.call(),
+            mock.call(),
+        ])
         M.AuditLog.log.assert_called_once_with(
-                'import tool mount_point from me/project_name on GitHub',
-                project=project, user=user, url='foo')
+            'import tool mount_point from me/project_name on GitHub',
+            project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
         app.globals.invalidate_bin_counts.assert_called_once_with()
 
@@ -80,21 +82,23 @@ class TestTrackerImporter(TestCase):
             'labels': [{'name': 'first'}, {'name': 'second'}],
         }
         importer = tracker.GitHubTrackerImporter()
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        importer.github_markdown_converter = GitHubMarkdownConverter(
+            'user', 'project')
         extractor = mock.Mock()
         extractor.urlopen().read.return_value = 'data'
         with mock.patch.object(tracker, 'datetime') as dt:
-            dt.strptime.side_effect = lambda s,f: s
+            dt.strptime.side_effect = lambda s, f: s
             importer.process_fields(extractor, ticket, issue)
             self.assertEqual(ticket.summary, 'title')
-            self.assertEqual(ticket.description, '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
+            self.assertEqual(ticket.description,
+                             '*Originally created by:* [creator](https://github.com/creator)\n*Originally owned by:* [owner](https://github.com/owner)\n\nhello')
             self.assertEqual(ticket.status, 'New')
             self.assertEqual(ticket.created_date, 'created_at')
             self.assertEqual(ticket.mod_date, 'updated_at')
             self.assertEqual(dt.strptime.call_args_list, [
-                    mock.call('created_at', '%Y-%m-%dT%H:%M:%SZ'),
-                    mock.call('updated_at', '%Y-%m-%dT%H:%M:%SZ'),
-                ])
+                mock.call('created_at', '%Y-%m-%dT%H:%M:%SZ'),
+                mock.call('updated_at', '%Y-%m-%dT%H:%M:%SZ'),
+            ])
             self.assertEqual(ticket.labels, ['first', 'second'])
 
     @mock.patch.object(tracker, 'c')
@@ -102,40 +106,45 @@ class TestTrackerImporter(TestCase):
         importer = tracker.GitHubTrackerImporter()
         importer.open_milestones = set([
             ('first', datetime(day=23, month=4, year=2015)),
-            ('second',datetime(day=25, month=4, year=2015))
+            ('second', datetime(day=25, month=4, year=2015))
         ])
         milestones = importer.postprocess_milestones()
         self.assertItemsEqual(milestones, [
-                {
-                    'name': '_milestone',
-                    'type': 'milestone',
-                    'label': 'Milestone',
-                    'milestones': [
-                        {'name': 'first', 'due_date': u'2015-04-23', 'complete': False},
-                        {'name': 'second', 'due_date': u'2015-04-25', 'complete': False},
-                    ],
-                },
-            ])
+            {
+                'name': '_milestone',
+                'type': 'milestone',
+                'label': 'Milestone',
+                'milestones': [
+                        {'name': 'first', 'due_date':
+                            u'2015-04-23', 'complete': False},
+                    {'name': 'second', 'due_date':
+                     u'2015-04-25', 'complete': False},
+                ],
+            },
+        ])
 
     def test_get_attachments(self):
         importer = tracker.GitHubTrackerImporter()
         extractor = mock.Mock()
         extractor.urlopen().read.return_value = 'data'
         body = 'hello\n' \
-        '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
-        '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
+            '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n' \
+            '![screensh0t](http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png)'
         new_body, attachments = importer._get_attachments(extractor, body)
         self.assertEqual(new_body, 'hello\n')
         self.assertEqual(len(attachments), 2)
-        self.assertEqual(attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
-        self.assertEqual(attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
+        self.assertEqual(
+            attachments[0].url, 'https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg')
+        self.assertEqual(
+            attachments[1].url, 'http://f.cl.ly/items/13453x43053r2G0d3x0v/Screen%20Shot%202012-04-28%20at%2010.48.17%20AM.png')
         self.assertEqual(attachments[0].file.read(), 'data')
         self.assertEqual(attachments[1].file.read(), 'data')
 
     def test_get_attachments_404(self):
         importer = tracker.GitHubTrackerImporter()
         extractor = mock.Mock()
-        extractor.urlopen.side_effect = HTTPError('url', 404, 'mock', None, None)
+        extractor.urlopen.side_effect = HTTPError(
+            'url', 404, 'mock', None, None)
         body = 'hello\n' \
             '![cdbpzjc5ex4](https://f.cloud.github.com/assets/979771/1027411/a393ab5e-0e70-11e3-8a38-b93a3df904cf.jpg)\r\n'
         new_body, attachments = importer._get_attachments(extractor, body)
@@ -147,20 +156,21 @@ class TestTrackerImporter(TestCase):
         extractor = mock.Mock()
         issue = {'comments_url': '/comments'}
         extractor.iter_comments.return_value = [
-                {
-                    'body': 'hello',
-                    'created_at': '2013-08-26T16:57:53Z',
-                    'user': {'login': 'me'},
-                }
-            ]
+            {
+                'body': 'hello',
+                'created_at': '2013-08-26T16:57:53Z',
+                'user': {'login': 'me'},
+            }
+        ]
         importer = tracker.GitHubTrackerImporter()
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        importer.github_markdown_converter = GitHubMarkdownConverter(
+            'user', 'project')
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text='*Originally posted by:* [me](https://github.com/me)\n\nhello',
-                timestamp=datetime(2013, 8, 26, 16, 57, 53),
-                ignore_security=True,
-            ))
+            text='*Originally posted by:* [me](https://github.com/me)\n\nhello',
+            timestamp=datetime(2013, 8, 26, 16, 57, 53),
+            ignore_security=True,
+        ))
 
     def test_process_events(self):
         ticket = mock.Mock()
@@ -229,11 +239,12 @@ Hello
             'labels': [{'name': 'first'}, {'name': 'second'}],
         }
         importer = tracker.GitHubTrackerImporter()
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        importer.github_markdown_converter = GitHubMarkdownConverter(
+            'user', 'project')
         extractor = mock.Mock()
         extractor.urlopen().read.return_value = 'data'
         with mock.patch.object(tracker, 'datetime') as dt:
-            dt.strptime.side_effect = lambda s,f: s
+            dt.strptime.side_effect = lambda s, f: s
             importer.process_fields(extractor, ticket, issue)
         self.assertEqual(ticket.description.strip(), body_converted.strip())
 
@@ -256,17 +267,18 @@ Hello
 
         issue = {'comments_url': '/comments'}
         extractor.iter_comments.return_value = [
-                {
-                    'body': body,
-                    'created_at': '2013-08-26T16:57:53Z',
-                    'user': {'login': 'me'},
-                }
-            ]
+            {
+                'body': body,
+                'created_at': '2013-08-26T16:57:53Z',
+                'user': {'login': 'me'},
+            }
+        ]
         importer = tracker.GitHubTrackerImporter()
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'project')
+        importer.github_markdown_converter = GitHubMarkdownConverter(
+            'user', 'project')
         importer.process_comments(extractor, ticket, issue)
         self.assertEqual(ticket.discussion_thread.add_post.call_args_list[0], mock.call(
-                text=body_converted,
-                timestamp=datetime(2013, 8, 26, 16, 57, 53),
-                ignore_security=True,
-            ))
+            text=body_converted,
+            timestamp=datetime(2013, 8, 26, 16, 57, 53),
+            ignore_security=True,
+        ))

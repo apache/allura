@@ -52,13 +52,16 @@ from allura.lib.widgets.project_list import ProjectScreenshots
 
 log = logging.getLogger(__name__)
 
+
 class W:
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
-    mount_delete = ffw.Lightbox(name='mount_delete',trigger='a.mount_delete')
-    admin_modal = ffw.Lightbox(name='admin_modal',trigger='a.admin_modal')
-    install_modal = ffw.Lightbox(name='install_modal',trigger='a.install_trig')
-    explain_export_modal = ffw.Lightbox(name='explain_export',trigger='#why_export')
+    mount_delete = ffw.Lightbox(name='mount_delete', trigger='a.mount_delete')
+    admin_modal = ffw.Lightbox(name='admin_modal', trigger='a.admin_modal')
+    install_modal = ffw.Lightbox(
+        name='install_modal', trigger='a.install_trig')
+    explain_export_modal = ffw.Lightbox(
+        name='explain_export', trigger='#why_export')
     group_card = aw.GroupCard()
     permission_card = aw.PermissionCard()
     group_settings = aw.GroupSettings()
@@ -67,11 +70,11 @@ class W:
     screenshot_list = ProjectScreenshots()
     metadata_admin = aw.MetadataAdmin()
     audit = aw.AuditLog()
-    page_list=ffw.PageList()
-
+    page_list = ffw.PageList()
 
 
 class AdminApp(Application):
+
     '''This is the admin app.  It is pretty much required for
     a functioning allura project.
     '''
@@ -79,10 +82,10 @@ class AdminApp(Application):
     _installable_tools = None
     max_instances = 0
     tool_label = 'admin'
-    icons={
-        24:'images/admin_24.png',
-        32:'images/admin_32.png',
-        48:'images/admin_48.png'
+    icons = {
+        24: 'images/admin_24.png',
+        32: 'images/admin_32.png',
+        48: 'images/admin_48.png'
     }
     exportable = True
 
@@ -91,8 +94,9 @@ class AdminApp(Application):
         self.root = ProjectAdminController()
         self.api_root = ProjectAdminRestController()
         self.admin = AdminAppAdminController(self)
-        self.templates = pkg_resources.resource_filename('allura.ext.admin', 'templates')
-        self.sitemap = [ SitemapEntry('Admin','.')]
+        self.templates = pkg_resources.resource_filename(
+            'allura.ext.admin', 'templates')
+        self.sitemap = [SitemapEntry('Admin', '.')]
 
     def is_visible_to(self, user):
         '''Whether the user can view the app.'''
@@ -106,10 +110,11 @@ class AdminApp(Application):
             app = App(project, cfg)
             if app.installable:
                 tools.append(dict(name=name, app=App))
-            session(cfg).expunge(cfg)  # prevent from saving temporary config to db
+            # prevent from saving temporary config to db
+            session(cfg).expunge(cfg)
         tools.sort(key=lambda t: (t['app'].status_int(), t['app'].ordinal))
         return [t for t in tools
-            if t['app'].status in project.allowed_tool_status]
+                if t['app'].status in project.allowed_tool_status]
 
     @staticmethod
     def exportable_tools_for(project):
@@ -128,37 +133,40 @@ class AdminApp(Application):
     @h.exceptionless([], log)
     def sidebar_menu(self):
         links = []
-        admin_url = c.project.url()+'admin/'
-
+        admin_url = c.project.url() + 'admin/'
 
         if c.project.is_nbhd_project:
-            links.append(SitemapEntry('Add Project', c.project.url()+'add_project', ui_icon=g.icons['plus']))
-            nbhd_admin_url = c.project.neighborhood.url()+'_admin/'
+            links.append(SitemapEntry('Add Project', c.project.url()
+                         + 'add_project', ui_icon=g.icons['plus']))
+            nbhd_admin_url = c.project.neighborhood.url() + '_admin/'
             links = links + [
-                     SitemapEntry('Neighborhood'),
-                     SitemapEntry('Overview', nbhd_admin_url+'overview'),
-                     SitemapEntry('Awards', nbhd_admin_url+'accolades')]
+                SitemapEntry('Neighborhood'),
+                SitemapEntry('Overview', nbhd_admin_url + 'overview'),
+                SitemapEntry('Awards', nbhd_admin_url + 'accolades')]
         else:
-            links += [SitemapEntry('Metadata', admin_url+'overview'),]
+            links += [SitemapEntry('Metadata', admin_url + 'overview'), ]
             if c.project.neighborhood.name != "Users":
                 links += [
-                    SitemapEntry('Screenshots', admin_url+'screenshots'),
-                    SitemapEntry('Categorization', admin_url+'trove')
+                    SitemapEntry('Screenshots', admin_url + 'screenshots'),
+                    SitemapEntry('Categorization', admin_url + 'trove')
                 ]
-        links.append(SitemapEntry('Tools', admin_url+'tools'))
+        links.append(SitemapEntry('Tools', admin_url + 'tools'))
         if asbool(config.get('bulk_export_enabled', True)):
             links.append(SitemapEntry('Export', admin_url + 'export'))
         if c.project.is_root and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('User Permissions', admin_url+'groups/'))
+            links.append(
+                SitemapEntry('User Permissions', admin_url + 'groups/'))
         if not c.project.is_root and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Permissions', admin_url+'permissions/'))
+            links.append(
+                SitemapEntry('Permissions', admin_url + 'permissions/'))
         if len(c.project.neighborhood_invitations):
-            links.append(SitemapEntry('Invitation(s)', admin_url+'invitations'))
-        links.append(SitemapEntry('Audit Trail', admin_url+ 'audit/'))
+            links.append(
+                SitemapEntry('Invitation(s)', admin_url + 'invitations'))
+        links.append(SitemapEntry('Audit Trail', admin_url + 'audit/'))
         if c.project.is_nbhd_project:
-            links.append(SitemapEntry('Statistics', nbhd_admin_url+ 'stats/'))
+            links.append(SitemapEntry('Statistics', nbhd_admin_url + 'stats/'))
             links.append(None)
-            links.append(SitemapEntry('Help', nbhd_admin_url+ 'help/'))
+            links.append(SitemapEntry('Help', nbhd_admin_url + 'help/'))
 
         for ep_name in sorted(g.entry_points['admin'].keys()):
             admin_extension = g.entry_points['admin'][ep_name]
@@ -245,10 +253,13 @@ class ProjectAdminController(BaseController):
     @expose('jinja:allura.ext.admin:templates/project_trove.html')
     def trove(self):
         c.label_edit = W.label_edit
-        base_troves = M.TroveCategory.query.find(dict(trove_parent_id=0)).sort('fullname').all()
-        topic_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='topic')
-        license_trove = M.TroveCategory.query.get(trove_parent_id=0,shortname='license')
-        return dict(base_troves=base_troves,license_trove=license_trove,topic_trove=topic_trove)
+        base_troves = M.TroveCategory.query.find(
+            dict(trove_parent_id=0)).sort('fullname').all()
+        topic_trove = M.TroveCategory.query.get(
+            trove_parent_id=0, shortname='topic')
+        license_trove = M.TroveCategory.query.get(
+            trove_parent_id=0, shortname='license')
+        return dict(base_troves=base_troves, license_trove=license_trove, topic_trove=topic_trove)
 
     @without_trailing_slash
     @expose('jinja:allura.ext.admin:templates/project_tools.html')
@@ -262,7 +273,8 @@ class ProjectAdminController(BaseController):
         return dict(
             mounts=mounts,
             installable_tools=AdminApp.installable_tools_for(c.project),
-            roles=M.ProjectRole.query.find(dict(project_id=c.project.root_project._id)).sort('_id').all(),
+            roles=M.ProjectRole.query.find(
+                dict(project_id=c.project.root_project._id)).sort('_id').all(),
             categories=M.ProjectCategory.query.find(dict(parent_id=None)).sort('label').all())
 
     @expose()
@@ -272,7 +284,8 @@ class ProjectAdminController(BaseController):
             grouping_threshold = int(grouping_threshold)
             if grouping_threshold < 1:
                 raise ValueError('Invalid threshold')
-            c.project.set_tool_data('allura', grouping_threshold=grouping_threshold)
+            c.project.set_tool_data(
+                'allura', grouping_threshold=grouping_threshold)
         except ValueError as e:
             flash('Invalid threshold', 'error')
         redirect('tools')
@@ -353,22 +366,26 @@ class ProjectAdminController(BaseController):
             c.project.removal = removal
             c.project.removal_changed_date = datetime.utcnow()
         if 'delete_icon' in kw:
-            M.ProjectFile.query.remove(dict(project_id=c.project._id, category='icon'))
+            M.ProjectFile.query.remove(
+                dict(project_id=c.project._id, category='icon'))
             M.AuditLog.log('remove project icon')
             h.log_action(log, 'remove project icon').info('')
             g.post_event('project_updated')
             redirect('overview')
         elif 'delete' in kw:
-            allow_project_delete = asbool(config.get('allow_project_delete', True))
+            allow_project_delete = asbool(
+                config.get('allow_project_delete', True))
             if allow_project_delete or not c.project.is_root:
                 M.AuditLog.log('delete project')
                 h.log_action(log, 'delete project').info('')
-                plugin.ProjectRegistrationProvider.get().delete_project(c.project, c.user)
+                plugin.ProjectRegistrationProvider.get().delete_project(
+                    c.project, c.user)
             redirect('overview')
         elif 'undelete' in kw:
             h.log_action(log, 'undelete project').info('')
             M.AuditLog.log('undelete project')
-            plugin.ProjectRegistrationProvider.get().undelete_project(c.project, c.user)
+            plugin.ProjectRegistrationProvider.get().undelete_project(
+                c.project, c.user)
             redirect('overview')
         if name != c.project.name:
             h.log_action(log, 'change project name').info('')
@@ -389,7 +406,8 @@ class ProjectAdminController(BaseController):
             c.project.category_id = category
         if external_homepage != c.project.external_homepage:
             h.log_action(log, 'change external home page').info('')
-            M.AuditLog.log('change external home page to %s', external_homepage)
+            M.AuditLog.log('change external home page to %s',
+                           external_homepage)
             c.project.external_homepage = external_homepage
         if support_page != c.project.support_page:
             h.log_action(log, 'change project support page').info('')
@@ -398,31 +416,37 @@ class ProjectAdminController(BaseController):
         old_twitter = c.project.social_account('Twitter')
         if not old_twitter or twitter_handle != old_twitter.accounturl:
             h.log_action(log, 'change project twitter handle').info('')
-            M.AuditLog.log('change project twitter handle to %s', twitter_handle)
+            M.AuditLog.log('change project twitter handle to %s',
+                           twitter_handle)
             c.project.set_social_account('Twitter', twitter_handle)
         old_facebook = c.project.social_account('Facebook')
         if not old_facebook or facebook_page != old_facebook.accounturl:
             if not facebook_page or 'facebook.com' in urlparse(facebook_page).netloc:
                 h.log_action(log, 'change project facebook page').info('')
-                M.AuditLog.log('change project facebook page to %s', facebook_page)
+                M.AuditLog.log(
+                    'change project facebook page to %s', facebook_page)
                 c.project.set_social_account('Facebook', facebook_page)
         if support_page_url != c.project.support_page_url:
             h.log_action(log, 'change project support page url').info('')
-            M.AuditLog.log('change project support page url to %s', support_page_url)
+            M.AuditLog.log('change project support page url to %s',
+                           support_page_url)
             c.project.support_page_url = support_page_url
         if moved_to_url != c.project.moved_to_url:
             h.log_action(log, 'change project moved to url').info('')
             M.AuditLog.log('change project moved to url to %s', moved_to_url)
             c.project.moved_to_url = moved_to_url
         if export_controlled != c.project.export_controlled:
-            h.log_action(log, 'change project export controlled status').info('')
-            M.AuditLog.log('change project export controlled status to %s', export_controlled)
+            h.log_action(
+                log, 'change project export controlled status').info('')
+            M.AuditLog.log(
+                'change project export controlled status to %s', export_controlled)
             c.project.export_controlled = not not export_controlled
             if not export_controlled:
                 export_control_type = None
         if export_control_type != c.project.export_control_type:
             h.log_action(log, 'change project export control type').info('')
-            M.AuditLog.log('change project export control type to %s', export_control_type)
+            M.AuditLog.log('change project export control type to %s',
+                           export_control_type)
             c.project.export_control_type = export_control_type
         if tracking_id != c.project.tracking_id:
             h.log_action(log, 'change project tracking ID').info('')
@@ -431,21 +455,22 @@ class ProjectAdminController(BaseController):
 
         if icon is not None and icon != '':
             if c.project.icon:
-                M.ProjectFile.remove(dict(project_id=c.project._id, category='icon'))
+                M.ProjectFile.remove(
+                    dict(project_id=c.project._id, category='icon'))
             M.AuditLog.log('update project icon')
             M.ProjectFile.save_image(
                 icon.filename, icon.file, content_type=icon.type,
-                square=True, thumbnail_size=(48,48),
-                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+                square=True, thumbnail_size=(48, 48),
+                thumbnail_meta=dict(project_id=c.project._id, category='icon'))
         g.post_event('project_updated')
         flash('Saved', 'success')
         redirect('overview')
 
     def _add_trove(self, type, new_trove):
-        current_troves = getattr(c.project,'trove_%s'%type)
+        current_troves = getattr(c.project, 'trove_%s' % type)
         trove_obj = M.TroveCategory.query.get(trove_cat_id=int(new_trove))
         error_msg = None
-        if type in ['license','audience','developmentstatus','language'] and len(current_troves) >= 6:
+        if type in ['license', 'audience', 'developmentstatus', 'language'] and len(current_troves) >= 6:
             error_msg = 'You may not have more than 6 of this category.'
         elif type in ['topic'] and len(current_troves) >= 3:
             error_msg = 'You may not have more than 3 of this category.'
@@ -453,7 +478,8 @@ class ProjectAdminController(BaseController):
             if trove_obj._id not in current_troves:
                 current_troves.append(trove_obj._id)
                 M.AuditLog.log('add trove %s: %s', type, trove_obj.fullpath)
-                ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
+                # just in case the event handling is super fast
+                ThreadLocalORMSession.flush_all()
                 c.project.last_updated = datetime.utcnow()
                 g.post_event('project_updated')
             else:
@@ -465,7 +491,7 @@ class ProjectAdminController(BaseController):
     def add_trove_js(self, type, new_trove, **kw):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
-        return dict(trove_full_path = trove_obj.fullpath, trove_cat_id = trove_obj.trove_cat_id, error_msg=error_msg)
+        return dict(trove_full_path=trove_obj.fullpath, trove_cat_id=trove_obj.trove_cat_id, error_msg=error_msg)
 
     @expose()
     @require_post()
@@ -473,7 +499,7 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
         trove_obj, error_msg = self._add_trove(type, new_trove)
         if error_msg:
-            flash(error_msg,'error')
+            flash(error_msg, 'error')
         redirect('trove')
 
     @expose()
@@ -481,11 +507,12 @@ class ProjectAdminController(BaseController):
     def delete_trove(self, type, trove, **kw):
         require_access(c.project, 'update')
         trove_obj = M.TroveCategory.query.get(trove_cat_id=int(trove))
-        current_troves = getattr(c.project,'trove_%s'%type)
+        current_troves = getattr(c.project, 'trove_%s' % type)
         if trove_obj is not None and trove_obj._id in current_troves:
             M.AuditLog.log('remove trove %s: %s', type, trove_obj.fullpath)
             current_troves.remove(trove_obj._id)
-            ThreadLocalORMSession.flush_all()  # just in case the event handling is super fast
+            # just in case the event handling is super fast
+            ThreadLocalORMSession.flush_all()
             c.project.last_updated = datetime.utcnow()
             g.post_event('project_updated')
         redirect('trove')
@@ -497,7 +524,8 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
         screenshots = c.project.get_screenshots()
         if len(screenshots) >= 6:
-            flash('You may not have more than 6 screenshots per project.','error')
+            flash('You may not have more than 6 screenshots per project.',
+                  'error')
         elif screenshot is not None and screenshot != '':
             M.AuditLog.log('add screenshot')
             sort = 1 + max([ss.sort or 0 for ss in screenshots] or [0])
@@ -509,8 +537,8 @@ class ProjectAdminController(BaseController):
                     category='screenshot',
                     caption=caption,
                     sort=sort),
-                square=True, thumbnail_size=(150,150),
-                thumbnail_meta=dict(project_id=c.project._id,category='screenshot_thumb'))
+                square=True, thumbnail_size=(150, 150),
+                thumbnail_meta=dict(project_id=c.project._id, category='screenshot_thumb'))
             g.post_event('project_updated')
         redirect('screenshots')
 
@@ -536,7 +564,8 @@ class ProjectAdminController(BaseController):
         require_access(c.project, 'update')
         if id is not None and id != '':
             M.AuditLog.log('remove screenshot')
-            M.ProjectFile.query.remove(dict(project_id=c.project._id, _id=ObjectId(id)))
+            M.ProjectFile.query.remove(
+                dict(project_id=c.project._id, _id=ObjectId(id)))
             g.post_event('project_updated')
         redirect('screenshots')
 
@@ -545,7 +574,8 @@ class ProjectAdminController(BaseController):
     def edit_screenshot(self, id=None, caption=None, **kw):
         require_access(c.project, 'update')
         if id is not None and id != '':
-            M.ProjectFile.query.get(project_id=c.project._id, _id=ObjectId(id)).caption=caption
+            M.ProjectFile.query.get(
+                project_id=c.project._id, _id=ObjectId(id)).caption = caption
             g.post_event('project_updated')
         redirect('screenshots')
 
@@ -578,12 +608,15 @@ class ProjectAdminController(BaseController):
                 p.ordinal = int(sp['ordinal'])
         if tools:
             for p in tools:
-                c.project.app_config(p['mount_point']).options.ordinal = int(p['ordinal'])
+                c.project.app_config(
+                    p['mount_point']).options.ordinal = int(p['ordinal'])
         redirect('tools')
 
     def _update_mounts(self, subproject=None, tool=None, new=None, **kw):
-        if subproject is None: subproject = []
-        if tool is None: tool = []
+        if subproject is None:
+            subproject = []
+        if tool is None:
+            tool = []
         for sp in subproject:
             p = M.Project.query.get(shortname=sp['shortname'],
                                     neighborhood_id=c.project.neighborhood_id)
@@ -594,7 +627,8 @@ class ProjectAdminController(BaseController):
                     'delete subproject %s', sp['shortname'],
                     meta=dict(name=sp['shortname']))
                 p.removal = 'deleted'
-                plugin.ProjectRegistrationProvider.get().delete_project(p, c.user)
+                plugin.ProjectRegistrationProvider.get().delete_project(
+                    p, c.user)
             elif not new:
                 M.AuditLog.log('update subproject %s', sp['shortname'])
                 p.name = sp['name']
@@ -620,7 +654,7 @@ class ProjectAdminController(BaseController):
                 M.AuditLog.log('create subproject %s', mount_point)
                 h.log_action(log, 'create subproject').info(
                     'create subproject %s', mount_point,
-                    meta=dict(mount_point=mount_point,name=new['mount_label']))
+                    meta=dict(mount_point=mount_point, name=new['mount_label']))
                 sp = c.project.new_subproject(mount_point)
                 sp.name = new['mount_label']
                 sp.ordinal = int(new['ordinal'])
@@ -635,7 +669,8 @@ class ProjectAdminController(BaseController):
                 h.log_action(log, 'install tool').info(
                     'install tool %s', mount_point,
                     meta=dict(tool_type=ep_name, mount_point=mount_point, mount_label=new['mount_label']))
-                c.project.install_app(ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
+                c.project.install_app(
+                    ep_name, mount_point, mount_label=new['mount_label'], ordinal=new['ordinal'])
         g.post_event('project_updated')
 
     @h.vardec
@@ -660,7 +695,8 @@ class ProjectAdminController(BaseController):
                 flash(str(e), 'error')
                 redirect('.')
             else:
-                flash('Export scheduled.  You will recieve an email with download instructions when complete.', 'ok')
+                flash(
+                    'Export scheduled.  You will recieve an email with download instructions when complete.', 'ok')
                 redirect('export')
 
         exportable_tools = AdminApp.exportable_tools_for(c.project)
@@ -671,6 +707,7 @@ class ProjectAdminController(BaseController):
 
 
 class ProjectAdminRestController(BaseController):
+
     """
     Exposes RESTful APi for project admin actions.
     """
@@ -703,8 +740,9 @@ class ProjectAdminRestController(BaseController):
         if not asbool(config.get('bulk_export_enabled', True)):
             raise exc.HTTPNotFound()
         if not tools:
-            raise exc.HTTPBadRequest('Must give at least one tool mount point to export')
-        tools = aslist(tools,',')
+            raise exc.HTTPBadRequest(
+                'Must give at least one tool mount point to export')
+        tools = aslist(tools, ',')
         exportable_tools = AdminApp.exportable_tools_for(c.project)
         allowed = set(t.options.mount_point for t in exportable_tools)
         if not set(tools).issubset(allowed):
@@ -717,9 +755,9 @@ class ProjectAdminRestController(BaseController):
         filename = c.project.bulk_export_filename()
         export_tasks.bulk_export.post(tools, filename, send_email=send_email)
         return {
-                'status': 'in progress',
-                'filename': filename,
-            }
+            'status': 'in progress',
+            'filename': filename,
+        }
 
     @expose('json:')
     def export_status(self, **kw):
@@ -781,18 +819,19 @@ class ProjectAdminRestController(BaseController):
         if order is None:
             order = 'last'
         mounts = [{
-                'ordinal': ac.options.ordinal,
-                'label': ac.options.mount_label,
-                'mount': ac.options.mount_point,
-                'type': ac.tool_name.lower(),
-            } for ac in c.project.app_configs]
-        subs = {p.shortname: p for p in M.Project.query.find({'parent_id': c.project._id})}
+            'ordinal': ac.options.ordinal,
+            'label': ac.options.mount_label,
+            'mount': ac.options.mount_point,
+            'type': ac.tool_name.lower(),
+        } for ac in c.project.app_configs]
+        subs = {p.shortname:
+                p for p in M.Project.query.find({'parent_id': c.project._id})}
         for sub in subs.values():
             mounts.append({
-                    'ordinal': sub.ordinal,
-                    'mount': sub.shortname,
-                    'type': 'sub-project',
-                })
+                'ordinal': sub.ordinal,
+                'mount': sub.shortname,
+                'type': 'sub-project',
+            })
         mounts.sort(key=itemgetter('ordinal'))
         if order == 'first':
             ordinal = 0
@@ -831,7 +870,7 @@ class ProjectAdminRestController(BaseController):
         return {'success': True,
                 'info': 'Tool %s with mount_point %s and mount_label %s was created.'
                         % (tool, mount_point, mount_label)
-        }
+                }
 
 
 class PermissionsController(BaseController):
@@ -857,18 +896,20 @@ class PermissionsController(BaseController):
             new_group_ids = args.get('new', [])
             group_ids = args.get('value', [])
             if isinstance(new_group_ids, basestring):
-                new_group_ids = [ new_group_ids ]
+                new_group_ids = [new_group_ids]
             if isinstance(group_ids, basestring):
-                group_ids = [ group_ids ]
+                group_ids = [group_ids]
             # make sure the admin group has the admin permission
             if perm == 'admin':
                 if c.project.is_root:
                     pid = c.project._id
                 else:
                     pid = c.project.parent_id
-                admin_group_id = str(M.ProjectRole.query.get(project_id=pid, name='Admin')._id)
+                admin_group_id = str(
+                    M.ProjectRole.query.get(project_id=pid, name='Admin')._id)
                 if admin_group_id not in group_ids + new_group_ids:
-                    flash('You cannot remove the admin group from the admin permission.','warning')
+                    flash(
+                        'You cannot remove the admin group from the admin permission.', 'warning')
                     group_ids.append(admin_group_id)
             permissions[perm] = []
             role_ids = map(ObjectId, group_ids + new_group_ids)
@@ -876,22 +917,23 @@ class PermissionsController(BaseController):
         c.project.acl = []
         for perm, role_ids in permissions.iteritems():
             role_names = lambda ids: ','.join(sorted(
-                    pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in':ids}))))
+                pr.name for pr in M.ProjectRole.query.find(dict(_id={'$in': ids}))))
             old_role_ids = old_permissions.get(perm, [])
             if old_role_ids != role_ids:
                 M.AuditLog.log('updated "%s" permissions: "%s" => "%s"',
-                               perm,role_names(old_role_ids), role_names(role_ids))
+                               perm, role_names(old_role_ids), role_names(role_ids))
             c.project.acl += [M.ACE.allow(rid, perm) for rid in role_ids]
         g.post_event('project_updated')
         redirect('.')
 
     def _index_permissions(self):
         permissions = dict(
-            (p,[]) for p in c.project.permissions)
+            (p, []) for p in c.project.permissions)
         for ace in c.project.acl:
             if ace.access == M.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)
         return permissions
+
 
 class GroupsController(BaseController):
 
@@ -900,7 +942,7 @@ class GroupsController(BaseController):
 
     def _index_permissions(self):
         permissions = dict(
-            (p,[]) for p in c.project.permissions)
+            (p, []) for p in c.project.permissions)
         for ace in c.project.acl:
             if ace.access == M.ACE.ALLOW:
                 permissions[ace.permission].append(ace.role_id)
@@ -908,14 +950,15 @@ class GroupsController(BaseController):
 
     def _map_group_permissions(self):
         roles = c.project.named_roles
-        permissions=self._index_permissions()
+        permissions = self._index_permissions()
         permissions_by_role = dict()
         auth_role = M.ProjectRole.authenticated()
         anon_role = M.ProjectRole.anonymous()
-        for role in roles+[auth_role, anon_role]:
+        for role in roles + [auth_role, anon_role]:
             permissions_by_role[str(role._id)] = []
             for perm in permissions:
-                perm_info = dict(has="no", text="Does not have permission %s" % perm, name=perm)
+                perm_info = dict(has="no", text="Does not have permission %s" %
+                                 perm, name=perm)
                 role_ids = permissions[perm]
                 if role._id in role_ids:
                     perm_info['text'] = "Has permission %s" % perm
@@ -923,15 +966,18 @@ class GroupsController(BaseController):
                 else:
                     for r in role.child_roles():
                         if r._id in role_ids:
-                            perm_info['text'] = "Inherited permission %s from %s" % (perm, r.name)
+                            perm_info['text'] = "Inherited permission %s from %s" % (
+                                perm, r.name)
                             perm_info['has'] = "inherit"
                             break
                 if perm_info['has'] == "no":
                     if anon_role._id in role_ids:
-                        perm_info['text'] = "Inherited permission %s from Anonymous" % perm
+                        perm_info[
+                            'text'] = "Inherited permission %s from Anonymous" % perm
                         perm_info['has'] = "inherit"
                     elif auth_role._id in role_ids and role != anon_role:
-                        perm_info['text'] = "Inherited permission %s from Authenticated" % perm
+                        perm_info[
+                            'text'] = "Inherited permission %s from Authenticated" % perm
                         perm_info['has'] = "inherit"
                 permissions_by_role[str(role._id)].append(perm_info)
         return permissions_by_role
@@ -968,14 +1014,16 @@ class GroupsController(BaseController):
     @require_post()
     @h.vardec
     def change_perm(self, role_id, permission, allow="true", **kw):
-        if allow=="true":
-            M.AuditLog.log('granted permission %s to group %s', permission, M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
+        if allow == "true":
+            M.AuditLog.log('granted permission %s to group %s', permission,
+                           M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
             c.project.acl.append(M.ACE.allow(ObjectId(role_id), permission))
         else:
             admin_group_id = str(M.ProjectRole.by_name('Admin')._id)
             if admin_group_id == role_id and permission == 'admin':
                 return dict(error='You cannot remove the admin permission from the admin group.')
-            M.AuditLog.log('revoked permission %s from group %s', permission, M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
+            M.AuditLog.log('revoked permission %s from group %s', permission,
+                           M.ProjectRole.query.get(_id=ObjectId(role_id)).name)
             c.project.acl.remove(M.ACE.allow(ObjectId(role_id), permission))
         g.post_event('project_updated')
         return self._map_group_permissions()
@@ -985,7 +1033,7 @@ class GroupsController(BaseController):
     @require_post()
     @h.vardec
     def add_user(self, role_id, username, **kw):
-        if not username or username=='*anonymous':
+        if not username or username == '*anonymous':
             return dict(error='You must choose a user to add.')
         group = M.ProjectRole.query.get(_id=ObjectId(role_id))
         user = M.User.by_username(username.strip())
@@ -1036,9 +1084,9 @@ class GroupsController(BaseController):
             user_ids = pr.get('value', [])
             new_users = pr.get('new', [])
             if isinstance(user_ids, basestring):
-                user_ids = [ user_ids ]
+                user_ids = [user_ids]
             if isinstance(new_users, basestring):
-                new_users = [ new_users ]
+                new_users = [new_users]
             # Handle new users in groups
             user_added = False
             for username in new_users:
@@ -1047,9 +1095,10 @@ class GroupsController(BaseController):
                     flash('User %s not found' % username, 'error')
                     redirect('.')
                 if not user._id:
-                    continue # never add anon users to groups
+                    continue  # never add anon users to groups
                 M.AuditLog.log('add user %s to %s', username, group.name)
-                M.ProjectRole.by_user(user, upsert=True).roles.append(group._id)
+                M.ProjectRole.by_user(
+                    user, upsert=True).roles.append(group._id)
                 user_added = True
             # Make sure we aren't removing all users from the Admin group
             if group.name == u'Admin' and not (user_ids or user_added):
@@ -1060,10 +1109,12 @@ class GroupsController(BaseController):
             user_ids = set(
                 uid and ObjectId(uid)
                 for uid in user_ids)
-            for role in M.ProjectRole.query.find(dict(user_id={'$ne':None}, roles=group._id)):
+            for role in M.ProjectRole.query.find(dict(user_id={'$ne': None}, roles=group._id)):
                 if role.user_id and role.user_id not in user_ids:
-                    role.roles = [ rid for rid in role.roles if rid != group._id ]
-                    M.AuditLog.log('remove user %s from %s', role.user.username, group.name)
+                    role.roles = [
+                        rid for rid in role.roles if rid != group._id]
+                    M.AuditLog.log('remove user %s from %s',
+                                   role.user.username, group.name)
         g.post_event('project_updated')
         redirect('.')
 
@@ -1092,6 +1143,7 @@ class GroupsController(BaseController):
     @expose()
     def _lookup(self, name, *remainder):
         return GroupController(name), remainder
+
 
 class GroupController(BaseController):
 
@@ -1132,6 +1184,7 @@ class GroupController(BaseController):
         flash('%s updated' % name)
         redirect('..')
 
+
 class AuditController(BaseController):
 
     @with_trailing_slash
@@ -1146,7 +1199,7 @@ class AuditController(BaseController):
         if count > limit:
             q = q.limit(limit)
         else:
-            limit=count
+            limit = count
         c.widget = W.audit
         return dict(
             entries=q.all(),
@@ -1154,6 +1207,8 @@ class AuditController(BaseController):
             page=page,
             count=count)
 
+
 class AdminAppAdminController(DefaultAdminController):
+
     '''Administer the admin app'''
     pass

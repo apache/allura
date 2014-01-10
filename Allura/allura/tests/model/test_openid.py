@@ -34,6 +34,7 @@ from allura.lib.app_globals import Globals
 from allura import model as M
 from allura.lib import helpers as h
 
+
 def setUp():
     g._push_object(Globals())
     c._push_object(mock.Mock())
@@ -44,14 +45,15 @@ def setUp():
     M.OpenIdAssociation.query.remove({})
     #conn = M.main_doc_session.bind.conn
 
+
 def test_oid_model():
     oid = M.OpenIdAssociation(_id='http://example.com')
     assoc = mock.Mock()
     assoc.handle = 'foo'
-    assoc.serialize = lambda:'bar'
-    assoc.getExpiresIn = lambda:0
+    assoc.serialize = lambda: 'bar'
+    assoc.getExpiresIn = lambda: 0
     with h.push_config(Association,
-                       deserialize=staticmethod(lambda v:assoc)):
+                       deserialize=staticmethod(lambda v: assoc)):
         oid.set_assoc(assoc)
         assert assoc == oid.get_assoc('foo')
         oid.set_assoc(assoc)
@@ -62,14 +64,15 @@ def test_oid_model():
         oid.cleanup_assocs()
         assert oid.get_assoc('foo') is None
 
+
 def test_oid_store():
     assoc = mock.Mock()
     assoc.handle = 'foo'
-    assoc.serialize = lambda:'bar'
-    assoc.getExpiresIn = lambda:0
+    assoc.serialize = lambda: 'bar'
+    assoc.getExpiresIn = lambda: 0
     store = M.OpenIdStore()
     with h.push_config(Association,
-                       deserialize=staticmethod(lambda v:assoc)):
+                       deserialize=staticmethod(lambda v: assoc)):
         store.storeAssociation('http://example.com', assoc)
         assert assoc == store.getAssociation('http://example.com', 'foo')
         assert assoc == store.getAssociation('http://example.com')
@@ -78,6 +81,6 @@ def test_oid_store():
         assert store.useNonce('http://www.example.com', t0, 'abcd')
         ThreadLocalORMSession.flush_all()
         assert not store.useNonce('http://www.example.com', t0, 'abcd')
-        assert not store.useNonce('http://www.example.com', t0-1e9, 'abcd')
+        assert not store.useNonce('http://www.example.com', t0 - 1e9, 'abcd')
         assert store.getAssociation('http://example.com') is None
         store.cleanupNonces()

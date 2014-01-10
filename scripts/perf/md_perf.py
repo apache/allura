@@ -69,7 +69,7 @@ DUMMYTEXT = None
 def get_artifact():
     from forgeblog import model as BM
     return BM.BlogPost.query.get(
-            slug='2013/09/watch-breaking-bad-season-5-episode-16-felina-live-streaming')
+        slug='2013/09/watch-breaking-bad-season-5-episode-16-felina-live-streaming')
 
 
 def main(opts):
@@ -81,7 +81,7 @@ def main(opts):
         'markdown_safe': lambda: markdown.Markdown(safe_mode=True),
         'markdown_escape': lambda: markdown.Markdown(safe_mode='escape'),
         'forge': lambda: g.markdown,
-        }
+    }
     md = converters[opts.converter]()
     artifact = get_artifact()
     return render(artifact, md, opts)
@@ -113,11 +113,16 @@ def render(artifact, md, opts):
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument('--converter', default='markdown')
-    parser.add_argument('--profile', action='store_true', help='Run profiler and output timings')
-    parser.add_argument('--output', action='store_true', help='Print result of markdown conversion')
-    parser.add_argument('--re2', action='store_true', help='Run with re2 instead of re')
-    parser.add_argument('--compare', action='store_true', help='Run with re and re2, and compare results')
-    parser.add_argument('-n', '--n', nargs='+', type=int, help='Only convert nth post(s) in thread')
+    parser.add_argument('--profile', action='store_true',
+                        help='Run profiler and output timings')
+    parser.add_argument('--output', action='store_true',
+                        help='Print result of markdown conversion')
+    parser.add_argument('--re2', action='store_true',
+                        help='Run with re2 instead of re')
+    parser.add_argument('--compare', action='store_true',
+                        help='Run with re and re2, and compare results')
+    parser.add_argument('-n', '--n', nargs='+', type=int,
+                        help='Only convert nth post(s) in thread')
     return parser.parse_args()
 
 

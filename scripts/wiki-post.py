@@ -19,7 +19,8 @@
 
 
 from sys import stdin, stdout
-import hmac, hashlib
+import hmac
+import hashlib
 from datetime import datetime
 import os
 import urllib
@@ -28,6 +29,7 @@ from urlparse import urlparse, urljoin
 import urllib
 from optparse import OptionParser
 from ConfigParser import ConfigParser
+
 
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
@@ -48,7 +50,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # know how to print itself properly. We shouldn't raise a
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
-                        errors) for arg in s])
+                                           errors) for arg in s])
             return unicode(s).encode(encoding, errors)
     elif isinstance(s, unicode):
         r = s.encode(encoding, errors)
@@ -58,9 +60,11 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     else:
         return s
 
+
 def generate_smart_str(params):
     for (key, value) in params:
         yield smart_str(key), smart_str(value)
+
 
 def urlencode(params):
     """
@@ -87,6 +91,7 @@ class Signer(object):
         params.append(('api_signature', digest))
         return params
 
+
 def main():
     usage = 'usage: %prog [options] [PageName [file]]'
     op = OptionParser(usage=usage)
@@ -112,7 +117,8 @@ def main():
         markdown = f.read()
 
     config = ConfigParser()
-    config.read([str(os.path.expanduser('~/.forge-api.ini')), str(options.config)])
+    config.read(
+        [str(os.path.expanduser('~/.forge-api.ini')), str(options.config)])
 
     api_key = None
     secret_key = None
@@ -126,13 +132,13 @@ def main():
     print url
 
     sign = Signer(secret_key, api_key)
-    params = [('text', markdown)] if method=='PUT' else []
+    params = [('text', markdown)] if method == 'PUT' else []
     params = sign(urlparse(url).path, params)
     try:
-        if method=='PUT':
+        if method == 'PUT':
             result = urlopen(url, urlencode(params))
         else:
-            result = urlopen(url+'?'+urlencode(params))
+            result = urlopen(url + '?' + urlencode(params))
         stdout.write(result.read())
     except HTTPError, e:
         stdout.write(e.read())

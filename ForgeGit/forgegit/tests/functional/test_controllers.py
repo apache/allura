@@ -35,6 +35,7 @@ from allura.tests.decorators import with_tool
 from forgegit.tests import with_git
 from forgegit import model as GM
 
+
 class _TestCase(TestController):
 
     def setUp(self):
@@ -104,45 +105,53 @@ class TestRootController(_TestCase):
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src-git/commit_browser_data')
-        data = json.loads(resp.body);
+        data = json.loads(resp.body)
         assert data['max_row'] == 4
         assert data['next_column'] == 1
-        assert_equal(data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
-                {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
-                 u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
-                 u'short_id': u'[df3042]',
-                 u'column': 0,
-                 u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
-                 u'message': u'Add README', u'row': 2})
+        assert_equal(
+            data['built_tree']['df30427c488aeab84b2352bdf88a3b19223f9d7a'],
+            {u'url': u'/p/test/src-git/ci/df30427c488aeab84b2352bdf88a3b19223f9d7a/',
+             u'oid': u'df30427c488aeab84b2352bdf88a3b19223f9d7a',
+             u'short_id': u'[df3042]',
+             u'column': 0,
+             u'parents': [u'6a45885ae7347f1cac5103b0050cc1be6a1496c8'],
+             u'message': u'Add README', u'row': 2})
 
     def test_log(self):
-        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        resp = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert 'Initial commit' in resp
         assert '<div class="markdown_content"><p>Change README</p></div>' in resp
         assert 'tree/README?format=raw">Download</a>' not in resp
-        assert 'Tree' in resp.html.findAll('td')[2].text, resp.html.findAll('td')[2].text
-        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        assert 'Tree' in resp.html.findAll(
+            'td')[2].text, resp.html.findAll('td')[2].text
+        resp = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert 'View' in resp.html.findAll('td')[2].text
         assert 'Change README' in resp
         assert 'tree/README?format=raw">Download</a>' in resp
         assert 'Add README' in resp
         assert "Initial commit " not in resp
-        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/a/b/c/')
+        resp = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/a/b/c/')
         assert 'Remove file' in resp
         assert 'Initial commit' in resp
         assert 'Add README' not in resp
         assert 'Change README' not in resp
-        resp = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/not/exist')
+        resp = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/not/exist')
         assert 'No (more) commits' in resp
 
     def test_diff_ui(self):
-        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
+        r = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' in r
         assert '<input type="checkbox" class="revision"' in r
         assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' in r
         assert 'url_commit="/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/">' in r
 
-        r = self.app.get('/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
+        r = self.app.get(
+            '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/')
         assert '<div class="grid-19"><input type="button" value="Compare" class="compare_revision"></div>' not in r
         assert '<input type="checkbox" class="revision"' not in r
         assert 'revision="1e146e67985dcd71c74de79613719bef7bddca4a"' not in r
@@ -174,7 +183,8 @@ class TestRootController(_TestCase):
             title = channel.find('title').text
             assert_equal(title, 'test Git changes')
             description = channel.find('description').text
-            assert_equal(description, 'Recent changes to Git repository in test project')
+            assert_equal(description,
+                         'Recent changes to Git repository in test project')
             link = channel.find('link').text
             assert_equal(link, 'http://localhost/p/test/src-git/')
             commit = channel.find('item')
@@ -200,7 +210,7 @@ class TestRootController(_TestCase):
         assert len(resp.html.findAll('tr')) == 2, resp.showbrowser()
         resp = self.app.get(ci + 'tree/')
         assert 'README' in resp, resp.showbrowser()
-        links = [ a.get('href') for a in resp.html.findAll('a') ]
+        links = [a.get('href') for a in resp.html.findAll('a')]
         assert 'README' in links, resp.showbrowser()
         assert 'README/' not in links, resp.showbrowser()
 
@@ -219,8 +229,10 @@ class TestRootController(_TestCase):
     def test_file(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README')
-        assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
+        assert 'README' in resp.html.find(
+            'h2', {'class': 'dark title'}).contents[2]
+        content = str(
+            resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
@@ -231,7 +243,8 @@ class TestRootController(_TestCase):
 
     def test_diff(self):
         ci = self._get_ci()
-        resp = self.app.get(ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
+        resp = self.app.get(
+            ci + 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a')
         assert 'readme' in resp, resp.showbrowser()
         assert '+++' in resp, resp.showbrowser()
 
@@ -239,7 +252,8 @@ class TestRootController(_TestCase):
         ci = self._get_ci()
         fn = 'tree/README?diff=df30427c488aeab84b2352bdf88a3b19223f9d7a'
         r = self.app.get(ci + fn + '&diformat=regular')
-        assert fn + '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
+        assert fn + \
+            '&amp;diformat=sidebyside">Switch to side-by-side view</a>' in r
 
         r = self.app.get(ci + fn + '&diformat=sidebyside')
         assert fn + '&amp;diformat=regular">Switch to unified view</a>' in r
@@ -249,7 +263,8 @@ class TestRootController(_TestCase):
         notification = M.Notification.query.find(
             dict(subject='[test:src-git] 5 new commits to Test Project Git')).first()
         assert notification
-        domain = '.'.join(reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(
+            reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
         common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
         email = 'noreply@%s%s' % (domain, common_suffix)
         assert email in notification['reply_to_address']
@@ -257,7 +272,8 @@ class TestRootController(_TestCase):
     def test_file_force_display(self):
         ci = self._get_ci()
         resp = self.app.get(ci + 'tree/README?force=True')
-        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
+        content = str(
+            resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert re.search(r'<pre>.*This is readme', content), content
         assert '</pre>' in content, content
 
@@ -270,7 +286,8 @@ class TestRootController(_TestCase):
         r = self.app.get(ci + 'tree/index.html')
         header = r.html.find('h2', {'class': 'dark title'}).contents[2]
         assert 'index.html' in header, header
-        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        content = str(
+            r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index.html'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
@@ -284,7 +301,8 @@ class TestRootController(_TestCase):
         header = r.html.find('h2', {'class': 'dark title'})
         assert 'index' in header.contents[3], header.contents[3]
         assert 'index.htm' in header.contents[4], header.contents[4]
-        content = str(r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
+        content = str(
+            r.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert ('<span class="nt">&lt;h1&gt;</span>'
                 'index/index.htm'
                 '<span class="nt">&lt;/h1&gt;</span>') in content, content
@@ -296,27 +314,27 @@ class TestRootController(_TestCase):
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
-                extra_environ={'username': str(user.username)})
+                         extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_subscribe')
         assert link is not None, r.html
 
         # subscribe
         self.app.get(ci + 'tree/subscribe?subscribe=True',
-                extra_environ={'username': str(user.username)}).follow()
+                     extra_environ={'username': str(user.username)}).follow()
         # user is subscribed
         assert M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
-                extra_environ={'username': str(user.username)})
+                         extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_unsubscribe active')
         assert link is not None, r.html
 
         # unsubscribe
         self.app.get(ci + 'tree/subscribe?unsubscribe=True',
-                extra_environ={'username': str(user.username)}).follow()
+                     extra_environ={'username': str(user.username)}).follow()
         # user is not subscribed
         assert not M.Mailbox.subscribed(user_id=user._id)
         r = self.app.get(ci + 'tree/',
-                extra_environ={'username': str(user.username)})
+                         extra_environ={'username': str(user.username)})
         link = r.html.find('a', 'artifact_subscribe')
         assert link is not None, r.html
 
@@ -363,7 +381,8 @@ class TestRootController(_TestCase):
         self.setup_testgit_index_repo()
         r = self.app.get('/p/test/testgit-index/ci/master/tree/index/')
         form = r.html.find('form', 'tarball')
-        assert_equal(form.get('action'), '/p/test/testgit-index/ci/master/tarball')
+        assert_equal(
+            form.get('action'), '/p/test/testgit-index/ci/master/tarball')
         assert_equal(form.input.get('value'), '/index')
 
     def test_default_branch(self):
@@ -376,14 +395,17 @@ class TestRootController(_TestCase):
     def test_set_default_branch(self):
         r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
         assert '<input type="text" name="branch_name" id="branch_name"  value="master"/>' in r
-        self.app.post('/p/test/admin/src-git/set_default_branch_name', params={'branch_name':'zz'})
+        self.app.post('/p/test/admin/src-git/set_default_branch_name',
+                      params={'branch_name': 'zz'})
         r = self.app.get('/p/test/admin/src-git/set_default_branch_name')
         assert '<input type="text" name="branch_name" id="branch_name"  value="zz"/>' in r
         r = self.app.get('/p/test/src-git/').follow().follow()
         assert '<span class="scm-branch-label">zz</span>' in r
-        assert_in('<span>bad</span>', r)  # 'bad' is a file name which in zz, but not in master
+        # 'bad' is a file name which in zz, but not in master
+        assert_in('<span>bad</span>', r)
 
-        self.app.post('/p/test/admin/src-git/set_default_branch_name', params={'branch_name':'master'})
+        self.app.post('/p/test/admin/src-git/set_default_branch_name',
+                      params={'branch_name': 'master'})
         r = self.app.get('/p/test/src-git/').follow().follow()
         assert_not_in('<span>bad</span>', r)
         assert_in('<span>README</span>', r)
@@ -397,6 +419,7 @@ class TestRestController(_TestCase):
     def test_commits(self):
         self.app.get('/rest/p/test/src-git/commits', status=200)
 
+
 class TestFork(_TestCase):
 
     def setUp(self):
@@ -404,18 +427,19 @@ class TestFork(_TestCase):
         to_project = M.Project.query.get(
             shortname='test2', neighborhood_id=c.project.neighborhood_id)
         r = self.app.post('/src-git/fork', params=dict(
-                project_id=str(to_project._id),
-                mount_point='code',
-                mount_label='Test forked repository'))
+            project_id=str(to_project._id),
+            mount_point='code',
+            mount_label='Test forked repository'))
         assert "{status: 'error'}" not in str(r.follow())
         cloned_from = c.app.repo
         with h.push_context('test2', 'code', neighborhood='Projects'):
             c.app.repo.init_as_clone(
-                    cloned_from.full_fs_path,
-                    cloned_from.app.config.script_name(),
-                    cloned_from.full_fs_path)
+                cloned_from.full_fs_path,
+                cloned_from.app.config.script_name(),
+                cloned_from.full_fs_path)
             # Add commit to a forked repo, thus merge requests will not be empty
-            # clone repo to tmp location first (can't add commit to bare repos directly)
+            # clone repo to tmp location first (can't add commit to bare repos
+            # directly)
             clone_path = tempfile.mkdtemp()
             cloned = c.app.repo._impl._git.clone(clone_path)
             with open(clone_path + '/README', 'w+') as f:
@@ -473,8 +497,8 @@ class TestFork(_TestCase):
 
     def test_fork_links_go_to_fork(self):
         r = self._fork_page()
-        hrefs = ( a.get('href') for a in r.html('a') )
-        hrefs = ( href for href in hrefs if href and '/ci/' in href )
+        hrefs = (a.get('href') for a in r.html('a'))
+        hrefs = (href for href in hrefs if href and '/ci/' in href)
         for href in hrefs:
             assert href.startswith('/p/test2/code/'), href
 
@@ -504,7 +528,8 @@ class TestFork(_TestCase):
         c_id = self.forked_repo.get_heads()[0]['object_id']
         assert_equal(rev_links[0].get('href'), '/p/test2/code/ci/%s/' % c_id)
         assert_equal(rev_links[0].getText(), '[%s]' % c_id[:6])
-        assert_equal(browse_links[0].get('href'), '/p/test2/code/ci/%s/tree' % c_id)
+        assert_equal(browse_links[0].get('href'),
+                     '/p/test2/code/ci/%s/tree' % c_id)
         assert_equal(browse_links[0].getText(), 'Tree')
         merge_instructions = r.html.findAll('textarea')[0].getText()
         assert 'git checkout master' in merge_instructions
@@ -523,7 +548,8 @@ class TestFork(_TestCase):
         assert 'Merge Request #%s:  (rejected)' % mr_num in r, r
 
     def test_merge_request_default_branches(self):
-        _select_val = lambda r, n: r.html.find('select', {'name': n}).find(selected=True).string
+        _select_val = lambda r, n: r.html.find(
+            'select', {'name': n}).find(selected=True).string
         r = self.app.get('/p/test2/code/request_merge')
         assert_equal(_select_val(r, 'source_branch'), 'master')
         assert_equal(_select_val(r, 'target_branch'), 'master')
@@ -538,6 +564,7 @@ class TestFork(_TestCase):
         r = self.app.get('/p/test2/code/ci/zz/tree/').click('Request Merge')
         assert_equal(_select_val(r, 'source_branch'), 'zz')
         assert_equal(_select_val(r, 'target_branch'), 'zz')
+
 
 class TestDiff(TestController):
 
@@ -559,13 +586,16 @@ class TestDiff(TestController):
         ThreadLocalORMSession.flush_all()
 
     def test_diff(self):
-        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?barediff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        r = self.app.get(
+            '/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?barediff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
         assert 'alt="2ce83a2..."' in r
         assert 'alt="d961abb..."' in r
 
-        r = self.app.get('/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
+        r = self.app.get(
+            '/src-git/ci/d961abbbf10341ee18a668c975842c35cfc0bef2/tree/1.png?diff=2ce83a24e52c21e8d2146b1a04a20717c0bb08d7')
         assert 'alt="2ce83a2..."' in r
         assert 'alt="d961abb..."' in r
+
 
 class TestGitRename(TestController):
 
@@ -587,17 +617,18 @@ class TestGitRename(TestController):
         ThreadLocalORMSession.flush_all()
 
     def test_log(self):
-        resp = self.app.get('/src-git/ci/259c77dd6ee0e6091d11e429b56c44ccbf1e64a3/log/?path=/f2.txt')
+        resp = self.app.get(
+            '/src-git/ci/259c77dd6ee0e6091d11e429b56c44ccbf1e64a3/log/?path=/f2.txt')
         assert '<b>renamed from</b>' in resp
         assert '/f.txt' in resp
         assert '(27 Bytes)' in resp
         assert '(19 Bytes)' in resp
 
-        resp = self.app.get('/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/log/?path=/f.txt')
+        resp = self.app.get(
+            '/src-git/ci/fbb0644603bb6ecee3ebb62efe8c86efc9b84ee6/log/?path=/f.txt')
         assert '(19 Bytes)' in resp
         assert '(10 Bytes)' in resp
 
-        resp = self.app.get('/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
+        resp = self.app.get(
+            '/src-git/ci/7c09182e61af959e4f1fb0e354bab49f14ef810d/tree/f.txt')
         assert "2 lines (1 with data), 10 Bytes" in resp
-
-

@@ -16,7 +16,8 @@
 #       under the License.
 
 from setuptools import setup, find_packages
-import sys, os
+import sys
+import os
 
 from forgesvn.version import __version__
 
@@ -34,7 +35,8 @@ setup(name='ForgeSVN',
       description="",
       long_description="""\
 """,
-      classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[],
       keywords='',
       author='',
       author_email='',

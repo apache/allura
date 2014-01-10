@@ -24,21 +24,22 @@ from allura.lib import helpers as h
 from .session import project_orm_session
 from .filesystem import File
 
+
 class BaseAttachment(File):
     thumbnail_size = (255, 255)
-    ArtifactType=None
+    ArtifactType = None
 
     class __mongometa__:
         name = 'attachment'
         polymorphic_on = 'attachment_type'
-        polymorphic_identity=None
+        polymorphic_identity = None
         session = project_orm_session
-        indexes = [ 'artifact_id', 'app_config_id' ]
+        indexes = ['artifact_id', 'app_config_id']
 
-    artifact_id=FieldProperty(S.ObjectId)
-    app_config_id=FieldProperty(S.ObjectId)
-    type=FieldProperty(str)
-    attachment_type=FieldProperty(str)
+    artifact_id = FieldProperty(S.ObjectId)
+    app_config_id = FieldProperty(S.ObjectId)
+    type = FieldProperty(str)
+    attachment_type = FieldProperty(str)
 
     @property
     def artifact(self):
@@ -76,7 +77,9 @@ class BaseAttachment(File):
             return orig, thumbnail
         else:
             # No, generic attachment
-            fp.seek(0)  # stream may have been partially consumed in a failed save_image attempt
+            # stream may have been partially consumed in a failed save_image
+            # attempt
+            fp.seek(0)
             return cls.from_stream(
                 filename, fp, content_type=content_type,
                 **original_meta)

@@ -24,6 +24,7 @@ from allura.lib.helpers import iter_entry_points
 
 log = logging.getLogger(__name__)
 
+
 def register_ew_resources(manager):
     manager.register_directory(
         'js', pkg_resources.resource_filename('allura', 'lib/widgets/resources/js'))

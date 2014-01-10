@@ -33,12 +33,14 @@ from allura.tests import decorators as td
 
 
 class TestTicketModel(TrackerTestWithModel):
+
     def test_that_label_counts_are_local_to_tool(self):
         """Test that label queries return only artifacts from the specified
         tool.
         """
         # create a ticket in two different tools, with the same label
         from allura.tests import decorators as td
+
         @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
         def _test_ticket():
             return Ticket(ticket_num=1, summary="ticket1", labels=["mylabel"])
@@ -53,8 +55,10 @@ class TestTicketModel(TrackerTestWithModel):
         ThreadLocalORMSession.flush_all()
 
         # test label query results
-        label_count1 = t1.artifacts_labeled_with("mylabel", t1.app_config).count()
-        label_count2 = t2.artifacts_labeled_with("mylabel", t2.app_config).count()
+        label_count1 = t1.artifacts_labeled_with(
+            "mylabel", t1.app_config).count()
+        label_count2 = t2.artifacts_labeled_with(
+            "mylabel", t2.app_config).count()
         assert 1 == label_count1 == label_count2
 
     def test_that_it_has_ordered_custom_fields(self):
@@ -95,31 +99,33 @@ class TestTicketModel(TrackerTestWithModel):
         observer = bootstrap.create_user('Random Non-Project User')
         anon = User(_id=None, username='*anonymous',
                     display_name='Anonymous')
-        t = Ticket(summary='my ticket', ticket_num=3, reported_by_id=creator._id)
+        t = Ticket(summary='my ticket', ticket_num=3,
+                   reported_by_id=creator._id)
 
         assert creator == t.reported_by
         role_admin = ProjectRole.by_name('Admin')._id
         role_developer = ProjectRole.by_name('Developer')._id
         role_creator = ProjectRole.by_user(t.reported_by, upsert=True)._id
-        ProjectRole.by_user(developer, upsert=True).roles.append(role_developer)
+        ProjectRole.by_user(
+            developer, upsert=True).roles.append(role_developer)
         ThreadLocalORMSession.flush_all()
         cred = Credentials.get().clear()
 
         t.private = True
         assert_equal(t.acl, [
-                        ACE.allow(role_developer, 'save_searches'),
-                        ACE.allow(role_developer, 'read'),
-                        ACE.allow(role_developer, 'create'),
-                        ACE.allow(role_developer, 'update'),
-                        ACE.allow(role_developer, 'unmoderated_post'),
-                        ACE.allow(role_developer, 'post'),
-                        ACE.allow(role_developer, 'moderate'),
-                        ACE.allow(role_developer, 'delete'),
-                        ACE.allow(role_creator, 'read'),
-                        ACE.allow(role_creator, 'post'),
-                        ACE.allow(role_creator, 'create'),
-                        ACE.allow(role_creator, 'unmoderated_post'),
-                        DENY_ALL])
+            ACE.allow(role_developer, 'save_searches'),
+            ACE.allow(role_developer, 'read'),
+            ACE.allow(role_developer, 'create'),
+            ACE.allow(role_developer, 'update'),
+            ACE.allow(role_developer, 'unmoderated_post'),
+            ACE.allow(role_developer, 'post'),
+            ACE.allow(role_developer, 'moderate'),
+            ACE.allow(role_developer, 'delete'),
+            ACE.allow(role_creator, 'read'),
+            ACE.allow(role_creator, 'post'),
+            ACE.allow(role_creator, 'create'),
+            ACE.allow(role_creator, 'unmoderated_post'),
+            DENY_ALL])
         assert has_access(t, 'read', user=admin)()
         assert has_access(t, 'create', user=admin)()
         assert has_access(t, 'update', user=admin)()
@@ -155,11 +161,11 @@ class TestTicketModel(TrackerTestWithModel):
 
     def test_feed(self):
         t = Ticket(
-        app_config_id=c.app.config._id,
-        ticket_num=1,
-        summary='test ticket',
-        description='test description',
-        created_date=datetime(2012, 10, 29, 9, 57, 21, 465000))
+            app_config_id=c.app.config._id,
+            ticket_num=1,
+            summary='test ticket',
+            description='test description',
+            created_date=datetime(2012, 10, 29, 9, 57, 21, 465000))
         assert_equal(t.created_date, datetime(2012, 10, 29, 9, 57, 21, 465000))
         f = Feed.post(
             t,
@@ -168,7 +174,8 @@ class TestTicketModel(TrackerTestWithModel):
             pubdate=t.created_date)
         assert_equal(f.pubdate, datetime(2012, 10, 29, 9, 57, 21, 465000))
         assert_equal(f.title, 'test ticket')
-        assert_equal(f.description, '<div class="markdown_content"><p>test description</p></div>')
+        assert_equal(f.description,
+                     '<div class="markdown_content"><p>test description</p></div>')
 
     @td.with_tool('test', 'Tickets', 'bugs', username='test-user')
     @td.with_tool('test', 'Tickets', 'bugs2', username='test-user')
@@ -182,13 +189,18 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.assigned_to_id = User.by_username('test-user')._id
             ticket.discussion_thread.add_post(text='test comment')
 
-        assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 1)
-        assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 0)
-        assert_equal(Post.query.find(dict(thread_id=ticket.discussion_thread._id)).count(), 1)
+        assert_equal(
+            Ticket.query.find({'app_config_id': app1.config._id}).count(), 1)
+        assert_equal(
+            Ticket.query.find({'app_config_id': app2.config._id}).count(), 0)
+        assert_equal(
+            Post.query.find(dict(thread_id=ticket.discussion_thread._id)).count(), 1)
 
         t = ticket.move(app2.config)
-        assert_equal(Ticket.query.find({'app_config_id': app1.config._id}).count(), 0)
-        assert_equal(Ticket.query.find({'app_config_id': app2.config._id}).count(), 1)
+        assert_equal(
+            Ticket.query.find({'app_config_id': app1.config._id}).count(), 0)
+        assert_equal(
+            Ticket.query.find({'app_config_id': app2.config._id}).count(), 1)
         assert_equal(t.summary, 'test ticket')
         assert_equal(t.description, 'test description')
         assert_equal(t.assigned_to.username, 'test-user')
@@ -228,7 +240,8 @@ class TestTicketModel(TrackerTestWithModel):
         assert_equal(t.summary, 'test ticket')
         assert_equal(t.description, 'test description')
         assert_equal(t.custom_fields['_test'], 'test val')
-        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        post = Post.query.find(
+            dict(thread_id=ticket.discussion_thread._id)).first()
         assert post is not None, 'No comment about ticket moving'
         message = 'Ticket moved from /p/test/bugs/1/'
         message += '\n\nCan\'t be converted:\n'
@@ -255,14 +268,17 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.summary = 'test ticket'
             ticket.description = 'test description'
             ticket.custom_fields['_user_field'] = 'test-user'  # in project
-            ticket.custom_fields['_user_field_2'] = 'test-user-0'  # not in project
-            ticket.assigned_to_id = User.by_username('test-user-0')._id  # not in project
+            # not in project
+            ticket.custom_fields['_user_field_2'] = 'test-user-0'
+            # not in project
+            ticket.assigned_to_id = User.by_username('test-user-0')._id
 
         t = ticket.move(app2.config)
         assert_equal(t.assigned_to_id, None)
         assert_equal(t.custom_fields['_user_field'], 'test-user')
         assert_equal(t.custom_fields['_user_field_2'], '')
-        post = Post.query.find(dict(thread_id=ticket.discussion_thread._id)).first()
+        post = Post.query.find(
+            dict(thread_id=ticket.discussion_thread._id)).first()
         assert post is not None, 'No comment about ticket moving'
         message = 'Ticket moved from /p/test/bugs/1/'
         message += '\n\nCan\'t be converted:\n'
@@ -278,8 +294,9 @@ class TestTicketModel(TrackerTestWithModel):
             ticket.description = 'test description'
         assert_equal(len(ticket.attachments), 0)
         f = urllib2.urlopen('file://%s' % __file__)
-        TicketAttachment.save_attachment('test_ticket_model.py', ResettableStream(f),
-                                            artifact_id=ticket._id)
+        TicketAttachment.save_attachment(
+            'test_ticket_model.py', ResettableStream(f),
+            artifact_id=ticket._id)
         ThreadLocalORMSession.flush_all()
         # need to refetch since attachments are cached
         session(ticket).expunge(ticket)

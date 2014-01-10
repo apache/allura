@@ -129,7 +129,7 @@ class WikiExporter(object):
         if type is None:
             return url
         glue = '&' if '?' in suburl else '?'
-        return  url + glue + 'format=' + type
+        return url + glue + 'format=' + type
 
     def fetch(self, url):
         return urlopen(url)
@@ -201,6 +201,7 @@ class WikiExporter(object):
         internal_url = urlsplit(self.base_url).path + 'wiki/'
         internal_link_re = r'\[([^]]+)\]\(%s([^)]*)\)' % internal_url
         internal_link = re.compile(internal_link_re, re.UNICODE)
+
         def sub(match):
             caption = match.group(1)
             page = self.convert_title(match.group(2))
@@ -232,8 +233,10 @@ class WikiExporter(object):
         a = []
         for line in text.split('\n'):
             if not line.startswith('    '):
-                line = re.sub(r'\[(https?://[^\s\[\]]+)\s([^\[\]]+)\]', r'[\2](\1)', line)
-                line = re.sub(r'\[(wiki:[^\s\[\]]+)\s([^\[\]]+)\]', r'[\2](/\1/)', line)
+                line = re.sub(
+                    r'\[(https?://[^\s\[\]]+)\s([^\[\]]+)\]', r'[\2](\1)', line)
+                line = re.sub(r'\[(wiki:[^\s\[\]]+)\s([^\[\]]+)\]',
+                              r'[\2](/\1/)', line)
                 line = re.sub(r'\!(([A-Z][a-z0-9]+){2,})', r'\1', line)
                 line = re.sub(r'\'\'\'(.*?)\'\'\'', r'*\1*', line)
                 line = re.sub(r'\'\'(.*?)\'\'', r'_\1_', line)

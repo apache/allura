@@ -27,6 +27,7 @@ from forgetracker.model import Ticket
 
 
 class FixDiscussion(base.Command):
+
     """Fixes trackers that had used buggy 'ticket move' feature before it was fixed.
 
     See [#5727] for details.
@@ -59,41 +60,44 @@ class FixDiscussion(base.Command):
                 ]})
                 if projects.count() > 1:
                     raise exc.ForgeError('Multiple projects has a shortname %s. '
-                            'Use project _id instead.' % p_name_or_id)
+                                         'Use project _id instead.' % p_name_or_id)
                 project = projects.first()
             if not project:
                 raise exc.NoSuchProjectError('The project %s '
-                        'could not be found' % p_name_or_id)
+                                             'could not be found' % p_name_or_id)
 
             self.fix_for_project(project)
         else:
-            base.log.info('Checking discussion instances for each tracker in all projects')
+            base.log.info(
+                'Checking discussion instances for each tracker in all projects')
             for project in M.Project.query.find():
                 self.fix_for_project(project)
 
     def fix_for_project(self, project):
         c.project = project
-        base.log.info('Checking discussion instances for each tracker in project %s' % project.shortname)
+        base.log.info(
+            'Checking discussion instances for each tracker in project %s' %
+            project.shortname)
         trackers = [ac for ac in project.app_configs
-                       if ac.tool_name.lower() == 'tickets']
+                    if ac.tool_name.lower() == 'tickets']
         for tracker in trackers:
             base.log.info('Found tracker %s' % tracker)
             for ticket in Ticket.query.find({'app_config_id': tracker._id}):
                 base.log.info('Processing ticket %s [#%s] %s'
-                        % (ticket._id, ticket.ticket_num, ticket.summary))
+                              % (ticket._id, ticket.ticket_num, ticket.summary))
                 if ticket.discussion_thread.discussion.app_config_id != tracker._id:
                     # Some tickets were moved from this tracker,
                     # and Discussion instance for entire tracker was moved too.
                     # Should move it back.
                     base.log.info("Some tickets were moved from this tracker. "
-                            "Moving tracker's discussion instance back.")
+                                  "Moving tracker's discussion instance back.")
                     ticket.discussion_thread.discussion.app_config_id = tracker._id
 
                 if ticket.discussion_thread.discussion_id != tracker.discussion_id:
                     # Ticket was moved from another tracker.
                     # Should bind his comment thread to tracker's Discussion
                     base.log.info("Ticket was moved from another tracker. "
-                            "Bind ticket's comment thread to tracker's Discussion instance.")
+                                  "Bind ticket's comment thread to tracker's Discussion instance.")
                     ticket.discussion_thread.discussion_id = tracker.discussion_id
                     for post in ticket.discussion_thread.posts:
                         post.discussion_id = tracker.discussion_id

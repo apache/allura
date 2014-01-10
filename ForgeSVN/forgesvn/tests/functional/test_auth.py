@@ -23,6 +23,7 @@ from datadiff.tools import assert_equal
 from allura.tests import TestController
 from forgesvn.tests import with_svn
 
+
 class TestSVNAuth(TestController):
 
     @with_svn
@@ -40,7 +41,9 @@ class TestSVNAuth(TestController):
         assert_equal(r.body, 'Cannot find repo at /p/test/blah')
 
         r = self.app.get('/auth/refresh_repo/p/test/src/')
-        assert_equal(r.body, '<Repository /tmp/svn/p/test/src> refresh queued.\n')
+        assert_equal(r.body,
+                     '<Repository /tmp/svn/p/test/src> refresh queued.\n')
+
 
 class TestSVNUserPermissions(TestController):
     allow = dict(allow_read=True, allow_write=True, allow_create=True)
@@ -49,7 +52,8 @@ class TestSVNUserPermissions(TestController):
 
     @with_svn
     def test_list_repos(self):
-        r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
+        r = self.app.get('/auth/repo_permissions',
+                         params=dict(username='test-admin'), status=200)
         assert_equal(json.loads(r.body), {"allow_write": [
             '/svn/test/src',
         ]})

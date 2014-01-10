@@ -39,6 +39,7 @@ log = logging.getLogger(__name__)
 
 
 class MonQTask(MappedClass):
+
     '''Task to be executed by the taskd daemon.
 
     Properties
@@ -60,6 +61,7 @@ class MonQTask(MappedClass):
     '''
     states = ('ready', 'busy', 'error', 'complete', 'skipped')
     result_types = ('keep', 'forget')
+
     class __mongometa__:
         session = task_orm_session
         name = 'monq_task'
@@ -90,12 +92,12 @@ class MonQTask(MappedClass):
     task_name = FieldProperty(str)
     process = FieldProperty(str)
     context = FieldProperty(dict(
-            project_id=S.ObjectId,
-            app_config_id=S.ObjectId,
-            user_id=S.ObjectId,
-            notifications_disabled=bool))
+        project_id=S.ObjectId,
+        app_config_id=S.ObjectId,
+        user_id=S.ObjectId,
+        notifications_disabled=bool))
     args = FieldProperty([])
-    kwargs = FieldProperty({None:None})
+    kwargs = FieldProperty({None: None})
     result = FieldProperty(None, if_missing=None)
 
     def __repr__(self):
@@ -137,8 +139,10 @@ class MonQTask(MappedClass):
              priority=10,
              delay=0):
         '''Create a new task object based on the current context.'''
-        if args is None: args = ()
-        if kwargs is None: kwargs = {}
+        if args is None:
+            args = ()
+        if kwargs is None:
+            kwargs = {}
         task_name = '%s.%s' % (
             function.__module__,
             function.__name__)
@@ -148,12 +152,13 @@ class MonQTask(MappedClass):
             user_id=None,
             notifications_disabled=False)
         if getattr(c, 'project', None):
-            context['project_id']=c.project._id
-            context['notifications_disabled']=c.project.notifications_disabled
+            context['project_id'] = c.project._id
+            context[
+                'notifications_disabled'] = c.project.notifications_disabled
         if getattr(c, 'app', None):
-            context['app_config_id']=c.app.config._id
+            context['app_config_id'] = c.app.config._id
         if getattr(c, 'user', None):
-            context['user_id']=c.user._id
+            context['user_id'] = c.user._id
         obj = cls(
             state='ready',
             priority=priority,
@@ -182,8 +187,8 @@ class MonQTask(MappedClass):
         StopIteration, stop waiting for a task
         '''
         sort = [
-                ('priority', ming.DESCENDING),
-                ('time_queue', ming.ASCENDING)]
+            ('priority', ming.DESCENDING),
+            ('time_queue', ming.ASCENDING)]
         while True:
             try:
                 query = dict(state=state)
@@ -196,10 +201,11 @@ class MonQTask(MappedClass):
                         '$set': dict(
                             state='busy',
                             process=process)
-                        },
+                    },
                     new=True,
                     sort=sort)
-                if obj is not None: return obj
+                if obj is not None:
+                    return obj
             except pymongo.errors.OperationFailure, exc:
                 if 'No matching object found' not in exc.args[0]:
                     raise
@@ -215,7 +221,7 @@ class MonQTask(MappedClass):
         '''Mark all busy tasks older than a certain datetime as 'ready' again.
         Used to retry 'stuck' tasks.'''
         spec = dict(state='busy')
-        spec['time_start'] = {'$lt':older_than}
+        spec['time_start'] = {'$lt': older_than}
         cls.query.update(spec, {'$set': dict(state='ready')}, multi=True)
 
     @classmethod
@@ -227,7 +233,7 @@ class MonQTask(MappedClass):
     @classmethod
     def run_ready(cls, worker=None):
         '''Run all the tasks that are currently ready'''
-        i=0
+        i = 0
         for i, task in enumerate(cls.query.find(dict(state='ready')).all()):
             task.process = worker
             task()
@@ -250,8 +256,10 @@ class MonQTask(MappedClass):
             c.project = M.Project.query.get(_id=self.context.project_id)
             c.app = None
             if c.project:
-                c.project.notifications_disabled = self.context.get('notifications_disabled', False)
-                app_config = M.AppConfig.query.get(_id=self.context.app_config_id)
+                c.project.notifications_disabled = self.context.get(
+                    'notifications_disabled', False)
+                app_config = M.AppConfig.query.get(
+                    _id=self.context.app_config_id)
                 if app_config:
                     c.app = c.project.app_instance(app_config)
             c.user = M.User.query.get(_id=self.context.user_id)

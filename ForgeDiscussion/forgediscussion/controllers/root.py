@@ -51,13 +51,14 @@ from forgediscussion.widgets.admin import AddForumShort
 
 log = logging.getLogger(__name__)
 
+
 class RootController(BaseController, DispatchIndex, FeedController):
 
     class W(object):
-        forum_subscription_form=FW.ForumSubscriptionForm()
-        new_topic=DW.NewTopicPost(submit_text='Post')
-        announcements_table=FW.AnnouncementsTable()
-        add_forum=AddForumShort()
+        forum_subscription_form = FW.ForumSubscriptionForm()
+        new_topic = DW.NewTopicPost(submit_text='Post')
+        announcements_table = FW.AnnouncementsTable()
+        add_forum = AddForumShort()
         search_results = SearchResults()
         search_help = SearchHelp(comments=False, history=False)
 
@@ -71,13 +72,13 @@ class RootController(BaseController, DispatchIndex, FeedController):
         c.new_topic = self.W.new_topic
         c.add_forum = self.W.add_forum
         c.announcements_table = self.W.announcements_table
-        announcements=model.ForumThread.query.find(dict(
-                app_config_id=c.app.config._id,
-                flags='Announcement',
-                )).all()
+        announcements = model.ForumThread.query.find(dict(
+            app_config_id=c.app.config._id,
+            flags='Announcement',
+        )).all()
         forums = model.Forum.query.find(dict(
-                        app_config_id=c.app.config._id,
-                        parent_id=None, deleted=False)).all()
+            app_config_id=c.app.config._id,
+            parent_id=None, deleted=False)).all()
         forums = [f for f in forums if h.has_access(f, 'read')()]
         return dict(forums=forums,
                     announcements=announcements,
@@ -105,7 +106,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
                                              deleted=False))
         c.new_topic = self.W.new_topic
         my_forums = []
-        forum_name = h.really_unicode(unquote(forum_name)) if forum_name else None
+        forum_name = h.really_unicode(unquote(
+            forum_name)) if forum_name else None
         current_forum = None
         for f in forums:
             if forum_name == f.shortname:
@@ -128,7 +130,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
             redirect(request.referrer)
         require_access(discussion, 'post')
         thd = discussion.get_discussion_thread(dict(
-                headers=dict(Subject=subject)))[0]
+            headers=dict(Subject=subject)))[0]
         post = thd.post(subject, text)
         flash('Message posted')
         redirect(thd.url())
@@ -190,9 +192,10 @@ class RootController(BaseController, DispatchIndex, FeedController):
         thread = kw.pop('thread', [])
         objs = []
         for data in forum:
-            objs.append(dict(obj=model.Forum.query.get(shortname=data['shortname'],
-                                                       app_config_id=c.app.config._id),
-                             subscribed=bool(data.get('subscribed'))))
+            objs.append(
+                dict(obj=model.Forum.query.get(shortname=data['shortname'],
+                                               app_config_id=c.app.config._id),
+                     subscribed=bool(data.get('subscribed'))))
         for data in thread:
             objs.append(dict(obj=model.Thread.query.get(_id=data['id']),
                              subscribed=bool(data.get('subscribed'))))
@@ -212,7 +215,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
         """
         return FeedArgs(
             dict(project_id=project._id, app_config_id=app.config._id),
-             'Recent posts to %s' % app.config.options.mount_label,
+            'Recent posts to %s' % app.config.options.mount_label,
             app.url)
 
     @without_trailing_slash
@@ -278,7 +281,8 @@ class RootController(BaseController, DispatchIndex, FeedController):
 
             next_expected_date = begin
             for d in mongo_data:
-                this_date = datetime(d['_id']['year'], d['_id']['month'], d['_id']['day'])
+                this_date = datetime(
+                    d['_id']['year'], d['_id']['month'], d['_id']['day'])
                 for day in h.daterange(next_expected_date, this_date):
                     yield item(day, 0)
                 yield item(this_date, d['posts'])
@@ -306,9 +310,9 @@ class RootRestController(BaseController):
     def index(self, limit=100, page=0, **kw):
         limit, page, start = g.handle_paging(int(limit), int(page))
         forums = model.Forum.query.find(dict(
-                        app_config_id=c.app.config._id,
-                        parent_id=None, deleted=False)
-                ).sort([('shortname', pymongo.ASCENDING)]).skip(start).limit(limit)
+            app_config_id=c.app.config._id,
+            parent_id=None, deleted=False)
+        ).sort([('shortname', pymongo.ASCENDING)]).skip(start).limit(limit)
         count = forums.count()
         json = dict(forums=[dict(_id=f._id,
                                  name=f.name,
@@ -326,10 +330,12 @@ class RootRestController(BaseController):
     @expose('json:')
     def validate_import(self, doc=None, username_mapping=None, **kw):
         require_access(c.project, 'admin')
-        if username_mapping is None: username_mapping = {}
+        if username_mapping is None:
+            username_mapping = {}
         try:
             doc = json.loads(doc)
-            warnings, doc = import_support.validate_import(doc, username_mapping)
+            warnings, doc = import_support.validate_import(
+                doc, username_mapping)
             return dict(warnings=warnings, errors=[])
         except Exception, e:
             raise
@@ -338,12 +344,14 @@ class RootRestController(BaseController):
 
     @expose('json:')
     def perform_import(
-        self, doc=None, username_mapping=None, default_username=None, create_users=False,
-        **kw):
+            self, doc=None, username_mapping=None, default_username=None, create_users=False,
+            **kw):
         require_access(c.project, 'admin')
-        if username_mapping is None: username_mapping = '{}'
+        if username_mapping is None:
+            username_mapping = '{}'
         if c.api_token.get_capability('import') != [c.project.neighborhood.name, c.project.shortname]:
-            log.error('Import capability is not enabled for %s', c.project.shortname)
+            log.error('Import capability is not enabled for %s',
+                      c.project.shortname)
             raise exc.HTTPForbidden(detail='Import is not allowed')
         try:
             doc = json.loads(doc)
@@ -372,7 +380,8 @@ class ForumRestController(BaseController):
     @expose('json:')
     def index(self, limit=100, page=0, **kw):
         limit, page, start = g.handle_paging(int(limit), int(page))
-        topics = model.Forum.thread_class().query.find(dict(discussion_id=self.forum._id))
+        topics = model.Forum.thread_class().query.find(
+            dict(discussion_id=self.forum._id))
         topics = topics.sort([('flags', pymongo.DESCENDING),
                               ('last_post_date', pymongo.DESCENDING)])
         topics = topics.skip(start).limit(limit)
@@ -403,6 +412,7 @@ class ForumRestController(BaseController):
             if topic:
                 return ForumTopicRestController(self.forum, topic), remainder
         raise exc.HTTPNotFound()
+
 
 class ForumTopicRestController(BaseController):
 

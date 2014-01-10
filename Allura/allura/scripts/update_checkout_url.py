@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 
 class UpdateCheckoutUrl(ScriptTask):
+
     @classmethod
     def execute(cls, options):
         query = {'tool_name': {'$regex': '^svn$', '$options': 'i'},
@@ -41,7 +42,8 @@ class UpdateCheckoutUrl(ScriptTask):
         for chunk in utils.chunked_find(M.AppConfig, query):
             for config in chunk:
                 repo = Repository.query.get(app_config_id=config._id)
-                trunk_path = "file://{0}{1}/trunk".format(repo.fs_path, repo.name)
+                trunk_path = "file://{0}{1}/trunk".format(repo.fs_path,
+                                                          repo.name)
                 if svn_path_exists(trunk_path):
                     config.options['checkout_url'] = "trunk"
                     log.info("Update checkout_url for: %s", trunk_path)
@@ -49,4 +51,3 @@ class UpdateCheckoutUrl(ScriptTask):
 
 if __name__ == '__main__':
     UpdateCheckoutUrl.main()
-

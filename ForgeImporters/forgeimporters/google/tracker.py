@@ -26,15 +26,15 @@ from ming.orm import session, ThreadLocalORMSession
 import dateutil.parser
 
 from tg import (
-        expose,
-        flash,
-        redirect,
-        validate,
-        )
+    expose,
+    flash,
+    redirect,
+    validate,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
@@ -47,9 +47,9 @@ from forgetracker import model as TM
 from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.google import GoogleCodeProjectNameValidator
 from forgeimporters.base import (
-        ToolImporter,
-        ToolImportForm,
-        )
+    ToolImporter,
+    ToolImportForm,
+)
 
 
 class GoogleCodeTrackerImportForm(ToolImportForm):
@@ -57,6 +57,7 @@ class GoogleCodeTrackerImportForm(ToolImportForm):
 
 
 class GoogleCodeTrackerImportController(BaseController):
+
     def __init__(self):
         self.importer = GoogleCodeTrackerImporter()
 
@@ -68,7 +69,7 @@ class GoogleCodeTrackerImportController(BaseController):
     @expose('jinja:forgeimporters.google:templates/tracker/index.html')
     def index(self, **kw):
         return dict(importer=self.importer,
-                target_app=self.target_app)
+                    target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
@@ -77,14 +78,15 @@ class GoogleCodeTrackerImportController(BaseController):
     def create(self, gc_project_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
-                    project_name=gc_project_name,
-                    mount_point=mount_point,
-                    mount_label=mount_label,
-                    )
+                project_name=gc_project_name,
+                mount_point=mount_point,
+                mount_label=mount_label,
+            )
             flash('Ticket import has begun. Your new tracker will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -96,10 +98,10 @@ class GoogleCodeTrackerImporter(ToolImporter):
     tool_description = 'Import your public tickets from Google Code'
 
     field_types = defaultdict(lambda: 'string',
-            milestone='milestone',
-            priority='select',
-            type='select',
-        )
+                              milestone='milestone',
+                              priority='select',
+                              type='select',
+                              )
 
     def __init__(self, *args, **kwargs):
         super(GoogleCodeTrackerImporter, self).__init__(*args, **kwargs)
@@ -108,17 +110,17 @@ class GoogleCodeTrackerImporter(ToolImporter):
         self.max_ticket_num = 0
 
     def import_tool(self, project, user, project_name, mount_point=None,
-            mount_label=None, **kw):
+                    mount_label=None, **kw):
         import_id_converter = ImportIdConverter.get()
         app = project.install_app('tickets', mount_point, mount_label,
-                EnableVoting=True,
-                open_status_names='New Accepted Started',
-                closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
-                import_id={
-                        'source': self.source,
-                        'project_name': project_name,
-                    },
-            )
+                                  EnableVoting=True,
+                                  open_status_names='New Accepted Started',
+                                  closed_status_names='Fixed Verified Invalid Duplicate WontFix Done',
+                                  import_id={
+                                      'source': self.source,
+                                      'project_name': project_name,
+                                  },
+                                  )
         ThreadLocalORMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
@@ -139,14 +141,14 @@ class GoogleCodeTrackerImporter(ToolImporter):
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
-                    'import tool %s from %s on %s' % (
-                            app.config.options.mount_point,
-                            project_name, self.source,
-                        ),
-                    project=project,
-                    user=user,
-                    url=app.url,
-                )
+                'import tool %s from %s on %s' % (
+                    app.config.options.mount_point,
+                    project_name, self.source,
+                ),
+                project=project,
+                user=user,
+                url=app.url,
+            )
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app
@@ -159,17 +161,18 @@ class GoogleCodeTrackerImporter(ToolImporter):
     def custom_field(self, name):
         if name not in self.custom_fields:
             self.custom_fields[name] = {
-                    'type': self.field_types[name.lower()],
-                    'label': name,
-                    'name': u'_%s' % name.lower(),
-                    'options': set(),
-                }
+                'type': self.field_types[name.lower()],
+                'label': name,
+                'name': u'_%s' % name.lower(),
+                'options': set(),
+            }
         return self.custom_fields[name]
 
     def process_fields(self, ticket, issue):
         ticket.summary = issue.get_issue_summary()
         ticket.status = issue.get_issue_status()
-        ticket.created_date = dateutil.parser.parse(issue.get_issue_created_date())
+        ticket.created_date = dateutil.parser.parse(
+            issue.get_issue_created_date())
         ticket.mod_date = dateutil.parser.parse(issue.get_issue_mod_date())
         ticket.votes_up = issue.get_issue_stars()
         ticket.votes = issue.get_issue_stars()
@@ -179,14 +182,14 @@ class GoogleCodeTrackerImporter(ToolImporter):
         else:
             owner_line = ''
         ticket.description = (
-                u'*Originally created by:* {creator}\n'
-                u'{owner}'
-                u'\n'
-                u'{body}').format(
-                    creator=issue.get_issue_creator(),
-                    owner=owner_line,
-                    body=issue.get_issue_description(),
-                )
+            u'*Originally created by:* {creator}\n'
+            u'{owner}'
+            u'\n'
+            u'{body}').format(
+            creator=issue.get_issue_creator(),
+            owner=owner_line,
+            body=issue.get_issue_description(),
+        )
         ticket.add_multiple_attachments(issue.get_issue_attachments())
 
     def process_labels(self, ticket, issue):
@@ -203,15 +206,16 @@ class GoogleCodeTrackerImporter(ToolImporter):
             else:
                 labels.add(label)
         ticket.labels = list(labels)
-        ticket.custom_fields = {n: u', '.join(sorted(v)) for n,v in custom_fields.iteritems()}
+        ticket.custom_fields = {n: u', '.join(sorted(v))
+                                for n, v in custom_fields.iteritems()}
 
     def process_comments(self, ticket, issue):
         for comment in issue.iter_comments():
             p = ticket.discussion_thread.add_post(
-                    text = comment.annotated_text,
-                    ignore_security = True,
-                    timestamp = dateutil.parser.parse(comment.created_date),
-                )
+                text=comment.annotated_text,
+                ignore_security=True,
+                timestamp=dateutil.parser.parse(comment.created_date),
+            )
             p.add_multiple_attachments(comment.attachments)
 
     def postprocess_custom_fields(self):
@@ -219,10 +223,10 @@ class GoogleCodeTrackerImporter(ToolImporter):
         for name, field in self.custom_fields.iteritems():
             if field['name'] == '_milestone':
                 field['milestones'] = [{
-                        'name': milestone,
-                        'due_date': None,
-                        'complete': milestone not in self.open_milestones,
-                    } for milestone in sorted(field['options'])]
+                    'name': milestone,
+                    'due_date': None,
+                    'complete': milestone not in self.open_milestones,
+                } for milestone in sorted(field['options'])]
                 field['options'] = ''
             elif field['type'] == 'select':
                 field['options'] = ' '.join(field['options'])

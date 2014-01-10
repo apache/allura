@@ -45,23 +45,25 @@ from .model.svn import svn_path_exists
 
 log = logging.getLogger(__name__)
 
+
 class ForgeSVNApp(RepositoryApp):
+
     '''This is the SVN app for PyForge'''
     __version__ = version.__version__
     config_options = RepositoryApp.config_options + [
         ConfigOption('checkout_url', str, '')
-        ]
+    ]
     permissions_desc = dict(RepositoryApp.permissions_desc, **{
         'write': 'Repo commit access.',
         'admin': 'Set permissions, checkout url, and viewable files. Import a remote repo.',
     })
-    tool_label='SVN'
-    tool_description="""
+    tool_label = 'SVN'
+    tool_description = """
         Enterprise-class centralized version control for the masses.
     """
-    ordinal=4
-    forkable=False
-    default_branch_name='HEAD'
+    ordinal = 4
+    forkable = False
+    default_branch_name = 'HEAD'
 
     def __init__(self, project, config):
         super(ForgeSVNApp, self).__init__(project, config)
@@ -99,16 +101,20 @@ class ForgeSVNApp(RepositoryApp):
     def admin_menu(self):
         links = []
         links.append(SitemapEntry(
-                'Checkout URL',
-                c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'checkout_url',
-                className='admin_modal'))
+            'Checkout URL',
+            c.project.url() + 'admin/' +
+            self.config.options.mount_point +
+            '/' + 'checkout_url',
+            className='admin_modal'))
         links.append(SitemapEntry(
-                'Import Repo',
-                c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'importer/'))
+            'Import Repo',
+            c.project.url() + 'admin/' + self.config.options.mount_point + '/' + 'importer/'))
         links += super(ForgeSVNApp, self).admin_menu()
         return links
 
+
 class SVNRepoAdminController(RepoAdminController):
+
     def __init__(self, app):
         super(SVNRepoAdminController, self).__init__(app)
         self.importer = SVNImportController(self.app)
@@ -131,11 +137,12 @@ class SVNRepoAdminController(RepoAdminController):
             self.app.config.options['checkout_url'] = post_data['checkout_url']
             flash("Checkout URL successfully changed")
         else:
-            flash("%s is not a valid path for this repository" % post_data['checkout_url'], "error")
+            flash("%s is not a valid path for this repository" %
+                  post_data['checkout_url'], "error")
 
 
 class SVNImportController(BaseController):
-    import_form=widgets.ImportForm()
+    import_form = widgets.ImportForm()
 
     def __init__(self, app):
         self.app = app
@@ -154,8 +161,8 @@ class SVNImportController(BaseController):
     def do_import(self, checkout_url=None, **kwargs):
         if self.app.repo.is_empty():
             with h.push_context(
-                self.app.config.project_id,
-                app_config_id=self.app.config._id):
+                    self.app.config.project_id,
+                    app_config_id=self.app.config._id):
                 allura.tasks.repo_tasks.reclone.post(
                     cloned_from_path=None,
                     cloned_from_name=None,
@@ -172,8 +179,9 @@ class SVNImportController(BaseController):
 
 
 def svn_timers():
-    return Timer('svn_lib.{method_name}', SM.svn.SVNLibWrapper, 'checkout', 'add',
-                 'checkin', 'info2', 'log', 'cat', 'list')
+    return Timer(
+        'svn_lib.{method_name}', SM.svn.SVNLibWrapper, 'checkout', 'add',
+        'checkin', 'info2', 'log', 'cat', 'list')
 
 
 def forgesvn_timers():

@@ -27,6 +27,7 @@ from allura.lib.solr import make_solr_from_config
 
 log = logging.getLogger(__name__)
 
+
 @task
 def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     '''
@@ -69,18 +70,22 @@ def add_artifacts(ref_ids, update_solr=True, update_refs=True, solr_hosts=None):
     if exceptions:
         raise CompoundError(*exceptions)
 
+
 @task
 def del_artifacts(ref_ids):
     from allura import model as M
-    if not ref_ids: return
+    if not ref_ids:
+        return
     solr_query = 'id:({0})'.format(' || '.join(ref_ids))
     g.solr.delete(q=solr_query)
-    M.ArtifactReference.query.remove(dict(_id={'$in':ref_ids}))
-    M.Shortlink.query.remove(dict(ref_id={'$in':ref_ids}))
+    M.ArtifactReference.query.remove(dict(_id={'$in': ref_ids}))
+    M.Shortlink.query.remove(dict(ref_id={'$in': ref_ids}))
+
 
 @task
 def commit():
     g.solr.commit()
+
 
 @contextmanager
 def _indexing_disabled(session):

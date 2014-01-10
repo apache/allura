@@ -35,6 +35,8 @@ from . import security
 log = logging.getLogger(__name__)
 
 _macros = {}
+
+
 class macro(object):
 
     def __init__(self, context=None):
@@ -43,6 +45,7 @@ class macro(object):
     def __call__(self, func):
         _macros[func.__name__] = (func, self._context)
         return func
+
 
 class parse(object):
 
@@ -54,10 +57,13 @@ class parse(object):
             if s.startswith('quote '):
                 return '[[' + s[len('quote '):] + ']]'
             try:
-                parts = [ unicode(x, 'utf-8') for x in shlex.split(s.encode('utf-8')) ]
-                if not parts: return '[[' + s + ']]'
+                parts = [unicode(x, 'utf-8')
+                         for x in shlex.split(s.encode('utf-8'))]
+                if not parts:
+                    return '[[' + s + ']]'
                 macro = self._lookup_macro(parts[0])
-                if not macro: return  '[[' + s + ']]'
+                if not macro:
+                    return '[[' + s + ']]'
                 for t in parts[1:]:
                     if '=' not in t:
                         return '[-%s: missing =-]' % ' '.join(parts)
@@ -81,6 +87,7 @@ class parse(object):
         else:
             return None
 
+
 @macro('neighborhood-wiki')
 def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
     from allura import model as M
@@ -91,16 +98,17 @@ def neighborhood_feeds(tool_name, max_number=5, sort='pubdate'):
             neighborhood_id=c.project.neighborhood._id))
     feed = feed.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
     output = ((dict(
-                href=item.link,
-                title=item.title,
-                author=item.author_name,
-                ago=h.ago(item.pubdate),
-                description=g.markdown.cached_convert(item, 'description')))
+        href=item.link,
+        title=item.title,
+        author=item.author_name,
+        ago=h.ago(item.pubdate),
+        description=g.markdown.cached_convert(item, 'description')))
         for item in feed)
     feeds = NeighborhoodFeeds(feeds=output)
     g.resource_manager.register(feeds)
     response = feeds.display(feeds=output)
     return response
+
 
 @macro('neighborhood-wiki')
 def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
@@ -111,19 +119,20 @@ def neighborhood_blog_posts(max_number=5, sort='timestamp', summary=False):
         state='published'))
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
     output = ((dict(
-                href=post.url(),
-                title=post.title,
-                author=post.author().display_name,
-                ago=h.ago(post.timestamp),
-                description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
+        href=post.url(),
+        title=post.title,
+        author=post.author().display_name,
+        ago=h.ago(post.timestamp),
+        description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
         for post in posts if post.app and
-                             security.has_access(post, 'read', project=post.app.project)() and
-                             security.has_access(post.app.project, 'read', project=post.app.project)())
+        security.has_access(post, 'read', project=post.app.project)() and
+        security.has_access(post.app.project, 'read', project=post.app.project)())
 
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)
     response = posts.display(posts=output)
     return response
+
 
 @macro()
 def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_point=None):
@@ -131,27 +140,29 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
     from allura.lib.widgets.macros import BlogPosts
     app_config_ids = []
     for conf in c.project.app_configs:
-        if conf.tool_name.lower() == 'blog' and (mount_point is None or conf.options.mount_point==mount_point):
+        if conf.tool_name.lower() == 'blog' and (mount_point is None or conf.options.mount_point == mount_point):
             app_config_ids.append(conf._id)
     posts = BM.BlogPost.query.find({
         'app_config_id': {'$in': app_config_ids},
-        'state':'published',
+        'state': 'published',
     })
     posts = posts.sort(sort, pymongo.DESCENDING).limit(int(max_number)).all()
     output = ((dict(
-                href=post.url(),
-                title=post.title,
-                author=post.author().display_name,
-                ago=h.ago(post.timestamp),
-                description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
+        href=post.url(),
+        title=post.title,
+        author=post.author().display_name,
+        ago=h.ago(post.timestamp),
+        description=summary and '&nbsp;' or g.markdown.cached_convert(post, 'text')))
         for post in posts if security.has_access(post, 'read', project=post.app.project)() and
-                             security.has_access(post.app.project, 'read', project=post.app.project)())
+        security.has_access(post.app.project, 'read', project=post.app.project)())
     posts = BlogPosts(posts=output)
     g.resource_manager.register(posts)
     response = posts.display(posts=output)
     return response
 
-def get_projects_for_macro(category=None, display_mode='grid', sort='last_updated',
+
+def get_projects_for_macro(
+        category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
         columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
         grid_view_tools='',
@@ -178,9 +189,9 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
             short=award)).first()
         if aw:
             ids = [grant.granted_to_project_id for grant in
-                M.AwardGrant.query.find(dict(
-                    granted_by_neighborhood_id=c.project.neighborhood_id,
-                    award_id=aw._id))]
+                   M.AwardGrant.query.find(dict(
+                       granted_by_neighborhood_id=c.project.neighborhood_id,
+                       award_id=aw._id))]
             if '_id' in q:
                 ids = list(set(q['_id']['$in']).intersection(ids))
             q['_id'] = {'$in': ids}
@@ -203,7 +214,7 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
         # Can't filter these with a mongo query directly - have to iterate
         # through and check the ACL of each project.
         for chunk in utils.chunked_find(M.Project, q, sort_key=sort_key,
-                sort_dir=sort_dir):
+                                        sort_dir=sort_dir):
             projects.extend([p for p in chunk if p.private])
         total = len(projects)
         if sort == 'random':
@@ -225,7 +236,7 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
             docs = list(collection.find(q, {'_id': 1}))
             if docs:
                 ids = [doc['_id'] for doc in
-                        random.sample(docs, min(limit, len(docs)))]
+                       random.sample(docs, min(limit, len(docs)))]
                 if '_id' in q:
                     ids = list(set(q['_id']['$in']).intersection(ids))
                 q['_id'] = {'$in': ids}
@@ -233,7 +244,7 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
                 random.shuffle(projects)
         else:
             projects = M.Project.query.find(q).limit(limit).sort(sort_key,
-                sort_dir).all()
+                                                                 sort_dir).all()
 
     pl = ProjectList()
     g.resource_manager.register(pl)
@@ -249,27 +260,29 @@ def get_projects_for_macro(category=None, display_mode='grid', sort='last_update
                 if h.has_access(p, 'read')():
                     total = total + 1
         response = '<p class="macro_projects_total">%s Projects</p>%s' % \
-                (total, response)
+            (total, response)
     return response
 
 
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
-        show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
-        grid_view_tools=''):
+             show_total=False, limit=100, labels='', award='', private=False,
+             columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+             grid_view_tools=''):
     initial_q = dict(neighborhood_id=c.project.neighborhood_id)
-    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort,
-                   show_total=show_total, limit=limit, labels=labels, award=award, private=private,
-                   columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
-                   initial_q=initial_q)
+    return get_projects_for_macro(
+        category=category, display_mode=display_mode, sort=sort,
+        show_total=show_total, limit=limit, labels=labels, award=award, private=private,
+        columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
+        show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
+        initial_q=initial_q)
+
 
 @macro('userproject-wiki')
 def my_projects(category=None, display_mode='grid', sort='last_updated',
-        show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
-        grid_view_tools=''):
+                show_total=False, limit=100, labels='', award='', private=False,
+                columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+                grid_view_tools=''):
 
     myproj_user = c.project.user_project_of
     if myproj_user is None:
@@ -280,11 +293,13 @@ def my_projects(category=None, display_mode='grid', sort='last_updated',
         ids.append(p._id)
 
     initial_q = dict(_id={'$in': ids})
-    return get_projects_for_macro(category=category, display_mode=display_mode, sort=sort,
-                   show_total=show_total, limit=limit, labels=labels, award=award, private=private,
-                   columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
-                   show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
-                   initial_q=initial_q)
+    return get_projects_for_macro(
+        category=category, display_mode=display_mode, sort=sort,
+        show_total=show_total, limit=limit, labels=labels, award=award, private=private,
+        columns=columns, show_proj_icon=show_proj_icon, show_download_button=show_download_button,
+        show_awards_banner=show_awards_banner, grid_view_tools=grid_view_tools,
+        initial_q=initial_q)
+
 
 @macro()
 def project_screenshots():
@@ -294,6 +309,7 @@ def project_screenshots():
     response = ps.display(project=c.project)
     return response
 
+
 @macro()
 def gittip_button(username):
     from allura.lib.widgets.macros import GittipButton
@@ -302,7 +318,10 @@ def gittip_button(username):
     response = button.display(username=username)
     return response
 
-# FIXME: this is SourceForge specific - need to provide a way for macros to come from other packages
+# FIXME: this is SourceForge specific - need to provide a way for macros
+# to come from other packages
+
+
 @macro()
 def download_button():
     from allura.lib.widgets.macros import DownloadButton
@@ -311,7 +330,8 @@ def download_button():
         res_mgr = g.resource_manager
     except TypeError:
         # e.g. "TypeError: No object (name: widget_context) has been registered for this thread"
-        # this is an ugly way to check to see if we're outside of a web request and avoid errors
+        # this is an ugly way to check to see if we're outside of a web request
+        # and avoid errors
         return '[[download_button]]'
     else:
         res_mgr.register(button)
@@ -341,6 +361,7 @@ def include(ref=None, **kw):
     response = sb.display(artifact=artifact, attrs=kw)
     return response
 
+
 @macro()
 def img(src=None, **kw):
     attrs = ('%s="%s"' % t for t in kw.iteritems())
@@ -351,18 +372,20 @@ def img(src=None, **kw):
     else:
         return '<img src="./attachment/%s" %s/>' % (src, ' '.join(attrs))
 
+
 @macro()
 def project_admins():
     admins = c.project.users_with_role('Admin')
     from allura.lib.widgets.macros import ProjectAdmins
     output = ((dict(
-            url=user.url(),
-            name=user.display_name))
+        url=user.url(),
+        name=user.display_name))
         for user in admins)
     users = ProjectAdmins(users=output)
     g.resource_manager.register(users)
     response = users.display(users=output)
     return response
+
 
 @macro()
 def members(limit=20):
@@ -371,10 +394,10 @@ def members(limit=20):
     admins = set(c.project.users_with_role('Admin'))
     members = sorted(c.project.users(), key=attrgetter('display_name'))
     output = [dict(
-            url=user.url(),
-            name=user.display_name,
-            admin=' (admin)' if user in admins else '',
-            )
+        url=user.url(),
+        name=user.display_name,
+        admin=' (admin)' if user in admins else '',
+    )
         for user in members[:limit]]
 
     over_limit = len(members) > limit
@@ -383,10 +406,12 @@ def members(limit=20):
     response = users.display(users=output, over_limit=over_limit)
     return response
 
+
 @macro()
 def embed(url=None):
     consumer = oembed.OEmbedConsumer()
-    endpoint = oembed.OEmbedEndpoint('http://www.youtube.com/oembed', ['http://*.youtube.com/*', 'https://*.youtube.com/*'])
+    endpoint = oembed.OEmbedEndpoint(
+        'http://www.youtube.com/oembed', ['http://*.youtube.com/*', 'https://*.youtube.com/*'])
     consumer.addEndpoint(endpoint)
     try:
         return jinja2.Markup('<div class="grid-20">%s</div>' % consumer.embed(url)['html'])

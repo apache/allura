@@ -100,9 +100,11 @@ class RestController(object):
         c.api_token = self._authenticate_request()
         if c.api_token:
             c.user = c.api_token.user
-        neighborhood = M.Neighborhood.query.get(url_prefix = '/' + name + '/')
-        if not neighborhood: raise exc.HTTPNotFound, name
+        neighborhood = M.Neighborhood.query.get(url_prefix='/' + name + '/')
+        if not neighborhood:
+            raise exc.HTTPNotFound, name
         return NeighborhoodRestController(neighborhood), remainder
+
 
 class OAuthNegotiator(object):
 
@@ -131,7 +133,7 @@ class OAuthNegotiator(object):
             headers=request.headers,
             parameters=dict(request.params),
             query_string=request.query_string
-            )
+        )
         consumer_token = M.OAuthConsumerToken.query.get(
             api_key=req['oauth_consumer_key'])
         access_token = M.OAuthAccessToken.query.get(
@@ -159,7 +161,7 @@ class OAuthNegotiator(object):
             headers=request.headers,
             parameters=dict(request.params),
             query_string=request.query_string
-            )
+        )
         consumer_token = M.OAuthConsumerToken.query.get(
             api_key=req['oauth_consumer_key'])
         if consumer_token is None:
@@ -174,7 +176,7 @@ class OAuthNegotiator(object):
         req_token = M.OAuthRequestToken(
             consumer_token_id=consumer_token._id,
             callback=req.get('oauth_callback', 'oob')
-            )
+        )
         session(req_token).flush()
         log.info('Saving new request token with key: %s', req_token.api_key)
         return req_token.to_string()
@@ -208,7 +210,7 @@ class OAuthNegotiator(object):
             url = rtok.callback + '&'
         else:
             url = rtok.callback + '?'
-        url+='oauth_token=%s&oauth_verifier=%s' % (
+        url += 'oauth_token=%s&oauth_verifier=%s' % (
             rtok.api_key, rtok.validation_pin)
         redirect(url)
 
@@ -220,7 +222,7 @@ class OAuthNegotiator(object):
             headers=request.headers,
             parameters=dict(request.params),
             query_string=request.query_string
-            )
+        )
         consumer_token = M.OAuthConsumerToken.query.get(
             api_key=req['oauth_consumer_key'])
         request_token = M.OAuthRequestToken.query.get(
@@ -244,11 +246,12 @@ class OAuthNegotiator(object):
             log.error('Invalid signature')
             raise exc.HTTPForbidden
         acc_token = M.OAuthAccessToken(
-                consumer_token_id=consumer_token._id,
-                request_token_id=request_token._id,
-                user_id=request_token.user_id,
-            )
+            consumer_token_id=consumer_token._id,
+            request_token_id=request_token._id,
+            user_id=request_token.user_id,
+        )
         return acc_token.to_string()
+
 
 class NeighborhoodRestController(object):
 
@@ -259,14 +262,18 @@ class NeighborhoodRestController(object):
     def _lookup(self, name, *remainder):
         provider = plugin.ProjectRegistrationProvider.get()
         try:
-            provider.shortname_validator.to_python(name, check_allowed=False, neighborhood=self._neighborhood)
+            provider.shortname_validator.to_python(
+                name, check_allowed=False, neighborhood=self._neighborhood)
         except Invalid as e:
             raise exc.HTTPNotFound, name
         name = self._neighborhood.shortname_prefix + name
-        project = M.Project.query.get(shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
-        if not project: raise exc.HTTPNotFound, name
+        project = M.Project.query.get(
+            shortname=name, neighborhood_id=self._neighborhood._id, deleted=False)
+        if not project:
+            raise exc.HTTPNotFound, name
         c.project = project
         return ProjectRestController(), remainder
+
 
 class ProjectRestController(object):
 
@@ -274,9 +281,10 @@ class ProjectRestController(object):
     def _lookup(self, name, *remainder):
         if not name:
             return self, ()
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
-                                         neighborhood_id=c.project.neighborhood_id,
-                                         deleted=False)
+        subproject = M.Project.query.get(
+            shortname=c.project.shortname + '/' + name,
+            neighborhood_id=c.project.neighborhood_id,
+            deleted=False)
         if subproject:
             c.project = subproject
             c.app = None
@@ -288,7 +296,7 @@ class ProjectRestController(object):
         if app.api_root is None:
             raise exc.HTTPNotFound, name
         action_logger.info('', extra=dict(
-                api_key=request.params.get('api_key')))
+            api_key=request.params.get('api_key')))
         return app.api_root, remainder
 
     @expose('json:')

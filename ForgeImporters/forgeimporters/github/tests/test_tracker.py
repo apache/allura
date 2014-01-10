@@ -25,9 +25,11 @@ from allura import model as M
 
 from forgeimporters.github import GitHubOAuthMixin
 
-# important to be distinct from 'test' which ForgeTracker uses, so that the tests can run in parallel and not clobber each other
+# important to be distinct from 'test' which ForgeTracker uses, so that
+# the tests can run in parallel and not clobber each other
 test_project_with_tracker = 'test2'
-with_tracker = with_tool(test_project_with_tracker, 'tickets', 'spooky-issues', 'tickets')
+with_tracker = with_tool(test_project_with_tracker,
+                         'tickets', 'spooky-issues', 'tickets')
 
 
 class TestGitHubTrackerImportController(TestController, TestCase):
@@ -51,10 +53,14 @@ class TestGitHubTrackerImportController(TestController, TestCase):
             mount_point='issues',
             mount_label='Issues')
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_tracker)
-        self.assertEqual(u'Issues', import_tool.post.call_args[1]['mount_label'])
-        self.assertEqual(u'issues', import_tool.post.call_args[1]['mount_point'])
-        self.assertEqual(u'mulder', import_tool.post.call_args[1]['project_name'])
+        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
+                         test_project_with_tracker)
+        self.assertEqual(
+            u'Issues', import_tool.post.call_args[1]['mount_label'])
+        self.assertEqual(
+            u'issues', import_tool.post.call_args[1]['mount_point'])
+        self.assertEqual(
+            u'mulder', import_tool.post.call_args[1]['project_name'])
         self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
 
     @with_tracker

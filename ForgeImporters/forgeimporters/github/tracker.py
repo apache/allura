@@ -27,15 +27,15 @@ except ImportError:
 
 from formencode import validators as fev
 from tg import (
-        expose,
-        validate,
-        flash,
-        redirect
-        )
+    expose,
+    validate,
+    flash,
+    redirect
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash
-        )
+    with_trailing_slash,
+    without_trailing_slash
+)
 
 from allura import model as M
 from allura.controllers import BaseController
@@ -85,14 +85,15 @@ class GitHubTrackerImportController(BaseController, GitHubOAuthMixin):
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
-                    project_name=gh_project_name,
-                    user_name=gh_user_name,
-                    mount_point=mount_point,
-                    mount_label=mount_label)
+                project_name=gh_project_name,
+                user_name=gh_user_name,
+                mount_point=mount_point,
+                mount_label=mount_label)
             flash('Ticket import has begun. Your new tracker will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -105,18 +106,18 @@ class GitHubTrackerImporter(ToolImporter):
     open_milestones = set()
 
     def import_tool(self, project, user, project_name, mount_point=None,
-            mount_label=None, **kw):
+                    mount_label=None, **kw):
         import_id_converter = ImportIdConverter.get()
         project_name = '%s/%s' % (kw['user_name'], project_name)
         app = project.install_app('tickets', mount_point, mount_label,
-                EnableVoting=False,
-                open_status_names='open',
-                closed_status_names='closed',
-                import_id={
-                    'source': self.source,
-                    'project_name': project_name,
-                }
-            )
+                                  EnableVoting=False,
+                                  open_status_names='open',
+                                  closed_status_names='closed',
+                                  import_id={
+                                      'source': self.source,
+                                      'project_name': project_name,
+                                  }
+                                  )
         self.github_markdown_converter = GitHubMarkdownConverter(
             kw['user_name'], project_name)
         ThreadLocalORMSession.flush_all()
@@ -142,10 +143,10 @@ class GitHubTrackerImporter(ToolImporter):
                 app.globals.last_ticket_num = self.max_ticket_num
                 ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
-                    'import tool %s from %s on %s' % (
-                        app.config.options.mount_point,
-                        project_name, self.source),
-                    project=project, user=user, url=app.url)
+                'import tool %s from %s on %s' % (
+                    app.config.options.mount_point,
+                    project_name, self.source),
+                project=project, user=user, url=app.url)
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             return app
@@ -165,35 +166,36 @@ class GitHubTrackerImporter(ToolImporter):
         ticket.mod_date = self.parse_datetime(issue['updated_at'])
         if issue['assignee']:
             owner_line = '*Originally owned by:* {}\n'.format(
-                    self.get_user_link(issue['assignee']['login']))
+                self.get_user_link(issue['assignee']['login']))
         else:
             owner_line = ''
         # body processing happens here
         body, attachments = self._get_attachments(extractor, issue['body'])
         ticket.add_multiple_attachments(attachments)
         ticket.description = (
-                u'*Originally created by:* {creator}\n'
-                u'{owner}'
-                u'\n'
-                u'{body}').format(
-                    creator=self.get_user_link(issue['user']['login']),
-                    owner=owner_line,
-                    body=self.github_markdown_converter.convert(body),
-                )
+            u'*Originally created by:* {creator}\n'
+            u'{owner}'
+            u'\n'
+            u'{body}').format(
+            creator=self.get_user_link(issue['user']['login']),
+            owner=owner_line,
+            body=self.github_markdown_converter.convert(body),
+        )
         ticket.labels = [label['name'] for label in issue['labels']]
 
     def process_comments(self, extractor, ticket, issue):
         for comment in extractor.iter_comments(issue):
-            body, attachments = self._get_attachments(extractor, comment['body'])
+            body, attachments = self._get_attachments(
+                extractor, comment['body'])
             if comment['user']:
                 posted_by = u'*Originally posted by:* {}\n\n'.format(
                     self.get_user_link(comment['user']['login']))
                 body = posted_by + body
             p = ticket.discussion_thread.add_post(
-                    text = self.github_markdown_converter.convert(body),
-                    ignore_security = True,
-                    timestamp = self.parse_datetime(comment['created_at']),
-                )
+                text=self.github_markdown_converter.convert(body),
+                ignore_security=True,
+                timestamp=self.parse_datetime(comment['created_at']),
+            )
             p.add_multiple_attachments(attachments)
 
     def process_events(self, extractor, ticket, issue):
@@ -201,22 +203,22 @@ class GitHubTrackerImporter(ToolImporter):
             prefix = text = ''
             if event['event'] in ('reopened', 'closed'):
                 prefix = '*Ticket changed by:* {}\n\n'.format(
-                        self.get_user_link(event['actor']['login']))
+                    self.get_user_link(event['actor']['login']))
             if event['event'] == 'reopened':
                 text = '- **status**: closed --> open'
             elif event['event'] == 'closed':
                 text = '- **status**: open --> closed'
             elif event['event'] == 'assigned':
                 text = '- **assigned_to**: {}'.format(
-                        self.get_user_link(event['actor']['login']))
+                    self.get_user_link(event['actor']['login']))
 
             text = prefix + text
             if not text:
                 continue
             ticket.discussion_thread.add_post(
-                text = text,
-                ignore_security = True,
-                timestamp = self.parse_datetime(event['created_at'])
+                text=text,
+                ignore_security=True,
+                timestamp=self.parse_datetime(event['created_at'])
             )
 
     def process_milestones(self, ticket, issue):
@@ -265,11 +267,13 @@ class GitHubTrackerImporter(ToolImporter):
             attachments.append(Attachment(
                 extractor,
                 match.group(1),  # url
-                'attach{}.{}'.format(i + 1, match.group(2)) # extension
+                'attach{}.{}'.format(i + 1, match.group(2))  # extension
             ))
         return (body, attachments)
 
+
 class Attachment(object):
+
     def __init__(self, extractor, url, filename):
         self.url = url
         self.filename = filename

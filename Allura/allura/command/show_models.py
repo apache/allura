@@ -35,8 +35,8 @@ from . import base
 
 
 class ShowModelsCommand(base.Command):
-    min_args=1
-    max_args=1
+    min_args = 1
+    max_args = 1
     usage = '<ini file>'
     summary = 'Show the inheritance graph of all Ming models'
     parser = base.Command.standard_parser(verbose=True)
@@ -50,8 +50,8 @@ class ShowModelsCommand(base.Command):
 
 
 class ReindexCommand(base.Command):
-    min_args=1
-    max_args=1
+    min_args = 1
+    max_args = 1
     usage = '<ini file>'
     summary = 'Reindex and re-shortlink all artifacts'
     parser = base.Command.standard_parser(verbose=True)
@@ -60,13 +60,15 @@ class ReindexCommand(base.Command):
     parser.add_option('--project-regex', dest='project_regex', default='',
                       help='Restrict reindex to projects for which the shortname matches '
                       'the provided regex.')
-    parser.add_option('-n', '--neighborhood', dest='neighborhood', default=None,
-                      help='neighborhood to reindex (e.g. p)')
+    parser.add_option(
+        '-n', '--neighborhood', dest='neighborhood', default=None,
+        help='neighborhood to reindex (e.g. p)')
 
     parser.add_option('--solr', action='store_true', dest='solr',
                       help='Solr needs artifact references to already exist.')
-    parser.add_option('--skip-solr-delete', action='store_true', dest='skip_solr_delete',
-                      help='Skip clearing solr index.')
+    parser.add_option(
+        '--skip-solr-delete', action='store_true', dest='skip_solr_delete',
+        help='Skip clearing solr index.')
     parser.add_option('--refs', action='store_true', dest='refs',
                       help='Update artifact references and shortlinks')
     parser.add_option('--tasks', action='store_true', dest='tasks',
@@ -75,10 +77,11 @@ class ReindexCommand(base.Command):
                            'which are needed for some markdown macros to run properly')
     parser.add_option('--solr-hosts', dest='solr_hosts',
                       help='Override the solr host(s) to post to.  Comma-separated list of solr server URLs')
-    parser.add_option('--max-chunk', dest='max_chunk', type=int, default=100*1000,
-                      help='Max number of artifacts to index in one Solr update command')
+    parser.add_option(
+        '--max-chunk', dest='max_chunk', type=int, default=100 * 1000,
+        help='Max number of artifacts to index in one Solr update command')
     parser.add_option('--ming-config', dest='ming_config', help='Path (absolute, or relative to '
-                        'Allura root) to .ini file defining ming configuration.')
+                      'Allura root) to .ini file defining ming configuration.')
 
     def command(self):
         from allura import model as M
@@ -107,9 +110,10 @@ class ReindexCommand(base.Command):
                 if self.options.solr and not self.options.skip_solr_delete:
                     g.solr.delete(q='project_id_s:%s' % p._id)
                 if self.options.refs:
-                    M.ArtifactReference.query.remove({'artifact_reference.project_id':p._id})
-                    M.Shortlink.query.remove({'project_id':p._id})
-                app_config_ids = [ ac._id for ac in p.app_configs ]
+                    M.ArtifactReference.query.remove(
+                        {'artifact_reference.project_id': p._id})
+                    M.Shortlink.query.remove({'project_id': p._id})
+                app_config_ids = [ac._id for ac in p.app_configs]
                 # Traverse the inheritance graph, finding all artifacts that
                 # belong to this project
                 for _, a_cls in dfs(M.Artifact, graph):
@@ -124,7 +128,8 @@ class ReindexCommand(base.Command):
                                 M.ArtifactReference.from_artifact(a)
                                 M.Shortlink.from_artifact(a)
                             except:
-                                base.log.exception('Making ArtifactReference/Shortlink from %s', a)
+                                base.log.exception(
+                                    'Making ArtifactReference/Shortlink from %s', a)
                                 continue
                         ref_ids.append(a.index_id())
                     M.main_orm_session.flush()
@@ -132,7 +137,8 @@ class ReindexCommand(base.Command):
                     try:
                         self._chunked_add_artifacts(ref_ids)
                     except CompoundError, err:
-                        base.log.exception('Error indexing artifacts:\n%r', err)
+                        base.log.exception(
+                            'Error indexing artifacts:\n%r', err)
                         base.log.error('%s', err.format_error())
                     M.main_orm_session.flush()
                     M.main_orm_session.clear()
@@ -141,7 +147,7 @@ class ReindexCommand(base.Command):
     @property
     def add_artifact_kwargs(self):
         if self.options.solr_hosts:
-           return {'solr_hosts': self.options.solr_hosts.split(',')}
+            return {'solr_hosts': self.options.solr_hosts.split(',')}
         return {}
 
     def _chunked_add_artifacts(self, ref_ids):
@@ -169,7 +175,8 @@ class ReindexCommand(base.Command):
                                    update_refs=self.options.refs,
                                    **self.add_artifact_kwargs)
         except InvalidDocument as e:
-            # there are many types of InvalidDocument, only recurse if its expected to help
+            # there are many types of InvalidDocument, only recurse if its
+            # expected to help
             if str(e).startswith('BSON document too large'):
                 self._post_add_artifacts(chunk[:len(chunk) // 2])
                 self._post_add_artifacts(chunk[len(chunk) // 2:])
@@ -193,8 +200,8 @@ class ReindexCommand(base.Command):
 
 
 class EnsureIndexCommand(base.Command):
-    min_args=1
-    max_args=1
+    min_args = 1
+    max_args = 1
     usage = '[<ini file>]'
     summary = 'Run ensure_index on all mongo objects'
     parser = base.Command.standard_parser(verbose=True)
@@ -202,12 +209,13 @@ class EnsureIndexCommand(base.Command):
     def command(self):
         from allura import model as M
         main_session_classes = [M.main_orm_session, M.repository_orm_session,
-                M.task_orm_session]
+                                M.task_orm_session]
         if asbool(self.config.get('activitystream.recording.enabled', False)):
             from activitystream.storage.mingstorage import activity_orm_session
             main_session_classes.append(activity_orm_session)
         self.basic_setup()
-        main_indexes = defaultdict(lambda: defaultdict(list))  # by db, then collection name
+        # by db, then collection name
+        main_indexes = defaultdict(lambda: defaultdict(list))
         project_indexes = defaultdict(list)  # by collection name
         base.log.info('Collecting indexes...')
         for m in Mapper.all_mappers():
@@ -237,7 +245,8 @@ class EnsureIndexCommand(base.Command):
 
     def _update_indexes(self, collection, indexes):
         uindexes = dict(
-            (tuple(i.index_spec), i)  # convert list to tuple so it's hashable for 'set'
+            # convert list to tuple so it's hashable for 'set'
+            (tuple(i.index_spec), i)
             for i in indexes
             if i.unique)
         indexes = dict(
@@ -284,30 +293,36 @@ class EnsureIndexCommand(base.Command):
         # Drop obsolete indexes
         for iname, keys in prev_indexes.iteritems():
             if keys not in indexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
+                base.log.info('...... drop index %s:%s',
+                              collection.name, iname)
                 collection.drop_index(iname)
         for iname, keys in prev_uindexes.iteritems():
             if keys not in uindexes:
-                base.log.info('...... drop index %s:%s', collection.name, iname)
+                base.log.info('...... drop index %s:%s',
+                              collection.name, iname)
                 collection.drop_index(iname)
 
     def _recreate_index(self, collection, iname, keys, **creation_options):
         '''Recreate an index with new creation options, using a temporary index
         so that at no time is an index missing from the specified keys'''
         superset_keys = keys + [('temporary_extra_field_for_indexing', 1)]
-        base.log.info('...... ensure index %s:%s', collection.name, superset_keys)
+        base.log.info('...... ensure index %s:%s',
+                      collection.name, superset_keys)
         superset_index = collection.ensure_index(superset_keys)
         base.log.info('...... drop index %s:%s', collection.name, iname)
         collection.drop_index(iname)
-        base.log.info('...... ensure index %s:%s %s', collection.name, keys, creation_options)
+        base.log.info('...... ensure index %s:%s %s',
+                      collection.name, keys, creation_options)
         collection.ensure_index(keys, **creation_options)
-        base.log.info('...... drop index %s:%s', collection.name, superset_index)
+        base.log.info('...... drop index %s:%s',
+                      collection.name, superset_index)
         collection.drop_index(superset_index)
 
     def _remove_dupes(self, collection, spec):
         iname = collection.create_index(spec)
-        fields = [ f[0] for f in spec ]
+        fields = [f[0] for f in spec]
         q = collection.find({}, fields=fields).sort(spec)
+
         def keyfunc(doc):
             return tuple(doc.get(f, None) for f in fields)
         dupes = []
@@ -315,47 +330,53 @@ class EnsureIndexCommand(base.Command):
             docs = list(doc_iter)
             if len(docs) > 1:
                 base.log.info('Found dupes with %s', key)
-                dupes += [ doc['_id'] for doc in docs[1:] ]
+                dupes += [doc['_id'] for doc in docs[1:]]
         collection.drop_index(iname)
-        collection.remove(dict(_id={'$in':dupes}))
+        collection.remove(dict(_id={'$in': dupes}))
+
 
 def build_model_inheritance_graph():
     graph = dict((m.mapped_class, ([], [])) for m in Mapper.all_mappers())
-    for cls, (parents, children)  in graph.iteritems():
+    for cls, (parents, children) in graph.iteritems():
         for b in cls.__bases__:
-            if b not in graph: continue
+            if b not in graph:
+                continue
             parents.append(b)
             graph[b][1].append(cls)
     return graph
 
+
 def dump_cls(depth, cls):
-    indent = ' '*4*depth
+    indent = ' ' * 4 * depth
     yield indent + '%s.%s' % (cls.__module__, cls.__name__)
     m = mapper(cls)
     for p in m.properties:
-        s = indent*2 + ' - ' + str(p)
+        s = indent * 2 + ' - ' + str(p)
         if hasattr(p, 'field_type'):
             s += ' (%s)' % p.field_type
         yield s
 
+
 def dfs(root, graph, depth=0):
     yield depth, root
     for c in graph[root][1]:
-        for r in dfs(c, graph, depth+1):
+        for r in dfs(c, graph, depth + 1):
             yield r
 
 
-def pm(etype, value, tb): # pragma no cover
-    import pdb, traceback
+def pm(etype, value, tb):  # pragma no cover
+    import pdb
+    import traceback
     try:
-        from IPython.ipapi import make_session; make_session()
+        from IPython.ipapi import make_session
+        make_session()
         from IPython.Debugger import Pdb
         sys.stderr.write('Entering post-mortem IPDB shell\n')
         p = Pdb(color_scheme='Linux')
         p.reset()
         p.setup(None, tb)
         p.print_stack_trace()
-        sys.stderr.write('%s: %s\n' % ( etype, value))
+        sys.stderr.write('%s: %s\n' % (etype, value))
         p.cmdloop()
         p.forget()
         # p.interaction(None, tb)

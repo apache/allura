@@ -36,8 +36,8 @@ from allura.lib import exceptions
 from allura.lib.helpers import exceptionless
 from allura.lib.helpers import plain2markdown
 
-## Everything in this file depends on html2text,
-## so import attempt is placed in global scope.
+# Everything in this file depends on html2text,
+# so import attempt is placed in global scope.
 try:
     import html2text
 except ImportError:
@@ -45,6 +45,7 @@ except ImportError:
     https://github.com/brondsem/html2text""")
 
 html2text.BODY_WIDTH = 0
+
 
 class RssFeedsCommand(base.BlogCommand):
     summary = 'Rss feed client'
@@ -60,12 +61,15 @@ class RssFeedsCommand(base.BlogCommand):
         # activity, User.url() will be called. This method defers to an
         # AuthenticationProvider, which depends on a request being setup in
         # the current thread. So, we set one up here.
-        import pylons, webob
+        import pylons
+        import webob
         pylons.request._push_object(webob.Request.blank('/'))
 
         self.basic_setup()
-        self.process_feed = exceptionless(None, log=allura_base.log)(self.process_feed)
-        self.process_entry = exceptionless(None, log=allura_base.log)(self.process_entry)
+        self.process_feed = exceptionless(
+            None, log=allura_base.log)(self.process_feed)
+        self.process_entry = exceptionless(
+            None, log=allura_base.log)(self.process_entry)
 
         user = M.User.query.get(username=self.options.username)
         c.user = user
@@ -78,10 +82,11 @@ class RssFeedsCommand(base.BlogCommand):
     def prepare_feeds(self):
         feed_dict = {}
         if self.options.appid != '':
-            gl_app = BM.Globals.query.get(app_config_id=ObjectId(self.options.appid))
+            gl_app = BM.Globals.query.get(
+                app_config_id=ObjectId(self.options.appid))
             if not gl_app:
-                raise exceptions.NoSuchGlobalsError("The globals %s " \
-                     "could not be found in the database" % self.options.appid)
+                raise exceptions.NoSuchGlobalsError("The globals %s "
+                                                    "could not be found in the database" % self.options.appid)
             if len(gl_app.external_feeds) > 0:
                 feed_dict[gl_app.app_config_id] = gl_app.external_feeds
         else:
@@ -111,7 +116,8 @@ class RssFeedsCommand(base.BlogCommand):
     def process_entry(self, e, appid):
         title = e.title
         allura_base.log.info(" ...entry '%s'", title)
-        parsed_content = filter(None, e.get('content') or [e.get('summary_detail')])
+        parsed_content = filter(
+            None, e.get('content') or [e.get('summary_detail')])
         if parsed_content:
             content = u''
             for ct in parsed_content:
@@ -124,18 +130,19 @@ class RssFeedsCommand(base.BlogCommand):
                     content += markdown_content
         else:
             content = plain2markdown(getattr(e, 'summary',
-                                        getattr(e, 'subtitle',
-                                            getattr(e, 'title'))))
+                                             getattr(e, 'subtitle',
+                                                     getattr(e, 'title'))))
 
         content += u' [link](%s)' % e.link
         updated = datetime.utcfromtimestamp(calendar.timegm(e.updated_parsed))
 
         base_slug = BM.BlogPost.make_base_slug(title, updated)
-        b_count = BM.BlogPost.query.find(dict(slug=base_slug, app_config_id=appid)).count()
+        b_count = BM.BlogPost.query.find(
+            dict(slug=base_slug, app_config_id=appid)).count()
         if b_count == 0:
             post = BM.BlogPost(title=title, text=content, timestamp=updated,
-                            app_config_id=appid,
-                            state='published')
-            post.neighborhood_id=c.project.neighborhood_id
+                               app_config_id=appid,
+                               state='published')
+            post.neighborhood_id = c.project.neighborhood_id
             post.make_slug()
             post.commit()

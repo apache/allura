@@ -44,10 +44,10 @@ ArtifactReferenceDoc = collection(
     'artifact_reference', main_doc_session,
     Field('_id', str),
     Field('artifact_reference', dict(
-            cls=S.Binary(),
-            project_id=S.ObjectId(),
-            app_config_id=S.ObjectId(),
-            artifact_id=S.Anything(if_missing=None))),
+        cls=S.Binary(),
+        project_id=S.ObjectId(),
+        app_config_id=S.ObjectId(),
+        artifact_id=S.Anything(if_missing=None))),
     Field('references', [str], index=True),
     Index('artifact_reference.project_id'),  # used in ReindexCommand
 )
@@ -55,22 +55,28 @@ ArtifactReferenceDoc = collection(
 ShortlinkDoc = collection(
     'shortlink', main_doc_session,
     Field('_id', S.ObjectId()),
-    Field('ref_id', str, index=True),  # index needed for from_artifact() and index_tasks.py:del_artifacts
+    # index needed for from_artifact() and index_tasks.py:del_artifacts
+    Field('ref_id', str, index=True),
     Field('project_id', S.ObjectId()),
     Field('app_config_id', S.ObjectId()),
     Field('link', str),
     Field('url', str),
-    Index('project_id', 'link'), # used by from_links()  More helpful to have project_id first, for other queries
+    # used by from_links()  More helpful to have project_id first, for other
+    # queries
+    Index('project_id', 'link'),
 )
 
 # Class definitions
+
+
 class ArtifactReference(object):
 
     @classmethod
     def from_artifact(cls, artifact):
         '''Upsert logic to generate an ArtifactReference object from an artifact'''
         obj = cls.query.get(_id=artifact.index_id())
-        if obj is not None: return obj
+        if obj is not None:
+            return obj
         try:
             obj = cls(
                 _id=artifact.index_id(),
@@ -81,7 +87,7 @@ class ArtifactReference(object):
                     artifact_id=artifact._id))
             session(obj).flush(obj)
             return obj
-        except pymongo.errors.DuplicateKeyError: # pragma no cover
+        except pymongo.errors.DuplicateKeyError:  # pragma no cover
             session(obj).expunge(obj)
             return cls.query.get(_id=artifact.index_id())
 
@@ -97,7 +103,9 @@ class ArtifactReference(object):
             log.exception('Error loading artifact for %s: %r',
                           self._id, aref)
 
+
 class Shortlink(object):
+
     '''Collection mapping shorthand_ids for artifacts to ArtifactReferences'''
 
     # Regexes used to find shortlinks
@@ -107,14 +115,14 @@ class Shortlink(object):
             (?P<artifact_id>.*)             # artifact ID
     \])'''
     re_link_1 = re.compile(r'\s' + _core_re, re.VERBOSE)
-    re_link_2 = re.compile(r'^' +  _core_re, re.VERBOSE)
+    re_link_2 = re.compile(r'^' + _core_re, re.VERBOSE)
 
     def __repr__(self):
         return '<Shortlink %s %s %s -> %s>' % (
-                    self.project_id,
-                    self.app_config_id,
-                    self.link,
-                    self.ref_id)
+            self.project_id,
+            self.app_config_id,
+            self.link,
+            self.ref_id)
 
     @classmethod
     def lookup(cls, link):
@@ -126,11 +134,11 @@ class Shortlink(object):
         if result is None:
             try:
                 result = cls(
-                    ref_id = a.index_id(),
-                    project_id = a.app_config.project_id,
-                    app_config_id = a.app_config._id)
+                    ref_id=a.index_id(),
+                    project_id=a.app_config.project_id,
+                    app_config_id=a.app_config._id)
                 session(result).flush(result)
-            except pymongo.errors.DuplicateKeyError: # pragma no cover
+            except pymongo.errors.DuplicateKeyError:  # pragma no cover
                 session(result).expunge(result)
                 result = cls.query.get(ref_id=a.index_id())
         result.link = a.shorthand_id()
@@ -146,7 +154,8 @@ class Shortlink(object):
         if len(links):
             result = {}
             # Parse all the links
-            parsed_links = dict((link, cls._parse_link(link)) for link in links)
+            parsed_links = dict((link, cls._parse_link(link))
+                                for link in links)
             links_by_artifact = defaultdict(list)
             project_ids = set()
             for link, d in parsed_links.items():
@@ -156,20 +165,20 @@ class Shortlink(object):
                 else:
                     result[link] = parsed_links.pop(link)
             q = cls.query.find(dict(
-                    link={'$in': links_by_artifact.keys()},
-                    project_id={'$in': list(project_ids)}
-                ), validate=False)
+                link={'$in': links_by_artifact.keys()},
+                project_id={'$in': list(project_ids)}
+            ), validate=False)
             matches_by_artifact = dict(
                 (link, list(matches))
-                for link, matches in groupby(q, key=lambda s:unquote(s.link)))
+                for link, matches in groupby(q, key=lambda s: unquote(s.link)))
             for link, d in parsed_links.iteritems():
                 matches = matches_by_artifact.get(unquote(d['artifact']), [])
                 matches = (
                     m for m in matches
                     if m.project.shortname == d['project'] and
-                       m.project.neighborhood_id == d['nbhd'] and
-                       m.app_config is not None and
-                       m.project.app_instance(m.app_config.options.mount_point))
+                    m.project.neighborhood_id == d['nbhd'] and
+                    m.app_config is not None and
+                    m.project.app_instance(m.app_config.options.mount_point))
                 if d['app']:
                     matches = (
                         m for m in matches
@@ -233,9 +242,9 @@ class Shortlink(object):
 # Mapper definitions
 mapper(ArtifactReference, ArtifactReferenceDoc, main_orm_session)
 mapper(Shortlink, ShortlinkDoc, main_orm_session, properties=dict(
-    ref_id = ForeignIdProperty(ArtifactReference),
-    project_id = ForeignIdProperty('Project'),
-    app_config_id = ForeignIdProperty('AppConfig'),
-    project = RelationProperty('Project'),
-    app_config = RelationProperty('AppConfig'),
-    ref = RelationProperty(ArtifactReference)))
+    ref_id=ForeignIdProperty(ArtifactReference),
+    project_id=ForeignIdProperty('Project'),
+    app_config_id=ForeignIdProperty('AppConfig'),
+    project=RelationProperty('Project'),
+    app_config=RelationProperty('AppConfig'),
+    ref=RelationProperty(ArtifactReference)))

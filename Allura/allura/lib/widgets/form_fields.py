@@ -28,8 +28,10 @@ import ew.jinja2_ew as ew
 
 log = logging.getLogger(__name__)
 
+
 def onready(text):
-    return ew.JSScript('$(function () {%s});' % text);
+    return ew.JSScript('$(function () {%s});' % text)
+
 
 class LabelList(fev.UnicodeString):
 
@@ -46,10 +48,11 @@ class LabelList(fev.UnicodeString):
         value = super(LabelList, self)._from_python(value, state)
         return value
 
+
 class LabelEdit(ew.InputField):
-    template='jinja:allura:templates/widgets/label_edit.html'
+    template = 'jinja:allura:templates/widgets/label_edit.html'
     validator = LabelList(if_empty=[])
-    defaults=dict(
+    defaults = dict(
         ew.InputField.defaults,
         name=None,
         value=None,
@@ -90,9 +93,10 @@ class LabelEdit(ew.InputField):
             });
         ''' % dict(url=c.app.url))
 
+
 class ProjectUserSelect(ew.InputField):
-    template='jinja:allura:templates/widgets/project_user_select.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/project_user_select.html'
+    defaults = dict(
         ew.InputField.defaults,
         name=None,
         value=None,
@@ -102,13 +106,14 @@ class ProjectUserSelect(ew.InputField):
     def __init__(self, **kw):
         super(ProjectUserSelect, self).__init__(**kw)
         if not isinstance(self.value, list):
-            self.value=[self.value]
+            self.value = [self.value]
 
     def from_python(self, value, state=None):
         return value
 
     def resources(self):
-        for r in super(ProjectUserSelect, self).resources(): yield r
+        for r in super(ProjectUserSelect, self).resources():
+            yield r
         yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.project_user_select').autocomplete({
@@ -153,8 +158,8 @@ class ProjectUserCombo(ew.SingleSelectField):
 
 
 class NeighborhoodProjectSelect(ew.InputField):
-    template='jinja:allura:templates/widgets/neighborhood_project_select.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/neighborhood_project_select.html'
+    defaults = dict(
         ew.InputField.defaults,
         name=None,
         value=None,
@@ -164,14 +169,15 @@ class NeighborhoodProjectSelect(ew.InputField):
     def __init__(self, url, **kw):
         super(NeighborhoodProjectSelect, self).__init__(**kw)
         if not isinstance(self.value, list):
-            self.value=[self.value]
+            self.value = [self.value]
         self.url = url
 
     def from_python(self, value, state=None):
         return value
 
     def resources(self):
-        for r in super(NeighborhoodProjectSelect, self).resources(): yield r
+        for r in super(NeighborhoodProjectSelect, self).resources():
+            yield r
         yield ew.CSSLink('css/autocomplete.css')
         yield onready('''
           $('input.neighborhood-project-select').autocomplete({
@@ -190,22 +196,25 @@ class NeighborhoodProjectSelect(ew.InputField):
             minLength: 3
           });''' % self.url)
 
+
 class AttachmentList(ew_core.Widget):
-    template='jinja:allura:templates/widgets/attachment_list.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/attachment_list.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         attachments=None,
         edit_mode=None)
 
+
 class AttachmentAdd(ew_core.Widget):
-    template='jinja:allura:templates/widgets/attachment_add.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/attachment_add.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         action=None,
         name=None)
 
     def resources(self):
-        for r in super(AttachmentAdd, self).resources(): yield r
+        for r in super(AttachmentAdd, self).resources():
+            yield r
         yield onready('''
             $(".attachment_form_add_button").click(function (evt) {
                 $(this).hide();
@@ -214,12 +223,13 @@ class AttachmentAdd(ew_core.Widget):
             });
          ''')
 
+
 class SubmitButton(ew.SubmitButton):
-    attrs={'class':'ui-state-default ui-button ui-button-text'}
+    attrs = {'class': 'ui-state-default ui-button ui-button-text'}
 
 
 class Radio(ew.InputField):
-    template=ew_core.render.Snippet('''<input {% if value %} checked{% endif %} {{widget.j2_attrs({
+    template = ew_core.render.Snippet('''<input {% if value %} checked{% endif %} {{widget.j2_attrs({
         'id':id,
         'type':field_type,
         'name':rendered_name,
@@ -227,13 +237,13 @@ class Radio(ew.InputField):
         'readonly':readonly,
         'value':value},
         attrs)}}>''', 'jinja2')
-    defaults=dict(
+    defaults = dict(
         ew.InputField.defaults,
         field_type='radio')
 
 
 class AutoResizeTextarea(ew.TextArea):
-    defaults=dict(
+    defaults = dict(
         ew.TextArea.defaults,
         name=None,
         value=None,
@@ -245,10 +255,11 @@ class AutoResizeTextarea(ew.TextArea):
             $('textarea.auto_resize').focus(function(){$(this).autosize();});
         ''')
 
+
 class MarkdownEdit(AutoResizeTextarea):
-    template='jinja:allura:templates/widgets/markdown_edit.html'
+    template = 'jinja:allura:templates/widgets/markdown_edit.html'
     validator = fev.UnicodeString()
-    defaults=dict(
+    defaults = dict(
         AutoResizeTextarea.defaults,
         name=None,
         value=None,
@@ -258,15 +269,17 @@ class MarkdownEdit(AutoResizeTextarea):
         return value
 
     def resources(self):
-        for r in super(MarkdownEdit, self).resources(): yield r
+        for r in super(MarkdownEdit, self).resources():
+            yield r
         yield ew.JSLink('js/jquery.lightbox_me.js')
         yield ew.JSLink('js/jquery.textarea.js')
         yield ew.JSLink('js/sf_markitup.js')
         yield ew.CSSLink('css/markitup_sf.css')
 
+
 class PageList(ew_core.Widget):
-    template='jinja:allura:templates/widgets/page_list.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/page_list.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         name=None,
         limit=None,
@@ -277,12 +290,13 @@ class PageList(ew_core.Widget):
     def paginator(self, count, page, limit, zero_based_pages=True):
         page_offset = 1 if zero_based_pages else 0
         limit = 10 if limit is None else limit
+
         def page_url(page):
             params = request.GET.copy()
             params['page'] = page - page_offset
             return url(request.path, params)
         return paginate.Page(range(count), page + page_offset, int(limit),
-        url=page_url)
+                             url=page_url)
 
     def resources(self):
         yield ew.CSSLink('css/page_list.css')
@@ -290,14 +304,15 @@ class PageList(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k,v in request.params.iteritems():
-            if k not in ['limit','count','page']:
+        for k, v in request.params.iteritems():
+            if k not in ['limit', 'count', 'page']:
                 url_params[k] = v
         return url_params
 
+
 class PageSize(ew_core.Widget):
-    template='jinja:allura:templates/widgets/page_size.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/page_size.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         limit=None,
         name=None,
@@ -307,8 +322,8 @@ class PageSize(ew_core.Widget):
     @property
     def url_params(self, **kw):
         url_params = dict()
-        for k,v in request.params.iteritems():
-            if k not in ['limit','count','page']:
+        for k, v in request.params.iteritems():
+            if k not in ['limit', 'count', 'page']:
                 url_params[k] = v
         return url_params
 
@@ -317,15 +332,17 @@ class PageSize(ew_core.Widget):
             $('select.results_per_page').change(function () {
                 this.form.submit();});''')
 
+
 class FileChooser(ew.InputField):
-    template='jinja:allura:templates/widgets/file_chooser.html'
-    validator=fev.FieldStorageUploadConverter()
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/file_chooser.html'
+    validator = fev.FieldStorageUploadConverter()
+    defaults = dict(
         ew.InputField.defaults,
         name=None)
 
     def resources(self):
-        for r in super(FileChooser, self).resources(): yield r
+        for r in super(FileChooser, self).resources():
+            yield r
         yield ew.JSLink('js/jquery.file_chooser.js')
         yield onready('''
             var num_files = 0;
@@ -350,27 +367,30 @@ class FileChooser(ew.InputField):
                 $(holder).append(delete_link);
             });''')
 
+
 class JQueryMixin(object):
     js_widget_name = None
     js_plugin_file = None
     js_params = [
         'container_cls'
-        ]
-    defaults=dict(
-        container_cls = 'container')
+    ]
+    defaults = dict(
+        container_cls='container')
 
     def resources(self):
         for r in super(JQueryMixin, self).resources():
             yield r
-        if self.js_plugin_file is not None: yield self.js_plugin_file
+        if self.js_plugin_file is not None:
+            yield self.js_plugin_file
         opts = dict(
             (k, getattr(self, k))
-            for k in self.js_params )
+            for k in self.js_params)
         yield onready('''
 $(document).bind('clone', function () {
     $('.%s').%s(%s); });
 $(document).trigger('clone');
-            ''' % (self.container_cls, self.js_widget_name, json.dumps(opts)));
+            ''' % (self.container_cls, self.js_widget_name, json.dumps(opts)))
+
 
 class SortableRepeatedMixin(JQueryMixin):
     js_widget_name = 'SortableRepeatedField'
@@ -380,8 +400,8 @@ class SortableRepeatedMixin(JQueryMixin):
         'flist_cls',
         'stub_cls',
         'msg_cls',
-        ]
-    defaults=dict(
+    ]
+    defaults = dict(
         container_cls='sortable-repeated-field',
         field_cls='sortable-field',
         flist_cls='sortable-field-list',
@@ -390,64 +410,72 @@ class SortableRepeatedMixin(JQueryMixin):
         empty_msg='No fields have been defined',
         nonempty_msg='Drag and drop the fields to reorder',
         repetitions=0)
-    button =  ew.InputField(
+    button = ew.InputField(
         css_class='add', field_type='button', value='New Field')
 
+
 class SortableRepeatedField(SortableRepeatedMixin, ew.RepeatedField):
-    template='genshi:allura.templates.widgets.sortable_repeated_field'
-    defaults=dict(
+    template = 'genshi:allura.templates.widgets.sortable_repeated_field'
+    defaults = dict(
         ew.RepeatedField.defaults,
         **SortableRepeatedMixin.defaults)
 
+
 class SortableTable(SortableRepeatedMixin, ew.TableField):
-    template='genshi:allura.templates.widgets.sortable_table'
-    defaults=dict(
+    template = 'genshi:allura.templates.widgets.sortable_table'
+    defaults = dict(
         ew.TableField.defaults,
         **SortableRepeatedMixin.defaults)
 
+
 class StateField(JQueryMixin, ew.CompoundField):
-    template='genshi:allura.templates.widgets.state_field'
+    template = 'genshi:allura.templates.widgets.state_field'
     js_widget_name = 'StateField'
     js_plugin_file = ew.JSLink('js/state_field.js')
     js_params = JQueryMixin.js_params + [
         'selector_cls',
         'field_cls',
-        ]
-    defaults=dict(
+    ]
+    defaults = dict(
         ew.CompoundField.defaults,
-        js_params = js_params,
+        js_params=js_params,
         container_cls='state-field-container',
         selector_cls='state-field-selector',
         field_cls='state-field',
         show_label=False,
-        selector = None,
-        states = {},
-        )
+        selector=None,
+        states={},
+    )
 
     @property
     def fields(self):
         return [self.selector] + self.states.values()
 
+
 class DateField(JQueryMixin, ew.TextField):
     js_widget_name = 'datepicker'
     js_params = JQueryMixin.js_params
     container_cls = 'ui-date-field'
-    defaults=dict(
+    defaults = dict(
         ew.TextField.defaults,
-        container_cls = 'ui-date-field',
-        css_class = 'ui-date-field')
+        container_cls='ui-date-field',
+        css_class='ui-date-field')
 
     def resources(self):
-        for r in super(DateField, self).resources(): yield r
+        for r in super(DateField, self).resources():
+            yield r
         yield ew.CSSLink('css/jquery.ui.datepicker.css')
 
+
 class FieldCluster(ew.CompoundField):
-    template='genshi:allura.templates.widgets.field_cluster'
+    template = 'genshi:allura.templates.widgets.field_cluster'
+
 
 class AdminField(ew.InputField):
+
     '''Field with the correct layout/etc for an admin page'''
-    template='jinja:allura:templates/widgets/admin_field.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/admin_field.html'
+    defaults = dict(
         ew.InputField.defaults,
         field=None,
         css_class=None,
@@ -462,9 +490,10 @@ class AdminField(ew.InputField):
         for r in self.field.resources():
             yield r
 
+
 class Lightbox(ew_core.Widget):
-    template='jinja:allura:templates/widgets/lightbox.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/lightbox.html'
+    defaults = dict(
         name=None,
         trigger=None,
         content='',
@@ -487,10 +516,11 @@ class Lightbox(ew_core.Widget):
 
 
 class DisplayOnlyField(ew.HiddenField):
+
     '''
     Render a field as plain text, optionally with a hidden field to preserve the value.
     '''
-    template=ew.Snippet('''{{ (text or value or attrs.value)|e }}
+    template = ew.Snippet('''{{ (text or value or attrs.value)|e }}
         {%- if with_hidden_input is none and name or with_hidden_input -%}
         <input {{
             widget.j2_attrs({
@@ -500,9 +530,8 @@ class DisplayOnlyField(ew.HiddenField):
                 'class':css_class}, attrs)
         }}>
         {%- endif %}''', 'jinja2')
-    defaults=dict(
+    defaults = dict(
         ew.HiddenField.defaults,
         text=None,
         value=None,
         with_hidden_input=None)
-

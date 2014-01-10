@@ -32,43 +32,46 @@ log = logging.getLogger(__name__)
 
 
 class Wiki2Markdown(ScriptTask):
+
     """Import MediaWiki to Allura Wiki tool"""
     @classmethod
     def parser(cls):
         parser = argparse.ArgumentParser(description='Import wiki from'
-            'mediawiki-dump to allura wiki')
+                                         'mediawiki-dump to allura wiki')
         parser.add_argument('-e', '--extract-only', action='store_true',
-                          dest='extract',
-                          help='Store data from the mediawiki-dump '
-                          'on the local filesystem; not load into Allura')
-        parser.add_argument('-l', '--load-only', action='store_true', dest='load',
-                    help='Load into Allura previously-extracted data')
+                            dest='extract',
+                            help='Store data from the mediawiki-dump '
+                            'on the local filesystem; not load into Allura')
+        parser.add_argument(
+            '-l', '--load-only', action='store_true', dest='load',
+            help='Load into Allura previously-extracted data')
         parser.add_argument('-d', '--dump-dir', dest='dump_dir', default='',
-                    help='Directory for dump files')
+                            help='Directory for dump files')
         parser.add_argument('-n', '--neighborhood', dest='nbhd', default='',
-                    help='Neighborhood name to load data')
+                            help='Neighborhood name to load data')
         parser.add_argument('-p', '--project', dest='project', default='',
-                    help='Project shortname to load data into')
+                            help='Project shortname to load data into')
         parser.add_argument('-a', '--attachments-dir', dest='attachments_dir',
-                    help='Path to directory with mediawiki attachments dump',
-                    default='')
+                            help='Path to directory with mediawiki attachments dump',
+                            default='')
         parser.add_argument('--db_config_prefix', dest='db_config_prefix',
-                          help='Key prefix (e.g. "legacy.") in ini file to '
-                          'use instead of commandline db params')
+                            help='Key prefix (e.g. "legacy.") in ini file to '
+                            'use instead of commandline db params')
         parser.add_argument('-s', '--source', dest='source', default='mysql',
-                    help='Database type to extract from (only mysql for now)')
+                            help='Database type to extract from (only mysql for now)')
         parser.add_argument('--db_name', dest='db_name', default='mediawiki',
-                    help='Database name')
+                            help='Database name')
         parser.add_argument('--host', dest='host', default='localhost',
-                    help='Database host')
+                            help='Database host')
         parser.add_argument('--port', dest='port', type=int, default=0,
-                    help='Database port')
+                            help='Database port')
         parser.add_argument('--user', dest='user', default='',
-                    help='User for database connection')
+                            help='User for database connection')
         parser.add_argument('--password', dest='password', default='',
-                    help='Password for database connection')
-        parser.add_argument('--keep-dumps', action='store_true', dest='keep_dumps',
-                    help='Leave dump files on disk after run')
+                            help='Password for database connection')
+        parser.add_argument(
+            '--keep-dumps', action='store_true', dest='keep_dumps',
+            help='Leave dump files on disk after run')
         return parser
 
     @classmethod
@@ -93,14 +96,15 @@ class Wiki2Markdown(ScriptTask):
 
         if not options.dump_dir:
             if options.load and not options.extract:
-                raise ValueError('You must specify directory containing dump files')
+                raise ValueError(
+                    'You must specify directory containing dump files')
             else:
                 options.dump_dir = tempfile.mkdtemp()
                 log.info("Writing temp files to %s", options.dump_dir)
 
         if options.load and (not options.project or not options.nbhd):
             raise ValueError('You must specify neighborhood and project '
-                                  'to load data')
+                             'to load data')
 
         if options.extract:
             if options.db_config_prefix:
@@ -112,12 +116,14 @@ class Wiki2Markdown(ScriptTask):
             if options.source == 'mysql':
                 pass
             elif options.source in ('sqlite', 'postgres', 'sql-dump'):
-                raise ValueError('This source not implemented yet. Only mysql for now')
+                raise ValueError(
+                    'This source not implemented yet. Only mysql for now')
             else:
                 raise ValueError('You must specify a valid data source')
 
             if not options.attachments_dir:
-                raise ValueError('You must specify path to directory with mediawiki attachmets dump.')
+                raise ValueError(
+                    'You must specify path to directory with mediawiki attachmets dump.')
 
         return options
 

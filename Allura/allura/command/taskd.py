@@ -40,6 +40,7 @@ status_log = logging.getLogger('taskdstatus')
 
 log = logging.getLogger(__name__)
 
+
 @contextmanager
 def proctitle(title):
     """Temporarily change the process title, then restore it."""
@@ -77,23 +78,29 @@ class TaskdCommand(base.Command):
         self.worker()
 
     def graceful_restart(self, signum, frame):
-        base.log.info('taskd pid %s recieved signal %s preparing to do a graceful restart' % (os.getpid(), signum))
+        base.log.info(
+            'taskd pid %s recieved signal %s preparing to do a graceful restart' %
+            (os.getpid(), signum))
         self.keep_running = False
         self.restart_when_done = True
 
     def graceful_stop(self, signum, frame):
-        base.log.info('taskd pid %s recieved signal %s preparing to do a graceful stop' % (os.getpid(), signum))
+        base.log.info(
+            'taskd pid %s recieved signal %s preparing to do a graceful stop' %
+            (os.getpid(), signum))
         self.keep_running = False
 
     def log_current_task(self, signum, frame):
-        entry = 'taskd pid %s is currently handling task %s' % (os.getpid(), getattr(self, 'task', None))
+        entry = 'taskd pid %s is currently handling task %s' % (
+            os.getpid(), getattr(self, 'task', None))
         status_log.info(entry)
         base.log.info(entry)
 
     def worker(self):
         from allura import model as M
         name = '%s pid %s' % (os.uname()[1], os.getpid())
-        wsgi_app = loadapp('config:%s#task' % self.args[0],relative_to=os.getcwd())
+        wsgi_app = loadapp('config:%s#task' %
+                           self.args[0], relative_to=os.getcwd())
         poll_interval = asint(pylons.config.get('monq.poll_interval', 10))
         only = self.options.only
         if only:
@@ -101,8 +108,9 @@ class TaskdCommand(base.Command):
 
         def start_response(status, headers, exc_info=None):
             if status != '200 OK':
-                log.warn('Unexpected http response from taskd request: %s.  Headers: %s',
-                             status, headers)
+                log.warn(
+                    'Unexpected http response from taskd request: %s.  Headers: %s',
+                    status, headers)
 
         def waitfunc_amqp():
             try:
@@ -132,23 +140,26 @@ class TaskdCommand(base.Command):
             try:
                 while self.keep_running:
                     self.task = M.MonQTask.get(
-                            process=name,
-                            waitfunc=waitfunc,
-                            only=only)
+                        process=name,
+                        waitfunc=waitfunc,
+                        only=only)
                     if self.task:
                         with(proctitle("taskd:{0}:{1}".format(
                                 self.task.task_name, self.task._id))):
                             # Build the (fake) request
-                            request_path = '/--%s--/%s/' % (self.task.task_name, self.task._id)
+                            request_path = '/--%s--/%s/' % (self.task.task_name,
+                                                            self.task._id)
                             r = Request.blank(request_path,
-                                              base_url=tg.config['base_url'].rstrip('/') + request_path,
+                                              base_url=tg.config['base_url'].rstrip(
+                                                  '/') + request_path,
                                               environ={'task': self.task,
-                                               })
+                                                       })
                             list(wsgi_app(r.environ, start_response))
                             self.task = None
             except Exception as e:
                 if self.keep_running:
-                    base.log.exception('taskd error %s; pausing for 10s before taking more tasks' % e)
+                    base.log.exception(
+                        'taskd error %s; pausing for 10s before taking more tasks' % e)
                     time.sleep(10)
                 else:
                     base.log.exception('taskd error %s' % e)
@@ -211,7 +222,8 @@ class TaskCommand(base.Command):
     def _timeout(self):
         '''Reset tasks that have been busy too long to 'ready' state'''
         from allura import model as M
-        base.log.info('Reset tasks stuck for %ss or more', self.options.timeout)
+        base.log.info('Reset tasks stuck for %ss or more',
+                      self.options.timeout)
         cutoff = datetime.utcnow() - timedelta(seconds=self.options.timeout)
         M.MonQTask.timeout_tasks(cutoff)
 

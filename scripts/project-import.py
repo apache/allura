@@ -35,7 +35,9 @@ from allura.lib import helpers as h
 
 log = logging.getLogger(__name__)
 
+
 class TroveCategory():
+
     def __init__(self, root_type=''):
         self.root_type = root_type
 
@@ -47,29 +49,35 @@ class TroveCategory():
             cat = M.TroveCategory.query.get(fullname=cstruct)
         if not cat:
             raise col.Invalid(node,
-                    '"%s" is not a valid trove category.' % cstruct)
+                              '"%s" is not a valid trove category.' % cstruct)
         if not cat.fullpath.startswith(self.root_type):
             raise col.Invalid(node,
-                    '"%s" is not a valid "%s" trove category.' %
-                    (cstruct, self.root_type))
+                              '"%s" is not a valid "%s" trove category.' %
+                              (cstruct, self.root_type))
         return cat
 
+
 class User():
+
     def deserialize(self, node, cstruct):
         if cstruct is col.null:
             return col.null
         user = M.User.by_username(cstruct)
         if not user:
             raise col.Invalid(node,
-                    'Invalid username "%s".' % cstruct)
+                              'Invalid username "%s".' % cstruct)
         return user
 
+
 class ProjectName(object):
+
     def __init__(self, name, shortname):
         self.name = name
         self.shortname = shortname
 
+
 class ProjectNameType():
+
     def deserialize(self, node, cstruct):
         if cstruct is col.null:
             return col.null
@@ -78,18 +86,22 @@ class ProjectNameType():
         shortname = re.sub(" ", "-", shortname)
         return ProjectName(name, shortname)
 
+
 class ProjectShortnameType():
+
     def deserialize(self, node, cstruct):
         if cstruct is col.null:
             return col.null
         col.Length(min=3, max=15)(node, cstruct)
         col.Regex(r'^[A-z][-A-z0-9]{2,}$',
-            msg='Project shortname must begin with a letter, can '
-                'contain letters, numbers, and dashes, and must be '
-                '3-15 characters in length.')(node, cstruct)
+                  msg='Project shortname must begin with a letter, can '
+                  'contain letters, numbers, and dashes, and must be '
+                  '3-15 characters in length.')(node, cstruct)
         return cstruct.lower()
 
+
 class Award():
+
     def __init__(self, nbhd):
         self.nbhd = nbhd
 
@@ -97,45 +109,56 @@ class Award():
         if cstruct is col.null:
             return col.null
         award = M.Award.query.find(dict(short=cstruct,
-            created_by_neighborhood_id=self.nbhd._id)).first()
+                                        created_by_neighborhood_id=self.nbhd._id)).first()
         if not award:
             # try to look up the award by _id
             award = M.Award.query.find(dict(_id=bson.ObjectId(cstruct),
-                created_by_neighborhood_id=self.nbhd._id)).first()
+                                            created_by_neighborhood_id=self.nbhd._id)).first()
         if not award:
             raise col.Invalid(node,
-                    'Invalid award "%s".' % cstruct)
+                              'Invalid award "%s".' % cstruct)
         return award
+
 
 class TroveTopics(col.SequenceSchema):
     trove_topics = col.SchemaNode(TroveCategory("Topic"))
 
+
 class TroveLicenses(col.SequenceSchema):
     trove_license = col.SchemaNode(TroveCategory("License"))
+
 
 class TroveDatabases(col.SequenceSchema):
     trove_databases = col.SchemaNode(TroveCategory("Database Environment"))
 
+
 class TroveStatuses(col.SequenceSchema):
     trove_statuses = col.SchemaNode(TroveCategory("Development Status"))
+
 
 class TroveAudiences(col.SequenceSchema):
     trove_audience = col.SchemaNode(TroveCategory("Intended Audience"))
 
+
 class TroveOSes(col.SequenceSchema):
     trove_oses = col.SchemaNode(TroveCategory("Operating System"))
+
 
 class TroveLanguages(col.SequenceSchema):
     trove_languages = col.SchemaNode(TroveCategory("Programming Language"))
 
+
 class TroveTranslations(col.SequenceSchema):
     trove_translations = col.SchemaNode(TroveCategory("Translations"))
+
 
 class TroveUIs(col.SequenceSchema):
     trove_uis = col.SchemaNode(TroveCategory("User Interface"))
 
+
 class Labels(col.SequenceSchema):
     label = col.SchemaNode(col.Str())
+
 
 class Project(col.MappingSchema):
     name = col.SchemaNode(ProjectNameType())
@@ -147,7 +170,8 @@ class Project(col.MappingSchema):
     labels = Labels(missing=[])
     external_homepage = col.SchemaNode(col.Str(), missing='')
     trove_root_databases = TroveDatabases(missing=None)
-    trove_developmentstatuses = TroveStatuses(validator=col.Length(max=6), missing=None)
+    trove_developmentstatuses = TroveStatuses(
+        validator=col.Length(max=6), missing=None)
     trove_audiences = TroveAudiences(validator=col.Length(max=6), missing=None)
     trove_licenses = TroveLicenses(validator=col.Length(max=6), missing=None)
     trove_oses = TroveOSes(missing=None)
@@ -155,6 +179,7 @@ class Project(col.MappingSchema):
     trove_topics = TroveTopics(validator=col.Length(max=3), missing=None)
     trove_natlanguages = TroveTranslations(missing=None)
     trove_environments = TroveUIs(missing=None)
+
 
 def valid_shortname(project):
     if project.shortname:
@@ -164,25 +189,31 @@ def valid_shortname(project):
         return True
     else:
         return 'Project shortname "%s" must be between 3 and 15 characters' \
-                % project.name.shortname
+            % project.name.shortname
+
 
 class Projects(col.SequenceSchema):
     project = Project(validator=col.Function(valid_shortname))
 
+
 class Object(object):
+
     def __init__(self, d):
         self.__dict__.update(d)
 
+
 def trove_ids(orig, new_):
-    if new_ is None: return orig
+    if new_ is None:
+        return orig
     return list(set(t._id for t in list(new_)))
+
 
 def create_project(p, nbhd, user, options):
     worker_name = multiprocessing.current_process().name
     M.session.artifact_orm_session._get().skip_mod_date = True
     shortname = p.shortname or p.name.shortname
     project = M.Project.query.get(shortname=shortname,
-            neighborhood_id=nbhd._id)
+                                  neighborhood_id=nbhd._id)
     project_template = nbhd.get_project_template()
 
     if project and not (options.update and p.shortname):
@@ -196,8 +227,8 @@ def create_project(p, nbhd, user, options):
         try:
                 project = nbhd.register_project(shortname,
                                                 p.admin,
-                                            project_name=p.name.name,
-                                            private_project=p.private)
+                                                project_name=p.name.name,
+                                                private_project=p.private)
         except Exception, e:
             log.error('[%s] %s' % (worker_name, str(e)))
             return 0
@@ -217,9 +248,9 @@ def create_project(p, nbhd, user, options):
                     tool_options[k] = string.Template(v).safe_substitute(
                         project.root_project.__dict__.get('root_project', {}))
             project.install_app(tool,
-                    mount_label=tool_config['label'],
-                    mount_point=tool_config['mount_point'],
-                    **tool_options)
+                                mount_label=tool_config['label'],
+                                mount_point=tool_config['mount_point'],
+                                **tool_options)
 
     project.summary = p.summary
     project.short_description = p.description
@@ -228,21 +259,27 @@ def create_project(p, nbhd, user, options):
     # These properties may have been populated by nbhd template defaults in
     # register_project(). Overwrite if we have data, otherwise keep defaults.
     project.labels = p.labels or project.labels
-    project.trove_root_database = trove_ids(project.trove_root_database, p.trove_root_databases)
-    project.trove_developmentstatus = trove_ids(project.trove_developmentstatus, p.trove_developmentstatuses)
-    project.trove_audience = trove_ids(project.trove_audience, p.trove_audiences)
+    project.trove_root_database = trove_ids(
+        project.trove_root_database, p.trove_root_databases)
+    project.trove_developmentstatus = trove_ids(
+        project.trove_developmentstatus, p.trove_developmentstatuses)
+    project.trove_audience = trove_ids(
+        project.trove_audience, p.trove_audiences)
     project.trove_license = trove_ids(project.trove_license, p.trove_licenses)
     project.trove_os = trove_ids(project.trove_os, p.trove_oses)
-    project.trove_language = trove_ids(project.trove_language, p.trove_languages)
+    project.trove_language = trove_ids(
+        project.trove_language, p.trove_languages)
     project.trove_topic = trove_ids(project.trove_topic, p.trove_topics)
-    project.trove_natlanguage = trove_ids(project.trove_natlanguage, p.trove_natlanguages)
-    project.trove_environment = trove_ids(project.trove_environment, p.trove_environments)
+    project.trove_natlanguage = trove_ids(
+        project.trove_natlanguage, p.trove_natlanguages)
+    project.trove_environment = trove_ids(
+        project.trove_environment, p.trove_environments)
 
     for a in p.awards:
         M.AwardGrant(app_config_id=bson.ObjectId(),
-                award_id=a._id,
-                granted_to_project_id=project._id,
-                granted_by_neighborhood_id=nbhd._id)
+                     award_id=a._id,
+                     granted_to_project_id=project._id,
+                     granted_by_neighborhood_id=nbhd._id)
     project.notifications_disabled = False
     with h.push_config(c, project=project, user=user):
         ThreadLocalORMSession.flush_all()
@@ -250,11 +287,13 @@ def create_project(p, nbhd, user, options):
     session(project).clear()
     return 0
 
+
 def create_projects(projects, nbhd, user, options):
     for p in projects:
         r = create_project(Object(p), nbhd, user, options)
         if r != 0:
             sys.exit(r)
+
 
 def main(options):
     log.addHandler(logging.StreamHandler(sys.stdout))
@@ -264,7 +303,8 @@ def main(options):
     nbhd = M.Neighborhood.query.get(name=options.neighborhood)
     if not nbhd:
         return 'Invalid neighborhood "%s".' % options.neighborhood
-    admin = M.User.query.get(username=config.get('sfx.api.siteadmin', 'sf-robot'))
+    admin = M.User.query.get(
+        username=config.get('sfx.api.siteadmin', 'sf-robot'))
 
     data = json.load(open(options.file, 'r'))
     project = Project()
@@ -279,36 +319,39 @@ def main(options):
     jobs = []
     for i in range(options.nprocs):
         p = multiprocessing.Process(target=create_projects,
-                args=(chunks[i], nbhd, admin, options), name='worker-' + str(i+1))
+                                    args=(chunks[i], nbhd, admin, options), name='worker-' + str(i + 1))
         jobs.append(p)
         p.start()
 
     for j in jobs:
         j.join()
-        if j.exitcode <> 0: return j.exitcode
+        if j.exitcode <> 0:
+            return j.exitcode
     return 0
+
 
 def parse_options():
     import argparse
     parser = argparse.ArgumentParser(
-            description='Import Allura project(s) from JSON file')
+        description='Import Allura project(s) from JSON file')
     parser.add_argument('file', metavar='JSON_FILE', type=str,
-            help='Path to JSON file containing project data.')
+                        help='Path to JSON file containing project data.')
     parser.add_argument('neighborhood', metavar='NEIGHBORHOOD', type=str,
-            help='Destination Neighborhood shortname.')
+                        help='Destination Neighborhood shortname.')
     parser.add_argument('--log', dest='log_level', default='INFO',
-            help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
+                        help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
     parser.add_argument('--update', dest='update', default=False,
-            action='store_true',
-            help='Update existing projects. Without this option, existing '
-                 'projects will be skipped.')
+                        action='store_true',
+                        help='Update existing projects. Without this option, existing '
+                        'projects will be skipped.')
     parser.add_argument('--ensure-tools', dest='ensure_tools', default=False,
-            action='store_true',
-            help='Check nbhd project template for default tools, and install '
-                 'them on the project(s) if not already installed.')
-    parser.add_argument('--nprocs', '-n', action='store', dest='nprocs', type=int,
-            help='Number of processes to divide the work among.',
-            default=multiprocessing.cpu_count())
+                        action='store_true',
+                        help='Check nbhd project template for default tools, and install '
+                        'them on the project(s) if not already installed.')
+    parser.add_argument(
+        '--nprocs', '-n', action='store', dest='nprocs', type=int,
+        help='Number of processes to divide the work among.',
+        default=multiprocessing.cpu_count())
     return parser.parse_args()
 
 if __name__ == '__main__':

@@ -42,7 +42,9 @@ from forgewiki import model
 # CommentController methods exposed:
 #     reply, delete
 
+
 class TestRootController(TestController):
+
     def setUp(self):
         super(TestRootController, self).setUp()
         self.setup_with_tools()
@@ -57,7 +59,7 @@ class TestRootController(TestController):
         assert 'Create Page' in r
         # No 'Create Page' button if user doesn't have 'create' perm
         r = self.app.get('/wiki/tést/',
-                extra_environ=dict(username='*anonymous')).follow()
+                         extra_environ=dict(username='*anonymous')).follow()
         assert 'Create Page' not in r
 
     def test_root_markdown_syntax(self):
@@ -88,8 +90,10 @@ class TestRootController(TestController):
     @patch('allura.lib.search.search')
     def test_search(self, search):
         r = self.app.get('/wiki/search?q=test')
-        assert_in('<a href="/wiki/search?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
-        assert_in('<a href="/wiki/search?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
+        assert_in(
+            '<a href="/wiki/search?q=test&amp;sort=score+asc" class="strong">relevance</a>', r)
+        assert_in(
+            '<a href="/wiki/search?q=test&amp;sort=mod_date_dt+desc" class="">date</a>', r)
 
         p = M.Project.query.get(shortname='test')
         r = self.app.get('/wiki/search?q=test&sort=score+asc')
@@ -102,7 +106,7 @@ class TestRootController(TestController):
             'qf': 'title^2 text',
             'pf': 'title^2 text',
             'fq': [
-                'project_id_s:%s'  % p._id,
+                'project_id_s:%s' % p._id,
                 'mount_point_s:wiki',
                 '-deleted_b:true',
                 'type_s:("WikiPage" OR "WikiPage Snapshot")',
@@ -115,8 +119,10 @@ class TestRootController(TestController):
         }
         search.assert_called_with('test', **solr_query)
 
-        r = self.app.get('/wiki/search?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
-        solr_query['fq'][3] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
+        r = self.app.get(
+            '/wiki/search?q=test&search_comments=on&history=on&sort=mod_date_dt+desc')
+        solr_query['fq'][
+            3] = 'type_s:("WikiPage" OR "WikiPage Snapshot" OR "Post")'
         solr_query['fq'].remove('is_history_b:False')
         solr_query['sort'] = 'mod_date_dt desc'
         search.assert_called_with('test', **solr_query)
@@ -169,10 +175,10 @@ class TestRootController(TestController):
         response = self.app.post(
             '/wiki/foo-bar/update',
             params={
-                'title':'foo/bar',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'}).follow()
+                'title': 'foo/bar',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'}).follow()
         assert 'foo-bar' in response
         assert 'foo-bar' in response.request.url
 
@@ -180,10 +186,10 @@ class TestRootController(TestController):
         r = self.app.post(
             '/wiki/page.dot/update',
             params={
-                'title':'page.dot',
-                'text':'text1',
-                'labels':'',
-                'viewable_by-0.id':'all'}).follow()
+                'title': 'page.dot',
+                'text': 'text1',
+                'labels': '',
+                'viewable_by-0.id': 'all'}).follow()
         assert 'page.dot' in r
 
     def test_subpage_attempt(self):
@@ -191,10 +197,10 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'text1',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'text1',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         assert '/p/test/wiki/Home/' in self.app.get('/wiki/tést/Home/')
         self.app.get('/wiki/tést/notthere/', status=404)
 
@@ -203,41 +209,42 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'text1',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'text1',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'text2',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'text2',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         response = self.app.get('/wiki/tést/history')
         assert 'tést' in response
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you can revert to an old revison, but not the current one
-        assert response.html.find('a',{'href':'./revert?version=1'})
-        assert not response.html.find('a',{'href':'./revert?version=2'})
-        response = self.app.get('/wiki/tést/history', extra_environ=dict(username='*anonymous'))
+        assert response.html.find('a', {'href': './revert?version=1'})
+        assert not response.html.find('a', {'href': './revert?version=2'})
+        response = self.app.get('/wiki/tést/history',
+                                extra_environ=dict(username='*anonymous'))
         # two revisions are shown
         assert '2 by Test Admin' in response
         assert '1 by Test Admin' in response
         # you cannot revert to any revision
-        assert not response.html.find('a',{'href':'./revert?version=1'})
-        assert not response.html.find('a',{'href':'./revert?version=2'})
+        assert not response.html.find('a', {'href': './revert?version=1'})
+        assert not response.html.find('a', {'href': './revert?version=2'})
 
     def test_page_diff(self):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         self.app.post('/wiki/tést/revert', params=dict(version='1'))
         response = self.app.get('/wiki/tést/')
         assert 'Subscribe' in response
@@ -322,10 +329,10 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/TEST/update',
             params={
-                'title':'TEST',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'TEST',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         response = self.app.get('/wiki/TEST/raw')
         assert 'TEST' in response
 
@@ -333,10 +340,10 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': '',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get('/wiki/tést/')
@@ -347,10 +354,10 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         response = self.app.post('/wiki/tést/revert', params=dict(version='1'))
         assert '.' in response.json['location']
         response = self.app.get('/wiki/tést/')
@@ -362,10 +369,10 @@ class TestRootController(TestController):
         response = self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         assert_equal(spam_checker.check.call_args[0][0], 'sometext')
         assert 'tést' in response
 
@@ -374,18 +381,18 @@ class TestRootController(TestController):
         response = self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'yellow,green',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': 'yellow,green',
+                'viewable_by-0.id': 'all'})
         assert 'tést' in response
         response = self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'yellow',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': 'yellow',
+                'viewable_by-0.id': 'all'})
         assert 'tést' in response
 
     def test_page_label_count(self):
@@ -413,12 +420,13 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         content = file(__file__).read()
-        self.app.post('/wiki/tést/attach', upload_files=[('file_info', 'test_root.py', content)])
+        self.app.post('/wiki/tést/attach',
+                      upload_files=[('file_info', 'test_root.py', content)])
         response = self.app.get('/wiki/tést/')
         assert 'test_root.py' in response
 
@@ -426,12 +434,13 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         content = file(__file__).read()
-        self.app.post('/wiki/tést/attach', upload_files=[('file_info', 'test1.py', content),('file_info', 'test2.py', content)])
+        self.app.post('/wiki/tést/attach',
+                      upload_files=[('file_info', 'test1.py', content), ('file_info', 'test2.py', content)])
         response = self.app.get('/wiki/tést/')
         assert 'test1.py' in response
         assert 'test2.py' in response
@@ -440,10 +449,10 @@ class TestRootController(TestController):
         self.app.post(
             '/wiki/tést/update',
             params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+                'title': 'tést',
+                'text': 'sometext',
+                'labels': '',
+                'viewable_by-0.id': 'all'})
         file_name = 'test_root.py'
         file_data = file(__file__).read()
         upload = ('file_info', file_name, file_data)
@@ -454,12 +463,13 @@ class TestRootController(TestController):
 
     def test_new_image_attachment_content(self):
         self.app.post('/wiki/TEST/update', params={
-                'title':'TEST',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'TEST',
+            'text': 'sometext',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         file_name = 'neo-icon-set-454545-256x350.png'
-        file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+        file_path = os.path.join(
+            allura.__path__[0], 'nf', 'allura', 'images', file_name)
         file_data = file(file_path).read()
         upload = ('file_info', file_name, file_data)
         self.app.post('/wiki/TEST/attach', upload_files=[upload])
@@ -468,18 +478,19 @@ class TestRootController(TestController):
         filename = page.attachments[0].filename
 
         uploaded = PIL.Image.open(file_path)
-        r = self.app.get('/wiki/TEST/attachment/'+filename)
+        r = self.app.get('/wiki/TEST/attachment/' + filename)
         downloaded = PIL.Image.open(StringIO.StringIO(r.body))
         assert uploaded.size == downloaded.size
-        r = self.app.get('/wiki/TEST/attachment/'+filename+'/thumb')
+        r = self.app.get('/wiki/TEST/attachment/' + filename + '/thumb')
 
         thumbnail = PIL.Image.open(StringIO.StringIO(r.body))
-        assert thumbnail.size == (255,255)
+        assert thumbnail.size == (255, 255)
 
         # Make sure thumbnail is absent
         r = self.app.get('/wiki/TEST/')
-        img_srcs = [ i['src'] for i in r.html.findAll('img') ]
-        assert ('/p/test/wiki/TEST/attachment/' + filename) not in img_srcs, img_srcs
+        img_srcs = [i['src'] for i in r.html.findAll('img')]
+        assert ('/p/test/wiki/TEST/attachment/' +
+                filename) not in img_srcs, img_srcs
 
     def test_sidebar_static_page(self):
         response = self.app.get('/wiki/tést/')
@@ -491,20 +502,20 @@ class TestRootController(TestController):
         assert 'Edit TEST' in response
         assert 'Related' not in response
         self.app.post('/wiki/TEST/update', params={
-                'title':'TEST',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'TEST',
+            'text': 'sometext',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         self.app.post('/wiki/aaa/update', params={
-                'title':'aaa',
-                'text':'',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'aaa',
+            'text': '',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         self.app.post('/wiki/bbb/update', params={
-                'title':'bbb',
-                'text':'',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'bbb',
+            'text': '',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
 
         h.set_context('test', 'wiki', neighborhood='Projects')
         a = model.Page.query.find(dict(title='aaa')).first()
@@ -523,56 +534,63 @@ class TestRootController(TestController):
 
     def test_show_discussion(self):
         self.app.post('/wiki/tést/update', params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'tést',
+            'text': 'sometext',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         wiki_page = self.app.get('/wiki/tést/')
-        assert wiki_page.html.find('div',{'id':'new_post_holder'})
-        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
+        assert wiki_page.html.find('div', {'id': 'new_post_holder'})
+        options_admin = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_discussion'].checked
         options_admin.form['show_discussion'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
+        options_admin2 = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_discussion'].checked
         wiki_page2 = self.app.get('/wiki/tést/')
-        assert not wiki_page2.html.find('div',{'id':'new_post_holder'})
+        assert not wiki_page2.html.find('div', {'id': 'new_post_holder'})
 
     def test_show_left_bar(self):
         self.app.post('/wiki/tést/update', params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'tést',
+            'text': 'sometext',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         wiki_page = self.app.get('/wiki/tést/')
-        assert wiki_page.html.find('ul',{'class':'sidebarmenu'})
-        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
+        assert wiki_page.html.find('ul', {'class': 'sidebarmenu'})
+        options_admin = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_left_bar'].checked
         options_admin.form['show_left_bar'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
+        options_admin2 = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_left_bar'].checked
-        wiki_page2 = self.app.get('/wiki/tést/',extra_environ=dict(username='*anonymous'))
-        assert not wiki_page2.html.find('ul',{'class':'sidebarmenu'})
+        wiki_page2 = self.app.get(
+            '/wiki/tést/', extra_environ=dict(username='*anonymous'))
+        assert not wiki_page2.html.find('ul', {'class': 'sidebarmenu'})
         wiki_page3 = self.app.get('/wiki/tést/')
-        assert not wiki_page3.html.find('ul',{'class':'sidebarmenu'})
+        assert not wiki_page3.html.find('ul', {'class': 'sidebarmenu'})
 
     def test_show_metadata(self):
         self.app.post('/wiki/tést/update', params={
-                'title':'tést',
-                'text':'sometext',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'tést',
+            'text': 'sometext',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         wiki_page = self.app.get('/wiki/tést/')
-        assert wiki_page.html.find('div',{'class':'editbox'})
-        options_admin = self.app.get('/admin/wiki/options', validate_chunk=True)
+        assert wiki_page.html.find('div', {'class': 'editbox'})
+        options_admin = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert options_admin.form['show_right_bar'].checked
         options_admin.form['show_right_bar'].checked = False
         options_admin.form.submit()
-        options_admin2 = self.app.get('/admin/wiki/options', validate_chunk=True)
+        options_admin2 = self.app.get(
+            '/admin/wiki/options', validate_chunk=True)
         assert not options_admin2.form['show_right_bar'].checked
         wiki_page2 = self.app.get('/wiki/tést/')
-        assert not wiki_page2.html.find('div',{'class':'editbox'})
+        assert not wiki_page2.html.find('div', {'class': 'editbox'})
 
     def test_edit_mount_label(self):
         r = self.app.get('/admin/wiki/edit_label', validate_chunk=True)
@@ -585,15 +603,15 @@ class TestRootController(TestController):
     def test_page_links_are_colored(self):
         self.app.get('/wiki/space%20page/')
         params = {
-            'title':'space page',
-            'text':'''There is a space in the title!''',
-            'labels':'',
-            'viewable_by-0.id':'all'}
+            'title': 'space page',
+            'text': '''There is a space in the title!''',
+            'labels': '',
+            'viewable_by-0.id': 'all'}
         self.app.post('/wiki/space%20page/update', params=params)
         self.app.get('/wiki/TEST/')
         params = {
-            'title':'TEST',
-            'text':'''
+            'title': 'TEST',
+            'text': '''
 * Here is a link to [this page](TEST)
 * Here is a link to [another page](Some page which does not exist)
 * Here is a link to [space page space](space page)
@@ -605,62 +623,65 @@ class TestRootController(TestController):
 * Here is a link to [another attach](TEST/attachment/attach.txt)
 * Here is a link to [attach](TEST/attachment/test_root.py)
 ''',
-            'labels':'',
-            'viewable_by-0.id':'all'}
+            'labels': '',
+            'viewable_by-0.id': 'all'}
         self.app.post('/wiki/TEST/update', params=params)
         content = file(__file__).read()
-        self.app.post('/wiki/TEST/attach', upload_files=[('file_info', 'test_root.py', content)])
+        self.app.post('/wiki/TEST/attach',
+                      upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/wiki/TEST/')
         found_links = 0
         for link in r.html.findAll('a'):
             if link.contents == ['this page']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['another page']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['space page space']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['space page escape']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['[TEST]']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['[Some page which does not exist]']:
                 assert 'notfound' in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['[space page]']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['[space%20page]']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['another attach']:
                 assert 'notfound' in link.get('class', '')
-                found_links +=1
+                found_links += 1
             if link.contents == ['attach']:
                 assert 'notfound' not in link.get('class', '')
-                found_links +=1
+                found_links += 1
         assert found_links == 10, 'Wrong number of links found'
 
     def test_home_rename(self):
-        assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get('/p/test/wiki/')
+        assert 'The resource was found at http://localhost/p/test/wiki/Home/;' in self.app.get(
+            '/p/test/wiki/')
         req = self.app.get('/p/test/wiki/Home/edit')
         req.forms[1]['title'].value = 'new_title'
         req.forms[1].submit()
-        assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get('/p/test/wiki/')
+        assert 'The resource was found at http://localhost/p/test/wiki/new_title/;' in self.app.get(
+            '/p/test/wiki/')
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
     def test_cached_html(self):
         """Ensure cached html is not escaped."""
         html = '<p><span>My Html</span></p>'
         self.app.post('/wiki/cache/update', params={
-                'title': 'cache',
-                'text': html,
-                'labels': '',
-                'viewable_by-0.id': 'all'})
+            'title': 'cache',
+            'text': html,
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         # first request caches html, second serves from cache
         r = self.app.get('/wiki/cache/')
         r = self.app.get('/wiki/cache/')
@@ -668,15 +689,15 @@ class TestRootController(TestController):
 
     def test_page_delete(self):
         self.app.post('/wiki/aaa/update', params={
-                'title':'aaa',
-                'text':'',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'aaa',
+            'text': '',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         self.app.post('/wiki/bbb/update', params={
-                'title':'bbb',
-                'text':'',
-                'labels':'',
-                'viewable_by-0.id':'all'})
+            'title': 'bbb',
+            'text': '',
+            'labels': '',
+            'viewable_by-0.id': 'all'})
         response = self.app.get('/wiki/browse_pages/')
         assert 'aaa' in response
         assert 'bbb' in response
@@ -688,21 +709,21 @@ class TestRootController(TestController):
     def test_mailto_links(self):
         self.app.get('/wiki/test_mailto/')
         params = {
-            'title':'test_mailto',
-            'text':'''
+            'title': 'test_mailto',
+            'text': '''
 * Automatic mailto #1 <darth.vader@deathstar.org>
 * Automatic mailto #2 <mailto:luke.skywalker@tatooine.org>
 * Handmaid mailto <a href="mailto:yoda@jedi.org">Email Yoda</a>
 ''',
-            'labels':'',
-            'viewable_by-0.id':'all'}
+            'labels': '',
+            'viewable_by-0.id': 'all'}
         self.app.post('/wiki/test_mailto/update', params=params)
         r = self.app.get('/wiki/test_mailto/')
         mailto_links = 0
         for link in r.html.findAll('a'):
             if link.get('href') == 'mailto:darth.vader@deathstar.org':
                 assert 'notfound' not in link.get('class', '')
-                mailto_links +=1
+                mailto_links += 1
             if link.get('href') == 'mailto:luke.skywalker@tatooine.org':
                 assert 'notfound' not in link.get('class', '')
                 mailto_links += 1

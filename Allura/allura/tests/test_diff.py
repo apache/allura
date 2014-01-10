@@ -27,8 +27,8 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
 
     def test_render_change(self):
         html = self.diff._render_change(
-                'aline', 'aline <span class="diff-add">bline</span>',
-                1, 2,'aclass', 'bclass')
+            'aline', 'aline <span class="diff-add">bline</span>',
+            1, 2, 'aclass', 'bclass')
         expected = '''
 <tr>
   <td class="lineno">1</td>

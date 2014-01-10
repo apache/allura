@@ -41,6 +41,7 @@ from allura.lib import helpers as h
 from allura.tests import TestController
 from alluratest.controller import setup_global_objects
 
+
 def setUp():
     controller = TestController()
     controller.setUp()
@@ -54,6 +55,7 @@ def setUp():
 
 def tearDown():
     ThreadLocalORMSession.close_all()
+
 
 @with_setup(setUp, tearDown)
 def test_discussion_methods():
@@ -74,6 +76,7 @@ def test_discussion_methods():
     d.delete()
     ThreadLocalORMSession.flush_all()
     ThreadLocalORMSession.close_all()
+
 
 @with_setup(setUp, tearDown)
 def test_thread_methods():
@@ -120,6 +123,7 @@ def test_thread_methods():
     assert len(t.find_posts()) == 0
     t.delete()
 
+
 @with_setup(setUp, tearDown)
 def test_thread_new():
     with mock.patch('allura.model.discuss.h.nonce') as nonce:
@@ -136,6 +140,7 @@ def test_thread_new():
         assert_equals(t2._id, 'beefdead')
         assert_equals(t1_2.subject, 'Test Thread One')
         assert_equals(t2_2.subject, 'Test Thread Two')
+
 
 @with_setup(setUp, tearDown)
 def test_post_methods():
@@ -170,20 +175,21 @@ def test_post_methods():
     p.delete()
     assert t.num_replies == 0
 
+
 @with_setup(setUp, tearDown)
 def test_attachment_methods():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p_att = p.attach('foo.text', StringIO('Hello, world!'),
-                discussion_id=d._id,
-                thread_id=t._id,
-                post_id=p._id)
+                     discussion_id=d._id,
+                     thread_id=t._id,
+                     post_id=p._id)
     t_att = p.attach('foo2.text', StringIO('Hello, thread!'),
-                discussion_id=d._id,
-                thread_id=t._id)
+                     discussion_id=d._id,
+                     thread_id=t._id)
     d_att = p.attach('foo3.text', StringIO('Hello, discussion!'),
-                discussion_id=d._id)
+                     discussion_id=d._id)
 
     ThreadLocalORMSession.flush_all()
     assert p_att.post == p
@@ -196,14 +202,16 @@ def test_attachment_methods():
     # Test notification in mail
     t = M.Thread.new(discussion_id=d._id, subject='Test comment notification')
     fs = FieldStorage()
-    fs.name='file_info'
-    fs.filename='fake.txt'
+    fs.name = 'file_info'
+    fs.filename = 'fake.txt'
     fs.type = 'text/plain'
-    fs.file=StringIO('this is the content of the fake file\n')
-    p = t.post(text=u'test message', forum= None, subject= '', file_info=fs)
+    fs.file = StringIO('this is the content of the fake file\n')
+    p = t.post(text=u'test message', forum=None, subject='', file_info=fs)
     ThreadLocalORMSession.flush_all()
-    n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
+    n = M.Notification.query.get(
+        subject=u'[test:wiki] Test comment notification')
     assert '\nAttachment: fake.txt (37 Bytes; text/plain)' in n.text
+
 
 @with_setup(setUp, tearDown())
 def test_multiple_attachments():
@@ -211,12 +219,12 @@ def test_multiple_attachments():
     test_file1.name = 'file_info'
     test_file1.filename = 'test1.txt'
     test_file1.type = 'text/plain'
-    test_file1.file=StringIO('test file1\n')
+    test_file1.file = StringIO('test file1\n')
     test_file2 = FieldStorage()
     test_file2.name = 'file_info'
     test_file2.filename = 'test2.txt'
     test_file2.type = 'text/plain'
-    test_file2.file=StringIO('test file2\n')
+    test_file2.file = StringIO('test file2\n')
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     test_post = t.post('test post')
@@ -227,13 +235,14 @@ def test_multiple_attachments():
     assert 'test1.txt' in [attaches[0].filename, attaches[1].filename]
     assert 'test2.txt' in [attaches[0].filename, attaches[1].filename]
 
+
 @with_setup(setUp, tearDown)
 def test_add_attachment():
     test_file = FieldStorage()
     test_file.name = 'file_info'
     test_file.filename = 'test.txt'
     test_file.type = 'text/plain'
-    test_file.file=StringIO('test file\n')
+    test_file.file = StringIO('test file\n')
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     test_post = t.post('test post')
@@ -243,6 +252,7 @@ def test_add_attachment():
     attach = test_post.attachments[0]
     assert attach.filename == 'test.txt', attach.filename
     assert attach.content_type == 'text/plain', attach.content_type
+
 
 def test_notification_two_attaches():
     d = M.Discussion(shortname='test', name='test')
@@ -259,8 +269,10 @@ def test_notification_two_attaches():
     fs2.file = StringIO('this is the content of the fake file\n')
     t.post(text=u'test message', forum=None, subject='', file_info=[fs1, fs2])
     ThreadLocalORMSession.flush_all()
-    n = M.Notification.query.get(subject=u'[test:wiki] Test comment notification')
+    n = M.Notification.query.get(
+        subject=u'[test:wiki] Test comment notification')
     assert '\nAttachment: fake.txt (37 Bytes; text/plain)  fake2.txt (37 Bytes; text/plain)' in n.text
+
 
 @with_setup(setUp, tearDown)
 def test_discussion_delete():
@@ -268,9 +280,9 @@ def test_discussion_delete():
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
-                discussion_id=d._id,
-                thread_id=t._id,
-                post_id=p._id)
+             discussion_id=d._id,
+             thread_id=t._id,
+             post_id=p._id)
     r = M.ArtifactReference.from_artifact(d)
     rid = d.index_id()
     ThreadLocalORMSession.flush_all()
@@ -278,17 +290,19 @@ def test_discussion_delete():
     ThreadLocalORMSession.flush_all()
     assert_equals(M.ArtifactReference.query.find(dict(_id=rid)).count(), 0)
 
+
 @with_setup(setUp, tearDown)
 def test_thread_delete():
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
-                discussion_id=d._id,
-                thread_id=t._id,
-                post_id=p._id)
+             discussion_id=d._id,
+             thread_id=t._id,
+             post_id=p._id)
     ThreadLocalORMSession.flush_all()
     t.delete()
+
 
 @with_setup(setUp, tearDown)
 def test_post_delete():
@@ -296,11 +310,12 @@ def test_post_delete():
     t = M.Thread.new(discussion_id=d._id, subject='Test Thread')
     p = t.post('This is a post')
     p.attach('foo.text', StringIO(''),
-                discussion_id=d._id,
-                thread_id=t._id,
-                post_id=p._id)
+             discussion_id=d._id,
+             thread_id=t._id,
+             post_id=p._id)
     ThreadLocalORMSession.flush_all()
     p.delete()
+
 
 @with_setup(setUp, tearDown)
 def test_post_permission_check():
@@ -397,15 +412,17 @@ def test_post_notify():
         else:
             assert False, 'send_simple must not be called'
 
+
 @with_setup(setUp, tearDown)
 @patch('allura.model.discuss.c.project.users_with_role')
 def test_is_spam_for_admin(users):
-    users.return_value = [c.user,]
+    users.return_value = [c.user, ]
     d = M.Discussion(shortname='test', name='test')
     t = M.Thread(discussion_id=d._id, subject='Test Thread')
     t.post('This is a post')
     post = M.Post.query.get(text='This is a post')
     assert not t.is_spam(post), t.is_spam(post)
+
 
 @with_setup(setUp, tearDown)
 @patch('allura.model.discuss.c.project.users_with_role')

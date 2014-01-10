@@ -17,14 +17,17 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import re, sys
+import re
+import sys
 
 signoff = re.compile('^Signed-off-by: (.*)$', flags=re.MULTILINE)
 bug = re.compile('\[(?:.*:)?#\d+\]')
 
+
 def deny_commit(message):
     print message
     sys.exit(1)
+
 
 def main():
     # argv[1] is the name of the file holding the commit message.

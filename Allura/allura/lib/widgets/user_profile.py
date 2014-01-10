@@ -17,14 +17,13 @@
 
 import ew as ew_core
 import ew.jinja2_ew as ew
-from formencode import  validators as fev
+from formencode import validators as fev
 from .forms import ForgeForm
 
 
 class SendMessageForm(ForgeForm):
     template = 'jinja:allura.ext.user_profile:templates/send_message_form.html'
     submit_text = 'Send Message'
-
 
     class fields(ew_core.NameList):
         subject = ew.TextField(

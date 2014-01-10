@@ -25,25 +25,27 @@ from allura.lib import plugin
 from allura.model.session import main_orm_session
 from allura.model import Stats
 
-class UserStats(Stats):
-    class __mongometa__:
-        name='userstats'
-        session = main_orm_session
-        unique_indexes = [ '_id', 'user_id']
 
-    tot_logins_count = FieldProperty(int, if_missing = 0)
+class UserStats(Stats):
+
+    class __mongometa__:
+        name = 'userstats'
+        session = main_orm_session
+        unique_indexes = ['_id', 'user_id']
+
+    tot_logins_count = FieldProperty(int, if_missing=0)
     last_login = FieldProperty(datetime)
-    lastmonthlogins=FieldProperty([datetime])
+    lastmonthlogins = FieldProperty([datetime])
     user_id = FieldProperty(S.ObjectId)
 
     @classmethod
     def create(cls, user):
         auth_provider = plugin.AuthenticationProvider.get(request)
         reg_date = auth_provider.user_registration_date(user)
-        stats = cls.query.get(user_id = user._id)
+        stats = cls.query.get(user_id=user._id)
         if stats:
             return stats
-        stats = cls(user_id=user._id, registration_date = reg_date)
+        stats = cls(user_id=user._id, registration_date=reg_date)
         user.stats_id = stats._id
         return stats
 
@@ -64,5 +66,5 @@ class UserStats(Stats):
         self.tot_logins_count += 1
         self.lastmonthlogins.append(login_datetime)
         self.checkOldArtifacts()
-        
+
 Mapper.compile_all()

@@ -39,25 +39,25 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from tg import config as tg_config
 
 from allura.model import (
-        ACE,
-        DENY_ALL,
+    ACE,
+    DENY_ALL,
 
-        AppConfig,
-        Artifact,
-        BaseAttachment,
-        Feed,
-        Mailbox,
-        MovedArtifact,
-        Notification,
-        ProjectRole,
-        Snapshot,
-        Thread,
-        User,
-        VersionedArtifact,
-        VotableArtifact,
+    AppConfig,
+    Artifact,
+    BaseAttachment,
+    Feed,
+    Mailbox,
+    MovedArtifact,
+    Notification,
+    ProjectRole,
+    Snapshot,
+    Thread,
+    User,
+    VersionedArtifact,
+    VotableArtifact,
 
-        artifact_orm_session,
-        project_orm_session,
+    artifact_orm_session,
+    project_orm_session,
 )
 from allura.model.timeline import ActivityObject
 from allura.model.notification import MailFooter
@@ -85,29 +85,32 @@ config = utils.ConfigProxy(
     common_suffix='forgemail.domain',
     new_solr='solr.use_new_types')
 
+
 class Globals(MappedClass):
 
     class __mongometa__:
         name = 'globals'
         session = project_orm_session
-        indexes = [ 'app_config_id' ]
+        indexes = ['app_config_id']
 
     type_s = 'Globals'
     _id = FieldProperty(schema.ObjectId)
-    app_config_id = ForeignIdProperty(AppConfig, if_missing=lambda:c.app.config._id)
+    app_config_id = ForeignIdProperty(
+        AppConfig, if_missing=lambda: c.app.config._id)
     app_config = RelationProperty(AppConfig, via='app_config_id')
     last_ticket_num = FieldProperty(int)
     status_names = FieldProperty(str)
     open_status_names = FieldProperty(str)
     closed_status_names = FieldProperty(str)
     milestone_names = FieldProperty(str, if_missing='')
-    custom_fields = FieldProperty([{str:None}])
-    _bin_counts = FieldProperty(schema.Deprecated) # {str:int})
+    custom_fields = FieldProperty([{str: None}])
+    _bin_counts = FieldProperty(schema.Deprecated)  # {str:int})
     _bin_counts_data = FieldProperty([dict(summary=str, hits=int)])
     _bin_counts_expire = FieldProperty(datetime)
     _bin_counts_invalidated = FieldProperty(datetime)
-    _milestone_counts = FieldProperty(schema.Deprecated) #[dict(name=str,hits=int,closed=int)])
-    _milestone_counts_expire = FieldProperty(schema.Deprecated) #datetime)
+    # [dict(name=str,hits=int,closed=int)])
+    _milestone_counts = FieldProperty(schema.Deprecated)
+    _milestone_counts_expire = FieldProperty(schema.Deprecated)  # datetime)
     show_in_search = FieldProperty({str: bool}, if_missing={'ticket_num': True,
                                                             'summary': True,
                                                             '_milestone': True,
@@ -122,7 +125,7 @@ class Globals(MappedClass):
     def next_ticket_num(self):
         gbl = Globals.query.find_and_modify(
             query=dict(app_config_id=self.app_config_id),
-            update={'$inc': { 'last_ticket_num': 1}},
+            update={'$inc': {'last_ticket_num': 1}},
             new=True)
         session(gbl).expunge(gbl)
         return gbl.last_ticket_num
@@ -145,7 +148,7 @@ class Globals(MappedClass):
 
     @property
     def not_closed_query(self):
-        return ' && '.join(['!status:'+name for name in self.set_of_closed_status_names])
+        return ' && '.join(['!status:' + name for name in self.set_of_closed_status_names])
 
     @property
     def not_closed_mongo_query(self):
@@ -154,11 +157,11 @@ class Globals(MappedClass):
 
     @property
     def closed_query(self):
-        return ' or '.join(['status:'+name for name in self.set_of_closed_status_names])
+        return ' or '.join(['status:' + name for name in self.set_of_closed_status_names])
 
     @property
     def milestone_fields(self):
-        return [ fld for fld in self.custom_fields if fld['type'] == 'milestone' ]
+        return [fld for fld in self.custom_fields if fld['type'] == 'milestone']
 
     def get_custom_field(self, name):
         for fld in self.custom_fields:
@@ -186,7 +189,9 @@ class Globals(MappedClass):
         for b in Bin.query.find(dict(
                 app_config_id=self.app_config_id)):
             if b.terms and '$USER' in b.terms:
-                continue  # skip queries with $USER variable, hits will be inconsistent for them
+                # skip queries with $USER variable, hits will be inconsistent
+                # for them
+                continue
             r = search_artifact(Ticket, b.terms, rows=0, short_timeout=False)
             hits = r is not None and r.hits or 0
             self._bin_counts_data.append(dict(summary=b.summary, hits=hits))
@@ -200,7 +205,8 @@ class Globals(MappedClass):
         if self._bin_counts_expire < datetime.utcnow():
             self.invalidate_bin_counts()
         for d in self._bin_counts_data:
-            if d['summary'] == name: return d
+            if d['summary'] == name:
+                return d
         return dict(summary=name, hits=0)
 
     def milestone_count(self, name):
@@ -265,13 +271,14 @@ class Globals(MappedClass):
             moved = ticket.move(tracker, notify=False)
             moved_tickets[moved._id] = moved
         mail = dict(
-            sender = c.project.app_instance(self.app_config).email_address,
-            fromaddr = str(c.user.email_address_header()),
-            reply_to = str(c.user.email_address_header()),
-            subject = '[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
+            sender=c.project.app_instance(self.app_config).email_address,
+            fromaddr=str(c.user.email_address_header()),
+            reply_to=str(c.user.email_address_header()),
+            subject='[%s:%s] Mass ticket moving by %s' % (c.project.shortname,
                                                           self.app_config.options.mount_point,
                                                           c.user.display_name))
-        tmpl = g.jinja2_env.get_template('forgetracker:data/mass_move_report.html')
+        tmpl = g.jinja2_env.get_template(
+            'forgetracker:data/mass_move_report.html')
 
         tmpl_context = {
             'original_tracker': '%s:%s' % (c.project.shortname,
@@ -282,44 +289,49 @@ class Globals(MappedClass):
         }
         for user in users:
             tmpl_context['tickets'] = ({
-                    'original_num': original_ticket_nums[_id],
-                    'destination_num': moved_tickets[_id].ticket_num,
-                    'summary': moved_tickets[_id].summary
-                } for _id in filtered.get(user._id, []))
+                'original_num': original_ticket_nums[_id],
+                'destination_num': moved_tickets[_id].ticket_num,
+                'summary': moved_tickets[_id].summary
+            } for _id in filtered.get(user._id, []))
             mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [str(user._id)]))
+                message_id=h.gen_message_id(),
+                text=tmpl.render(tmpl_context),
+                destinations=[str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
         if self.app_config.options.get('TicketMonitoringType') in (
                 'AllTicketChanges', 'AllPublicTicketChanges'):
-            monitoring_email = self.app_config.options.get('TicketMonitoringEmail')
+            monitoring_email = self.app_config.options.get(
+                'TicketMonitoringEmail')
             tmpl_context['tickets'] = [{
-                    'original_num': original_ticket_nums[_id],
-                    'destination_num': moved_tickets[_id].ticket_num,
-                    'summary': moved_tickets[_id].summary
-                } for _id, t in moved_tickets.iteritems()
-                  if (not t.private or
-                      self.app_config.options.get('TicketMonitoringType') ==
-                      'AllTicketChanges')]
+                'original_num': original_ticket_nums[_id],
+                'destination_num': moved_tickets[_id].ticket_num,
+                'summary': moved_tickets[_id].summary
+            } for _id, t in moved_tickets.iteritems()
+                if (not t.private or
+                    self.app_config.options.get('TicketMonitoringType') ==
+                    'AllTicketChanges')]
             if len(tmpl_context['tickets']) > 0:
                 mail.update(dict(
-                    message_id = h.gen_message_id(),
-                    text = tmpl.render(tmpl_context),
-                    destinations = [monitoring_email]))
+                    message_id=h.gen_message_id(),
+                    text=tmpl.render(tmpl_context),
+                    destinations=[monitoring_email]))
                 mail_tasks.sendmail.post(**mail)
 
-        moved_from = '%s/%s' % (c.project.shortname, self.app_config.options.mount_point)
-        moved_to = '%s/%s' % (tracker.project.shortname, tracker.options.mount_point)
+        moved_from = '%s/%s' % (c.project.shortname,
+                                self.app_config.options.mount_point)
+        moved_to = '%s/%s' % (tracker.project.shortname,
+                              tracker.options.mount_point)
         text = 'Tickets moved from %s to %s' % (moved_from, moved_to)
         Notification.post_user(c.user, None, 'flash', text=text)
 
     def update_tickets(self, **post_data):
         from forgetracker.tracker_main import get_change_text, get_label
         tickets = Ticket.query.find(dict(
-                _id={'$in':[ObjectId(id) for id in aslist(post_data['__ticket_ids'])]},
-                app_config_id=self.app_config_id)).all()
+            _id={'$in': [ObjectId(id)
+                         for id in aslist(
+                             post_data['__ticket_ids'])]},
+            app_config_id=self.app_config_id)).all()
 
         fields = set(['status', 'private'])
         values = {}
@@ -327,7 +339,8 @@ class Globals(MappedClass):
 
         for k in fields:
             v = post_data.get(k)
-            if v: values[k] = v
+            if v:
+                values[k] = v
         assigned_to = post_data.get('assigned_to')
         if assigned_to == '-':
             values['assigned_to_id'] = None
@@ -352,7 +365,8 @@ class Globals(MappedClass):
         for ticket in tickets:
             message = ''
             if labels:
-                values['labels'] = self.append_new_labels(ticket.labels, labels.split(','))
+                values['labels'] = self.append_new_labels(
+                    ticket.labels, labels.split(','))
             for k, v in sorted(values.iteritems()):
                 if k == 'assigned_to_id':
                     new_user = User.query.get(_id=v)
@@ -381,8 +395,8 @@ class Globals(MappedClass):
             for k, v in sorted(custom_values.iteritems()):
                 def cf_val(cf):
                     return ticket.get_custom_user(cf.name) \
-                           if cf.type == 'user' \
-                           else ticket.custom_fields.get(cf.name)
+                        if cf.type == 'user' \
+                        else ticket.custom_fields.get(cf.name)
                 cf = custom_fields[k]
                 old_value = cf_val(cf)
                 if cf.type == 'boolean':
@@ -400,19 +414,22 @@ class Globals(MappedClass):
                 ticket.commit()
 
         filtered_changes = self.filtered_by_subscription(changed_tickets)
-        users = User.query.find({'_id': {'$in': filtered_changes.keys()}}).all()
+        users = User.query.find(
+            {'_id': {'$in': filtered_changes.keys()}}).all()
+
         def changes_iter(user):
             for t_id in filtered_changes.get(user._id, []):
                 # mark changes text as safe, thus it wouldn't be escaped in plain-text emails
-                # html part of email is handled by markdown and it'll be properly escaped
+                # html part of email is handled by markdown and it'll be
+                # properly escaped
                 yield (changed_tickets[t_id], jinja2.Markup(changes[t_id]))
         mail = dict(
-            sender = c.project.app_instance(self.app_config).email_address,
-            fromaddr = str(c.user._id),
-            reply_to = tg_config['forgemail.return_path'],
-            subject = '[%s:%s] Mass edit changes by %s' % (c.project.shortname,
-                                                           self.app_config.options.mount_point,
-                                                           c.user.display_name),
+            sender=c.project.app_instance(self.app_config).email_address,
+            fromaddr=str(c.user._id),
+            reply_to=tg_config['forgemail.return_path'],
+            subject='[%s:%s] Mass edit changes by %s' % (c.project.shortname,
+                                                         self.app_config.options.mount_point,
+                                                         c.user.display_name),
         )
         tmpl = g.jinja2_env.get_template('forgetracker:data/mass_report.html')
         head = []
@@ -427,45 +444,50 @@ class Globals(MappedClass):
                 user = User.by_username(v)
                 v = user.display_name if user else v
             head.append('- **%s**: %s' % (cf.label, v))
-        tmpl_context = {'context': c, 'data': {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
+        tmpl_context = {'context': c, 'data':
+                        {'header': jinja2.Markup('\n'.join(['Mass edit changing:', ''] + head))}}
         for user in users:
             tmpl_context['data'].update({'changes': changes_iter(user)})
             mail.update(dict(
-                message_id = h.gen_message_id(),
-                text = tmpl.render(tmpl_context),
-                destinations = [str(user._id)]))
+                message_id=h.gen_message_id(),
+                text=tmpl.render(tmpl_context),
+                destinations=[str(user._id)]))
             mail_tasks.sendmail.post(**mail)
 
         if self.app_config.options.get('TicketMonitoringType') in (
                 'AllTicketChanges', 'AllPublicTicketChanges'):
-            monitoring_email = self.app_config.options.get('TicketMonitoringEmail')
+            monitoring_email = self.app_config.options.get(
+                'TicketMonitoringEmail')
             visible_changes = []
             for t_id, t in changed_tickets.items():
                 if (not t.private or
                         self.app_config.options.get('TicketMonitoringType') ==
                         'AllTicketChanges'):
                     visible_changes.append(
-                            (changed_tickets[t_id], jinja2.Markup(changes[t_id])))
+                        (changed_tickets[t_id], jinja2.Markup(changes[t_id])))
             if visible_changes:
                 tmpl_context['data'].update({'changes': visible_changes})
                 mail.update(dict(
-                    message_id = h.gen_message_id(),
-                    text = tmpl.render(tmpl_context),
-                    destinations = [monitoring_email]))
+                    message_id=h.gen_message_id(),
+                    text=tmpl.render(tmpl_context),
+                    destinations=[monitoring_email]))
                 mail_tasks.sendmail.post(**mail)
 
         self.invalidate_bin_counts()
         ThreadLocalORMSession.flush_all()
-        app = '%s/%s' % (c.project.shortname, self.app_config.options.mount_point)
+        app = '%s/%s' % (c.project.shortname,
+                         self.app_config.options.mount_point)
         count = len(tickets)
-        text = 'Updated {} ticket{} in {}'.format(count, 's' if count != 1 else '', app)
+        text = 'Updated {} ticket{} in {}'.format(
+            count, 's' if count != 1 else '', app)
         Notification.post_user(c.user, None, 'flash', text=text)
 
     def filtered_by_subscription(self, tickets, project_id=None, app_config_id=None):
         p_id = project_id if project_id else c.project._id
         ac_id = app_config_id if app_config_id else self.app_config_id
         ticket_ids = tickets.keys()
-        tickets_index_id = {ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
+        tickets_index_id = {
+            ticket.index_id(): t_id for t_id, ticket in tickets.iteritems()}
         subscriptions = Mailbox.query.find({
             'project_id': p_id,
             'app_config_id': ac_id,
@@ -527,7 +549,9 @@ class TicketHistory(Snapshot):
         result['text'] += pformat(result.values())
         return result
 
+
 class Bin(Artifact, ActivityObject):
+
     class __mongometa__:
         name = 'bin'
 
@@ -567,7 +591,9 @@ class Bin(Artifact, ActivityObject):
             sort=self.sort,
         )
 
+
 class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
+
     class __mongometa__:
         name = 'ticket'
         history_class = TicketHistory
@@ -575,10 +601,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             'ticket_num',
             ('app_config_id', 'custom_fields._milestone'),
             'import_id',
-            ]
+        ]
         unique_indexes = [
             ('app_config_id', 'ticket_num'),
-            ]
+        ]
 
     type_s = 'Ticket'
     _id = FieldProperty(schema.ObjectId)
@@ -588,11 +614,11 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     summary = FieldProperty(str)
     description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
-    reported_by_id = ForeignIdProperty(User, if_missing=lambda:c.user._id)
+    reported_by_id = ForeignIdProperty(User, if_missing=lambda: c.user._id)
     assigned_to_id = ForeignIdProperty(User, if_missing=None)
     milestone = FieldProperty(str, if_missing='')
     status = FieldProperty(str, if_missing='')
-    custom_fields = FieldProperty({str:None})
+    custom_fields = FieldProperty({str: None})
 
     reported_by = RelationProperty(User, via='reported_by_id')
 
@@ -621,7 +647,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 return ticket
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
-                    log.warning('Try to create duplicate ticket %s', ticket.url())
+                    log.warning('Try to create duplicate ticket %s',
+                                ticket.url())
                     session(ticket).expunge(ticket)
                     continue
                 raise
@@ -644,7 +671,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             votes_down_i=self.votes_down,
             votes_total_i=(self.votes_up - self.votes_down),
             import_id_s=ImportIdConverter.get().simplify(self.import_id)
-            )
+        )
         for k, v in self.custom_fields.iteritems():
             # Pre solr-4.2.1 code expects all custom fields to be indexed
             # as strings.
@@ -655,7 +682,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_type = self.app.globals.get_custom_field_solr_type(k)
             if solr_type:
                 result[k + solr_type] = (v or
-                        get_default_for_solr_type(solr_type))
+                                         get_default_for_solr_type(solr_type))
 
         if self.reported_by:
             result['reported_by_s'] = self.reported_by.username
@@ -682,7 +709,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             # can search on those instead of the old string-type solr fields.
             if config.get_bool('new_solr'):
                 solr_type = (c.app.globals.get_custom_field_solr_type(f)
-                        or solr_type)
+                             or solr_type)
             actual = solr_field.format(f, solr_type)
             q = q.replace(f + ':', actual + ':')
         return q
@@ -697,7 +724,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def assigned_to(self):
-        if self.assigned_to_id is None: return None
+        if self.assigned_to_id is None:
+            return None
         return User.query.get(_id=self.assigned_to_id)
 
     @property
@@ -714,7 +742,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(
+            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.ticket_num, domain, config.common_suffix)
 
     @property
@@ -737,8 +766,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
     def notify_post(self):
         monitoring_type = self.app_config.options.get('TicketMonitoringType')
         return monitoring_type == 'AllTicketChanges' or (
-                monitoring_type == 'AllPublicTicketChanges' and
-                not self.private)
+            monitoring_type == 'AllPublicTicketChanges' and
+            not self.private)
 
     def get_custom_user(self, custom_user_field_name):
         fld = None
@@ -750,7 +779,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             raise KeyError, 'Custom field "%s" does not exist.' % custom_user_field_name
         if fld.type != 'user':
             raise TypeError, 'Custom field "%s" is of type "%s"; expected ' \
-                             'type "user".' % (custom_user_field_name, fld.type)
+                             'type "user".' % (
+                                 custom_user_field_name, fld.type)
         username = self.custom_fields.get(custom_user_field_name)
         if not username:
             return None
@@ -766,12 +796,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         if bool_flag:
             role_developer = ProjectRole.by_name('Developer')
             role_creator = ProjectRole.by_user(self.reported_by, upsert=True)
-            _allow_all = lambda role, perms: [ACE.allow(role._id, perm) for perm in perms]
+            _allow_all = lambda role, perms: [
+                ACE.allow(role._id, perm) for perm in perms]
             # maintain existing access for developers and the ticket creator,
             # but revoke all access for everyone else
             self.acl = _allow_all(role_developer, security.all_allowed(self, role_developer)) \
-                     + _allow_all(role_creator, security.all_allowed(self, role_creator)) \
-                     + [DENY_ALL]
+                + _allow_all(role_creator, security.all_allowed(self, role_creator)) \
+                + [DENY_ALL]
         else:
             self.acl = []
     private = property(_get_private, _set_private)
@@ -780,62 +811,67 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         VersionedArtifact.commit(self)
         monitoring_email = self.app.config.options.get('TicketMonitoringEmail')
         if self.version > 1:
-            hist = TicketHistory.query.get(artifact_id=self._id, version=self.version-1)
+            hist = TicketHistory.query.get(
+                artifact_id=self._id, version=self.version - 1)
             old = hist.data
             changes = ['Ticket %s has been modified: %s' % (
-                    self.ticket_num, self.summary),
-                       'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
+                self.ticket_num, self.summary),
+                'Edited By: %s (%s)' % (c.user.get_pref('display_name'), c.user.username)]
             fields = [
                 ('Summary', old.summary, self.summary),
-                ('Status', old.status, self.status) ]
+                ('Status', old.status, self.status)]
             if old.status != self.status and self.status in c.app.globals.set_of_closed_status_names:
                 h.log_action(log, 'closed').info('')
-                g.statsUpdater.ticketEvent("closed", self, self.project, self.assigned_to)
+                g.statsUpdater.ticketEvent(
+                    "closed", self, self.project, self.assigned_to)
             for key in self.custom_fields:
-                fields.append((key, old.custom_fields.get(key, ''), self.custom_fields[key]))
+                fields.append(
+                    (key, old.custom_fields.get(key, ''), self.custom_fields[key]))
             for title, o, n in fields:
                 if o != n:
                     changes.append('%s updated: %r => %r' % (
-                            title, o, n))
+                        title, o, n))
             o = hist.assigned_to
             n = self.assigned_to
             if o != n:
                 changes.append('Owner updated: %r => %r' % (
-                        o and o.username, n and n.username))
+                    o and o.username, n and n.username))
                 self.subscribe(user=n)
                 g.statsUpdater.ticketEvent("assigned", self, self.project, n)
                 if o:
-                    g.statsUpdater.ticketEvent("revoked", self, self.project, o)
+                    g.statsUpdater.ticketEvent(
+                        "revoked", self, self.project, o)
             if old.description != self.description:
                 changes.append('Description updated:')
                 changes.append('\n'.join(
-                        difflib.unified_diff(
-                            a=old.description.split('\n'),
-                            b=self.description.split('\n'),
-                            fromfile='description-old',
-                            tofile='description-new')))
+                    difflib.unified_diff(
+                        a=old.description.split('\n'),
+                        b=self.description.split('\n'),
+                        fromfile='description-old',
+                        tofile='description-new')))
             description = '\n'.join(changes)
         else:
             self.subscribe()
             if self.assigned_to_id:
                 user = User.query.get(_id=self.assigned_to_id)
-                g.statsUpdater.ticketEvent("assigned", self, self.project, user)
+                g.statsUpdater.ticketEvent(
+                    "assigned", self, self.project, user)
                 self.subscribe(user=user)
             description = ''
             subject = self.email_subject
             Thread.new(discussion_id=self.app_config.discussion_id,
-                   ref_id=self.index_id())
+                       ref_id=self.index_id())
             # First ticket notification. Use persistend Message-ID (self.message_id()).
             # Thus we can group notification emails in one thread later.
             n = Notification.post(
-                    message_id=self.message_id(),
-                    artifact=self,
-                    topic='metadata',
-                    text=description,
-                    subject=subject)
+                message_id=self.message_id(),
+                artifact=self,
+                topic='metadata',
+                text=description,
+                subject=subject)
             if monitoring_email and n and (not self.private or
-                    self.app.config.options.get('TicketMonitoringType') in (
-                        'NewTicketsOnly', 'AllTicketChanges')):
+                                           self.app.config.options.get('TicketMonitoringType') in (
+                                               'NewTicketsOnly', 'AllTicketChanges')):
                 n.send_simple(monitoring_email)
         Feed.post(
             self,
@@ -852,7 +888,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
 
     def assigned_to_name(self):
         who = self.assigned_to
-        if who in (None, User.anonymous()): return 'nobody'
+        if who in (None, User.anonymous()):
+            return 'nobody'
         return who.get_pref('display_name')
 
     def update(self, ticket_form):
@@ -866,7 +903,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
              other_custom_fields).add(cf['name'])
             if cf['type'] == 'boolean' and 'custom_fields.' + cf['name'] not in ticket_form:
                 self.custom_fields[cf['name']] = 'False'
-        # this has to happen because the milestone custom field has special layout treatment
+        # this has to happen because the milestone custom field has special
+        # layout treatment
         if '_milestone' in ticket_form:
             other_custom_fields.add('_milestone')
             milestone = ticket_form.pop('_milestone', None)
@@ -885,7 +923,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             else:
                 setattr(self, k, v)
         if 'custom_fields' in ticket_form:
-            for k,v in ticket_form['custom_fields'].iteritems():
+            for k, v in ticket_form['custom_fields'].iteritems():
                 if k in custom_users:
                     # restrict custom user field values to project members
                     user = self.app_config.project.user_in_project(v)
@@ -903,7 +941,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             attach.app_config_id = app_config._id
             if attach.attachment_type == 'DiscussionAttachment':
                 attach.discussion_id = app_config.discussion_id
-            attach_thumb = BaseAttachment.query.get(filename=attach.filename, **attach_metadata)
+            attach_thumb = BaseAttachment.query.get(
+                filename=attach.filename, **attach_metadata)
             if attach_thumb:
                 if attach_thumb.attachment_type == 'DiscussionAttachment':
                     attach_thumb.discussion_id = app_config.discussion_id
@@ -933,18 +972,21 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         messages = []
         for cf in skipped_fields:
             name = cf[0]
-            messages.append('- **%s**: %s' % (name, self.custom_fields.get(name, '')))
+            messages.append('- **%s**: %s' %
+                            (name, self.custom_fields.get(name, '')))
         for cf in user_fields:
             name = cf[0]
             username = self.custom_fields.get(name, None)
             user = app_config.project.user_in_project(username)
             if not user or user == User.anonymous():
-                messages.append('- **%s**: %s (user not in project)' % (name, username))
+                messages.append('- **%s**: %s (user not in project)' %
+                                (name, username))
                 self.custom_fields[name] = ''
         # special case: not custom user field (assigned_to_id)
         user = self.assigned_to
         if user and not app_config.project.user_in_project(user.username):
-            messages.append('- **assigned_to**: %s (user not in project)' % user.username)
+            messages.append('- **assigned_to**: %s (user not in project)' %
+                            user.username)
             self.assigned_to_id = None
 
         custom_fields = {}
@@ -965,18 +1007,22 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             new_url = app_config.url() + str(self.ticket_num) + '/'
             try:
                 session(self).flush(self)
-                h.log_action(log, 'moved').info('Ticket %s moved to %s' % (prior_url, new_url))
+                h.log_action(log, 'moved').info('Ticket %s moved to %s' %
+                                                (prior_url, new_url))
                 break
             except OperationFailure, err:
                 if 'duplicate' in err.args[0]:
-                    log.warning('Try to create duplicate ticket %s when moving from %s' % (new_url, prior_url))
+                    log.warning(
+                        'Try to create duplicate ticket %s when moving from %s' %
+                        (new_url, prior_url))
                     session(self).expunge(self)
                     continue
 
         attach_metadata['type'] = 'thumbnail'
         self._move_attach(attachments, attach_metadata, app_config)
 
-        # move ticket's discussion thread, thus all new commnets will go to a new ticket's feed
+        # move ticket's discussion thread, thus all new commnets will go to a
+        # new ticket's feed
         self.discussion_thread.app_config_id = app_config._id
         self.discussion_thread.discussion_id = app_config.discussion_id
         for post in self.discussion_thread.posts:
@@ -1015,19 +1061,23 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                 parents_json.update(parent.__json__(self))
 
         return dict(parents_json,
-            created_date=self.created_date,
-            ticket_num=self.ticket_num,
-            summary=self.summary,
-            description=self.description,
-            reported_by=self.reported_by_username,
-            assigned_to=self.assigned_to_id and self.assigned_to_username or None,
-            reported_by_id=self.reported_by_id and str(self.reported_by_id) or None,
-            assigned_to_id=self.assigned_to_id and str(self.assigned_to_id) or None,
-            status=self.status,
-            private=self.private,
-            attachments=[dict(bytes=attach.length,
-                              url=h.absurl(attach.url())) for attach in self.attachments],
-            custom_fields=dict(self.custom_fields))
+                    created_date=self.created_date,
+                    ticket_num=self.ticket_num,
+                    summary=self.summary,
+                    description=self.description,
+                    reported_by=self.reported_by_username,
+                    assigned_to=self.assigned_to_id and self.assigned_to_username or None,
+                    reported_by_id=self.reported_by_id and str(
+                        self.reported_by_id) or None,
+                    assigned_to_id=self.assigned_to_id and str(
+                        self.assigned_to_id) or None,
+                    status=self.status,
+                    private=self.private,
+                    attachments=[dict(bytes=attach.length,
+                                      url=h.absurl(
+                                          attach.url(
+                                          ))) for attach in self.attachments],
+                    custom_fields=dict(self.custom_fields))
 
     @classmethod
     def paged_query(cls, app_config, user, query, limit=None, page=0, sort=None, deleted=False, **kw):
@@ -1037,7 +1087,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         See also paged_search which does a solr search
         """
         limit, page, start = g.handle_paging(limit, page, default=25)
-        q = cls.query.find(dict(query, app_config_id=app_config._id, deleted=deleted))
+        q = cls.query.find(
+            dict(query, app_config_id=app_config._id, deleted=deleted))
         q = q.sort('ticket_num', pymongo.DESCENDING)
         if sort:
             field, direction = sort.split()
@@ -1055,7 +1106,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             if security.has_access(t, 'read', user, app_config.project.root_project):
                 tickets.append(t)
             else:
-                count = count -1
+                count = count - 1
 
         return dict(
             tickets=tickets,
@@ -1088,7 +1139,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
         count = 0
         tickets = []
         refined_sort = sort if sort else 'ticket_num_i desc'
-        if  'ticket_num_i' not in refined_sort:
+        if 'ticket_num_i' not in refined_sort:
             refined_sort += ',ticket_num_i asc'
         try:
             if q:
@@ -1106,7 +1157,8 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             # ticket_numbers is in sorted order
             ticket_numbers = [match['ticket_num_i'] for match in matches.docs]
             # but query, unfortunately, returns results in arbitrary order
-            query = cls.query.find(dict(app_config_id=app_config._id, ticket_num={'$in':ticket_numbers}))
+            query = cls.query.find(
+                dict(app_config_id=app_config._id, ticket_num={'$in': ticket_numbers}))
             # so stick all the results in a dictionary...
             ticket_for_num = {}
             for t in query:
@@ -1115,12 +1167,13 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             tickets = []
             for tn in ticket_numbers:
                 if tn in ticket_for_num:
-                    show_deleted = show_deleted and security.has_access(ticket_for_num[tn], 'delete', user, app_config.project.root_project)
+                    show_deleted = show_deleted and security.has_access(
+                        ticket_for_num[tn], 'delete', user, app_config.project.root_project)
                     if (security.has_access(ticket_for_num[tn], 'read', user, app_config.project.root_project) and
-                        (show_deleted or ticket_for_num[tn].deleted==False)):
+                            (show_deleted or ticket_for_num[tn].deleted == False)):
                         tickets.append(ticket_for_num[tn])
                     else:
-                        count = count -1
+                        count = count - 1
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
                     solr_error=solr_error, **kw)
@@ -1135,19 +1188,21 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                     self.app.config.options.mount_point)))
         return super(Ticket, self).get_mail_footer(notification, toaddr)
 
+
 class TicketAttachment(BaseAttachment):
     thumbnail_size = (100, 100)
-    ArtifactType=Ticket
+    ArtifactType = Ticket
+
     class __mongometa__:
-        polymorphic_identity='TicketAttachment'
-    attachment_type=FieldProperty(str, if_missing='TicketAttachment')
+        polymorphic_identity = 'TicketAttachment'
+    attachment_type = FieldProperty(str, if_missing='TicketAttachment')
 
 
 class MovedTicket(MovedArtifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name='moved_ticket'
+        name = 'moved_ticket'
         indexes = [
             ('app_config_id', 'ticket_num'),
         ]

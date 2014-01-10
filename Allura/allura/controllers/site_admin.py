@@ -46,9 +46,11 @@ from urlparse import urlparse
 
 log = logging.getLogger(__name__)
 
+
 class W:
     page_list = ffw.PageList()
     page_size = ffw.PageSize()
+
 
 class SiteAdminController(object):
 
@@ -65,10 +67,12 @@ class SiteAdminController(object):
     def index(self):
         neighborhoods = []
         for n in M.Neighborhood.query.find():
-            project_count = M.Project.query.find(dict(neighborhood_id=n._id)).count()
-            configured_count = M.Project.query.find(dict(neighborhood_id=n._id, database_configured=True)).count()
+            project_count = M.Project.query.find(
+                dict(neighborhood_id=n._id)).count()
+            configured_count = M.Project.query.find(
+                dict(neighborhood_id=n._id, database_configured=True)).count()
             neighborhoods.append((n.name, project_count, configured_count))
-        neighborhoods.sort(key=lambda n:n[0])
+        neighborhoods.sort(key=lambda n: n[0])
         return dict(neighborhoods=neighborhoods)
 
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
@@ -91,7 +95,8 @@ class SiteAdminController(object):
                 flash('JSON format error')
             if type(caps) is not type({}):
                 ok = False
-                flash('Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
+                flash(
+                    'Capabilities must be a JSON dictionary, mapping capability name to optional discriminator(s) (or "")')
             try:
                 expires = dateutil.parser.parse(data['expires'])
             except ValueError:
@@ -100,7 +105,8 @@ class SiteAdminController(object):
             if ok:
                 tok = None
                 try:
-                    tok = M.ApiTicket(user_id=for_user._id, capabilities=caps, expires=expires)
+                    tok = M.ApiTicket(user_id=for_user._id,
+                                      capabilities=caps, expires=expires)
                     session(tok).flush()
                     log.info('New token: %s', tok)
                     flash('API Ticket created')
@@ -110,7 +116,8 @@ class SiteAdminController(object):
         elif request.method == 'GET':
             data = {'expires': datetime.utcnow() + timedelta(days=2)}
 
-        data['token_list'] = M.ApiTicket.query.find().sort('mod_date', pymongo.DESCENDING).all()
+        data['token_list'] = M.ApiTicket.query.find().sort(
+            'mod_date', pymongo.DESCENDING).all()
         log.info(data['token_list'])
         return data
 
@@ -119,7 +126,7 @@ class SiteAdminController(object):
         neighborhood = M.Neighborhood.query.find({
             "url_prefix": "/" + artifact_url[0] + "/"}).first()
 
-        if  artifact_url[0] == "u":
+        if artifact_url[0] == "u":
             project = M.Project.query.find({
                 "shortname": artifact_url[0] + "/" + artifact_url[1],
                 "neighborhood_id": neighborhood._id}).first()
@@ -196,10 +203,10 @@ class SiteAdminController(object):
         end = bson.ObjectId.from_datetime(end_dt)
         nb = M.Neighborhood.query.get(name='Users')
         projects = (M.Project.query.find({
-                'neighborhood_id': {'$ne': nb._id},
-                'deleted': False,
-                '_id': {'$lt': start, '$gt': end},
-            }).sort('_id', -1))
+            'neighborhood_id': {'$ne': nb._id},
+            'deleted': False,
+            '_id': {'$lt': start, '$gt': end},
+        }).sort('_id', -1))
         step = start_dt - end_dt
         params = request.params.copy()
         params['start-dt'] = (start_dt + step).strftime('%Y/%m/%d %H:%M:%S')
@@ -226,34 +233,43 @@ class SiteAdminController(object):
             if c.form_errors:
                 error_msg = 'Error: '
                 for msg in list(c.form_errors):
-                    names = {'prefix': 'Neighborhood prefix', 'shortname': 'Project shortname', 'mount_point': 'Repository mount point'}
+                    names = {'prefix': 'Neighborhood prefix', 'shortname':
+                             'Project shortname', 'mount_point': 'Repository mount point'}
                     error_msg += '%s: %s ' % (names[msg], c.form_errors[msg])
                     flash(error_msg, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             nbhd = M.Neighborhood.query.get(url_prefix='/%s/' % prefix)
             if not nbhd:
-                flash('Neighborhood with prefix %s not found' % prefix, 'error')
+                flash('Neighborhood with prefix %s not found' %
+                      prefix, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
-            c.project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
+            c.project = M.Project.query.get(
+                shortname=shortname, neighborhood_id=nbhd._id)
             if not c.project:
-                flash('Project with shortname %s not found in neighborhood %s' % (shortname, nbhd.name), 'error')
+                flash(
+                    'Project with shortname %s not found in neighborhood %s' %
+                    (shortname, nbhd.name), 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             c.app = c.project.app_instance(mount_point)
             if not c.app:
-                flash('Mount point %s not found on project %s' % (mount_point, c.project.shortname), 'error')
+                flash('Mount point %s not found on project %s' %
+                      (mount_point, c.project.shortname), 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
             source_url = c.app.config.options.get('init_from_url')
             source_path = c.app.config.options.get('init_from_path')
             if not (source_url or source_path):
-                flash('%s does not appear to be a cloned repo' % c.app, 'error')
+                flash('%s does not appear to be a cloned repo' %
+                      c.app, 'error')
                 return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
-            allura.tasks.repo_tasks.reclone_repo.post(prefix=prefix, shortname=shortname, mount_point=mount_point)
+            allura.tasks.repo_tasks.reclone_repo.post(
+                prefix=prefix, shortname=shortname, mount_point=mount_point)
             flash('Repository is being recloned')
         else:
             prefix = 'p'
             shortname = ''
             mount_point = ''
         return dict(prefix=prefix, shortname=shortname, mount_point=mount_point)
+
 
 class TaskManagerController(object):
 
@@ -274,8 +290,8 @@ class TaskManagerController(object):
             minutes = int(minutes)
         except ValueError as e:
             minutes = 1
-        start_dt = now - timedelta(minutes=(page_num-1)*minutes)
-        end_dt = now - timedelta(minutes=page_num*minutes)
+        start_dt = now - timedelta(minutes=(page_num - 1) * minutes)
+        end_dt = now - timedelta(minutes=page_num * minutes)
         start = bson.ObjectId.from_datetime(start_dt)
         end = bson.ObjectId.from_datetime(end_dt)
         query = {'_id': {'$gt': end}}
@@ -292,17 +308,19 @@ class TaskManagerController(object):
         for task in tasks:
             task.project = M.Project.query.get(_id=task.context.project_id)
             task.user = M.User.query.get(_id=task.context.user_id)
-        newer_url = tg.url(params=dict(request.params, page_num=page_num - 1)).lstrip('/')
-        older_url = tg.url(params=dict(request.params, page_num=page_num + 1)).lstrip('/')
+        newer_url = tg.url(
+            params=dict(request.params, page_num=page_num - 1)).lstrip('/')
+        older_url = tg.url(
+            params=dict(request.params, page_num=page_num + 1)).lstrip('/')
         return dict(
-                tasks=tasks,
-                page_num=page_num,
-                minutes=minutes,
-                newer_url=newer_url,
-                older_url=older_url,
-                window_start=start_dt,
-                window_end=end_dt,
-            )
+            tasks=tasks,
+            page_num=page_num,
+            minutes=minutes,
+            newer_url=newer_url,
+            older_url=older_url,
+            window_start=start_dt,
+            window_end=end_dt,
+        )
 
     @expose('jinja:allura:templates/site_admin_task_view.html')
     @without_trailing_slash
@@ -313,7 +331,8 @@ class TaskManagerController(object):
             task = None
         if task:
             task.project = M.Project.query.get(_id=task.context.project_id)
-            task.app_config = M.AppConfig.query.get(_id=task.context.app_config_id)
+            task.app_config = M.AppConfig.query.get(
+                _id=task.context.app_config_id)
             task.user = M.User.query.get(_id=task.context.user_id)
         return dict(task=task)
 

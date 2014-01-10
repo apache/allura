@@ -30,9 +30,10 @@ log = logging.getLogger(__name__)
 
 smtp_client = mail_util.SMTPClient()
 
+
 @task
 def route_email(
-    peer, mailfrom, rcpttos, data):
+        peer, mailfrom, rcpttos, data):
     '''Route messages according to their destination:
 
     <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
@@ -40,7 +41,7 @@ def route_email(
     '''
     try:
         msg = mail_util.parse_message(data)
-    except: # pragma no cover
+    except:  # pragma no cover
         log.exception('Parse Error: (%r,%r,%r)', peer, mailfrom, rcpttos)
         return
     if mail_util.is_autoreply(msg):
@@ -49,18 +50,21 @@ def route_email(
     mail_user = mail_util.identify_sender(peer, mailfrom, msg['headers'], msg)
     with h.push_config(c, user=mail_user):
         log.info('Received email from %s', c.user.username)
-        # For each of the addrs, determine the project/app and route appropriately
+        # For each of the addrs, determine the project/app and route
+        # appropriately
         for addr in rcpttos:
             try:
                 userpart, project, app = mail_util.parse_address(addr)
                 with h.push_config(c, project=project, app=app):
                     if not app.has_access(c.user, userpart):
-                        log.info('Access denied for %s to mailbox %s', c.user, userpart)
+                        log.info('Access denied for %s to mailbox %s',
+                                 c.user, userpart)
                     else:
                         if msg['multipart']:
                             msg_hdrs = msg['headers']
                             for part in msg['parts']:
-                                if part.get('content_type', '').startswith('multipart/'): continue
+                                if part.get('content_type', '').startswith('multipart/'):
+                                    continue
                                 msg = dict(
                                     headers=dict(msg_hdrs, **part['headers']),
                                     message_id=part['message_id'],
@@ -76,6 +80,7 @@ def route_email(
                 log.error('Error routing email to %s: %s', addr, e)
             except:
                 log.exception('Error routing mail to %s', addr)
+
 
 @task
 def sendmail(fromaddr, destinations, text, reply_to, subject,
@@ -110,11 +115,13 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
             addr = user.email_address_header()
             if not addr and user.email_addresses:
                 addr = user.email_addresses[0]
-                log.warning('User %s has not set primary email address, using %s',
-                            user._id, addr)
+                log.warning(
+                    'User %s has not set primary email address, using %s',
+                    user._id, addr)
             if not addr:
-                log.error("User %s (%s) has not set any email address, can't deliver",
-                          user._id, user.username)
+                log.error(
+                    "User %s (%s) has not set any email address, can't deliver",
+                    user._id, user.username)
                 continue
             if user.get_pref('email_format') == 'plain':
                 addrs_plain.append(addr)
@@ -137,18 +144,19 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
         addrs_html, fromaddr, reply_to, subject, message_id,
         in_reply_to, html_msg, sender=sender, references=references)
 
+
 @task
 def sendsimplemail(
-    fromaddr,
-    toaddr,
-    text,
-    reply_to,
-    subject,
-    message_id,
-    in_reply_to=None,
-    sender=None,
-    references=None,
-    cc=None):
+        fromaddr,
+        toaddr,
+        text,
+        reply_to,
+        subject,
+        message_id,
+        in_reply_to=None,
+        sender=None,
+        references=None,
+        cc=None):
     from allura import model as M
     if fromaddr is None:
         fromaddr = u'noreply@in.sf.net'

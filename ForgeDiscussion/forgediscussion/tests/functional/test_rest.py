@@ -49,12 +49,14 @@ class TestDiscussionApiBase(TestRestApiBase):
 
     def create_topic(self, forum, subject, text):
         r = self.app.get('/discussion/create_topic/')
-        f = r.html.find('form', {'action': '/p/test/discussion/save_new_topic'})
+        f = r.html.find(
+            'form', {'action': '/p/test/discussion/save_new_topic'})
         params = dict()
         inputs = f.findAll('input')
         for field in inputs:
             if field.has_key('name'):
-                params[field['name']] = field.has_key('value') and field['value'] or ''
+                params[field['name']] = field.has_key(
+                    'value') and field['value'] or ''
         params[f.find('textarea')['name']] = text
         params[f.find('select')['name']] = forum
         params[f.find('input', {'style': 'width: 90%'})['name']] = subject
@@ -69,23 +71,27 @@ class TestRootRestController(TestDiscussionApiBase):
         assert_equal(len(forums), 2)
         forums = sorted(forums, key=lambda x: x['name'])
         assert_equal(forums[0]['name'], 'General Discussion')
-        assert_equal(forums[0]['description'], 'Forum about anything you want to talk about.')
+        assert_equal(
+            forums[0]['description'], 'Forum about anything you want to talk about.')
         assert_equal(forums[0]['num_topics'], 2)
-        assert_equal(forums[0]['url'], 'http://localhost/rest/p/test/discussion/general/')
+        assert_equal(
+            forums[0]['url'], 'http://localhost/rest/p/test/discussion/general/')
         assert_equal(forums[0]['last_post']['subject'], 'Hi guys')
         assert_equal(forums[0]['last_post']['author'], 'test-admin')
         assert_equal(forums[0]['last_post']['text'], 'Hi boys and girls')
         assert_equal(forums[1]['name'], u'Say Héllo')
         assert_equal(forums[1]['description'], u'Say héllo here')
         assert_equal(forums[1]['num_topics'], 0)
-        assert_equal(forums[1]['url'], 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
+        assert_equal(
+            forums[1]['url'], 'http://localhost/rest/p/test/discussion/h%C3%A9llo/')
         assert_equal(forums[1]['last_post'], None)
 
     def test_forum(self):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
         assert_equal(forum['name'], 'General Discussion')
-        assert_equal(forum['description'], 'Forum about anything you want to talk about.')
+        assert_equal(
+            forum['description'], 'Forum about anything you want to talk about.')
         topics = forum['topics']
         assert_equal(len(topics), 2)
         assert_equal(topics[0]['subject'], 'Hi guys')
@@ -126,7 +132,8 @@ class TestRootRestController(TestDiscussionApiBase):
         forum = self.api_get('/rest/p/test/discussion/general/')
         forum = forum.json['forum']
         assert_equal(forum['name'], 'General Discussion')
-        assert_equal(forum['description'], 'Forum about anything you want to talk about.')
+        assert_equal(
+            forum['description'], 'Forum about anything you want to talk about.')
         topics = forum['topics']
         topic = self.api_get(topics[0]['url'][len('http://localhost'):])
         topic = topic.json['topic']

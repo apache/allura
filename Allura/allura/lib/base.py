@@ -24,7 +24,9 @@ from tg import TGController, config
 
 __all__ = ['WsgiDispatchController']
 
+
 class WsgiDispatchController(TGController):
+
     """
     Base class for the controllers in the application.
 
@@ -43,13 +45,15 @@ class WsgiDispatchController(TGController):
     def __call__(self, environ, start_response):
         try:
             self._setup_request()
-            response = super(WsgiDispatchController, self).__call__(environ, start_response)
+            response = super(WsgiDispatchController, self).__call__(
+                environ, start_response)
             return self.cleanup_iterator(response)
         except exc.HTTPException, err:
             return err(environ, start_response)
 
     def cleanup_iterator(self, response):
-        for chunk in response: yield chunk
+        for chunk in response:
+            yield chunk
         self._cleanup_request()
 
     def _get_dispatchable(self, url_path):

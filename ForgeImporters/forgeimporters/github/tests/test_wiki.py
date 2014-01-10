@@ -32,7 +32,8 @@ from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgeimporters.github import GitHubOAuthMixin
 
 
-# important to be distinct from 'test' which ForgeWiki uses, so that the tests can run in parallel and not clobber each other
+# important to be distinct from 'test' which ForgeWiki uses, so that the
+# tests can run in parallel and not clobber each other
 test_project_with_wiki = 'test2'
 with_wiki = with_tool(test_project_with_wiki, 'wiki', 'w', 'wiki')
 
@@ -43,7 +44,6 @@ class TestGitHubWikiImporter(TestCase):
         project = Mock()
         project.get_tool_data.side_effect = lambda *args: gh_proj_name
         return project
-
 
     @patch('forgeimporters.github.wiki.M')
     @patch('forgeimporters.github.wiki.ThreadLocalORMSession')
@@ -57,7 +57,8 @@ class TestGitHubWikiImporter(TestCase):
             app = p.install_app.return_value
             app.config.options.mount_point = 'wiki'
             app.url = 'foo'
-            GitHubWikiImporter().import_tool(p, u, project_name='project_name', user_name='testuser')
+            GitHubWikiImporter().import_tool(
+                p, u, project_name='project_name', user_name='testuser')
             p.install_app.assert_called_once_with(
                 'Wiki',
                 mount_point='wiki',
@@ -96,7 +97,8 @@ class TestGitHubWikiImporter(TestCase):
         self.commit2 = Mock()
         blobs = [self.blob1, self.blob2, self.blob3]
         self.commit2.tree.blobs = blobs
-        self.commit2.tree.__contains__ = lambda _, item: item in [self.blob1.name, self.blob2.name, self.blob3.name]
+        self.commit2.tree.__contains__ = lambda _, item: item in [
+            self.blob1.name, self.blob2.name, self.blob3.name]
         self.commit2.tree.traverse.return_value = blobs
         self.commit2.committed_date = 1256291446
 
@@ -144,7 +146,8 @@ class TestGitHubWikiImporter(TestCase):
         with patch('forgeimporters.github.wiki.rmtree'):
             path.return_value = 'temp_path'
             GitHubWikiImporter().import_pages('wiki_url')
-            repo.clone_from.assert_called_with('wiki_url', to_path='temp_path', bare=True)
+            repo.clone_from.assert_called_with(
+                'wiki_url', to_path='temp_path', bare=True)
 
     @patch('forgeimporters.github.wiki.git.Repo._clone')
     @patch('forgeimporters.github.wiki.GitHubWikiImporter._with_history')
@@ -178,7 +181,8 @@ class TestGitHubWikiImporter(TestCase):
         importer.rewrite_links = Mock(return_value='')
         importer._with_history(self.commit2)
         assert_equal(upsert.call_args_list, [call('Home')])
-        assert_equal(render.call_args_list, [call('Home.rst', u'# test message')])
+        assert_equal(render.call_args_list,
+                     [call('Home.rst', u'# test message')])
 
     @skipif(module_not_available('html2text'))
     @patch('forgeimporters.github.wiki.WM.Page.upsert')
@@ -230,12 +234,15 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u'[[Pagê Nâme]]'), u'[Pagê Nâme]')
         # Github always converts spaces and slashes in links to hyphens,
         # to lookup page in the filesystem. During import we're converting
-        # all hyphens in page name to spaces, but still supporting both link formats.
+        # all hyphens in page name to spaces, but still supporting both link
+        # formats.
         assert_equal(f(u'[[Page With Spaces]]'), u'[Page With Spaces]')
         assert_equal(f(u'[[Page-With-Spaces]]'), u'[Page With Spaces]')
         assert_equal(f(u'[[Page / 1]]'), u'[Page   1]')
-        assert_equal(f(u'[[Title|Page With Spaces]]'), u'[Title](Page With Spaces)')
-        assert_equal(f(u'[[Title|Page-With-Spaces]]'), u'[Title](Page With Spaces)')
+        assert_equal(f(u'[[Title|Page With Spaces]]'),
+                     u'[Title](Page With Spaces)')
+        assert_equal(f(u'[[Title|Page-With-Spaces]]'),
+                     u'[Title](Page With Spaces)')
         assert_equal(f(u'[[go here|Page / 1]]'), u'[go here](Page   1)')
 
     def test_convert_gollum_page_links_escaped(self):
@@ -245,21 +252,25 @@ class TestGitHubWikiImporter(TestCase):
         assert_equal(f(u"'[[Page With Spaces]]"), u'[[Page With Spaces]]')
         assert_equal(f(u"'[[Page-With-Spaces]]"), u'[[Page-With-Spaces]]')
         assert_equal(f(u"'[[Page / 1]]"), u'[[Page / 1]]')
-        assert_equal(f(u"'[[Title|Page With Spaces]]"), u'[[Title|Page With Spaces]]')
-        assert_equal(f(u"'[[Title|Page-With-Spaces]]"), u'[[Title|Page-With-Spaces]]')
+        assert_equal(f(u"'[[Title|Page With Spaces]]"),
+                     u'[[Title|Page With Spaces]]')
+        assert_equal(f(u"'[[Title|Page-With-Spaces]]"),
+                     u'[[Title|Page-With-Spaces]]')
         assert_equal(f(u"'[[go here|Page / 1]]"), u'[[go here|Page / 1]]')
 
     def test_convert_gollum_external_links(self):
         f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u'[[http://sf.net]]'), u'<http://sf.net>')
         assert_equal(f(u'[[https://sf.net]]'), u'<https://sf.net>')
-        assert_equal(f(u'[[SourceForge|http://sf.net]]'), u'[SourceForge](http://sf.net)')
+        assert_equal(f(u'[[SourceForge|http://sf.net]]'),
+                     u'[SourceForge](http://sf.net)')
 
     def test_convert_gollum_external_links_escaped(self):
         f = GitHubWikiImporter().convert_gollum_tags
         assert_equal(f(u"'[[http://sf.net]]"), u'[[http://sf.net]]')
         assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
-        assert_equal(f(u"'[[SourceForge|http://sf.net]]"), u'[[SourceForge|http://sf.net]]')
+        assert_equal(f(u"'[[SourceForge|http://sf.net]]"),
+                     u'[[SourceForge|http://sf.net]]')
 
     def test_convert_gollum_toc(self):
         f = GitHubWikiImporter().convert_gollum_tags
@@ -292,7 +303,8 @@ Our website is <http://sf.net>.
         importer.github_wiki_url = 'https://github.com/a/b/wiki'
         importer.app = Mock()
         importer.app.url = '/p/test/wiki/'
-        importer.github_markdown_converter = GitHubMarkdownConverter('user', 'proj')
+        importer.github_markdown_converter = GitHubMarkdownConverter(
+            'user', 'proj')
         f = importer.convert_markup
         source = u'''Look at [[this page|Some Page]]
 
@@ -363,16 +375,26 @@ Our website is [[http://sf.net]].
         f = GitHubWikiImporter().rewrite_links
         prefix = 'https://github/a/b/wiki'
         new = '/p/test/wiki/'
-        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test Page</a>', prefix, new),
-                     u'<a href="/p/test/wiki/Test Page">Test Page</a>')
-        assert_equal(f(u'<a href="https://github/a/b/wiki/Test-Page">Test-Page</a>', prefix, new),
-                     u'<a href="/p/test/wiki/Test Page">Test Page</a>')
-        assert_equal(f(u'<a href="https://github/a/b/issues/1" class="1"></a>', prefix, new),
-                     u'<a href="https://github/a/b/issues/1" class="1"></a>')
-        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>', prefix, new),
-                     u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
-        assert_equal(f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>', prefix, new),
-                     u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/wiki/Test Page">Test Page</a>',
+              prefix, new),
+            u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/wiki/Test-Page">Test-Page</a>',
+              prefix, new),
+            u'<a href="/p/test/wiki/Test Page">Test Page</a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/issues/1" class="1"></a>',
+              prefix, new),
+            u'<a href="https://github/a/b/issues/1" class="1"></a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/wiki/Test Page">https://github/a/b/wiki/Test Page</a>',
+              prefix, new),
+            u'<a href="/p/test/wiki/Test Page">/p/test/wiki/Test Page</a>')
+        assert_equal(
+            f(u'<a href="https://github/a/b/wiki/Test Page">Test <b>Page</b></a>',
+              prefix, new),
+            u'<a href="/p/test/wiki/Test Page">Test <b>Page</b></a>')
 
     @skipif(module_not_available('html2text'))
     def test_convert_markup_with_mediawiki2markdown(self):
@@ -489,7 +511,8 @@ some text and **[Tips n' Tricks]**
         importer.app.url = '/p/test/wiki/'
         f = importer.convert_markup
         source = u'*[[this checklist|Troubleshooting]]*'
-        assert_equal(f(source, 't.textile').strip(), u'**[this checklist](Troubleshooting)**')
+        assert_equal(f(source, 't.textile').strip(),
+                     u'**[this checklist](Troubleshooting)**')
 
     @without_module('html2text')
     def test_convert_textile_special_tag_without_html2text(self):
@@ -514,7 +537,8 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name='gh_project_name')))
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_label')))
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
-        self.assertIsNotNone(r.html.find(attrs=dict(name='tool_option', value='import_history')))
+        self.assertIsNotNone(
+            r.html.find(attrs=dict(name='tool_option', value='import_history')))
 
     @with_wiki
     @patch('forgeimporters.base.import_tool')
@@ -526,7 +550,8 @@ class TestGitHubWikiImportController(TestController, TestCase):
             mount_label='GitHub Wiki',
             tool_option='import_history')
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki)
+        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
+                         test_project_with_wiki)
         args = import_tool.post.call_args[1]
         self.assertEqual(u'GitHub Wiki', args['mount_label'])
         self.assertEqual(u'gh-wiki', args['mount_point'])
@@ -537,7 +562,8 @@ class TestGitHubWikiImportController(TestController, TestCase):
         # without history
         params.pop('tool_option')
         r = self.app.post(self.url + 'create', params, status=302)
-        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' % test_project_with_wiki)
+        self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
+                         test_project_with_wiki)
         args = import_tool.post.call_args[1]
         self.assertEqual(u'GitHub Wiki', args['mount_label'])
         self.assertEqual(u'gh-wiki', args['mount_point'])

@@ -28,6 +28,7 @@ from forgeshorturl.model import ShortUrl
 
 
 class TestRootController(TestController):
+
     def setUp(self):
         super(TestRootController, self).setUp()
         self.setup_with_tools()
@@ -109,32 +110,38 @@ class TestRootController(TestController):
     def test_shorturl_chars_restrictions(self):
         d = dict(short_url='', full_url='http://sf.net/')
         r = self.app.post('/admin/url/add', params=d)
-        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
+        assert ShortUrl.query.find(
+            dict(app_config_id=c.app.config._id)).count() == 0
         assert 'Please enter a value' in self.webflash(r)
         d = dict(short_url='g*', full_url='http://sf.net/')
         r = self.app.post('/admin/url/add', params=d)
-        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
-        assert 'Short url: must include only letters, numbers, dashes and underscores.' in self.webflash(r)
+        assert ShortUrl.query.find(
+            dict(app_config_id=c.app.config._id)).count() == 0
+        assert 'Short url: must include only letters, numbers, dashes and underscores.' in self.webflash(
+            r)
 
     def test_shorturl_remove(self):
         self.app.post('/admin/url/add',
-                params=dict(short_url='g', full_url='http://google.com/'))
-        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 1
+                      params=dict(short_url='g', full_url='http://google.com/'))
+        assert ShortUrl.query.find(
+            dict(app_config_id=c.app.config._id)).count() == 1
         self.app.post('/admin/url/remove', params=dict(shorturl='g'))
-        assert ShortUrl.query.find(dict(app_config_id=c.app.config._id)).count() == 0
+        assert ShortUrl.query.find(
+            dict(app_config_id=c.app.config._id)).count() == 0
 
     def test_shorturl_permissions(self):
         self.app.post('/admin/url/add',
-                params=dict(short_url='g', full_url='http://google.com/'),
-                extra_environ=dict(username='test-user'), status=403)
+                      params=dict(short_url='g',
+                                  full_url='http://google.com/'),
+                      extra_environ=dict(username='test-user'), status=403)
         self.app.post('/admin/url/remove', params=dict(shorturl='g'),
-                extra_environ=dict(username='test-user'), status=403)
+                      extra_environ=dict(username='test-user'), status=403)
 
     def test_build_short_url(self):
         with h.push_config(config, **{
                 'short_url.url_pattern': '{base_url}:{nbhd}:{project}:{mount_point}:{short_name}',
                 'base_url': 'b',
-            }):
+        }):
             nbhd = mock.Mock(url_prefix='/n/')
             project = mock.Mock(shortname='p', neighborhood=nbhd)
             app = mock.Mock(project=project)
@@ -155,5 +162,5 @@ class TestRootController(TestController):
         with h.push_config(config, **{
                 'short_url.url_pattern': '{base_url}:{nbhd}:{project}:{mount_point}:{short_name}',
                 'base_url': 'b',
-            }):
+        }):
             assert_equal(surl.short_url(), 'b:p:test:url:test')

@@ -46,13 +46,15 @@ from allura.model.repository import zipdir
 
 log = logging.getLogger(__name__)
 
+
 class Repository(M.Repository):
-    tool_name='SVN'
-    repo_id='svn'
-    type_s='SVN Repository'
+    tool_name = 'SVN'
+    repo_id = 'svn'
+    type_s = 'SVN Repository'
+
     class __mongometa__:
-        name='svn-repository'
-    branches = FieldProperty([dict(name=str,object_id=str)])
+        name = 'svn-repository'
+    branches = FieldProperty([dict(name=str, object_id=str)])
     _refresh_precompute = False
 
     @LazyProperty
@@ -68,13 +70,17 @@ class Repository(M.Repository):
         tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
-                                   source_url=self.clone_url(category, username)+c.app.config.options.get('checkout_url'),
+                                   source_url=self.clone_url(
+                                       category, username) + c.app.config.options.get(
+                                       'checkout_url'),
                                    dest_path=self.suggested_clone_dest_path()))
 
-    def compute_diffs(self): return
+    def compute_diffs(self):
+        return
 
     def latest(self, branch=None):
-        if self._impl is None: return None
+        if self._impl is None:
+            return None
         return self._impl.commit('HEAD')
 
     def tarball_filename(self, revision, path=None):
@@ -88,6 +94,7 @@ class Repository(M.Repository):
 
 
 class SVNCalledProcessError(Exception):
+
     def __init__(self, cmd, returncode, stdout, stderr):
         self.cmd = cmd
         self.returncode = returncode
@@ -113,7 +120,9 @@ def svn_path_exists(path, rev=None):
 
 
 class SVNLibWrapper(object):
+
     """Wrapper around pysvn, used for instrumentation."""
+
     def __init__(self, client):
         self.client = client
 
@@ -185,10 +194,10 @@ class SVNImplementation(M.RepositoryImplementation):
         if os.path.exists(fullname):
             shutil.rmtree(fullname)
         subprocess.call(['svnadmin', 'create', self._repo.name],
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 cwd=self._repo.fs_path)
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        cwd=self._repo.fs_path)
         if not skip_special_files:
             self._setup_special_files()
         self._repo.set_status('ready')
@@ -197,17 +206,18 @@ class SVNImplementation(M.RepositoryImplementation):
             tmp_working_dir = tempfile.mkdtemp(prefix='allura-svn-r1-',
                                                dir=tg.config.get('scm.svn.tmpdir', g.tmpdir))
             log.info('tmp dir = %s', tmp_working_dir)
-            self._repo._impl._svn.checkout('file://'+fullname, tmp_working_dir)
-            os.mkdir(tmp_working_dir+'/trunk')
-            os.mkdir(tmp_working_dir+'/tags')
-            os.mkdir(tmp_working_dir+'/branches')
-            self._repo._impl._svn.add(tmp_working_dir+'/trunk')
-            self._repo._impl._svn.add(tmp_working_dir+'/tags')
-            self._repo._impl._svn.add(tmp_working_dir+'/branches')
-            self._repo._impl._svn.checkin([tmp_working_dir+'/trunk',
-                                           tmp_working_dir+'/tags',
-                                           tmp_working_dir+'/branches'],
-                                        'Initial commit')
+            self._repo._impl._svn.checkout(
+                'file://' + fullname, tmp_working_dir)
+            os.mkdir(tmp_working_dir + '/trunk')
+            os.mkdir(tmp_working_dir + '/tags')
+            os.mkdir(tmp_working_dir + '/branches')
+            self._repo._impl._svn.add(tmp_working_dir + '/trunk')
+            self._repo._impl._svn.add(tmp_working_dir + '/tags')
+            self._repo._impl._svn.add(tmp_working_dir + '/branches')
+            self._repo._impl._svn.checkin([tmp_working_dir + '/trunk',
+                                           tmp_working_dir + '/tags',
+                                           tmp_working_dir + '/branches'],
+                                          'Initial commit')
             shutil.rmtree(tmp_working_dir)
             log.info('deleted %s', tmp_working_dir)
 
@@ -261,13 +271,15 @@ class SVNImplementation(M.RepositoryImplementation):
             # make sure new repo has a pre-revprop-change hook,
             # otherwise the sync will fail
             set_hook('pre-revprop-change')
-            self.check_call(['svnsync', '--non-interactive', '--allow-non-empty',
-              'initialize', self._url, source_url])
+            self.check_call(
+                ['svnsync', '--non-interactive', '--allow-non-empty',
+                 'initialize', self._url, source_url])
             clear_hook('pre-revprop-change')
         else:
             set_hook('pre-revprop-change')
             self.check_call(['svnsync', 'init', self._url, source_url])
-            self.check_call(['svnsync', '--non-interactive', 'sync', self._url])
+            self.check_call(
+                ['svnsync', '--non-interactive', 'sync', self._url])
             clear_hook('pre-revprop-change')
 
         log.info('... %r cloned', self._repo)
@@ -287,12 +299,13 @@ class SVNImplementation(M.RepositoryImplementation):
         """
         opts = self._repo.app.config.options
         if not svn_path_exists('file://{0}{1}/{2}'.format(self._repo.fs_path,
-                self._repo.name, opts['checkout_url'])):
+                                                          self._repo.name, opts['checkout_url'])):
             opts['checkout_url'] = ''
 
         if (not opts['checkout_url'] and
-                svn_path_exists('file://{0}{1}/trunk'.format(self._repo.fs_path,
-                    self._repo.name))):
+                svn_path_exists(
+                    'file://{0}{1}/trunk'.format(self._repo.fs_path,
+                                                 self._repo.name))):
             opts['checkout_url'] = 'trunk'
 
     def commit(self, rev):
@@ -319,7 +332,7 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def new_commits(self, all_commits=False):
         head_revno = self.head
-        oids = [ self._oid(revno) for revno in range(1, head_revno+1) ]
+        oids = [self._oid(revno) for revno in range(1, head_revno + 1)]
         if all_commits:
             return oids
         # Find max commit id -- everything greater than that will be "unknown"
@@ -327,22 +340,24 @@ class SVNImplementation(M.RepositoryImplementation):
         q = M.repo.Commit.query.find(
             dict(
                 type='commit',
-                _id={'$gt':prefix},
-                ),
+                _id={'$gt': prefix},
+            ),
             dict(_id=True)
-            )
+        )
         seen_oids = set()
         for d in q.ming_cursor.cursor:
             oid = d['_id']
-            if not oid.startswith(prefix): break
+            if not oid.startswith(prefix):
+                break
             seen_oids.add(oid)
         return [
-            oid for oid in oids if oid not in seen_oids ]
+            oid for oid in oids if oid not in seen_oids]
 
     def refresh_commit_info(self, oid, seen_object_ids, lazy=True):
         from allura.model.repo import CommitDoc, DiffInfoDoc
         ci_doc = CommitDoc.m.get(_id=oid)
-        if ci_doc and lazy: return False
+        if ci_doc and lazy:
+            return False
         revno = self._revno(oid)
         rev = self._revision(oid)
         try:
@@ -352,7 +367,8 @@ class SVNImplementation(M.RepositoryImplementation):
                 limit=1,
                 discover_changed_paths=True)[0]
         except pysvn.ClientError:
-            log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+            log.info('ClientError processing %r %r, treating as empty',
+                     oid, self._repo, exc_info=True)
             log_entry = Object(date='', message='', changed_paths=[])
         log_date = None
         if hasattr(log_entry, 'date'):
@@ -360,7 +376,7 @@ class SVNImplementation(M.RepositoryImplementation):
         user = Object(
             name=h.really_unicode(log_entry.get('author', '--none--')),
             email='',
-           date=log_date)
+            date=log_date)
         args = dict(
             tree_id=None,
             committed=user,
@@ -369,7 +385,7 @@ class SVNImplementation(M.RepositoryImplementation):
             parent_ids=[],
             child_ids=[])
         if revno > 1:
-            args['parent_ids'] = [ self._oid(revno-1) ]
+            args['parent_ids'] = [self._oid(revno - 1)]
         if ci_doc:
             ci_doc.update(**args)
             ci_doc.m.save()
@@ -378,7 +394,8 @@ class SVNImplementation(M.RepositoryImplementation):
             try:
                 ci_doc.m.insert(safe=True)
             except DuplicateKeyError:
-                if lazy: return False
+                if lazy:
+                    return False
         # Save diff info
         di = DiffInfoDoc.make(dict(_id=ci_doc._id, differences=[]))
         for path in log_entry.changed_paths:
@@ -417,21 +434,22 @@ class SVNImplementation(M.RepositoryImplementation):
             else:
                 lhs_id = None
             di.differences.append(dict(
-                    name=h.really_unicode(path.path),
-                    lhs_id=lhs_id,
-                    rhs_id=rhs_id))
+                name=h.really_unicode(path.path),
+                lhs_id=lhs_id,
+                rhs_id=rhs_id))
         di.m.save()
         return True
 
     def compute_tree_new(self, commit, tree_path='/'):
         from allura.model import repo as RM
-        tree_path = '/' + tree_path.strip('/')  # always leading slash, never trailing
+        # always leading slash, never trailing
+        tree_path = '/' + tree_path.strip('/')
         tree_id = self._tree_oid(commit._id, tree_path)
         tree = RM.Tree.query.get(_id=tree_id)
         if tree:
             return tree_id
         log.debug('Computing tree for %s: %s',
-                 self._revno(commit._id), tree_path)
+                  self._revno(commit._id), tree_path)
         rev = self._revision(commit._id)
         try:
             infos = self._svn.info2(
@@ -449,34 +467,35 @@ class SVNImplementation(M.RepositoryImplementation):
         for path, info in infos[1:]:
             if info.kind == pysvn.node_kind.dir:
                 tree_ids.append(Object(
-                        id=self._tree_oid(commit._id, path),
-                        name=path))
+                    id=self._tree_oid(commit._id, path),
+                    name=path))
             elif info.kind == pysvn.node_kind.file:
                 blob_ids.append(Object(
-                        id=self._tree_oid(commit._id, path),
-                        name=path))
+                    id=self._tree_oid(commit._id, path),
+                    name=path))
             else:
                 assert False
             lcd_entries.append(dict(
-                    name=path,
-                    commit_id=self._oid(info.last_changed_rev.number),
-                ))
+                name=path,
+                commit_id=self._oid(info.last_changed_rev.number),
+            ))
         tree, is_new = RM.Tree.upsert(tree_id,
-                tree_ids=tree_ids,
-                blob_ids=blob_ids,
-                other_ids=[],
-            )
+                                      tree_ids=tree_ids,
+                                      blob_ids=blob_ids,
+                                      other_ids=[],
+                                      )
         if is_new:
             commit_id = self._oid(infos[0][1].last_changed_rev.number)
             path = tree_path.strip('/')
             RM.TreesDoc.m.update_partial(
-                    {'_id': commit._id},
-                    {'$addToSet': {'tree_ids': tree_id}},
-                    upsert=True)
+                {'_id': commit._id},
+                {'$addToSet': {'tree_ids': tree_id}},
+                upsert=True)
             RM.LastCommitDoc.m.update_partial(
-                    {'commit_id': commit_id, 'path': path},
-                    {'commit_id': commit_id, 'path': path, 'entries': lcd_entries},
-                    upsert=True)
+                {'commit_id': commit_id, 'path': path},
+                {'commit_id': commit_id, 'path':
+                 path, 'entries': lcd_entries},
+                upsert=True)
         return tree_id
 
     def _tree_oid(self, commit_id, path):
@@ -533,7 +552,8 @@ class SVNImplementation(M.RepositoryImplementation):
         while revno > exclude:
             rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
             try:
-                logs = self._svn.log(url, revision_start=rev, peg_revision=rev, limit=page_size,
+                logs = self._svn.log(
+                    url, revision_start=rev, peg_revision=rev, limit=page_size,
                     discover_changed_paths=True)
             except pysvn.ClientError as e:
                 if 'Unable to connect' in e.message:
@@ -548,16 +568,18 @@ class SVNImplementation(M.RepositoryImplementation):
                 else:
                     yield self._map_log(ci, url, path)
             if len(logs) < page_size:
-                return  # we didn't get a full page, don't bother calling SVN again
+                # we didn't get a full page, don't bother calling SVN again
+                return
             revno = ci.revision.number - 1
 
     def _check_changed_path(self, changed_path, path):
         if (changed_path['copyfrom_path'] and
-                    changed_path['path'] and
-                    path and
-                    (len(changed_path['path']) < len(path)) and
-                    path.startswith(changed_path['path'])):
-                changed_path['copyfrom_path'] = changed_path['copyfrom_path'] + path[len(changed_path['path']):]
+                changed_path['path'] and
+                path and
+                (len(changed_path['path']) < len(path)) and
+                path.startswith(changed_path['path'])):
+                changed_path['copyfrom_path'] = changed_path['copyfrom_path'] + \
+                    path[len(changed_path['path']):]
                 changed_path['path'] = path
         return changed_path
 
@@ -565,7 +587,8 @@ class SVNImplementation(M.RepositoryImplementation):
         revno = ci.revision.number
         rev = pysvn.Revision(pysvn.opt_revision_kind.number, revno)
         try:
-            size = int(self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
+            size = int(
+                self._svn.list(url, revision=rev, peg_revision=rev)[0][0].size)
         except pysvn.ClientError:
             size = None
         rename_details = {}
@@ -579,23 +602,23 @@ class SVNImplementation(M.RepositoryImplementation):
                 )
                 break
         return {
-                'id': revno,
-                'message': h.really_unicode(ci.get('message', '--none--')),
-                'authored': {
-                        'name': h.really_unicode(ci.get('author', '--none--')),
-                        'email': '',
-                        'date': datetime.utcfromtimestamp(ci.date),
-                    },
-                'committed': {
-                        'name': h.really_unicode(ci.get('author', '--none--')),
-                        'email': '',
-                        'date': datetime.utcfromtimestamp(ci.date),
-                    },
-                'refs': ['HEAD'] if revno == self.head else [],
-                'parents': [revno-1] if revno > 1 else [],
-                'size': size,
-                'rename_details': rename_details,
-            }
+            'id': revno,
+            'message': h.really_unicode(ci.get('message', '--none--')),
+            'authored': {
+                'name': h.really_unicode(ci.get('author', '--none--')),
+                'email': '',
+                'date': datetime.utcfromtimestamp(ci.date),
+            },
+            'committed': {
+                'name': h.really_unicode(ci.get('author', '--none--')),
+                'email': '',
+                'date': datetime.utcfromtimestamp(ci.date),
+            },
+            'refs': ['HEAD'] if revno == self.head else [],
+            'parents': [revno - 1] if revno > 1 else [],
+            'size': size,
+            'rename_details': rename_details,
+        }
 
     def open_blob(self, blob):
         data = self._svn.cat(
@@ -607,18 +630,21 @@ class SVNImplementation(M.RepositoryImplementation):
         try:
             rev = self._revision(blob.commit._id)
             data = self._svn.list(
-                   self._url + blob.path(),
-                   revision=rev,
-                   peg_revision=rev,
-                   dirent_fields=pysvn.SVN_DIRENT_SIZE)
+                self._url + blob.path(),
+                revision=rev,
+                peg_revision=rev,
+                dirent_fields=pysvn.SVN_DIRENT_SIZE)
         except pysvn.ClientError:
-            log.info('ClientError getting filesize %r %r, returning 0', blob.path(), self._repo, exc_info=True)
+            log.info('ClientError getting filesize %r %r, returning 0',
+                     blob.path(), self._repo, exc_info=True)
             return 0
 
         try:
             size = data[0][0]['size']
         except (IndexError, KeyError):
-            log.info('Error getting filesize: bad data from svn client %r %r, returning 0', blob.path(), self._repo, exc_info=True)
+            log.info(
+                'Error getting filesize: bad data from svn client %r %r, returning 0',
+                blob.path(), self._repo, exc_info=True)
             size = 0
 
         return size
@@ -629,7 +655,8 @@ class SVNImplementation(M.RepositoryImplementation):
         # the hook should also call the user-defined post-commit-user hook
         text = self.post_receive_template.substitute(
             url=self._repo.refresh_url())
-        fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-commit')
+        fn = os.path.join(self._repo.fs_path, self._repo.name,
+                          'hooks', 'post-commit')
         with open(fn, 'wb') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
@@ -661,7 +688,8 @@ class SVNImplementation(M.RepositoryImplementation):
         if len(paths) == 1:
             tree_path = '/' + os.path.dirname(paths[0].strip('/'))
         else:
-            tree_path = '/' + os.path.commonprefix(paths).strip('/')  # always leading slash, never trailing
+            # always leading slash, never trailing
+            tree_path = '/' + os.path.commonprefix(paths).strip('/')
         paths = [path.strip('/') for path in paths]
         rev = self._revision(commit._id)
         try:
@@ -689,7 +717,8 @@ class SVNImplementation(M.RepositoryImplementation):
                 limit=1,
                 discover_changed_paths=True)[0]
         except pysvn.ClientError:
-            log.info('ClientError processing %r %r, treating as empty', oid, self._repo, exc_info=True)
+            log.info('ClientError processing %r %r, treating as empty',
+                     oid, self._repo, exc_info=True)
             log_entry = Object(date='', message='', changed_paths=[])
         return [p.path for p in log_entry.changed_paths]
 
@@ -702,7 +731,8 @@ class SVNImplementation(M.RepositoryImplementation):
                 idx = path.index('tags')
             elif 'branches' in path:
                 idx = path.index('branches')
-            if idx is not None and idx < len(path) - 1:  # e.g. path/tags/tag-1.0/...
+            # e.g. path/tags/tag-1.0/...
+            if idx is not None and idx < len(path) - 1:
                 return '/'.join(path[:idx + 2])  # path/tags/tag-1.0
             if 'trunk' in path:
                 idx = path.index('trunk')
@@ -720,8 +750,10 @@ class SVNImplementation(M.RepositoryImplementation):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit, path)
         dest = os.path.join(self._repo.tarball_path, archive_name)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
-        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        filename = os.path.join(self._repo.tarball_path, '%s%s' %
+                                (archive_name, '.zip'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' %
+                                   (archive_name, '.tmp'))
         rmtree(dest, ignore_errors=True)
         path = os.path.join(self._url, path)
         try:
@@ -730,7 +762,8 @@ class SVNImplementation(M.RepositoryImplementation):
             locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
             self._svn.export(path,
                              dest,
-                             revision=pysvn.Revision(pysvn.opt_revision_kind.number, commit),
+                             revision=pysvn.Revision(
+                                 pysvn.opt_revision_kind.number, commit),
                              ignore_externals=True)
             zipdir(dest, tmpfilename)
             os.rename(tmpfilename, filename)
@@ -744,9 +777,11 @@ class SVNImplementation(M.RepositoryImplementation):
 
     def is_file(self, path, rev=None):
         url = '/'.join([self._url, path.strip('/')])
-        rev = pysvn.Revision(pysvn.opt_revision_kind.number, self._revno(self.rev_parse(rev)))
+        rev = pysvn.Revision(pysvn.opt_revision_kind.number,
+                             self._revno(self.rev_parse(rev)))
         try:
-            info = self._svn.list(url, revision=rev, peg_revision=rev, dirent_fields=pysvn.SVN_DIRENT_KIND)[0][0]
+            info = self._svn.list(
+                url, revision=rev, peg_revision=rev, dirent_fields=pysvn.SVN_DIRENT_KIND)[0][0]
             return info.kind == pysvn.node_kind.file
         except pysvn.ClientError:
             return False

@@ -32,6 +32,7 @@ from forgeimporters import base
 
 
 class TestProjectExtractor(TestCase):
+
     @mock.patch('forgeimporters.base.h.urlopen')
     @mock.patch('forgeimporters.base.urllib2.Request')
     def test_urlopen(self, Request, urlopen):
@@ -39,7 +40,7 @@ class TestProjectExtractor(TestCase):
         Request.assert_called_once_with('myurl', data='foo')
         req = Request.return_value
         req.add_header.assert_called_once_with(
-                'User-Agent', 'Allura Data Importer (https://forge-allura.apache.org/p/allura/)')
+            'User-Agent', 'Allura Data Importer (https://forge-allura.apache.org/p/allura/)')
         urlopen.assert_called_once_with(req, retries=3, codes=(408,))
         self.assertEqual(r, urlopen.return_value)
 
@@ -53,16 +54,17 @@ def test_import_tool(g, c, object_from_path):
     object_from_path.return_value = importer = mock.Mock()
     importer.return_value.source = 'source'
     importer.return_value.tool_label = 'label'
-    base.import_tool('forgeimporters.base.ToolImporter', project_name='project_name',
-            mount_point='mount_point', mount_label='mount_label')
+    base.import_tool(
+        'forgeimporters.base.ToolImporter', project_name='project_name',
+        mount_point='mount_point', mount_label='mount_label')
     importer.return_value.import_tool.assert_called_once_with(c.project,
-            c.user, project_name='project_name', mount_point='mount_point',
-            mount_label='mount_label')
+                                                              c.user, project_name='project_name', mount_point='mount_point',
+                                                              mount_label='mount_label')
     g.post_event.assert_called_once_with(
-            'import_tool_task_succeeded',
-            'source',
-            'label',
-        )
+        'import_tool_task_succeeded',
+        'source',
+        'label',
+    )
 
 
 @mock.patch.object(base.traceback, 'format_exc')
@@ -72,20 +74,21 @@ def test_import_tool_failed(g, ToolImporter, format_exc):
     format_exc.return_value = 'my traceback'
 
     importer = mock.Mock(source='importer_source',
-            tool_label='importer_tool_label')
+                         tool_label='importer_tool_label')
     importer.import_tool.side_effect = RuntimeError('my error')
     ToolImporter.return_value = importer
 
-    assert_raises(RuntimeError, base.import_tool, 'forgeimporters.base.ToolImporter',
-            project_name='project_name')
+    assert_raises(
+        RuntimeError, base.import_tool, 'forgeimporters.base.ToolImporter',
+        project_name='project_name')
     g.post_event.assert_called_once_with(
-            'import_tool_task_failed',
-            error=str(importer.import_tool.side_effect),
-            traceback='my traceback',
-            importer_source='importer_source',
-            importer_tool_label='importer_tool_label',
-            project_name='project_name',
-        )
+        'import_tool_task_failed',
+        error=str(importer.import_tool.side_effect),
+        traceback='my traceback',
+        importer_source='importer_source',
+        importer_tool_label='importer_tool_label',
+        project_name='project_name',
+    )
 
 
 def ep(name, source=None, importer=None, **kw):
@@ -101,12 +104,15 @@ def ep(name, source=None, importer=None, **kw):
 
 
 class TestProjectImporter(TestCase):
+
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_tool_importers(self, iep):
-        eps = iep.return_value = [ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
+        eps = iep.return_value = [
+            ep('ep1', 'foo'), ep('ep2', 'bar'), ep('ep3', 'foo')]
         pi = base.ProjectImporter(mock.Mock(name='neighborhood'))
         pi.source = 'foo'
-        self.assertEqual(pi.tool_importers, {'ep1': eps[0].lv, 'ep3': eps[2].lv})
+        self.assertEqual(pi.tool_importers,
+                         {'ep1': eps[0].lv, 'ep3': eps[2].lv})
         iep.assert_called_once_with('allura.importers')
 
     @mock.patch.object(base.ToolImporter, 'by_name')
@@ -123,15 +129,17 @@ class TestProjectImporter(TestCase):
         pi.after_project_create = mock.Mock()
         pi.neighborhood.register_project.return_value.script_name = 'script_name/'
         kw = {
-                'project_name': 'project_name',
-                'project_shortname': 'shortname',
-                'tools': ['tool'],
-            }
+            'project_name': 'project_name',
+            'project_shortname': 'shortname',
+            'tools': ['tool'],
+        }
         with mock.patch.dict(base.config, {'site_name': 'foo'}):
             pi.process(**kw)
-        pi.neighborhood.register_project.assert_called_once_with('shortname', project_name='project_name')
+        pi.neighborhood.register_project.assert_called_once_with(
+            'shortname', project_name='project_name')
         pi.after_project_create.assert_called_once_with(c.project, **kw)
-        import_tool.post.assert_called_once_with('forgeimporters.base.ToolImporter', **kw)
+        import_tool.post.assert_called_once_with(
+            'forgeimporters.base.ToolImporter', **kw)
         M.AuditLog.log.assert_called_once_with('import project from Source')
         self.assertEqual(flash.call_count, 1)
         redirect.assert_called_once_with('script_name/admin/overview')
@@ -160,30 +168,34 @@ class TestProjectImporter(TestCase):
         self.assertEqual(c.show_login_overlay, False)
 
 
-
 TA1 = mock.Mock(tool_label='foo', tool_description='foo_desc')
 TA2 = mock.Mock(tool_label='qux', tool_description='qux_desc')
 TA3 = mock.Mock(tool_label='baz', tool_description='baz_desc')
 
+
 class TI1Controller(object):
+
     @expose()
     def index(self, *a, **kw):
         return 'test importer 1 controller webpage'
 
+
 class TI1(base.ToolImporter):
     target_app = TA1
     controller = TI1Controller
+
 
 class TI2(base.ToolImporter):
     target_app = TA2
     tool_label = 'bar'
     tool_description = 'bar_desc'
 
+
 class TI3(base.ToolImporter):
     target_app = [TA2, TA2]
 
-class TestToolImporter(TestCase):
 
+class TestToolImporter(TestCase):
 
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_name(self, iep):
@@ -201,15 +213,15 @@ class TestToolImporter(TestCase):
     @mock.patch.object(base.h, 'iter_entry_points')
     def test_by_app(self, iep):
         eps = iep.return_value = [
-                ep('importer1', importer=TI1),
-                ep('importer2', importer=TI2),
-                ep('importer3', importer=TI3),
-            ]
+            ep('importer1', importer=TI1),
+            ep('importer2', importer=TI2),
+            ep('importer3', importer=TI3),
+        ]
         importers = base.ToolImporter.by_app(TA2)
         self.assertEqual(set(importers.keys()), set([
-                'importer2',
-                'importer3',
-            ]))
+            'importer2',
+            'importer3',
+        ]))
         self.assertIsInstance(importers['importer2'], TI2)
         self.assertIsInstance(importers['importer3'], TI3)
 
@@ -225,6 +237,7 @@ class TestToolImporter(TestCase):
 
 
 class TestToolsValidator(TestCase):
+
     def setUp(self):
         self.tv = base.ToolsValidator('good-source')
 
@@ -251,24 +264,28 @@ class TestToolsValidator(TestCase):
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_multiple(self, by_name):
-        eps = by_name.side_effect = [ep('ep1', 'bad-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
+        eps = by_name.side_effect = [
+            ep('ep1', 'bad-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
         with self.assertRaises(Invalid) as cm:
             self.tv.to_python(['value1', 'value2', 'value3'])
-        self.assertEqual(cm.exception.msg, 'Invalid tools selected: value1, value3')
+        self.assertEqual(cm.exception.msg,
+                         'Invalid tools selected: value1, value3')
         self.assertEqual(by_name.call_args_list, [
-                mock.call('value1'),
-                mock.call('value2'),
-                mock.call('value3'),
-            ])
+            mock.call('value1'),
+            mock.call('value2'),
+            mock.call('value3'),
+        ])
 
     @mock.patch.object(base.ToolImporter, 'by_name')
     def test_valid(self, by_name):
-        eps = by_name.side_effect = [ep('ep1', 'good-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
-        self.assertEqual(self.tv.to_python(['value1', 'value2']), ['value1', 'value2'])
+        eps = by_name.side_effect = [
+            ep('ep1', 'good-source').lv, ep('ep2', 'good-source').lv, ep('ep3', 'bad-source').lv]
+        self.assertEqual(
+            self.tv.to_python(['value1', 'value2']), ['value1', 'value2'])
         self.assertEqual(by_name.call_args_list, [
-                mock.call('value1'),
-                mock.call('value2'),
-            ])
+            mock.call('value1'),
+            mock.call('value2'),
+        ])
 
 
 class TestProjectToolsImportController(TestController):
@@ -309,23 +326,26 @@ class TestProjectToolsImportController(TestController):
 
 def test_get_importer_upload_path():
     project = mock.Mock(
-            shortname='prefix/shortname',
-            is_nbhd_project=False,
-            is_user_project=False,
-            is_root=False,
-            url=lambda: 'n_url/',
-            neighborhood=mock.Mock(url_prefix='p/'),
-        )
+        shortname='prefix/shortname',
+        is_nbhd_project=False,
+        is_user_project=False,
+        is_root=False,
+        url=lambda: 'n_url/',
+        neighborhood=mock.Mock(url_prefix='p/'),
+    )
     with h.push_config(config, importer_upload_path='path/{nbhd}/{project}'):
         assert_equal(base.get_importer_upload_path(project), 'path/p/prefix')
         project.is_nbhd_project = True
         assert_equal(base.get_importer_upload_path(project), 'path/p/n_url')
         project.is_nbhd_project = False
         project.is_user_project = True
-        assert_equal(base.get_importer_upload_path(project), 'path/p/shortname')
+        assert_equal(base.get_importer_upload_path(project),
+                     'path/p/shortname')
         project.is_user_project = False
         project.is_root = True
-        assert_equal(base.get_importer_upload_path(project), 'path/p/prefix/shortname')
+        assert_equal(base.get_importer_upload_path(project),
+                     'path/p/prefix/shortname')
+
 
 @mock.patch.object(base, 'os')
 @mock.patch.object(base, 'get_importer_upload_path')
@@ -342,7 +362,8 @@ def test_save_importer_upload(giup, os):
     fp.write.assert_called_once_with('data')
 
     os.makedirs.side_effect = OSError(errno.EACCES, 'foo')
-    assert_raises(OSError, base.save_importer_upload, 'project', 'file', 'data')
+    assert_raises(OSError, base.save_importer_upload,
+                  'project', 'file', 'data')
 
 
 class TestFile(object):
@@ -350,9 +371,9 @@ class TestFile(object):
     @mock.patch.object(base, 'ProjectExtractor')
     def test_type(self, PE):
         PE().page = {
-                'content-type': 'image/png',
-                'data': 'data',
-            }
+            'content-type': 'image/png',
+            'data': 'data',
+        }
         f = base.File('http://example.com/barbaz.jpg')
         assert_equal(f.type, 'image/jpeg')
 

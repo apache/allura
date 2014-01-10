@@ -21,11 +21,12 @@ from formencode import validators as fev
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
+
 class OptionsAdmin(ff.AdminForm):
-    template='jinja:forgetracker:templates/tracker_widgets/options_admin.html'
-    defaults=dict(
+    template = 'jinja:forgetracker:templates/tracker_widgets/options_admin.html'
+    defaults = dict(
         ff.ForgeForm.defaults,
-        submit_text = 'Save')
+        submit_text='Save')
 
     @property
     def fields(self):
@@ -43,11 +44,15 @@ class OptionsAdmin(ff.AdminForm):
                 label='Send notifications for',
                 grid_width='7',
                 options=[
-                    ew.Option(py_value='NewTicketsOnly', label='New tickets only'),
-                    ew.Option(py_value='NewPublicTicketsOnly', label='New public tickets only'),
-                    ew.Option(py_value='AllTicketChanges', label='All ticket changes'),
-                    ew.Option(py_value='AllPublicTicketChanges', label='All public ticket changes'),
-                    ]),
+                    ew.Option(py_value='NewTicketsOnly',
+                              label='New tickets only'),
+                    ew.Option(py_value='NewPublicTicketsOnly',
+                              label='New public tickets only'),
+                    ew.Option(py_value='AllTicketChanges',
+                              label='All ticket changes'),
+                    ew.Option(py_value='AllPublicTicketChanges',
+                              label='All public ticket changes'),
+                ]),
             ffw.MarkdownEdit(
                 name='TicketHelpNew',
                 label='Help text to display on new ticket page',

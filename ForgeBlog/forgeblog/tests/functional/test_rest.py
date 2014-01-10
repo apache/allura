@@ -44,7 +44,9 @@ class TestBlogApi(TestRestApiBase):
             'labels': 'label1, label2'
         }
         r = self.api_post('/rest/p/test/blog/', **data)
-        assert_equal(r.location, 'http://localhost/rest/p/test/blog/%s/%s/test/' % (date.today().strftime("%Y"), date.today().strftime("%m")))
+        assert_equal(
+            r.location, 'http://localhost/rest/p/test/blog/%s/%s/test/' %
+            (date.today().strftime("%Y"), date.today().strftime("%m")))
         assert_equal(r.status_int, 201)
         url = '/rest' + BM.BlogPost.query.find().first().url()
         r = self.api_get('/rest/p/test/blog/')
@@ -57,8 +59,6 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.json['author'], 'test-admin')
         assert_equal(r.json['state'], data['state'])
         assert_equal(r.json['labels'], data['labels'].split(','))
-
-
 
     def test_update_post(self):
         data = {
@@ -100,8 +100,10 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.status_int, 404)
 
     def test_read_permissons(self):
-        self.api_post('/rest/p/test/blog/', title='test', text='test text', state='published')
-        self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'}, status=200)
+        self.api_post('/rest/p/test/blog/', title='test',
+                      text='test text', state='published')
+        self.app.get('/rest/p/test/blog/',
+                     extra_environ={'username': '*anonymous'}, status=200)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('blog').config.acl
         anon = M.ProjectRole.by_name('*anonymous')._id
@@ -113,7 +115,8 @@ class TestBlogApi(TestRestApiBase):
 
     def test_new_post_permissons(self):
         self.app.post('/rest/p/test/blog/',
-                      params=dict(title='test', text='test text', state='published'),
+                      params=dict(title='test', text='test text',
+                                  state='published'),
                       extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
@@ -122,15 +125,18 @@ class TestBlogApi(TestRestApiBase):
         anon_write = M.ACE.allow(anon, 'write')
         acl.append(anon_write)
         self.app.post('/rest/p/test/blog/',
-                      params=dict(title='test', text='test text', state='published'),
+                      params=dict(title='test', text='test text',
+                                  state='published'),
                       extra_environ={'username': '*anonymous'},
                       status=201)
 
     def test_update_post_permissons(self):
-        self.api_post('/rest/p/test/blog/', title='test', text='test text', state='published')
+        self.api_post('/rest/p/test/blog/', title='test',
+                      text='test text', state='published')
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.app.post(url.encode('utf-8'),
-                      params=dict(title='test2', text='test text2', state='published'),
+                      params=dict(title='test2', text='test text2',
+                                  state='published'),
                       extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
@@ -139,7 +145,8 @@ class TestBlogApi(TestRestApiBase):
         anon_write = M.ACE.allow(anon, 'write')
         acl.append(anon_write)
         self.app.post(url.encode('utf-8'),
-                      params=dict(title='test2', text='test text2', state='published'),
+                      params=dict(title='test2', text='test text2',
+                                  state='published'),
                       extra_environ={'username': '*anonymous'},
                       status=200)
         r = self.api_get(url)
@@ -148,12 +155,15 @@ class TestBlogApi(TestRestApiBase):
         assert_equal(r.json['state'], 'published')
 
     def test_permission_draft_post(self):
-        self.api_post('/rest/p/test/blog/', title='test', text='test text', state='draft')
-        r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
+        self.api_post('/rest/p/test/blog/', title='test',
+                      text='test text', state='draft')
+        r = self.app.get('/rest/p/test/blog/',
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.app.post(url.encode('utf-8'),
-                      params=dict(title='test2', text='test text2', state='published'),
+                      params=dict(title='test2', text='test text2',
+                                  state='published'),
                       extra_environ={'username': '*anonymous'},
                       status=401)
         p = M.Project.query.get(shortname='test')
@@ -161,22 +171,29 @@ class TestBlogApi(TestRestApiBase):
         anon = M.ProjectRole.by_name('*anonymous')._id
         anon_write = M.ACE.allow(anon, 'write')
         acl.append(anon_write)
-        r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
+        r = self.app.get('/rest/p/test/blog/',
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'][0]['title'], 'test')
 
     def test_draft_post(self):
-        self.api_post('/rest/p/test/blog/', title='test', text='test text', state='draft')
-        r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
+        self.api_post('/rest/p/test/blog/', title='test',
+                      text='test text', state='draft')
+        r = self.app.get('/rest/p/test/blog/',
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'], [])
         url = '/rest' + BM.BlogPost.query.find().first().url()
         self.api_post(url, state='published')
-        r = self.app.get('/rest/p/test/blog/', extra_environ={'username': '*anonymous'})
+        r = self.app.get('/rest/p/test/blog/',
+                         extra_environ={'username': '*anonymous'})
         assert_equal(r.json['posts'][0]['title'], 'test')
 
     def test_pagination(self):
-        self.api_post('/rest/p/test/blog/', title='test1', text='test text1', state='published')
-        self.api_post('/rest/p/test/blog/', title='test2', text='test text2', state='published')
-        self.api_post('/rest/p/test/blog/', title='test3', text='test text3', state='published')
+        self.api_post('/rest/p/test/blog/', title='test1',
+                      text='test text1', state='published')
+        self.api_post('/rest/p/test/blog/', title='test2',
+                      text='test text2', state='published')
+        self.api_post('/rest/p/test/blog/', title='test3',
+                      text='test text3', state='published')
         r = self.api_get('/rest/p/test/blog/', limit='1', page='0')
         assert_equal(r.json['posts'][0]['title'], 'test3')
         assert_equal(len(r.json['posts']), 1)

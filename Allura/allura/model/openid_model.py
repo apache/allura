@@ -27,14 +27,16 @@ from ming.orm.declarative import MappedClass
 from .session import main_doc_session, main_orm_session
 from .session import project_doc_session, project_orm_session
 
+
 class OpenIdAssociation(MappedClass):
+
     class __mongometa__:
-        name='oid_store_assoc'
+        name = 'oid_store_assoc'
         session = main_orm_session
 
-    _id = FieldProperty(str) # server url
+    _id = FieldProperty(str)  # server url
     assocs = FieldProperty([dict(
-                key=str, value=str)])
+        key=str, value=str)])
 
     # Mimic openid.store.memstore.ServerAssocs
     def set_assoc(self, assoc):
@@ -54,7 +56,7 @@ class OpenIdAssociation(MappedClass):
         old_len = len(self.assocs)
         self.assocs = [
             a for a in self.assocs
-            if a['key'] != handle ]
+            if a['key'] != handle]
         return old_len != len(self.assocs)
 
     def best_assoc(self):
@@ -70,19 +72,22 @@ class OpenIdAssociation(MappedClass):
 
     def cleanup_assocs(self):
         old_len = len(self.assocs)
-        self.assocs = [ a for a in self.assocs
-                        if Association.deserialize(a['value']).getExpiresIn() != 0 ]
+        self.assocs = [a for a in self.assocs
+                       if Association.deserialize(a['value']).getExpiresIn() != 0]
         new_len = len(self.assocs)
         return (old_len - new_len), new_len
 
+
 class OpenIdNonce(MappedClass):
+
     class __mongometa__:
-        name='oid_store_nonce'
+        name = 'oid_store_nonce'
         session = main_orm_session
 
-    _id = FieldProperty(str) # Nonce value
+    _id = FieldProperty(str)  # Nonce value
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
-        
+
+
 class OpenIdStore(object):
 
     def _get_assocs(self, server_url):
@@ -90,7 +95,7 @@ class OpenIdStore(object):
         if assoc is None:
             assoc = OpenIdAssociation(_id=server_url)
         return assoc
-    
+
     def storeAssociation(self, server_url, association):
         assocs = self._get_assocs(server_url)
         assocs.set_assoc(deepcopy(association))
@@ -120,6 +125,5 @@ class OpenIdStore(object):
         now = datetime.utcnow()
         cutoff = now - timedelta(seconds=nonce.SKEW)
         num_removed = OpenIdNonce.query.remove(dict(
-                timestamp={'$lt': cutoff}))
+            timestamp={'$lt': cutoff}))
         return num_removed
-

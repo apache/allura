@@ -46,6 +46,7 @@ def setUp(self):
 
 
 class TestMakeSafePathPortion(TestCase):
+
     def setUp(self):
         self.f = h.make_safe_path_portion
 
@@ -78,7 +79,8 @@ def test_really_unicode():
     here_dir = path.dirname(__file__)
     s = h.really_unicode('\xef\xbb\xbf<?xml version="1.0" encoding="utf-8" ?>')
     assert s.startswith(u'\ufeff')
-    s = h.really_unicode(open(path.join(here_dir, 'data/unicode_test.txt')).read())
+    s = h.really_unicode(
+        open(path.join(here_dir, 'data/unicode_test.txt')).read())
     assert isinstance(s, unicode)
     # try non-ascii string in legacy 8bit encoding
     h.really_unicode(u'\u0410\u0401'.encode('cp1251'))
@@ -86,11 +88,13 @@ def test_really_unicode():
     s = h._attempt_encodings('foo', ['LKDJFLDK'])
     assert isinstance(s, unicode)
 
+
 def test_render_genshi_plaintext():
     here_dir = path.dirname(__file__)
     tpl = path.join(here_dir, 'data/genshi_hello_tmpl')
     text = h.render_genshi_plaintext(tpl, object='world')
     eq_(u'Hello, world!\n', text)
+
 
 def test_find_project():
     proj, rest = h.find_project('/p/test/foo')
@@ -99,14 +103,17 @@ def test_find_project():
     proj, rest = h.find_project('/p/testable/foo')
     assert proj is None
 
+
 def test_make_users():
     r = h.make_users([None]).next()
     assert r.username == '*anonymous', r
+
 
 def test_make_roles():
     h.set_context('test', 'wiki', neighborhood='Projects')
     pr = M.ProjectRole.anonymous()
     assert h.make_roles([pr._id]).next() == pr
+
 
 @td.with_wiki
 def test_make_app_admin_only():
@@ -138,6 +145,7 @@ def test_make_app_admin_only():
     assert not c.app.is_visible_to(anon)
     assert not c.app.is_visible_to(dev)
     assert c.app.is_visible_to(admin)
+
 
 @td.with_wiki
 def test_context_setters():
@@ -172,15 +180,17 @@ def test_context_setters():
     assert not hasattr(c, 'project')
     assert not hasattr(c, 'app')
 
+
 def test_encode_keys():
-    kw = h.encode_keys({u'foo':5})
+    kw = h.encode_keys({u'foo': 5})
     assert type(kw.keys()[0]) != unicode
+
 
 def test_ago():
     from datetime import datetime, timedelta
     import time
     assert_equals(h.ago(datetime.utcnow() - timedelta(days=2)), '2 days ago')
-    assert_equals(h.ago_ts(time.time() - 60*60*2), '2 hours ago')
+    assert_equals(h.ago_ts(time.time() - 60 * 60 * 2), '2 hours ago')
     d_str = (datetime.utcnow() - timedelta(hours=3)).isoformat()
     assert_equals(h.ago_string(d_str), '3 hours ago')
     assert_equals(h.ago_string('bad format'), 'unknown')
@@ -197,8 +207,10 @@ def test_urlquote_unicode():
     h.urlquote(u'\u0410')
     h.urlquoteplus(u'\u0410')
 
+
 def test_sharded_path():
     assert_equals(h.sharded_path('foobar'), 'f/fo')
+
 
 def test_paging_sanitizer():
     test_data = {
@@ -215,12 +227,17 @@ def test_paging_sanitizer():
     for input, output in test_data.iteritems():
         assert (h.paging_sanitizer(*input)) == output
 
+
 def test_render_any_markup_empty():
     assert_equals(h.render_any_markup('foo', ''), '<p><em>Empty File</em></p>')
 
+
 def test_render_any_markup_plain():
-    assert_equals(h.render_any_markup('readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo'),
-                  '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
+    assert_equals(
+        h.render_any_markup(
+            'readme.txt', '<b>blah</b>\n<script>alert(1)</script>\nfoo'),
+        '<pre>&lt;b&gt;blah&lt;/b&gt;\n&lt;script&gt;alert(1)&lt;/script&gt;\nfoo</pre>')
+
 
 def test_render_any_markup_formatting():
     assert_equals(h.render_any_markup('README.md', '### foo\n'
@@ -270,6 +287,7 @@ def test_get_first():
     assert_equals(h.get_first({'title': []}, 'title'), None)
     assert_equals(h.get_first({'title': ['Value']}, 'title'), 'Value')
 
+
 @patch('allura.lib.search.c')
 def test_inject_user(context):
     user = Mock(username='user01')
@@ -283,7 +301,9 @@ def test_inject_user(context):
     assert_equals(result, 'reported_by_s:"admin1" OR assigned_to_s:"admin1"')
     context.user = Mock(username='*anonymous')
     result = inject_user('reported_by_s:$USER OR assigned_to_s:$USER')
-    assert_equals(result, 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')
+    assert_equals(
+        result, 'reported_by_s:"*anonymous" OR assigned_to_s:"*anonymous"')
+
 
 def test_datetimeformat():
     from datetime import date
@@ -291,8 +311,10 @@ def test_datetimeformat():
 
 
 def test_split_select_field_options():
-    assert_equals(h.split_select_field_options('"test message" test2'), ['test message', 'test2'])
-    assert_equals(h.split_select_field_options('"test message test2'), ['test', 'message', 'test2'])
+    assert_equals(h.split_select_field_options('"test message" test2'),
+                  ['test message', 'test2'])
+    assert_equals(h.split_select_field_options('"test message test2'),
+                  ['test', 'message', 'test2'])
 
 
 def test_notifications_disabled():
@@ -331,14 +353,20 @@ http://blah.com/?x=y&a=b - not escaped either
 
     dd.assert_equal(h.plain2markdown(text), expected)
 
-    dd.assert_equal(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
-                'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+    dd.assert_equal(
+        h.plain2markdown('a foo  bar\n\n    code here?',
+                         preserve_multiple_spaces=True),
+        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
 
-    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
-                 '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+    dd.assert_equal(
+        h.plain2markdown('\ttab before (stuff)',
+                         preserve_multiple_spaces=True),
+        '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
 
-    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
-                 'tab before \(stuff\)')
+    dd.assert_equal(
+        h.plain2markdown('\ttab before (stuff)',
+                         preserve_multiple_spaces=False),
+        'tab before \(stuff\)')
 
 
 @td.without_module('html2text')
@@ -376,17 +404,24 @@ back\\\\\-slash escaped
 
     dd.assert_equal(h.plain2markdown(text), expected)
 
-    dd.assert_equal(h.plain2markdown('a foo  bar\n\n    code here?', preserve_multiple_spaces=True),
-                'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
+    dd.assert_equal(
+        h.plain2markdown('a foo  bar\n\n    code here?',
+                         preserve_multiple_spaces=True),
+        'a foo&nbsp; bar\n\n&nbsp;&nbsp;&nbsp; code here?')
 
-    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=True),
-                 '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
+    dd.assert_equal(
+        h.plain2markdown('\ttab before (stuff)',
+                         preserve_multiple_spaces=True),
+        '&nbsp;&nbsp;&nbsp; tab before \(stuff\)')
 
-    dd.assert_equal(h.plain2markdown('\ttab before (stuff)', preserve_multiple_spaces=False),
-                 'tab before \(stuff\)')
+    dd.assert_equal(
+        h.plain2markdown('\ttab before (stuff)',
+                         preserve_multiple_spaces=False),
+        'tab before \(stuff\)')
 
 
 class TestUrlOpen(TestCase):
+
     @patch('allura.lib.helpers.urllib2')
     def test_no_error(self, urllib2):
         r = h.urlopen('myurl')
@@ -396,6 +431,7 @@ class TestUrlOpen(TestCase):
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_socket_timeout(self, urlopen):
         import socket
+
         def side_effect(url, timeout=None):
             raise socket.timeout()
         urlopen.side_effect = side_effect
@@ -405,6 +441,7 @@ class TestUrlOpen(TestCase):
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_handled_http_error(self, urlopen):
         from urllib2 import HTTPError
+
         def side_effect(url, timeout=None):
             raise HTTPError('url', 408, 'timeout', None, None)
         urlopen.side_effect = side_effect
@@ -414,6 +451,7 @@ class TestUrlOpen(TestCase):
     @patch('allura.lib.helpers.urllib2.urlopen')
     def test_unhandled_http_error(self, urlopen):
         from urllib2 import HTTPError
+
         def side_effect(url, timeout=None):
             raise HTTPError('url', 404, 'timeout', None, None)
         urlopen.side_effect = side_effect
@@ -428,12 +466,15 @@ def test_absurl_no_request():
 @patch.object(h, 'request',
               new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
 def test_absurl_with_request():
-    assert_equals(h.absurl('/p/test/foobar'), 'https://www.mysite.com/p/test/foobar')
+    assert_equals(h.absurl('/p/test/foobar'),
+                  'https://www.mysite.com/p/test/foobar')
 
 
 def test_daterange():
-    assert_equals(list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))),
-                 [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
+    assert_equals(
+        list(h.daterange(datetime(2013, 1, 1), datetime(2013, 1, 4))),
+        [datetime(2013, 1, 1), datetime(2013, 1, 2), datetime(2013, 1, 3)])
+
 
 @patch.object(h, 'request',
               new=Request.blank('/p/test/foobar', base_url='https://www.mysite.com/p/test/foobar'))
@@ -446,7 +487,9 @@ def test_login_overlay():
         with h.login_overlay(exceptions=['foobar']):
             raise HTTPUnauthorized()
 
+
 class TestIterEntryPoints(TestCase):
+
     def _make_ep(self, name, cls):
         m = Mock()
         m.name = name
@@ -457,17 +500,20 @@ class TestIterEntryPoints(TestCase):
     @patch.dict(h.tg.config, {'disable_entry_points.allura': 'myapp'})
     def test_disabled(self, pkg_resources):
         pkg_resources.iter_entry_points.return_value = [
-                self._make_ep('myapp', object)]
+            self._make_ep('myapp', object)]
         self.assertEqual([], list(h.iter_entry_points('allura')))
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_subclassed_ep(self, pkg_resources):
-        class App(object): pass
-        class BetterApp(App): pass
+        class App(object):
+            pass
+
+        class BetterApp(App):
+            pass
 
         pkg_resources.iter_entry_points.return_value = [
-                self._make_ep('myapp', App),
-                self._make_ep('myapp', BetterApp)]
+            self._make_ep('myapp', App),
+            self._make_ep('myapp', BetterApp)]
 
         eps = list(h.iter_entry_points('allura'))
         self.assertEqual(len(eps), 1)
@@ -475,16 +521,21 @@ class TestIterEntryPoints(TestCase):
 
     @patch('allura.lib.helpers.pkg_resources')
     def test_ambiguous_eps(self, pkg_resources):
-        class App(object): pass
-        class BetterApp(App): pass
-        class BestApp(object): pass
+        class App(object):
+            pass
+
+        class BetterApp(App):
+            pass
+
+        class BestApp(object):
+            pass
 
         pkg_resources.iter_entry_points.return_value = [
-                self._make_ep('myapp', App),
-                self._make_ep('myapp', BetterApp),
-                self._make_ep('myapp', BestApp)]
+            self._make_ep('myapp', App),
+            self._make_ep('myapp', BetterApp),
+            self._make_ep('myapp', BestApp)]
 
         self.assertRaisesRegexp(ImportError,
-                'Ambiguous \[allura\] entry points detected. '
-                'Multiple entry points with name "myapp".',
-                list, h.iter_entry_points('allura'))
+                                'Ambiguous \[allura\] entry points detected. '
+                                'Multiple entry points with name "myapp".',
+                                list, h.iter_entry_points('allura'))

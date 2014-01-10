@@ -36,23 +36,26 @@ from allura.lib import utils
 config = utils.ConfigProxy(
     common_suffix='forgemail.domain')
 
+
 class Globals(MappedClass):
 
     class __mongometa__:
         name = 'blog-globals'
         session = M.project_orm_session
-        indexes = [ 'app_config_id' ]
+        indexes = ['app_config_id']
 
     type_s = 'BlogGlobals'
     _id = FieldProperty(schema.ObjectId)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
-    external_feeds=FieldProperty([str])
+    app_config_id = ForeignIdProperty(
+        'AppConfig', if_missing=lambda: c.app.config._id)
+    external_feeds = FieldProperty([str])
 
 
 class BlogPostSnapshot(M.Snapshot):
+
     class __mongometa__:
-        name='blog_post_snapshot'
-    type_s='Blog Post Snapshot'
+        name = 'blog_post_snapshot'
+    type_s = 'Blog Post Snapshot'
 
     def original(self):
         return BlogPost.query.get(_id=self.artifact_id)
@@ -92,14 +95,18 @@ class BlogPostSnapshot(M.Snapshot):
             return None
         return orig.email_address
 
+
 class BlogPost(M.VersionedArtifact, ActivityObject):
+
     class __mongometa__:
-        name='blog_post'
+        name = 'blog_post'
         history_class = BlogPostSnapshot
-        unique_indexes = [ ('app_config_id', 'slug') ]
+        unique_indexes = [('app_config_id', 'slug')]
         indexes = [
-            ('app_config_id', 'state', 'timestamp'),  # for [[project_blog_posts]] macro
-            ('neighborhood_id', 'state', 'timestamp'),  # for [[neighborhood_blog_posts]] macro
+            # for [[project_blog_posts]] macro
+            ('app_config_id', 'state', 'timestamp'),
+            # for [[neighborhood_blog_posts]] macro
+            ('neighborhood_id', 'state', 'timestamp'),
         ]
 
     type_s = 'Blog Post'
@@ -109,7 +116,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
     text_cache = FieldProperty(MarkdownCache)
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     slug = FieldProperty(str)
-    state = FieldProperty(schema.OneOf('draft', 'published'), if_missing='draft')
+    state = FieldProperty(
+        schema.OneOf('draft', 'published'), if_missing='draft')
     neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=None)
 
     @property
@@ -128,12 +136,14 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     def _get_date(self):
         return self.timestamp.date()
+
     def _set_date(self, value):
         self.timestamp = datetime.combine(value, self.time)
     date = property(_get_date, _set_date)
 
     def _get_time(self):
         return self.timestamp.time()
+
     def _set_time(self, value):
         self.timestamp = datetime.combine(self.date, value)
     time = property(_get_time, _set_time)
@@ -162,19 +172,20 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
         # first and *then* truncating doesn't work either, because the
         # ellipsis tag ends up orphaned from the main text.
         ellipsis = '... [read more](%s)' % self.url()
-        paragraphs = self.text.replace('\r','').split('\n\n')
+        paragraphs = self.text.replace('\r', '').split('\n\n')
         total_length = 0
         for i, p in enumerate(paragraphs):
             total_length += len(p)
             if total_length >= 400:
                 break
-        text = '\n\n'.join(paragraphs[:i+1])
+        text = '\n\n'.join(paragraphs[:i + 1])
         return g.markdown.convert(text + (ellipsis if i + 1 < len(paragraphs)
-                                                   else ''))
+                                          else ''))
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(
+            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.title.replace('/', '.'), domain, config.common_suffix)
 
     @staticmethod
@@ -184,8 +195,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
             for ch in title.replace(' ', '-')
             if ch.isalnum() or ch == '-')
         return '%s/%s' % (
-                timestamp.strftime('%Y/%m'),
-                slugsafe)
+            timestamp.strftime('%Y/%m'),
+            slugsafe)
 
     def make_slug(self):
         base = BlogPost.make_base_slug(self.title, self.timestamp)
@@ -195,7 +206,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 session(self).insert_now(self, state(self))
                 return self.slug
             except DuplicateKeyError:
-                self.slug = base + '-%.3d' % randint(0,999)
+                self.slug = base + '-%.3d' % randint(0, 999)
 
     def url(self):
         return self.app.url + self.slug + '/'
@@ -215,26 +226,27 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     def get_version(self, version):
         HC = self.__mongometa__.history_class
-        return HC.query.find({'artifact_id':self._id, 'version':int(version)}).one()
+        return HC.query.find({'artifact_id': self._id, 'version': int(version)}).one()
 
     def commit(self):
         activity = functools.partial(g.director.create_activity, c.user,
-                target=c.project)
+                                     target=c.project)
         self.subscribe()
         super(BlogPost, self).commit()
         if self.version > 1:
-            v1 = self.get_version(self.version-1)
+            v1 = self.get_version(self.version - 1)
             v2 = self
-            la = [ line + '\n'  for line in v1.text.splitlines() ]
-            lb = [ line + '\n'  for line in v2.text.splitlines() ]
+            la = [line + '\n' for line in v1.text.splitlines()]
+            lb = [line + '\n' for line in v2.text.splitlines()]
             diff = ''.join(difflib.unified_diff(
-                    la, lb,
-                    'v%d' % v1.version,
-                    'v%d' % v2.version))
+                la, lb,
+                'v%d' % v1.version,
+                'v%d' % v2.version))
             description = diff
             if v1.state != 'published' and v2.state == 'published':
                 activity('created', self)
-                M.Feed.post(self, self.title, self.text, author=self.author(), pubdate=self.get_version(1).timestamp)
+                M.Feed.post(self, self.title, self.text, author=self.author(),
+                            pubdate=self.get_version(1).timestamp)
                 description = self.text
                 subject = '%s created post %s' % (
                     c.user.username, self.title)
@@ -252,7 +264,8 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
                 c.user.username, self.title)
             if self.state == 'published':
                 activity('created', self)
-                M.Feed.post(self, self.title, self.text, author=self.author(), pubdate=self.timestamp)
+                M.Feed.post(self, self.title, self.text,
+                            author=self.author(), pubdate=self.timestamp)
         if self.state == 'published':
             M.Notification.post(
                 artifact=self, topic='metadata', text=description, subject=subject)
@@ -282,10 +295,11 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
 
 class Attachment(M.BaseAttachment):
-    ArtifactClass=BlogPost
+    ArtifactClass = BlogPost
+
     class __mongometa__:
-        polymorphic_identity='BlogAttachment'
-    attachment_type=FieldProperty(str, if_missing='BlogAttachment')
+        polymorphic_identity = 'BlogAttachment'
+    attachment_type = FieldProperty(str, if_missing='BlogAttachment')
 
 
 Mapper.compile_all()

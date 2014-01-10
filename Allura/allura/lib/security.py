@@ -31,7 +31,9 @@ from allura.lib.utils import TruthyCallable
 
 log = logging.getLogger(__name__)
 
+
 class Credentials(object):
+
     '''
     Role graph logic & caching
     '''
@@ -58,7 +60,8 @@ class Credentials(object):
 
     def clear_user(self, user_id, project_id=None):
         if project_id == '*':
-            to_remove = [(uid, pid) for uid, pid in self.users if uid == user_id]
+            to_remove = [(uid, pid)
+                         for uid, pid in self.users if uid == user_id]
         else:
             to_remove = [(user_id, project_id)]
         for uid, pid in to_remove:
@@ -68,8 +71,10 @@ class Credentials(object):
     def load_user_roles(self, user_id, *project_ids):
         '''Load the credentials with all user roles for a set of projects'''
         # Don't reload roles
-        project_ids = [ pid for pid in project_ids if self.users.get((user_id, pid)) is None ]
-        if not project_ids: return
+        project_ids = [
+            pid for pid in project_ids if self.users.get((user_id, pid)) is None]
+        if not project_ids:
+            return
         if user_id is None:
             q = self.project_role.find({
                 'user_id': None,
@@ -94,8 +99,10 @@ class Credentials(object):
     def load_project_roles(self, *project_ids):
         '''Load the credentials with all user roles for a set of projects'''
         # Don't reload roles
-        project_ids = [ pid for pid in project_ids if self.projects.get(pid) is None ]
-        if not project_ids: return
+        project_ids = [
+            pid for pid in project_ids if self.projects.get(pid) is None]
+        if not project_ids:
+            return
         q = self.project_role.find({
             'project_id': {'$in': project_ids}})
         roles_by_project = dict((pid, []) for pid in project_ids)
@@ -134,16 +141,17 @@ class Credentials(object):
 
     def user_has_any_role(self, user_id, project_id, role_ids):
         user_roles = self.user_roles(user_id=user_id, project_id=project_id)
-        return bool(set(role_ids)  & user_roles.reaching_ids_set)
+        return bool(set(role_ids) & user_roles.reaching_ids_set)
 
     def users_with_named_role(self, project_id, name):
         """ returns in sorted order """
         roles = self.project_roles(project_id)
-        return sorted(RoleCache(self, roles.find(name=name)).users_that_reach, key=lambda u:u.username)
+        return sorted(RoleCache(self, roles.find(name=name)).users_that_reach, key=lambda u: u.username)
 
     def userids_with_named_role(self, project_id, name):
         roles = self.project_roles(project_id)
         return RoleCache(self, roles.find(name=name)).userids_that_reach
+
 
 class RoleCache(object):
 
@@ -153,19 +161,23 @@ class RoleCache(object):
 
     def find(self, **kw):
         tests = kw.items()
+
         def _iter():
             for r in self:
-                for k,v in tests:
+                for k, v in tests:
                     val = r.get(k)
                     if callable(v):
-                        if not v(val): break
-                    elif v != val: break
+                        if not v(val):
+                            break
+                    elif v != val:
+                        break
                 else:
                     yield r
         return RoleCache(self.cred, _iter())
 
     def get(self, **kw):
-        for x in self.find(**kw): return x
+        for x in self.find(**kw):
+            return x
         return None
 
     def __iter__(self):
@@ -199,10 +211,12 @@ class RoleCache(object):
             to_visit = list(self)
             while to_visit:
                 r = to_visit.pop(0)
-                if r['_id'] in visited: continue
+                if r['_id'] in visited:
+                    continue
                 visited.add(r['_id'])
                 yield r
-                pr_rindex = self.cred.project_roles(r['project_id']).reverse_index
+                pr_rindex = self.cred.project_roles(
+                    r['project_id']).reverse_index
                 to_visit += pr_rindex[r['_id']]
         return RoleCache(self.cred, _iter())
 
@@ -214,7 +228,7 @@ class RoleCache(object):
 
     @LazyProperty
     def userids_that_reach(self):
-        return [ r['user_id'] for r in self.roles_that_reach ]
+        return [r['user_id'] for r in self.roles_that_reach]
 
     @LazyProperty
     def reaching_roles(self):
@@ -223,7 +237,8 @@ class RoleCache(object):
             visited = set()
             while to_visit:
                 (rid, role) = to_visit.pop()
-                if rid in visited: continue
+                if rid in visited:
+                    continue
                 yield role
                 pr_index = self.cred.project_roles(role['project_id']).index
                 if rid in pr_index:
@@ -234,11 +249,12 @@ class RoleCache(object):
 
     @LazyProperty
     def reaching_ids(self):
-        return [ r['_id'] for r in self.reaching_roles ]
+        return [r['_id'] for r in self.reaching_roles]
 
     @LazyProperty
     def reaching_ids_set(self):
         return set(self.reaching_ids)
+
 
 def has_access(obj, permission, user=None, project=None):
     '''Return whether the given user has the permission name on the given object.
@@ -280,11 +296,13 @@ def has_access(obj, permission, user=None, project=None):
       3. Otherwise, DENY access to the resource.
     '''
     from allura import model as M
+
     def predicate(obj=obj, user=user, project=project, roles=None):
         if obj is None:
             return False
         if roles is None:
-            if user is None: user = c.user
+            if user is None:
+                user = c.user
             assert user, 'c.user should always be at least M.User.anonymous()'
             cred = Credentials.get()
             if project is None:
@@ -298,12 +316,13 @@ def has_access(obj, permission, user=None, project=None):
                 else:
                     project = getattr(obj, 'project', None) or c.project
                     project = project.root_project
-            roles = cred.user_roles(user_id=user._id, project_id=project._id).reaching_ids
+            roles = cred.user_roles(
+                user_id=user._id, project_id=project._id).reaching_ids
 
         # TODO: move deny logic into loop below; see ticket [#6715]
         if user != M.User.anonymous():
             user_roles = Credentials.get().user_roles(user_id=user._id,
-                    project_id=project.root_project._id)
+                                                      project_id=project.root_project._id)
             for r in user_roles:
                 deny_user = M.ACE.deny(r['_id'], permission)
                 if M.ACL.contains(deny_user, obj.acl):
@@ -336,6 +355,7 @@ def has_access(obj, permission, user=None, project=None):
         # log.info('%s: %s', txt, result)
         return result
     return TruthyCallable(predicate)
+
 
 def all_allowed(obj, user_or_role=None, project=None):
     '''
@@ -380,7 +400,8 @@ def all_allowed(obj, user_or_role=None, project=None):
         roles += [anon]  # auth inherits from anon
     else:
         roles += [auth, anon]  # named group or user inherits from auth + anon
-    role_ids = RoleCache(Credentials.get(), roles).reaching_ids  # match rules applicable to us
+    # match rules applicable to us
+    role_ids = RoleCache(Credentials.get(), roles).reaching_ids
     perms = set()
     denied = defaultdict(set)
     while obj:  # traverse parent contexts
@@ -395,12 +416,14 @@ def all_allowed(obj, user_or_role=None, project=None):
                     else:
                         # explicit DENY overrides any ALLOW for this permission
                         # for this role_id in this ACL or parent(s) (but an ALLOW
-                        # for a different role could still grant this permission)
+                        # for a different role could still grant this
+                        # permission)
                         denied[role_id].add(ace.permission)
         obj = obj.parent_security_context()
     if M.ALL_PERMISSIONS in perms:
         return set([M.ALL_PERMISSIONS])
     return perms
+
 
 def require(predicate, message=None):
     '''
@@ -412,7 +435,8 @@ def require(predicate, message=None):
     '''
 
     from allura import model as M
-    if predicate(): return
+    if predicate():
+        return
     if not message:
         message = """You don't have permission to do that.
                      You must ask a project administrator for rights to perform this task.
@@ -423,12 +447,15 @@ def require(predicate, message=None):
     else:
         raise exc.HTTPUnauthorized()
 
+
 def require_access(obj, permission, **kwargs):
     if obj is not None:
         predicate = has_access(obj, permission, **kwargs)
         return require(predicate, message='%s access required' % permission.capitalize())
     else:
-        raise exc.HTTPForbidden(detail="Could not verify permissions for this page.")
+        raise exc.HTTPForbidden(
+            detail="Could not verify permissions for this page.")
+
 
 def require_authenticated():
     '''
@@ -438,11 +465,14 @@ def require_authenticated():
     if c.user == M.User.anonymous():
         raise exc.HTTPUnauthorized()
 
+
 def simple_grant(acl, role_id, permission):
     from allura.model.types import ACE
     for ace in acl:
-        if ace.role_id == role_id and ace.permission == permission: return
+        if ace.role_id == role_id and ace.permission == permission:
+            return
     acl.append(ACE.allow(role_id, permission))
+
 
 def simple_revoke(acl, role_id, permission):
     remove = []

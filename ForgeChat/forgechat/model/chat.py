@@ -31,25 +31,26 @@ class ChatChannel(MappedClass):
         name = 'globals'
         session = M.main_orm_session
         indexes = ['project_id']
-        unique_indexes = [ 'channel' ]
+        unique_indexes = ['channel']
 
     _id = FieldProperty(S.ObjectId)
     project_id = FieldProperty(S.ObjectId)
     app_config_id = FieldProperty(S.ObjectId)
     channel = FieldProperty(str)
-    
+
+
 class ChatMessage(M.Artifact):
+
     class __mongometa__:
-        name='chat_message'
-        indexes = [ 'timestamp' ]
-    type_s='Chat Message'
+        name = 'chat_message'
+        indexes = ['timestamp']
+    type_s = 'Chat Message'
 
     timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
     sender = FieldProperty(str, if_missing='')
     channel = FieldProperty(str, if_missing='')
     text = FieldProperty(str, if_missing='')
     text_cache = FieldProperty(MarkdownCache)
-
 
     def index_id(self):
         id = 'Chat-%s:%s:%s.%s' % (
@@ -73,7 +74,7 @@ class ChatMessage(M.Artifact):
                 + str(self._id))
 
     def shorthand_id(self):
-        return str(self._id) # pragma no cover
+        return str(self._id)  # pragma no cover
 
     @property
     def sender_short(self):

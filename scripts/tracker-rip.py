@@ -23,13 +23,13 @@ from urlparse import urljoin
 
 from allura.lib import rest_api
 
-SRC_CRED=dict(
-        api_key='c03efc6cca1cf78be9e9',
-        secret_key='575eda2f25f6490d8cfe5d02f2506c010112894d0ea10660e43157a87a7e620c61ac06397b028af1',
-        http_username=raw_input('LDAP username: '),
-        http_password=getpass.getpass('LDAP password: '))
-SRC_SERVER='https://newforge.sf.geek.net/'
-SRC_TOOL='/rest/p/forge/tickets/'
+SRC_CRED = dict(
+    api_key='c03efc6cca1cf78be9e9',
+    secret_key='575eda2f25f6490d8cfe5d02f2506c010112894d0ea10660e43157a87a7e620c61ac06397b028af1',
+    http_username=raw_input('LDAP username: '),
+    http_password=getpass.getpass('LDAP password: '))
+SRC_SERVER = 'https://newforge.sf.geek.net/'
+SRC_TOOL = '/rest/p/forge/tickets/'
 
 # Credentials for sf-overlords
 # DST_CRED=dict(
@@ -37,17 +37,17 @@ SRC_TOOL='/rest/p/forge/tickets/'
 #     secret_key='fcc48a0c31459e99a88cc42cdd7f908fad78b283ca30a86caac1ab65036ff71fc195a18e56534dc5')
 # DST_SERVER='http://sourceforge.net/'
 # DST_TOOL='/rest/p/allura/tickets/'
-DST_CRED=dict(
+DST_CRED = dict(
     api_key='aa7244645424513d9636',
     secret_key='cd1d97be98497f7b615b297aa2061177ddf6d42b95a8484193f84690486694234dbf817efc3b2d6e')
-DST_SERVER='http://localhost:8080/'
-DST_TOOL='/rest/p/test/bugs/'
+DST_SERVER = 'http://localhost:8080/'
+DST_TOOL = '/rest/p/test/bugs/'
 
-FAKE_TICKET={
+FAKE_TICKET = {
     u'created_date': u'2010-03-08 17:29:42.802000',
     u'assigned_to_id': u'',
     u'assigned_to': u'',
-    u'custom_fields': {'_component':'', '_size':0, '_priority':'', '_type':''},
+    u'custom_fields': {'_component': '', '_size': 0, '_priority': '', '_type': ''},
     u'description': u'Ticket was not present in source',
     u'milestone': u'',
     u'reported_by': u'',
@@ -56,6 +56,7 @@ FAKE_TICKET={
     u'sub_ids': [],
     u'summary': u'Placeholder ticket',
     u'super_id': u'None'}
+
 
 def main():
     src_cli = rest_api.RestClient(
@@ -81,6 +82,7 @@ def main():
             print '... migrate post %s:\n%r' % (post['slug'], post['text'])
             dst.create_post(dst_thread, post, slug_map)
 
+
 class TicketAPI(object):
 
     def __init__(self, client, path):
@@ -95,29 +97,34 @@ class TicketAPI(object):
         cur_ticket = min_ticket
         while True:
             if check and cur_ticket not in valid_tickets:
-                if cur_ticket > max_valid_ticket: break
+                if cur_ticket > max_valid_ticket:
+                    break
                 yield dict(FAKE_TICKET, ticket_num=cur_ticket)
                 cur_ticket += 1
                 continue
-            ticket = self.client.request('GET', self.ticket_path(cur_ticket))['ticket']
-            if ticket is None: break
+            ticket = self.client.request(
+                'GET', self.ticket_path(cur_ticket))['ticket']
+            if ticket is None:
+                break
             yield ticket
             cur_ticket += 1
-            if max_ticket and cur_ticket > max_ticket: break
+            if max_ticket and cur_ticket > max_ticket:
+                break
 
     def load_thread(self, ticket):
-        discussion = self.client.request('GET', self.discussion_path())['discussion']
+        discussion = self.client.request(
+            'GET', self.discussion_path())['discussion']
         for thd in discussion['threads']:
             if thd['subject'].startswith('#%d ' % ticket['ticket_num']):
                 break
         else:
             return None
         thread = self.client.request(
-            'GET',self.thread_path(thd['_id']))['thread']
+            'GET', self.thread_path(thd['_id']))['thread']
         return thread
 
     def iter_posts(self, thread):
-        for p in sorted(thread['posts'], key=lambda p:p['slug']):
+        for p in sorted(thread['posts'], key=lambda p: p['slug']):
             post = self.client.request(
                 'GET', self.post_path(thread['_id'], p['slug']))['post']
             yield post
@@ -140,7 +147,8 @@ class TicketAPI(object):
             ticket['milestone'] = ''
         if ticket['status'] not in 'open in-progress code-review validation closed'.split():
             ticket['status'] = 'open'
-        r = self.client.request('POST', self.new_ticket_path(), ticket_form=ticket)
+        r = self.client.request(
+            'POST', self.new_ticket_path(), ticket_form=ticket)
         self.client.request(
             'POST', self.ticket_path(r['ticket']['ticket_num'], 'save'),
             ticket_form=ticket)
@@ -175,17 +183,20 @@ class TicketAPI(object):
     def post_path(self, thread_id, post_slug, suffix=''):
         return '%s_discuss/thread/%s/%s/%s' % (self.path, thread_id, post_slug, suffix)
 
-def pm(etype, value, tb): # pragma no cover
-    import pdb, traceback
+
+def pm(etype, value, tb):  # pragma no cover
+    import pdb
+    import traceback
     try:
-        from IPython.ipapi import make_session; make_session()
+        from IPython.ipapi import make_session
+        make_session()
         from IPython.Debugger import Pdb
         sys.stderr.write('Entering post-mortem IPDB shell\n')
         p = Pdb(color_scheme='Linux')
         p.reset()
         p.setup(None, tb)
         p.print_stack_trace()
-        sys.stderr.write('%s: %s\n' % ( etype, value))
+        sys.stderr.write('%s: %s\n' % (etype, value))
         p.cmdloop()
         p.forget()
         # p.interaction(None, tb)

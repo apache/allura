@@ -47,6 +47,7 @@ log = logging.getLogger(__name__)
 
 
 class Artifact(MappedClass):
+
     """
     Base class for anything you want to keep track of.
 
@@ -60,10 +61,11 @@ class Artifact(MappedClass):
     """
     class __mongometa__:
         session = artifact_orm_session
-        name='artifact'
+        name = 'artifact'
         indexes = [
             ('app_config_id', 'labels'),
         ]
+
         def before_save(data):
             if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
                 data['mod_date'] = datetime.utcnow()
@@ -76,7 +78,8 @@ class Artifact(MappedClass):
     # Artifact base schema
     _id = FieldProperty(S.ObjectId)
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    app_config_id = ForeignIdProperty(
+        'AppConfig', if_missing=lambda: c.app.config._id)
     plugin_verson = FieldProperty(S.Deprecated)
     tool_version = FieldProperty(S.Deprecated)
     acl = FieldProperty(ACL)
@@ -90,7 +93,7 @@ class Artifact(MappedClass):
     # the source, original ID, and any other info needed to identify where
     # the artifact came from.  But if you only have one source, a str might do.
     import_id = FieldProperty(None, if_missing=None)
-    deleted=FieldProperty(bool, if_missing=False)
+    deleted = FieldProperty(bool, if_missing=False)
 
     def __json__(self):
         """Return a JSON-encodable :class:`dict` representation of this
@@ -103,7 +106,8 @@ class Artifact(MappedClass):
             labels=list(self.labels),
             related_artifacts=[a.url() for a in self.related_artifacts()],
             discussion_thread=self.discussion_thread.__json__(),
-            discussion_thread_url=h.absurl('/rest%s' % self.discussion_thread.url()),
+            discussion_thread_url=h.absurl('/rest%s' %
+                                           self.discussion_thread.url()),
         )
 
     def parent_security_context(self):
@@ -158,18 +162,20 @@ class Artifact(MappedClass):
 
         """
         q = ArtifactReference.query.find(dict(references=self.index_id()))
-        return [ aref._id for aref in q ]
+        return [aref._id for aref in q]
 
     def related_artifacts(self):
         """Return all Artifacts that are related to this one.
 
         """
         related_artifacts = []
-        for ref_id in self.refs+self.backrefs:
+        for ref_id in self.refs + self.backrefs:
             ref = ArtifactReference.query.get(_id=ref_id)
-            if ref is None: continue
+            if ref is None:
+                continue
             artifact = ref.artifact
-            if artifact is None: continue
+            if artifact is None:
+                continue
             artifact = artifact.primary()
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
@@ -178,7 +184,7 @@ class Artifact(MappedClass):
             # artifact type strings in platform code.
             if artifact.type_s == 'Commit' and not artifact.repo:
                 ac = AppConfig.query.get(
-                        _id=ref.artifact_reference['app_config_id'])
+                    _id=ref.artifact_reference['app_config_id'])
                 app = ac.project.app_instance(ac) if ac else None
                 if app:
                     artifact.set_context(app.repo)
@@ -196,7 +202,8 @@ class Artifact(MappedClass):
 
         """
         from allura.model import Mailbox
-        if user is None: user = c.user
+        if user is None:
+            user = c.user
         Mailbox.subscribe(
             user_id=user._id,
             project_id=self.app_config.project_id,
@@ -214,7 +221,8 @@ class Artifact(MappedClass):
 
         """
         from allura.model import Mailbox
-        if user is None: user = c.user
+        if user is None:
+            user = c.user
         Mailbox.unsubscribe(
             user_id=user._id,
             project_id=self.app_config.project_id,
@@ -237,7 +245,7 @@ class Artifact(MappedClass):
         :param app_config: :class:`allura.model.project.AppConfig` instance
 
         """
-        return cls.query.find({'labels':label, 'app_config_id': app_config._id})
+        return cls.query.find({'labels': label, 'app_config_id': app_config._id})
 
     def email_link(self, subject='artifact'):
         """Return a 'mailto' URL for this Artifact, with optional subject.
@@ -337,7 +345,7 @@ class Artifact(MappedClass):
         Subclasses must implement this.
 
         """
-        raise NotImplementedError, 'url' # pragma no cover
+        raise NotImplementedError, 'url'  # pragma no cover
 
     def shorthand_id(self):
         """How to refer to this artifact within the app instance context.
@@ -347,7 +355,7 @@ class Artifact(MappedClass):
         this should have a strong correlation to the URL.
 
         """
-        return str(self._id) # pragma no cover
+        return str(self._id)  # pragma no cover
 
     def link_text(self):
         """Return the link text to use when a shortlink to this artifact
@@ -394,7 +402,8 @@ class Artifact(MappedClass):
             file_info = [file_info]
         for attach in file_info:
             if hasattr(attach, 'file'):
-                self.attach(attach.filename, attach.file, content_type=attach.type)
+                self.attach(attach.filename, attach.file,
+                            content_type=attach.type)
 
     def attach(self, filename, fp, **kw):
         """Attach a file to this Artifact.
@@ -430,22 +439,23 @@ class Artifact(MappedClass):
 
 
 class Snapshot(Artifact):
+
     """A snapshot of an :class:`Artifact <allura.model.artifact.Artifact>`, used in :class:`VersionedArtifact <allura.model.artifact.VersionedArtifact>`"""
     class __mongometa__:
         session = artifact_orm_session
-        name='artifact_snapshot'
-        unique_indexes = [ ('artifact_class', 'artifact_id', 'version') ]
-        indexes = [ ('artifact_id', 'version') ]
+        name = 'artifact_snapshot'
+        unique_indexes = [('artifact_class', 'artifact_id', 'version')]
+        indexes = [('artifact_id', 'version')]
 
     _id = FieldProperty(S.ObjectId)
     artifact_id = FieldProperty(S.ObjectId)
     artifact_class = FieldProperty(str)
     version = FieldProperty(S.Int, if_missing=0)
     author = FieldProperty(dict(
-            id=S.ObjectId,
-            username=str,
-            display_name=str,
-            logged_ip=str))
+        id=S.ObjectId,
+        username=str,
+        display_name=str,
+        logged_ip=str))
     timestamp = FieldProperty(datetime)
     data = FieldProperty(None)
 
@@ -456,7 +466,7 @@ class Snapshot(Artifact):
             original_index = original.index()
             result.update(original_index)
             result['title'] = '%s (version %d)' % (
-                    h.get_first(original_index, 'title'), self.version)
+                h.get_first(original_index, 'title'), self.version)
         result.update(
             id=self.index_id(),
             version_i=self.version,
@@ -467,7 +477,7 @@ class Snapshot(Artifact):
         return result
 
     def original(self):
-        raise NotImplemented, 'original' # pragma no cover
+        raise NotImplemented, 'original'  # pragma no cover
 
     def shorthand_id(self):
         return '%s#%s' % (self.original().shorthand_id(), self.version)
@@ -482,14 +492,16 @@ class Snapshot(Artifact):
     def __getattr__(self, name):
         return getattr(self.data, name)
 
+
 class VersionedArtifact(Artifact):
+
     """
     An :class:`Artifact <allura.model.artifact.Artifact>` that has versions.
     Associated data like attachments and discussion thread are not versioned.
     """
     class __mongometa__:
         session = artifact_orm_session
-        name='versioned_artifact'
+        name = 'versioned_artifact'
         history_class = Snapshot
 
     version = FieldProperty(S.Int, if_missing=0)
@@ -498,7 +510,8 @@ class VersionedArtifact(Artifact):
         '''Save off a snapshot of the artifact and increment the version #'''
         self.version += 1
         try:
-            ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
+            ip_address = request.headers.get(
+                'X_FORWARDED_FOR', request.remote_addr)
             ip_address = ip_address.split(',')[0].strip()
         except:
             ip_address = '0.0.0.0'
@@ -523,7 +536,7 @@ class VersionedArtifact(Artifact):
             if self.version > 1:
                 g.statsUpdater.modifiedArtifact(
                     self.type_s, self.mod_date, self.project, c.user)
-            else :
+            else:
                 g.statsUpdater.newArtifact(
                     self.type_s, self.mod_date, self.project, c.user)
         return ss
@@ -544,13 +557,14 @@ class VersionedArtifact(Artifact):
     def revert(self, version):
         ss = self.get_version(version)
         old_version = self.version
-        for k,v in ss.data.iteritems():
+        for k, v in ss.data.iteritems():
             setattr(self, k, v)
         self.version = old_version
 
     def history(self):
         HC = self.__mongometa__.history_class
-        q = HC.query.find(dict(artifact_id=self._id)).sort('version', pymongo.DESCENDING)
+        q = HC.query.find(dict(artifact_id=self._id)).sort(
+            'version', pymongo.DESCENDING)
         return q
 
     @property
@@ -569,6 +583,7 @@ class VersionedArtifact(Artifact):
 
 
 class Message(Artifact):
+
     """
     A message
 
@@ -579,17 +594,17 @@ class Message(Artifact):
 
     class __mongometa__:
         session = artifact_orm_session
-        name='message'
-    type_s='Generic Message'
+        name = 'message'
+    type_s = 'Generic Message'
 
-    _id=FieldProperty(str, if_missing=h.gen_message_id)
-    slug=FieldProperty(str, if_missing=h.nonce)
-    full_slug=FieldProperty(str, if_missing=None)
-    parent_id=FieldProperty(str)
-    app_id=FieldProperty(S.ObjectId, if_missing=lambda:c.app.config._id)
-    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
-    author_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
-    text=FieldProperty(str, if_missing='')
+    _id = FieldProperty(str, if_missing=h.gen_message_id)
+    slug = FieldProperty(str, if_missing=h.nonce)
+    full_slug = FieldProperty(str, if_missing=None)
+    parent_id = FieldProperty(str)
+    app_id = FieldProperty(S.ObjectId, if_missing=lambda: c.app.config._id)
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
+    author_id = FieldProperty(S.ObjectId, if_missing=lambda: c.user._id)
+    text = FieldProperty(str, if_missing='')
 
     @classmethod
     def make_slugs(cls, parent=None, timestamp=None):
@@ -622,26 +637,32 @@ class Message(Artifact):
     def shorthand_id(self):
         return self.slug
 
+
 class AwardFile(File):
+
     class __mongometa__:
         session = main_orm_session
         name = 'award_file'
-    award_id=FieldProperty(S.ObjectId)
+    award_id = FieldProperty(S.ObjectId)
+
 
 class Award(Artifact):
+
     class __mongometa__:
         session = main_orm_session
-        name='award'
-        indexes = [ 'short' ]
+        name = 'award'
+        indexes = ['short']
     type_s = 'Generic Award'
 
     from .project import Neighborhood
-    _id=FieldProperty(S.ObjectId)
-    created_by_neighborhood_id = ForeignIdProperty(Neighborhood, if_missing=None)
-    created_by_neighborhood = RelationProperty(Neighborhood, via='created_by_neighborhood_id')
-    short=FieldProperty(str, if_missing=h.nonce)
-    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
-    full=FieldProperty(str, if_missing='')
+    _id = FieldProperty(S.ObjectId)
+    created_by_neighborhood_id = ForeignIdProperty(
+        Neighborhood, if_missing=None)
+    created_by_neighborhood = RelationProperty(
+        Neighborhood, via='created_by_neighborhood_id')
+    short = FieldProperty(str, if_missing=h.nonce)
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
+    full = FieldProperty(str, if_missing='')
 
     def index(self):
         result = Artifact.index(self)
@@ -667,22 +688,27 @@ class Award(Artifact):
     def shorthand_id(self):
         return self.short
 
+
 class AwardGrant(Artifact):
+
     "An :class:`Award <allura.model.artifact.Award>` can be bestowed upon a project by a neighborhood"
     class __mongometa__:
         session = main_orm_session
-        name='grant'
-        indexes = [ 'short' ]
+        name = 'grant'
+        indexes = ['short']
     type_s = 'Generic Award Grant'
 
-    _id=FieldProperty(S.ObjectId)
+    _id = FieldProperty(S.ObjectId)
     award_id = ForeignIdProperty(Award, if_missing=None)
     award = RelationProperty(Award, via='award_id')
-    granted_by_neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=None)
-    granted_by_neighborhood = RelationProperty('Neighborhood', via='granted_by_neighborhood_id')
+    granted_by_neighborhood_id = ForeignIdProperty(
+        'Neighborhood', if_missing=None)
+    granted_by_neighborhood = RelationProperty(
+        'Neighborhood', via='granted_by_neighborhood_id')
     granted_to_project_id = ForeignIdProperty('Project', if_missing=None)
-    granted_to_project = RelationProperty('Project', via='granted_to_project_id')
-    timestamp=FieldProperty(datetime, if_missing=datetime.utcnow)
+    granted_to_project = RelationProperty(
+        'Project', via='granted_to_project_id')
+    timestamp = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     def index(self):
         result = Artifact.index(self)
@@ -700,11 +726,11 @@ class AwardGrant(Artifact):
         return AwardFile.query.get(award_id=self.award_id)
 
     def url(self):
-        slug = str(self.granted_to_project.shortname).replace('/','_')
+        slug = str(self.granted_to_project.shortname).replace('/', '_')
         return h.urlquote(slug)
 
     def longurl(self):
-        slug = str(self.granted_to_project.shortname).replace('/','_')
+        slug = str(self.granted_to_project.shortname).replace('/', '_')
         slug = self.award.longurl() + '/' + slug
         return h.urlquote(slug)
 
@@ -714,7 +740,9 @@ class AwardGrant(Artifact):
         else:
             return None
 
+
 class Feed(MappedClass):
+
     """
     Used to generate rss/atom feeds.  This does not need to be extended;
     all feed items go into the same collection
@@ -730,7 +758,8 @@ class Feed(MappedClass):
             (('project_id', pymongo.ASCENDING),
              ('app_config_id', pymongo.ASCENDING),
              ('pubdate', pymongo.DESCENDING)),
-            'author_link',  # used in ext/user_profile/user_main.py for user feeds
+            # used in ext/user_profile/user_main.py for user feeds
+            'author_link',
         ]
 
     _id = FieldProperty(S.ObjectId)
@@ -738,17 +767,18 @@ class Feed(MappedClass):
     neighborhood_id = ForeignIdProperty('Neighborhood')
     project_id = ForeignIdProperty('Project')
     app_config_id = ForeignIdProperty('AppConfig')
-    tool_name=FieldProperty(str)
-    title=FieldProperty(str)
-    link=FieldProperty(str)
+    tool_name = FieldProperty(str)
+    title = FieldProperty(str)
+    link = FieldProperty(str)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
     description = FieldProperty(str)
     description_cache = FieldProperty(MarkdownCache)
-    unique_id = FieldProperty(str, if_missing=lambda:h.nonce(40))
-    author_name = FieldProperty(str, if_missing=lambda:c.user.get_pref('display_name') if hasattr(c, 'user') else None)
-    author_link = FieldProperty(str, if_missing=lambda:c.user.url() if hasattr(c, 'user') else None)
+    unique_id = FieldProperty(str, if_missing=lambda: h.nonce(40))
+    author_name = FieldProperty(str, if_missing=lambda: c.user.get_pref(
+        'display_name') if hasattr(c, 'user') else None)
+    author_link = FieldProperty(
+        str, if_missing=lambda: c.user.url() if hasattr(c, 'user') else None)
     artifact_reference = FieldProperty(S.Deprecated)
-
 
     @classmethod
     def post(cls, artifact, title=None, description=None, author=None, author_link=None, author_name=None, pubdate=None, link=None, **kw):
@@ -769,12 +799,14 @@ class Feed(MappedClass):
         if author_name is None:
             author_name = author.get_pref('display_name')
         if title is None:
-            title='%s modified by %s' % (h.get_first(idx, 'title'), author_name)
-        if description is None: description = title
+            title = '%s modified by %s' % (
+                h.get_first(idx, 'title'), author_name)
+        if description is None:
+            description = title
         if pubdate is None:
             pubdate = datetime.utcnow()
         if link is None:
-            link=artifact.url()
+            link = artifact.url()
         item = cls(
             ref_id=artifact.index_id(),
             neighborhood_id=artifact.app_config.project.neighborhood_id,
@@ -796,7 +828,8 @@ class Feed(MappedClass):
     def feed(cls, q, feed_type, title, link, description,
              since=None, until=None, offset=None, limit=None):
         "Produces webhelper.feedgenerator Feed"
-        d = dict(title=title, link=h.absurl(link), description=description, language=u'en')
+        d = dict(title=title, link=h.absurl(link),
+                 description=description, language=u'en')
         if feed_type == 'atom':
             feed = FG.Atom1Feed(**d)
         elif feed_type == 'rss':
@@ -809,9 +842,11 @@ class Feed(MappedClass):
             query['pubdate']['$lte'] = until
         cur = cls.query.find(query)
         cur = cur.sort('pubdate', pymongo.DESCENDING)
-        if limit is None: limit = 10
+        if limit is None:
+            limit = 10
         query = cur.limit(limit)
-        if offset is not None: query = cur.offset(offset)
+        if offset is not None:
+            query = cur.offset(offset)
         for r in cur:
             feed.add_item(title=r.title,
                           link=h.absurl(r.link.encode('utf-8')),
@@ -824,6 +859,7 @@ class Feed(MappedClass):
 
 
 class VotableArtifact(MappedClass):
+
     """Voting support for the Artifact. Use as a mixin."""
 
     class __mongometa__:
@@ -899,11 +935,13 @@ class VotableArtifact(MappedClass):
 
 
 class MovedArtifact(Artifact):
+
     class __mongometa__:
         session = artifact_orm_session
-        name='moved_artifact'
+        name = 'moved_artifact'
 
     _id = FieldProperty(S.ObjectId)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    app_config_id = ForeignIdProperty(
+        'AppConfig', if_missing=lambda: c.app.config._id)
     app_config = RelationProperty('AppConfig')
     moved_to_url = FieldProperty(str, required=True, allow_none=False)

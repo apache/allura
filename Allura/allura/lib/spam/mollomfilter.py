@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 
 class MollomSpamFilter(SpamFilter):
+
     """Spam checking implementation via Mollom service.
 
     To enable Mollom spam filtering in your Allura instance, first
@@ -48,6 +49,7 @@ class MollomSpamFilter(SpamFilter):
         spam.public_key = <your Mollom public key here>
         spam.private_key = <your Mollom private key here>
     """
+
     def __init__(self, config):
         if not MOLLOM_AVAILABLE:
             raise ImportError('Mollom not available')
@@ -71,7 +73,8 @@ class MollomSpamFilter(SpamFilter):
         user = user or c.user
         if user:
             kw['authorName'] = user.display_name or user.username
-            kw['authorMail'] = user.email_addresses[0] if user.email_addresses else ''
+            kw['authorMail'] = user.email_addresses[
+                0] if user.email_addresses else ''
         user_ip = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
         kw['authorIP'] = user_ip.split(',')[0].strip()
         # kw will be urlencoded, need to utf8-encode
@@ -79,7 +82,7 @@ class MollomSpamFilter(SpamFilter):
             kw[k] = h.really_unicode(v).encode('utf8')
         cc = self.service.checkContent(**kw)
         res = cc['spam'] == 2
-        artifact.spam_check_id = cc.get('session_id','')
+        artifact.spam_check_id = cc.get('session_id', '')
         log.info("spam=%s (mollom): %s" % (str(res), log_msg))
         return res
 

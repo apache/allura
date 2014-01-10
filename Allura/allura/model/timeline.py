@@ -30,15 +30,17 @@ log = logging.getLogger(__name__)
 
 
 class Director(ActivityDirector):
+
     """Overrides the default ActivityDirector to kick off background
     timeline aggregations after an activity is created.
 
     """
+
     def create_activity(self, actor, verb, obj, target=None,
-            related_nodes=None):
+                        related_nodes=None):
         from allura.model.project import Project
         super(Director, self).create_activity(actor, verb, obj,
-                target=target, related_nodes=related_nodes)
+                                              target=target, related_nodes=related_nodes)
         # aggregate actor and follower's timelines
         create_timelines.post(actor.node_id)
         # aggregate project and follower's timelines
@@ -52,12 +54,14 @@ class Aggregator(BaseAggregator):
 
 
 class ActivityNode(NodeBase):
+
     @property
     def node_id(self):
         return "%s:%s" % (self.__class__.__name__, self._id)
 
 
 class ActivityObject(ActivityObjectBase):
+
     @property
     def activity_name(self):
         """Override this for each Artifact type."""
@@ -94,9 +98,11 @@ def perm_check(user):
         otherwise return False.
         """
         extras_dict = activity.obj.activity_extras
-        if not extras_dict: return True
+        if not extras_dict:
+            return True
         allura_id = extras_dict.get('allura_id')
-        if not allura_id: return True
+        if not allura_id:
+            return True
         classname, _id = allura_id.split(':', 1)
         cls = Mapper.by_classname(classname).mapped_class
         try:

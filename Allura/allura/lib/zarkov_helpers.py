@@ -24,6 +24,7 @@ except ImportError:
     zmq = None
 import bson
 
+
 class ZarkovClient(object):
 
     def __init__(self, addr):
@@ -35,6 +36,7 @@ class ZarkovClient(object):
         obj = dict(
             type=type, context=context, extra=extra)
         self._sock.send(bson.BSON.encode(obj))
+
 
 def zero_fill_zarkov_result(zarkov_data, period, start_date, end_date):
     """Return a new copy of zarkov_data (a dict returned from a zarkov
@@ -60,8 +62,9 @@ def zero_fill_zarkov_result(zarkov_data, period, start_date, end_date):
     for query in zarkov_data.iterkeys():
         for series in zarkov_data[query].iterkeys():
             d[query][series] = zero_fill_time_series(d[query][series],
-                                    period, start_date, end_date)
+                                                     period, start_date, end_date)
     return d
+
 
 def zero_fill_time_series(time_series, period, start_date, end_date):
     """Return a copy of time_series after adding [timestamp, 0] pairs for
@@ -91,10 +94,10 @@ def zero_fill_time_series(time_series, period, start_date, end_date):
                 new_series[ts] = 0
             # next month
             if date.month == 12:
-                date = date.replace(year=date.year+1, month=1)
+                date = date.replace(year=date.year + 1, month=1)
             else:
-                date = date.replace(month=date.month+1)
-    else: # daily
+                date = date.replace(month=date.month + 1)
+    else:  # daily
         days = (end_date - start_date).days + 1
         periods = range(0, days)
         for dayoffset in periods:
@@ -103,6 +106,7 @@ def zero_fill_time_series(time_series, period, start_date, end_date):
             if ts not in new_series:
                 new_series[ts] = 0
     return sorted([[k, v] for k, v in new_series.items()])
+
 
 def to_utc_timestamp(d):
     """Return UTC unix timestamp representation of d (datetime)."""

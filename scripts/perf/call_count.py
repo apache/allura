@@ -49,8 +49,9 @@ def parse_args():
                         help='Show call details.  Note that Timers with debug_each_call=False (like ming\'s Cursor.next) are not displayed in verbose mode (but they are counted).')
     parser.add_argument('--debug-html', action='store_true', default=False,
                         help='Save HTML responses as local files')
-    parser.add_argument('--data-file', default='call_counts.csv', type=argparse.FileType('a'),
-                        help='CSV file that is appended to')
+    parser.add_argument(
+        '--data-file', default='call_counts.csv', type=argparse.FileType('a'),
+        help='CSV file that is appended to')
     parser.add_argument('--id', default='',
                         help='An identifier for this run.  Examples:\n'
                              '`git rev-parse --short HEAD` for current hash\n'
@@ -63,9 +64,11 @@ def main(args):
     setup(test)
 
     url = generate_wiki_thread(test)
-    ThreadLocalODMSession.close_all()  # make sure ODM sessions won't get re-used
+    # make sure ODM sessions won't get re-used
+    ThreadLocalODMSession.close_all()
 
-    counts = count_page(test, url, verbose=args.verbose, debug_html=args.debug_html)
+    counts = count_page(test, url, verbose=args.verbose,
+                        debug_html=args.debug_html)
     print json.dumps(counts)
     write_csv(counts, args.id, args.data_file)
     test.tearDown()
@@ -76,7 +79,7 @@ def setup(test):
     with patch_middleware_config({'stats.sample_rate': 1,
                                   'stats.debug_line_length': 1000,
                                   }), \
-         patch('timermiddleware.log.isEnabledFor', return_value=True):  # can't set this via logging configuration since setUp() will load a logging config and then start using it before we have a good place to tweak it
+            patch('timermiddleware.log.isEnabledFor', return_value=True):  # can't set this via logging configuration since setUp() will load a logging config and then start using it before we have a good place to tweak it
         test.setUp()
 
     tmw_log = logging.getLogger('timermiddleware')
@@ -95,8 +98,8 @@ def generate_wiki_thread(test):
     thread = page.discussion_thread
     # create a few posts by a few users
     with push_config(c, user=M.User.query.get(username='test-admin'),
-                        app=app,
-                        project=project):
+                     app=app,
+                     project=project):
         thread.add_post(text='This is very helpful')
         thread.add_post(text="But it's not **super** helpful")
         with push_config(c, user=M.User.query.get(username='test-user')):
@@ -116,7 +119,8 @@ def count_page(test, url, verbose=False, debug_html=False):
         resp = test.app.get(url, extra_environ=dict(username='*anonymous'))
         print url, resp.status
         if debug_html:
-            debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(10)]))
+            debug_filename = 'call-{}.html'.format(''.join([random.choice(string.ascii_letters + string.digits)
+                                                   for n in xrange(10)]))
             with open(debug_filename, 'w') as out:
                 out.write(resp.body)
             print debug_filename
@@ -127,7 +131,8 @@ def count_page(test, url, verbose=False, debug_html=False):
 
     assert len(stats.records) == 1
     timings = json.loads(stats.records[0].getMessage())
-    del timings['call_counts']['total']  # total is always 1, which is misleading
+    # total is always 1, which is misleading
+    del timings['call_counts']['total']
     return timings['call_counts']
 
 

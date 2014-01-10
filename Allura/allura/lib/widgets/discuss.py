@@ -27,34 +27,44 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms as ff
 from allura import model as M
 
-class NullValidator(fev.FancyValidator):
-    perform_validation=True
 
-    def _to_python(self, value, state): return value
-    def _from_python(self, value, state): return value
+class NullValidator(fev.FancyValidator):
+    perform_validation = True
+
+    def _to_python(self, value, state):
+        return value
+
+    def _from_python(self, value, state):
+        return value
 
 # Discussion forms
+
+
 class ModerateThread(ff.CsrfForm):
-    defaults=dict(
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text=None)
+
     class buttons(ew_core.NameList):
-        delete=ew.SubmitButton(label='Delete Thread')
+        delete = ew.SubmitButton(label='Delete Thread')
+
 
 class ModeratePost(ew.SimpleForm):
-    template='jinja:allura:templates/widgets/moderate_post.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/moderate_post.html'
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text=None)
+
 
 class FlagPost(ew.SimpleForm):
-    template='jinja:allura:templates/widgets/flag_post.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/flag_post.html'
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text=None)
 
+
 class AttachPost(ff.ForgeForm):
-    defaults=dict(
+    defaults = dict(
         ff.ForgeForm.defaults,
         submit_text='Attach File',
         enctype='multipart/form-data')
@@ -62,17 +72,21 @@ class AttachPost(ff.ForgeForm):
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='file_info', field_type='file', label='New Attachment')
+            ew.InputField(name='file_info', field_type='file',
+                          label='New Attachment')
         ]
         return fields
 
+
 class ModeratePosts(ew.SimpleForm):
-    template='jinja:allura:templates/widgets/moderate_posts.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/moderate_posts.html'
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text=None)
+
     def resources(self):
-        for r in super(ModeratePosts, self).resources(): yield r
+        for r in super(ModeratePosts, self).resources():
+            yield r
         yield ew.JSScript('''
       (function($){
           var tbl = $('form table');
@@ -86,8 +100,9 @@ class ModeratePosts(ew.SimpleForm):
           });
       }(jQuery));''')
 
+
 class PostFilter(ff.ForgeForm):
-    defaults=dict(
+    defaults = dict(
         ew.SimpleForm.defaults,
         submit_text=None,
         method='GET')
@@ -96,22 +111,24 @@ class PostFilter(ff.ForgeForm):
             name='page',
             validator=fev.Int()),
         ew.FieldSet(label='Post Filter', fields=[
-                ew.SingleSelectField(
+            ew.SingleSelectField(
                     name='status',
                     label='Show posts with status',
                     options=[
                         ew.Option(py_value='-', label='Any'),
                         ew.Option(py_value='spam', label='Spam'),
-                        ew.Option(py_value='pending', label='Pending moderation'),
+                        ew.Option(py_value='pending',
+                                  label='Pending moderation'),
                         ew.Option(py_value='ok', label='Ok')],
                     if_missing='pending'),
-                ew.IntField(name='flag',
-                            label='Show posts with at least "n" flags',
-                            css_class='text',
-                            if_missing=0),
-                ew.SubmitButton(label='Filter Posts')
-                ])
-        ]
+            ew.IntField(name='flag',
+                        label='Show posts with at least "n" flags',
+                        css_class='text',
+                        if_missing=0),
+            ew.SubmitButton(label='Filter Posts')
+        ])
+    ]
+
 
 class TagPost(ff.ForgeForm):
 
@@ -123,15 +140,17 @@ class TagPost(ff.ForgeForm):
         result['buttons'] = [submit_button]
         return result
 
-    fields=[ffw.LabelEdit(label='Labels',name='labels', className='title')]
+    fields = [ffw.LabelEdit(label='Labels', name='labels', className='title')]
 
     def resources(self):
-        for r in ffw.LabelEdit(name='labels').resources(): yield r
+        for r in ffw.LabelEdit(name='labels').resources():
+            yield r
+
 
 class EditPost(ff.ForgeForm):
-    template='jinja:allura:templates/widgets/edit_post.html'
-    antispam=True
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/edit_post.html'
+    antispam = True
+    defaults = dict(
         ff.ForgeForm.defaults,
         show_subject=False,
         value=None,
@@ -142,12 +161,13 @@ class EditPost(ff.ForgeForm):
         fields = ew_core.NameList()
         fields.append(ffw.MarkdownEdit(
             name='text',
-            attrs={'style':'height:7em; width:97%'}))
+            attrs={'style': 'height:7em; width:97%'}))
         fields.append(ew.HiddenField(name='forum', if_missing=None))
         if ew_core.widget_context.widget:
             # we are being displayed
             if ew_core.widget_context.render_context.get('show_subject', self.show_subject):
-                fields.append(ew.TextField(name='subject',attrs=dict(style="width:97%")))
+                fields.append(
+                    ew.TextField(name='subject', attrs=dict(style="width:97%")))
         else:
             # We are being validated
             validator = fev.UnicodeString(not_empty=True, if_missing='')
@@ -156,8 +176,10 @@ class EditPost(ff.ForgeForm):
         return fields
 
     def resources(self):
-        for r in ew.TextField(name='subject').resources(): yield r
-        for r in ffw.MarkdownEdit(name='text').resources(): yield r
+        for r in ew.TextField(name='subject').resources():
+            yield r
+        for r in ffw.MarkdownEdit(name='text').resources():
+            yield r
         yield ew.JSScript('''$(document).ready(function () {
             $("a.attachment_form_add_button").click(function(evt){
                 $(this).hide();
@@ -171,48 +193,57 @@ class EditPost(ff.ForgeForm):
             });
          });''')
 
+
 class NewTopicPost(EditPost):
-    template='jinja:allura:templates/widgets/new_topic_post.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/new_topic_post.html'
+    defaults = dict(
         EditPost.defaults,
-        show_subject = True,
+        show_subject=True,
         forums=None)
 
+
 class _ThreadsTable(ew.TableField):
-    template='jinja:allura:templates/widgets/threads_table.html'
+    template = 'jinja:allura:templates/widgets/threads_table.html'
+
     class fields(ew_core.NameList):
-        _id=ew.HiddenField(validator=V.Ming(M.Thread))
-        subscription=ew.Checkbox(suppress_label=True)
-        subject=ffw.DisplayOnlyField(label='Topic')
-        url=ffw.DisplayOnlyField()
-        num_replies=ffw.DisplayOnlyField(label='Posts')
-        num_views=ffw.DisplayOnlyField(label='Views')
-        last_post=ffw.DisplayOnlyField(label='Last Post')
+        _id = ew.HiddenField(validator=V.Ming(M.Thread))
+        subscription = ew.Checkbox(suppress_label=True)
+        subject = ffw.DisplayOnlyField(label='Topic')
+        url = ffw.DisplayOnlyField()
+        num_replies = ffw.DisplayOnlyField(label='Posts')
+        num_views = ffw.DisplayOnlyField(label='Views')
+        last_post = ffw.DisplayOnlyField(label='Last Post')
+
 
 class SubscriptionForm(ew.SimpleForm):
-    template='jinja:allura:templates/widgets/subscription_form.html'
-    value=None
-    threads=None
-    show_subject=False
-    allow_create_thread=False
-    limit=None
-    page=0
-    count=0
-    submit_text='Update Subscriptions'
-    params=['value', 'threads', 'limit', 'page', 'count',
-            'show_subject', 'allow_create_thread']
+    template = 'jinja:allura:templates/widgets/subscription_form.html'
+    value = None
+    threads = None
+    show_subject = False
+    allow_create_thread = False
+    limit = None
+    page = 0
+    count = 0
+    submit_text = 'Update Subscriptions'
+    params = ['value', 'threads', 'limit', 'page', 'count',
+              'show_subject', 'allow_create_thread']
+
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
-        threads=_ThreadsTable()
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
+        threads = _ThreadsTable()
+
     def resources(self):
-        for r in super(SubscriptionForm, self).resources(): yield r
+        for r in super(SubscriptionForm, self).resources():
+            yield r
         yield ew.JSScript('''
         $(window).load(function () {
             $('tbody').children(':even').addClass('even');
         });''')
 
 # Widgets
+
+
 class HierWidget(ew_core.Widget):
     widgets = {}
 
@@ -228,37 +259,41 @@ class HierWidget(ew_core.Widget):
             for r in w.resources():
                 yield r
 
+
 class Attachment(ew_core.Widget):
-    template='jinja:allura:templates/widgets/attachment.html'
-    params=['value', 'post']
-    value=None
-    post=None
+    template = 'jinja:allura:templates/widgets/attachment.html'
+    params = ['value', 'post']
+    value = None
+    post = None
+
 
 class DiscussionHeader(HierWidget):
-    template='jinja:allura:templates/widgets/discussion_header.html'
-    params=['value']
-    value=None
-    widgets=dict(
+    template = 'jinja:allura:templates/widgets/discussion_header.html'
+    params = ['value']
+    value = None
+    widgets = dict(
         edit_post=EditPost(submit_text='New Thread'))
 
+
 class ThreadHeader(HierWidget):
-    template='jinja:allura:templates/widgets/thread_header.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/thread_header.html'
+    defaults = dict(
         HierWidget.defaults,
         value=None,
         page=None,
         limit=None,
         count=None,
         show_moderate=False)
-    widgets=dict(
+    widgets = dict(
         page_list=ffw.PageList(),
         page_size=ffw.PageSize(),
         moderate_thread=ModerateThread(),
         tag_post=TagPost())
 
+
 class Post(HierWidget):
-    template='jinja:allura:templates/widgets/post_widget.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/post_widget.html'
+    defaults = dict(
         HierWidget.defaults,
         value=None,
         indent=0,
@@ -266,13 +301,15 @@ class Post(HierWidget):
         limit=25,
         show_subject=False,
         suppress_promote=False)
-    widgets=dict(
+    widgets = dict(
         moderate_post=ModeratePost(),
         edit_post=EditPost(submit_text='Post'),
         attach_post=AttachPost(submit_text='Attach'),
         attachment=Attachment())
+
     def resources(self):
-        for r in super(Post, self).resources(): yield r
+        for r in super(Post, self).resources():
+            yield r
         for w in self.widgets.itervalues():
             for r in w.resources():
                 yield r
@@ -362,9 +399,10 @@ class Post(HierWidget):
         }());
         ''')
 
+
 class PostThread(ew_core.Widget):
-    template='jinja:allura:templates/widgets/post_thread.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/post_thread.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         value=None,
         indent=0,
@@ -375,10 +413,11 @@ class PostThread(ew_core.Widget):
         parent=None,
         children=None)
 
+
 class Thread(HierWidget):
-    template='jinja:allura:templates/widgets/thread_widget.html'
-    name='thread'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/thread_widget.html'
+    name = 'thread'
+    defaults = dict(
         HierWidget.defaults,
         value=None,
         page=None,
@@ -386,14 +425,16 @@ class Thread(HierWidget):
         count=None,
         show_subject=False,
         new_post_text='+ New Comment')
-    widgets=dict(
+    widgets = dict(
         page_list=ffw.PageList(),
         thread_header=ThreadHeader(),
         post_thread=PostThread(),
         post=Post(),
         edit_post=EditPost(submit_text='Submit'))
+
     def resources(self):
-        for r in super(Thread, self).resources(): yield r
+        for r in super(Thread, self).resources():
+            yield r
         for w in self.widgets.itervalues():
             for r in w.resources():
                 yield r
@@ -441,18 +482,20 @@ class Thread(HierWidget):
         });
         ''')
 
+
 class Discussion(HierWidget):
-    template='jinja:allura:templates/widgets/discussion.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/discussion.html'
+    defaults = dict(
         HierWidget.defaults,
         value=None,
         threads=None,
         show_subject=False,
         allow_create_thread=False)
-    widgets=dict(
+    widgets = dict(
         discussion_header=DiscussionHeader(),
         edit_post=EditPost(submit_text='New Topic'),
         subscription_form=SubscriptionForm())
 
     def resources(self):
-        for r in super(Discussion, self).resources(): yield r
+        for r in super(Discussion, self).resources():
+            yield r

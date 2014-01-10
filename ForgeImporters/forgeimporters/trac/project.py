@@ -37,6 +37,7 @@ class TracProjectForm(base.ProjectImportForm):
 
 
 class TracProjectImporter(base.ProjectImporter):
+
     """
     Project importer for Trac.
 

@@ -41,10 +41,13 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
 class ImportException(Exception):
     pass
 
+
 class ResettableStream(object):
+
     '''Class supporting seeks within a header of otherwise
     unseekable stream.'''
 
@@ -92,9 +95,10 @@ class ResettableStream(object):
         else:
             return self.stream_pos
 
+
 class ImportSupport(object):
 
-    ATTACHMENT_SIZE_LIMIT = 1024*1024
+    ATTACHMENT_SIZE_LIMIT = 1024 * 1024
 
     def __init__(self):
         # Map JSON interchange format fields to Ticket fields
@@ -102,7 +106,8 @@ class ImportSupport(object):
         #   None - drop
         #   True - map as is
         #   (new_field_name, value_convertor(val)) - use new field name and convert JSON's value
-        #   handler(ticket, field, val) - arbitrary transform, expected to modify ticket in-place
+        # handler(ticket, field, val) - arbitrary transform, expected to modify
+        # ticket in-place
         self.FIELD_MAP = {
             'assigned_to': ('assigned_to_id', self.get_user_id),
             'class': None,
@@ -110,7 +115,8 @@ class ImportSupport(object):
             'date_updated': ('mod_date', self.parse_date),
             'description': True,
             'id': None,
-            'keywords': ('labels', lambda s: s.split()), # default way of handling, see below for overrides
+            # default way of handling, see below for overrides
+            'keywords': ('labels', lambda s: s.split()),
             'status': True,
             'submitter': ('reported_by_id', self.get_user_id),
             'summary': True,
@@ -120,7 +126,6 @@ class ImportSupport(object):
         self.warnings = []
         self.errors = []
         self.options = {}
-
 
     def init_options(self, options_json):
         self.options = json.loads(options_json)
@@ -132,7 +137,6 @@ class ImportSupport(object):
 
     def option(self, name, default=None):
         return self.options.get(name, False)
-
 
     #
     # Field/value convertors
@@ -158,7 +162,8 @@ class ImportSupport(object):
     def check_custom_field(self, field, value, ticket_status):
         field = c.app.globals.get_custom_field(field)
         if (field['type'] == 'select') and value:
-            field_options = h.split_select_field_options(h.really_unicode(field['options']))
+            field_options = h.split_select_field_options(
+                h.really_unicode(field['options']))
             if value not in field_options:
                 field['options'] = ' '.join([field['options'], value])
         elif (field['type'] == 'milestone') and value:
@@ -180,8 +185,10 @@ class ImportSupport(object):
     def custom(self, ticket, field, value, ticket_status):
         field = '_' + field
         if not c.app.has_custom_field(field):
-            log.warning('Custom field %s is not defined, defining as string', field)
-            c.app.globals.custom_fields.append(dict(name=field, label=field[1:].capitalize(), type='string'))
+            log.warning(
+                'Custom field %s is not defined, defining as string', field)
+            c.app.globals.custom_fields.append(
+                dict(name=field, label=field[1:].capitalize(), type='string'))
             ThreadLocalORMSession.flush_all()
         if 'custom_fields' not in ticket:
             ticket['custom_fields'] = {}
@@ -204,23 +211,26 @@ class ImportSupport(object):
                 new_f, conv = transform
                 remapped[new_f] = conv(v)
 
-        description = h.really_unicode(self.description_processing(remapped['description']))
+        description = h.really_unicode(
+            self.description_processing(remapped['description']))
         creator = owner = ''
         if ticket_dict.get('submitter') and not remapped.get('reported_by_id'):
             creator = u'*Originally created by:* {0}\n'.format(
-                    h.really_unicode(ticket_dict['submitter']))
+                h.really_unicode(ticket_dict['submitter']))
         if ticket_dict.get('assigned_to') and not remapped.get('assigned_to_id'):
             owner = u'*Originally owned by:* {0}\n'.format(
                     h.really_unicode(ticket_dict['assigned_to']))
         remapped['description'] = u'{0}{1}{2}{3}'.format(creator, owner,
-                '\n' if creator or owner else '', description)
+                                                         '\n' if creator or owner else '', description)
 
         ticket_num = ticket_dict['id']
         existing_ticket = TM.Ticket.query.get(app_config_id=c.app.config._id,
-                                          ticket_num=ticket_num)
+                                              ticket_num=ticket_num)
         if existing_ticket:
             ticket_num = c.app.globals.next_ticket_num()
-            self.warnings.append('Ticket #%s: Ticket with this id already exists, using next available id: %s' % (ticket_dict['id'], ticket_num))
+            self.warnings.append(
+                'Ticket #%s: Ticket with this id already exists, using next available id: %s' %
+                (ticket_dict['id'], ticket_num))
         else:
             if c.app.globals.last_ticket_num < ticket_num:
                 c.app.globals.last_ticket_num = ticket_num
@@ -245,22 +255,24 @@ class ImportSupport(object):
     def make_comment(self, thread, comment_dict):
         ts = self.parse_date(comment_dict['date'])
         author_id = self.get_user_id(comment_dict['submitter'])
-        text = h.really_unicode(self.comment_processing(comment_dict['comment']))
+        text = h.really_unicode(
+            self.comment_processing(comment_dict['comment']))
         if not author_id and comment_dict['submitter']:
             text = u'*Originally posted by:* {0}\n\n{1}'.format(
-                    h.really_unicode(comment_dict['submitter']), text)
+                h.really_unicode(comment_dict['submitter']), text)
         comment = thread.post(text=text, timestamp=ts)
         comment.author_id = author_id
 
     def make_attachment(self, org_ticket_id, ticket_id, att_dict):
         if att_dict['size'] > self.ATTACHMENT_SIZE_LIMIT:
-            self.errors.append('Ticket #%s: Attachment %s (@ %s) is too large, skipping' %
-                               (org_ticket_id, att_dict['filename'], att_dict['url']))
+            self.errors.append(
+                'Ticket #%s: Attachment %s (@ %s) is too large, skipping' %
+                (org_ticket_id, att_dict['filename'], att_dict['url']))
             return
         f = urlopen(att_dict['url'])
-        TM.TicketAttachment.save_attachment(att_dict['filename'], ResettableStream(f),
-                                            artifact_id=ticket_id)
-
+        TM.TicketAttachment.save_attachment(
+            att_dict['filename'], ResettableStream(f),
+            artifact_id=ticket_id)
 
     #
     # User handling
@@ -298,8 +310,8 @@ class ImportSupport(object):
         for foreign_user, allura_user in self.options['user_map'].iteritems():
             u = M.User.by_username(allura_user)
             if not u:
-                raise ImportException('User mapping %s:%s - target user does not exist' % (foreign_user, allura_user))
-
+                raise ImportException(
+                    'User mapping %s:%s - target user does not exist' % (foreign_user, allura_user))
 
     #
     # Main methods
@@ -354,7 +366,8 @@ option user_map to avoid losing username information. Unknown users: %s''' % unk
                 try:
                     self.make_attachment(a['id'], t._id, a_entry)
                 except Exception, e:
-                    self.warnings.append('Could not import attachment, skipped: %s' % e)
+                    self.warnings.append(
+                        'Could not import attachment, skipped: %s' % e)
             log.info('Imported ticket: %d', t.ticket_num)
         c.app.globals.invalidate_bin_counts()
 

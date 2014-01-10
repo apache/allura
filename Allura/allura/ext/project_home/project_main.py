@@ -35,12 +35,12 @@ log = logging.getLogger(__name__)
 class ProjectHomeApp(Application):
     __version__ = version.__version__
     tool_label = 'home'
-    default_mount_label='Project Home'
+    default_mount_label = 'Project Home'
     max_instances = 0
-    icons={
-        24:'images/home_24.png',
-        32:'images/home_32.png',
-        48:'images/home_48.png'
+    icons = {
+        24: 'images/home_24.png',
+        32: 'images/home_32.png',
+        48: 'images/home_48.png'
     }
 
     def __init__(self, project, config):
@@ -57,20 +57,20 @@ class ProjectHomeApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label,
-                '..')]
+        return [SitemapEntry(
+            self.config.options.mount_label,
+            '..')]
 
     @property
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = 'Home'
         return [
-            SitemapEntry('Home', '..') ]
+            SitemapEntry('Home', '..')]
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
-        return [ ]
+        return []
 
     def admin_menu(self):
         return []
@@ -81,7 +81,7 @@ class ProjectHomeApp(Application):
         if pr:
             self.config.acl = [
                 model.ACE.allow(pr._id, perm)
-                for perm in self.permissions ]
+                for perm in self.permissions]
 
 
 class ProjectHomeController(BaseController):

@@ -172,23 +172,23 @@ class TestMySQLExtractor(object):
         with open(os.path.join(self.options.dump_dir, 'pages/1/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
-                        'text': 'Talk for page Test 1.',
-                        'username': 'test-user',
-                        'timestamp': 1}
+            'text': 'Talk for page Test 1.',
+            'username': 'test-user',
+            'timestamp': 1}
 
         with open(os.path.join(self.options.dump_dir, 'pages/2/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
-                        'text': 'Talk for page Test 2.',
-                        'timestamp': 1,
-                        'username': 'test-user'}
+            'text': 'Talk for page Test 2.',
+            'timestamp': 1,
+            'username': 'test-user'}
 
         with open(os.path.join(self.options.dump_dir, 'pages/3/discussion.json'), 'r') as f:
             page = json.load(f)
         assert page == {
-                        'text': 'Talk for page Test 3.',
-                        'timestamp': 1,
-                        'username': 'test-user'}
+            'text': 'Talk for page Test 3.',
+            'timestamp': 1,
+            'username': 'test-user'}
 
 
 class TestMediawikiLoader(object):

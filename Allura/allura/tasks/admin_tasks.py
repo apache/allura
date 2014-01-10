@@ -35,5 +35,5 @@ install_app.__doc__ += '''
     Arguments::
 
         ''' + inspect.formatargspec(*inspect.getargspec(
-        M.Project.install_app
-    )).replace('self, ','')
+    M.Project.install_app
+)).replace('self, ', '')

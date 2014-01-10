@@ -36,12 +36,15 @@ def add(acl, role):
         acl.append(role)
 
 # migration script for change write permission to create + update
+
+
 def main():
     query = {'tool_name': {'$regex': '^tickets$', '$options': 'i'}}
     for chunk in utils.chunked_find(M.AppConfig, query):
         for a in chunk:
             # change 'deny write' and 'write' permission
-            role_ids = [(p.role_id, p.access) for p in a.acl if p.permission == 'write']
+            role_ids = [(p.role_id, p.access)
+                        for p in a.acl if p.permission == 'write']
             for role_id, access in role_ids:
                 if access == M.ACE.DENY:
                     add(a.acl, M.ACE.deny(role_id, 'create'))

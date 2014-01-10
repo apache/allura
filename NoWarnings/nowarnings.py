@@ -18,6 +18,7 @@
 import warnings
 from nose.plugins import Plugin
 
+
 class NoWarnings(Plugin):
 
     def beforeTest(self, result):

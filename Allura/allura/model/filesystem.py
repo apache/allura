@@ -33,24 +33,26 @@ from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_BY_PIL=set([
-        'image/jpg',
-        'image/jpeg',
-        'image/pjpeg',
-        'image/png',
-        'image/x-png',
-        'image/gif'])
+SUPPORTED_BY_PIL = set([
+    'image/jpg',
+    'image/jpeg',
+    'image/pjpeg',
+    'image/png',
+    'image/x-png',
+    'image/gif'])
+
 
 class File(MappedClass):
+
     class __mongometa__:
         session = project_orm_session
         name = 'fs'
-        indexes = [ 'filename' ]
+        indexes = ['filename']
 
     _id = FieldProperty(schema.ObjectId)
     file_id = FieldProperty(schema.ObjectId)
-    filename=FieldProperty(str, if_missing='unknown')
-    content_type=FieldProperty(str)
+    filename = FieldProperty(str, if_missing='unknown')
+    content_type = FieldProperty(str)
 
     def __init__(self, **kw):
         super(File, self).__init__(**kw)
@@ -78,7 +80,8 @@ class File(MappedClass):
         with obj.wfile() as fp_w:
             while True:
                 s = stream.read()
-                if not s: break
+                if not s:
+                    break
                 fp_w.write(s)
         return obj
 
@@ -116,25 +119,25 @@ class File(MappedClass):
 
     @classmethod
     def save_thumbnail(cls, filename, image,
-                   content_type,
-                   thumbnail_size=None,
-                   thumbnail_meta=None,
-                   square=False):
+                       content_type,
+                       thumbnail_size=None,
+                       thumbnail_meta=None,
+                       square=False):
         format = image.format
         height = image.size[0]
         width = image.size[1]
         if square and height != width:
             sz = max(width, height)
             if 'transparency' in image.info:
-                new_image = PIL.Image.new('RGBA', (sz,sz))
+                new_image = PIL.Image.new('RGBA', (sz, sz))
             else:
-                new_image = PIL.Image.new('RGB', (sz,sz), 'white')
+                new_image = PIL.Image.new('RGB', (sz, sz), 'white')
             if height < width:
                 # image is wider than tall, so center horizontally
-                new_image.paste(image, ((width-height)/2, 0))
+                new_image.paste(image, ((width - height) / 2, 0))
             elif height > width:
                 # image is taller than wide, so center vertically
-                new_image.paste(image, (0, (height-width)/2))
+                new_image.paste(image, (0, (height - width) / 2))
             image = new_image
 
         if thumbnail_size:
@@ -145,7 +148,8 @@ class File(MappedClass):
             filename=filename, content_type=content_type, **thumbnail_meta)
         with thumbnail.wfile() as fp_w:
             if 'transparency' in image.info:
-                image.save(fp_w, format, transparency=image.info['transparency'])
+                image.save(fp_w,
+                           format, transparency=image.info['transparency'])
             else:
                 image.save(fp_w, format)
 
@@ -162,7 +166,8 @@ class File(MappedClass):
         if content_type is None:
             content_type = utils.guess_mime_type(filename)
         if not content_type.lower() in SUPPORTED_BY_PIL:
-            log.debug('Content type %s from file %s not supported', content_type, filename)
+            log.debug('Content type %s from file %s not supported',
+                      content_type, filename)
             return None, None
 
         try:
@@ -179,7 +184,8 @@ class File(MappedClass):
             with original.wfile() as fp_w:
                 try:
                     if 'transparency' in image.info:
-                        image.save(fp_w, format, transparency=image.info['transparency'])
+                        image.save(fp_w,
+                                   format, transparency=image.info['transparency'])
                     else:
                         image.save(fp_w, format)
                 except Exception as e:
@@ -189,7 +195,8 @@ class File(MappedClass):
         else:
             original = None
 
-        thumbnail = cls.save_thumbnail(filename, image, content_type, thumbnail_size, thumbnail_meta, square)
+        thumbnail = cls.save_thumbnail(
+            filename, image, content_type, thumbnail_size, thumbnail_meta, square)
 
         return original, thumbnail
 

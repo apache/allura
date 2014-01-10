@@ -56,7 +56,7 @@ def task(*args, **kw):
             delay = kwargs.pop('delay', 0)
             project = getattr(c, 'project', None)
             cm = (h.notifications_disabled if project and
-                    kw.get('notifications_disabled') else h.null_contextmanager)
+                  kw.get('notifications_disabled') else h.null_contextmanager)
             with cm(project):
                 from allura import model as M
                 return M.MonQTask.post(func, args, kwargs, delay=delay)
@@ -68,7 +68,9 @@ def task(*args, **kw):
         return task_(args[0])
     return task_
 
+
 class event_handler(object):
+
     '''Decorator to register event handlers'''
     listeners = defaultdict(set)
 
@@ -80,6 +82,7 @@ class event_handler(object):
             self.listeners[t].add(func)
         return func
 
+
 class require_post(object):
 
     def __init__(self, redir=None):
@@ -90,18 +93,20 @@ class require_post(object):
             if request.method != 'POST':
                 if self.redir is not None:
                     redirect(self.redir)
-                raise exc.HTTPMethodNotAllowed(headers={'Allow':'POST'})
+                raise exc.HTTPMethodNotAllowed(headers={'Allow': 'POST'})
         before_validate(check_method)(func)
         return func
 
-class log_action(object): # pragma no cover
+
+class log_action(object):  # pragma no cover
 
     def __init__(self,
                  logger=None,
                  level=logging.INFO,
                  msg=None,
                  *args, **kwargs):
-        if logger is None: logger = logging
+        if logger is None:
+            logger = logging
         self._logger = logger
         self._level = level
         self._msg = msg
@@ -119,7 +124,7 @@ class log_action(object): # pragma no cover
         self._extra_proto.update(action=func.__name__)
         if self._msg is None:
             self._msg = func.__name__
-        result = lambda *args,**kwargs: self._wrapper(*args,**kwargs)
+        result = lambda *args, **kwargs: self._wrapper(*args, **kwargs)
         # assert not hasattr(func, 'decoration')
         if hasattr(func, 'decoration'):
             result.decoration = func.decoration
@@ -166,9 +171,9 @@ class log_action(object): # pragma no cover
                          user_id=user.id)
         # Save the project info
         if (result
-            and isinstance(result, dict)
-            and 'p' in result
-            and result['p'] is not None):
+                and isinstance(result, dict)
+                and 'p' in result
+                and result['p'] is not None):
             extra.update(
                 source=result['p']['source'],
                 project_name=result['p']['shortname'],
@@ -184,16 +189,18 @@ class log_action(object): # pragma no cover
         extra['referer_link'] = referer_link
         return extra
 
+
 def Property(function):
     '''Decorator to easily assign descriptors based on sub-function names
     See <http://code.activestate.com/recipes/410698-property-decorator-for-python-24/>
     '''
     keys = 'fget', 'fset', 'fdel'
-    func_locals = {'doc':function.__doc__}
+    func_locals = {'doc': function.__doc__}
+
     def probeFunc(frame, event, arg):
         if event == 'return':
             locals = frame.f_locals
-            func_locals.update(dict((k,locals.get(k)) for k in keys))
+            func_locals.update(dict((k, locals.get(k)) for k in keys))
             sys.settrace(None)
         return probeFunc
     sys.settrace(probeFunc)

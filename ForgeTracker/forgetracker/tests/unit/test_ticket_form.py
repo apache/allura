@@ -26,6 +26,7 @@ from forgetracker.model import Globals
 
 
 class TestTicketForm(TrackerTestWithModel):
+
     def test_it_creates_status_field(self):
         g = c.app.globals
         g.open_status_names = 'open'
@@ -39,4 +40,3 @@ class TestTicketForm(TrackerTestWithModel):
                            for field in fields
                            if field.name == field_name]
         return matching_fields[0].options
-

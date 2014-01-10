@@ -20,6 +20,7 @@ from alluratest.controller import TestController
 
 
 class TestRootController(TestController):
+
     def test_root_index_no_url(self):
         response = self.app.get('/link/index')
         assert 'Link is not configured' in response
@@ -57,4 +58,3 @@ class TestRootController(TestController):
         response = self.app.get('/link/help')
         # HACK: support for remote redirects is limited in follow()
         assert 'http://www.google.de/search?q=help' in response
-

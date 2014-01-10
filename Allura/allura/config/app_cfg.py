@@ -48,6 +48,7 @@ from allura.lib.package_path_loader import PackagePathLoader
 
 log = logging.getLogger(__name__)
 
+
 class ForgeConfig(AppConfig):
 
     def __init__(self, root_controller='root'):
@@ -86,7 +87,7 @@ class ForgeConfig(AppConfig):
                 bcc = FileSystemBytecodeCache()
         except:
             log.exception("Error encountered while setting up a" +
-                        " %s-backed bytecode cache for Jinja" % cache_type)
+                          " %s-backed bytecode cache for Jinja" % cache_type)
         return bcc
 
     def setup_jinja_renderer(self):

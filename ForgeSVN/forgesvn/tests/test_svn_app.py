@@ -25,6 +25,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib import helpers as h
 from forgesvn.tests import with_svn
 
+
 class TestSVNApp(unittest.TestCase):
 
     def setUp(self):

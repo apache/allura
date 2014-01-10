@@ -25,6 +25,7 @@ from forgediscussion import model as DM
 
 log = logging.getLogger(__name__)
 
+
 def main():
     db = M.project_doc_session.db
     log.info('=== Making attachments in %s polymorphic ===', db)

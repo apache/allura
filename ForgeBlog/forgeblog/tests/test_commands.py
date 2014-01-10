@@ -30,15 +30,18 @@ from allura import model as M
 from forgeblog import model as BM
 
 
-test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
+test_config = pkg_resources.resource_filename(
+    'allura', '../test.ini') + '#main'
 
 
 def setUp():
     setup_basic_test()
     setup_global_objects()
 
+
 def _mock_feed(*entries):
     class attrdict(dict):
+
         def __getattr__(self, name):
             return self[name]
 
@@ -53,17 +56,19 @@ def _mock_feed(*entries):
             subtitle='',
             summary='',
             link='http://example.com/',
-            updated=datetime.utcnow()+timedelta(days=_mock_feed.i - 100))
+            updated=datetime.utcnow() + timedelta(days=_mock_feed.i - 100))
         entry.update(e)
         entry['updated_parsed'] = entry['updated'].timetuple()
         if 'content' in entry:
-            entry['content'] = [attrdict(type=entry['content_type'], value=entry['content'])]
+            entry['content'] = [
+                attrdict(type=entry['content_type'], value=entry['content'])]
         if 'summary_detail' in entry:
             entry['summary_detail'] = attrdict(entry['summary_detail'])
         feed.entries.append(entry)
 
     return feed
 _mock_feed.i = 0
+
 
 @skipif(module_not_available('html2text'))
 @mock.patch.object(feedparser, 'parse')
@@ -82,11 +87,11 @@ def test_pull_rss_feeds(parsefeed):
     )
 
     rendered_html_content = "\n".join([
-       r"1\. foo",
+        r"1\. foo",
         "",
-       r"\#foo bar [baz](baz) foo bar ",
+        r"\#foo bar [baz](baz) foo bar ",
         "",
-       r"\#foo bar [ baz ](baz)",
+        r"\#foo bar [ baz ](baz)",
         " [link](http://example.com/)",
     ])
 
@@ -97,13 +102,14 @@ def test_pull_rss_feeds(parsefeed):
         dict(summary_detail=dict(type='text/html', value=html_content)),
     )
 
-    base_app =  M.AppConfig.query.find().all()[0]
-    tmp_app = M.AppConfig(tool_name=u'Blog', discussion_id=base_app.discussion_id,
-                          project_id=base_app.project_id,
-                          options={u'ordinal': 0, u'show_right_bar': True,
-                                    u'project_name': base_app.project.name,
-                                    u'mount_point': u'blog',
-                                    u'mount_label': u'Blog'})
+    base_app = M.AppConfig.query.find().all()[0]
+    tmp_app = M.AppConfig(
+        tool_name=u'Blog', discussion_id=base_app.discussion_id,
+        project_id=base_app.project_id,
+        options={u'ordinal': 0, u'show_right_bar': True,
+                 u'project_name': base_app.project.name,
+                 u'mount_point': u'blog',
+                 u'mount_label': u'Blog'})
     new_external_feeds = ['http://example.com/news/feed/']
     BM.Globals(app_config_id=tmp_app._id, external_feeds=new_external_feeds)
     ThreadLocalORMSession.flush_all()
@@ -113,7 +119,8 @@ def test_pull_rss_feeds(parsefeed):
     cmd.run([test_config, '-a', tmp_app._id])
     cmd.command()
     parsefeed.assert_called_with('http://example.com/news/feed/')
-    posts = BM.BlogPost.query.find({'app_config_id': tmp_app._id}).sort('timestamp', 1)
+    posts = BM.BlogPost.query.find(
+        {'app_config_id': tmp_app._id}).sort('timestamp', 1)
     assert_equal(posts.count(), 4)
     posts = posts.all()
     assert_equal(posts[0].title, 'Test')
@@ -124,6 +131,7 @@ def test_pull_rss_feeds(parsefeed):
     assert_equal(posts[2].text, rendered_html_content)
     assert_equal(posts[3].title, 'Default Title 4')
     assert_equal(posts[3].text, rendered_html_content)
+
 
 @skipif(module_not_available('html2text'))
 def test_plaintext_preprocessor():
@@ -140,10 +148,11 @@ def test_plaintext_preprocessor():
     )
     html = g.markdown.convert(text)
     assert_equal(html,
-        '<div class="markdown_content"><p>1. foo '
-        '#foo bar <a class="" href="../baz">baz</a> foo bar '
-        '#foo bar <a class="" href="../baz"> baz </a></p></div>'
-    )
+                 '<div class="markdown_content"><p>1. foo '
+                 '#foo bar <a class="" href="../baz">baz</a> foo bar '
+                 '#foo bar <a class="" href="../baz"> baz </a></p></div>'
+                 )
+
 
 @skipif(module_not_available('html2text'))
 def test_plaintext_preprocessor_wrapped():
@@ -162,7 +171,7 @@ def test_plaintext_preprocessor_wrapped():
     )
     html = g.markdown.convert(text)
     assert_equal(html,
-        '<div class="markdown_content"><p>1. foo</p>\n'
-        '<p>#foo bar <a class="" href="../baz">baz</a> foo bar </p>\n'
-        '<p>#foo bar <a class="" href="../baz"> baz </a></p></div>'
-    )
+                 '<div class="markdown_content"><p>1. foo</p>\n'
+                 '<p>#foo bar <a class="" href="../baz">baz</a> foo bar </p>\n'
+                 '<p>#foo bar <a class="" href="../baz"> baz </a></p></div>'
+                 )

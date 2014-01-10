@@ -26,17 +26,21 @@ from allura import model as M
 from .form_fields import AutoResizeTextarea
 from .forms import ForgeForm
 
+
 class OAuthApplicationForm(ForgeForm):
-    submit_text='Register new application'
-    style='wide'
+    submit_text = 'Register new application'
+    style = 'wide'
+
     class fields(ew_core.NameList):
-        application_name =ew.TextField(label='Application Name',
-                                       validator=V.UniqueOAuthApplicationName())
-        application_description = AutoResizeTextarea(label='Application Description')
+        application_name = ew.TextField(label='Application Name',
+                                        validator=V.UniqueOAuthApplicationName())
+        application_description = AutoResizeTextarea(
+            label='Application Description')
+
 
 class OAuthRevocationForm(ForgeForm):
-    submit_text='Revoke Access'
+    submit_text = 'Revoke Access'
     fields = []
-    class fields(ew_core.NameList):
-        _id=ew.HiddenField()
 
+    class fields(ew_core.NameList):
+        _id = ew.HiddenField()

@@ -57,10 +57,11 @@ log = logging.getLogger(__name__)
 
 
 class W:
-    thread=w.Thread(
+    thread = w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
-    create_page_lightbox = CreatePageWidget(name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
+    create_page_lightbox = CreatePageWidget(
+        name='create_wiki_page', trigger='#sidebar a.add_wiki_page')
     markdown_editor = ffw.MarkdownEdit()
     label_edit = ffw.LabelEdit()
     attachment_add = ffw.AttachmentAdd()
@@ -71,17 +72,19 @@ class W:
     page_size = ffw.PageSize()
     search_results = SearchResults()
     help_modal = SearchHelp()
-    icons={
-        24:'images/wiki_24.png',
-        32:'images/wiki_32.png',
-        48:'images/wiki_48.png'
+    icons = {
+        24: 'images/wiki_24.png',
+        32: 'images/wiki_32.png',
+        48: 'images/wiki_48.png'
     }
 
+
 class ForgeWikiApp(Application):
+
     '''This is the Wiki app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read', 'create', 'edit', 'delete',
-                    'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions = ['configure', 'read', 'create', 'edit', 'delete',
+                   'unmoderated_post', 'post', 'moderate', 'admin']
     permissions_desc = {
         'read': 'View wiki pages.',
         'create': 'Create wiki pages.',
@@ -89,21 +92,21 @@ class ForgeWikiApp(Application):
         'delete': 'Delete wiki pages.',
         'admin': 'Set permissions. Configure options. Set wiki home page.',
     }
-    searchable=True
-    exportable=True
-    tool_label='Wiki'
-    tool_description="""
+    searchable = True
+    exportable = True
+    tool_label = 'Wiki'
+    tool_description = """
         Documentation is key to your project and the wiki tool
         helps make it easy for anyone to contribute.
     """
-    default_mount_label='Wiki'
-    default_mount_point='wiki'
-    ordinal=5
+    default_mount_label = 'Wiki'
+    default_mount_point = 'wiki'
+    ordinal = 5
     default_root_page_name = u'Home'
-    icons={
-        24:'images/wiki_24.png',
-        32:'images/wiki_32.png',
-        48:'images/wiki_48.png'
+    icons = {
+        24: 'images/wiki_24.png',
+        32: 'images/wiki_32.png',
+        48: 'images/wiki_48.png'
     }
 
     def __init__(self, project, config):
@@ -134,12 +137,14 @@ class ForgeWikiApp(Application):
             else:
                 page_name = self.default_root_page_name
             return page_name
+
         def fset(self, new_root_page_name):
             globals = WM.Globals.query.get(app_config_id=self.config._id)
             if globals is not None:
                 globals.root = new_root_page_name
             elif new_root_page_name != self.default_root_page_name:
-                globals = WM.Globals(app_config_id=self.config._id, root=new_root_page_name)
+                globals = WM.Globals(
+                    app_config_id=self.config._id, root=new_root_page_name)
             if globals is not None:
                 session(globals).flush(globals)
 
@@ -147,6 +152,7 @@ class ForgeWikiApp(Application):
     def show_discussion():
         def fget(self):
             return self.config.options.get('show_discussion', True)
+
         def fset(self, show):
             self.config.options['show_discussion'] = bool(show)
 
@@ -154,6 +160,7 @@ class ForgeWikiApp(Application):
     def show_left_bar():
         def fget(self):
             return self.config.options.get('show_left_bar', True)
+
         def fset(self, show):
             self.config.options['show_left_bar'] = bool(show)
 
@@ -161,6 +168,7 @@ class ForgeWikiApp(Application):
     def show_right_bar():
         def fget(self):
             return self.config.options.get('show_right_bar', True)
+
         def fset(self, show):
             self.config.options['show_right_bar'] = bool(show)
 
@@ -168,9 +176,9 @@ class ForgeWikiApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label,
-                '.')]
+        return [SitemapEntry(
+            self.config.options.mount_label,
+            '.')]
 
     @property
     @h.exceptionless([], log)
@@ -180,10 +188,10 @@ class ForgeWikiApp(Application):
             pages = [
                 SitemapEntry(p.title, p.url())
                 for p in WM.Page.query.find(dict(
-                        app_config_id=self.config._id,
-                        deleted=False)) ]
+                    app_config_id=self.config._id,
+                    deleted=False))]
             return [
-                SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]] ]
+                SitemapEntry(menu_id, '.')[SitemapEntry('Pages')[pages]]]
 
     def create_common_wiki_menu(self,
                                 has_create_access,
@@ -193,42 +201,46 @@ class ForgeWikiApp(Application):
         links = []
         if has_create_access:
             links += [SitemapEntry('Create Page', create_page_url,
-                                    ui_icon=g.icons['plus'],
-                                    className=create_page_class)]
+                                   ui_icon=g.icons['plus'],
+                                   className=create_page_class)]
         if not admin_menu:
             links += [SitemapEntry(''),
-                SitemapEntry('Wiki Home', self.url, className='wiki_home')]
+                      SitemapEntry('Wiki Home', self.url, className='wiki_home')]
         links += [SitemapEntry('Browse Pages', self.url + 'browse_pages/'),
                   SitemapEntry('Browse Labels', self.url + 'browse_tags/')]
         discussion = c.app.config.discussion
-        pending_mod_count = M.Post.query.find({'discussion_id':discussion._id, 'status':'pending'}).count() if discussion else 0
+        pending_mod_count = M.Post.query.find(
+            {'discussion_id': discussion._id, 'status': 'pending'}).count() if discussion else 0
         if pending_mod_count and h.has_access(discussion, 'moderate')():
-            links.append(SitemapEntry('Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
-                small = pending_mod_count))
+            links.append(
+                SitemapEntry(
+                    'Moderate', discussion.url() + 'moderate', ui_icon=g.icons['pencil'],
+                    small=pending_mod_count))
         if not admin_menu:
             links += [SitemapEntry(''),
-                SitemapEntry('Formatting Help',self.url+'markdown_syntax/')]
+                      SitemapEntry('Formatting Help', self.url + 'markdown_syntax/')]
         return links
 
     def admin_menu(self):
         admin_url = c.project.url() + \
-                    'admin/' + \
-                    self.config.options.mount_point + '/'
+            'admin/' + \
+            self.config.options.mount_point + '/'
         links = [SitemapEntry('Set Home',
                               admin_url + 'home',
                               className='admin_modal')]
 
         if not self.show_left_bar:
             links += self.create_common_wiki_menu(True,
-                        admin_url + 'create_wiki_page',
-                        'admin_modal', admin_menu=True)
+                                                  admin_url +
+                                                  'create_wiki_page',
+                                                  'admin_modal', admin_menu=True)
         links += super(ForgeWikiApp, self).admin_menu(force_options=True)
 
         return links
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
-        return self.create_common_wiki_menu(has_access(self, 'create'),c.app.url,'add_wiki_page')
+        return self.create_common_wiki_menu(has_access(self, 'create'), c.app.url, 'add_wiki_page')
 
     def install(self, project):
         'Set up any default permissions and roles here'
@@ -250,13 +262,14 @@ class ForgeWikiApp(Application):
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
-            ]
+        ]
         root_page_name = self.default_root_page_name
         WM.Globals(app_config_id=c.app.config._id, root=root_page_name)
         self.upsert_root(root_page_name)
 
     def upsert_root(self, new_root):
-        p = WM.Page.query.get(app_config_id=self.config._id, title=new_root, deleted=False)
+        p = WM.Page.query.get(app_config_id=self.config._id,
+                              title=new_root, deleted=False)
         if p is None:
             with h.push_config(c, app=self):
                 p = WM.Page.upsert(new_root)
@@ -272,7 +285,6 @@ The wiki uses [Markdown](%s) syntax.
 [[download_button]]
 """ % url
                 p.commit()
-
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
@@ -305,7 +317,7 @@ class RootController(BaseController, DispatchIndex, FeedController):
     @with_trailing_slash
     @expose()
     def index(self, **kw):
-        redirect(h.really_unicode(c.app.root_page_name).encode('utf-8')+'/')
+        redirect(h.really_unicode(c.app.root_page_name).encode('utf-8') + '/')
 
     @expose()
     def _lookup(self, pname, *remainder):
@@ -376,10 +388,11 @@ class RootController(BaseController, DispatchIndex, FeedController):
                 else:
                     pages.append(p)
         if sort == 'recent':
-            pages.sort(reverse=True, key=lambda x:(x['updated']))
+            pages.sort(reverse=True, key=lambda x: (x['updated']))
             pages = pages + uv_pages
-        return dict(pages=pages, can_delete=can_delete, show_deleted=show_deleted,
-                    limit=limit, count=count, page=pagenum)
+        return dict(
+            pages=pages, can_delete=can_delete, show_deleted=show_deleted,
+            limit=limit, count=count, page=pagenum)
 
     @with_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/browse_tags.html')
@@ -451,7 +464,8 @@ class PageController(BaseController, FeedController):
             attachments=[])
 
     def get_version(self, version):
-        if not version: return self.page
+        if not version:
+            return self.page
         try:
             return self.page.get_version(version)
         except (ValueError, IndexError):
@@ -473,7 +487,7 @@ class PageController(BaseController, FeedController):
                    limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, version=None, page=0, limit=25, **kw):
         if not self.page:
-            redirect(c.app.url+h.urlquote(self.title)+'/edit')
+            redirect(c.app.url + h.urlquote(self.title) + '/edit')
         c.thread = W.thread
         c.attachment_list = W.attachment_list
         c.subscribe_form = W.page_subscribe_form
@@ -481,14 +495,18 @@ class PageController(BaseController, FeedController):
         limit, pagenum = h.paging_sanitizer(limit, page, post_count)
         page = self.get_version(version)
         if page is None:
-            if version: redirect('.?version=%d' % (version-1))
-            else: redirect('.')
+            if version:
+                redirect('.?version=%d' % (version - 1))
+            else:
+                redirect('.')
         elif 'all' not in page.viewable_by and c.user.username not in page.viewable_by:
             raise exc.HTTPForbidden(detail="You may not view this page.")
         cur = page.version
-        if cur > 1: prev = cur-1
-        else: prev = None
-        next = cur+1
+        if cur > 1:
+            prev = cur - 1
+        else:
+            prev = None
+        next = cur + 1
         hide_left_bar = not (c.app.show_left_bar)
         return dict(
             page=page,
@@ -513,7 +531,7 @@ class PageController(BaseController, FeedController):
         c.label_edit = W.label_edit
         hide_left_bar = not c.app.show_left_bar
         return dict(page=page, page_exists=page_exists,
-            hide_left_bar=hide_left_bar)
+                    hide_left_bar=hide_left_bar)
 
     @without_trailing_slash
     @expose('json')
@@ -521,7 +539,7 @@ class PageController(BaseController, FeedController):
     def delete(self):
         require_access(self.page, 'delete')
         self.page.delete()
-        return dict(location='../'+self.page.title+'/?deleted=True')
+        return dict(location='../' + self.page.title + '/?deleted=True')
 
     @without_trailing_slash
     @expose('json')
@@ -552,8 +570,8 @@ class PageController(BaseController, FeedController):
     @without_trailing_slash
     @expose('jinja:forgewiki:templates/wiki/page_diff.html')
     @validate(dict(
-            v1=validators.Int(),
-            v2=validators.Int()))
+        v1=validators.Int(),
+        v2=validators.Int()))
     def diff(self, v1, v2, **kw):
         if not self.page:
             raise exc.HTTPNotFound
@@ -604,10 +622,10 @@ class PageController(BaseController, FeedController):
     def update(self, title=None, text=None,
                labels=None,
                viewable_by=None,
-               new_viewable_by=None,**kw):
+               new_viewable_by=None, **kw):
         activity_verb = 'created'
         if not title:
-            flash('You must provide a title for the page.','error')
+            flash('You must provide a title for the page.', 'error')
             redirect('edit')
         title = title.replace('/', '-')
         if not self.page:
@@ -619,12 +637,14 @@ class PageController(BaseController, FeedController):
             activity_verb = 'modified'
         name_conflict = None
         if self.page.title != title:
-            name_conflict = WM.Page.query.find(dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
+            name_conflict = WM.Page.query.find(
+                dict(app_config_id=c.app.config._id, title=title, deleted=False)).first()
             if name_conflict:
                 flash('There is already a page named "%s".' % title, 'error')
             else:
                 if self.page.title == c.app.root_page_name:
-                    WM.Globals.query.get(app_config_id=c.app.config._id).root = title
+                    WM.Globals.query.get(
+                        app_config_id=c.app.config._id).root = title
                 self.page.title = title
                 activity_verb = 'renamed'
         self.page.text = text
@@ -633,9 +653,10 @@ class PageController(BaseController, FeedController):
         else:
             self.page.labels = []
         self.page.commit()
-        g.spam_checker.check(text, artifact=self.page, user=c.user, content_type='wiki')
+        g.spam_checker.check(text, artifact=self.page,
+                             user=c.user, content_type='wiki')
         g.director.create_activity(c.user, activity_verb, self.page,
-                target=c.project)
+                                   target=c.project)
         if new_viewable_by:
             if new_viewable_by == 'all':
                 self.page.viewable_by.append('all')
@@ -652,7 +673,8 @@ class PageController(BaseController, FeedController):
                         user = M.User.by_username(str(u['id']))
                         if user:
                             self.page.viewable_by.remove(user.username)
-        redirect('../' + h.really_unicode(self.page.title).encode('utf-8') + ('/' if not name_conflict else '/edit'))
+        redirect('../' + h.really_unicode(self.page.title)
+                 .encode('utf-8') + ('/' if not name_conflict else '/edit'))
 
     @without_trailing_slash
     @expose()
@@ -675,14 +697,16 @@ class PageController(BaseController, FeedController):
             self.page.unsubscribe()
         redirect(request.referer)
 
+
 class WikiAttachmentController(ac.AttachmentController):
     AttachmentClass = WM.WikiAttachment
     edit_perm = 'edit'
 
+
 class WikiAttachmentsController(ac.AttachmentsController):
     AttachmentControllerClass = WikiAttachmentController
 
-MARKDOWN_EXAMPLE='''
+MARKDOWN_EXAMPLE = '''
 # First-level heading
 
 Some *emphasized* and **strong** text
@@ -690,6 +714,7 @@ Some *emphasized* and **strong** text
 #### Fourth-level heading
 
 '''
+
 
 class RootRestController(BaseController):
 
@@ -702,7 +727,8 @@ class RootRestController(BaseController):
     @expose('json:')
     def index(self, **kw):
         page_titles = []
-        pages = WM.Page.query.find(dict(app_config_id=c.app.config._id, deleted=False))
+        pages = WM.Page.query.find(
+            dict(app_config_id=c.app.config._id, deleted=False))
         for page in pages:
             if has_access(page, 'read')():
                 page_titles.append(page.title)
@@ -786,8 +812,10 @@ class WikiAdminController(DefaultAdminController):
         self.app.root_page_name = new_home
         self.app.upsert_root(new_home)
         flash('Home updated')
-        mount_base = c.project.url()+self.app.config.options.mount_point+'/'
-        url = h.really_unicode(mount_base).encode('utf-8') + h.really_unicode(new_home).encode('utf-8')+'/'
+        mount_base = c.project.url() + \
+            self.app.config.options.mount_point + '/'
+        url = h.really_unicode(mount_base).encode('utf-8') + \
+            h.really_unicode(new_home).encode('utf-8') + '/'
         redirect(url)
 
     @without_trailing_slash
@@ -798,4 +826,4 @@ class WikiAdminController(DefaultAdminController):
         self.app.show_left_bar = show_left_bar
         self.app.show_right_bar = show_right_bar
         flash('Wiki options updated')
-        redirect(c.project.url()+'admin/tools')
+        redirect(c.project.url() + 'admin/tools')

@@ -38,9 +38,10 @@ from allura import model as M
 
 from forgechat import model as CM
 
+
 class IRCBotCommand(allura.command.Command):
-    min_args=1
-    max_args=1
+    min_args = 1
+    max_args = 1
     usage = '<ini file>'
     summary = 'Connect to all configured IRC servers and relay messages'
     parser = command.Command.standard_parser(verbose=True)
@@ -58,11 +59,13 @@ class IRCBotCommand(allura.command.Command):
                     asint(tg.config.get('forgechat.port', '6667')))
                 asyncore.loop()
             except Exception:
-                base.log.exception('Error in ircbot asyncore.loop(), restart in 5s')
+                base.log.exception(
+                    'Error in ircbot asyncore.loop(), restart in 5s')
                 time.sleep(5)
 
+
 class IRCBot(asynchat.async_chat):
-    TIME_BETWEEN_CONFIGS=timedelta(minutes=1)
+    TIME_BETWEEN_CONFIGS = timedelta(minutes=1)
 
     def __init__(self, host, port, nick='sfbot'):
         self.logger = logging.getLogger(__name__)
@@ -91,7 +94,7 @@ class IRCBot(asynchat.async_chat):
     def found_terminator(self):
         request = ''.join(self.data)
         self.logger.debug('RECV %s', request)
-        self.data=[]
+        self.data = []
         if request.startswith(':'):
             sender, cmd, rest = request[1:].split(' ', 2)
             sender = sender.split('!', 1)
@@ -114,7 +117,7 @@ class IRCBot(asynchat.async_chat):
 
     def check_configure(self):
         if (datetime.utcnow() - self.last_configured
-            > self.TIME_BETWEEN_CONFIGS):
+                > self.TIME_BETWEEN_CONFIGS):
             self.configure()
 
     def say(self, s):
@@ -131,7 +134,8 @@ class IRCBot(asynchat.async_chat):
         ThreadLocalORMSession.flush_all()
 
     def handle_command(self, sender, cmd, rest):
-        if cmd == 'NOTICE': pass
+        if cmd == 'NOTICE':
+            pass
         elif cmd == '433':
             self.set_nick()
             self.channels = {}
@@ -140,10 +144,13 @@ class IRCBot(asynchat.async_chat):
             self.say('PONG ' + rest)
         elif cmd in ('NOTICE', 'PRIVMSG'):
             rcpt, msg = rest.split(' ', 1)
-            if not self.set_context(rcpt): return
-            if msg.startswith(':'): msg = msg[1:]
+            if not self.set_context(rcpt):
+                return
+            if msg.startswith(':'):
+                msg = msg[1:]
             self.log_channel(sender, cmd, rcpt, msg)
-            if cmd == 'NOTICE': return
+            if cmd == 'NOTICE':
+                return
             for lnk in search.find_shortlinks(msg):
                 self.handle_shortlink(lnk, sender, rcpt)
         ThreadLocalORMSession.flush_all()
@@ -152,9 +159,11 @@ class IRCBot(asynchat.async_chat):
         ThreadLocalORMSession.close_all()
 
     def set_context(self, rcpt):
-        if rcpt == self.nick: return False
+        if rcpt == self.nick:
+            return False
         chan = self.channels.get(rcpt, None)
-        if not chan: return False
+        if not chan:
+            return False
         h.set_context(chan.project_id,
                       app_config_id=chan.app_config_id)
         return True
@@ -164,8 +173,9 @@ class IRCBot(asynchat.async_chat):
         if security.has_access(art, 'read', user=M.User.anonymous())():
             index = art.index()
             text = index['snippet_s'] or h.get_first(index, 'title')
-            url = urljoin(tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
-            self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text,url))
+            url = urljoin(
+                tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
+            self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text, url))
 
     def log_channel(self, sender, cmd, rcpt, rest):
         if cmd not in ('NOTICE', 'PRIVMSG'):

@@ -34,9 +34,10 @@ class TestProjectHome(TestController):
     def test_project_nav(self):
         response = self.app.get('/p/test/_nav.json')
         root = self.app.get('/p/test/wiki/').follow()
-        assert re.search(r'<!-- Server: \S+ -->', str(root.html)), 'Missing Server comment'
+        assert re.search(r'<!-- Server: \S+ -->',
+                         str(root.html)), 'Missing Server comment'
         nav_links = root.html.find('div', dict(id='top_nav')).findAll('a')
-        assert len(nav_links) ==  len(response.json['menu'])
+        assert len(nav_links) == len(response.json['menu'])
         for nl, entry in zip(nav_links, response.json['menu']):
             assert nl['href'] == entry['url']
 
@@ -52,12 +53,14 @@ class TestProjectHome(TestController):
         menu = response.json['menu']
         wikis = menu[-2]['children']
         assert_equal(len(wikis), 2)
-        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
-        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
+        assert {u'url': u'/p/test/wiki/', u'name': u'Wiki', u'icon':
+                u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
+        assert {u'url': u'/p/test/wiki2/', u'name': u'wiki2', u'icon':
+                u'tool-wiki', 'tool_name': 'wiki'} in wikis, wikis
 
     @td.with_wiki
     def test_project_group_nav_more_than_ten(self):
-        for i in range(1,15):
+        for i in range(1, 15):
             tool_name = "wiki%s" % str(i)
             c.user = M.User.by_username('test-admin')
             p = M.Project.query.get(shortname='test')
@@ -67,7 +70,8 @@ class TestProjectHome(TestController):
         response = self.app.get('/p/test/_nav.json')
         menu = response.json['menu']
         assert_equal(len(menu[0]['children']), 11)
-        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...', u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[0]['children']
+        assert {u'url': u'/p/test/_list/wiki', u'name': u'More...',
+                u'icon': u'tool-wiki', 'tool_name': 'wiki'} in menu[0]['children']
 
     @td.with_wiki
     def test_neighborhood_home(self):
@@ -117,7 +121,8 @@ class TestProjectHome(TestController):
     def test_members(self):
         nbhd = M.Neighborhood.query.get(name='Projects')
         self.app.post('/admin/groups/create', params={'name': 'B_role'})
-        test_project = M.Project.query.get(shortname='test', neighborhood_id=nbhd._id)
+        test_project = M.Project.query.get(
+            shortname='test', neighborhood_id=nbhd._id)
         test_project.add_user(M.User.by_username('test-user-1'), ['B_role'])
         test_project.add_user(M.User.by_username('test-user'), ['Developer'])
         test_project.add_user(M.User.by_username('test-user-0'), ['Member'])
@@ -140,9 +145,9 @@ class TestProjectHome(TestController):
         assert "<td>Test User 1</td>" in str(tr[6])
         assert "<td>Test User 2</td>" in str(tr[7])
 
-
     def test_members_anonymous(self):
-        r = self.app.get('/p/test/_members/', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/p/test/_members/',
+                         extra_environ=dict(username='*anonymous'))
         assert '<td>Test Admin</td>' in r
         assert '<td><a href="/u/test-admin/">test-admin</a></td>' in r
         assert '<td>Admin</td>' in r

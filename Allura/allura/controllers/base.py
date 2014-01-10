@@ -21,6 +21,7 @@ from tg.controllers.dispatcher import ObjectDispatcher
 
 
 class BaseController(object):
+
     @expose()
     def _lookup(self, name=None, *remainder):
         """Provide explicit default lookup to avoid dispatching backtracking
@@ -29,6 +30,7 @@ class BaseController(object):
 
 
 class DispatchIndex(object):
+
     """Rewrite default url dispatching for controller.
 
     Catch url that ends with `index.*` and pass it to the `_lookup()`

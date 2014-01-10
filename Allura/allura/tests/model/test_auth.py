@@ -41,16 +41,20 @@ def setUp():
     ThreadLocalORMSession.close_all()
     setup_global_objects()
 
+
 @with_setup(setUp)
 def test_password_encoder():
     # Verify salt
-    ep = plugin.LocalAuthenticationProvider(Request.blank('/'))._encode_password
+    ep = plugin.LocalAuthenticationProvider(
+        Request.blank('/'))._encode_password
     assert ep('test_pass') != ep('test_pass')
     assert ep('test_pass', '0000') == ep('test_pass', '0000')
 
+
 @with_setup(setUp)
 def test_email_address():
-    addr = M.EmailAddress(_id='test_admin@sf.net', claimed_by_user_id=c.user._id)
+    addr = M.EmailAddress(_id='test_admin@sf.net',
+                          claimed_by_user_id=c.user._id)
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() == c.user
     addr2 = M.EmailAddress.upsert('test@sf.net')
@@ -66,13 +70,15 @@ def test_email_address():
     c.user.claim_address('test@SF.NET')
     assert 'test@sf.net' in c.user.email_addresses
 
+
 @with_setup(setUp)
 def test_openid():
     oid = M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID')
     oid.claimed_by_user_id = c.user._id
     ThreadLocalORMSession.flush_all()
     assert oid.claimed_by_user() is c.user
-    assert M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID') is oid
+    assert M.OpenId.upsert(
+        'http://google.com/accounts/1', 'My Google OID') is oid
     ThreadLocalORMSession.flush_all()
     assert oid is c.user.openid_object(oid._id)
     c.user.claim_openid('http://google.com/accounts/2')
@@ -80,18 +86,21 @@ def test_openid():
     assert oid2._id in c.user.open_ids
     ThreadLocalORMSession.flush_all()
 
+
 @td.with_user_project('test-admin')
 @with_setup(setUp)
 def test_user():
     assert c.user.url() .endswith('/u/test-admin/')
     assert c.user.script_name .endswith('/u/test-admin/')
-    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects()),
+                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
-    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects()),
+                 set(['test', 'u/test-admin', 'adobe-1', '--init--']))
     u = M.User.register(dict(
-            username='nosetest-user'))
+        username='nosetest-user'))
     ThreadLocalORMSession.flush_all()
     assert_equal(u.private_project().shortname, 'u/nosetest-user')
     roles = g.credentials.user_roles(
@@ -105,6 +114,7 @@ def test_user():
     assert provider._validate_password(u, 'foobar')
     assert not provider._validate_password(u, 'foo')
 
+
 @with_setup(setUp)
 def test_user_project_creates_on_demand():
     u = M.User.register(dict(username='foobar123'), make_project=False)
@@ -112,6 +122,7 @@ def test_user_project_creates_on_demand():
     assert not M.Project.query.get(shortname='u/foobar123')
     assert u.private_project()
     assert M.Project.query.get(shortname='u/foobar123')
+
 
 @with_setup(setUp)
 def test_user_project_already_deleted_creates_on_demand():
@@ -124,12 +135,15 @@ def test_user_project_already_deleted_creates_on_demand():
     ThreadLocalORMSession.flush_all()
     assert M.Project.query.get(shortname='u/foobar123', deleted=False)
 
+
 @with_setup(setUp)
 def test_user_project_does_not_create_on_demand_for_disabled_user():
-    u = M.User.register(dict(username='foobar123', disabled=True), make_project=False)
+    u = M.User.register(
+        dict(username='foobar123', disabled=True), make_project=False)
     ThreadLocalORMSession.flush_all()
     assert not u.private_project()
     assert not M.Project.query.get(shortname='u/foobar123')
+
 
 @with_setup(setUp)
 def test_user_project_does_not_create_on_demand_for_anonymous_user():
@@ -139,6 +153,7 @@ def test_user_project_does_not_create_on_demand_for_anonymous_user():
     assert not M.Project.query.get(shortname='u/anonymous')
     assert not M.Project.query.get(shortname='u/*anonymous')
 
+
 @with_setup(setUp)
 def test_user_project_does_not_create_on_demand_for_openid_user():
     u = M.User.register({'username': ''}, make_project=False)
@@ -147,6 +162,7 @@ def test_user_project_does_not_create_on_demand_for_openid_user():
     assert not M.Project.query.get(shortname='u/')
     assert not M.Project.query.get(shortname='u/anonymous')
     assert not M.Project.query.get(shortname='u/*anonymous')
+
 
 @with_setup(setUp)
 def test_project_role():
@@ -162,12 +178,13 @@ def test_project_role():
         pr.special
         assert pr.user in (c.user, None, M.User.anonymous())
 
+
 @with_setup(setUp)
 def test_default_project_roles():
     roles = dict(
         (pr.name, pr)
         for pr in M.ProjectRole.query.find(dict(
-                project_id=c.project._id)).all()
+            project_id=c.project._id)).all()
         if pr.name)
     assert 'Admin' in roles.keys(), roles.keys()
     assert 'Developer' in roles.keys(), roles.keys()
@@ -179,6 +196,7 @@ def test_default_project_roles():
     # relational (vs named) ProjectRole's
     assert len(roles) == M.ProjectRole.query.find(dict(
         project_id=c.project._id)).count() - 1
+
 
 @with_setup(setUp)
 def test_dup_api_token():
@@ -193,7 +211,9 @@ def test_dup_api_token():
         assert False, "Entry with duplicate unique key was inserted"
     except DuplicateKeyError:
         pass
-    assert len(M.ApiToken.query.find().all()) == 1, "Duplicate entries with unique key found"
+    assert len(M.ApiToken.query.find().all()
+               ) == 1, "Duplicate entries with unique key found"
+
 
 @with_setup(setUp)
 def test_openid_claimed_by_user():
@@ -203,9 +223,11 @@ def test_openid_claimed_by_user():
     ThreadLocalORMSession.flush_all()
     assert oid.claimed_by_user() is None
 
+
 @with_setup(setUp)
 def test_email_address_claimed_by_user():
-    addr = M.EmailAddress(_id='test_admin@sf.net', claimed_by_user_id=c.user._id)
+    addr = M.EmailAddress(_id='test_admin@sf.net',
+                          claimed_by_user_id=c.user._id)
     c.user.disabled = True
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() is None
@@ -214,8 +236,10 @@ def test_email_address_claimed_by_user():
 @td.with_user_project('test-admin')
 @with_setup(setUp)
 def test_user_projects_by_role():
-    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects()),
+                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')),
+                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     # Remove admin access from c.user to test2 project
     project = M.Project.query.get(shortname='test2')
     admin_role = M.ProjectRole.by_name('Admin', project)
@@ -225,8 +249,11 @@ def test_user_projects_by_role():
     user_role.roles.append(developer_role._id)
     ThreadLocalORMSession.flush_all()
     g.credentials.clear()
-    assert_equal(set(p.shortname for p in c.user.my_projects()), set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')), set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects()),
+                 set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
+    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')),
+                 set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+
 
 @patch.object(g, 'user_message_max_messages', 3)
 def test_check_sent_user_message_times():
@@ -238,5 +265,5 @@ def test_check_sent_user_message_times():
     assert user1.can_send_user_message()
     assert_equal(len(user1.sent_user_message_times), 2)
     user1.sent_user_message_times.append(
-            datetime.utcnow() - timedelta(minutes=15))
+        datetime.utcnow() - timedelta(minutes=15))
     assert not user1.can_send_user_message()

@@ -49,12 +49,18 @@ def parse_options():
     optparser = OptionParser(usage=''' %prog <Trac URL>
 
 Export ticket data from a Trac instance''')
-    optparser.add_option('-o', '--out-file', dest='out_filename', help='Write to file (default stdout)')
-    optparser.add_option('--no-attachments', dest='do_attachments', action='store_false', default=True, help='Export attachment info')
-    optparser.add_option('--only-tickets', dest='only_tickets', action='store_true', help='Export only ticket list')
-    optparser.add_option('--start', dest='start_id', type='int', default=1, help='Start with given ticket numer (or next accessible)')
-    optparser.add_option('--limit', dest='limit', type='int', default=None, help='Limit number of tickets')
-    optparser.add_option('-v', '--verbose', dest='verbose', action='store_true', help='Verbose operation')
+    optparser.add_option('-o', '--out-file', dest='out_filename',
+                         help='Write to file (default stdout)')
+    optparser.add_option('--no-attachments', dest='do_attachments',
+                         action='store_false', default=True, help='Export attachment info')
+    optparser.add_option('--only-tickets', dest='only_tickets',
+                         action='store_true', help='Export only ticket list')
+    optparser.add_option('--start', dest='start_id', type='int', default=1,
+                         help='Start with given ticket numer (or next accessible)')
+    optparser.add_option('--limit', dest='limit', type='int',
+                         default=None, help='Limit number of tickets')
+    optparser.add_option('-v', '--verbose', dest='verbose',
+                         action='store_true', help='Verbose operation')
     options, args = optparser.parse_args()
     if len(args) != 1:
         optparser.error("Wrong number of arguments.")
@@ -65,8 +71,9 @@ class TracExport(object):
 
     PAGE_SIZE = 100
     TICKET_URL = 'ticket/%d'
-    QUERY_MAX_ID_URL  = 'query?col=id&order=id&desc=1&max=2'
-    QUERY_BY_PAGE_URL = 'query?col=id&col=time&col=changetime&order=id&max=' + str(PAGE_SIZE)+ '&page=%d'
+    QUERY_MAX_ID_URL = 'query?col=id&order=id&desc=1&max=2'
+    QUERY_BY_PAGE_URL = 'query?col=id&col=time&col=changetime&order=id&max=' + \
+        str(PAGE_SIZE) + '&page=%d'
     ATTACHMENT_LIST_URL = 'attachment/ticket/%d/'
     ATTACHMENT_URL = 'raw-attachment/ticket/%d/%s'
 
@@ -108,7 +115,7 @@ class TracExport(object):
         if type is None:
             return url
         glue = '&' if '?' in suburl else '?'
-        return  url + glue + 'format=' + type
+        return url + glue + 'format=' + type
 
     def log_url(self, url):
         log.info(url)
@@ -134,7 +141,8 @@ class TracExport(object):
         # telling that access denied. So, we'll emulate 403 ourselves.
         # TODO: currently, any non-csv result treated as 403.
         if not f.info()['Content-Type'].startswith('text/csv'):
-            raise urllib2.HTTPError(url, 403, 'Forbidden - emulated', f.info(), f)
+            raise urllib2.HTTPError(
+                url, 403, 'Forbidden - emulated', f.info(), f)
         return f
 
     def parse_ticket(self, id):
@@ -154,12 +162,15 @@ class TracExport(object):
         d = BeautifulSoup(urlopen(url))
         self.clean_missing_wiki_links(d)
         desc = d.find('div', 'description').find('div', 'searchable')
-        ticket['description'] = html2text.html2text(desc.renderContents('utf8').decode('utf8')) if desc else ''
+        ticket['description'] = html2text.html2text(
+            desc.renderContents('utf8').decode('utf8')) if desc else ''
         comments = []
         for comment in d.findAll('form', action='#comment'):
             c = {}
-            c['submitter'] = re.sub(r'.* by ', '', comment.find('h3', 'change').text).strip()
-            c['date'] = self.trac2z_date(comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
+            c['submitter'] = re.sub(
+                r'.* by ', '', comment.find('h3', 'change').text).strip()
+            c['date'] = self.trac2z_date(
+                comment.find('a', 'timeline')['title'].replace(' in Timeline', ''))
             changes = unicode(comment.find('ul', 'changes') or '')
             body = comment.find('div', 'comment')
             body = body.renderContents('utf8').decode('utf8') if body else ''
@@ -189,18 +200,22 @@ class TracExport(object):
             size_s = attach.span['title']
             d['size'] = int(self.match_pattern(SIZE_PATTERN, size_s))
             timestamp_s = attach.find('a', {'class': 'timeline'})['title']
-            d['date'] = self.trac2z_date(self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
-            d['by'] = attach.find(text=re.compile('added by')).nextSibling.renderContents()
+            d['date'] = self.trac2z_date(
+                self.match_pattern(TIMESTAMP_PATTERN, timestamp_s))
+            d['by'] = attach.find(
+                text=re.compile('added by')).nextSibling.renderContents()
             d['description'] = ''
             # Skip whitespace
             while attach.nextSibling and type(attach.nextSibling) is NavigableString:
                 attach = attach.nextSibling
-            # if there's a description, there will be a <dd> element, other immediately next <dt>
+            # if there's a description, there will be a <dd> element, other
+            # immediately next <dt>
             if attach.nextSibling and attach.nextSibling.name == 'dd':
                 desc_el = attach.nextSibling
                 if desc_el:
                     # TODO: Convert to Allura link syntax as needed
-                    d['description'] = ''.join(desc_el.findAll(text=True)).strip()
+                    d['description'] = ''.join(
+                        desc_el.findAll(text=True)).strip()
             list.append(d)
         return list
 
@@ -245,7 +260,8 @@ class TracExport(object):
         for r in reader:
             if r and r[0].isdigit():
                 id = int(r[0])
-                extra = {'date': self.trac2z_date(r[1]), 'date_updated': self.trac2z_date(r[2])}
+                extra = {'date': self.trac2z_date(
+                    r[1]), 'date_updated': self.trac2z_date(r[2])}
                 res.append((id, extra))
         self.page += 1
 
@@ -276,6 +292,7 @@ class TracExport(object):
 
 
 class DateJSONEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, time.struct_time):
             return time.strftime('%Y-%m-%dT%H:%M:%SZ', obj)
@@ -283,9 +300,9 @@ class DateJSONEncoder(json.JSONEncoder):
 
 
 def export(url, start_id=1, verbose=False, do_attachments=True,
-        only_tickets=False, limit=None):
+           only_tickets=False, limit=None):
     ex = TracExport(url, start_id=start_id,
-            verbose=verbose, do_attachments=do_attachments)
+                    verbose=verbose, do_attachments=do_attachments)
 
     doc = [t for t in islice(ex, limit)]
 
@@ -304,7 +321,8 @@ def main():
     out_file = sys.stdout
     if options.out_filename:
         out_file = open(options.out_filename, 'w')
-    out_file.write(json.dumps(doc, cls=DateJSONEncoder, indent=2, sort_keys=True))
+    out_file.write(
+        json.dumps(doc, cls=DateJSONEncoder, indent=2, sort_keys=True))
     # It's bad habit not to terminate lines
     out_file.write('\n')
 

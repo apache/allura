@@ -53,10 +53,11 @@ class TestRootController(TestController):
 
     def test_index(self):
         response = self.app.get('/')
-        assert_equal(response.html.find('h2',{'class':'dark title'}).contents[0].strip(), 'All Neighborhoods')
-        nbhds = response.html.findAll('td',{'class':'nbhd'})
+        assert_equal(response.html.find('h2', {'class': 'dark title'}).contents[
+                     0].strip(), 'All Neighborhoods')
+        nbhds = response.html.findAll('td', {'class': 'nbhd'})
         assert nbhds[0].find('a').get('href') == '/adobe/'
-        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('li')
+        cat_links = response.html.find('div', {'id': 'sidebar'}).findAll('li')
         assert len(cat_links) == 4
         assert cat_links[0].find('a').get('href') == '/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
@@ -68,31 +69,40 @@ class TestRootController(TestController):
 
         response = self.app.get('/')
         # inject it into the sidebar data
-        content = str(response.html.find('div',{'id':'content_base'}))
+        content = str(response.html.find('div', {'id': 'content_base'}))
         assert '<script>' not in content
         assert '&lt;script&gt;' in content
 
     def test_strange_accept_headers(self):
         hdrs = [
             'text/plain;text/html;text/*',
-            'text/html,application/xhtml+xml,application/xml;q=0.9;text/plain;q=0.8,image/png,*/*;q=0.5' ]
+            'text/html,application/xhtml+xml,application/xml;q=0.9;text/plain;q=0.8,image/png,*/*;q=0.5']
         for hdr in hdrs:
-            # malformed headers used to return 500, just make sure they don't now
+            # malformed headers used to return 500, just make sure they don't
+            # now
             self.app.get('/', headers=dict(Accept=hdr), validate_skip=True)
 
     def test_project_browse(self):
-        com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
+        com_cat = M.ProjectCategory.query.find(
+            dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
-        M.Project.query.find(dict(shortname='adobe-1')).first().category_id = com_cat._id
+        M.Project.query.find(dict(shortname='adobe-1')
+                             ).first().category_id = com_cat._id
         response = self.app.get('/browse')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/browse/communications')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 0
         response = self.app.get('/browse/communications/fax')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 0
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 0
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 0
 
     def test_neighborhood_home(self):
         # Install home app
@@ -102,45 +112,57 @@ class TestRootController(TestController):
             p.install_app('home', 'home', 'Home', ordinal=0)
 
         response = self.app.get('/adobe/')
-        projects = response.html.findAll('div',{'class':'border card'})
+        projects = response.html.findAll('div', {'class': 'border card'})
         assert len(projects) == 2
-        cat_links = response.html.find('div',{'id':'sidebar'}).findAll('ul')[1].findAll('li')
+        cat_links = response.html.find(
+            'div', {'id': 'sidebar'}).findAll('ul')[1].findAll('li')
         assert len(cat_links) == 3, cat_links
         assert cat_links[0].find('a').get('href') == '/adobe/browse/clustering'
         assert cat_links[0].find('a').find('span').string == 'Clustering'
 
     def test_neighborhood_project_browse(self):
-        com_cat = M.ProjectCategory.query.find(dict(label='Communications')).first()
+        com_cat = M.ProjectCategory.query.find(
+            dict(label='Communications')).first()
         fax_cat = M.ProjectCategory.query.find(dict(label='Fax')).first()
-        M.Project.query.find(dict(shortname='adobe-1')).first().category_id = com_cat._id
-        M.Project.query.find(dict(shortname='adobe-2')).first().category_id = fax_cat._id
+        M.Project.query.find(dict(shortname='adobe-1')
+                             ).first().category_id = com_cat._id
+        M.Project.query.find(dict(shortname='adobe-2')
+                             ).first().category_id = fax_cat._id
         response = self.app.get('/adobe/browse')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 1
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
         response = self.app.get('/adobe/browse/communications/fax')
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-1/'})) == 0
-        assert len(response.html.findAll('a',{'href':'/adobe/adobe-2/'})) == 1
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-1/'})) == 0
+        assert len(
+            response.html.findAll('a', {'href': '/adobe/adobe-2/'})) == 1
 
     @td.with_wiki
     def test_markdown_to_html(self):
         n = M.Neighborhood.query.get(name='Projects')
-        r = self.app.get('/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
+        r = self.app.get(
+            '/nf/markdown_to_html?markdown=*aaa*bb[wiki:Home]&project=test&app=bugs&neighborhood=%s' % n._id, validate_chunk=True)
         assert '<p><em>aaa</em>bb<a class="alink" href="/p/test/wiki/Home/">[wiki:Home]</a></p>' in r, r
 
     def test_slash_redirect(self):
-        r = self.app.get('/p',status=301)
-        r = self.app.get('/p/',status=302)
+        r = self.app.get('/p', status=301)
+        r = self.app.get('/p/', status=302)
 
     @skipif(module_not_available('newrelic'))
     def test_newrelic_set_transaction_name(self):
         from allura.controllers.project import NeighborhoodController
         with mock.patch('newrelic.agent.callable_name') as callable_name,\
-             mock.patch('newrelic.agent.set_transaction_name') as set_transaction_name:
+                mock.patch('newrelic.agent.set_transaction_name') as set_transaction_name:
             callable_name.return_value = 'foo'
             r = self.app.get('/p/')
             arg = callable_name.call_args[0][0]
-            assert_equal(arg.undecorated, NeighborhoodController.index.undecorated)
+            assert_equal(arg.undecorated,
+                         NeighborhoodController.index.undecorated)
             set_transaction_name.assert_called_with('foo')

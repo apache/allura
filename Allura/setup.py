@@ -26,7 +26,7 @@ except ImportError:
 
 exec open('allura/version.py').read()
 
-PROJECT_DESCRIPTION='''
+PROJECT_DESCRIPTION = '''
 Allura is an open source implementation of a software "forge", a web site
 that manages source code repositories, bug reports, discussions, mailing
 lists, wiki pages, blogs and more for any number of individual projects.
@@ -43,7 +43,7 @@ setup(
     platforms=[
         'Linux',
         'MacOS X',
-        ],
+    ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
@@ -53,7 +53,7 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         'License :: OSI Approved :: Apache Software License',
-        ],
+    ],
     install_requires=[
         "TurboGears2",
         "pypeline",
@@ -72,7 +72,7 @@ setup(
         "feedparser >= 5.0.1",
         "oauth2 >= 1.2.0",
         "Ming >= 0.2.2dev-20110930",
-        ],
+    ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2', 'Ming'],
     packages=find_packages(exclude=['ez_setup']),
@@ -85,11 +85,11 @@ setup(
                              'templates/**.xml',
                              'templates/**.txt',
                              'public/*/*/*/*/*',
-                            ]},
+                             ]},
     message_extractors={'allura': [
-            ('**.py', 'python', None),
-            ('templates/**.html', 'genshi', None),
-            ('public/**', 'ignore', None)]},
+        ('**.py', 'python', None),
+        ('templates/**.html', 'genshi', None),
+        ('public/**', 'ignore', None)]},
 
     entry_points="""
     [paste.app_factory]

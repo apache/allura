@@ -42,6 +42,7 @@ class TestTask(TestCase):
         @task(disable_notifications=True)
         def func(s, foo=None, **kw):
             pass
+
         def mock_post(f, args, kw, delay=None):
             self.assertTrue(c.project.notifications_disabled)
             self.assertFalse('delay' in kw)

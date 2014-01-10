@@ -49,7 +49,9 @@ from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
+
 class Config(object):
+
     "Config to encapsulate flexible/complex test enabled/disabled rules."
     _instance = None
 
@@ -68,7 +70,8 @@ class Config(object):
         if not self.ini_config:
             from . import controller
             import ConfigParser
-            conf = ConfigParser.ConfigParser({'validate_html5': 'false', 'validate_inlinejs': 'false'})
+            conf = ConfigParser.ConfigParser(
+                {'validate_html5': 'false', 'validate_inlinejs': 'false'})
             conf.read(controller.get_config_file())
             self.ini_config = conf
         return self.ini_config
@@ -88,7 +91,8 @@ class Config(object):
         elif env_var is not None:
             return val_type in env_var.split(',')
 
-        enabled = self.test_ini.getboolean('validation', 'validate_' + val_type)
+        enabled = self.test_ini.getboolean(
+            'validation', 'validate_' + val_type)
         return enabled
 
     def fail_on_validation(self, val_type):
@@ -99,7 +103,8 @@ class Config(object):
 
 
 def report_validation_error(val_name, filename, message):
-    message = '%s Validation errors (%s):\n%s\n' % (val_name, filename, message)
+    message = '%s Validation errors (%s):\n%s\n' % (
+        val_name, filename, message)
     if Config.instance().fail_on_validation(val_name):
         ok_(False, message)
     else:
@@ -147,7 +152,7 @@ def validate_html5(html_or_response):
     else:
         html = html_or_response
     register_openers()
-    params = [("out","text"),("content",html)]
+    params = [("out", "text"), ("content", html)]
     datagen, headers = multipart_encode(params)
     request = urllib2.Request("http://html5.validator.nu/", datagen, headers)
     count = 3
@@ -162,7 +167,7 @@ def validate_html5(html_or_response):
                 sys.stderr.write('WARNING: ' + resp + '\n')
                 break
 
-    resp = resp.replace('“','"').replace('”','"').replace('–','-')
+    resp = resp.replace('“', '"').replace('”', '"').replace('–', '-')
 
     ignored_errors = [
         'Required attributes missing on element "object"',
@@ -175,7 +180,7 @@ def validate_html5(html_or_response):
 
     if 'Error:' in resp:
         fname = dump_to_file('html5-', html)
-        message = resp.decode('ascii','ignore')
+        message = resp.decode('ascii', 'ignore')
         report_validation_error('html5', fname, message)
 
 
@@ -207,8 +212,10 @@ def validate_js(html_or_response):
     basedir = path.dirname(path.abspath(__file__))
     jslint_dir = basedir + '/../jslint'
     fname = dump_to_file('jslint-', html)
-    cmd = 'java -jar ' + jslint_dir + '/js.jar '+ jslint_dir +'/jslint.js ' + fname
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    cmd = 'java -jar ' + jslint_dir + '/js.jar ' + \
+        jslint_dir + '/jslint.js ' + fname
+    p = subprocess.Popen(cmd, shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, stderr = p.communicate(html)
     if stdout.startswith('jslint: No problems found'):
         os.unlink(fname)
@@ -241,6 +248,7 @@ class AntiSpamTestApp(TestApp):
             kwargs['params'] = params
         return super(AntiSpamTestApp, self).post(*args, **kwargs)
 
+
 class PostParamCheckingTestApp(AntiSpamTestApp):
 
     def _validate_params(self, params, method):
@@ -251,9 +259,12 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
             params = params.items()
         for k, v in params:
             if not isinstance(k, basestring):
-                raise TypeError('%s key %s is %s, not str' % (method, k, type(k)))
+                raise TypeError('%s key %s is %s, not str' %
+                                (method, k, type(k)))
             if not isinstance(v, (basestring, webtest.app.File)):
-                raise TypeError('%s key %s has value %s of type %s, not str. ' % (method, k, v, type(v)))
+                raise TypeError(
+                    '%s key %s has value %s of type %s, not str. ' %
+                    (method, k, v, type(v)))
 
     def get(self, *args, **kwargs):
         self._validate_params(kwargs.get('params'), 'get')
@@ -262,6 +273,7 @@ class PostParamCheckingTestApp(AntiSpamTestApp):
     def post(self, *args, **kwargs):
         self._validate_params(kwargs.get('params'), 'post')
         return super(PostParamCheckingTestApp, self).post(*args, **kwargs)
+
 
 class ValidatingTestApp(PostParamCheckingTestApp):
 
@@ -286,7 +298,7 @@ class ValidatingTestApp(PostParamCheckingTestApp):
             pass
         elif content_type.startswith('application/json'):
             validate_json(content)
-        elif content_type.startswith(('application/x-javascript','application/javascript', 'text/javascript')):
+        elif content_type.startswith(('application/x-javascript', 'application/javascript', 'text/javascript')):
             validate_js(content)
         elif content_type.startswith('application/xml'):
             import feedparser

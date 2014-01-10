@@ -26,6 +26,7 @@ from forgeblog import model as BM
 
 log = logging.getLogger(__name__)
 
+
 def main():
     broken_posts = BM.BlogPost.query.find(dict(neighborhood_id=None)).all()
     for post in broken_posts:

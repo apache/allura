@@ -31,34 +31,38 @@ from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
+
 class SearchApp(Application):
+
     '''This is the HelloWorld application for Allura, showing
     all the rich, creamy goodness that is installable apps.
     '''
     __version__ = version.__version__
     max_instances = 0
     hidden = True
-    sitemap=[]
+    sitemap = []
 
     def __init__(self, project, config):
         Application.__init__(self, project, config)
         self.root = SearchController()
-        self.templates = pkg_resources.resource_filename('allura.ext.search', 'templates')
+        self.templates = pkg_resources.resource_filename(
+            'allura.ext.search', 'templates')
 
-    def main_menu(self): # pragma no cover
+    def main_menu(self):  # pragma no cover
         return []
 
-    def sidebar_menu(self): # pragma no cover
-        return [ ]
+    def sidebar_menu(self):  # pragma no cover
+        return []
 
-    def admin_menu(self): # pragma no cover
+    def admin_menu(self):  # pragma no cover
         return []
 
     def install(self, project):
-        pass # pragma no cover
+        pass  # pragma no cover
 
     def uninstall(self, project):
-        pass # pragma no cover
+        pass  # pragma no cover
+
 
 class SearchController(BaseController):
 
@@ -70,10 +74,10 @@ class SearchController(BaseController):
         c.search_results = SearchResults()
         c.help_modal = SearchHelp(comments=False)
         pids = [c.project._id] + [
-            p._id for p in c.project.subprojects ]
+            p._id for p in c.project.subprojects]
         project_match = ' OR '.join(
             'project_id_s:%s' % pid
-            for pid in pids )
+            for pid in pids)
         search_params = kw
         search_params.update({
             'q': q,

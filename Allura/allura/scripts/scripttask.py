@@ -55,14 +55,16 @@ from allura.lib.decorators import task
 log = logging.getLogger(__name__)
 
 
-
 class ScriptTask(object):
+
     """Base class for a command-line script that is also executable as a task."""
 
     class __metaclass__(type):
+
         @property
         def __doc__(cls):
             return cls.parser().format_help()
+
         def __new__(meta, classname, bases, classDict):
             return task(type.__new__(meta, classname, bases, classDict))
 

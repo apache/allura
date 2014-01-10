@@ -31,15 +31,16 @@ from allura.lib.utils import ForgeHTMLSanitizer
 
 log = logging.getLogger(__name__)
 
-PLAINTEXT_BLOCK_RE = re.compile( \
+PLAINTEXT_BLOCK_RE = re.compile(
     r'(?P<bplain>\[plain\])(?P<code>.*?)(?P<eplain>\[\/plain\])',
-    re.MULTILINE|re.DOTALL
-    )
+    re.MULTILINE | re.DOTALL
+)
 
 MACRO_PATTERN = r'\[\[([^\]\[]+)\]\]'
 
 
 class CommitMessageExtension(markdown.Extension):
+
     """Markdown extension for processing commit messages.
 
     People don't expect their commit messages to be parsed as Markdown. This
@@ -61,6 +62,7 @@ class CommitMessageExtension(markdown.Extension):
     the :class:`PatternReplacingProcessor` preprocessor.
 
     """
+
     def __init__(self, app):
         markdown.Extension.__init__(self)
         self.app = app
@@ -75,13 +77,13 @@ class CommitMessageExtension(markdown.Extension):
         # remove all inlinepattern processors except short refs and links
         md.inlinePatterns.clear()
         md.inlinePatterns["link"] = markdown.inlinepatterns.LinkPattern(
-                markdown.inlinepatterns.LINK_RE, md)
+            markdown.inlinepatterns.LINK_RE, md)
         md.inlinePatterns['short_reference'] = ForgeLinkPattern(
-                markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+            markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
         # remove all default block processors except for paragraph
         md.parser.blockprocessors.clear()
         md.parser.blockprocessors['paragraph'] = \
-                markdown.blockprocessors.ParagraphProcessor(md.parser)
+            markdown.blockprocessors.ParagraphProcessor(md.parser)
         # wrap artifact link text in square brackets
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
@@ -96,6 +98,7 @@ class CommitMessageExtension(markdown.Extension):
 
 
 class Pattern(object):
+
     """Base class for regex patterns used by the :class:`PatternReplacingProcessor`.
 
     Subclasses must define :attr:`pattern` (a compiled regex), and
@@ -116,6 +119,7 @@ class Pattern(object):
 
 
 class TracRef1(Pattern):
+
     """Replaces Trac-style short refs with links. Example patterns::
 
         #100 (ticket 100)
@@ -128,12 +132,13 @@ class TracRef1(Pattern):
         shortlink = M.Shortlink.lookup(match.group(1))
         if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
             return '[{ref}]({url})'.format(
-                    ref=match.group(1),
-                    url=shortlink.url)
+                ref=match.group(1),
+                url=shortlink.url)
         return match.group()
 
 
 class TracRef2(Pattern):
+
     """Replaces Trac-style short refs with links. Example patterns::
 
         ticket:100
@@ -141,22 +146,23 @@ class TracRef2(Pattern):
 
     """
     pattern = re.compile(
-            Pattern.BEGIN + r'((comment:(\d+):)?(ticket:)(\d+))' + Pattern.END)
+        Pattern.BEGIN + r'((comment:(\d+):)?(ticket:)(\d+))' + Pattern.END)
 
     def repl(self, match):
         shortlink = M.Shortlink.lookup('#' + match.group(6))
         if shortlink and not getattr(shortlink.ref.artifact, 'deleted', False):
             url = shortlink.url
             if match.group(4):
-                slug = self.get_comment_slug(shortlink.ref.artifact, match.group(4))
+                slug = self.get_comment_slug(
+                    shortlink.ref.artifact, match.group(4))
                 slug = '#' + slug if slug else ''
                 url = url + slug
 
             return '{front}[{ref}]({url}){back}'.format(
-                    front=match.group(1),
-                    ref=match.group(2),
-                    url=url,
-                    back=match.group(7))
+                front=match.group(1),
+                ref=match.group(2),
+                url=url,
+                back=match.group(7))
         return match.group()
 
     def get_comment_slug(self, ticket, comment_num):
@@ -173,10 +179,11 @@ class TracRef2(Pattern):
             status={'$in': ['ok', 'pending']})).sort('timestamp')
 
         if comment_num <= comments.count():
-            return comments.all()[comment_num-1].slug
+            return comments.all()[comment_num - 1].slug
 
 
 class TracRef3(Pattern):
+
     """Replaces Trac-style short refs with links. Example patterns::
 
         source:trunk/server/file.c@123#L456 (rev 123, lineno 456)
@@ -185,7 +192,7 @@ class TracRef3(Pattern):
 
     """
     pattern = re.compile(
-            Pattern.BEGIN + r'((source:)([^@#\s]+)(@(\w+))?(#L(\d+))?)' + Pattern.END)
+        Pattern.BEGIN + r'((source:)([^@#\s]+)(@(\w+))?(#L(\d+))?)' + Pattern.END)
 
     def __init__(self, app):
         super(Pattern, self).__init__()
@@ -195,22 +202,23 @@ class TracRef3(Pattern):
         if not self.app:
             return match.group()
         file, rev, lineno = (
-                match.group(4),
-                match.group(6) or 'HEAD',
-                '#l' + match.group(8) if match.group(8) else '')
+            match.group(4),
+            match.group(6) or 'HEAD',
+            '#l' + match.group(8) if match.group(8) else '')
         url = '{app_url}{rev}/tree/{file}{lineno}'.format(
-                app_url=self.app.url,
-                rev=rev,
-                file=file,
-                lineno=lineno)
+            app_url=self.app.url,
+            rev=rev,
+            file=file,
+            lineno=lineno)
         return '{front}[{ref}]({url}){back}'.format(
-                front=match.group(1),
-                ref=match.group(2),
-                url=url,
-                back=match.group(9))
+            front=match.group(1),
+            ref=match.group(2),
+            url=url,
+            back=match.group(9))
 
 
 class PatternReplacingProcessor(markdown.preprocessors.Preprocessor):
+
     """A Markdown preprocessor that searches the source lines for patterns and
     replaces matches with alternate text.
 
@@ -238,23 +246,33 @@ class ForgeExtension(markdown.Extension):
 
     def extendMarkdown(self, md, md_globals):
         md.registerExtension(self)
-        # allow markdown within e.g. <div markdown>...</div>  More info at: https://github.com/waylan/Python-Markdown/issues/52
+        # allow markdown within e.g. <div markdown>...</div>  More info at:
+        # https://github.com/waylan/Python-Markdown/issues/52
         md.preprocessors['html_block'].markdown_in_raw = True
         md.preprocessors['fenced-code'] = FencedCodeProcessor()
-        md.preprocessors.add('plain_text_block', PlainTextPreprocessor(md), "_begin")
-        md.preprocessors.add('macro_include', ForgeMacroIncludePreprocessor(md), '_end')
-        # this has to be before the 'escape' processor, otherwise weird placeholders are inserted for escaped chars within urls, and then the autolink can't match the whole url
-        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
+        md.preprocessors.add('plain_text_block',
+                             PlainTextPreprocessor(md), "_begin")
+        md.preprocessors.add(
+            'macro_include', ForgeMacroIncludePreprocessor(md), '_end')
+        # this has to be before the 'escape' processor, otherwise weird
+        # placeholders are inserted for escaped chars within urls, and then the
+        # autolink can't match the whole url
+        md.inlinePatterns.add('autolink_without_brackets', AutolinkPattern(
+            r'(http(?:s?)://[a-zA-Z0-9./\-\\_%?&=+#;~:!]+)', md), '<escape')
         # replace the link pattern with our extended version
-        md.inlinePatterns['link'] = ForgeLinkPattern(markdown.inlinepatterns.LINK_RE, md, ext=self)
-        md.inlinePatterns['short_reference'] = ForgeLinkPattern(markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
+        md.inlinePatterns['link'] = ForgeLinkPattern(
+            markdown.inlinepatterns.LINK_RE, md, ext=self)
+        md.inlinePatterns['short_reference'] = ForgeLinkPattern(
+            markdown.inlinepatterns.SHORT_REF_RE, md, ext=self)
         # macro must be processed before links
-        md.inlinePatterns.add('macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
+        md.inlinePatterns.add(
+            'macro', ForgeMacroPattern(MACRO_PATTERN, md, ext=self), '<link')
         self.forge_link_tree_processor = ForgeLinkTreeProcessor(md)
         md.treeprocessors['links'] = self.forge_link_tree_processor
         # Sanitize HTML
         md.postprocessors['sanitize_html'] = HTMLSanitizer()
-        # Rewrite all relative links that don't start with . to have a '../' prefix
+        # Rewrite all relative links that don't start with . to have a '../'
+        # prefix
         md.postprocessors['rewrite_relative_links'] = RelativeLinkRewriter(
             make_absolute=self._is_email)
         # Put a class around markdown content for custom css
@@ -334,6 +352,7 @@ class ForgeLinkPattern(markdown.inlinepatterns.LinkPattern):
 
 
 class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
+
     '''
     This was used earlier for [plain] tags that the Blog tool's rss importer
     created, before html2text did good escaping of all special markdown chars.
@@ -347,7 +366,8 @@ class PlainTextPreprocessor(markdown.preprocessors.Preprocessor):
             for m in res:
                 code = self._escape(m.group('code'))
                 placeholder = self.markdown.htmlStash.store(code, safe=True)
-                text = '%s%s%s'% (text[:m.start()], placeholder, text[m.end():])
+                text = '%s%s%s' % (
+                    text[:m.start()], placeholder, text[m.end():])
                 break
             else:
                 break
@@ -393,6 +413,7 @@ class ForgeMacroPattern(markdown.inlinepatterns.Pattern):
 
 
 class ForgeLinkTreeProcessor(markdown.treeprocessors.Treeprocessor):
+
     '''Wraps artifact links with []'''
 
     def __init__(self, parent):
@@ -448,7 +469,8 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
 
     def _rewrite(self, tag, attr):
         val = tag.get(attr)
-        if val is None: return
+        if val is None:
+            return
         if ' ' in val:
             # Don't urllib.quote to avoid possible double-quoting
             # just make sure no spaces
@@ -458,18 +480,22 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             if 'sf.net' in val or 'sourceforge.net' in val:
                 return
             else:
-                tag['rel']='nofollow'
+                tag['rel'] = 'nofollow'
                 return
-        if val.startswith('/'): return
-        if val.startswith('.'): return
-        if val.startswith('mailto:'): return
-        if val.startswith('#'): return
+        if val.startswith('/'):
+            return
+        if val.startswith('.'):
+            return
+        if val.startswith('mailto:'):
+            return
+        if val.startswith('#'):
+            return
         tag[attr] = '../' + val
 
     def _rewrite_abs(self, tag, attr):
         self._rewrite(tag, attr)
         val = tag.get(attr)
-        val = urljoin(config.get('base_url', 'http://sourceforge.net/'),val)
+        val = urljoin(config.get('base_url', 'http://sourceforge.net/'), val)
         tag[attr] = val
 
 
@@ -478,7 +504,7 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
     def run(self, text):
         try:
             p = ForgeHTMLSanitizer('utf-8')
-        except TypeError: # $@%## pre-released versions from SOG
+        except TypeError:  # $@%## pre-released versions from SOG
             p = ForgeHTMLSanitizer('utf-8', '')
         p.feed(text.encode('utf-8'))
         return unicode(p.output(), 'utf-8')
@@ -487,7 +513,8 @@ class HTMLSanitizer(markdown.postprocessors.Postprocessor):
 class AutolinkPattern(markdown.inlinepatterns.Pattern):
 
     def __init__(self, pattern, markdown_instance=None):
-        markdown.inlinepatterns.Pattern.__init__(self, pattern, markdown_instance)
+        markdown.inlinepatterns.Pattern.__init__(
+            self, pattern, markdown_instance)
         # override the complete regex, requiring the preceding text (.*?) to end
         # with whitespace or beginning of line "\s|^"
         self.compiled_re = re.compile("^(.*?\s|^)%s(.*?)$" % pattern,
@@ -497,7 +524,8 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
         old_link = mo.group(2)
         result = markdown.util.etree.Element('a')
         result.text = old_link
-        # since this is run before the builtin 'escape' processor, we have to do our own unescaping
+        # since this is run before the builtin 'escape' processor, we have to
+        # do our own unescaping
         for char in markdown.Markdown.ESCAPED_CHARS:
             old_link = old_link.replace('\\' + char, char)
         result.set('href', old_link)
@@ -505,6 +533,7 @@ class AutolinkPattern(markdown.inlinepatterns.Pattern):
 
 
 class ForgeMacroIncludePreprocessor(markdown.preprocessors.Preprocessor):
+
     '''Join include statements to prevent extra <br>'s inserted by nl2br extension.
 
     Converts:

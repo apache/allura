@@ -42,8 +42,10 @@ def main(opts):
         repo = hg.repository(HgUI(), opts.repo_path)
         cid = None if opts.cid == 'HEAD' else ['%s:0' % opts.cid]
         path = opts.path.strip('/')
-        filenames = repo['tip' if opts.cid == 'HEAD' else opts.cid].manifest().keys()
-        filenames = [name for name in filenames if name.startswith(('%s/' % path).lstrip('/'))]
+        filenames = repo[
+            'tip' if opts.cid == 'HEAD' else opts.cid].manifest().keys()
+        filenames = [
+            name for name in filenames if name.startswith(('%s/' % path).lstrip('/'))]
         names = set()
         for name in filenames:
             names.add(name.split('/')[0])
@@ -78,11 +80,13 @@ def impl_git_tree(repo, cid, path, names, *args):
     data = {}
     for name in names:
         #data[name] = repo.git.rev_list(cid, '--', os.path.join(path, name), max_count=1)
-        data[name] = git.Commit.iter_items(repo, cid, os.path.join(path, name), max_count=1).next().hexsha
+        data[name] = git.Commit.iter_items(
+            repo, cid, os.path.join(path, name), max_count=1).next().hexsha
     return data
 
+
 def impl_git_node(repo, cid, path, *args):
-    #return repo.git.rev_list(cid, '--', path, max_count=1)
+    # return repo.git.rev_list(cid, '--', path, max_count=1)
     return git.Commit.iter_items(repo, cid, path, max_count=1).next().hexsha
 
 
@@ -90,53 +94,62 @@ def impl_hg_tree(repo, cid, path, names, *args):
     m = cmdutil.match(repo, pats=[path], default=path)
     data = {}
     for name in names:
-        rev_iter = cmdutil.walkchangerevs(repo, m, {'rev': cid}, lambda c,f: None)
+        rev_iter = cmdutil.walkchangerevs(
+            repo, m, {'rev': cid}, lambda c, f: None)
         data[name] = rev_iter.next().hex()
     return data
 
+
 def impl_hg_node(repo, cid, path, *args):
     m = cmdutil.match(repo, pats=[path], default=path)
-    rev_iter = cmdutil.walkchangerevs(repo, m, {'rev': cid}, lambda c,f: None)
+    rev_iter = cmdutil.walkchangerevs(repo, m, {'rev': cid}, lambda c, f: None)
     return rev_iter.next().hex()
+
 
 def impl_svn_tree(repo, cid, path, names, repo_path, *args):
     infos = repo.info2(
-            'file://%s/%s' % (repo_path, path),
-            revision=cid,
-            depth=pysvn.depth.immediates)
+        'file://%s/%s' % (repo_path, path),
+        revision=cid,
+        depth=pysvn.depth.immediates)
     data = {}
     for name, info in infos[1:]:
         data[name] = info.last_changed_rev
     return data
 
+
 def impl_svn_node(repo, cid, path, names, repo_path, *args):
     logs = repo.log(
-            'file://%s/%s' % (repo_path, path),
-            revision_start=cid,
-            limit=1)
+        'file://%s/%s' % (repo_path, path),
+        revision_start=cid,
+        limit=1)
     return logs[0].revision.number
 
 
 class HgUI(ui.ui):
+
     '''Hg UI subclass that suppresses reporting of untrusted hgrc files.'''
+
     def __init__(self, *args, **kwargs):
         super(HgUI, self).__init__(*args, **kwargs)
         self._reportuntrusted = False
 
+
 def parse_opts():
-    parser = argparse.ArgumentParser(description='Benchmark getting LCD from repo tool')
+    parser = argparse.ArgumentParser(
+        description='Benchmark getting LCD from repo tool')
     parser.add_argument('--type', default='git', dest='type',
-            help='Type of repository being tested.')
+                        help='Type of repository being tested.')
     parser.add_argument('--repo-path', dest='repo_path', required=True,
-            help='Path to the repository to test against')
+                        help='Path to the repository to test against')
     parser.add_argument('--commit', default='HEAD', dest='cid',
-            help='Commit ID or revision number to test against')
+                        help='Commit ID or revision number to test against')
     parser.add_argument('--path', default='', dest='path',
-            help='Path within the repository to test against')
+                        help='Path within the repository to test against')
     parser.add_argument('--count', type=int, default=100, dest='count',
-            help='Number of times to execute')
-    parser.add_argument('--full-tree', action='store_true', default=False, dest='full_tree',
-            help='Time full tree listing instead of just the single node')
+                        help='Number of times to execute')
+    parser.add_argument(
+        '--full-tree', action='store_true', default=False, dest='full_tree',
+        help='Time full tree listing instead of just the single node')
     return parser.parse_args()
 
 if __name__ == '__main__':

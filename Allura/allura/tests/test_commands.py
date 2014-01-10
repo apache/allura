@@ -24,32 +24,40 @@ import pkg_resources
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.command import base, script, set_neighborhood_features, \
-                           create_neighborhood, show_models, taskd_cleanup
+    create_neighborhood, show_models, taskd_cleanup
 from allura import model as M
 from forgeblog import model as BM
 from allura.lib.exceptions import InvalidNBFeatureValueError
 from allura.tests import decorators as td
 
-test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
+test_config = pkg_resources.resource_filename(
+    'allura', '../test.ini') + '#main'
 
 
-class EmptyClass(object): pass
+class EmptyClass(object):
+    pass
+
 
 def setUp(self):
     """Method called by nose before running each test"""
-    #setup_basic_test(app_name='main_with_amqp')
+    # setup_basic_test(app_name='main_with_amqp')
     setup_basic_test()
     setup_global_objects()
 
+
 def test_script():
     cmd = script.ScriptCommand('script')
-    cmd.run([test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py') ])
-    assert_raises(ValueError, cmd.run, [test_config, pkg_resources.resource_filename('allura','tests/tscript_error.py') ])
+    cmd.run(
+        [test_config, pkg_resources.resource_filename('allura', 'tests/tscript.py')])
+    assert_raises(ValueError, cmd.run,
+                  [test_config, pkg_resources.resource_filename('allura', 'tests/tscript_error.py')])
+
 
 def test_set_neighborhood_max_projects():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
-    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
+    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand(
+        'setnbfeatures')
 
     # a valid number
     cmd.run([test_config, str(n_id), 'max_projects', '50'])
@@ -62,13 +70,17 @@ def test_set_neighborhood_max_projects():
     assert neighborhood.features['max_projects'] == None
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'max_projects', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'max_projects', '2.8'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'max_projects', 'string'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'max_projects', '2.8'])
+
 
 def test_set_neighborhood_private():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
-    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
+    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand(
+        'setnbfeatures')
 
     # allow private projects
     cmd.run([test_config, str(n_id), 'private_projects', 'True'])
@@ -81,14 +93,19 @@ def test_set_neighborhood_private():
     assert not neighborhood.features['private_projects']
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'private_projects', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'private_projects', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'private_projects', '2.8'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'private_projects', 'string'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'private_projects', '1'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'private_projects', '2.8'])
+
 
 def test_set_neighborhood_google_analytics():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
-    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
+    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand(
+        'setnbfeatures')
 
     # allow private projects
     cmd.run([test_config, str(n_id), 'google_analytics', 'True'])
@@ -101,14 +118,19 @@ def test_set_neighborhood_google_analytics():
     assert not neighborhood.features['google_analytics']
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'google_analytics', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'google_analytics', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'google_analytics', '2.8'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'google_analytics', 'string'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'google_analytics', '1'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'google_analytics', '2.8'])
+
 
 def test_set_neighborhood_css():
     neighborhood = M.Neighborhood.query.find().first()
     n_id = neighborhood._id
-    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand('setnbfeatures')
+    cmd = set_neighborhood_features.SetNeighborhoodFeaturesCommand(
+        'setnbfeatures')
 
     # none
     cmd.run([test_config, str(n_id), 'css', 'none'])
@@ -126,22 +148,30 @@ def test_set_neighborhood_css():
     assert neighborhood.features['css'] == 'custom'
 
     # check validation
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'string'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', '1'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', '2.8'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'None'])
-    assert_raises(InvalidNBFeatureValueError, cmd.run, [test_config, str(n_id), 'css', 'True'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'css', 'string'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'css', '1'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'css', '2.8'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'css', 'None'])
+    assert_raises(InvalidNBFeatureValueError, cmd.run,
+                  [test_config, str(n_id), 'css', 'True'])
+
 
 def test_update_neighborhood():
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'True'])
-    ThreadLocalORMSession.close_all() # make sure the app_configs get freshly queried
+    # make sure the app_configs get freshly queried
+    ThreadLocalORMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool == True
 
     cmd = create_neighborhood.UpdateNeighborhoodCommand('update-neighborhood')
     cmd.run([test_config, 'Projects', 'False'])
-    ThreadLocalORMSession.close_all() # make sure the app_configs get freshly queried
+    # make sure the app_configs get freshly queried
+    ThreadLocalORMSession.close_all()
     nb = M.Neighborhood.query.get(name='Projects')
     assert nb.has_home_tool == False
 
@@ -155,12 +185,12 @@ class TestEnsureIndexCommand(object):
     def test_update_indexes_order(self):
         collection = Mock(name='collection')
         collection.index_information.return_value = {
-                '_id_': {'key': '_id'},
-                '_foo_bar': {'key': [('foo', 1), ('bar', 1)]},
-                }
+            '_id_': {'key': '_id'},
+            '_foo_bar': {'key': [('foo', 1), ('bar', 1)]},
+        }
         indexes = [
-                Mock(unique=False, index_spec=[('foo', 1)]),
-                ]
+            Mock(unique=False, index_spec=[('foo', 1)]),
+        ]
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd._update_indexes(collection, indexes)
 
@@ -168,39 +198,43 @@ class TestEnsureIndexCommand(object):
         for i, call in enumerate(collection.mock_calls):
             method_name = call[0]
             collection_call_order[method_name] = i
-        assert collection_call_order['ensure_index'] < collection_call_order['drop_index'], collection.mock_calls
+        assert collection_call_order['ensure_index'] < collection_call_order[
+            'drop_index'], collection.mock_calls
 
     def test_update_indexes_unique_changes(self):
         collection = Mock(name='collection')
         # expecting these ensure_index calls, we'll make their return values normal
         # for easier assertions later
-        collection.ensure_index.side_effect = ['_foo_bar_temporary_extra_field_for_indexing',
-                                               '_foo_bar',
-                                               '_foo_baz_temporary_extra_field_for_indexing',
-                                               '_foo_baz',
-                                               '_foo_baz',
-                                               '_foo_bar',
-                                               ]
+        collection.ensure_index.side_effect = [
+            '_foo_bar_temporary_extra_field_for_indexing',
+            '_foo_bar',
+            '_foo_baz_temporary_extra_field_for_indexing',
+            '_foo_baz',
+            '_foo_baz',
+            '_foo_bar',
+        ]
         collection.index_information.return_value = {
-                '_id_': {'key': '_id'},
-                '_foo_bar': {'key': [('foo', 1), ('bar', 1)], 'unique': True},
-                '_foo_baz': {'key': [('foo', 1), ('baz', 1)]},
-                }
+            '_id_': {'key': '_id'},
+            '_foo_bar': {'key': [('foo', 1), ('bar', 1)], 'unique': True},
+            '_foo_baz': {'key': [('foo', 1), ('baz', 1)]},
+        }
         indexes = [
-                Mock(index_spec=[('foo', 1), ('bar', 1)], unique=False, ),
-                Mock(index_spec=[('foo', 1), ('baz', 1)], unique=True, ),
-                ]
+            Mock(index_spec=[('foo', 1), ('bar', 1)], unique=False, ),
+            Mock(index_spec=[('foo', 1), ('baz', 1)], unique=True, ),
+        ]
 
         cmd = show_models.EnsureIndexCommand('ensure_index')
         cmd._update_indexes(collection, indexes)
 
         assert_equal(collection.mock_calls, [
             call.index_information(),
-            call.ensure_index([('foo', 1), ('bar', 1), ('temporary_extra_field_for_indexing', 1)]),
+            call.ensure_index(
+                [('foo', 1), ('bar', 1), ('temporary_extra_field_for_indexing', 1)]),
             call.drop_index('_foo_bar'),
             call.ensure_index([('foo', 1), ('bar', 1)], unique=False),
             call.drop_index('_foo_bar_temporary_extra_field_for_indexing'),
-            call.ensure_index([('foo', 1), ('baz', 1), ('temporary_extra_field_for_indexing', 1)]),
+            call.ensure_index(
+                [('foo', 1), ('baz', 1), ('temporary_extra_field_for_indexing', 1)]),
             call.drop_index('_foo_baz'),
             call.ensure_index([('foo', 1), ('baz', 1)], unique=True),
             call.drop_index('_foo_baz_temporary_extra_field_for_indexing'),
@@ -292,7 +326,8 @@ class TestTaskdCleanupCommand(object):
         assert task1.result == 'Forsaken task'
 
         # task1 seems lost, but it just moved quickly
-        task1 = Mock(state='complete', process='host pid 1111', result='', _id=1)
+        task1 = Mock(state='complete',
+                     process='host pid 1111', result='', _id=1)
         task2 = Mock(state='busy', process='host pid 1111', result='', _id=2)
         self.cmd_class._complete_suspicious_tasks = lambda x: [1]
         self.cmd_class._busy_tasks = lambda x: [task1, task2]
@@ -341,7 +376,8 @@ class TestBackgroundCommand(object):
     def test_run_command(self, command):
         command.__name__ = 'ReindexCommand'
         base.run_command(self.cmd, 'dev.ini -p "project 3"')
-        command(command.__name__).run.assert_called_with(['dev.ini', '-p', 'project 3'])
+        command(command.__name__).run.assert_called_with(
+            ['dev.ini', '-p', 'project 3'])
 
     def test_invalid_args(self):
         M.MonQTask.query.remove()
@@ -377,9 +413,11 @@ class TestReindexCommand(object):
             '-p', 'test', '--solr', '--solr-hosts=http://blah.com/solr/forge,https://other.net/solr/forge'])
         cmd._chunked_add_artifacts(list(range(10)))
         # check constructors of first and second Solr() instantiations
-        assert_equal(set([Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]]),
-                     set(['http://blah.com/solr/forge', 'https://other.net/solr/forge'])
-                     )
+        assert_equal(
+            set([Solr.call_args_list[0][0][0], Solr.call_args_list[1][0][0]]),
+            set(['http://blah.com/solr/forge',
+                 'https://other.net/solr/forge'])
+        )
 
     @patch('allura.command.show_models.utils')
     def test_project_regex(self, utils):
@@ -391,12 +429,14 @@ class TestReindexCommand(object):
     @patch('allura.command.show_models.add_artifacts')
     def test_chunked_add_artifacts(self, add_artifacts):
         cmd = show_models.ReindexCommand('reindex')
-        cmd.options = Mock(tasks=True, max_chunk=10*1000, ming_config=None)
+        cmd.options = Mock(tasks=True, max_chunk=10 * 1000, ming_config=None)
         ref_ids = list(range(10 * 1000 * 2 + 20))
         cmd._chunked_add_artifacts(ref_ids)
         assert_equal(len(add_artifacts.post.call_args_list), 3)
-        assert_equal(len(add_artifacts.post.call_args_list[0][0][0]), 10 * 1000)
-        assert_equal(len(add_artifacts.post.call_args_list[1][0][0]), 10 * 1000)
+        assert_equal(
+            len(add_artifacts.post.call_args_list[0][0][0]), 10 * 1000)
+        assert_equal(
+            len(add_artifacts.post.call_args_list[1][0][0]), 10 * 1000)
         assert_equal(len(add_artifacts.post.call_args_list[2][0][0]), 20)
 
     @patch('allura.command.show_models.add_artifacts')
@@ -404,7 +444,7 @@ class TestReindexCommand(object):
         def on_post(chunk, **kw):
             if len(chunk) > 1:
                 raise pymongo.errors.InvalidDocument(
-                        "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
+                    "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
         add_artifacts.post.side_effect = on_post
         cmd = show_models.ReindexCommand('reindex')
         cmd.options, args = cmd.parser.parse_args([])

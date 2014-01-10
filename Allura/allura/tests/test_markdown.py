@@ -24,6 +24,7 @@ from allura.lib import markdown_extensions as mde
 
 
 class TestTracRef1(unittest.TestCase):
+
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_no_such_artifact(self, lookup):
         lookup.return_value = None
@@ -42,11 +43,14 @@ class TestTracRef1(unittest.TestCase):
         shortlink = mock.Mock(url='/p/project/tool/artifact')
         shortlink.ref.artifact.deleted = False
         lookup.return_value = shortlink
-        self.assertEqual(mde.TracRef1().sub('#100'), '[#100](/p/project/tool/artifact)')
-        self.assertEqual(mde.TracRef1().sub('r123'), '[r123](/p/project/tool/artifact)')
+        self.assertEqual(mde.TracRef1().sub('#100'),
+                         '[#100](/p/project/tool/artifact)')
+        self.assertEqual(mde.TracRef1().sub('r123'),
+                         '[r123](/p/project/tool/artifact)')
 
 
 class TestTracRef2(unittest.TestCase):
+
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_no_such_artifact(self, lookup):
         lookup.return_value = None
@@ -63,32 +67,37 @@ class TestTracRef2(unittest.TestCase):
         lookup.return_value = shortlink
         pattern = mde.TracRef2()
         pattern.get_comment_slug = lambda *args: 'abc'
-        self.assertEqual(pattern.sub('ticket:100'), '[ticket:100](/p/project/tool/artifact/)')
-        self.assertEqual(pattern.sub('[ticket:100]'), '[[ticket:100](/p/project/tool/artifact/)]')
+        self.assertEqual(pattern.sub('ticket:100'),
+                         '[ticket:100](/p/project/tool/artifact/)')
+        self.assertEqual(pattern.sub('[ticket:100]'),
+                         '[[ticket:100](/p/project/tool/artifact/)]')
         self.assertEqual(pattern.sub('comment:13:ticket:100'),
-                '[comment:13:ticket:100](/p/project/tool/artifact/#abc)')
+                         '[comment:13:ticket:100](/p/project/tool/artifact/#abc)')
         pattern.get_comment_slug = lambda *args: None
         self.assertEqual(pattern.sub('comment:13:ticket:100'),
-                '[comment:13:ticket:100](/p/project/tool/artifact/)')
+                         '[comment:13:ticket:100](/p/project/tool/artifact/)')
 
 
 class TestTracRef3(unittest.TestCase):
+
     def test_no_app_context(self):
-        self.assertEqual(mde.TracRef3(None).sub('source:file.py'), 'source:file.py')
+        self.assertEqual(mde.TracRef3(None)
+                         .sub('source:file.py'), 'source:file.py')
 
     def test_legit_refs(self):
         app = mock.Mock(url='/p/project/tool/')
         self.assertEqual(mde.TracRef3(app).sub('source:file.py'),
-                '[source:file.py](/p/project/tool/HEAD/tree/file.py)')
+                         '[source:file.py](/p/project/tool/HEAD/tree/file.py)')
         self.assertEqual(mde.TracRef3(app).sub('source:file.py@123'),
-                '[source:file.py@123](/p/project/tool/123/tree/file.py)')
+                         '[source:file.py@123](/p/project/tool/123/tree/file.py)')
         self.assertEqual(mde.TracRef3(app).sub('source:file.py@123#L456'),
-                '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)')
+                         '[source:file.py@123#L456](/p/project/tool/123/tree/file.py#l456)')
         self.assertEqual(mde.TracRef3(app).sub('source:file.py#L456'),
-                '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)')
+                         '[source:file.py#L456](/p/project/tool/HEAD/tree/file.py#l456)')
 
 
 class TestPatternReplacingProcessor(unittest.TestCase):
+
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_run(self, lookup):
         shortlink = mock.Mock(url='/p/project/tool/artifact')
@@ -102,6 +111,7 @@ class TestPatternReplacingProcessor(unittest.TestCase):
 
 
 class TestCommitMessageExtension(unittest.TestCase):
+
     @mock.patch('allura.lib.markdown_extensions.TracRef2.get_comment_slug')
     @mock.patch('allura.lib.markdown_extensions.M.Shortlink.lookup')
     def test_convert(self, lookup, get_comment_slug):
@@ -132,6 +142,7 @@ Not *strong* or _underlined_."""
 * <a href="/p/project/tool/2/tree/test.py#l3">source:test.py@2#L3</a></p>
 <p>Not *strong* or _underlined_.</p></div>"""
 
-        md = ForgeMarkdown(extensions=[mde.CommitMessageExtension(app), 'nl2br'],
-                output_format='html4')
+        md = ForgeMarkdown(
+            extensions=[mde.CommitMessageExtension(app), 'nl2br'],
+            output_format='html4')
         self.assertEqual(md.convert(text), expected_html)

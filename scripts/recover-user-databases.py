@@ -30,12 +30,15 @@ IGNORED_COLLECTIONS = [
     'config',
     'system.indexes']
 
+
 def main():
     conn = M.session.main_doc_session.bind.conn
     n = M.Neighborhood.query.get(url_prefix='/u/')
     for p in M.Project.query.find(dict(neighborhood_id=n._id)):
-        if not p.database_configured: continue
-        if not p.shortname.startswith('u/'): continue
+        if not p.database_configured:
+            continue
+        if not p.shortname.startswith('u/'):
+            continue
         log.info('Checking to see if %s is configured...', p.database)
         db = conn[p.database]
         if is_unconfigured(db):
@@ -49,10 +52,12 @@ def main():
         else:
             log.info('... it is.')
 
+
 def is_unconfigured(db):
     # Check for data in collections other than those we pre-fill with data
     for collection_name in db.collection_names():
-        if collection_name in IGNORED_COLLECTIONS: continue
+        if collection_name in IGNORED_COLLECTIONS:
+            continue
         collection = db[collection_name]
         if collection.count():
             log.info('...%s has data', collection_name)

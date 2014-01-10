@@ -32,12 +32,14 @@ from . import GitHubOAuthMixin
 
 log = logging.getLogger(__name__)
 
+
 class GitHubProjectForm(base.ProjectImportForm):
     project_name = fev.Regex(r'^[a-zA-Z0-9-_.]+$',
-            not_empty=True,
-            messages={
-                'invalid': 'Valid symbols are: letters, numbers, dashes, underscores and periods',
-            })
+                             not_empty=True,
+                             messages={
+                                 'invalid': 'Valid symbols are: letters, numbers, dashes, underscores and periods',
+                             })
+
 
 class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):
 

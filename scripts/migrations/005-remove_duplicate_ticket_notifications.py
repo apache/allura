@@ -29,6 +29,8 @@ log = logging.getLogger(__name__)
 
 # Given a list of subscriptions, try to find one with a proper artifact_url, and delete the rest
 # If none of them have artifact_urls, delete them all
+
+
 def trim_subs(subs, test):
     prime = False
 
@@ -42,22 +44,25 @@ def trim_subs(subs, test):
                 print "   Found subscription with no artifact URL, deleting."
             else:
                 print "   Subscription has URL, but is a duplicate, deleting."
-            if not test: sub.delete()
+            if not test:
+                sub.delete()
 
 
 def main():
     test = sys.argv[-1] == 'test'
     title = re.compile('Ticket .*')
-    all_subscriptions = M.Mailbox.query.find(dict(artifact_title=title, type='direct')).sort([ ('artifact_title', pymongo.ASCENDING), ('user_id', pymongo.DESCENDING) ]).all()
+    all_subscriptions = M.Mailbox.query.find(dict(artifact_title=title, type='direct')).sort(
+        [('artifact_title', pymongo.ASCENDING), ('user_id', pymongo.DESCENDING)]).all()
     log.info('Fixing duplicate tracker subscriptions')
 
     for (key, group) in groupby(
-        all_subscriptions,
-        key=lambda sub:(sub.artifact_title, sub.user_id)):
+            all_subscriptions,
+            key=lambda sub: (sub.artifact_title, sub.user_id)):
         group = list(group)
         if group:
             trim_subs(group, test)
-    if not test: ThreadLocalORMSession.flush_all()
+    if not test:
+        ThreadLocalORMSession.flush_all()
 
 
 if __name__ == '__main__':

@@ -25,6 +25,7 @@ from forgewiki import model as WM
 
 log = logging.getLogger(__name__)
 
+
 def main():
     c.project = None
     pages = WM.Page.query.find({'title': {'$regex': '\/'}}).all()

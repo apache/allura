@@ -26,14 +26,14 @@ from forgetracker.model import Globals
 
 
 class TestTicketCustomFields(TrackerTestWithModel):
+
     def test_it_creates_string_fields(self):
         globals_ = c.app.globals
         globals_.custom_fields = [Object(name='_iteration_number',
-                                       label='Iteration Number',
-                                       type='string')]
+                                         label='Iteration Number',
+                                         type='string')]
         ThreadLocalORMSession.flush_all()
         fields = ticket_form.TicketCustomFields().fields
         iteration_field = fields[0]
         assert iteration_field.label == 'Iteration Number'
         assert iteration_field.name == '_iteration_number'
-

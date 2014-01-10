@@ -29,10 +29,11 @@ from allura.lib.widgets import form_fields as ffw
 from allura.lib import helpers as h
 from forgediscussion import model as DM
 
+
 class OptionsAdmin(ff.AdminForm):
-    defaults=dict(
+    defaults = dict(
         ff.ForgeForm.defaults,
-        submit_text = 'Save')
+        submit_text='Save')
 
     @property
     def fields(self):
@@ -41,48 +42,57 @@ class OptionsAdmin(ff.AdminForm):
                 name='PostingPolicy',
                 label='Posting Policy',
                 options=[
-                    ew.Option(py_value='ApproveOnceModerated', label='Approve Once Moderated'),
+                    ew.Option(py_value='ApproveOnceModerated',
+                              label='Approve Once Moderated'),
                     ew.Option(py_value='ApproveAll', label='Approve All')])
         ]
         return fields
 
+
 class AddForum(ff.AdminForm):
     template = 'jinja:forgediscussion:templates/discussion_widgets/add_forum.html'
-    defaults=dict(
+    defaults = dict(
         ff.ForgeForm.defaults,
         name="add_forum",
         value=None,
         app=None,
-        submit_text = 'Save')
+        submit_text='Save')
 
     @property
     def fields(self):
         fields = [
             ew.HiddenField(name='app_id', label='App'),
-            ew.TextField(name='name', label='Name', validator=fev.UnicodeString()),
+            ew.TextField(name='name', label='Name',
+                         validator=fev.UnicodeString()),
             ew.TextField(name='shortname', label='Short Name',
                          validator=All(
-                                 fev.Regex(ur"^[^\s\/\.]*$", not_empty=True, messages={
-                                    'invalid':'Shortname cannot contain space . or /',
-                                    'empty':'You must create a short name for the forum.'}),
-                                 UniqueForumShortnameValidator())),
+                             fev.Regex(ur"^[^\s\/\.]*$", not_empty=True, messages={
+                                 'invalid': 'Shortname cannot contain space . or /',
+                                 'empty': 'You must create a short name for the forum.'}),
+                             UniqueForumShortnameValidator())),
             ew.TextField(name='parent', label='Parent Forum'),
-            ew.TextField(name='description', label='Description',validator=fev.UnicodeString()),
-            ew.TextField(name='monitoring_email', label='Monitoring Email',validator=fev.Email()),
+            ew.TextField(name='description', label='Description',
+                         validator=fev.UnicodeString()),
+            ew.TextField(name='monitoring_email',
+                         label='Monitoring Email', validator=fev.Email()),
             ffw.FileChooser(name='icon', label='Icon'),
             ew.Checkbox(name="members_only", label="Developer Only"),
             ew.Checkbox(name="anon_posts", label="Allow Anonymous Posts")
         ]
         return fields
 
+
 class AddForumShort(AddForum):
     template = 'jinja:forgediscussion:templates/discussion_widgets/add_forum_short.html'
+
 
 class UniqueForumShortnameValidator(fev.FancyValidator):
 
     def _to_python(self, value, state):
-        forums = DM.Forum.query.find(dict(app_config_id=ObjectId(state.full_dict['app_id']))).all()
+        forums = DM.Forum.query.find(
+            dict(app_config_id=ObjectId(state.full_dict['app_id']))).all()
         value = h.really_unicode(value.lower() or '')
-        if value in [ f.shortname for f in forums ]:
-            raise formencode.Invalid('A forum already exists with that short name, please choose another.', value, state)
+        if value in [f.shortname for f in forums]:
+            raise formencode.Invalid(
+                'A forum already exists with that short name, please choose another.', value, state)
         return value

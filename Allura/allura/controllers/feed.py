@@ -26,12 +26,14 @@ from allura.lib import helpers as h
 
 
 class FeedArgs(object):
+
     """A facade for the arguments required by
     :meth:`allura.model.artifact.Feed.feed`.
 
     Used by :meth:`FeedController.feed` to create a real feed.
 
     """
+
     def __init__(self, query, title, url, description=None):
         self.query = query
         self.title = title
@@ -40,6 +42,7 @@ class FeedArgs(object):
 
 
 class FeedController(object):
+
     """Mixin class which adds RSS and Atom feed endpoints to an existing
     controller.
 
@@ -70,10 +73,10 @@ class FeedController(object):
     @without_trailing_slash
     @expose()
     @validate(dict(
-            since=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            until=h.DateTimeConverter(if_empty=None, if_invalid=None),
-            page=V.Int(if_empty=None, if_invalid=None),
-            limit=V.Int(if_empty=None, if_invalid=None)))
+        since=h.DateTimeConverter(if_empty=None, if_invalid=None),
+        until=h.DateTimeConverter(if_empty=None, if_invalid=None),
+        page=V.Int(if_empty=None, if_invalid=None),
+        limit=V.Int(if_empty=None, if_invalid=None)))
     def feed(self, since=None, until=None, page=None, limit=None, **kw):
         """Return a utf8-encoded XML feed (RSS or Atom) to the browser.
         """

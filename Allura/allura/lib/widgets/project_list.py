@@ -23,9 +23,10 @@ from pylons import tmpl_context as c, app_globals as g
 from allura import model as M
 from allura.lib.security import Credentials
 
+
 class ProjectSummary(ew_core.Widget):
-    template='jinja:allura:templates/widgets/project_summary.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/project_summary.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         sitemap=None,
         icon=None,
@@ -42,7 +43,7 @@ class ProjectSummary(ew_core.Widget):
         response = super(ProjectSummary, self).prepare_context(context)
         value = response['value']
         if response['sitemap'] is None:
-            response['sitemap'] = [ s for s in value.sitemap() if s.url ]
+            response['sitemap'] = [s for s in value.sitemap() if s.url]
 
         if response['grid_view_tools'] != '':
             view_tools_list = response['grid_view_tools'].split(',')
@@ -55,7 +56,7 @@ class ProjectSummary(ew_core.Widget):
 
         if response['icon_url'] is None:
             if value.icon:
-                response['icon_url'] = value.url()+'icon'
+                response['icon_url'] = value.url() + 'icon'
         if response['accolades'] is None:
             response['accolades'] = value.accolades
 
@@ -102,9 +103,10 @@ class ProjectSummary(ew_core.Widget):
         });
         ''')
 
+
 class ProjectList(ew_core.Widget):
-    template='jinja:allura:templates/widgets/project_list_widget.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/project_list_widget.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         projects=[],
         project_summary=ProjectSummary(),
@@ -157,9 +159,10 @@ class ProjectList(ew_core.Widget):
         for r in self.project_summary.resources():
             yield r
 
+
 class ProjectScreenshots(ew_core.Widget):
-    template='jinja:allura:templates/widgets/project_screenshots.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/project_screenshots.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         project=None,
         edit=False)

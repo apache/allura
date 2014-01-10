@@ -42,16 +42,20 @@ from .feed import FeedArgs, FeedController
 
 log = logging.getLogger(__name__)
 
+
 class pass_validator(object):
+
     def validate(self, v, s):
         return v
-pass_validator=pass_validator()
+pass_validator = pass_validator()
+
 
 class ModelConfig(object):
-    Discussion=M.Discussion
-    Thread=M.Thread
-    Post=M.Post
-    Attachment=M.DiscussionAttachment
+    Discussion = M.Discussion
+    Thread = M.Thread
+    Post = M.Post
+    Attachment = M.DiscussionAttachment
+
 
 class WidgetConfig(object):
     # Forms
@@ -61,7 +65,7 @@ class WidgetConfig(object):
     moderate_post = DW.ModeratePost()
     flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
-    moderate_posts=DW.ModeratePosts()
+    moderate_posts = DW.ModeratePosts()
     # Other widgets
     discussion = DW.Discussion()
     thread = DW.Thread()
@@ -70,9 +74,11 @@ class WidgetConfig(object):
     discussion_header = DW.DiscussionHeader()
 
 # Controllers
+
+
 class DiscussionController(BaseController, FeedController):
-    M=ModelConfig
-    W=WidgetConfig
+    M = ModelConfig
+    W = WidgetConfig
 
     def __init__(self):
         if not hasattr(self, 'ThreadController'):
@@ -115,7 +121,8 @@ class DiscussionController(BaseController, FeedController):
 
         """
         return FeedArgs(
-            dict(ref_id={'$in': [t.index_id() for t in self.discussion.threads]}),
+            dict(ref_id={'$in': [t.index_id()
+                 for t in self.discussion.threads]}),
             'Recent posts to %s' % self.discussion.name,
             self.discussion.url())
 
@@ -124,16 +131,20 @@ class AppDiscussionController(DiscussionController):
 
     @LazyProperty
     def discussion(self):
-        return self.M.Discussion.query.get(shortname=c.app.config.options.mount_point,
-                                           app_config_id=c.app.config._id)
+        return self.M.Discussion.query.get(
+            shortname=c.app.config.options.mount_point,
+            app_config_id=c.app.config._id)
+
 
 class ThreadsController(BaseController):
-    __metaclass__=h.ProxiedAttrMeta
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+    __metaclass__ = h.ProxiedAttrMeta
+    M = h.attrproxy('_discussion_controller', 'M')
+    W = h.attrproxy('_discussion_controller', 'W')
+    ThreadController = h.attrproxy(
+        '_discussion_controller', 'ThreadController')
+    PostController = h.attrproxy('_discussion_controller', 'PostController')
+    AttachmentController = h.attrproxy(
+        '_discussion_controller', 'AttachmentController')
 
     def __init__(self, discussion_controller):
         self._discussion_controller = discussion_controller
@@ -141,18 +152,21 @@ class ThreadsController(BaseController):
     @expose()
     def _lookup(self, id=None, *remainder):
         if id:
-            id=unquote(id)
+            id = unquote(id)
             return self.ThreadController(self._discussion_controller, id), remainder
         else:
             raise exc.HTTPNotFound()
 
+
 class ThreadController(BaseController, FeedController):
-    __metaclass__=h.ProxiedAttrMeta
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+    __metaclass__ = h.ProxiedAttrMeta
+    M = h.attrproxy('_discussion_controller', 'M')
+    W = h.attrproxy('_discussion_controller', 'W')
+    ThreadController = h.attrproxy(
+        '_discussion_controller', 'ThreadController')
+    PostController = h.attrproxy('_discussion_controller', 'PostController')
+    AttachmentController = h.attrproxy(
+        '_discussion_controller', 'AttachmentController')
 
     def _check_security(self):
         require_access(self.thread, 'read')
@@ -168,7 +182,7 @@ class ThreadController(BaseController, FeedController):
 
     @expose()
     def _lookup(self, id, *remainder):
-        id=unquote(id)
+        id = unquote(id)
         return self.PostController(self._discussion_controller, self.thread, id), remainder
 
     @expose('jinja:allura:templates/discussion/thread.html')
@@ -177,7 +191,8 @@ class ThreadController(BaseController, FeedController):
         c.thread_header = self.W.thread_header
         limit, page, start = g.handle_paging(limit, page)
         self.thread.num_views += 1
-        M.session.artifact_orm_session._get().skip_mod_date = True # the update to num_views shouldn't affect it
+        # the update to num_views shouldn't affect it
+        M.session.artifact_orm_session._get().skip_mod_date = True
         count = self.thread.query_posts(page=page, limit=int(limit)).count()
         return dict(discussion=self.thread.discussion,
                     thread=self.thread,
@@ -200,7 +215,8 @@ class ThreadController(BaseController, FeedController):
             require_access(self.thread.ref.artifact, 'post')
         kw = self.W.edit_post.to_python(kw, None)
         if not kw['text']:
-            flash('Your post was not saved. You must provide content.', 'error')
+            flash('Your post was not saved. You must provide content.',
+                  'error')
             redirect(request.referer)
 
         file_info = kw.get('file_info', None)
@@ -241,12 +257,14 @@ class ThreadController(BaseController, FeedController):
 
 
 class PostController(BaseController):
-    __metaclass__=h.ProxiedAttrMeta
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+    __metaclass__ = h.ProxiedAttrMeta
+    M = h.attrproxy('_discussion_controller', 'M')
+    W = h.attrproxy('_discussion_controller', 'W')
+    ThreadController = h.attrproxy(
+        '_discussion_controller', 'ThreadController')
+    PostController = h.attrproxy('_discussion_controller', 'PostController')
+    AttachmentController = h.attrproxy(
+        '_discussion_controller', 'AttachmentController')
 
     def _check_security(self):
         require_access(self.post, 'read')
@@ -259,7 +277,8 @@ class PostController(BaseController):
 
     @LazyProperty
     def post(self):
-        post = self.M.Post.query.get(slug=self._post_slug, thread_id=self.thread._id)
+        post = self.M.Post.query.get(
+            slug=self._post_slug, thread_id=self.thread._id)
         if post:
             return post
         post = self.M.Post.query.get(slug=self._post_slug)
@@ -279,7 +298,7 @@ class PostController(BaseController):
             post_fields = self.W.edit_post.to_python(kw, None)
             file_info = post_fields.pop('file_info', None)
             self.post.add_multiple_attachments(file_info)
-            for k,v in post_fields.iteritems():
+            for k, v in post_fields.iteritems():
                 try:
                     setattr(self.post, k, v)
                 except AttributeError:
@@ -289,14 +308,16 @@ class PostController(BaseController):
             self.post.last_edit_by_id = c.user._id
             self.post.commit()
             g.director.create_activity(c.user, 'modified', self.post,
-                    target=self.post.thread.artifact or self.post.thread,
-                    related_nodes=[self.post.app_config.project])
+                                       target=self.post.thread.artifact or self.post.thread,
+                                       related_nodes=[self.post.app_config.project])
             redirect(request.referer)
-        elif request.method=='GET':
+        elif request.method == 'GET':
             if version is not None:
                 HC = self.post.__mongometa__.history_class
-                ss = HC.query.find({'artifact_id':self.post._id, 'version':int(version)}).first()
-                if not ss: raise exc.HTTPNotFound
+                ss = HC.query.find(
+                    {'artifact_id': self.post._id, 'version': int(version)}).first()
+                if not ss:
+                    raise exc.HTTPNotFound
                 post = Object(
                     ss.data,
                     acl=self.post.acl,
@@ -307,9 +328,9 @@ class PostController(BaseController):
                     attachments=self.post.attachments,
                     related_artifacts=self.post.related_artifacts,
                     parent_security_context=lambda: None,
-                    )
+                )
             else:
-                post=self.post
+                post = self.post
             return dict(discussion=self.post.discussion,
                         post=post)
 
@@ -341,9 +362,10 @@ class PostController(BaseController):
             self.post.spam()
         elif kw.pop('approve', None):
             self.post.status = 'ok'
-            g.spam_checker.submit_ham(self.post.text, artifact=self.post, user=c.user)
+            g.spam_checker.submit_ham(
+                self.post.text, artifact=self.post, user=c.user)
         self.thread.update_stats()
-        return dict(result ='success')
+        return dict(result='success')
 
     @h.vardec
     @expose()
@@ -366,26 +388,31 @@ class PostController(BaseController):
 
     @expose()
     def _lookup(self, id, *remainder):
-        id=unquote(id)
+        id = unquote(id)
         return self.PostController(
             self._discussion_controller,
             self.thread, self._post_slug + '/' + id), remainder
 
+
 class DiscussionAttachmentController(AttachmentController):
-    AttachmentClass=M.DiscussionAttachment
-    edit_perm='moderate'
+    AttachmentClass = M.DiscussionAttachment
+    edit_perm = 'moderate'
+
 
 class DiscussionAttachmentsController(AttachmentsController):
-    AttachmentControllerClass=DiscussionAttachmentController
+    AttachmentControllerClass = DiscussionAttachmentController
+
 
 class ModerationController(BaseController):
-    __metaclass__=h.ProxiedAttrMeta
+    __metaclass__ = h.ProxiedAttrMeta
     PostModel = M.Post
-    M=h.attrproxy('_discussion_controller', 'M')
-    W=h.attrproxy('_discussion_controller', 'W')
-    ThreadController=h.attrproxy('_discussion_controller', 'ThreadController')
-    PostController=h.attrproxy('_discussion_controller', 'PostController')
-    AttachmentController=h.attrproxy('_discussion_controller', 'AttachmentController')
+    M = h.attrproxy('_discussion_controller', 'M')
+    W = h.attrproxy('_discussion_controller', 'W')
+    ThreadController = h.attrproxy(
+        '_discussion_controller', 'ThreadController')
+    PostController = h.attrproxy('_discussion_controller', 'PostController')
+    AttachmentController = h.attrproxy(
+        '_discussion_controller', 'AttachmentController')
 
     def _check_security(self):
         require_access(self.discussion, 'moderate')
@@ -413,7 +440,7 @@ class ModerationController(BaseController):
         if status != '-':
             query['status'] = status
         if flag:
-            query['flags'] = {'$gte': int(flag) }
+            query['flags'] = {'$gte': int(flag)}
         q = self.PostModel.query.find(query)
         count = q.count()
         if not page:
@@ -437,7 +464,9 @@ class ModerationController(BaseController):
             if 'checked' in p:
                 posted = self.PostModel.query.get(
                     _id=p['_id'],
-                    discussion_id=self.discussion._id,  # make sure nobody hacks the HTML form to moderate other posts
+                    # make sure nobody hacks the HTML form to moderate other
+                    # posts
+                    discussion_id=self.discussion._id,
                 )
                 if posted:
                     if delete:
@@ -450,12 +479,14 @@ class ModerationController(BaseController):
                         posted.spam()
                     elif approve and posted.status != 'ok':
                         posted.status = 'ok'
-                        g.spam_checker.submit_ham(posted.text, artifact=posted, user=c.user)
+                        g.spam_checker.submit_ham(
+                            posted.text, artifact=posted, user=c.user)
                         posted.thread.last_post_date = max(
                             posted.thread.last_post_date,
                             posted.mod_date)
                         posted.thread.num_replies += 1
         redirect(request.referer)
+
 
 class PostRestController(PostController):
 
@@ -474,6 +505,7 @@ class PostRestController(PostController):
         self.thread.num_replies += 1
         redirect(post.slug.split('/')[-1] + '/')
 
+
 class ThreadRestController(ThreadController):
 
     @expose('json:')
@@ -489,6 +521,7 @@ class ThreadRestController(ThreadController):
         kw = self.W.edit_post.to_python(kw, None)
         p = self.thread.add_post(**kw)
         redirect(p.slug + '/')
+
 
 class AppDiscussionRestController(AppDiscussionController):
     ThreadController = ThreadRestController

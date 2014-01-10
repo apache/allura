@@ -28,6 +28,7 @@ import unittest
 
 
 class WithUserAndBugsApp(TrackerTestWithModel):
+
     def setUp(self):
         super(WithUserAndBugsApp, self).setUp()
         c.user = User(username='test-user')
@@ -35,6 +36,7 @@ class WithUserAndBugsApp(TrackerTestWithModel):
 
 
 class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
+
     def setUp(self):
         super(TestWhenSearchingWithCustomFields, self).setUp()
         with solr_search_returning_colors_are_wrong_ticket():
@@ -51,6 +53,7 @@ class TestWhenSearchingWithCustomFields(WithUserAndBugsApp):
 
 
 class TestWhenLoadingFrontPage(WithUserAndBugsApp):
+
     def setUp(self):
         super(TestWhenLoadingFrontPage, self).setUp()
         with mongo_search_returning_colors_are_wrong_ticket():
@@ -69,9 +72,10 @@ def solr_search_returning_colors_are_wrong_ticket():
     search_artifact.return_value = matches
     return patch('forgetracker.model.ticket.search_artifact', search_artifact)
 
+
 def mongo_search_returning_colors_are_wrong_ticket():
     ticket = create_colors_are_wrong_ticket()
-    tickets = [ ticket ]
+    tickets = [ticket]
     paged_query = Mock()
     paged_query.return_value = dict(tickets=tickets)
     return patch('forgetracker.tracker_main.TM.Ticket.paged_query', paged_query)
@@ -104,6 +108,7 @@ def create_ticket(summary, custom_fields):
 
 
 class test_change_text(unittest.TestCase):
+
     def test_get_label(self):
         self.assertEqual('Milestone', tracker_main.get_label('_milestone'))
         self.assertEqual('Ticket Number', tracker_main.get_label('ticket_num'))

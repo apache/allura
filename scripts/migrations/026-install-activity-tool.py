@@ -24,6 +24,7 @@ from allura import model as M
 
 log = logging.getLogger(__name__)
 
+
 def main():
     for chunk in utils.chunked_find(M.Project):
         for p in chunk:

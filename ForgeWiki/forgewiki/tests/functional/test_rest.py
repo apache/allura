@@ -42,13 +42,18 @@ class TestWikiApi(TestRestApiBase):
         r = self.app.get('/p/test/wiki/Home/')
         discussion_url = r.html.findAll('form')[2]['action'][:-4]
         content = file(__file__).read()
-        self.app.post('/wiki/Home/attach', upload_files=[('file_info', 'test_root.py', content)])
+        self.app.post('/wiki/Home/attach',
+                      upload_files=[('file_info', 'test_root.py', content)])
         r = self.app.get('/rest/p/test/wiki/Home/')
         r = json.loads(r.body)
-        assert_equal(r['attachments'][0]['url'], 'http://localhost/p/test/wiki/Home/attachment/test_root.py')
-        assert_equal(r['discussion_thread_url'], 'http://localhost/rest%s' % discussion_url)
-        assert_equal(r['discussion_thread']['_id'], discussion_url.split('/')[-2])
-        self.app.post('/wiki/Home/attach', upload_files=[('file_info', '__init__.py', content),])
+        assert_equal(r['attachments'][0]['url'],
+                     'http://localhost/p/test/wiki/Home/attachment/test_root.py')
+        assert_equal(r['discussion_thread_url'], 'http://localhost/rest%s' %
+                     discussion_url)
+        assert_equal(r['discussion_thread']['_id'],
+                     discussion_url.split('/')[-2])
+        self.app.post('/wiki/Home/attach',
+                      upload_files=[('file_info', '__init__.py', content), ])
         r = self.app.get('/rest/p/test/wiki/Home/')
         r = json.loads(r.body)
         assert_equal(len(r['attachments']), 2)

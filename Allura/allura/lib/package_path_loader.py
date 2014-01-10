@@ -132,20 +132,21 @@ from allura.lib.helpers import topological_sort, iter_entry_points
 
 
 class PackagePathLoader(jinja2.BaseLoader):
+
     def __init__(self, override_entrypoint='allura.theme.override',
-                default_paths=None,
-                override_root='override',
-                ):
+                 default_paths=None,
+                 override_root='override',
+                 ):
         '''
         Set up initial values... defaults are for Allura.
         '''
         # TODO: How does one handle project-theme?
         if default_paths is None:
             default_paths = [
-                    #['project-theme', None],
-                    ['site-theme', None],
-                    ['allura', '/'],
-                ]
+                #['project-theme', None],
+                ['site-theme', None],
+                ['allura', '/'],
+            ]
 
         self.override_entrypoint = override_entrypoint
         self.default_paths = default_paths
@@ -161,9 +162,9 @@ class PackagePathLoader(jinja2.BaseLoader):
         """
         paths = self.default_paths[:]  # copy default_paths
         paths[-1:0] = [  # insert all eps just before last item, by default
-                [ep.name, pkg_resources.resource_filename(ep.module_name, "")]
-                for ep in iter_entry_points(self.override_entrypoint)
-            ]
+            [ep.name, pkg_resources.resource_filename(ep.module_name, "")]
+            for ep in iter_entry_points(self.override_entrypoint)
+        ]
         return paths
 
     def _load_rules(self):
@@ -213,7 +214,8 @@ class PackagePathLoader(jinja2.BaseLoader):
         path 'a' should come before path 'b'.
         """
         names = [p[0] for p in paths]
-        # filter rules that reference non-existent paths to prevent "loops" in the graph
+        # filter rules that reference non-existent paths to prevent "loops" in
+        # the graph
         rules = [r for r in rules if r[0] in names and r[1] in names]
         ordered_paths = topological_sort(names, rules)
         if ordered_paths is None:

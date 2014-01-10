@@ -24,28 +24,30 @@ from allura import model as M
 from allura.tests import TestController
 from allura.lib.decorators import task
 
+
 class TestSiteAdmin(TestController):
 
     def test_access(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
-                username='test-user'), status=403)
+            username='test-user'), status=403)
 
         r = self.app.get('/nf/admin/', extra_environ=dict(
-                username='*anonymous'), status=302)
+            username='*anonymous'), status=302)
         r = r.follow()
         assert 'Login' in r
 
     def test_home(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
-                username='root'))
-        assert 'Forge Site Admin' in r.html.find('h2',{'class':'dark title'}).contents[0]
+            username='root'))
+        assert 'Forge Site Admin' in r.html.find(
+            'h2', {'class': 'dark title'}).contents[0]
         stats_table = r.html.find('table')
         cells = stats_table.findAll('td')
         assert cells[0].contents[0] == 'Adobe', cells[0].contents[0]
 
     def test_tickets_access(self):
         r = self.app.get('/nf/admin/api_tickets', extra_environ=dict(
-                username='test-user'), status=403)
+            username='test-user'), status=403)
 
     def test_new_projects_access(self):
         self.app.get('/nf/admin/new_projects', extra_environ=dict(
@@ -56,7 +58,7 @@ class TestSiteAdmin(TestController):
 
     def test_new_projects(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-                username='root'))
+            username='root'))
         headers = r.html.find('table').findAll('th')
         assert headers[1].contents[0] == 'Created'
         assert headers[2].contents[0] == 'Shortname'
@@ -69,18 +71,18 @@ class TestSiteAdmin(TestController):
     def test_new_projects_deleted_projects(self):
         '''Deleted projects should not be visible here'''
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-                username='root'))
+            username='root'))
         count = len(r.html.find('table').findAll('tr'))
         p = M.Project.query.get(shortname='test')
         p.deleted = True
         ThreadLocalORMSession.flush_all()
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-                username='root'))
+            username='root'))
         assert_equal(len(r.html.find('table').findAll('tr')), count - 1)
 
     def test_new_projects_daterange_filtering(self):
         r = self.app.get('/nf/admin/new_projects', extra_environ=dict(
-                username='root'))
+            username='root'))
         count = len(r.html.find('table').findAll('tr'))
         assert_equal(count, 7)
 
@@ -105,7 +107,8 @@ class TestSiteAdmin(TestController):
         assert 'value="p"' in r
 
     def test_task_list(self):
-        r = self.app.get('/nf/admin/task_manager', extra_environ=dict(username='*anonymous'), status=302)
+        r = self.app.get('/nf/admin/task_manager',
+                         extra_environ=dict(username='*anonymous'), status=302)
         import math
         task = M.MonQTask.post(math.ceil, (12.5,))
         r = self.app.get('/nf/admin/task_manager?page_num=1')
@@ -115,7 +118,8 @@ class TestSiteAdmin(TestController):
         import math
         task = M.MonQTask.post(math.ceil, (12.5,))
         url = '/nf/admin/task_manager/view/%s' % task._id
-        r = self.app.get(url, extra_environ=dict(username='*anonymous'), status=302)
+        r = self.app.get(
+            url, extra_environ=dict(username='*anonymous'), status=302)
         r = self.app.get(url)
         assert 'math.ceil' in r, r
 
@@ -129,15 +133,15 @@ class TestSiteAdmin(TestController):
         user = M.User.by_username('root')
 
         task_args = dict(
-                args=['foo'],
-                kwargs=dict(bar='baz'))
+            args=['foo'],
+            kwargs=dict(bar='baz'))
 
         r = self.app.post('/nf/admin/task_manager/create', params=dict(
             task='allura.tests.functional.test_site_admin.test_task',
             task_args=json.dumps(task_args),
             user='root',
             path='/p/test/admin',
-            ), status=302)
+        ), status=302)
         task = M.MonQTask.query.find({}).sort('_id', -1).next()
         assert str(task._id) in r.location
         assert task.context['project_id'] == project._id

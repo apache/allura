@@ -24,9 +24,10 @@ from allura import model as M
 from allura.lib.widgets import forms as ff
 from allura.lib.widgets import form_fields as ffw
 
+
 class SCMLogWidget(ew_core.Widget):
-    template='jinja:allura:templates/widgets/repo/log.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/repo/log.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         value=None,
         limit=None,
@@ -35,32 +36,35 @@ class SCMLogWidget(ew_core.Widget):
         show_paging=True)
 
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
 
     def resources(self):
         for f in self.fields:
             for r in f.resources():
                 yield r
 
+
 class SCMRevisionWidget(ew_core.Widget):
-    template='jinja:allura:templates/widgets/repo/revision.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/repo/revision.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         value=None,
         prev=ew_core.NoDefault,
         next=ew_core.NoDefault)
 
+
 class SCMTreeWidget(ew_core.Widget):
-    template='jinja:allura:templates/widgets/repo/tree_widget.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/repo/tree_widget.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         tree=None,
         list=list)
 
+
 class SCMMergeRequestWidget(ff.ForgeForm):
-    source_branches=[]
-    target_branches=[]
+    source_branches = []
+    target_branches = []
 
     @property
     def fields(self):
@@ -74,28 +78,31 @@ class SCMMergeRequestWidget(ff.ForgeForm):
                 name='target_branch',
                 label='Target Branch',
                 options=self.target_branches),
-            ffw.AutoResizeTextarea(name='description') ]
+            ffw.AutoResizeTextarea(name='description')]
         return result
 
+
 class SCMMergeRequestFilterWidget(ff.ForgeForm):
-    defaults=dict(
+    defaults = dict(
         ff.ForgeForm.defaults,
         submit_text='Filter',
         method='GET')
 
     class fields(ew_core.NameList):
-        status=ew.MultiSelectField(options=M.MergeRequest.statuses)
+        status = ew.MultiSelectField(options=M.MergeRequest.statuses)
+
 
 class SCMMergeRequestDisposeWidget(ff.ForgeForm):
 
     class fields(ew_core.NameList):
-        status=ew.SingleSelectField(
+        status = ew.SingleSelectField(
             label='Change Status',
             options=M.MergeRequest.statuses)
 
+
 class SCMCommitBrowserWidget(ew_core.Widget):
-    template='jinja:allura:templates/widgets/repo/commit_browser.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/repo/commit_browser.html'
+    defaults = dict(
         ew_core.Widget.defaults,
     )
 

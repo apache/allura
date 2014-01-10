@@ -38,13 +38,15 @@ log = logging.getLogger(__name__)
 
 tool_entry_points = list(h.iter_entry_points('allura'))
 
+
 class StaticFilesMiddleware(object):
+
     '''Custom static file middleware
 
     Map everything in allura/public/nf/* to <script_name>/*
     For each plugin, map everything <module>/nf/<ep_name>/* to <script_name>/<ep_name>/*
     '''
-    CACHE_MAX_AGE=60*60*24*365
+    CACHE_MAX_AGE = 60 * 60 * 24 * 365
 
     def __init__(self, app, script_name=''):
         self.app = app
@@ -74,16 +76,18 @@ class StaticFilesMiddleware(object):
                         ep.name.lower(),
                         filename))
                 return fileapp.FileApp(file_path, [
-                        ('Access-Control-Allow-Origin', '*')])
+                    ('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename(
             'allura', os.path.join(
                 'public', 'nf',
                 filename))
         return fileapp.FileApp(file_path, [
-                ('Access-Control-Allow-Origin', '*')])
+            ('Access-Control-Allow-Origin', '*')])
+
 
 class LoginRedirectMiddleware(object):
+
     '''Actually converts a 401 into a 302 so we can do a redirect to a different
     app for login.  (StatusCodeRedirect does a WSGI-only redirect which cannot
     go to a URL not managed by the WSGI stack).'''
@@ -110,13 +114,16 @@ class LoginRedirectMiddleware(object):
         start_response(status, headers, exc_info)
         return app_iter
 
+
 class CSRFMiddleware(object):
+
     '''On POSTs, looks for a special field name that matches the value of a given
     cookie.  If this field is missing, the cookies are cleared to anonymize the
     request.'''
 
     def __init__(self, app, cookie_name, param_name=None):
-        if param_name is None: param_name = cookie_name
+        if param_name is None:
+            param_name = cookie_name
         self._app = app
         self._param_name = param_name
         self._cookie_name = cookie_name
@@ -131,7 +138,8 @@ class CSRFMiddleware(object):
             if cookie != param:
                 log.warning('CSRF attempt detected, %r != %r', cookie, param)
                 environ.pop('HTTP_COOKIE', None)
-        def session_start_response(status, headers, exc_info = None):
+
+        def session_start_response(status, headers, exc_info=None):
             if dict(headers).get('Content-Type', '').startswith('text/html'):
                 headers.append(
                     ('Set-cookie',
@@ -139,7 +147,9 @@ class CSRFMiddleware(object):
             return start_response(status, headers, exc_info)
         return self._app(environ, session_start_response)
 
+
 class SSLMiddleware(object):
+
     'Verify the https/http schema is correct'
 
     def __init__(self, app, no_redirect_pattern=None, force_ssl_pattern=None):
@@ -168,8 +178,10 @@ class SSLMiddleware(object):
         # This SFUSER check is SourceForge-specific (to require all logged-in users to use https)
         # BUT has the additional affect of not forcing SSL for regular Allura instances
         # This is important for local development, at least.  When we remove SFUSER (perhaps by requiring SSL everywhere),
-        # we can use `no_redirect.pattern = .` for local development to work without SSL
-        force_ssl = req.cookies.get('SFUSER') or self._force_ssl_re.match(environ['PATH_INFO'])
+        # we can use `no_redirect.pattern = .` for local development to work
+        # without SSL
+        force_ssl = req.cookies.get(
+            'SFUSER') or self._force_ssl_re.match(environ['PATH_INFO'])
         if not secure and force_ssl:
             resp = exc.HTTPFound(location='https://' + srv_path)
         elif secure and not force_ssl:
@@ -179,7 +191,9 @@ class SSLMiddleware(object):
             resp = self.app
         return resp(environ, start_response)
 
+
 class AlluraTimerMiddleware(TimerMiddleware):
+
     def timers(self):
         import genshi
         import jinja2
@@ -191,42 +205,50 @@ class AlluraTimerMiddleware(TimerMiddleware):
         import activitystream
 
         return self.entry_point_timers() + [
-            Timer('activitystream.director.{method_name}', allura.model.timeline.Director,
+            Timer(
+                'activitystream.director.{method_name}', allura.model.timeline.Director,
                 'create_activity', 'create_timeline', 'get_timeline'),
-            Timer('activitystream.aggregator.{method_name}', allura.model.timeline.Aggregator, '*'),
-            Timer('activitystream.node_manager.{method_name}', activitystream.managers.NodeManager, '*'),
-            Timer('activitystream.activity_manager.{method_name}', activitystream.managers.ActivityManager, '*'),
+            Timer('activitystream.aggregator.{method_name}',
+                  allura.model.timeline.Aggregator, '*'),
+            Timer('activitystream.node_manager.{method_name}',
+                  activitystream.managers.NodeManager, '*'),
+            Timer('activitystream.activity_manager.{method_name}',
+                  activitystream.managers.ActivityManager, '*'),
             Timer('jinja', jinja2.Template, 'render', 'stream', 'generate'),
             Timer('markdown', markdown.Markdown, 'convert'),
             Timer('ming', ming.odm.odmsession.ODMCursor, 'next',  # FIXME: this may captures timings ok, but is misleading for counts
                   debug_each_call=False),
             Timer('ming', ming.odm.odmsession.ODMSession, 'flush', 'find'),
             Timer('ming', ming.schema.Document, 'validate',
-                debug_each_call=False),
+                  debug_each_call=False),
             Timer('ming', ming.schema.FancySchemaItem, '_validate_required',
-                '_validate_fast_missing', '_validate_optional',
-                debug_each_call=False),
+                  '_validate_fast_missing', '_validate_optional',
+                  debug_each_call=False),
             Timer('mongo', pymongo.collection.Collection, 'count', 'find',
-                'find_one'),
+                  'find_one'),
             Timer('mongo', pymongo.cursor.Cursor, 'count', 'distinct',
-                '_refresh'),
+                  '_refresh'),
             # urlopen and socket io may or may not overlap partially
             Timer('render', genshi.Stream, 'render'),
             Timer('repo.Blob.{method_name}', allura.model.repo.Blob, '*'),
             Timer('repo.Commit.{method_name}', allura.model.repo.Commit, '*'),
-            Timer('repo.LastCommit.{method_name}', allura.model.repo.LastCommit, '*'),
+            Timer('repo.LastCommit.{method_name}',
+                  allura.model.repo.LastCommit, '*'),
             Timer('repo.Tree.{method_name}', allura.model.repo.Tree, '*'),
             Timer('socket_read', socket._fileobject, 'read', 'readline',
-                'readlines', debug_each_call=False),
+                  'readlines', debug_each_call=False),
             Timer('socket_write', socket._fileobject, 'write', 'writelines',
-                'flush', debug_each_call=False),
+                  'flush', debug_each_call=False),
             Timer('solr', pysolr.Solr, 'add', 'delete', 'search', 'commit'),
             Timer('template', genshi.template.Template, '_prepare', '_parse',
-                'generate'),
+                  'generate'),
             Timer('urlopen', urllib2, 'urlopen'),
-            Timer('base_repo_tool.{method_name}', allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
+            Timer('base_repo_tool.{method_name}',
+                  allura.model.repository.RepositoryImplementation, 'last_commit_ids'),
             Timer('_diffs_copied', allura.model.repo.Commit, '_diffs_copied'),
-            Timer('sequencematcher.{method_name}', allura.model.repo.SequenceMatcher, 'ratio', 'quick_ratio', 'real_quick_ratio'),
+            Timer(
+                'sequencematcher.{method_name}', allura.model.repo.SequenceMatcher,
+                'ratio', 'quick_ratio', 'real_quick_ratio'),
             Timer('unified_diff', allura.model.repo, 'unified_diff'),
         ] + [Timer('sidebar', ep.load(), 'sidebar_menu') for ep in tool_entry_points]
 

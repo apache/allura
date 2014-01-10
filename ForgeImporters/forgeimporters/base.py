@@ -57,6 +57,7 @@ log = logging.getLogger(__name__)
 
 
 class ProjectImportForm(schema.Schema):
+
     def __init__(self, source):
         super(ProjectImportForm, self).__init__()
         provider = ProjectRegistrationProvider.get()
@@ -69,6 +70,7 @@ class ProjectImportForm(schema.Schema):
 
 
 class ToolImportForm(schema.Schema):
+
     def __init__(self, tool_class):
         super(ToolImportForm, self).__init__()
         self.add_field('mount_point', v.MountPointValidator(tool_class))
@@ -76,6 +78,7 @@ class ToolImportForm(schema.Schema):
 
 
 class ImportErrorHandler(object):
+
     def __init__(self, importer, project_name, project):
         self.importer = importer
         self.project_name = project_name
@@ -89,19 +92,19 @@ class ImportErrorHandler(object):
             self.importer.clear_pending(self.project)
         if exc_type:
             g.post_event('import_tool_task_failed',
-                error=str(exc_val),
-                traceback=traceback.format_exc(),
-                importer_source=self.importer.source,
-                importer_tool_label=self.importer.tool_label,
-                project_name=self.project_name,
-                )
+                         error=str(exc_val),
+                         traceback=traceback.format_exc(),
+                         importer_source=self.importer.source,
+                         importer_tool_label=self.importer.tool_label,
+                         project_name=self.project_name,
+                         )
 
     def success(self, app):
         with h.push_config(c, project=self.project, app=app):
             g.post_event('import_tool_task_succeeded',
-                    self.importer.source,
-                    self.importer.tool_label,
-                    )
+                         self.importer.source,
+                         self.importer.tool_label,
+                         )
 
 
 def object_from_path(path):
@@ -117,9 +120,10 @@ def object_from_path(path):
 def import_tool(importer_path, project_name=None, mount_point=None, mount_label=None, **kw):
     importer = object_from_path(importer_path)()
     with ImportErrorHandler(importer, project_name, c.project) as handler,\
-         M.session.substitute_extensions(M.artifact_orm_session, [M.session.BatchIndexer]):
-        app = importer.import_tool(c.project, c.user, project_name=project_name,
-                mount_point=mount_point, mount_label=mount_label, **kw)
+            M.session.substitute_extensions(M.artifact_orm_session, [M.session.BatchIndexer]):
+        app = importer.import_tool(
+            c.project, c.user, project_name=project_name,
+            mount_point=mount_point, mount_label=mount_label, **kw)
         M.artifact_orm_session.flush()
         M.session.BatchIndexer.flush()
         if app:
@@ -127,6 +131,7 @@ def import_tool(importer_path, project_name=None, mount_point=None, mount_label=
 
 
 class ProjectExtractor(object):
+
     """Base class for project extractors.
 
     Subclasses should use :meth:`urlopen` to make HTTP requests, as it provides
@@ -147,7 +152,8 @@ class ProjectExtractor(object):
     @staticmethod
     def urlopen(url, retries=3, codes=(408,), **kw):
         req = urllib2.Request(url, **kw)
-        req.add_header('User-Agent', 'Allura Data Importer (https://forge-allura.apache.org/p/allura/)')
+        req.add_header(
+            'User-Agent', 'Allura Data Importer (https://forge-allura.apache.org/p/allura/)')
         return h.urlopen(req, retries=retries, codes=codes)
 
     def get_page(self, page_name_or_url, parser=None, **kw):
@@ -175,7 +181,7 @@ class ProjectExtractor(object):
             if parser is None:
                 parser = self.parse_page
             self.page = self._page_cache[self.url] = \
-                    parser(self.urlopen(self.url))
+                parser(self.urlopen(self.url))
         return self.page
 
     def get_page_url(self, page_name, **kw):
@@ -185,7 +191,7 @@ class ProjectExtractor(object):
 
         """
         return self.PAGE_MAP[page_name].format(
-            project_name = urllib.quote(self.project_name), **kw)
+            project_name=urllib.quote(self.project_name), **kw)
 
     def parse_page(self, page):
         """Transforms the result of a `urlopen` call before returning it from
@@ -205,6 +211,7 @@ class ProjectExtractor(object):
 
 
 class ProjectImporter(BaseController):
+
     """
     Base class for project importers.
 
@@ -264,16 +271,20 @@ class ProjectImporter(BaseController):
         message indicating that some data will not be available immediately.
         """
         try:
-            c.project = self.neighborhood.register_project(kw['project_shortname'],
-                    project_name=kw['project_name'])
+            c.project = self.neighborhood.register_project(
+                kw['project_shortname'],
+                project_name=kw['project_name'])
         except exceptions.ProjectOverlimitError:
-            flash("You have exceeded the maximum number of projects you are allowed to create", 'error')
+            flash(
+                "You have exceeded the maximum number of projects you are allowed to create", 'error')
             redirect('.')
         except exceptions.ProjectRatelimitError:
-            flash("Project creation rate limit exceeded.  Please try again later.", 'error')
+            flash(
+                "Project creation rate limit exceeded.  Please try again later.", 'error')
             redirect('.')
         except Exception:
-            log.error('error registering project: %s', kw['project_shortname'], exc_info=True)
+            log.error('error registering project: %s',
+                      kw['project_shortname'], exc_info=True)
             flash('Internal Error. Please try again later.', 'error')
             redirect('.')
 
@@ -314,6 +325,7 @@ class ProjectImporter(BaseController):
 
 
 class ToolImporter(object):
+
     """
     Base class for tool importers.
 
@@ -377,16 +389,16 @@ class ToolImporter(object):
         limit = config.get('tool_import.rate_limit', 1)
         pending_key = 'tool_data.%s.pending' % self.classname
         modified_project = M.Project.query.find_and_modify(
-                query={
-                        '_id': project._id,
-                        '$or': [
-                                {pending_key: None},
-                                {pending_key: {'$lt': limit}},
-                            ],
-                    },
-                update={'$inc': {pending_key: 1}},
-                new=True,
-            )
+            query={
+                '_id': project._id,
+                '$or': [
+                    {pending_key: None},
+                    {pending_key: {'$lt': limit}},
+                ],
+            },
+            update={'$inc': {pending_key: 1}},
+            new=True,
+        )
         return modified_project is not None
 
     def clear_pending(self, project):
@@ -396,13 +408,13 @@ class ToolImporter(object):
         """
         pending_key = 'tool_data.%s.pending' % self.classname
         M.Project.query.find_and_modify(
-                query={'_id': project._id},
-                update={'$inc': {pending_key: -1}},
-                new=True,
-            )
+            query={'_id': project._id},
+            update={'$inc': {pending_key: -1}},
+            new=True,
+        )
 
     def import_tool(self, project, user, project_name=None,
-            mount_point=None, mount_label=None, **kw):
+                    mount_point=None, mount_label=None, **kw):
         """
         Override this method to perform the tool import.
 
@@ -450,12 +462,14 @@ class ToolImporter(object):
 
 
 class ToolsValidator(fev.Set):
+
     """
     Validates the list of tool importers during a project import.
 
     This verifies that the tools selected are available and valid
     for this source.
     """
+
     def __init__(self, source, *a, **kw):
         super(ToolsValidator, self).__init__(*a, **kw)
         self.source = source
@@ -472,10 +486,13 @@ class ToolsValidator(fev.Set):
                 invalid.append(name)
         if invalid:
             pl = 's' if len(invalid) > 1 else ''
-            raise fev.Invalid('Invalid tool%s selected: %s' % (pl, ', '.join(invalid)), value, state)
+            raise fev.Invalid('Invalid tool%s selected: %s' %
+                              (pl, ', '.join(invalid)), value, state)
         return valid
 
+
 class ProjectToolsImportController(object):
+
     '''List all importers available'''
 
     @with_trailing_slash
@@ -503,24 +520,28 @@ class ProjectToolsImportController(object):
         else:
             raise exc.HTTPNotFound
 
+
 class ImportAdminExtension(AdminExtension):
+
     '''Add import link to project admin sidebar'''
 
     project_admin_controllers = {'import': ProjectToolsImportController}
 
     def update_project_sidebar_menu(self, sidebar_links):
         base_url = c.project.url() + 'admin/ext/'
-        link = SitemapEntry('Import', base_url+'import/')
+        link = SitemapEntry('Import', base_url + 'import/')
         sidebar_links.append(link)
 
 
 def stringio_parser(page):
     return {
-            'content-type': page.info()['content-type'],
-            'data': StringIO(page.read()),
-        }
+        'content-type': page.info()['content-type'],
+        'data': StringIO(page.read()),
+    }
+
 
 class File(object):
+
     def __init__(self, url, filename=None):
         extractor = ProjectExtractor(None, url, parser=stringio_parser)
         self.url = url
@@ -546,11 +567,12 @@ def get_importer_upload_path(project):
     elif not project.is_root:
         shortname = project.shortname.split('/')[0]
     upload_path = config['importer_upload_path'].format(
-            nbhd=project.neighborhood.url_prefix.strip('/'),
-            project=shortname,
-            c=c,
-        )
+        nbhd=project.neighborhood.url_prefix.strip('/'),
+        project=shortname,
+        c=c,
+    )
     return upload_path
+
 
 def save_importer_upload(project, filename, data):
     dest_path = get_importer_upload_path(project)

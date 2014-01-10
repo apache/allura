@@ -32,14 +32,15 @@ from allura import model as M
 # CommentController methods exposed:
 #     reply, delete
 
+
 class Test(TestController):
 
     def _post(self, slug='', **kw):
         d = {
-                'title':'My Post',
-                'text':'Nothing to see here',
-                'labels':'',
-                'state':'published'}
+            'title': 'My Post',
+            'text': 'Nothing to see here',
+            'labels': '',
+            'state': 'published'}
         d.update(kw)
         r = self.app.post('/blog%s/save' % slug, params=d)
         return r
@@ -210,7 +211,7 @@ class Test(TestController):
         self._post(title='two', text='[blog:%s/one]' % d)
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        r= self.app.get('/blog/%s/one/' % d)
+        r = self.app.get('/blog/%s/one/' % d)
         assert 'Related' in r
         assert 'Blog Post: %s/two' % d in r
 

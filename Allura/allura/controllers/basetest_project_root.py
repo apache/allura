@@ -29,7 +29,7 @@ from webob import exc
 from tg import expose
 from tg.decorators import without_trailing_slash
 
-import  ming.orm.ormsession
+import ming.orm.ormsession
 
 import allura
 from allura.lib.base import WsgiDispatchController
@@ -49,7 +49,9 @@ __all__ = ['RootController']
 
 log = logging.getLogger(__name__)
 
+
 class BasetestProjectRootController(WsgiDispatchController, ProjectController):
+
     '''Root controller for testing -- it behaves just like a
     ProjectController for test/ except that all tools are mounted,
     on-demand, at the mount point that is the same as their entry point
@@ -84,14 +86,17 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     def _setup_request(self):
         # This code fixes a race condition in our tests
-        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
+        c.project = M.Project.query.get(
+            shortname='test', neighborhood_id=self.p_nbhd._id)
         c.memoize_cache = {}
         count = 20
         while c.project is None:
-            import sys, time
+            import sys
+            import time
             time.sleep(0.5)
             log.warning('Project "test" not found, retrying...')
-            c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
+            c.project = M.Project.query.get(
+                shortname='test', neighborhood_id=self.p_nbhd._id)
             count -= 1
             assert count > 0, 'Timeout waiting for test project to appear'
 
@@ -102,8 +107,9 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
     def _lookup(self, name, *remainder):
         if not h.re_project_name.match(name):
             raise exc.HTTPNotFound, name
-        subproject = M.Project.query.get(shortname=c.project.shortname + '/' + name,
-                                         neighborhood_id=self.p_nbhd._id)
+        subproject = M.Project.query.get(
+            shortname=c.project.shortname + '/' + name,
+            neighborhood_id=self.p_nbhd._id)
         if subproject:
             c.project = subproject
             c.app = None
@@ -123,7 +129,8 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
 
     def __call__(self, environ, start_response):
         c.app = None
-        c.project = M.Project.query.get(shortname='test', neighborhood_id=self.p_nbhd._id)
+        c.project = M.Project.query.get(
+            shortname='test', neighborhood_id=self.p_nbhd._id)
         auth = plugin.AuthenticationProvider.get(request)
         user = auth.by_username(environ.get('username', 'test-admin'))
         if not user:
@@ -131,6 +138,7 @@ class BasetestProjectRootController(WsgiDispatchController, ProjectController):
         environ['beaker.session']['userid'] = user._id
         c.user = auth.authenticate_request()
         return WsgiDispatchController.__call__(self, environ, start_response)
+
 
 class DispatchTest(object):
 
@@ -140,6 +148,7 @@ class DispatchTest(object):
             return NamedController(args[0]), args[1:]
         else:
             raise exc.HTTPNotFound()
+
 
 class NamedController(object):
 
@@ -154,6 +163,7 @@ class NamedController(object):
     def _default(self, *args):
         return 'default(%s)(%r)' % (self.name, args)
 
+
 class SecurityTests(object):
 
     @expose()
@@ -163,16 +173,18 @@ class SecurityTests(object):
             c.user = M.User.anonymous()
         return SecurityTest(), args
 
+
 class SecurityTest(object):
 
     def __init__(self):
         from forgewiki import model as WM
         c.app = c.project.app_instance('wiki')
-        self.page = WM.Page.query.get(app_config_id=c.app.config._id, title='Home')
+        self.page = WM.Page.query.get(
+            app_config_id=c.app.config._id, title='Home')
 
     @expose()
     def forbidden(self):
-        require(lambda:False, 'Never allowed')
+        require(lambda: False, 'Never allowed')
         return ''
 
     @expose()

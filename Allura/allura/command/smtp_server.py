@@ -27,9 +27,10 @@ from allura.command import base
 
 from paste.deploy.converters import asint
 
+
 class SMTPServerCommand(base.Command):
-    min_args=1
-    max_args=1
+    min_args = 1
+    max_args = 1
     usage = '<ini file>'
     summary = 'Handle incoming emails, routing them to RabbitMQ'
     parser = command.Command.standard_parser(verbose=True)
@@ -44,6 +45,7 @@ class SMTPServerCommand(base.Command):
                     asint(tg.config.get('forgemail.port', 8825))),
                    None)
         asyncore.loop()
+
 
 class MailServer(smtpd.SMTPServer):
 

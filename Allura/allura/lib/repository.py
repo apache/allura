@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 
 
 class RepositoryApp(Application):
-    END_OF_REF_ESCAPE='~'
+    END_OF_REF_ESCAPE = '~'
     __version__ = version.__version__
     permissions = [
         'read', 'write', 'create',
@@ -56,19 +56,19 @@ class RepositoryApp(Application):
         ConfigOption('cloned_from_project_id', ObjectId, None),
         ConfigOption('cloned_from_repo_id', ObjectId, None),
         ConfigOption('init_from_url', str, None)
-        ]
-    tool_label='Repository'
-    default_mount_label='Code'
-    default_mount_point='code'
-    relaxed_mount_points=True
-    ordinal=2
-    forkable=False
-    default_branch_name=None # master or default or some such
-    repo=None # override with a property in child class
-    icons={
-        24:'images/code_24.png',
-        32:'images/code_32.png',
-        48:'images/code_48.png'
+    ]
+    tool_label = 'Repository'
+    default_mount_label = 'Code'
+    default_mount_point = 'code'
+    relaxed_mount_points = True
+    ordinal = 2
+    forkable = False
+    default_branch_name = None  # master or default or some such
+    repo = None  # override with a property in child class
+    icons = {
+        24: 'images/code_24.png',
+        32: 'images/code_32.png',
+        48: 'images/code_48.png'
     }
 
     def __init__(self, project, config):
@@ -79,9 +79,9 @@ class RepositoryApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label,
-                '.')]
+        return [SitemapEntry(
+            self.config.options.mount_label,
+            '.')]
 
     @property
     @h.exceptionless([], log)
@@ -89,13 +89,17 @@ class RepositoryApp(Application):
         menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     def admin_menu(self):
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
-        links = [SitemapEntry('Viewable Files', admin_url + 'extensions', className='admin_modal')]
+        admin_url = c.project.url() + 'admin/' + \
+            self.config.options.mount_point + '/'
+        links = [
+            SitemapEntry('Viewable Files', admin_url + 'extensions', className='admin_modal')]
         links.append(SitemapEntry('Refresh Repository',
-                                  c.project.url() + self.config.options.mount_point + '/refresh',
+                                  c.project.url() +
+                                  self.config.options.mount_point +
+                                  '/refresh',
                                   ))
         links += super(RepositoryApp, self).admin_menu()
         [links.remove(l) for l in links[:] if l.label == 'Options']
@@ -105,41 +109,47 @@ class RepositoryApp(Application):
     def sidebar_menu(self):
         if not self.repo or self.repo.status != 'ready':
             return []
-        links = [SitemapEntry('Browse Commits', c.app.url + 'commit_browser', ui_icon=g.icons['folder'])]
+        links = [SitemapEntry('Browse Commits', c.app.url +
+                              'commit_browser', ui_icon=g.icons['folder'])]
         if self.forkable and self.repo.status == 'ready':
-            links.append(SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
-        merge_request_count = self.repo.merge_requests_by_statuses('open').count()
+            links.append(
+                SitemapEntry('Fork', c.app.url + 'fork', ui_icon=g.icons['fork']))
+        merge_request_count = self.repo.merge_requests_by_statuses(
+            'open').count()
         if merge_request_count:
             links += [
                 SitemapEntry(
                     'Merge Requests', c.app.url + 'merge-requests/',
-                    small=merge_request_count) ]
+                    small=merge_request_count)]
         if self.repo.forks:
             links += [
-                SitemapEntry('Forks', c.app.url + 'forks/', small=len(self.repo.forks))
+                SitemapEntry('Forks', c.app.url + 'forks/',
+                             small=len(self.repo.forks))
             ]
         if self.repo.upstream_repo.name:
-            repo_path_parts = self.repo.upstream_repo.name.strip('/').split('/')
+            repo_path_parts = self.repo.upstream_repo.name.strip(
+                '/').split('/')
             links += [
                 SitemapEntry('Clone of'),
                 SitemapEntry('%s / %s' %
-                    (repo_path_parts[1], repo_path_parts[-1]),
-                    self.repo.upstream_repo.name)
-                ]
+                             (repo_path_parts[1], repo_path_parts[-1]),
+                             self.repo.upstream_repo.name)
+            ]
             if not c.app.repo.is_empty() and has_access(c.app.repo, 'admin'):
                 merge_url = c.app.url + 'request_merge'
                 if getattr(c, 'revision', None):
                     merge_url = merge_url + '?branch=' + h.urlquote(c.revision)
                 links.append(SitemapEntry('Request Merge', merge_url,
                              ui_icon=g.icons['merge'],
-                             ))
+                                          ))
             pending_upstream_merges = self.repo.pending_upstream_merges()
             if pending_upstream_merges:
                 links.append(SitemapEntry(
-                        'Pending Merges',
-                        self.repo.upstream_repo.name + 'merge-requests/',
-                        small=pending_upstream_merges))
-        ref_url = self.repo.url_for_commit(self.default_branch_name, url_type='ref')
+                    'Pending Merges',
+                    self.repo.upstream_repo.name + 'merge-requests/',
+                    small=pending_upstream_merges))
+        ref_url = self.repo.url_for_commit(
+            self.default_branch_name, url_type='ref')
         branches = self.repo.get_branches()
         if branches:
             links.append(SitemapEntry('Branches'))
@@ -151,28 +161,28 @@ class RepositoryApp(Application):
             max_branches = 10
             for branch in branches[:max_branches]:
                 links.append(SitemapEntry(
-                        branch.name,
-                        quote(self.repo.url_for_commit(branch.name) + 'tree/')))
+                    branch.name,
+                    quote(self.repo.url_for_commit(branch.name) + 'tree/')))
             if len(branches) > max_branches:
                 links.append(
                     SitemapEntry(
                         'More Branches',
                         ref_url + 'branches/',
-                        ))
+                    ))
         tags = self.repo.get_tags()
         if tags:
             links.append(SitemapEntry('Tags'))
             max_tags = 10
             for b in tags[:max_tags]:
                 links.append(SitemapEntry(
-                        b.name,
-                        quote(self.repo.url_for_commit(b.name) + 'tree/')))
+                    b.name,
+                    quote(self.repo.url_for_commit(b.name) + 'tree/')))
             if len(tags) > max_tags:
                 links.append(
                     SitemapEntry(
                         'More Tags',
                         ref_url + 'tags/',
-                        ))
+                    ))
         return links
 
     def install(self, project):
@@ -191,10 +201,11 @@ class RepositoryApp(Application):
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
-            ]
+        ]
 
     def uninstall(self, project):
         allura.tasks.repo_tasks.uninstall.post()
+
 
 class RepoAdminController(DefaultAdminController):
 
@@ -224,7 +235,8 @@ class RepoAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def set_extensions(self, **post_data):
-        self.repo.additional_viewable_extensions = post_data['additional_viewable_extensions']
+        self.repo.additional_viewable_extensions = post_data[
+            'additional_viewable_extensions']
 
     @without_trailing_slash
     @expose('jinja:allura:templates/repo/default_branch.html')
@@ -235,4 +247,3 @@ class RepoAdminController(DefaultAdminController):
         else:
             return dict(app=self.app,
                         default_branch_name=self.app.default_branch_name)
-

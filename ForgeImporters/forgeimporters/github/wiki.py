@@ -28,28 +28,28 @@ from pylons import tmpl_context as c
 from ming.orm import ThreadLocalORMSession
 from formencode import validators as fev
 from tg import (
-        expose,
-        validate,
-        flash,
-        redirect,
-        )
+    expose,
+    validate,
+    flash,
+    redirect,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import (
-        require_post,
-        )
+    require_post,
+)
 from allura import model as M
 from forgeimporters.base import (
-        ToolImporter,
-        ToolImportForm,
-        )
+    ToolImporter,
+    ToolImportForm,
+)
 from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgewiki import model as WM
@@ -105,7 +105,8 @@ class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
             flash('Wiki import has begun. Your new wiki will be available '
                   'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -120,22 +121,24 @@ class GitHubWikiImporter(ToolImporter):
     mediawiki_exts = ['.wiki', '.mediawiki']
     markdown_exts = utils.MARKDOWN_EXTENSIONS
     textile_exts = ['.textile']
-    # List of supported formats https://github.com/gollum/gollum/wiki#page-files
+    # List of supported formats
+    # https://github.com/gollum/gollum/wiki#page-files
     supported_formats = [
-            '.asciidoc',
-            '.creole',
-            '.org',
-            '.pod',
-            '.rdoc',
-            '.rest.txt',
-            '.rst.txt',
-            '.rest',
-            '.rst',
+        '.asciidoc',
+        '.creole',
+        '.org',
+        '.pod',
+        '.rdoc',
+        '.rest.txt',
+        '.rst.txt',
+        '.rest',
+        '.rst',
     ] + mediawiki_exts + markdown_exts + textile_exts
     available_pages = []
 
-    def import_tool(self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
-                    tool_option=None, **kw):
+    def import_tool(
+            self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
+            tool_option=None, **kw):
         """ Import a GitHub wiki into a new Wiki Allura tool.
 
         """
@@ -144,7 +147,8 @@ class GitHubWikiImporter(ToolImporter):
         if not extractor.has_wiki():
             return
 
-        self.github_wiki_url = extractor.get_page_url('wiki_url').replace('.wiki', '/wiki')
+        self.github_wiki_url = extractor.get_page_url(
+            'wiki_url').replace('.wiki', '/wiki')
         self.app = project.install_app(
             "Wiki",
             mount_point=mount_point or 'wiki',
@@ -161,7 +165,8 @@ class GitHubWikiImporter(ToolImporter):
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=self.app):
-                self.import_pages(extractor.get_page_url('wiki_url'), history=with_history)
+                self.import_pages(
+                    extractor.get_page_url('wiki_url'), history=with_history)
             ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
                 'import tool %s from %s on %s' % (
@@ -183,7 +188,7 @@ class GitHubWikiImporter(ToolImporter):
         pages = [blob.name for blob in commit.tree.traverse()]
         pages = map(os.path.splitext, pages)
         pages = [self._convert_page_name(name) for name, ext in pages
-                if ext in self.supported_formats]
+                 if ext in self.supported_formats]
         self.available_pages = pages
 
     def _without_history(self, commit):
@@ -196,7 +201,8 @@ class GitHubWikiImporter(ToolImporter):
             self._set_available_pages(commit)
             renamed_to = None
             if '=>' in filename:
-                # File renamed. Stats contains entry like 'Page.md => NewPage.md'
+                # File renamed. Stats contains entry like 'Page.md =>
+                # NewPage.md'
                 filename, renamed_to = filename.split(' => ')
             if renamed_to and renamed_to in commit.tree:
                 text = commit.tree[renamed_to].data_stream.read()
@@ -209,7 +215,8 @@ class GitHubWikiImporter(ToolImporter):
 
     def _make_page(self, text, filename, commit, renamed_to=None):
         orig_name = self._format_supported(filename)
-        renamed_orig_name = self._format_supported(renamed_to) if renamed_to else None
+        renamed_orig_name = self._format_supported(
+            renamed_to) if renamed_to else None
         if not orig_name:
             return
         if renamed_to and not renamed_orig_name:
@@ -220,13 +227,16 @@ class GitHubWikiImporter(ToolImporter):
         wiki_page.viewable_by = ['all']
         if renamed_orig_name and renamed_to in commit.tree:
             wiki_page.title = self._convert_page_name(renamed_orig_name)
-            wiki_page.text = self.convert_markup(h.really_unicode(text), renamed_to)
+            wiki_page.text = self.convert_markup(
+                h.really_unicode(text), renamed_to)
         elif filename in commit.tree:
-            wiki_page.text = self.convert_markup(h.really_unicode(text), filename)
+            wiki_page.text = self.convert_markup(
+                h.really_unicode(text), filename)
         else:
             wiki_page.delete()
         import_id_name = renamed_orig_name if renamed_orig_name else orig_name
-        wiki_page.import_id = ImportIdConverter.get().expand(import_id_name, self.app)
+        wiki_page.import_id = ImportIdConverter.get().expand(
+            import_id_name, self.app)
         wiki_page.commit()
         return wiki_page
 
@@ -290,12 +300,14 @@ class GitHubWikiImporter(ToolImporter):
                 if not new_prefix.endswith('/'):
                     new_prefix += '/'
                 _re = re.compile(r'%s(\S*)' % prefix)
+
                 def repl(m):
                     return new_prefix + self._convert_page_name(m.group(1))
                 text = _re.sub(repl, text)
             else:
                 text = h.render_any_markup(filename, text)
-                text = self.rewrite_links(text, self.github_wiki_url, self.app.url)
+                text = self.rewrite_links(
+                    text, self.github_wiki_url, self.app.url)
             return text
         elif ext and ext in self.textile_exts:
             text = self._prepare_textile_text(text)
@@ -306,8 +318,10 @@ class GitHubWikiImporter(ToolImporter):
                 text = html2text.html2text(text)
                 text = self.convert_gollum_tags(text)
             text = text.replace('<notextile>', '').replace('</notextile>', '')
-            text = text.replace('&#60;notextile&#62;', '').replace('&#60;/notextile&#62;', '')
-            text = text.replace('&lt;notextile&gt;', '').replace('&lt;/notextile&gt;', '')
+            text = text.replace('&#60;notextile&#62;', '').replace(
+                '&#60;/notextile&#62;', '')
+            text = text.replace('&lt;notextile&gt;', '').replace(
+                '&lt;/notextile&gt;', '')
             return text
         else:
             text = h.render_any_markup(filename, text)
@@ -372,7 +386,8 @@ class GitHubWikiImporter(ToolImporter):
         # E.g. if you have two pages: a.md and A.md both [[a]] and [[A]] will refer a.md.
         # We're emulating this behavior using list of all available pages
         try:
-            idx = map(lambda p: p.lower(), self.available_pages).index(page.lower())
+            idx = map(lambda p: p.lower(),
+                      self.available_pages).index(page.lower())
         except ValueError:
             idx = None
         if idx is not None:
@@ -409,6 +424,6 @@ class GitHubWikiImporter(ToolImporter):
 
         # to convert gollum tags properly used <notextile> tag,
         # so these tags will not be affected by converter
-        text = text.replace('[[', '<notextile>[[').replace(']]', ']]</notextile>')
+        text = text.replace(
+            '[[', '<notextile>[[').replace(']]', ']]</notextile>')
         return text
-

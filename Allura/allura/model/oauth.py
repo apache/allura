@@ -31,17 +31,19 @@ from .types import MarkdownCache
 
 log = logging.getLogger(__name__)
 
+
 class OAuthToken(MappedClass):
+
     class __mongometa__:
         session = main_orm_session
-        name='oauth_token'
-        indexes = [ 'api_key' ]
-        polymorphic_on='type'
-        polymorphic_identity=None
+        name = 'oauth_token'
+        indexes = ['api_key']
+        polymorphic_on = 'type'
+        polymorphic_identity = None
 
     _id = FieldProperty(S.ObjectId)
-    type=FieldProperty(str)
-    api_key = FieldProperty(str, if_missing=lambda:h.nonce(20))
+    type = FieldProperty(str)
+    api_key = FieldProperty(str, if_missing=lambda: h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
 
     def to_string(self):
@@ -50,18 +52,19 @@ class OAuthToken(MappedClass):
     def as_token(self):
         return oauth.Token(self.api_key, self.secret_key)
 
+
 class OAuthConsumerToken(OAuthToken):
+
     class __mongometa__:
-        polymorphic_identity='consumer'
-        name='oauth_consumer_token'
-        unique_indexes = [ 'name' ]
+        polymorphic_identity = 'consumer'
+        name = 'oauth_consumer_token'
+        unique_indexes = ['name']
 
     type = FieldProperty(str, if_missing='consumer')
-    user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
+    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
     name = FieldProperty(str)
     description = FieldProperty(str)
     description_cache = FieldProperty(MarkdownCache)
-
 
     user = RelationProperty('User')
 
@@ -76,37 +79,43 @@ class OAuthConsumerToken(OAuthToken):
 
     @classmethod
     def for_user(cls, user=None):
-        if user is None: user = c.user
+        if user is None:
+            user = c.user
         return cls.query.find(dict(user_id=user._id)).all()
 
+
 class OAuthRequestToken(OAuthToken):
+
     class __mongometa__:
-        polymorphic_identity='request'
+        polymorphic_identity = 'request'
 
     type = FieldProperty(str, if_missing='request')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
-    user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
+    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
     callback = FieldProperty(str)
     validation_pin = FieldProperty(str)
 
     consumer_token = RelationProperty('OAuthConsumerToken')
 
+
 class OAuthAccessToken(OAuthToken):
+
     class __mongometa__:
-        polymorphic_identity='access'
+        polymorphic_identity = 'access'
 
     type = FieldProperty(str, if_missing='access')
     consumer_token_id = ForeignIdProperty('OAuthConsumerToken')
     request_token_id = ForeignIdProperty('OAuthToken')
-    user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
+    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
     is_bearer = FieldProperty(bool, if_missing=False)
 
     user = RelationProperty('User')
-    consumer_token = RelationProperty('OAuthConsumerToken', via='consumer_token_id')
+    consumer_token = RelationProperty(
+        'OAuthConsumerToken', via='consumer_token_id')
     request_token = RelationProperty('OAuthToken', via='request_token_id')
 
     @classmethod
     def for_user(cls, user=None):
-        if user is None: user = c.user
+        if user is None:
+            user = c.user
         return cls.query.find(dict(user_id=user._id, type='access')).all()
-

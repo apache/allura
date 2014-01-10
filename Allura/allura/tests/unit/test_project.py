@@ -23,6 +23,7 @@ from allura.app import SitemapEntry
 
 
 class TestProject(unittest.TestCase):
+
     def test_grouped_navbar_entries(self):
         p = M.Project()
         sitemap_entries = [
@@ -32,7 +33,8 @@ class TestProject(unittest.TestCase):
             SitemapEntry('subproject', url='subproject url'),
             SitemapEntry('features', url='features url', tool_name='Tickets'),
             SitemapEntry('help', url='help url', tool_name='Discussion'),
-            SitemapEntry('support reqs', url='support url', tool_name='Tickets'),
+            SitemapEntry('support reqs', url='support url',
+                         tool_name='Tickets'),
         ]
         p.url = Mock(return_value='proj_url/')
         p.sitemap = Mock(return_value=sitemap_entries)
@@ -57,7 +59,8 @@ class TestProject(unittest.TestCase):
             SitemapEntry('subproject', url='subproject url'),
             SitemapEntry('features', url='features url', tool_name='Tickets'),
             SitemapEntry('help', url='help url', tool_name='Discussion'),
-            SitemapEntry('support reqs', url='support url', tool_name='Tickets'),
+            SitemapEntry('support reqs', url='support url',
+                         tool_name='Tickets'),
         ]
         p.url = Mock(return_value='proj_url/')
         p.sitemap = Mock(return_value=sitemap_entries)
@@ -80,5 +83,6 @@ class TestProject(unittest.TestCase):
         self.assertIsNone(p.social_account('Twitter'))
 
         p.set_social_account('Twitter', 'http://twitter.com/allura')
-        self.assertEqual(p.social_account('Twitter').accounturl, 'http://twitter.com/allura')
+        self.assertEqual(p.social_account('Twitter')
+                         .accounturl, 'http://twitter.com/allura')
         self.assertEqual(p.twitter_handle, 'http://twitter.com/allura')

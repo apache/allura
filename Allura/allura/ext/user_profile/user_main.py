@@ -49,10 +49,10 @@ class UserProfileApp(Application):
     __version__ = version.__version__
     tool_label = 'Profile'
     max_instances = 0
-    icons={
-        24:'images/home_24.png',
-        32:'images/home_32.png',
-        48:'images/home_48.png'
+    icons = {
+        24: 'images/home_24.png',
+        32: 'images/home_32.png',
+        48: 'images/home_48.png'
     }
 
     def __init__(self, user, config):
@@ -81,9 +81,9 @@ class UserProfileApp(Application):
         if pr:
             self.config.acl = [
                 ACE.allow(pr._id, perm)
-                for perm in self.permissions ]
+                for perm in self.permissions]
 
-    def uninstall(self, project): # pragma no cover
+    def uninstall(self, project):  # pragma no cover
         pass
 
 
@@ -99,12 +99,12 @@ class UserProfileController(BaseController, FeedController):
 
         if not (from_user and from_user.get_pref('email_address')):
             flash('In order to send messages, you must have an email address '
-                    'associated with your account.', 'info')
+                  'associated with your account.', 'info')
             redirect(request.referer)
 
         if not (to_user and to_user.get_pref('email_address')):
             flash('This user can not receive messages because they do not have '
-                    'an email address associated with their account.', 'info')
+                  'an email address associated with their account.', 'info')
             redirect(request.referer)
 
         if to_user.get_pref('disable_user_messages'):
@@ -157,11 +157,11 @@ class UserProfileController(BaseController, FeedController):
         if cc:
             cc = c.user.get_pref('email_address')
         if c.user.can_send_user_message():
-            c.user.send_user_message(c.project.user_project_of, subject, message, cc)
+            c.user.send_user_message(
+                c.project.user_project_of, subject, message, cc)
             flash("Message sent.")
         else:
             flash("You can't send more than %i messages per %i seconds" % (
                 c.user.user_message_max_messages,
                 c.user.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
-

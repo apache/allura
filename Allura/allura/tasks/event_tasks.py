@@ -20,6 +20,7 @@ import sys
 from allura.lib.decorators import task, event_handler
 from allura.lib.exceptions import CompoundError
 
+
 @task
 def event(event_type, *args, **kwargs):
     exceptions = []
@@ -33,4 +34,3 @@ def event(event_type, *args, **kwargs):
             raise exceptions[0][0], exceptions[0][1], exceptions[0][2]
         else:
             raise CompoundError(*exceptions)
-

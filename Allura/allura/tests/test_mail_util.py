@@ -30,19 +30,20 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
 
 from allura.lib.mail_util import (
-        parse_address,
-        parse_message,
-        Header,
-        is_autoreply,
-        identify_sender,
-        _parse_message_id,
-    )
+    parse_address,
+    parse_message,
+    Header,
+    is_autoreply,
+    identify_sender,
+    _parse_message_id,
+)
 from allura.lib.exceptions import AddressException
 from allura.tests import decorators as td
 
 config = ConfigProxy(
     common_suffix='forgemail.domain',
     return_path='forgemail.return_path')
+
 
 class TestReactor(unittest.TestCase):
 
@@ -70,7 +71,8 @@ class TestReactor(unittest.TestCase):
 
     @td.with_wiki
     def test_parse_address_good(self):
-        topic, project, app = parse_address('foo@wiki.test.p' + config.common_suffix)
+        topic, project, app = parse_address(
+            'foo@wiki.test.p' + config.common_suffix)
         assert_equal(topic, 'foo')
         assert_equal(project.shortname, 'test')
         assert_equal(app.__class__.__name__, 'ForgeWikiApp')
@@ -96,15 +98,15 @@ class TestReactor(unittest.TestCase):
 Дворцов и башен; корабли
 Толпой со всех концов земли
 К богатым пристаням стремятся;'''.encode(charset),
-                        'plain',
-                        charset)
+                      'plain',
+                      charset)
         p2 = MIMEText(u'''<p>По оживлённым берегам
 Громады стройные теснятся
 Дворцов и башен; корабли
 Толпой со всех концов земли
 К богатым пристаням стремятся;</p>'''.encode(charset),
-                        'plain',
-                        charset)
+                      'plain',
+                      charset)
         msg1 = MIMEMultipart()
         msg1['Message-ID'] = '<foo@bar.com>'
         msg1.attach(p1)
@@ -112,7 +114,8 @@ class TestReactor(unittest.TestCase):
         s_msg = msg1.as_string()
         msg2 = parse_message(s_msg)
         for part in msg2['parts']:
-            if part['payload'] is None: continue
+            if part['payload'] is None:
+                continue
             assert isinstance(part['payload'], unicode)
 
 
@@ -133,7 +136,8 @@ class TestHeader(object):
 
     def test_name_addr(self):
         our_header = Header(u'"теснятся"', u'<dave@b.com>')
-        assert_equal(str(our_header), '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
+        assert_equal(str(our_header),
+                     '=?utf-8?b?ItGC0LXRgdC90Y/RgtGB0Y8i?= <dave@b.com>')
 
 
 class TestIsAutoreply(object):
@@ -181,27 +185,34 @@ class TestIsAutoreply(object):
         self.msg['headers']['Return-Path'] = '<>'
         assert_true(is_autoreply(self.msg))
 
+
 class TestIdentifySender(object):
+
     @mock.patch('allura.model.EmailAddress')
     def test_arg(self, EA):
-        EA.canonical = lambda e:e
-        EA.query.get.side_effect = [mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        EA.canonical = lambda e: e
+        EA.query.get.side_effect = [
+            mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', None, None), 'user')
         EA.query.get.assert_called_once_with(_id='arg')
 
     @mock.patch('allura.model.EmailAddress')
     def test_header(self, EA):
-        EA.canonical = lambda e:e
-        EA.query.get.side_effect = [None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
-        assert_equal(identify_sender(None, 'arg', {'From': 'from'}, None), 'user')
-        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg'), mock.call(_id='from')])
+        EA.canonical = lambda e: e
+        EA.query.get.side_effect = [
+            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        assert_equal(
+            identify_sender(None, 'arg', {'From': 'from'}, None), 'user')
+        assert_equal(EA.query.get.call_args_list,
+                     [mock.call(_id='arg'), mock.call(_id='from')])
 
     @mock.patch('allura.model.User')
     @mock.patch('allura.model.EmailAddress')
     def test_no_header(self, EA, User):
         anon = User.anonymous()
-        EA.canonical = lambda e:e
-        EA.query.get.side_effect = [None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
+        EA.canonical = lambda e: e
+        EA.query.get.side_effect = [
+            None, mock.Mock(claimed_by_user_id=True, claimed_by_user=lambda:'user')]
         assert_equal(identify_sender(None, 'arg', {}, None), anon)
         assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg')])
 
@@ -209,14 +220,16 @@ class TestIdentifySender(object):
     @mock.patch('allura.model.EmailAddress')
     def test_no_match(self, EA, User):
         anon = User.anonymous()
-        EA.canonical = lambda e:e
+        EA.canonical = lambda e: e
         EA.query.get.side_effect = [None, None]
-        assert_equal(identify_sender(None, 'arg', {'From': 'from'}, None), anon)
-        assert_equal(EA.query.get.call_args_list, [mock.call(_id='arg'), mock.call(_id='from')])
+        assert_equal(
+            identify_sender(None, 'arg', {'From': 'from'}, None), anon)
+        assert_equal(EA.query.get.call_args_list,
+                     [mock.call(_id='arg'), mock.call(_id='from')])
 
 
 def test_parse_message_id():
     assert_equal(_parse_message_id('<de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>, </p/libjpeg-turbo/patches/54/de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>'), [
-            'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
-            'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
-        ])
+        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
+        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
+    ])

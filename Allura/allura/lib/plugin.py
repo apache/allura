@@ -54,7 +54,9 @@ from paste.deploy.converters import asbool
 
 log = logging.getLogger(__name__)
 
+
 class AuthenticationProvider(object):
+
     '''
     An interface to provide authentication services for Allura.
 
@@ -115,7 +117,8 @@ class AuthenticationProvider(object):
 
     def login(self, user=None):
         try:
-            if user is None: user = self._login()
+            if user is None:
+                user = self._login()
             self.session['userid'] = user._id
             self.session.save()
             g.zarkov_event('login', user=user)
@@ -210,7 +213,9 @@ class AuthenticationProvider(object):
         '''
         raise NotImplementedError, 'user_registration_date'
 
+
 class LocalAuthenticationProvider(AuthenticationProvider):
+
     '''
     Stores user passwords on the User model, in mongo.  Uses per-user salt and
     SHA-256 encryption.
@@ -232,11 +237,14 @@ class LocalAuthenticationProvider(AuthenticationProvider):
         return user
 
     def _validate_password(self, user, password):
-        if user is None: return False
-        if not user.password: return False
-        salt = str(user.password[6:6+user.SALT_LEN])
+        if user is None:
+            return False
+        if not user.password:
+            return False
+        salt = str(user.password[6:6 + user.SALT_LEN])
         check = self._encode_password(password, salt)
-        if check != user.password: return False
+        if check != user.password:
+            return False
         return True
 
     def by_username(self, username):
@@ -273,7 +281,9 @@ class LocalAuthenticationProvider(AuthenticationProvider):
             return user._id.generation_time
         return datetime.utcnow()
 
+
 class LdapAuthenticationProvider(AuthenticationProvider):
+
     def register_user(self, user_doc):
         from allura import model as M
         password = user_doc['password'].encode('utf-8')
@@ -289,7 +299,7 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             ldif_u = modlist.addModlist(dict(
                 uid=uname,
                 userPassword=password,
-                objectClass=['account', 'posixAccount' ],
+                objectClass=['account', 'posixAccount'],
                 cn=display_name,
                 uidNumber=uid,
                 gidNumber='10001',
@@ -307,7 +317,8 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             if asbool(config.get('auth.ldap.use_schroot', True)):
                 argv = ('schroot -d / -c %s -u root /ldap-userconfig.py init %s' % (
                     config['auth.ldap.schroot_name'], user_doc['username'])).split()
-                p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                p = subprocess.Popen(
+                    argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 rc = p.wait()
                 if rc != 0:
                     log.error('Error creating home directory for %s',
@@ -321,8 +332,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
                 raise NotImplemented, 'SSH keys are not supported'
 
             argv = ('schroot -d / -c %s -u root /ldap-userconfig.py upload %s' % (
-                config['auth.ldap.schroot_name'], username)).split() + [ pubkey ]
-            p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                config['auth.ldap.schroot_name'], username)).split() + [pubkey]
+            p = subprocess.Popen(
+                argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             rc = p.wait()
             if rc != 0:
                 errmsg = p.stdout.read()
@@ -339,15 +351,18 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
             con.bind_s(dn, old_password.encode('utf-8'))
-            con.modify_s(dn, [(ldap.MOD_REPLACE, 'userPassword', new_password.encode('utf-8'))])
+            con.modify_s(
+                dn, [(ldap.MOD_REPLACE, 'userPassword', new_password.encode('utf-8'))])
             con.unbind_s()
         except ldap.INVALID_CREDENTIALS:
             raise exc.HTTPUnauthorized()
 
     def _login(self):
         from allura import model as M
-        user = M.User.query.get(username=self.request.params['username'], disabled=False)
-        if user is None: raise exc.HTTPUnauthorized()
+        user = M.User.query.get(
+            username=self.request.params['username'], disabled=False)
+        if user is None:
+            raise exc.HTTPUnauthorized()
         try:
             dn = 'uid=%s,%s' % (user.username, config['auth.ldap.suffix'])
             con = ldap.initialize(config['auth.ldap.server'])
@@ -369,7 +384,9 @@ class LdapAuthenticationProvider(AuthenticationProvider):
             return user._id.generation_time
         return datetime.utcnow()
 
+
 class ProjectRegistrationProvider(object):
+
     '''
     Project registration services for Allura.  This is a full implementation
     and the default.  Extend this class with your own if you need to add more
@@ -392,7 +409,8 @@ class ProjectRegistrationProvider(object):
     def __init__(self):
         from allura.lib.widgets import forms
         self.add_project_widget = forms.NeighborhoodAddProjectForm
-        self.shortname_validator = forms.NeighborhoodProjectShortNameValidator()
+        self.shortname_validator = forms.NeighborhoodProjectShortNameValidator(
+        )
 
     @classmethod
     def get(cls):
@@ -423,7 +441,8 @@ class ProjectRegistrationProvider(object):
         rate_limits = json.loads(config.get('project.rate_limits', '{}'))
         for rate, count in rate_limits.items():
             user_age = now - user._id.generation_time
-            user_age = (user_age.microseconds + (user_age.seconds + user_age.days * 24 * 3600) * 10**6) / 10**6
+            user_age = (user_age.microseconds +
+                        (user_age.seconds + user_age.days * 24 * 3600) * 10 ** 6) / 10 ** 6
             if user_age < int(rate) and project_count >= count:
                 raise forge_exc.ProjectRatelimitError()
 
@@ -432,14 +451,15 @@ class ProjectRegistrationProvider(object):
         shortname = '--init--'
         name = 'Home Project for %s' % neighborhood.name
         p = M.Project(neighborhood_id=neighborhood._id,
-                    shortname=shortname,
-                    name=name,
-                    short_description='',
-                    description=('You can edit this description in the admin page'),
-                    homepage_title = '# ' + name,
-                    last_updated = datetime.utcnow(),
-                    is_nbhd_project=True,
-                    is_root=True)
+                      shortname=shortname,
+                      name=name,
+                      short_description='',
+                      description=(
+                          'You can edit this description in the admin page'),
+                      homepage_title = '# ' + name,
+                      last_updated = datetime.utcnow(),
+                      is_nbhd_project=True,
+                      is_root=True)
         try:
             p.configure_project(
                 users=users,
@@ -461,7 +481,8 @@ class ProjectRegistrationProvider(object):
         '''Register a new project in the neighborhood.  The given user will
         become the project's superuser.
         '''
-        self.validate_project(neighborhood, shortname, project_name, user, user_project, private_project)
+        self.validate_project(neighborhood, shortname,
+                              project_name, user, user_project, private_project)
         return self._create_project(neighborhood, shortname, project_name, user, user_project, private_project, apps)
 
     def validate_project(self, neighborhood, shortname, project_name, user, user_project, private_project):
@@ -472,16 +493,18 @@ class ProjectRegistrationProvider(object):
 
         # Check for private project rights
         if neighborhood.features['private_projects'] == False and private_project:
-            raise ValueError("You can't create private projects for %s neighborhood" % neighborhood.name)
+            raise ValueError(
+                "You can't create private projects for %s neighborhood" %
+                neighborhood.name)
 
         # Check for project limit creation
         nb_max_projects = neighborhood.get_max_projects()
         if nb_max_projects is not None:
             count = M.Project.query.find(dict(
-                    neighborhood_id=neighborhood._id,
-                    deleted=False,
-                    is_nbhd_project=False,
-                    )).count()
+                neighborhood_id=neighborhood._id,
+                deleted=False,
+                is_nbhd_project=False,
+            )).count()
             if count >= nb_max_projects:
                 log.exception('Error registering project %s' % project_name)
                 raise forge_exc.ProjectOverlimitError()
@@ -492,11 +515,14 @@ class ProjectRegistrationProvider(object):
             check_shortname = shortname.replace('u/', '', 1)
         else:
             check_shortname = shortname
-        self.shortname_validator.to_python(check_shortname, neighborhood=neighborhood)
+        self.shortname_validator.to_python(
+            check_shortname, neighborhood=neighborhood)
 
-        p = M.Project.query.get(shortname=shortname, neighborhood_id=neighborhood._id)
+        p = M.Project.query.get(
+            shortname=shortname, neighborhood_id=neighborhood._id)
         if p:
-            raise forge_exc.ProjectConflict('%s already exists in nbhd %s' % (shortname, neighborhood._id))
+            raise forge_exc.ProjectConflict(
+                '%s already exists in nbhd %s' % (shortname, neighborhood._id))
 
     def _create_project(self, neighborhood, shortname, project_name, user, user_project, private_project, apps):
         '''
@@ -507,18 +533,20 @@ class ProjectRegistrationProvider(object):
 
         project_template = neighborhood.get_project_template()
         p = M.Project(neighborhood_id=neighborhood._id,
-                    shortname=shortname,
-                    name=project_name,
-                    short_description='',
-                    description=('You can edit this description in the admin page'),
-                    homepage_title=shortname,
-                    last_updated = datetime.utcnow(),
-                    is_nbhd_project=False,
-                    is_root=True)
+                      shortname=shortname,
+                      name=project_name,
+                      short_description='',
+                      description=(
+                          'You can edit this description in the admin page'),
+                      homepage_title=shortname,
+                      last_updated = datetime.utcnow(),
+                      is_nbhd_project=False,
+                      is_root=True)
         p.configure_project(
             users=[user],
             is_user_project=user_project,
-            is_private_project=private_project or project_template.get('private', False),
+            is_private_project=private_project or project_template.get(
+                'private', False),
             apps=apps or [] if 'tools' in project_template else None)
 
         # Setup defaults from neighborhood project template if applicable
@@ -527,22 +555,25 @@ class ProjectRegistrationProvider(object):
             for obj in project_template['groups']:
                 name = obj.get('name')
                 permissions = set(obj.get('permissions', [])) & \
-                              set(p.permissions)
+                    set(p.permissions)
                 usernames = obj.get('usernames', [])
                 # Must provide a group name
-                if not name: continue
+                if not name:
+                    continue
                 # If the group already exists, we'll add users to it,
                 # but we won't change permissions on the group
                 group = M.ProjectRole.by_name(name, project=p)
                 if not group:
                     # If creating a new group, *must* specify permissions
-                    if not permissions: continue
+                    if not permissions:
+                        continue
                     group = M.ProjectRole(project_id=p._id, name=name)
                     p.acl += [M.ACE.allow(group._id, perm)
-                            for perm in permissions]
+                              for perm in permissions]
                 for username in usernames:
                     guser = M.User.by_username(username)
-                    if not (guser and guser._id): continue
+                    if not (guser and guser._id):
+                        continue
                     pr = M.ProjectRole.by_user(guser, project=p, upsert=True)
                     if group._id not in pr.roles:
                         pr.roles.append(group._id)
@@ -553,19 +584,20 @@ class ProjectRegistrationProvider(object):
                 for k, v in tool_options.iteritems():
                     if isinstance(v, basestring):
                         tool_options[k] = \
-                                string.Template(v).safe_substitute(
-                                    p.__dict__.get('root_project', {}))
+                            string.Template(v).safe_substitute(
+                                p.__dict__.get('root_project', {}))
                 if p.app_instance(tool) is None:
                     app = p.install_app(tool,
-                        mount_label=tool_config['label'],
-                        mount_point=tool_config['mount_point'],
-                        ordinal=i + offset,
-                    **tool_options)
+                                        mount_label=tool_config['label'],
+                                        mount_point=tool_config['mount_point'],
+                                        ordinal=i + offset,
+                                        **tool_options)
                     if tool == 'wiki':
                         from forgewiki import model as WM
                         text = tool_config.get('home_text',
-                            '[[members limit=20]]\n[[download_button]]')
-                        WM.Page.query.get(app_config_id=app.config._id).text = text
+                                               '[[members limit=20]]\n[[download_button]]')
+                        WM.Page.query.get(
+                            app_config_id=app.config._id).text = text
 
         if 'tool_order' in project_template:
             for i, tool in enumerate(project_template['tool_order']):
@@ -576,9 +608,11 @@ class ProjectRegistrationProvider(object):
             for trove_type in project_template['trove_cats'].keys():
                 troves = getattr(p, 'trove_%s' % trove_type)
                 for trove_id in project_template['trove_cats'][trove_type]:
-                    troves.append(M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
+                    troves.append(
+                        M.TroveCategory.query.get(trove_cat_id=trove_id)._id)
         if 'icon' in project_template:
-            icon_file = StringIO(urlopen(project_template['icon']['url']).read())
+            icon_file = StringIO(
+                urlopen(project_template['icon']['url']).read())
             M.ProjectFile.save_image(
                 project_template['icon']['filename'], icon_file,
                 square=True, thumbnail_size=(48, 48),
@@ -592,14 +626,15 @@ class ProjectRegistrationProvider(object):
             home_app = p.app_instance('wiki')
             home_page = WM.Page.query.get(app_config_id=home_app.config._id)
             home_page.text = ("This is the personal project of %s."
-            " This project is created automatically during user registration"
-            " as an easy place to store personal data that doesn't need its own"
-            " project such as cloned repositories.") % user.display_name
+                              " This project is created automatically during user registration"
+                              " as an easy place to store personal data that doesn't need its own"
+                              " project such as cloned repositories.") % user.display_name
 
         # clear the RoleCache for the user so this project will
         # be picked up by user.my_projects()
         g.credentials.clear_user(user._id, None)  # unnamed roles for this user
-        g.credentials.clear_user(user._id, p._id)  # named roles for this project + user
+        # named roles for this project + user
+        g.credentials.clear_user(user._id, p._id)
         with h.push_config(c, project=p, user=user):
             ThreadLocalORMSession.flush_all()
             # have to add user to context, since this may occur inside auth code
@@ -611,13 +646,14 @@ class ProjectRegistrationProvider(object):
         from allura import model as M
         assert h.re_project_name.match(name), 'Invalid subproject shortname'
         shortname = project.shortname + '/' + name
-        ordinal = int(project.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
+        ordinal = int(project.ordered_mounts(include_hidden=True)
+                      [-1]['ordinal']) + 1
         sp = M.Project(
             parent_id=project._id,
             neighborhood_id=project.neighborhood_id,
             shortname=shortname,
             name=project_name or name,
-            last_updated = datetime.utcnow(),
+            last_updated=datetime.utcnow(),
             is_root=False,
             ordinal=ordinal,
         )
@@ -644,7 +680,9 @@ class ProjectRegistrationProvider(object):
            It should be overridden for your specific envirnoment'''
         return None
 
+
 class ThemeProvider(object):
+
     '''
     Theme information for Allura.  This is a full implementation
     and the default.  Extend this class with your own if you need to add more
@@ -881,7 +919,7 @@ class ThemeProvider(object):
             return None
         cookie = request.cookies.get('site-notification', '').split('-')
         if len(cookie) == 3 and cookie[0] == str(note._id):
-            views = asint(cookie[1])+1
+            views = asint(cookie[1]) + 1
             closed = asbool(cookie[2])
         else:
             views = 1
@@ -889,15 +927,18 @@ class ThemeProvider(object):
         if closed or note.impressions > 0 and views > note.impressions:
             return None
         response.set_cookie(
-                'site-notification',
-                '-'.join(map(str, [note._id, views, closed])),
-                max_age=timedelta(days=365))
+            'site-notification',
+            '-'.join(map(str, [note._id, views, closed])),
+            max_age=timedelta(days=365))
         return note
+
 
 class LocalProjectRegistrationProvider(ProjectRegistrationProvider):
     pass
 
+
 class UserPreferencesProvider(object):
+
     '''
     An interface for user preferences, like display_name and email_address
 
@@ -937,7 +978,9 @@ class UserPreferencesProvider(object):
         '''
         raise NotImplementedError, 'find_by_display_name'
 
+
 class LocalUserPreferencesProvider(UserPreferencesProvider):
+
     '''
     The default UserPreferencesProvider, storing preferences on the User object
     in mongo.
@@ -959,11 +1002,12 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
         from allura import model as M
         name_regex = re.compile('(?i)%s' % re.escape(name))
         users = M.User.query.find(dict(
-                display_name=name_regex)).sort('username').all()
+            display_name=name_regex)).sort('username').all()
         return users
 
 
 class AdminExtension(object):
+
     """
     A base class for extending the admin areas in Allura.
 
@@ -994,7 +1038,9 @@ class AdminExtension(object):
         """
         pass
 
+
 class ImportIdConverter(object):
+
     '''
     An interface to convert to and from import_id values for indexing,
     searching, or displaying.
@@ -1021,7 +1067,7 @@ class ImportIdConverter(object):
 
     def expand(self, source_id, app_instance):
         import_id = {
-                'source_id': source_id,
-            }
+            'source_id': source_id,
+        }
         import_id.update(app_instance.config.options.get('import_id', {}))
         return import_id

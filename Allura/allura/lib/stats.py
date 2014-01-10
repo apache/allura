@@ -20,6 +20,7 @@ from time import time
 from contextlib import contextmanager
 from pylons import request
 
+
 class StatsRecord(object):
 
     def __init__(self, request, active):
@@ -34,8 +35,8 @@ class StatsRecord(object):
 
     def __repr__(self):
         stats = ' '.join(
-            ('%s=%.0fms' % (k,v*1000))
-            for k,v in sorted(self.timers.iteritems()))
+            ('%s=%.0fms' % (k, v * 1000))
+            for k, v in sorted(self.timers.iteritems()))
         return '%s: %s' % (self.url, stats)
 
     def asdict(self):
@@ -53,12 +54,14 @@ class StatsRecord(object):
                 yield
             finally:
                 end = time()
-                self.timers[name] += end-begin
+                self.timers[name] += end - begin
                 self._now_timing.remove(name)
         else:
             yield
 
+
 class timing(object):
+
     '''Decorator to time a method call'''
 
     def __init__(self, timer):

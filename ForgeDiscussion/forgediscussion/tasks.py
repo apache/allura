@@ -22,6 +22,7 @@ from allura.lib.decorators import task
 
 log = logging.getLogger(__name__)
 
+
 @task
 def calc_forum_stats(shortname):
     from forgediscussion import model as DM
@@ -31,6 +32,7 @@ def calc_forum_stats(shortname):
         log.error("Error looking up forum: %r", shortname)
         return
     forum.update_stats()
+
 
 @task
 def calc_thread_stats(thread_id):

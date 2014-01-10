@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 
 
 class RefreshLastCommits(ScriptTask):
+
     @classmethod
     def parser(cls):
         def _repo_type_list(s):
@@ -45,36 +46,38 @@ class RefreshLastCommits(ScriptTask):
                 repo_type = repo_type.strip()
                 if repo_type not in ['git', 'hg']:
                     raise argparse.ArgumentTypeError(
-                            '{0} is not a valid repo type.'.format(repo_type))
+                        '{0} is not a valid repo type.'.format(repo_type))
                 repo_types.append(repo_type)
             return repo_types
         parser = argparse.ArgumentParser(description='Using existing commit data, '
-                'refresh the last commit metadata in MongoDB. Run for all repos (no args), '
-                'or restrict by neighborhood, project, or code tool mount point.')
+                                         'refresh the last commit metadata in MongoDB. Run for all repos (no args), '
+                                         'or restrict by neighborhood, project, or code tool mount point.')
         parser.add_argument('--nbhd', action='store', default='', dest='nbhd',
-                help='Restrict update to a particular neighborhood, e.g. /p/.')
-        parser.add_argument('--project', action='store', default='', dest='project',
-                help='Restrict update to a particular project. To specify a '
-                'subproject, use a slash: project/subproject.')
+                            help='Restrict update to a particular neighborhood, e.g. /p/.')
+        parser.add_argument(
+            '--project', action='store', default='', dest='project',
+            help='Restrict update to a particular project. To specify a '
+            'subproject, use a slash: project/subproject.')
         parser.add_argument('--project-regex', action='store', default='',
-                dest='project_regex',
-                help='Restrict update to projects for which the shortname matches '
-                'the provided regex.')
-        parser.add_argument('--repo-types', action='store', type=_repo_type_list,
-                default=['git', 'hg'], dest='repo_types',
-                help='Only refresh last commits for repos of the given type(s). Defaults to: '
-                'git,hg. Example: --repo-types=git')
+                            dest='project_regex',
+                            help='Restrict update to projects for which the shortname matches '
+                            'the provided regex.')
+        parser.add_argument(
+            '--repo-types', action='store', type=_repo_type_list,
+            default=['git', 'hg'], dest='repo_types',
+            help='Only refresh last commits for repos of the given type(s). Defaults to: '
+            'git,hg. Example: --repo-types=git')
         parser.add_argument('--mount-point', default='', dest='mount_point',
-                help='Restrict update to repos at the given tool mount point. ')
+                            help='Restrict update to repos at the given tool mount point. ')
         parser.add_argument('--clean', action='store_true', dest='clean',
-                default=False, help='Remove last commit mongo docs for '
-                'project(s) being refreshed before doing the refresh.')
+                            default=False, help='Remove last commit mongo docs for '
+                            'project(s) being refreshed before doing the refresh.')
         parser.add_argument('--dry-run', action='store_true', dest='dry_run',
-                default=False, help='Log names of projects that would have their ')
+                            default=False, help='Log names of projects that would have their ')
         parser.add_argument('--diffs', action='store_true', dest='diffs',
-                default=False, help='Refresh / clean diffs as well as LCDs')
+                            default=False, help='Refresh / clean diffs as well as LCDs')
         parser.add_argument('--limit', action='store', type=int, dest='limit',
-                default=False, help='Limit of how many commits to process')
+                            default=False, help='Limit of how many commits to process')
         return parser
 
     @classmethod
@@ -94,7 +97,8 @@ class RefreshLastCommits(ScriptTask):
 
         for chunk in chunked_find(M.Project, q_project):
             for p in chunk:
-                log.info("Refreshing last commit data for project '%s'." % p.shortname)
+                log.info("Refreshing last commit data for project '%s'." %
+                         p.shortname)
                 if options.dry_run:
                     continue
                 c.project = p
@@ -109,17 +113,19 @@ class RefreshLastCommits(ScriptTask):
                         continue
                     if c.app.repo.tool.lower() not in options.repo_types:
                         log.info("Skipping %r: wrong type (%s)", c.app.repo,
-                                c.app.repo.tool.lower())
+                                 c.app.repo.tool.lower())
                         continue
 
                     c.app.repo.status = 'analyzing'
                     session(c.app.repo).flush(c.app.repo)
                     try:
-                        ci_ids = list(reversed(list(c.app.repo.all_commit_ids())))
+                        ci_ids = list(
+                            reversed(list(c.app.repo.all_commit_ids())))
                         if options.clean:
                             cls._clean(ci_ids, options.diffs)
 
-                        log.info('Refreshing all last commits in %r', c.app.repo)
+                        log.info('Refreshing all last commits in %r',
+                                 c.app.repo)
                         cls.refresh_repo_lcds(ci_ids, options)
                         new_commit_ids = app.repo.unknown_commit_ids()
                         if len(new_commit_ids) > 0:
@@ -141,14 +147,15 @@ class RefreshLastCommits(ScriptTask):
             for i, commit_id in enumerate(commit_ids):
                 commit = M.repo.Commit.query.get(_id=commit_id)
                 with time(timings):
-                    M.repo_refresh.compute_diffs(c.app.repo._id, tree_cache, commit)
+                    M.repo_refresh.compute_diffs(
+                        c.app.repo._id, tree_cache, commit)
                 if i % 1000 == 0:
                     cls._print_stats(i, timings, 1000)
 
         model_cache = M.repo.ModelCache(
-                max_instances={M.repo.LastCommit: 4000},
-                max_queries={M.repo.LastCommit: 4000},
-            )
+            max_instances={M.repo.LastCommit: 4000},
+            max_queries={M.repo.LastCommit: 4000},
+        )
         lcid_cache = {}
         timings = []
         print 'Processing last commits'
@@ -171,13 +178,17 @@ class RefreshLastCommits(ScriptTask):
     def _clean(cls, commit_ids, clean_diffs):
         if clean_diffs:
             # delete DiffInfoDocs
-            i = M.repo.DiffInfoDoc.m.find(dict(_id={'$in': commit_ids})).count()
-            log.info("Deleting %i DiffInfoDoc docs for %i commits...", i, len(commit_ids))
+            i = M.repo.DiffInfoDoc.m.find(
+                dict(_id={'$in': commit_ids})).count()
+            log.info("Deleting %i DiffInfoDoc docs for %i commits...",
+                     i, len(commit_ids))
             M.repo.DiffInfoDoc.m.remove(dict(_id={'$in': commit_ids}))
 
         # delete LastCommitDocs
-        i = M.repo.LastCommitDoc.m.find(dict(commit_id={'$in': commit_ids})).count()
-        log.info("Deleting %i LastCommitDoc docs for %i commits...", i, len(commit_ids))
+        i = M.repo.LastCommitDoc.m.find(
+            dict(commit_id={'$in': commit_ids})).count()
+        log.info("Deleting %i LastCommitDoc docs for %i commits...",
+                 i, len(commit_ids))
         M.repo.LastCommitDoc.m.remove(dict(commit_id={'$in': commit_ids}))
 
     @classmethod
@@ -187,7 +198,7 @@ class RefreshLastCommits(ScriptTask):
         at = tt / len(timings)
         mat = sum(timings[-debug_step:]) / debug_step
         print '  Processed %d commits (max: %f, avg: %f, mavg: %f, tot: %f)' % (
-                processed, mt, at, mat, tt)
+            processed, mt, at, mat, tt)
 
 
 @contextmanager
@@ -195,7 +206,6 @@ def time(timings):
     s = datetime.utcnow()
     yield
     timings.append((datetime.utcnow() - s).total_seconds())
-
 
 
 if __name__ == '__main__':

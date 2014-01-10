@@ -48,13 +48,16 @@ from widgets.admin import OptionsAdmin, AddForum
 
 log = logging.getLogger(__name__)
 
+
 class W:
     options_admin = OptionsAdmin()
     add_forum = AddForum()
 
+
 class ForgeDiscussionApp(Application):
     __version__ = version.__version__
-    permissions = ['configure', 'read', 'unmoderated_post', 'post', 'moderate', 'admin']
+    permissions = ['configure', 'read',
+                   'unmoderated_post', 'post', 'moderate', 'admin']
     permissions_desc = {
         'configure': 'Create new forums.',
         'read': 'View posts.',
@@ -63,22 +66,22 @@ class ForgeDiscussionApp(Application):
     config_options = Application.config_options + [
         ConfigOption('PostingPolicy',
                      schema.OneOf('ApproveOnceModerated', 'ModerateAll'), 'ApproveOnceModerated')
-        ]
-    PostClass=DM.ForumPost
-    AttachmentClass=DM.ForumAttachment
-    searchable=True
-    exportable=True
-    tool_label='Discussion'
-    tool_description="""
+    ]
+    PostClass = DM.ForumPost
+    AttachmentClass = DM.ForumAttachment
+    searchable = True
+    exportable = True
+    tool_label = 'Discussion'
+    tool_description = """
         Collaborate with your community in your forum.
     """
-    default_mount_label='Discussion'
-    default_mount_point='discussion'
-    ordinal=7
-    icons={
-        24:'images/forums_24.png',
-        32:'images/forums_32.png',
-        48:'images/forums_48.png'
+    default_mount_label = 'Discussion'
+    default_mount_point = 'discussion'
+    ordinal = 7
+    icons = {
+        24: 'images/forums_24.png',
+        32: 'images/forums_32.png',
+        48: 'images/forums_48.png'
     }
 
     def __init__(self, project, config):
@@ -98,7 +101,7 @@ class ForgeDiscussionApp(Application):
         log.info('Message from %s (%s)',
                  topic, self.config.options.mount_point)
         log.info('Headers are: %s', message['headers'])
-        shortname=urllib.unquote_plus(topic.replace('.', '/'))
+        shortname = urllib.unquote_plus(topic.replace('.', '/'))
         forum = DM.Forum.query.get(
             shortname=shortname, app_config_id=self.config._id)
         if forum is None:
@@ -110,9 +113,9 @@ class ForgeDiscussionApp(Application):
         '''Apps should provide their entries to be added to the main nav
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
         '''
-        return [ SitemapEntry(
-                self.config.options.mount_label,
-                '.')]
+        return [SitemapEntry(
+            self.config.options.mount_label,
+            '.')]
 
     @property
     @h.exceptionless([], log)
@@ -120,7 +123,7 @@ class ForgeDiscussionApp(Application):
         menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     @property
     def forums(self):
@@ -132,12 +135,13 @@ class ForgeDiscussionApp(Application):
 
     def subforums_of(self, parent_id):
         return DM.Forum.query.find(dict(
-                app_config_id=self.config._id,
-                parent_id=parent_id,
-                )).all()
+            app_config_id=self.config._id,
+            parent_id=parent_id,
+        )).all()
 
     def admin_menu(self):
-        admin_url = c.project.url() + 'admin/' + self.config.options.mount_point + '/'
+        admin_url = c.project.url() + 'admin/' + \
+            self.config.options.mount_point + '/'
         links = []
         if has_access(self, 'configure')():
             links.append(SitemapEntry('Forums', admin_url + 'forums'))
@@ -150,35 +154,44 @@ class ForgeDiscussionApp(Application):
             moderate_link = None
             forum_links = []
             forums = DM.Forum.query.find(dict(
-                            app_config_id=c.app.config._id,
-                            parent_id=None, deleted=False))
+                app_config_id=c.app.config._id,
+                parent_id=None, deleted=False))
             for f in forums:
-                if has_access(f,'read')():
+                if has_access(f, 'read')():
                     if f.url() in request.url and h.has_access(f, 'moderate')():
-                        moderate_link = SitemapEntry('Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
-                        small = DM.ForumPost.query.find({'discussion_id':f._id, 'status':{'$ne': 'ok'}}).count())
-                    forum_links.append(SitemapEntry(f.name, f.url(), small=f.num_topics))
+                        moderate_link = SitemapEntry(
+                            'Moderate', "%smoderate/" % f.url(), ui_icon=g.icons['pencil'],
+                            small=DM.ForumPost.query.find({'discussion_id': f._id, 'status': {'$ne': 'ok'}}).count())
+                    forum_links.append(
+                        SitemapEntry(f.name, f.url(), small=f.num_topics))
             url = c.app.url + 'create_topic/'
-            url = h.urlquote(url + c.forum.shortname if getattr(c, 'forum', None) and c.forum else url)
-            l.append(SitemapEntry('Create Topic', url, ui_icon=g.icons['plus']))
+            url = h.urlquote(
+                url + c.forum.shortname if getattr(c, 'forum', None) and c.forum else url)
+            l.append(
+                SitemapEntry('Create Topic', url, ui_icon=g.icons['plus']))
             if has_access(c.app, 'configure')():
-                l.append(SitemapEntry('Add Forum', c.app.url + 'new_forum', ui_icon=g.icons['conversation']))
-                l.append(SitemapEntry('Admin Forums', c.project.url()+'admin/'+self.config.options.mount_point+'/forums', ui_icon=g.icons['pencil']))
+                l.append(SitemapEntry('Add Forum', c.app.url +
+                         'new_forum', ui_icon=g.icons['conversation']))
+                l.append(SitemapEntry('Admin Forums', c.project.url() + 'admin/' +
+                         self.config.options.mount_point + '/forums', ui_icon=g.icons['pencil']))
             if moderate_link:
                 l.append(moderate_link)
-            # if we are in a thread and not anonymous, provide placeholder links to use in js
+            # if we are in a thread and not anonymous, provide placeholder
+            # links to use in js
             if '/thread/' in request.url and c.user not in (None, M.User.anonymous()):
                 l.append(SitemapEntry(
-                        'Mark as Spam', 'flag_as_spam',
-                        ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
-            l.append(SitemapEntry('Stats Graph', c.app.url + 'stats', ui_icon=g.icons['stats']))
+                    'Mark as Spam', 'flag_as_spam',
+                    ui_icon=g.icons['flag'], className='sidebar_thread_spam'))
+            l.append(SitemapEntry('Stats Graph', c.app.url +
+                     'stats', ui_icon=g.icons['stats']))
             if forum_links:
                 l.append(SitemapEntry('Forums'))
                 l = l + forum_links
             l.append(SitemapEntry('Help'))
-            l.append(SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax'))
+            l.append(
+                SitemapEntry('Formatting Help', c.app.url + 'markdown_syntax'))
             return l
-        except: # pragma no cover
+        except:  # pragma no cover
             log.exception('sidebar_menu')
             return []
 
@@ -198,7 +211,7 @@ class ForgeDiscussionApp(Application):
             M.ACE.allow(role_developer, 'moderate'),
             M.ACE.allow(role_admin, 'configure'),
             M.ACE.allow(role_admin, 'admin'),
-            ]
+        ]
 
         utils.create_forum(self, new_forum=dict(
             shortname='general',
@@ -226,6 +239,7 @@ class ForgeDiscussionApp(Application):
             json.dump(forum, f, cls=jsonify.GenericJSON, indent=2)
         f.write(']}')
 
+
 class ForumAdminController(DefaultAdminController):
 
     def _check_security(self):
@@ -252,13 +266,14 @@ class ForumAdminController(DefaultAdminController):
     @expose()
     @require_post()
     def update_forums(self, forum=None, **kw):
-        if forum is None: forum = []
+        if forum is None:
+            forum = []
         for f in forum:
             forum = DM.Forum.query.get(_id=ObjectId(str(f['id'])))
             if f.get('delete'):
-                forum.deleted=True
+                forum.deleted = True
             elif f.get('undelete'):
-                forum.deleted=False
+                forum.deleted = False
             else:
                 if '.' in f['shortname'] or '/' in f['shortname'] or ' ' in f['shortname']:
                     flash('Shortname cannot contain space . or /', 'error')
@@ -269,7 +284,8 @@ class ForumAdminController(DefaultAdminController):
                 forum.monitoring_email = f['monitoring_email']
                 if 'members_only' in f:
                     if 'anon_posts' in f:
-                        flash('You cannot have anonymous posts in a members only forum.', 'warning')
+                        flash(
+                            'You cannot have anonymous posts in a members only forum.', 'warning')
                         forum.anon_posts = False
                         del f['anon_posts']
                     forum.members_only = True

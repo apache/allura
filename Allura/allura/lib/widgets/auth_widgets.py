@@ -28,9 +28,10 @@ from .forms import ForgeForm
 from allura.lib import plugin
 from allura import model as M
 
+
 class LoginForm(ForgeForm):
-    submit_text='Login'
-    style='wide'
+    submit_text = 'Login'
+    style = 'wide'
 
     @property
     def fields(self):
@@ -40,7 +41,8 @@ class LoginForm(ForgeForm):
         ]
         if plugin.AuthenticationProvider.get(request).forgotten_password_process:
             # only show link if auth provider has method of recovering password
-            fields.append(ew.HTMLField(name='link', text='<a href="forgotten_password">Forgot password?</a>'))
+            fields.append(
+                ew.HTMLField(name='link', text='<a href="forgotten_password">Forgot password?</a>'))
         return fields
 
     class hidden_fields(ew_core.NameList):
@@ -49,7 +51,8 @@ class LoginForm(ForgeForm):
     @validator
     def validate(self, value, state=None):
         try:
-            value['username'] = plugin.AuthenticationProvider.get(request).login()
+            value['username'] = plugin.AuthenticationProvider.get(
+                request).login()
         except exc.HTTPUnauthorized:
             msg = 'Invalid login'
             raise Invalid(
@@ -60,8 +63,8 @@ class LoginForm(ForgeForm):
 
 
 class ForgottenPasswordForm(ForgeForm):
-    submit_text='Recover password'
-    style='wide'
+    submit_text = 'Recover password'
+    style = 'wide'
 
     class fields(ew_core.NameList):
         email = ew.TextField(label='Your e-mail')
@@ -73,6 +76,6 @@ class ForgottenPasswordForm(ForgeForm):
         user = M.User.by_email_address(email)
         if user is None or not email_record.confirmed:
             raise Invalid(
-                    'Unable to recover password for this email',
-                    {'email': email}, None)
+                'Unable to recover password for this email',
+                {'email': email}, None)
         return value

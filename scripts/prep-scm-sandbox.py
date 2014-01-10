@@ -18,16 +18,17 @@
 import os
 import string
 
-HOME=os.environ['HOME']
+HOME = os.environ['HOME']
 
-USERS=['user%.2d' % i for i in range(1, 21) ]
+USERS = ['user%.2d' % i for i in range(1, 21)]
 USERS += [
     'admin1', 'admin2',
     'dovethunder', 'dovetail', 'dovestream', 'dovetree', 'dovespangle',
-    'dovemeade', 'dovestar', 'dovebuyer', 'dovesomething', 'dovesweet', 'dovewood' ]
+    'dovemeade', 'dovestar', 'dovebuyer', 'dovesomething', 'dovesweet', 'dovewood']
 SSH_CONFIG = '%s/.ssh/config' % HOME
 LDIF_FILE = '%s/users.ldif' % HOME
-KEYFILE='%s/.ssh/allura_rsa' % HOME
+KEYFILE = '%s/.ssh/allura_rsa' % HOME
+
 
 def main():
 
@@ -40,8 +41,8 @@ def main():
             sb_host=sb_host,
             sb=sb,
             veid='%d0%.2d' % (sb_host, sb))
-        for sb_host in 5,6,7,9
-        for sb in range(99) ]
+        for sb_host in 5, 6, 7, 9
+        for sb in range(99)]
     new_lines = '\n'.join(new_lines)
     found_star = False
     with open(SSH_CONFIG, 'w') as fp:
@@ -62,9 +63,10 @@ def main():
                 user=user, pubkey=pubkey)
 
     # Update LDAP
-    assert 0 == os.system('/usr/local/sbin/ldaptool modify -v -f %s' % LDIF_FILE)
+    assert 0 == os.system('/usr/local/sbin/ldaptool modify -v -f %s' %
+                          LDIF_FILE)
 
-SSH_TMPL=string.Template('''
+SSH_TMPL = string.Template('''
 Host hg*-$veid hg*-${veid}.sb.sf.net
   Hostname 10.58.${sb_host}.${sb}
   Port 17
@@ -81,7 +83,7 @@ Host git*-$veid git*-${veid}.sb.sf.net
   IdentityFile ~/.ssh/allura_rsa
 ''')
 
-LDIF_TMPL=string.Template('''
+LDIF_TMPL = string.Template('''
 dn: cn=$user,ou=users,dc=sf,dc=net
 changetype: modify
 add: sshPublicKey

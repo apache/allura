@@ -30,6 +30,7 @@ from paste.registry import Registry
 log = logging.getLogger(__name__)
 REGISTRY = Registry()
 
+
 def setup_schema(command, conf, vars):
     """Place any commands to setup allura here"""
     import ming
@@ -45,4 +46,6 @@ def setup_schema(command, conf, vars):
     # Nothing to do
     log.info('setup_schema called')
 
-class EmptyClass(object): pass
+
+class EmptyClass(object):
+    pass

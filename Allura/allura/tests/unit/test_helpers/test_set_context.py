@@ -24,12 +24,13 @@ from allura.lib.exceptions import NoSuchProjectError, NoSuchNeighborhoodError
 from allura.tests.unit import WithDatabase
 from allura.tests.unit import patches
 from allura.tests.unit.factories import (create_project,
-                                          create_app_config,
-                                          create_neighborhood)
+                                         create_app_config,
+                                         create_neighborhood)
 from allura.model.project import Neighborhood
 
 
 class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
+
     def setUp(self):
         super(TestWhenProjectIsFoundAndAppIsNot, self).setUp()
         self.myproject = create_project('myproject')
@@ -43,6 +44,7 @@ class TestWhenProjectIsFoundAndAppIsNot(WithDatabase):
 
 
 class TestWhenProjectIsFoundInNeighborhood(WithDatabase):
+
     def setUp(self):
         super(TestWhenProjectIsFoundInNeighborhood, self).setUp()
         self.myproject = create_project('myproject')
@@ -62,7 +64,8 @@ class TestWhenAppIsFoundByID(WithDatabase):
         super(TestWhenAppIsFoundByID, self).setUp()
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
-        set_context('myproject', app_config_id=self.app_config._id, neighborhood=self.myproject.neighborhood)
+        set_context('myproject', app_config_id=self.app_config._id,
+                    neighborhood=self.myproject.neighborhood)
 
     def test_that_it_sets_the_app(self):
         assert c.app is self.fake_app
@@ -78,7 +81,8 @@ class TestWhenAppIsFoundByMountPoint(WithDatabase):
         super(TestWhenAppIsFoundByMountPoint, self).setUp()
         self.myproject = create_project('myproject')
         self.app_config = create_app_config(self.myproject, 'my_mounted_app')
-        set_context('myproject', mount_point='my_mounted_app', neighborhood=self.myproject.neighborhood)
+        set_context('myproject', mount_point='my_mounted_app',
+                    neighborhood=self.myproject.neighborhood)
 
     def test_that_it_sets_the_app(self):
         assert c.app is self.fake_app
@@ -103,6 +107,7 @@ class TestWhenProjectIsNotFound(WithDatabase):
                       set_context,
                       ObjectId(),
                       neighborhood=None)
+
 
 class TestWhenNeighborhoodIsNotFound(WithDatabase):
 

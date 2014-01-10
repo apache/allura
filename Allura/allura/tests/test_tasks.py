@@ -53,6 +53,7 @@ from allura.lib.decorators import event_handler, task
 
 
 class TestRepoTasks(unittest.TestCase):
+
     @mock.patch('allura.tasks.repo_tasks.c.app')
     @mock.patch('allura.tasks.repo_tasks.g.post_event')
     def test_clone_posts_event_on_failure(self, post_event, app):
@@ -73,7 +74,7 @@ class TestEventTasks(unittest.TestCase):
 
     def test_fire_event(self):
         event_tasks.event('my_event', self, 1, 2, a=5)
-        assert self.called_with == [((1,2), {'a':5}) ], self.called_with
+        assert self.called_with == [((1, 2), {'a': 5})], self.called_with
 
     def test_compound_error(self):
         '''test_compound_exception -- make sure our multi-exception return works
@@ -83,7 +84,7 @@ class TestEventTasks(unittest.TestCase):
         setup_global_objects()
         t = raise_exc.post()
         with LogCapture(level=logging.ERROR) as l, \
-             mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
+                mock.patch.dict(tg.config, {'monq.raise_errors': False}):  # match normal non-test behavior
             t()
         # l.check() would be nice, but string is too detailed to check
         assert_equal(l.records[0].name, 'allura.model.monq_model')
@@ -94,6 +95,7 @@ class TestEventTasks(unittest.TestCase):
         assert_in(' (error) P:10 allura.tests.test_tasks.raise_exc ', msg)
         for x in range(10):
             assert ('assert %d' % x) in t.result
+
 
 class TestIndexTasks(unittest.TestCase):
 
@@ -109,33 +111,36 @@ class TestIndexTasks(unittest.TestCase):
 
             old_shortlinks = M.Shortlink.query.find().count()
             old_solr_size = len(g.solr.db)
-            artifacts = [ _TestArtifact() for x in range(5) ]
+            artifacts = [_TestArtifact() for x in range(5)]
             for i, a in enumerate(artifacts):
                 a._shorthand_id = 't%d' % i
                 a.text = 'This is a reference to [t3]'
-            arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
-            ref_ids = [ r._id for r in arefs ]
+            arefs = [M.ArtifactReference.from_artifact(a) for a in artifacts]
+            ref_ids = [r._id for r in arefs]
             M.artifact_orm_session.flush()
             index_tasks.add_artifacts(ref_ids)
             new_shortlinks = M.Shortlink.query.find().count()
             new_solr_size = len(g.solr.db)
-            assert old_shortlinks + 5 == new_shortlinks, 'Shortlinks not created'
-            assert old_solr_size + 5 == new_solr_size, "Solr additions didn't happen"
+            assert old_shortlinks + \
+                5 == new_shortlinks, 'Shortlinks not created'
+            assert old_solr_size + \
+                5 == new_solr_size, "Solr additions didn't happen"
             M.main_orm_session.flush()
             M.main_orm_session.clear()
             a = _TestArtifact.query.get(_shorthand_id='t3')
             assert len(a.backrefs) == 5, a.backrefs
             assert_equal(find_slinks.call_args_list,
-                    [mock.call(a.index().get('text')) for a in artifacts])
+                         [mock.call(a.index().get('text')) for a in artifacts])
 
     @td.with_wiki
     @mock.patch('allura.tasks.index_tasks.g.solr')
     def test_del_artifacts(self, solr):
         old_shortlinks = M.Shortlink.query.find().count()
-        artifacts = [ _TestArtifact(_shorthand_id='ta_%s' % x) for x in range(5) ]
+        artifacts = [_TestArtifact(_shorthand_id='ta_%s' % x)
+                     for x in range(5)]
         M.artifact_orm_session.flush()
-        arefs = [ M.ArtifactReference.from_artifact(a) for a in artifacts ]
-        ref_ids = [ r._id for r in arefs ]
+        arefs = [M.ArtifactReference.from_artifact(a) for a in artifacts]
+        ref_ids = [r._id for r in arefs]
         M.artifact_orm_session.flush()
         index_tasks.add_artifacts(ref_ids)
         M.main_orm_session.flush()
@@ -145,9 +150,9 @@ class TestIndexTasks(unittest.TestCase):
         assert solr.add.call_count == 1
         sort_key = operator.itemgetter('id')
         assert_equal(
-                sorted(solr.add.call_args[0][0], key=sort_key),
-                sorted([search.solarize(ref.artifact) for ref in arefs],
-                        key=sort_key))
+            sorted(solr.add.call_args[0][0], key=sort_key),
+            sorted([search.solarize(ref.artifact) for ref in arefs],
+                   key=sort_key))
         index_tasks.del_artifacts(ref_ids)
         M.main_orm_session.flush()
         M.main_orm_session.clear()
@@ -164,14 +169,15 @@ class TestMailTasks(unittest.TestCase):
         setup_global_objects()
 
     # these tests go down through the mail_util.SMTPClient.sendmail method
-    # since usage is generally through the task, and not using mail_util directly
+    # since usage is generally through the task, and not using mail_util
+    # directly
 
     def test_send_email_ascii_with_user_lookup(self):
         c.user = M.User.by_username('test-admin')
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
-                destinations=[ str(c.user._id) ],
+                destinations=[str(c.user._id)],
                 text=u'This is a test',
                 reply_to=u'noreply@sf.net',
                 subject=u'Test subject',
@@ -187,13 +193,14 @@ class TestMailTasks(unittest.TestCase):
             # plain
             assert_in('This is a test', body)
             # html
-            assert_in('<div class="markdown_content"><p>This is a test</p></div>', body)
+            assert_in(
+                '<div class="markdown_content"><p>This is a test</p></div>', body)
 
     def test_send_email_nonascii(self):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=u'"По" <foo@bar.com>',
-                destinations=[ 'blah@blah.com' ],
+                destinations=['blah@blah.com'],
                 text=u'Громады стройные теснятся',
                 reply_to=u'noreply@sf.net',
                 subject=u'По оживлённым берегам',
@@ -207,12 +214,15 @@ class TestMailTasks(unittest.TestCase):
 
             # The address portion must not be encoded, only the name portion can be.
             # Also it is apparently not necessary to have the double-quote separators present
-            #   when the name portion is encoded.  That is, the encoding below is just По and not "По"
+            # when the name portion is encoded.  That is, the encoding below is
+            # just По and not "По"
             assert_in('From: =?utf-8?b?0J/Qvg==?= <foo@bar.com>', body)
-            assert_in('Subject: =?utf-8?b?0J/QviDQvtC20LjQstC70ZHQvdC90YvQvCDQsdC10YDQtdCz0LDQvA==?=', body)
+            assert_in(
+                'Subject: =?utf-8?b?0J/QviDQvtC20LjQstC70ZHQvdC90YvQvCDQsdC10YDQtdCz0LDQvA==?=', body)
             assert_in('Content-Type: text/plain; charset="utf-8"', body)
             assert_in('Content-Transfer-Encoding: base64', body)
-            assert_in(b64encode(u'Громады стройные теснятся'.encode('utf-8')), body)
+            assert_in(
+                b64encode(u'Громады стройные теснятся'.encode('utf-8')), body)
 
     def test_send_email_with_disabled_user(self):
         c.user = M.User.by_username('test-admin')
@@ -223,7 +233,7 @@ class TestMailTasks(unittest.TestCase):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
-                destinations=[ str(destination_user._id) ],
+                destinations=[str(destination_user._id)],
                 text=u'This is a test',
                 reply_to=u'noreply@sf.net',
                 subject=u'Test subject',
@@ -242,7 +252,7 @@ class TestMailTasks(unittest.TestCase):
         with mock.patch.object(mail_tasks.smtp_client, '_client') as _client:
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
-                destinations=[ str(destination_user._id) ],
+                destinations=[str(destination_user._id)],
                 text=u'This is a test',
                 reply_to=u'noreply@sf.net',
                 subject=u'Test subject',
@@ -299,7 +309,7 @@ class TestMailTasks(unittest.TestCase):
             _client.reset_mock()
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
-                destinations=[ str(c.user._id) ],
+                destinations=[str(c.user._id)],
                 text=u'This is a test',
                 reply_to=u'123@tickets.test.p.sf.net',
                 subject=u'Test subject',
@@ -332,7 +342,7 @@ class TestMailTasks(unittest.TestCase):
             _client.reset_mock()
             mail_tasks.sendmail(
                 fromaddr=str(c.user._id),
-                destinations=[ str(c.user._id) ],
+                destinations=[str(c.user._id)],
                 text=u'This is a test',
                 reply_to=u'noreply@sf.net',
                 subject=u'Test subject',
@@ -409,9 +419,11 @@ class TestNotificationTasks(unittest.TestCase):
                 assert deliver.called_with('42', '52', 'none')
                 assert fire_ready.called_with()
 
+
 @event_handler('my_event')
 def _my_event(event_type, testcase, *args, **kwargs):
     testcase.called_with.append((args, kwargs))
+
 
 @task
 def raise_exc():
@@ -423,12 +435,17 @@ def raise_exc():
             errs.append(sys.exc_info())
     raise CompoundError(*errs)
 
+
 class _TestArtifact(M.Artifact):
     _shorthand_id = FieldProperty(str)
     text = FieldProperty(str)
-    def url(self): return ''
+
+    def url(self):
+        return ''
+
     def shorthand_id(self):
         return getattr(self, '_shorthand_id', self._id)
+
     def index(self):
         return dict(
             super(_TestArtifact, self).index(),
@@ -451,11 +468,13 @@ class TestExportTasks(unittest.TestCase):
         exportable = mock.Mock(exportable=True)
         not_exportable = mock.Mock(exportable=False)
         BE = export_tasks.BulkExport()
-        self.assertEqual(BE.filter_exportable([None, exportable, not_exportable]), [exportable])
+        self.assertEqual(
+            BE.filter_exportable([None, exportable, not_exportable]), [exportable])
 
     def test_bulk_export_filter_successful(self):
         BE = export_tasks.BulkExport()
-        self.assertEqual(BE.filter_successful(['foo', None, '0']), ['foo', '0'])
+        self.assertEqual(
+            BE.filter_successful(['foo', None, '0']), ['foo', '0'])
 
     def test_get_export_path(self):
         BE = export_tasks.BulkExport()
@@ -481,7 +500,8 @@ class TestExportTasks(unittest.TestCase):
         tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendmail')).all()
         assert_equal(len(tasks), 1)
-        assert_equal(tasks[0].kwargs['subject'], 'Bulk export for project test completed')
+        assert_equal(tasks[0].kwargs['subject'],
+                     'Bulk export for project test completed')
         assert_equal(tasks[0].kwargs['fromaddr'], 'noreply@sourceforge.net')
         assert_equal(tasks[0].kwargs['reply_to'], 'noreply@sourceforge.net')
         text = tasks[0].kwargs['text']

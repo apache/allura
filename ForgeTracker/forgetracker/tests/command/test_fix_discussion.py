@@ -26,7 +26,8 @@ from allura import model as M
 from forgetracker import model as TM
 
 
-test_config = pkg_resources.resource_filename('allura', '../test.ini') + '#main'
+test_config = pkg_resources.resource_filename(
+    'allura', '../test.ini') + '#main'
 
 
 def setUp(self):
@@ -62,13 +63,15 @@ def break_discussion():
     t.discussion_thread.add_post(text='comment 2')
     session(t).flush(t)
 
+
 def test_fix_discussion():
     break_discussion()
 
     tracker = M.AppConfig.query.find({'options.mount_point': 'bugs'}).first()
     t1 = TM.Ticket.query.get(ticket_num=1)
     t2 = TM.Ticket.query.get(ticket_num=2)
-    assert_not_equal(t1.discussion_thread.discussion.app_config_id, tracker._id)
+    assert_not_equal(
+        t1.discussion_thread.discussion.app_config_id, tracker._id)
     assert_not_equal(t2.discussion_thread.discussion_id, tracker.discussion_id)
 
     cmd = fix_discussion.FixDiscussion('fix-discussion')

@@ -52,9 +52,9 @@ from ming.utils import LazyProperty
 import allura.tasks.event_tasks
 from allura import model as M
 from allura.lib.markdown_extensions import (
-        ForgeExtension,
-        CommitMessageExtension,
-        )
+    ForgeExtension,
+    CommitMessageExtension,
+)
 from allura.eventslistener import PostEvent
 
 from allura.lib import gravatar, plugin, utils
@@ -69,9 +69,11 @@ log = logging.getLogger(__name__)
 
 
 class ForgeMarkdown(markdown.Markdown):
+
     def convert(self, source):
         if len(source) > asint(config.get('markdown_render_max_length', 40000)):
-            # if text is too big, markdown can take a long time to process it, so we return it as a plain text
+            # if text is too big, markdown can take a long time to process it,
+            # so we return it as a plain text
             log.info('Text is too big. Skipping markdown processing')
             escaped = cgi.escape(h.really_unicode(source))
             return h.html.literal(u'<pre>%s</pre>' % escaped)
@@ -97,8 +99,9 @@ class ForgeMarkdown(markdown.Markdown):
         cache_field_name = field_name + '_cache'
         cache = getattr(artifact, cache_field_name, None)
         if not cache:
-            log.warn('Skipping Markdown caching - Missing cache field "%s" on class %s',
-                    field_name, artifact.__class__.__name__)
+            log.warn(
+                'Skipping Markdown caching - Missing cache field "%s" on class %s',
+                field_name, artifact.__class__.__name__)
             return self.convert(source_text)
 
         md5 = None
@@ -117,7 +120,7 @@ class ForgeMarkdown(markdown.Markdown):
         except ValueError:
             threshold = None
             log.warn('Skipping Markdown caching - The value for config param '
-                    '"markdown_cache_threshold" must be a float.')
+                     '"markdown_cache_threshold" must be a float.')
 
         if threshold != None and render_time > threshold:
             if md5 is None:
@@ -127,6 +130,7 @@ class ForgeMarkdown(markdown.Markdown):
 
 
 class Globals(object):
+
     """Container for objects available throughout the life of the application.
 
     One instance of Globals is created during application initialization and
@@ -137,8 +141,10 @@ class Globals(object):
 
     def __init__(self):
         self.__dict__ = self.__shared_state
-        if self.__shared_state: return
-        self.allura_templates = pkg_resources.resource_filename('allura', 'templates')
+        if self.__shared_state:
+            return
+        self.allura_templates = pkg_resources.resource_filename(
+            'allura', 'templates')
         # Setup SOLR
         self.solr_server = aslist(config.get('solr.server'), ',')
         # skip empty strings in case of extra commas
@@ -147,11 +153,12 @@ class Globals(object):
         if asbool(config.get('solr.mock')):
             self.solr = self.solr_short_timeout = MockSOLR()
         elif self.solr_server:
-            self.solr = make_solr_from_config(self.solr_server, self.solr_query_server)
+            self.solr = make_solr_from_config(
+                self.solr_server, self.solr_query_server)
             self.solr_short_timeout = make_solr_from_config(
                 self.solr_server, self.solr_query_server,
                 timeout=int(config.get('solr.short_timeout', 10)))
-        else: # pragma no cover
+        else:  # pragma no cover
             self.solr = None
             self.solr_short_timeout = None
         self.use_queue = asbool(config.get('use_queue', False))
@@ -159,7 +166,8 @@ class Globals(object):
         # Load login/logout urls; only used for SFX logins
         self.login_url = config.get('auth.login_url', '/auth/')
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
-        self.login_fragment_url = config.get('auth.login_fragment_url', '/auth/login_fragment')
+        self.login_fragment_url = config.get(
+            'auth.login_fragment_url', '/auth/login_fragment')
 
         # Setup Gravatar
         self.gravatar = gravatar.url
@@ -231,6 +239,7 @@ class Globals(object):
             return d
 
         class entry_point_loading_dict(dict):
+
             def __missing__(self, key):
                 self[key] = _cache_eps(key)
                 return self[key]
@@ -245,7 +254,7 @@ class Globals(object):
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
             admin=_cache_eps('allura.admin'),
-            )
+        )
 
         # Zarkov logger
         self._zarkov = None
@@ -272,18 +281,25 @@ class Globals(object):
             return activitystream.director()
         else:
             class NullActivityStreamDirector(object):
+
                 def connect(self, *a, **kw):
                     pass
+
                 def disconnect(self, *a, **kw):
                     pass
+
                 def is_connected(self, *a, **kw):
                     return False
+
                 def create_activity(self, *a, **kw):
                     pass
+
                 def create_timeline(self, *a, **kw):
                     pass
+
                 def create_timelines(self, *a, **kw):
                     pass
+
                 def get_timeline(self, *a, **kw):
                     return []
             return NullActivityStreamDirector()
@@ -307,9 +323,9 @@ class Globals(object):
         allura.tasks.event_tasks.event.post(topic, *args, **kwargs)
 
     def zarkov_event(
-        self, event_type,
-        user=None, neighborhood=None, project=None, app=None,
-        extra=None):
+            self, event_type,
+            user=None, neighborhood=None, project=None, app=None,
+            extra=None):
         context = dict(
             user=None,
             neighborhood=None, project=None, tool=None,
@@ -322,7 +338,8 @@ class Globals(object):
         user = user or getattr(c, 'user', None)
         project = project or getattr(c, 'project', None)
         app = app or getattr(c, 'app', None)
-        if user: context['user'] = user.username
+        if user:
+            context['user'] = user.username
         if project:
             context.update(
                 project=project.shortname,
@@ -346,7 +363,7 @@ class Globals(object):
         except Exception, ex:
             self._zarkov = None
             log.error('Error sending zarkov event(%r): %r', ex, dict(
-                    type=event_type, context=context, extra=extra))
+                type=event_type, context=context, extra=extra))
 
     @LazyProperty
     def theme(self):
@@ -380,7 +397,8 @@ class Globals(object):
             if c.user in (None, M.User.anonymous()):
                 try:
                     limit = session['results_per_page']
-                except (KeyError, TypeError):  # TypeError if no session registered for thread
+                # TypeError if no session registered for thread
+                except (KeyError, TypeError):
                     limit = default
             else:
                 limit = c.user.get_pref('results_per_page') or default
@@ -403,26 +421,33 @@ class Globals(object):
             return h.html.literal('<em>Empty file</em>')
         # Don't use line numbers for diff highlight's, as per [#1484]
         if lexer == 'diff':
-            formatter = pygments.formatters.HtmlFormatter(cssclass='codehilite', linenos=False)
+            formatter = pygments.formatters.HtmlFormatter(
+                cssclass='codehilite', linenos=False)
         else:
             formatter = self.pygments_formatter
         if lexer is None:
             try:
-                lexer = pygments.lexers.get_lexer_for_filename(filename, encoding='chardet')
+                lexer = pygments.lexers.get_lexer_for_filename(
+                    filename, encoding='chardet')
             except pygments.util.ClassNotFound:
-                # no highlighting, but we should escape, encode, and wrap it in a <pre>
+                # no highlighting, but we should escape, encode, and wrap it in
+                # a <pre>
                 text = h.really_unicode(text)
                 text = cgi.escape(text)
                 return h.html.literal(u'<pre>' + text + u'</pre>')
         else:
-            lexer = pygments.lexers.get_lexer_by_name(lexer, encoding='chardet')
+            lexer = pygments.lexers.get_lexer_by_name(
+                lexer, encoding='chardet')
         return h.html.literal(pygments.highlight(text, lexer, formatter))
 
     def forge_markdown(self, **kwargs):
         '''return a markdown.Markdown object on which you can call convert'''
         return ForgeMarkdown(
-                extensions=['codehilite', ForgeExtension(**kwargs), 'tables', 'toc', 'nl2br'], # 'fenced_code'
-                output_format='html4')
+            # 'fenced_code'
+            extensions=['codehilite',
+                        ForgeExtension(
+                            **kwargs), 'tables', 'toc', 'nl2br'],
+            output_format='html4')
 
     @property
     def markdown(self):
@@ -444,7 +469,7 @@ class Globals(object):
         """
         app = getattr(c, 'app', None)
         return ForgeMarkdown(extensions=[CommitMessageExtension(app), 'nl2br'],
-                output_format='html4')
+                             output_format='html4')
 
     @property
     def production_mode(self):
@@ -485,7 +510,7 @@ class Globals(object):
             for size in (24, 32, 48):
                 url = self.theme.app_icon_url(tool_name.lower(), size)
                 css += '.ui-icon-tool-%s-%i {background: url(%s) no-repeat;}\n' % (
-                        tool_name, size, url)
+                    tool_name, size, url)
         return css, hashlib.md5(css).hexdigest()
 
     @property
@@ -580,10 +605,13 @@ class Globals(object):
     def year(self):
         return datetime.datetime.utcnow().year
 
+
 class Icon(object):
+
     def __init__(self, char, css):
         self.char = char
         self.css = css
+
 
 def connect_amqp(config):
     return

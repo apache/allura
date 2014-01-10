@@ -27,6 +27,7 @@ from allura.tasks import repo_tasks
 from allura import model as M
 from forgegit.tests import with_git
 
+
 class TestGitTasks(unittest.TestCase):
 
     def setUp(self):
@@ -52,7 +53,8 @@ class TestGitTasks(unittest.TestCase):
         with mock.patch.object(c.app.repo, 'init_as_clone') as f:
             c.app.config.options['init_from_path'] = 'test_path'
             c.app.config.options['init_from_url'] = 'test_url'
-            repo_tasks.reclone_repo(prefix='p', shortname='test', mount_point='src-git')
+            repo_tasks.reclone_repo(
+                prefix='p', shortname='test', mount_point='src-git')
             M.main_orm_session.flush()
             f.assert_called_with('test_path', None, 'test_url')
             assert ns + 1 == M.Notification.query.find().count()

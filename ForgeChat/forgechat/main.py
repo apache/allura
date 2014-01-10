@@ -43,25 +43,26 @@ from forgechat import version
 
 log = logging.getLogger(__name__)
 
+
 class ForgeChatApp(Application):
     __version__ = version.__version__
-    tool_label='Chat'
-    status='alpha'
-    default_mount_label='Chat'
-    default_mount_point='chat'
-    ordinal=13
-    permissions = ['configure', 'read' ]
+    tool_label = 'Chat'
+    status = 'alpha'
+    default_mount_label = 'Chat'
+    default_mount_point = 'chat'
+    ordinal = 13
+    permissions = ['configure', 'read']
     permissions_desc = {
         'configure': 'Set monitored IRC channel. Requires admin permission.',
         'read': 'View chat logs.',
     }
     config_options = Application.config_options + [
         ConfigOption('channel', str, ''),
-        ]
-    icons={
-        24:'images/chat_24.png',
-        32:'images/chat_32.png',
-        48:'images/chat_48.png'
+    ]
+    icons = {
+        24: 'images/chat_24.png',
+        32: 'images/chat_32.png',
+        48: 'images/chat_48.png'
     }
 
     def __init__(self, project, config):
@@ -79,14 +80,14 @@ class ForgeChatApp(Application):
         menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     @h.exceptionless([], log)
     def sidebar_menu(self):
         return [
             SitemapEntry('Home', '.'),
             SitemapEntry('Search', 'search'),
-            ]
+        ]
 
     def admin_menu(self):
         return super(ForgeChatApp, self).admin_menu()
@@ -99,7 +100,7 @@ class ForgeChatApp(Application):
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'configure'),
-            ]
+        ]
         CM.ChatChannel(
             project_id=self.config.project_id,
             app_config_id=self.config._id,
@@ -108,15 +109,16 @@ class ForgeChatApp(Application):
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
         CM.ChatChannel.query.remove(dict(
-                project_id=self.config.project_id,
-                app_config_id=self.config._id))
+            project_id=self.config.project_id,
+            app_config_id=self.config._id))
         super(ForgeChatApp, self).uninstall(project)
+
 
 class AdminController(DefaultAdminController):
 
     @with_trailing_slash
     def index(self, **kw):
-        redirect(c.project.url()+'admin/tools')
+        redirect(c.project.url() + 'admin/tools')
 
     @expose()
     @require_post()
@@ -129,6 +131,7 @@ class AdminController(DefaultAdminController):
             chan.channel = channel
         flash('Chat options updated')
         super(AdminController, self).configure(channel=channel)
+
 
 class RootController(BaseController):
 
@@ -159,8 +162,9 @@ class RootController(BaseController):
 
     @expose()
     def _lookup(self, y, m, d, *rest):
-        y,m,d = int(y), int(m), int(d)
-        return DayController(date(y,m,d)), rest
+        y, m, d = int(y), int(m), int(d)
+        return DayController(date(y, m, d)), rest
+
 
 class DayController(RootController):
 
@@ -171,8 +175,8 @@ class DayController(RootController):
     def index(self, **kw):
         q = dict(
             timestamp={
-                '$gte':datetime.combine(self.day, time.min),
-                '$lte':datetime.combine(self.day, time.max)})
+                '$gte': datetime.combine(self.day, time.min),
+                '$lte': datetime.combine(self.day, time.max)})
         messages = CM.ChatMessage.query.find(q).sort('timestamp').all()
         prev = c.app.url + (self.day - timedelta(days=1)).strftime('%Y/%m/%d/')
         next = c.app.url + (self.day + timedelta(days=1)).strftime('%Y/%m/%d/')

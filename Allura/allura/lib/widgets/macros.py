@@ -17,48 +17,53 @@
 
 import ew
 
+
 class Include(ew.Widget):
-    template='jinja:allura:templates/widgets/include.html'
-    params=['artifact', 'attrs']
-    artifact=None
+    template = 'jinja:allura:templates/widgets/include.html'
+    params = ['artifact', 'attrs']
+    artifact = None
     attrs = {
-        'style':'width:270px;float:right;background-color:#ccc'
-        }
+        'style': 'width:270px;float:right;background-color:#ccc'
+    }
+
 
 class GittipButton(ew.Widget):
-    template='jinja:allura:templates/widgets/gittip_button.html'
-    params=['username']
-    project=None
+    template = 'jinja:allura:templates/widgets/gittip_button.html'
+    params = ['username']
+    project = None
 
 
 class DownloadButton(ew.Widget):
-    template='jinja:allura:templates/widgets/download_button.html'
-    params=['project']
-    project=None
+    template = 'jinja:allura:templates/widgets/download_button.html'
+    params = ['project']
+    project = None
 
     def resources(self):
         yield ew.jinja2_ew.JSScript('''
             $(function(){$(".download-button-%s").load("%s");
-        });''' % (self.project._id,self.project.best_download_url()))
+        });''' % (self.project._id, self.project.best_download_url()))
+
 
 class NeighborhoodFeeds(ew.Widget):
     template = 'jinja:allura:templates/macro/neighborhood_feeds.html'
-    params=['feeds']
+    params = ['feeds']
     feeds = None
+
 
 class BlogPosts(ew.Widget):
     template = 'jinja:allura:templates/macro/blog_posts.html'
     params = ['posts']
     posts = None
 
+
 class ProjectAdmins(ew.Widget):
     template = 'jinja:allura:templates/macro/project_admins.html'
     params = ['users']
     users = None
+
 
 class Members(ew.Widget):
     template = 'jinja:allura:templates/macro/members.html'
     params = ['users', 'over_limit']
     users = None
     over_limit = None
-

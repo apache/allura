@@ -26,7 +26,9 @@ import alluratest.controller
 import socket
 socket.setdefaulttimeout(None)
 
+
 class TestController(alluratest.controller.TestController):
+
     """
     Base functional test case for the controllers.
 

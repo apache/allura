@@ -36,7 +36,7 @@ class TestWhenModerating(WithDatabase):
         super(TestWhenModerating, self).setUp()
         post = create_post('mypost')
         discussion_controller = Mock(
-            discussion = Mock(_id=post.discussion_id),
+            discussion=Mock(_id=post.discussion_id),
         )
         self.controller = ModerationController(discussion_controller)
 
@@ -45,7 +45,8 @@ class TestWhenModerating(WithDatabase):
         self.moderate_post(approve=True)
         post = self.get_post()
         assert_equal(post.status, 'ok')
-        assert_equal(post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S"), mod_date.strftime("%Y-%m-%d %H:%M:%S"))
+        assert_equal(post.thread.last_post_date.strftime("%Y-%m-%d %H:%M:%S"),
+                     mod_date.strftime("%Y-%m-%d %H:%M:%S"))
 
     def test_that_it_can_mark_as_spam(self):
         self.moderate_post(spam=True)
@@ -56,8 +57,9 @@ class TestWhenModerating(WithDatabase):
         assert_equal(self.get_post(), None)
 
     def moderate_post(self, **kwargs):
-        self.controller.save_moderation(post=[dict(checked=True, _id=self.get_post()._id)],
-                                 **kwargs)
+        self.controller.save_moderation(
+            post=[dict(checked=True, _id=self.get_post()._id)],
+            **kwargs)
         ThreadLocalORMSession.flush_all()
 
     def get_post(self):

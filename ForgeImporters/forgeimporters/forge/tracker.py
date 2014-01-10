@@ -24,15 +24,15 @@ from pylons import app_globals as g
 from ming.orm import session, ThreadLocalORMSession
 
 from tg import (
-        expose,
-        flash,
-        redirect,
-        validate,
-        )
+    expose,
+    flash,
+    redirect,
+    validate,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.controllers import BaseController
 from allura.lib import helpers as h
@@ -44,12 +44,12 @@ from allura import model as M
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.base import (
-        ToolImporter,
-        ToolImportForm,
-        File,
-        get_importer_upload_path,
-        save_importer_upload,
-        )
+    ToolImporter,
+    ToolImportForm,
+    File,
+    get_importer_upload_path,
+    save_importer_upload,
+)
 
 
 class ForgeTrackerImportForm(ToolImportForm):
@@ -57,6 +57,7 @@ class ForgeTrackerImportForm(ToolImportForm):
 
 
 class ForgeTrackerImportController(BaseController):
+
     def __init__(self):
         self.importer = ForgeTrackerImporter()
 
@@ -68,7 +69,7 @@ class ForgeTrackerImportController(BaseController):
     @expose('jinja:forgeimporters.forge:templates/tracker/index.html')
     def index(self, **kw):
         return dict(importer=self.importer,
-                target_app=self.target_app)
+                    target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
@@ -76,16 +77,18 @@ class ForgeTrackerImportController(BaseController):
     @validate(ForgeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, tickets_json, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
-            save_importer_upload(c.project, 'tickets.json', json.dumps(tickets_json))
+            save_importer_upload(
+                c.project, 'tickets.json', json.dumps(tickets_json))
             self.importer.post(
-                    mount_point=mount_point,
-                    mount_label=mount_label,
-                )
+                mount_point=mount_point,
+                mount_label=mount_label,
+            )
             flash('Ticket import has begun. Your new tracker will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
             redirect(c.project.url() + 'admin/')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -106,7 +109,7 @@ class ForgeTrackerImporter(ToolImporter):
             return json.load(fp)
 
     def import_tool(self, project, user, mount_point=None,
-            mount_label=None, **kw):
+                    mount_label=None, **kw):
         import_id_converter = ImportIdConverter.get()
         tracker_json = self._load_json(project)
         tracker_json['tracker_config']['options'].pop('ordinal', None)
@@ -114,14 +117,16 @@ class ForgeTrackerImporter(ToolImporter):
         tracker_json['tracker_config']['options'].pop('mount_label', None)
         tracker_json['tracker_config']['options'].pop('import_id', None)
         app = project.install_app('tickets', mount_point, mount_label,
-                import_id={
-                        'source': self.source,
-                        'app_config_id': tracker_json['tracker_config']['_id'],
-                    },
-                open_status_names=tracker_json['open_status_names'],
-                closed_status_names=tracker_json['closed_status_names'],
-                **tracker_json['tracker_config']['options']
-            )
+                                  import_id={
+                                      'source': self.source,
+                                      'app_config_id': tracker_json['tracker_config']['_id'],
+                                  },
+                                  open_status_names=tracker_json[
+                                      'open_status_names'],
+                                  closed_status_names=tracker_json[
+                                      'closed_status_names'],
+                                  **tracker_json['tracker_config']['options']
+                                  )
         ThreadLocalORMSession.flush_all()
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
@@ -129,42 +134,51 @@ class ForgeTrackerImporter(ToolImporter):
                 reporter = self.get_user(ticket_json['reported_by'])
                 owner = self.get_user(ticket_json['assigned_to'])
                 with h.push_config(c, user=reporter, app=app):
-                    self.max_ticket_num = max(ticket_json['ticket_num'], self.max_ticket_num)
+                    self.max_ticket_num = max(
+                        ticket_json['ticket_num'], self.max_ticket_num)
                     ticket = TM.Ticket(
-                            app_config_id=app.config._id,
-                            import_id=import_id_converter.expand(ticket_json['ticket_num'], app),
-                            description=self.annotate(
-                                self.annotate(
-                                    ticket_json['description'],
-                                    owner, ticket_json['assigned_to'], label=' owned'),
-                                reporter, ticket_json['reported_by'], label=' created'),
-                            created_date=dateutil.parser.parse(ticket_json['created_date']),
-                            mod_date=dateutil.parser.parse(ticket_json['mod_date']),
-                            ticket_num=ticket_json['ticket_num'],
-                            summary=ticket_json['summary'],
-                            custom_fields=ticket_json['custom_fields'],
-                            status=ticket_json['status'],
-                            labels=ticket_json['labels'],
-                            votes_down=ticket_json['votes_down'],
-                            votes_up=ticket_json['votes_up'],
-                            votes=ticket_json['votes_up'] - ticket_json['votes_down'],
-                            assigned_to_id=owner._id,
-                        )
-                    ticket.private = ticket_json['private']  # trigger the private property
-                    self.process_comments(ticket, ticket_json['discussion_thread']['posts'])
+                        app_config_id=app.config._id,
+                        import_id=import_id_converter.expand(
+                            ticket_json['ticket_num'], app),
+                        description=self.annotate(
+                            self.annotate(
+                                ticket_json['description'],
+                                owner, ticket_json[
+                                    'assigned_to'], label=' owned'),
+                            reporter, ticket_json[
+                                'reported_by'], label=' created'),
+                        created_date=dateutil.parser.parse(
+                            ticket_json['created_date']),
+                        mod_date=dateutil.parser.parse(
+                            ticket_json['mod_date']),
+                        ticket_num=ticket_json['ticket_num'],
+                        summary=ticket_json['summary'],
+                        custom_fields=ticket_json['custom_fields'],
+                        status=ticket_json['status'],
+                        labels=ticket_json['labels'],
+                        votes_down=ticket_json['votes_down'],
+                        votes_up=ticket_json['votes_up'],
+                        votes=ticket_json['votes_up'] -
+                        ticket_json['votes_down'],
+                        assigned_to_id=owner._id,
+                    )
+                    # trigger the private property
+                    ticket.private = ticket_json['private']
+                    self.process_comments(
+                        ticket, ticket_json['discussion_thread']['posts'])
                     session(ticket).flush(ticket)
                     session(ticket).expunge(ticket)
             app.globals.custom_fields = tracker_json['custom_fields']
             self.process_bins(app, tracker_json['saved_bins'])
             app.globals.last_ticket_num = self.max_ticket_num
             M.AuditLog.log(
-                    'import tool %s from exported Allura JSON' % (
-                            app.config.options.mount_point,
-                        ),
-                    project=project,
-                    user=user,
-                    url=app.url,
-                )
+                'import tool %s from exported Allura JSON' % (
+                    app.config.options.mount_point,
+                ),
+                project=project,
+                user=user,
+                url=app.url,
+            )
             g.post_event('project_updated')
             app.globals.invalidate_bin_counts()
             ThreadLocalORMSession.flush_all()
@@ -193,11 +207,15 @@ class ForgeTrackerImporter(ToolImporter):
             user = self.get_user(comment_json['author'])
             with h.push_config(c, user=user):
                 p = ticket.discussion_thread.add_post(
-                        text = self.annotate(comment_json['text'], user, comment_json['author']),
-                        ignore_security = True,
-                        timestamp = dateutil.parser.parse(comment_json['timestamp']),
-                    )
-                p.add_multiple_attachments([File(a['url']) for a in comment_json['attachments']])
+                    text=self.annotate(
+                        comment_json[
+                            'text'], user, comment_json['author']),
+                    ignore_security=True,
+                    timestamp=dateutil.parser.parse(
+                        comment_json['timestamp']),
+                )
+                p.add_multiple_attachments([File(a['url'])
+                                           for a in comment_json['attachments']])
 
     def process_bins(self, app, bins):
         TM.Bin.query.remove({'app_config_id': app.config._id})

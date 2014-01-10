@@ -34,33 +34,35 @@ import difflib
 from allura.model.session import main_orm_session
 from allura.lib import helpers as h
 
+
 class Stats(MappedClass):
+
     class __mongometa__:
-        name='basestats'
+        name = 'basestats'
         session = main_orm_session
-        unique_indexes = [ '_id']
+        unique_indexes = ['_id']
 
-    _id=FieldProperty(S.ObjectId)
+    _id = FieldProperty(S.ObjectId)
 
-    visible = FieldProperty(bool, if_missing = True)
+    visible = FieldProperty(bool, if_missing=True)
     registration_date = FieldProperty(datetime)
     general = FieldProperty([dict(
-        category = S.ObjectId,
-        messages = [dict(
-            messagetype = str,
-            created = int,
-            modified = int)],
-        tickets = dict(
-            solved = int,
-            assigned = int,
-            revoked = int,
-            totsolvingtime = int),
-        commits = [dict(
-            lines = int,
-            number = int,
-            language = S.ObjectId)])])
+        category=S.ObjectId,
+        messages=[dict(
+            messagetype=str,
+            created=int,
+            modified=int)],
+        tickets=dict(
+            solved=int,
+            assigned=int,
+            revoked=int,
+            totsolvingtime=int),
+        commits=[dict(
+            lines=int,
+            number=int,
+            language=S.ObjectId)])])
 
-    lastmonth=FieldProperty(dict(
+    lastmonth = FieldProperty(dict(
         messages=[dict(
             datetime=datetime,
             created=bool,
@@ -89,33 +91,33 @@ class Stats(MappedClass):
         The user may have registered before stats were collected,
         making calculations based on registration date unfair."""
         min_date = config.get('userstats.start_date', '0001-1-1')
-        return max(datetime.strptime(min_date,'%Y-%m-%d'), self.registration_date)
+        return max(datetime.strptime(min_date, '%Y-%m-%d'), self.registration_date)
 
     def getCodeContribution(self):
-        days=(datetime.today() - self.start_date).days
+        days = (datetime.today() - self.start_date).days
         if not days:
-            days=1
+            days = 1
         for val in self['general']:
             if val['category'] is None:
                 for commits in val['commits']:
                     if commits['language'] is None:
                         if days > 30:
-                            return round(float(commits.lines)/days*30, 2)
+                            return round(float(commits.lines) / days * 30, 2)
                         else:
                             return float(commits.lines)
         return 0
 
     def getDiscussionContribution(self):
-        days=(datetime.today() - self.start_date).days
+        days = (datetime.today() - self.start_date).days
         if not days:
-            days=1
+            days = 1
         for val in self['general']:
             if val['category'] is None:
                 for artifact in val['messages']:
                     if artifact['messagetype'] is None:
-                        tot = artifact.created+artifact.modified
+                        tot = artifact.created + artifact.modified
                         if days > 30:
-                            return round(float(tot)/days*30,2)
+                            return round(float(tot) / days * 30, 2)
                         else:
                             return float(tot)
         return 0
@@ -129,30 +131,30 @@ class Stats(MappedClass):
                 return round(float(tickets.solved) / tickets.assigned, 2)
         return 0
 
-    def getCommits(self, category = None):
-        i = getElementIndex(self.general, category = category)
+    def getCommits(self, category=None):
+        i = getElementIndex(self.general, category=category)
         if i is None:
             return dict(number=0, lines=0)
         cat = self.general[i]
-        j = getElementIndex(cat.commits, language = None)
+        j = getElementIndex(cat.commits, language=None)
         if j is None:
             return dict(number=0, lines=0)
         return dict(
             number=cat.commits[j]['number'],
             lines=cat.commits[j]['lines'])
 
-    def getArtifacts(self, category = None, art_type = None):
-        i = getElementIndex(self.general, category = category)
+    def getArtifacts(self, category=None, art_type=None):
+        i = getElementIndex(self.general, category=category)
         if i is None:
             return dict(created=0, modified=0)
         cat = self.general[i]
-        j = getElementIndex(cat.messages, messagetype = art_type)
+        j = getElementIndex(cat.messages, messagetype=art_type)
         if j is None:
             return dict(created=0, modified=0)
         return dict(created=cat.messages[j].created, modified=cat.messages[j].modified)
 
-    def getTickets(self, category = None):
-        i = getElementIndex(self.general, category = category)
+    def getTickets(self, category=None):
+        i = getElementIndex(self.general, category=category)
         if i is None:
             return dict(
                 assigned=0,
@@ -177,20 +179,20 @@ class Stats(MappedClass):
         by_cat = {}
         for entry in self.general:
             cat = entry.category
-            i = getElementIndex(entry.commits, language = None)
+            i = getElementIndex(entry.commits, language=None)
             if i is None:
                 n, lines = 0, 0
             else:
                 n, lines = entry.commits[i].number, entry.commits[i].lines
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
 
-    #For the moment, commit stats by language are not used, since each project
-    #can be linked to more than one programming language and we don't know how
-    #to which programming language should be credited a line of code modified
-    #within a project including two or more languages.
+    # For the moment, commit stats by language are not used, since each project
+    # can be linked to more than one programming language and we don't know how
+    # to which programming language should be credited a line of code modified
+    # within a project including two or more languages.
     def getCommitsByLanguage(self):
         langlist = []
         by_lang = {}
@@ -207,7 +209,7 @@ class Stats(MappedClass):
         for entry in self.general:
             cat = entry.category
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             if detailed:
                 by_cat[cat] = entry.messages
             else:
@@ -219,13 +221,13 @@ class Stats(MappedClass):
         return by_cat
 
     def getArtifactsByType(self, category=None):
-        i = getElementIndex(self.general, category = category)
+        i = getElementIndex(self.general, category=category)
         if i is None:
             return {}
         entry = self.general[i].messages
         by_type = dict([(el.messagetype, dict(created=el.created,
                                               modified=el.modified))
-                         for el in entry])
+                        for el in entry])
         return by_type
 
     def getTicketsByCategory(self):
@@ -235,7 +237,7 @@ class Stats(MappedClass):
         for entry in self.general:
             cat = entry.category
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             a, s = entry.tickets.assigned, entry.tickets.solved
             r, time = entry.tickets.solved, entry.tickets.totsolvingtime
             if s:
@@ -249,7 +251,7 @@ class Stats(MappedClass):
                 averagesolvingtime=_convertTimeDiff(average))
         return by_cat
 
-    def getLastMonthCommits(self, category = None):
+    def getLastMonthCommits(self, category=None):
         self.checkOldArtifacts()
         lineslist = [el.lines for el in self.lastmonth.commits
                      if category in el.categories + [None]]
@@ -260,8 +262,8 @@ class Stats(MappedClass):
 
         self.checkOldArtifacts()
         seen = set()
-        catlist=[el.category for el in self.general
-                 if el.category not in seen and not seen.add(el.category)]
+        catlist = [el.category for el in self.general
+                   if el.category not in seen and not seen.add(el.category)]
 
         by_cat = {}
         for cat in catlist:
@@ -270,7 +272,7 @@ class Stats(MappedClass):
             n = len(lineslist)
             lines = sum(lineslist)
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(number=n, lines=lines)
         return by_cat
 
@@ -279,8 +281,8 @@ class Stats(MappedClass):
 
         self.checkOldArtifacts()
         seen = set()
-        langlist=[el.language for el in self.general
-                  if el.language not in seen and not seen.add(el.language)]
+        langlist = [el.language for el in self.general
+                    if el.language not in seen and not seen.add(el.language)]
 
         by_lang = {}
         for lang in langlist:
@@ -289,36 +291,36 @@ class Stats(MappedClass):
             n = len(lineslist)
             lines = sum(lineslist)
             if lang != None:
-                lang = TroveCategory.query.get(_id = lang)
+                lang = TroveCategory.query.get(_id=lang)
             by_lang[lang] = dict(number=n, lines=lines)
         return by_lang
 
-    def getLastMonthArtifacts(self, category = None, art_type = None):
+    def getLastMonthArtifacts(self, category=None, art_type=None):
         self.checkOldArtifacts()
         cre, mod = reduce(
             addtuple,
-            [(int(el.created),1-int(el.created))
+            [(int(el.created), 1 - int(el.created))
                 for el in self.lastmonth.messages
                 if (category is None or category in el.categories) and
                 (el.messagetype == art_type or art_type is None)],
-            (0,0))
+            (0, 0))
         return dict(created=cre, modified=mod)
 
-    def getLastMonthArtifactsByType(self, category = None):
+    def getLastMonthArtifactsByType(self, category=None):
         self.checkOldArtifacts()
         seen = set()
-        types=[el.messagetype for el in self.lastmonth.messages
-               if el.messagetype not in seen and not seen.add(el.messagetype)]
+        types = [el.messagetype for el in self.lastmonth.messages
+                 if el.messagetype not in seen and not seen.add(el.messagetype)]
 
         by_type = {}
         for t in types:
             cre, mod = reduce(
                 addtuple,
-                [(int(el.created),1-int(el.created))
+                [(int(el.created), 1 - int(el.created))
                  for el in self.lastmonth.messages
                  if el.messagetype == t and
-                 category in [None]+el.categories],
-                (0,0))
+                 category in [None] + el.categories],
+                (0, 0))
             by_type[t] = dict(created=cre, modified=mod)
         return by_type
 
@@ -327,22 +329,22 @@ class Stats(MappedClass):
 
         self.checkOldArtifacts()
         seen = set()
-        catlist=[el.category for el in self.general
-                 if el.category not in seen and not seen.add(el.category)]
+        catlist = [el.category for el in self.general
+                   if el.category not in seen and not seen.add(el.category)]
 
         by_cat = {}
         for cat in catlist:
             cre, mod = reduce(
                 addtuple,
-                [(int(el.created),1-int(el.created))
+                [(int(el.created), 1 - int(el.created))
                  for el in self.lastmonth.messages
-                 if cat in el.categories + [None]], (0,0))
+                 if cat in el.categories + [None]], (0, 0))
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             by_cat[cat] = dict(created=cre, modified=mod)
         return by_cat
 
-    def getLastMonthTickets(self, category = None):
+    def getLastMonthTickets(self, category=None):
         from allura.model.project import TroveCategory
 
         self.checkOldArtifacts()
@@ -355,8 +357,8 @@ class Stats(MappedClass):
             [(1, el.solvingtime)
              for el in self.lastmonth.solvedtickets
              if category in el.categories + [None]],
-            (0,0))
-        if category!=None:
+            (0, 0))
+        if category != None:
             category = TroveCategory.query.get(_id=category)
         if s > 0:
             time = time / s
@@ -373,8 +375,8 @@ class Stats(MappedClass):
 
         self.checkOldArtifacts()
         seen = set()
-        catlist=[el.category for el in self.general
-                 if el.category not in seen and not seen.add(el.category)]
+        catlist = [el.category for el in self.general
+                   if el.category not in seen and not seen.add(el.category)]
         by_cat = {}
         for cat in catlist:
             a = len([el for el in self.lastmonth.assignedtickets
@@ -383,9 +385,9 @@ class Stats(MappedClass):
                      if cat in el.categories + [None]])
             s, time = reduce(addtuple, [(1, el.solvingtime)
                                         for el in self.lastmonth.solvedtickets
-                                        if cat in el.categories+[None]],(0,0))
+                                        if cat in el.categories + [None]], (0, 0))
             if cat != None:
-                cat = TroveCategory.query.get(_id = cat)
+                cat = TroveCategory.query.get(_id=cat)
             if s > 0:
                 time = time / s
             else:
@@ -436,8 +438,8 @@ class Stats(MappedClass):
 
     def addClosedTicket(self, open_datetime, close_datetime, project):
         topics = [t for t in project.trove_topic if t]
-        s_time=int((close_datetime-open_datetime).total_seconds())
-        self._updateTicketsStats(topics, 'solved', s_time = s_time)
+        s_time = int((close_datetime - open_datetime).total_seconds())
+        self._updateTicketsStats(topics, 'solved', s_time=s_time)
         self.lastmonth.solvedtickets.append(dict(
             datetime=close_datetime,
             categories=topics,
@@ -445,7 +447,7 @@ class Stats(MappedClass):
         self.checkOldArtifacts()
 
     def addCommit(self, newcommit, commit_datetime, project):
-        def _computeLines(newblob, oldblob = None):
+        def _computeLines(newblob, oldblob=None):
             if oldblob:
                 listold = list(oldblob)
             else:
@@ -462,7 +464,8 @@ class Stats(MappedClass):
                     listold, listnew,
                     ('old' + oldblob.path()).encode('utf-8'),
                     ('new' + newblob.path()).encode('utf-8'))
-                lines = len([l for l in diff if len(l) > 0 and l[0] == '+'])-1
+                lines = len(
+                    [l for l in diff if len(l) > 0 and l[0] == '+']) - 1
             else:
                 lines = 0
             return lines
@@ -506,16 +509,16 @@ class Stats(MappedClass):
             for changed in d.changed:
                 newblob = newcommit.tree.get_blob_by_path(changed)
                 oldblob = oldcommit.tree.get_blob_by_path(changed)
-                totlines+=_computeLines(newblob, oldblob)
+                totlines += _computeLines(newblob, oldblob)
 
             for copied in d.copied:
                 newblob = newcommit.tree.get_blob_by_path(copied['new'])
                 oldblob = oldcommit.tree.get_blob_by_path(copied['old'])
-                totlines+=_computeLines(newblob, oldblob)
+                totlines += _computeLines(newblob, oldblob)
 
             for added in d.added:
                 newblob = newcommit.tree.get_blob_by_path(added)
-                totlines+=_computeLines(newblob)
+                totlines += _computeLines(newblob)
 
         _addCommitData(self, topics, languages, totlines)
 
@@ -533,7 +536,7 @@ class Stats(MappedClass):
         lt = [None] + topics
         for mtype in [None, art_type]:
             for t in lt:
-                i = getElementIndex(self.general, category = t)
+                i = getElementIndex(self.general, category=t)
                 if i is None:
                     msg = dict(
                         category=t,
@@ -545,7 +548,7 @@ class Stats(MappedClass):
                             totsolvingtime=0),
                         messages=[])
                     self.general.append(msg)
-                    i = getElementIndex(self.general, category = t)
+                    i = getElementIndex(self.general, category=t)
                 j = getElementIndex(
                     self.general[i]['messages'], messagetype=mtype)
                 if j is None:
@@ -562,12 +565,12 @@ class Stats(MappedClass):
             messagetype=art_type))
         self.checkOldArtifacts()
 
-    def _updateTicketsStats(self, topics, action, s_time = None):
+    def _updateTicketsStats(self, topics, action, s_time=None):
         if action not in ['solved', 'assigned', 'revoked']:
             return
         lt = topics + [None]
         for t in lt:
-            i = getElementIndex(self.general, category = t)
+            i = getElementIndex(self.general, category=t)
             if i is None:
                 stats = dict(
                     category=t,
@@ -579,10 +582,11 @@ class Stats(MappedClass):
                         totsolvingtime=0),
                     messages=[])
                 self.general.append(stats)
-                i = getElementIndex(self.general, category = t)
+                i = getElementIndex(self.general, category=t)
             self.general[i]['tickets'][action] += 1
             if action == 'solved':
-                self.general[i]['tickets']['totsolvingtime']+=s_time
+                self.general[i]['tickets']['totsolvingtime'] += s_time
+
 
 def getElementIndex(el_list, **kw):
     for i in range(len(el_list)):
@@ -593,15 +597,17 @@ def getElementIndex(el_list, **kw):
             return i
     return None
 
+
 def addtuple(l1, l2):
     a, b = l1
     x, y = l2
-    return (a+x, b+y)
+    return (a + x, b + y)
+
 
 def _convertTimeDiff(int_seconds):
     if int_seconds is None:
         return None
-    diff = timedelta(seconds = int_seconds)
+    diff = timedelta(seconds=int_seconds)
     days, seconds = diff.days, diff.seconds
     hours = seconds / 3600
     seconds = seconds % 3600

@@ -20,6 +20,7 @@ from Queue import Queue
 
 log = logging.getLogger(__name__)
 
+
 class Connection(object):
 
     def __init__(self, hostname, port, userid, password, vhost):
@@ -36,6 +37,7 @@ class Connection(object):
     def reset(self):
         self._conn = self._connection_pool.acquire()
         self.queue = self._conn.SimpleQueue('task')
+
 
 class MockAMQ(object):
 

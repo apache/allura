@@ -24,13 +24,16 @@ from allura import model as M
 log = logging.getLogger('allura.migrate-artifact-refs')
 
 # Threads have artifact references that must be migrated to the new system
+
+
 def main():
     test = sys.argv[-1] == 'test'
     log.info('Fixing artifact references in threads')
     db = M.project_doc_session.db
     for thread in db.thread.find():
         ref = thread.pop('artifact_reference', None)
-        if ref is None: continue
+        if ref is None:
+            continue
         Artifact = loads(ref['artifact_type'])
         artifact = Artifact.query.get(_id=ref['artifact_id'])
         M.ArtifactReference.from_artifact(artifact)

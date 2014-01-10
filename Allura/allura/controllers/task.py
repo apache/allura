@@ -15,7 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
+
 class TaskController(object):
+
     '''WSGI app providing web-like RPC
 
     The purpose of this app is to allow us to replicate the
@@ -27,4 +29,4 @@ class TaskController(object):
         task = environ['task']
         result = task(restore_context=False)
         start_response('200 OK', [])
-        return [ result ]
+        return [result]

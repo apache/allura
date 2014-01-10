@@ -25,9 +25,10 @@ import ew.jinja2_ew as ew
 from allura.lib.widgets import form_fields as ffw
 from allura.lib.widgets import forms
 
+
 class TicketSearchResults(ew_core.SimpleForm):
-    template='jinja:forgetracker:templates/tracker_widgets/ticket_search_results.html'
-    defaults=dict(
+    template = 'jinja:forgetracker:templates/tracker_widgets/ticket_search_results.html'
+    defaults = dict(
         ew_core.SimpleForm.defaults,
         solr_error=None,
         count=None,
@@ -40,9 +41,9 @@ class TicketSearchResults(ew_core.SimpleForm):
         columns=None)
 
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
-        lightbox=ffw.Lightbox(name='col_list',trigger='#col_menu')
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
+        lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
     def resources(self):
         yield ew.JSLink('tracker_js/ticket-list.js')
@@ -50,9 +51,10 @@ class TicketSearchResults(ew_core.SimpleForm):
         for r in super(TicketSearchResults, self).resources():
             yield r
 
+
 class MassEdit(ew_core.SimpleForm):
-    template='jinja:forgetracker:templates/tracker_widgets/mass_edit.html'
-    defaults=dict(
+    template = 'jinja:forgetracker:templates/tracker_widgets/mass_edit.html'
+    defaults = dict(
         ew_core.SimpleForm.defaults,
         count=None,
         limit=None,
@@ -62,9 +64,9 @@ class MassEdit(ew_core.SimpleForm):
         sort=None)
 
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
-        lightbox=ffw.Lightbox(name='col_list',trigger='#col_menu')
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
+        lightbox = ffw.Lightbox(name='col_list', trigger='#col_menu')
 
     def resources(self):
         yield ew.JSLink('tracker_js/ticket-list.js')
@@ -72,9 +74,10 @@ class MassEdit(ew_core.SimpleForm):
         for r in super(MassEdit, self).resources():
             yield r
 
+
 class MassEditForm(ew_core.Widget):
-    template='jinja:forgetracker:templates/tracker_widgets/mass_edit_form.html'
-    defaults=dict(
+    template = 'jinja:forgetracker:templates/tracker_widgets/mass_edit_form.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         globals=None,
         query=None,
@@ -85,8 +88,9 @@ class MassEditForm(ew_core.Widget):
     def resources(self):
         yield ew.JSLink('tracker_js/mass-edit.js')
 
+
 class MassMoveForm(forms.MoveTicketForm):
-    defaults=dict(
+    defaults = dict(
         forms.MoveTicketForm.defaults,
         action='.')
 

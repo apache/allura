@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 
 c_forumpost = M.project_doc_session.db.forum_post
 
+
 def main():
     test = sys.argv[-1] == 'test'
 

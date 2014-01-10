@@ -24,6 +24,7 @@ from allura.model import Project, User
 from allura.tests import decorators as td
 from allura.tests import TestController
 
+
 class TestUserProfile(TestController):
 
     @td.with_user_project('test-admin')
@@ -41,7 +42,7 @@ class TestUserProfile(TestController):
         response = self.app.get('/u/test-admin/profile/')
         assert 'Email Addresses' in response
         self.app.get('/u/test-user', extra_environ=dict(
-                username='test-user'))
+            username='test-user'))
         response = self.app.get('/u/test-user/profile/')
         assert 'Email Addresses' not in response
 
@@ -71,7 +72,8 @@ class TestUserProfile(TestController):
         gen_message_id.return_value = 'id'
         test_user = User.by_username('test-user')
         test_user.set_pref('email_address', 'test-user@example.com')
-        response = self.app.get('/u/test-user/profile/send_message', status=200)
+        response = self.app.get(
+            '/u/test-user/profile/send_message', status=200)
         assert '<b>From:</b> &#34;Test Admin&#34; &lt;test-admin@users.localhost&gt;' in response
         self.app.post('/u/test-user/profile/send_user_message',
                       params={'subject': 'test subject',
@@ -101,45 +103,52 @@ class TestUserProfile(TestController):
             subject=u'test subject')
 
         check.return_value = False
-        response = self.app.get('/u/test-user/profile/send_message', status=200)
+        response = self.app.get(
+            '/u/test-user/profile/send_message', status=200)
         assert 'Sorry, messaging is rate-limited' in response
 
     @td.with_user_project('test-user')
     def test_send_message_for_anonymous(self):
         r = self.app.get('/u/test-user/profile/send_message',
-                     extra_environ={'username': '*anonymous'},
-                     status=302)
-        assert 'You must be logged in to send user messages.' in self.webflash(r)
+                         extra_environ={'username': '*anonymous'},
+                         status=302)
+        assert 'You must be logged in to send user messages.' in self.webflash(
+            r)
 
         r = self.app.post('/u/test-user/profile/send_user_message',
-                      params={'subject': 'test subject',
-                              'message': 'test message',
-                              'cc': 'on'},
-                      extra_environ={'username': '*anonymous'},
-                      status=302)
-        assert 'You must be logged in to send user messages.' in self.webflash(r)
+                          params={'subject': 'test subject',
+                                  'message': 'test message',
+                                  'cc': 'on'},
+                          extra_environ={'username': '*anonymous'},
+                          status=302)
+        assert 'You must be logged in to send user messages.' in self.webflash(
+            r)
 
     @td.with_user_project('test-user')
     def test_link_to_send_message_form(self):
-        User.by_username('test-admin').set_pref('email_address', 'admin@example.com')
-        User.by_username('test-user').set_pref('email_address', 'user@example.com')
+        User.by_username('test-admin').set_pref('email_address',
+                                                'admin@example.com')
+        User.by_username('test-user').set_pref('email_address',
+                                               'user@example.com')
         r = self.app.get('/u/test-user/profile',
                          status=200)
         assert '<a href="send_message">Send me a message</a>' in r
 
         r = self.app.get('/u/test-user/profile',
-                     extra_environ={'username': '*anonymous'},
-                     status=200)
+                         extra_environ={'username': '*anonymous'},
+                         status=200)
 
         assert '<a href="send_message">Send me a message</a>' not in r
 
     @td.with_user_project('test-user')
     def test_disable_user_messages(self):
-        User.by_username('test-admin').set_pref('email_address', 'admin@example.com')
+        User.by_username('test-admin').set_pref('email_address',
+                                                'admin@example.com')
         test_user = User.by_username('test-user')
         test_user.set_pref('email_address', 'user@example.com')
         test_user.set_pref('disable_user_messages', True)
         r = self.app.get('/u/test-user/profile')
         assert '<a href="send_message">Send me a message</a>' not in r
         r = self.app.get('/u/test-user/profile/send_message', status=302)
-        assert 'This user has disabled direct email messages' in self.webflash(r)
+        assert 'This user has disabled direct email messages' in self.webflash(
+            r)

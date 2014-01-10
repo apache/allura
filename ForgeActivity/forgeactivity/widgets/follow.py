@@ -22,8 +22,8 @@ import ew.jinja2_ew as ew
 
 
 class FollowToggle(ew.SimpleForm):
-    template='jinja:forgeactivity:templates/widgets/follow.html'
-    defaults=dict(
+    template = 'jinja:forgeactivity:templates/widgets/follow.html'
+    defaults = dict(
         ew.SimpleForm.defaults,
         thing='project',
         action='follow',

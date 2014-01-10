@@ -25,7 +25,10 @@ from allura.lib import plugin, exceptions
 from ming.orm import session
 
 # Example usage:
-# paster set-neighborhood-features development.ini 4f50c898610b270c92000286 max_projects 50
+# paster set-neighborhood-features development.ini
+# 4f50c898610b270c92000286 max_projects 50
+
+
 class SetNeighborhoodFeaturesCommand(base.Command):
     min_args = 4
     max_args = 4
@@ -50,40 +53,40 @@ class SetNeighborhoodFeaturesCommand(base.Command):
         except ValueError:
             n_value = self.args[3]
         if n_feature not in ["max_projects", "css", "google_analytics", "private_projects"]:
-            raise exceptions.NoSuchNBFeatureError("%s is not a valid " \
-                "neighborhood feature. The valid features are \"max_projects\", " \
-                "\"css\", \"google_analytics\" and \"private_projects\"" % n_feature)
+            raise exceptions.NoSuchNBFeatureError("%s is not a valid "
+                                                  "neighborhood feature. The valid features are \"max_projects\", "
+                                                  "\"css\", \"google_analytics\" and \"private_projects\"" % n_feature)
 
         n = M.Neighborhood.query.get(name=n_id)
         if not n:
             n = M.Neighborhood.query.get(_id=ObjectId(n_id))
 
         if not n:
-            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s " \
-                "could not be found in the database" % n_id)
+            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s "
+                                                     "could not be found in the database" % n_id)
         else:
             if n_feature == "max_projects":
                 if isinstance(n_value, int) or n_value is None:
                     n.features['max_projects'] = n_value
                 else:
-                    raise exceptions.InvalidNBFeatureValueError("max_projects must be " \
-                        "an int or None.")
+                    raise exceptions.InvalidNBFeatureValueError("max_projects must be "
+                                                                "an int or None.")
             elif n_feature == "css":
                 if n_value in ['none', 'custom', 'picker']:
                     n.features['css'] = n_value
                 else:
-                    raise exceptions.InvalidNBFeatureValueError("css must be " \
-                        "'none', 'custom', or 'picker'")
+                    raise exceptions.InvalidNBFeatureValueError("css must be "
+                                                                "'none', 'custom', or 'picker'")
             elif n_feature == "google_analytics":
                 if isinstance(n_value, bool):
                     n.features['google_analytics'] = n_value
                 else:
-                    raise exceptions.InvalidNBFeatureValueError("google_analytics must be " \
-                        "a boolean")
+                    raise exceptions.InvalidNBFeatureValueError("google_analytics must be "
+                                                                "a boolean")
             else:
                 if isinstance(n_value, bool):
                     n.features['private_projects'] = n_value
                 else:
-                    raise exceptions.InvalidNBFeatureValueError("private_projects must be " \
-                        "a boolean")
+                    raise exceptions.InvalidNBFeatureValueError("private_projects must be "
+                                                                "a boolean")
             session(M.Neighborhood).flush()

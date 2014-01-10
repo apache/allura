@@ -58,20 +58,23 @@ from .base import BaseController
 
 log = logging.getLogger(__name__)
 
+
 def on_import():
     BranchBrowser.CommitBrowserClass = CommitBrowser
     CommitBrowser.TreeBrowserClass = TreeBrowser
     TreeBrowser.FileBrowserClass = FileBrowser
 
+
 class RepoRootController(BaseController, FeedController):
     _discuss = AppDiscussionController()
-    commit_browser_widget=SCMCommitBrowserWidget()
+    commit_browser_widget = SCMCommitBrowserWidget()
 
     def get_feed(self, project, app, user):
         query = dict(project_id=project._id, app_config_id=app.config._id)
-        pname, repo =  (project.shortname, app.config.options.mount_label)
+        pname, repo = (project.shortname, app.config.options.mount_label)
         title = '%s %s changes' % (pname, repo)
-        description = 'Recent changes to %s repository in %s project' % (repo, pname)
+        description = 'Recent changes to %s repository in %s project' % (
+            repo, pname)
         return FeedArgs(query, title, app.url, description=description)
 
     def _check_security(self):
@@ -81,7 +84,7 @@ class RepoRootController(BaseController, FeedController):
     @expose()
     def index(self, offset=0, branch=None, **kw):
         if branch is None:
-            branch=c.app.default_branch_name
+            branch = c.app.default_branch_name
         redirect(c.app.repo.url_for_commit(branch, url_type='ref'))
 
     @with_trailing_slash
@@ -94,7 +97,8 @@ class RepoRootController(BaseController, FeedController):
                 repo_path_parts = f.url().strip('/').split('/')
                 links.append(dict(
                     repo_url=f.url(),
-                    repo = '%s / %s' % (repo_path_parts[1], repo_path_parts[-1]),
+                    repo='%s / %s' % (repo_path_parts[1],
+                                      repo_path_parts[-1]),
                 ))
         return dict(links=links)
 
@@ -112,13 +116,15 @@ class RepoRootController(BaseController, FeedController):
     def fork(self, project_id=None, mount_point=None, mount_label=None, **kw):
         # this shows the form and handles the submission
         security.require_authenticated()
-        if not c.app.forkable: raise exc.HTTPNotFound
+        if not c.app.forkable:
+            raise exc.HTTPNotFound
         from_repo = c.app.repo
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         from_project = c.project
         to_project = M.Project.query.get(_id=ObjectId(project_id))
-        mount_label = mount_label or '%s - %s' % (c.project.name, c.app.config.options.mount_label)
+        mount_label = mount_label or '%s - %s' % (c.project.name,
+                                                  c.app.config.options.mount_label)
         mount_point = (mount_point or from_project.shortname)
         if request.method != 'POST' or not mount_point:
             return dict(from_repo=from_repo,
@@ -137,7 +143,7 @@ class RepoRootController(BaseController, FeedController):
                         mount_label=mount_label,
                         cloned_from_project_id=from_project._id,
                         cloned_from_repo_id=from_repo._id)
-                    redirect(to_project.url()+mount_point+'/')
+                    redirect(to_project.url() + mount_point + '/')
                 except exc.HTTPRedirection:
                     raise
                 except Exception, ex:
@@ -169,15 +175,15 @@ class RepoRootController(BaseController, FeedController):
         with c.app.repo.push_upstream_context():
             target_branch = c.app.default_branch_name
         return {
-                'source_branch': source_branch,
-                'target_branch': target_branch,
-            }
+            'source_branch': source_branch,
+            'target_branch': target_branch,
+        }
 
     @expose()
     @require_post()
     def do_request_merge(self, **kw):
         kw = self.mr_widget.to_python(kw)
-        downstream=dict(
+        downstream = dict(
             project_id=c.project._id,
             mount_point=c.app.config.options.mount_point,
             commit_id=c.app.repo.commit(kw['source_branch'])._id)
@@ -214,8 +220,9 @@ class RepoRootController(BaseController, FeedController):
     @without_trailing_slash
     @expose('json:')
     def commit_browser_data(self, **kw):
-        head_ids = [ head.object_id for head in c.app.repo.get_heads() ]
-        commit_ids = [c.app.repo.rev_to_commit_id(r) for r in c.app.repo.log(head_ids, id_only=True)]
+        head_ids = [head.object_id for head in c.app.repo.get_heads()]
+        commit_ids = [c.app.repo.rev_to_commit_id(r)
+                      for r in c.app.repo.log(head_ids, id_only=True)]
         log.info('Grab %d commit objects by ID', len(commit_ids))
         commits_by_id = {
             c_obj._id: c_obj
@@ -232,25 +239,27 @@ class RepoRootController(BaseController, FeedController):
         result = []
         for row, oid in enumerate(topo_sort(children, parents, dates, head_ids)):
             ci = commits_by_id[oid]
-            url=c.app.repo.url_for_commit(Object(_id=oid))
+            url = c.app.repo.url_for_commit(Object(_id=oid))
             msg_split = ci.message.splitlines()
             if msg_split:
                 msg = msg_split[0]
             else:
                 msg = "No commit message."
             result.append(dict(
-                    oid=oid,
-                    short_id=c.app.repo.shorthand_for_commit(oid),
-                    row=row,
-                    parents=ci.parent_ids,
-                    message=msg,
-                    url=url))
+                oid=oid,
+                short_id=c.app.repo.shorthand_for_commit(oid),
+                row=row,
+                parents=ci.parent_ids,
+                message=msg,
+                url=url))
         log.info('...done')
         col_idx = {}
         columns = []
+
         def find_column(columns):
-            for i,c in enumerate(columns):
-                if c is None: return i
+            for i, c in enumerate(columns):
+                if c is None:
+                    return i
             columns.append(None)
             return len(columns) - 1
         for row, ci_json in enumerate(result):
@@ -263,14 +272,15 @@ class RepoRootController(BaseController, FeedController):
             ci_json['column'] = colno
             for p in parents[oid]:
                 p_col = col_idx.get(p, None)
-                if p_col is not None: continue
+                if p_col is not None:
+                    continue
                 p_col = find_column(columns)
                 col_idx[p] = p_col
                 columns[p_col] = p
         built_tree = dict(
-                (ci_json['oid'], ci_json) for ci_json in result)
+            (ci_json['oid'], ci_json) for ci_json in result)
         return dict(
-            commits=[ ci_json['oid'] for ci_json in result ],
+            commits=[ci_json['oid'] for ci_json in result],
             built_tree=built_tree,
             next_column=len(columns),
             max_row=row)
@@ -279,7 +289,9 @@ class RepoRootController(BaseController, FeedController):
     def status(self, **kw):
         return dict(status=c.app.repo.status)
 
+
 class RepoRestController(RepoRootController):
+
     @expose('json:')
     def index(self, **kw):
         all_commits = c.app.repo._impl.new_commits(all_commits=True)
@@ -292,7 +304,7 @@ class RepoRestController(RepoRootController):
         return {
             'commits': [
                 {
-                    'parents': [{'id':p} for p in commit['parents']],
+                    'parents': [{'id': p} for p in commit['parents']],
                     'url': c.app.repo.url_for_commit(commit['id']),
                     'id': commit['id'],
                     'message': commit['message'],
@@ -302,17 +314,18 @@ class RepoRestController(RepoRootController):
                     'author': {
                         'name': commit['authored']['name'],
                         'email': commit['authored']['email'],
-                        },
+                    },
                     'committer': {
                         'name': commit['committed']['name'],
                         'email': commit['committed']['email'],
                     },
                 }
-            for commit in revisions
-        ]}
+                for commit in revisions
+            ]}
+
 
 class MergeRequestsController(object):
-    mr_filter=SCMMergeRequestFilterWidget()
+    mr_filter = SCMMergeRequestFilterWidget()
 
     @expose('jinja:allura:templates/repo/merge_requests.html')
     @validate(mr_filter)
@@ -328,18 +341,20 @@ class MergeRequestsController(object):
     def _lookup(self, num, *remainder):
         return MergeRequestController(num), remainder
 
+
 class MergeRequestController(object):
-    log_widget=SCMLogWidget(show_paging=False)
-    thread_widget=w.Thread(
+    log_widget = SCMLogWidget(show_paging=False)
+    thread_widget = w.Thread(
         page=None, limit=None, page_size=None, count=None,
         style='linear')
-    mr_dispose_form=SCMMergeRequestDisposeWidget()
+    mr_dispose_form = SCMMergeRequestDisposeWidget()
 
     def __init__(self, num):
         self.req = M.MergeRequest.query.get(
             app_config_id=c.app.config._id,
             request_number=int(num))
-        if self.req is None: raise exc.HTTPNotFound
+        if self.req is None:
+            raise exc.HTTPNotFound
 
     @expose('jinja:allura:templates/repo/merge_request.html')
     def index(self, page=0, limit=250, **kw):
@@ -349,7 +364,7 @@ class MergeRequestController(object):
         with self.req.push_downstream_context():
             downstream_app = c.app
         return dict(
-            downstream_app = downstream_app,
+            downstream_app=downstream_app,
             req=self.req,
             page=page,
             limit=limit,
@@ -376,8 +391,9 @@ class RefsController(object):
         if EOR in remainder:
             i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
             ref = '/'.join((ref,) + remainder[:i])
-            remainder = remainder[i+1:]
+            remainder = remainder[i + 1:]
         return self.BranchBrowserClass(ref), remainder
+
 
 class CommitsController(object):
 
@@ -387,11 +403,12 @@ class CommitsController(object):
         if EOR in remainder:
             i = remainder.index(quote(c.app.END_OF_REF_ESCAPE))
             ci = '/'.join((ci,) + remainder[:i])
-            remainder = remainder[i+1:]
+            remainder = remainder[i + 1:]
         return CommitBrowser(ci), remainder
 
+
 class BranchBrowser(BaseController):
-    CommitBrowserClass=None
+    CommitBrowserClass = None
 
     def __init__(self, branch):
         self._branch = branch
@@ -415,11 +432,12 @@ class BranchBrowser(BaseController):
         ci = c.app.repo.commit(self._branch)
         redirect(ci.url() + 'log/')
 
+
 class CommitBrowser(BaseController):
-    TreeBrowserClass=None
+    TreeBrowserClass = None
     revision_widget = SCMRevisionWidget()
-    log_widget=SCMLogWidget()
-    page_list=ffw.PageList()
+    log_widget = SCMLogWidget()
+    page_list = ffw.PageList()
     DEFAULT_PAGE_LIMIT = 25
 
     def __init__(self, revision):
@@ -442,11 +460,11 @@ class CommitBrowser(BaseController):
         tree = self._commit.tree
         limit, page, start = g.handle_paging(limit, page,
                                              default=self.DEFAULT_PAGE_LIMIT)
-        diffs = self._commit.paged_diffs(start=start, end=start+limit)
+        diffs = self._commit.paged_diffs(start=start, end=start + limit)
         result['artifacts'] = [
-                (t,f) for t in ('added', 'removed', 'changed', 'copied')
-                    for f in diffs[t]
-                        if t == 'removed' or tree.get_blob_by_path(f)]
+            (t, f) for t in ('added', 'removed', 'changed', 'copied')
+            for f in diffs[t]
+            if t == 'removed' or tree.get_blob_by_path(f)]
         count = diffs['total']
         result.update(dict(page=page, limit=limit, count=count))
         return result
@@ -478,7 +496,6 @@ class CommitBrowser(BaseController):
         rev = self._commit.url().split('/')[-2]
         return dict(status=c.app.repo.get_tarball_status(rev, path))
 
-
     @expose('jinja:allura:templates/repo/log.html')
     @with_trailing_slash
     @validate(dict(page=validators.Int(if_empty=0, if_invalid=0),
@@ -488,10 +505,10 @@ class CommitBrowser(BaseController):
         if path:
             is_file = c.app.repo.is_file(path, self._commit._id)
         commits = list(islice(c.app.repo.log(
-                revs=self._commit._id,
-                path=path,
-                id_only=False,
-                page_size=limit+1), limit+1))
+            revs=self._commit._id,
+            path=path,
+            id_only=False,
+            page_size=limit + 1), limit + 1))
         next_commit = None
         if len(commits) > limit:
             next_commit = commits.pop()
@@ -509,7 +526,7 @@ class CommitBrowser(BaseController):
 
 class TreeBrowser(BaseController, DispatchIndex):
     tree_widget = SCMTreeWidget()
-    FileBrowserClass=None
+    FileBrowserClass = None
     subscribe_form = SubscribeForm()
 
     def __init__(self, commit, tree, path='', parent=None):
@@ -592,10 +609,12 @@ class FileBrowser(BaseController):
         if kw.pop('format', 'html') == 'raw':
             return self.raw()
         elif 'diff' in kw:
-            tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/diff.html')
+            tg.decorators.override_template(
+                self.index, 'jinja:allura:templates/repo/diff.html')
             return self.diff(kw['diff'], kw.pop('diformat', None))
         elif 'barediff' in kw:
-            tg.decorators.override_template(self.index, 'jinja:allura:templates/repo/barediff.html')
+            tg.decorators.override_template(
+                self.index, 'jinja:allura:templates/repo/barediff.html')
             return self.diff(kw['barediff'], kw.pop('diformat', None))
         else:
             force_display = 'force' in kw
@@ -607,7 +626,7 @@ class FileBrowser(BaseController):
                 prev=context.get('prev', None),
                 next=context.get('next', None),
                 force_display=force_display
-                )
+            )
 
     @expose()
     def raw(self, **kw):
@@ -655,17 +674,20 @@ class FileBrowser(BaseController):
             diff = ''.join(difflib.unified_diff(la, lb, adesc, bdesc))
         return dict(a=a, b=b, diff=diff)
 
+
 def topo_sort(children, parents, dates, head_ids):
     to_visit = sorted(list(set(head_ids)), key=lambda x: dates[x])
     visited = set()
     while to_visit:
         next = to_visit.pop()
-        if next in visited: continue
+        if next in visited:
+            continue
         visited.add(next)
         yield next
         for p in parents[next]:
             for c in children[p]:
-                if c not in visited: break
+                if c not in visited:
+                    break
             else:
                 to_visit.append(p)
 

@@ -53,12 +53,13 @@ http://www.open.collab.net/nonav/community/cif/csfe/50/javadoc/index.html?com/co
 '''
 
 options = None
-s = None # security token
-client = None # main api client
+s = None  # security token
+client = None  # main api client
 users = {}
 
 cj = CookieJar()
 loggedInOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+
 
 def make_client(api_url, app):
     return Client(api_url + app + '?wsdl', location=api_url + app)
@@ -66,7 +67,7 @@ def make_client(api_url, app):
 
 def main():
     global options, s, client, users
-    defaults=dict(
+    defaults = dict(
         api_url=None,
         attachment_url='/sf/%s/do/%s/',
         default_wiki_text='PRODUCT NAME HERE',
@@ -86,7 +87,7 @@ def main():
         config = ConfigParser()
         config.read(options.config_file)
         defaults.update(
-            (k, eval(v)) for k,v in config.items('teamforge-import'))
+            (k, eval(v)) for k, v in config.items('teamforge-import'))
         optparser = get_parser(defaults)
         options, project_ids = optparser.parse_args()
 
@@ -99,12 +100,16 @@ def main():
         client = make_client(options.api_url, 'CollabNet')
         api_v = client.service.getApiVersion()
         if not api_v.startswith('5.4.'):
-            log.warning('Unexpected API Version %s.  May not work correctly.' % api_v)
+            log.warning('Unexpected API Version %s.  May not work correctly.' %
+                        api_v)
 
-        s = client.service.login(options.username, options.password or getpass('Password: '))
+        s = client.service.login(
+            options.username, options.password or getpass('Password: '))
         teamforge_v = client.service.getVersion(s)
         if not teamforge_v.startswith('5.4.'):
-            log.warning('Unexpected TeamForge Version %s.  May not work correctly.' % teamforge_v)
+            log.warning(
+                'Unexpected TeamForge Version %s.  May not work correctly.' %
+                teamforge_v)
 
     if options.load:
         if not options.neighborhood:
@@ -114,7 +119,8 @@ def main():
             nbhd = M.Neighborhood.query.get(name=options.neighborhood)
         except:
             log.exception('error querying mongo')
-            log.error('This should be run as "paster script production.ini ../scripts/teamforge-import.py -- ...options.."')
+            log.error(
+                'This should be run as "paster script production.ini ../scripts/teamforge-import.py -- ...options.."')
             return
         assert nbhd
 
@@ -135,7 +141,8 @@ def main():
         if options.extract:
             try:
                 project = client.service.getProjectData(s, pid)
-                log.info('Project: %s %s %s' % (project.id, project.title, project.path))
+                log.info('Project: %s %s %s' %
+                         (project.id, project.title, project.path))
                 out_dir = os.path.join(options.output_dir, project.id)
                 if not os.path.exists(out_dir):
                     os.mkdir(out_dir)
@@ -159,13 +166,15 @@ def main():
             except:
                 log.exception('Error creating %s' % pid)
 
+
 def load_users():
     ''' load the users data from file, if it hasn't been already '''
     global users
     user_filename = os.path.join(options.output_dir, 'users.json')
     if not users and os.path.exists(user_filename):
         with open(user_filename) as user_file:
-            users = json.load(user_file, object_hook=Object) # Object for attribute access
+            # Object for attribute access
+            users = json.load(user_file, object_hook=Object)
 
 
 def save_user(usernames):
@@ -179,7 +188,8 @@ def save_user(usernames):
             user_data = client.service.getUserData(s, username)
             users[username] = Object(user_data)
             if users[username].status != 'Active':
-                log.warn('user: %s status: %s' % (username, users[username].status))
+                log.warn('user: %s status: %s' %
+                         (username, users[username].status))
 
 
 def get_project(project):
@@ -187,7 +197,7 @@ def get_project(project):
     cats = make_client(options.api_url, 'CategorizationApp')
 
     data = client.service.getProjectData(s, project.id)
-    access_level = { 1: 'public', 4: 'private', 3: 'gated community'}[
+    access_level = {1: 'public', 4: 'private', 3: 'gated community'}[
         client.service.getProjectAccessLevel(s, project.id)
     ]
     admins = client.service.listProjectAdmins(s, project.id).dataRows
@@ -195,14 +205,14 @@ def get_project(project):
     groups = client.service.getProjectGroupList(s, project.id).dataRows
     categories = cats.service.getProjectCategories(s, project.id).dataRows
     save(json.dumps(dict(
-            data = dict(data),
-            access_level = access_level,
-            admins = map(dict, admins),
-            members = map(dict, members),
-            groups = map(dict, groups),
-            categories = map(dict, categories),
-        ), default=str),
-        project, project.id+'.json')
+        data=dict(data),
+        access_level=access_level,
+        admins=map(dict, admins),
+        members=map(dict, members),
+        groups=map(dict, groups),
+        categories=map(dict, categories),
+    ), default=str),
+        project, project.id + '.json')
 
     if len(groups):
         log.warn('Project has groups %s' % groups)
@@ -215,6 +225,7 @@ def get_project(project):
     save_user(data.createdBy)
     save_user(u.userName for u in admins)
     save_user(u.userName for u in members)
+
 
 def get_user(orig_username):
     'returns an allura User object'
@@ -239,7 +250,7 @@ def get_user(orig_username):
                    email=user.email.lower().encode('utf-8'),
                    realname=user.fullName.encode('utf-8'),
                    status='A' if user.status == 'Active' else 'D',
-                   language=275, # english trove id
+                   language=275,  # english trove id
                    timezone=user.timeZone,
                    user_pw=''.join(random.sample(string.printable, 32)),
                    unix_pw=''.join(random.sample(string.printable, 32)),
@@ -247,11 +258,15 @@ def get_user(orig_username):
                    mail_siteupdates=0,
                    add_date=int(time.time()),
                    )
-        user_id = sqlalchemy.select([T.users.c.user_id], T.users.c.user_name==sf_username).execute().fetchone().user_id
+        user_id = sqlalchemy.select(
+            [T.users.c.user_id], T.users.c.user_name == sf_username).execute().fetchone().user_id
         npref = T.user_preferences.insert()
-        npref.execute(user_id=user_id, preference_name='country', preference_value='US')
-        npref.execute(user_id=user_id, preference_name='opt_research', preference_value=0)
-        npref.execute(user_id=user_id, preference_name='opt_thirdparty', preference_value=0)
+        npref.execute(user_id=user_id, preference_name='country',
+                      preference_value='US')
+        npref.execute(user_id=user_id,
+                      preference_name='opt_research', preference_value=0)
+        npref.execute(user_id=user_id,
+                      preference_name='opt_thirdparty', preference_value=0)
 
         new_audit = T.audit_trail_user.insert()
         new_audit.execute(
@@ -267,10 +282,11 @@ def get_user(orig_username):
     assert u
     return u
 
+
 def convert_project_shortname(teamforge_path):
     'convert from TeamForge to SF, and validate early'
     tf_shortname = teamforge_path.split('.')[-1]
-    sf_shortname = tf_shortname.replace('_','-')
+    sf_shortname = tf_shortname.replace('_', '-')
 
     # FIXME hardcoded translations
     sf_shortname = {
@@ -281,46 +297,51 @@ def convert_project_shortname(teamforge_path):
     }.get(sf_shortname, sf_shortname)
 
     if not 3 <= len(sf_shortname) <= 15:
-        raise ValueError('Project name length must be between 3 & 15, inclusive: %s (%s)' %
-                         (sf_shortname, len(sf_shortname)))
+        raise ValueError(
+            'Project name length must be between 3 & 15, inclusive: %s (%s)' %
+            (sf_shortname, len(sf_shortname)))
     return sf_shortname
 
 
 # FIXME hardcoded
 skip_perms_usernames = set([
-    'faisal_saeed','dsarkisian','debonairamit','nishanthiremath','Bhuvnesh','bluetooth','cnkurzke','makow2','jannes1','Joel_Hegberg','Farroc','brian_chen','eirikur',
-    'dmitry_flyorov','bipingm','MornayJo','ibv','b_weisshaar','k9srb','johnmmills','a_gomolitsky','filim','kapoor','ljzegers','jrukes','dwilson9','jlin','quickie',
-    'johnbell','nnikolenko','Gaetan','Giannetta','Katia','jackhan','jacobwangus','adwankar','dinobrusco','qbarnes','ilmojung','clifford_chan','nbaig','fhutchi1',
-    'rinofarina','baiyanbin','muralidhar','duanyiruo','bredding','mkolkey','manvith','nanduk','engyihan','deepsie','dabon','dino_jiang','mattrose','peter_j_wilhelm',
-    'emx2500','jmcguire','lfilimowski','guruppandit','abhilashisme','edwinhm','rabbi','ferrans','guna','kevin_robinson','adathiruthi','kochen','onehap','kalanithi',
-    'jamesn','obu001','chetanv','Avinash','HugoBoss','Han_Wei','mhooper','g16872','mfcarignano','jim_burke','kevin','arunkarra','adam_feng','pavan_scm','kostya_katz',
-    'ppazderka','eileenzhuang','pyammine','judyho','ashoykh','rdemento','ibrahim','min_wang','arvind_setlur','moorthy_karthik','daniel_nelson','dms','esnmurthy',
-    'rasa_bonyadlou','prashantjoshi','edkeating','billsaez','cambalindo','jims','bozkoyun','andry_deltsov','bpowers','manuel_milli','maryparsons','spriporov','yutianli',
-    'xiebin','tnemeth1','udayaps','zzzzuser','timberger','sbarve1','zarman','rwallace67','thangavelu_arum','yuhuaixie','tingup','sekchai','sasanplus','rupal','sebastien_hertz',
-    'sab8123','rony_lim','slava_kirillin','smwest','wendydu_yq','sco002','RonFred','spatnala','vd','Sunny','tthompson','sunijams','slaw','rodovich','zhangqingqi82','venki',
-    'yuntaom','xiaojin','walterciocosta','straus','Thomas','stupka','wangyu','yaowang','wisekb','tyler_louie','smartgarfield','shekar_mahalingam',
-    'venkata_akella','v_yellapragada','vavasthi','rpatel','zhengfang','sweetybala','vap','sergey','ymhuang','spatel78745'
+    'faisal_saeed', 'dsarkisian', 'debonairamit', 'nishanthiremath', 'Bhuvnesh', 'bluetooth', 'cnkurzke', 'makow2', 'jannes1', 'Joel_Hegberg', 'Farroc', 'brian_chen', 'eirikur',
+    'dmitry_flyorov', 'bipingm', 'MornayJo', 'ibv', 'b_weisshaar', 'k9srb', 'johnmmills', 'a_gomolitsky', 'filim', 'kapoor', 'ljzegers', 'jrukes', 'dwilson9', 'jlin', 'quickie',
+    'johnbell', 'nnikolenko', 'Gaetan', 'Giannetta', 'Katia', 'jackhan', 'jacobwangus', 'adwankar', 'dinobrusco', 'qbarnes', 'ilmojung', 'clifford_chan', 'nbaig', 'fhutchi1',
+    'rinofarina', 'baiyanbin', 'muralidhar', 'duanyiruo', 'bredding', 'mkolkey', 'manvith', 'nanduk', 'engyihan', 'deepsie', 'dabon', 'dino_jiang', 'mattrose', 'peter_j_wilhelm',
+    'emx2500', 'jmcguire', 'lfilimowski', 'guruppandit', 'abhilashisme', 'edwinhm', 'rabbi', 'ferrans', 'guna', 'kevin_robinson', 'adathiruthi', 'kochen', 'onehap', 'kalanithi',
+    'jamesn', 'obu001', 'chetanv', 'Avinash', 'HugoBoss', 'Han_Wei', 'mhooper', 'g16872', 'mfcarignano', 'jim_burke', 'kevin', 'arunkarra', 'adam_feng', 'pavan_scm', 'kostya_katz',
+    'ppazderka', 'eileenzhuang', 'pyammine', 'judyho', 'ashoykh', 'rdemento', 'ibrahim', 'min_wang', 'arvind_setlur', 'moorthy_karthik', 'daniel_nelson', 'dms', 'esnmurthy',
+    'rasa_bonyadlou', 'prashantjoshi', 'edkeating', 'billsaez', 'cambalindo', 'jims', 'bozkoyun', 'andry_deltsov', 'bpowers', 'manuel_milli', 'maryparsons', 'spriporov', 'yutianli',
+    'xiebin', 'tnemeth1', 'udayaps', 'zzzzuser', 'timberger', 'sbarve1', 'zarman', 'rwallace67', 'thangavelu_arum', 'yuhuaixie', 'tingup', 'sekchai', 'sasanplus', 'rupal', 'sebastien_hertz',
+    'sab8123', 'rony_lim', 'slava_kirillin', 'smwest', 'wendydu_yq', 'sco002', 'RonFred', 'spatnala', 'vd', 'Sunny', 'tthompson', 'sunijams', 'slaw', 'rodovich', 'zhangqingqi82', 'venki',
+    'yuntaom', 'xiaojin', 'walterciocosta', 'straus', 'Thomas', 'stupka', 'wangyu', 'yaowang', 'wisekb', 'tyler_louie', 'smartgarfield', 'shekar_mahalingam',
+    'venkata_akella', 'v_yellapragada', 'vavasthi', 'rpatel', 'zhengfang', 'sweetybala', 'vap', 'sergey', 'ymhuang', 'spatel78745'
 ])
+
 
 def create_project(pid, nbhd):
     M.session.artifact_orm_session._get().skip_mod_date = True
-    data = loadjson(pid, pid+'.json')
-    #pprint(data)
+    data = loadjson(pid, pid + '.json')
+    # pprint(data)
     log.info('Loading: %s %s %s' % (pid, data.data.title, data.data.path))
     shortname = convert_project_shortname(data.data.path)
 
-    project = M.Project.query.get(shortname=shortname, neighborhood_id=nbhd._id)
+    project = M.Project.query.get(
+        shortname=shortname, neighborhood_id=nbhd._id)
     if not project:
         private = (data.access_level == 'private')
         log.debug('Creating %s private=%s' % (shortname, private))
-        one_admin = [u.userName for u in data.admins if u.status == 'Active'][0]
+        one_admin = [
+            u.userName for u in data.admins if u.status == 'Active'][0]
         project = nbhd.register_project(shortname,
                                         get_user(one_admin),
                                         project_name=data.data.title,
                                         private_project=private)
     project.notifications_disabled = True
     project.short_description = data.data.description
-    project.last_updated = datetime.strptime(data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
+    project.last_updated = datetime.strptime(
+        data.data.lastModifiedDate, '%Y-%m-%d %H:%M:%S')
     M.main_orm_session.flush(project)
     # TODO: push last_updated to gutenberg?
     # TODO: try to set createdDate?
@@ -335,7 +356,7 @@ def create_project(pid, nbhd):
         user = get_user(admin.userName)
         c.user = user
         pr = M.ProjectRole.by_user(user, project=project, upsert=True)
-        pr.roles = [ role_admin._id ]
+        pr.roles = [role_admin._id]
         ThreadLocalORMSession.flush_all()
     role_developer = M.ProjectRole.by_name('Developer', project)
     for member in data.members:
@@ -346,19 +367,20 @@ def create_project(pid, nbhd):
             continue
         user = get_user(member.userName)
         pr = M.ProjectRole.by_user(user, project=project, upsert=True)
-        pr.roles = [ role_developer._id ]
+        pr.roles = [role_developer._id]
         ThreadLocalORMSession.flush_all()
-    project.labels = [cat.path.split('projects/categorization.root.')[1] for cat in data.categories]
+    project.labels = [cat.path.split('projects/categorization.root.')[1]
+                      for cat in data.categories]
     icon_file = 'emsignia-MOBILITY-red.png'
     if 'nsn' in project.labels or 'msi' in project.labels:
         icon_file = 'emsignia-SOLUTIONS-blue.gif'
     if project.icon:
         M.ProjectFile.remove(dict(project_id=project._id, category='icon'))
-    with open(os.path.join('..','scripts',icon_file)) as fp:
+    with open(os.path.join('..', 'scripts', icon_file)) as fp:
         M.ProjectFile.save_image(
             icon_file, fp, content_type=utils.guess_mime_type(icon_file),
-            square=True, thumbnail_size=(48,48),
-            thumbnail_meta=dict(project_id=project._id,category='icon'))
+            square=True, thumbnail_size=(48, 48),
+            thumbnail_meta=dict(project_id=project._id, category='icon'))
     ThreadLocalORMSession.flush_all()
 
     dirs = os.listdir(os.path.join(options.output_dir, pid))
@@ -378,11 +400,14 @@ def create_project(pid, nbhd):
     ThreadLocalORMSession.flush_all()
     return project
 
+
 def import_wiki(project, pid, nbhd):
     from forgewiki import model as WM
+
     def upload_attachments(page, pid, beginning):
         dirpath = os.path.join(options.output_dir, pid, 'wiki', beginning)
-        if not os.path.exists(dirpath): return
+        if not os.path.exists(dirpath):
+            return
         files = os.listdir(dirpath)
         for f in files:
             with open(os.path.join(options.output_dir, pid, 'wiki', beginning, f)) as fp:
@@ -437,11 +462,13 @@ def import_wiki(project, pid, nbhd):
                 page_data = loadjson(pid, 'wiki', page)
                 content = load(pid, 'wiki', markdown_file)
                 if page == 'HomePage.json':
-                    globals = WM.Globals.query.get(app_config_id=wiki_app.config._id)
+                    globals = WM.Globals.query.get(
+                        app_config_id=wiki_app.config._id)
                     if globals is not None:
                         globals.root = page_data.title
                     else:
-                        globals = WM.Globals(app_config_id=wiki_app.config._id, root=page_data.title)
+                        globals = WM.Globals(
+                            app_config_id=wiki_app.config._id, root=page_data.title)
                 p = WM.Page.upsert(page_data.title)
                 p.viewable_by = ['all']
                 p.text = wiki2markdown(content)
@@ -450,6 +477,7 @@ def import_wiki(project, pid, nbhd):
                 if not p.history().first():
                     p.commit()
     ThreadLocalORMSession.flush_all()
+
 
 def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
     from forgediscussion import model as DM
@@ -471,21 +499,25 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
         M.ACE.allow(role_admin, 'configure'),
         M.ACE.allow(role_admin, 'admin')]
     ThreadLocalORMSession.flush_all()
-    DM.Forum.query.remove(dict(app_config_id=discuss_app.config._id,shortname='general'))
+    DM.Forum.query.remove(
+        dict(app_config_id=discuss_app.config._id, shortname='general'))
     forums = os.listdir(os.path.join(options.output_dir, pid, 'forum'))
     for forum in forums:
         ending = forum[-5:]
         forum_name = forum[:-5]
         if '.json' == ending and forum_name in forums:
             forum_data = loadjson(pid, 'forum', forum)
-            fo = DM.Forum.query.get(shortname=forum_name, app_config_id=discuss_app.config._id)
+            fo = DM.Forum.query.get(
+                shortname=forum_name, app_config_id=discuss_app.config._id)
             if not fo:
-                fo = DM.Forum(app_config_id=discuss_app.config._id, shortname=forum_name)
+                fo = DM.Forum(app_config_id=discuss_app.config._id,
+                              shortname=forum_name)
             fo.name = forum_data.title
             fo.description = forum_data.description
             fo_num_topics = 0
             fo_num_posts = 0
-            topics = os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name))
+            topics = os.listdir(os.path.join(options.output_dir, pid, 'forum',
+                                forum_name))
             for topic in topics:
                 ending = topic[-5:]
                 topic_name = topic[:-5]
@@ -508,37 +540,47 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
                             discussion_id=fo._id,
                             import_id=topic_data.id,
                             app_config_id=discuss_app.config._id)
-                    to.import_id=topic_data.id
+                    to.import_id = topic_data.id
                     to_num_replies = 0
                     oldest_post = None
                     newest_post = None
-                    posts = sorted(os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
+                    posts = sorted(
+                        os.listdir(os.path.join(options.output_dir, pid, 'forum', forum_name, topic_name)))
                     for post in posts:
                         ending = post[-5:]
                         post_name = post[:-5]
                         if '.json' == ending:
                             to_num_replies += 1
-                            post_data = loadjson(pid, 'forum', forum_name, topic_name, post)
+                            post_data = loadjson(pid, 'forum',
+                                                 forum_name, topic_name, post)
                             p = DM.ForumPost.query.get(
-                                _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
+                                _id='%s%s@import' % (
+                                    post_name, str(discuss_app.config._id)),
                                 thread_id=to._id,
                                 discussion_id=fo._id,
                                 app_config_id=discuss_app.config._id)
 
                             if not p:
                                 p = DM.ForumPost(
-                                    _id='%s%s@import' % (post_name,str(discuss_app.config._id)),
+                                    _id='%s%s@import' % (
+                                        post_name, str(
+                                            discuss_app.config._id)),
                                     thread_id=to._id,
                                     discussion_id=fo._id,
                                     app_config_id=discuss_app.config._id)
-                            create_date = datetime.strptime(post_data.createdDate, '%Y-%m-%d %H:%M:%S')
+                            create_date = datetime.strptime(
+                                post_data.createdDate, '%Y-%m-%d %H:%M:%S')
                             p.timestamp = create_date
-                            p.author_id = str(get_user(post_data.createdByUserName)._id)
-                            p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.content, nbhd)
+                            p.author_id = str(
+                                get_user(post_data.createdByUserName)._id)
+                            p.text = convert_post_content(
+                                frs_mapping, sf_project_shortname, post_data.content, nbhd)
                             p.status = 'ok'
                             if post_data.replyToId:
-                                p.parent_id = '%s%s@import' % (post_data.replyToId,str(discuss_app.config._id))
-                            slug, full_slug = p.make_slugs(parent = p.parent, timestamp = create_date)
+                                p.parent_id = '%s%s@import' % (
+                                    post_data.replyToId, str(discuss_app.config._id))
+                            slug, full_slug = p.make_slugs(
+                                parent=p.parent, timestamp=create_date)
                             p.slug = slug
                             p.full_slug = full_slug
                             if oldest_post == None or oldest_post.timestamp > create_date:
@@ -555,6 +597,7 @@ def import_discussion(project, pid, frs_mapping, sf_project_shortname, nbhd):
             fo.num_posts = fo_num_posts
             ThreadLocalORMSession.flush_all()
 
+
 def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
     from forgeblog import model as BM
     posts = os.listdir(os.path.join(options.output_dir, pid, 'news'))
@@ -567,7 +610,8 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
         for post in posts:
             if '.json' == post[-5:]:
                 post_data = loadjson(pid, 'news', post)
-                create_date = datetime.strptime(post_data.createdOn, '%Y-%m-%d %H:%M:%S')
+                create_date = datetime.strptime(
+                    post_data.createdOn, '%Y-%m-%d %H:%M:%S')
                 p = BM.BlogPost.query.get(title=post_data.title,
                                           timestamp=create_date,
                                           app_config_id=news_app.config._id)
@@ -575,7 +619,8 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     p = BM.BlogPost(title=post_data.title,
                                     timestamp=create_date,
                                     app_config_id=news_app.config._id)
-                p.text = convert_post_content(frs_mapping, sf_project_shortname, post_data.body, nbhd)
+                p.text = convert_post_content(
+                    frs_mapping, sf_project_shortname, post_data.body, nbhd)
                 p.mod_date = create_date
                 p.state = 'published'
                 if not p.slug:
@@ -584,14 +629,15 @@ def import_news(project, pid, frs_mapping, sf_project_shortname, nbhd):
                     p.commit()
                     ThreadLocalORMSession.flush_all()
                     M.Thread.new(discussion_id=p.app_config.discussion_id,
-                           ref_id=p.index_id(),
-                           subject='%s discussion' % p.title)
+                                 ref_id=p.index_id(),
+                                 subject='%s discussion' % p.title)
                 user = get_user(post_data.createdByUsername)
-                p.history().first().author=dict(
+                p.history().first().author = dict(
                     id=user._id,
                     username=user.username,
                     display_name=user.get_pref('display_name'))
                 ThreadLocalORMSession.flush_all()
+
 
 def check_unsupported_tools(project):
     docs = make_client(options.api_url, 'DocumentApp')
@@ -601,21 +647,28 @@ def check_unsupported_tools(project):
             continue
         doc_count += 1
     if doc_count:
-        log.warn('Migrating documents is not supported, but found %s docs' % doc_count)
+        log.warn('Migrating documents is not supported, but found %s docs' %
+                 doc_count)
 
     scm = make_client(options.api_url, 'ScmApp')
     for repo in scm.service.getRepositoryList(s, project.id).dataRows:
-        log.warn('Migrating SCM repos is not supported, but found %s' % repo.repositoryPath)
+        log.warn('Migrating SCM repos is not supported, but found %s' %
+                 repo.repositoryPath)
 
     tasks = make_client(options.api_url, 'TaskApp')
-    task_count = len(tasks.service.getTaskList(s, project.id, filters=None).dataRows)
+    task_count = len(
+        tasks.service.getTaskList(s, project.id, filters=None).dataRows)
     if task_count:
-        log.warn('Migrating tasks is not supported, but found %s tasks' % task_count)
+        log.warn('Migrating tasks is not supported, but found %s tasks' %
+                 task_count)
 
     tracker = make_client(options.api_url, 'TrackerApp')
-    tracker_count = len(tracker.service.getArtifactList(s, project.id, filters=None).dataRows)
+    tracker_count = len(
+        tracker.service.getArtifactList(s, project.id, filters=None).dataRows)
     if tracker_count:
-        log.warn('Migrating trackers is not supported, but found %s tracker artifacts' % task_count)
+        log.warn(
+            'Migrating trackers is not supported, but found %s tracker artifacts' %
+            task_count)
 
 
 def load(project_id, *paths):
@@ -624,9 +677,11 @@ def load(project_id, *paths):
         content = input.read()
     return unicode(content, 'utf-8')
 
+
 def loadjson(*args):
     # Object for attribute access
     return json.loads(load(*args), object_hook=Object)
+
 
 def save(content, project, *paths):
     out_file = os.path.join(options.output_dir, project.id, *paths)
@@ -634,6 +689,7 @@ def save(content, project, *paths):
         os.makedirs(os.path.dirname(out_file))
     with open(out_file, 'w') as out:
         out.write(content.encode('utf-8'))
+
 
 def download_file(tool, url_path, *filepaths):
     if tool == 'wiki':
@@ -676,6 +732,8 @@ h1 = re.compile(r'^!!!', re.MULTILINE)
 h2 = re.compile(r'^!!', re.MULTILINE)
 h3 = re.compile(r'^!', re.MULTILINE)
 re_stats = re.compile(r'#+ .* [Ss]tatistics\n+(.*\[sf:.*?Statistics\].*)+')
+
+
 def wiki2markdown(markup):
     '''
     Partial implementation of http://help.collab.net/index.jsp?topic=/teamforge520/reference/wiki-wikisyntax.html
@@ -707,6 +765,8 @@ def wiki2markdown(markup):
     return markup
 
 re_rel = re.compile(r'\b(rel\d+)\b')
+
+
 def convert_post_content(frs_mapping, sf_project_shortname, text, nbhd):
     def rel_handler(matchobj):
         relno = matchobj.group(1)
@@ -728,6 +788,7 @@ def find_image_references(markup):
         if ext in ('jpg', 'gif', 'png'):
             yield snippet
 
+
 def get_news(project):
     '''
     Extracts news posts
@@ -737,8 +798,10 @@ def get_news(project):
     # find the forums
     posts = app.service.getNewsPostList(s, project.id)
     for post in posts.dataRows:
-        save(json.dumps(dict(post), default=str), project, 'news', post.id+'.json')
+        save(json.dumps(dict(post), default=str),
+             project, 'news', post.id + '.json')
         save_user(post.createdByUsername)
+
 
 def get_discussion(project):
     '''
@@ -751,15 +814,18 @@ def get_discussion(project):
     for forum in forums.dataRows:
         forumname = forum.path.split('.')[-1]
         log.info('Retrieving data for forum: %s' % forumname)
-        save(json.dumps(dict(forum), default=str), project, 'forum', forumname+'.json')
+        save(json.dumps(dict(forum), default=str), project, 'forum',
+             forumname + '.json')
         # topic in this forum
         topics = app.service.getTopicList(s, forum.id)
         for topic in topics.dataRows:
-            save(json.dumps(dict(topic), default=str), project, 'forum', forumname, topic.id+'.json')
+            save(json.dumps(dict(topic), default=str), project, 'forum',
+                 forumname, topic.id + '.json')
             # posts in this topic
             posts = app.service.getPostList(s, topic.id)
             for post in posts.dataRows:
-                save(json.dumps(dict(post), default=str), project, 'forum', forumname, topic.id, post.id+'.json')
+                save(json.dumps(dict(post), default=str), project, 'forum',
+                     forumname, topic.id, post.id + '.json')
                 save_user(post.createdByUserName)
 
 
@@ -774,7 +840,8 @@ def get_homepage_wiki(project):
     for wiki_page in wiki_pages.dataRows:
         wiki_page = wiki.service.getWikiPageData(s, wiki_page.id)
         pagename = wiki_page.path.split('/')[-1]
-        save(json.dumps(dict(wiki_page), default=str), project, 'wiki', pagename+'.json')
+        save(json.dumps(dict(wiki_page), default=str),
+             project, 'wiki', pagename + '.json')
         if not wiki_page.wikiText:
             log.debug('skip blank wiki page %s' % wiki_page.path)
             continue
@@ -802,20 +869,23 @@ def get_homepage_wiki(project):
                 img_url = img_ref
             else:
                 img_url = project.path + '/wiki/' + img_ref
-            download_file('wiki', img_url, project.id, 'wiki', 'homepage', filename)
+            download_file('wiki', img_url, project.id,
+                          'wiki', 'homepage', filename)
 
     for path, text in pages.iteritems():
         if options.default_wiki_text in text:
             log.debug('skipping default wiki page %s' % path)
         else:
-            save(text, project, 'wiki', path+'.markdown')
+            save(text, project, 'wiki', path + '.markdown')
             for img_ref in find_image_references(text):
                 filename = img_ref.split('/')[-1]
                 if '://' in img_ref:
                     img_url = img_ref
                 else:
                     img_url = project.path + '/wiki/' + img_ref
-                download_file('wiki', img_url, project.id, 'wiki', path, filename)
+                download_file('wiki', img_url, project.id,
+                              'wiki', path, filename)
+
 
 def _dir_sql(created_on, project, dir_name, rel_path):
     assert options.neighborhood_shortname
@@ -834,35 +904,40 @@ def _dir_sql(created_on, project, dir_name, rel_path):
     """ % (created_on, convert_project_shortname(project.path), options.neighborhood_shortname, dir_name, parent_directory)
     return sql
 
+
 def get_files(project):
     frs = make_client(options.api_url, 'FrsApp')
-    valid_pfs_filename = re.compile(r'(?![. ])[-_ +.,=#~@!()\[\]a-zA-Z0-9]+(?<! )$')
-    pfs_output_dir = os.path.join(os.path.abspath(options.output_dir), 'PFS', convert_project_shortname(project.path))
+    valid_pfs_filename = re.compile(
+        r'(?![. ])[-_ +.,=#~@!()\[\]a-zA-Z0-9]+(?<! )$')
+    pfs_output_dir = os.path.join(
+        os.path.abspath(options.output_dir), 'PFS', convert_project_shortname(project.path))
     sql_updates = ''
 
     def handle_path(obj, prev_path):
-        path_component = obj.title.strip().replace('/', ' ').replace('&','').replace(':','')
+        path_component = obj.title.strip().replace(
+            '/', ' ').replace('&', '').replace(':', '')
         path = os.path.join(prev_path, path_component)
         if not valid_pfs_filename.match(path_component):
             log.error('Invalid filename: "%s"' % path)
         save(json.dumps(dict(obj), default=str),
-            project, 'frs', path+'.json')
+             project, 'frs', path + '.json')
         return path
 
     frs_mapping = {}
 
     for pkg in frs.service.getPackageList(s, project.id).dataRows:
         pkg_path = handle_path(pkg, '')
-        pkg_details = frs.service.getPackageData(s, pkg.id) # download count
+        pkg_details = frs.service.getPackageData(s, pkg.id)  # download count
         save(json.dumps(dict(pkg_details), default=str),
-             project, 'frs', pkg_path+'_details.json')
+             project, 'frs', pkg_path + '_details.json')
 
         for rel in frs.service.getReleaseList(s, pkg.id).dataRows:
             rel_path = handle_path(rel, pkg_path)
             frs_mapping[rel['id']] = rel_path
-            rel_details = frs.service.getReleaseData(s, rel.id) # download count
+            # download count
+            rel_details = frs.service.getReleaseData(s, rel.id)
             save(json.dumps(dict(rel_details), default=str),
-                 project, 'frs', rel_path+'_details.json')
+                 project, 'frs', rel_path + '_details.json')
 
             for file in frs.service.getFrsFileList(s, rel.id).dataRows:
                 details = frs.service.getFrsFileData(s, file.id)
@@ -875,19 +950,23 @@ def get_files(project):
                                 default=str),
                      project,
                      'frs',
-                     file_path+'.json'
+                     file_path + '.json'
                      )
                 if not options.skip_frs_download:
-                    download_file('frs', rel.path + '/' + file.id, pfs_output_dir, file_path)
+                    download_file('frs', rel.path + '/' + file.id,
+                                  pfs_output_dir, file_path)
                     mtime = int(mktime(details.lastModifiedDate.timetuple()))
-                    os.utime(os.path.join(pfs_output_dir, file_path), (mtime, mtime))
+                    os.utime(os.path.join(pfs_output_dir, file_path),
+                             (mtime, mtime))
 
             # releases
             created_on = int(mktime(rel.createdOn.timetuple()))
             mtime = int(mktime(rel.lastModifiedOn.timetuple()))
             if os.path.exists(os.path.join(pfs_output_dir, rel_path)):
-                os.utime(os.path.join(pfs_output_dir, rel_path), (mtime, mtime))
-            sql_updates += _dir_sql(created_on, project, rel.title.strip(), pkg_path)
+                os.utime(os.path.join(pfs_output_dir, rel_path),
+                         (mtime, mtime))
+            sql_updates += _dir_sql(created_on, project,
+                                    rel.title.strip(), pkg_path)
         # packages
         created_on = int(mktime(pkg.createdOn.timetuple()))
         mtime = int(mktime(pkg.lastModifiedOn.timetuple()))
@@ -922,10 +1001,10 @@ def get_parser(defaults):
     optparser.add_option(
         '--api-url', dest='api_url', help='e.g. https://hostname/ce-soap50/services/')
     optparser.add_option(
-            '--attachment-url', dest='attachment_url')
+        '--attachment-url', dest='attachment_url')
     optparser.add_option(
-            '--default-wiki-text', dest='default_wiki_text',
-            help='used in determining if a wiki page text is default or changed')
+        '--default-wiki-text', dest='default_wiki_text',
+        help='used in determining if a wiki page text is default or changed')
     optparser.add_option(
         '-u', '--username', dest='username')
     optparser.add_option(
@@ -954,24 +1033,26 @@ def get_parser(defaults):
     return optparser
 
 re_username = re.compile(r"^[a-z\-0-9]+$")
+
+
 def make_valid_sf_username(orig_username):
-    sf_username = orig_username.replace('_','-').lower()
+    sf_username = orig_username.replace('_', '-').lower()
 
     # FIXME username translation is hardcoded here:
     sf_username = dict(
-        rlevy = 'ramilevy',
-        mkeisler = 'mkeisler',
-        bthale = 'bthale',
-        mmuller = 'mattjustmull',
-        MalcolmDwyer = 'slagheap',
-        tjyang = 'tjyang',
-        manaic = 'maniac76',
-        srinid = 'cnudav',
-        es = 'est016',
-        david_peyer = 'david-mmi',
-        okruse = 'ottokruse',
-        jvp = 'jvpmoto',
-        dmorelli = 'dmorelli',
+        rlevy='ramilevy',
+        mkeisler='mkeisler',
+        bthale='bthale',
+        mmuller='mattjustmull',
+        MalcolmDwyer='slagheap',
+        tjyang='tjyang',
+        manaic='maniac76',
+        srinid='cnudav',
+        es='est016',
+        david_peyer='david-mmi',
+        okruse='ottokruse',
+        jvp='jvpmoto',
+        dmorelli='dmorelli',
     ).get(sf_username, sf_username + '-mmi')
 
     if not re_username.match(sf_username):
@@ -982,7 +1063,7 @@ def make_valid_sf_username(orig_username):
                   sf_username, adjusted_username)
         sf_username = adjusted_username
     if len(sf_username) > 15:
-        adjusted_username = sf_username[0:15-4] + '-mmi'
+        adjusted_username = sf_username[0:15 - 4] + '-mmi'
         log.error('invalid sf_username length: %s   Changing it to %s',
                   sf_username, adjusted_username)
         sf_username = adjusted_username
@@ -993,18 +1074,20 @@ if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
     main()
 
+
 def test_make_valid_sf_username():
     tests = {
         # basic
-        'foo':'foo-mmi',
+        'foo': 'foo-mmi',
         # lookup
-        'rlevy':'ramilevy',
+        'rlevy': 'ramilevy',
         # too long
         'u012345678901234567890': 'u0123456789-mmi',
         'foo^213': 'foo213-mmi'
-        }
-    for k,v in tests.iteritems():
+    }
+    for k, v in tests.iteritems():
         assert make_valid_sf_username(k) == v
+
 
 def test_convert_post_content():
     nbhd = Object()

@@ -67,8 +67,10 @@ re_project_name = re.compile(r'^[a-z][-a-z0-9]{2,14}$')
 # validates tool mount point names
 re_tool_mount_point = re.compile(r'^[a-z][-a-z0-9]{0,62}$')
 re_tool_mount_point_fragment = re.compile(r'[a-z][-a-z0-9]*')
-re_relaxed_tool_mount_point = re.compile(r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$')
-re_relaxed_tool_mount_point_fragment = re.compile(r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*')
+re_relaxed_tool_mount_point = re.compile(
+    r'^[a-zA-Z0-9][-a-zA-Z0-9_\.\+]{0,62}$')
+re_relaxed_tool_mount_point_fragment = re.compile(
+    r'[a-zA-Z0-9][-a-zA-Z0-9_\.\+]*')
 
 re_clean_vardec_key = re.compile(r'''\A
 ( # first part
@@ -101,6 +103,7 @@ re_angle_bracket_open = re.compile('<')
 re_angle_bracket_close = re.compile('>')
 md_chars_matcher_all = re.compile(r"([`\*_{}\[\]\(\)#!\\\.+-])")
 
+
 def make_safe_path_portion(ustr, relaxed=True):
     """Return an ascii representation of ``ustr`` that conforms to mount point
     naming :attr:`rules <re_tool_mount_point_fragment>`.
@@ -113,7 +116,7 @@ def make_safe_path_portion(ustr, relaxed=True):
 
     """
     regex = (re_relaxed_tool_mount_point_fragment if relaxed else
-                re_tool_mount_point_fragment)
+             re_tool_mount_point_fragment)
     ustr = really_unicode(ustr)
     s = ustr.encode('latin1', 'ignore')
     s = AsciiDammit.asciiDammit(s)
@@ -123,11 +126,13 @@ def make_safe_path_portion(ustr, relaxed=True):
     s = s.replace('--', '-')
     return s
 
+
 def monkeypatch(*objs):
     def patchem(func):
         for obj in objs:
             setattr(obj, func.__name__, func)
     return patchem
+
 
 def urlquote(url, safe="/"):
     try:
@@ -135,14 +140,17 @@ def urlquote(url, safe="/"):
     except UnicodeEncodeError:
         return urllib.quote(url.encode('utf-8'), safe=safe)
 
+
 def urlquoteplus(url, safe=""):
     try:
         return urllib.quote_plus(str(url), safe=safe)
     except UnicodeEncodeError:
         return urllib.quote_plus(url.encode('utf-8'), safe=safe)
 
+
 def _attempt_encodings(s, encodings):
-    if s is None: return u''
+    if s is None:
+        return u''
     for enc in encodings:
         try:
             if enc is None:
@@ -154,6 +162,7 @@ def _attempt_encodings(s, encodings):
     # Return the repr of the str -- should always be safe
     return unicode(repr(str(s)))[1:-1]
 
+
 def really_unicode(s):
     # Try to guess the encoding
     def encodings():
@@ -163,6 +172,7 @@ def really_unicode(s):
         yield chardet.detect(s)['encoding']
         yield 'latin-1'
     return _attempt_encodings(s, encodings())
+
 
 def find_user(email=None, username=None, display_name=None):
     from allura import model as M
@@ -175,6 +185,7 @@ def find_user(email=None, username=None, display_name=None):
         user = M.User.by_display_name(display_name)
     return user
 
+
 def find_project(url_path):
     from allura import model as M
     for n in M.Neighborhood.query.find():
@@ -182,28 +193,36 @@ def find_project(url_path):
             break
     else:
         return None, url_path
-    project_part = n.shortname_prefix + url_path[len(n.url_prefix):] # easily off-by-one, might be better to join together everything but url_prefix
+    # easily off-by-one, might be better to join together everything but
+    # url_prefix
+    project_part = n.shortname_prefix + url_path[len(n.url_prefix):]
     parts = project_part.split('/')
     length = len(parts)
     while length:
         shortname = '/'.join(parts[:length])
         p = M.Project.query.get(shortname=shortname, deleted=False,
                                 neighborhood_id=n._id)
-        if p: return p, parts[length:]
+        if p:
+            return p, parts[length:]
         length -= 1
     return None, url_path.split('/')
+
 
 def make_neighborhoods(ids):
     return _make_xs('Neighborhood', ids)
 
+
 def make_projects(ids):
     return _make_xs('Project', ids)
+
 
 def make_users(ids):
     return _make_xs('User', ids)
 
+
 def make_roles(ids):
     return _make_xs('ProjectRole', ids)
+
 
 def _make_xs(X, ids):
     from allura import model as M
@@ -211,15 +230,17 @@ def _make_xs(X, ids):
     ids = list(ids)
     results = dict(
         (r._id, r)
-        for r in X.query.find(dict(_id={'$in':ids})))
+        for r in X.query.find(dict(_id={'$in': ids})))
     result = (results.get(i) for i in ids)
     return (r for r in result if r is not None)
+
 
 def make_app_admin_only(app):
     from allura.model.auth import ProjectRole
     admin_role = ProjectRole.by_name('Admin', app.project)
     for ace in [ace for ace in app.acl if ace.role_id != admin_role._id]:
         app.acl.remove(ace)
+
 
 @contextmanager
 def push_config(obj, **kw):
@@ -239,11 +260,13 @@ def push_config(obj, **kw):
         for k in new_attrs:
             delattr(obj, k)
 
+
 def sharded_path(name, num_parts=2):
     parts = [
         name[:i + 1]
-        for i in range(num_parts) ]
+        for i in range(num_parts)]
     return '/'.join(parts)
+
 
 def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, neighborhood=None):
     from allura import model
@@ -258,19 +281,22 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
             n = model.Neighborhood.query.get(name=neighborhood)
             if n is None:
                 try:
-                    n = model.Neighborhood.query.get(_id=ObjectId(str(neighborhood)))
+                    n = model.Neighborhood.query.get(
+                        _id=ObjectId(str(neighborhood)))
                 except InvalidId:
                     pass
             if n is None:
-                raise exc.NoSuchNeighborhoodError("Couldn't find neighborhood %s" %
-                                      repr(neighborhood))
+                raise exc.NoSuchNeighborhoodError(
+                    "Couldn't find neighborhood %s" %
+                    repr(neighborhood))
             neighborhood = n
 
-        query = dict(shortname=project_shortname_or_id, neighborhood_id=neighborhood._id)
+        query = dict(shortname=project_shortname_or_id,
+                     neighborhood_id=neighborhood._id)
         p = model.Project.query.get(**query)
     if p is None:
         raise exc.NoSuchProjectError("Couldn't find project %s nbhd %s" %
-                                 (project_shortname_or_id, neighborhood))
+                                     (project_shortname_or_id, neighborhood))
     c.project = p
 
     if app_config_id is None:
@@ -280,6 +306,7 @@ def set_context(project_shortname_or_id, mount_point=None, app_config_id=None, n
             app_config_id = ObjectId(app_config_id)
         app_config = model.AppConfig.query.get(_id=app_config_id)
         c.app = p.app_instance(app_config)
+
 
 @contextmanager
 def push_context(project_id, mount_point=None, app_config_id=None, neighborhood=None):
@@ -298,6 +325,7 @@ def push_context(project_id, mount_point=None, app_config_id=None, neighborhood=
         else:
             c.app = app
 
+
 def encode_keys(d):
     '''Encodes the unicode keys of d, making the result
     a valid kwargs argument'''
@@ -305,21 +333,25 @@ def encode_keys(d):
         (k.encode('utf-8'), v)
         for k, v in d.iteritems())
 
+
 def vardec(fun):
     def vardec_hook(remainder, params):
         new_params = variable_decode(dict(
-                (k, v) for k, v in params.items()
-                if re_clean_vardec_key.match(k)))
+            (k, v) for k, v in params.items()
+            if re_clean_vardec_key.match(k)))
         params.update(new_params)
     before_validate(vardec_hook)(fun)
     return fun
 
+
 def nonce(length=4):
     return sha1(ObjectId().binary + os.urandom(10)).hexdigest()[:length]
+
 
 def cryptographic_nonce(length=40):
     hex_format = '%.2x' * length
     return hex_format % tuple(map(ord, os.urandom(length)))
+
 
 def ago(start_time, show_date_after=7):
     """
@@ -327,7 +359,8 @@ def ago(start_time, show_date_after=7):
     E.g., "3 hours ago"
     """
 
-    if start_time is None: return 'unknown'
+    if start_time is None:
+        return 'unknown'
     granularities = ['century', 'decade', 'year', 'month', 'day', 'hour',
                      'minute']
     end_time = datetime.utcnow()
@@ -343,14 +376,17 @@ def ago(start_time, show_date_after=7):
             break
     return ago + ' ago'
 
+
 def ago_ts(timestamp):
     return ago(datetime.utcfromtimestamp(timestamp))
+
 
 def ago_string(s):
     try:
         return ago(parse(s, ignoretz=True))
     except (ValueError, AttributeError):
         return 'unknown'
+
 
 class DateTimeConverter(FancyValidator):
 
@@ -362,7 +398,6 @@ class DateTimeConverter(FancyValidator):
                 return self.if_invalid
             else:
                 raise
-
 
     def _from_python(self, value, state):
         return value.isoformat()
@@ -403,12 +438,13 @@ def diff_text(t1, t2, differ=None):
     result = []
     for tag, i1, i2, j1, j2 in differ.get_opcodes():
         if tag in ('delete', 'replace'):
-            result += [ '<del>' ] + t1_words[i1:i2] + [ '</del>' ]
+            result += ['<del>'] + t1_words[i1:i2] + ['</del>']
         if tag in ('insert', 'replace'):
-            result += [ '<ins>' ] + t2_words[j1:j2] + [ '</ins>' ]
+            result += ['<ins>'] + t2_words[j1:j2] + ['</ins>']
         if tag == 'equal':
             result += t1_words[i1:i2]
     return ' '.join(result).replace('\n', '<br/>\n')
+
 
 def gen_message_id(_id=None):
     if not _id:
@@ -424,14 +460,18 @@ def gen_message_id(_id=None):
     return '%s@%s.sourceforge.net' % (
         addr, '.'.join(reversed(parts)))
 
+
 class ProxiedAttrMeta(type):
+
     def __init__(cls, name, bases, dct):
         for v in dct.itervalues():
             if isinstance(v, attrproxy):
                 v.cls = cls
 
+
 class attrproxy(object):
     cls = None
+
     def __init__(self, *attrs):
         self.attrs = attrs
 
@@ -448,12 +488,14 @@ class attrproxy(object):
 
     def __getattr__(self, name):
         if self.cls is None:
-            return promised_attrproxy(lambda:self.cls, name)
+            return promised_attrproxy(lambda: self.cls, name)
         return getattr(
             attrproxy(self.cls, *self.attrs),
             name)
 
+
 class promised_attrproxy(attrproxy):
+
     def __init__(self, promise, *attrs):
         super(promised_attrproxy, self).__init__(*attrs)
         self._promise = promise
@@ -465,13 +507,18 @@ class promised_attrproxy(attrproxy):
         cls = self._promise()
         return getattr(cls, name)
 
+
 class proxy(object):
+
     def __init__(self, obj):
         self._obj = obj
+
     def __getattr__(self, name):
         return getattr(self._obj, name)
+
     def __call__(self, *args, **kwargs):
         return self._obj(*args, **kwargs)
+
 
 def render_genshi_plaintext(template_name, **template_vars):
     assert os.path.exists(template_name)
@@ -482,11 +529,12 @@ def render_genshi_plaintext(template_name, **template_vars):
         fd.close()
     filepath = os.path.dirname(template_name)
     tt = genshi.template.NewTextTemplate(tpl_text,
-            filepath=filepath, filename=template_name)
+                                         filepath=filepath, filename=template_name)
     stream = tt.generate(**template_vars)
     return stream.render(encoding='utf-8').decode('utf-8')
 
-site_url = None # cannot set it just yet since tg.config is empty
+site_url = None  # cannot set it just yet since tg.config is empty
+
 
 def full_url(url):
     """Make absolute URL from the relative one.
@@ -494,7 +542,8 @@ def full_url(url):
     global site_url
     if site_url is None:
         # XXX: add a separate tg option instead of re-using openid.realm
-        site_url = tg.config.get('openid.realm', 'https://newforge.sf.geek.net/')
+        site_url = tg.config.get(
+            'openid.realm', 'https://newforge.sf.geek.net/')
         site_url = site_url.replace('https:', 'http:')
         if not site_url.endswith('/'):
             site_url += '/'
@@ -502,14 +551,16 @@ def full_url(url):
         url = url[1:]
     return site_url + url
 
+
 @tg.expose(content_type='text/plain')
 def json_validation_error(controller, **kwargs):
     result = dict(status='Validation Error',
-                errors=c.validation_exception.unpack_errors(),
-                value=c.validation_exception.value,
-                params=kwargs)
+                  errors=c.validation_exception.unpack_errors(),
+                  value=c.validation_exception.value,
+                  params=kwargs)
     response.status = 400
     return json.dumps(result, indent=2)
+
 
 def pop_user_notifications(user=None):
     from allura import model as M
@@ -517,11 +568,13 @@ def pop_user_notifications(user=None):
         user = c.user
     mbox = M.Mailbox.query.get(user_id=user._id, is_flash=True)
     if mbox:
-        notifications = M.Notification.query.find(dict(_id={'$in':mbox.queue}))
+        notifications = M.Notification.query.find(
+            dict(_id={'$in': mbox.queue}))
         mbox.queue = []
         mbox.queue_empty = True
         for n in notifications:
-            M.Notification.query.remove({'_id': n._id}) # clean it up so it doesn't hang around
+            # clean it up so it doesn't hang around
+            M.Notification.query.remove({'_id': n._id})
             yield n
 
 
@@ -533,11 +586,12 @@ def config_with_prefix(d, prefix):
     return dict((k[plen:], v) for k, v in d.iteritems()
                 if k.startswith(prefix))
 
+
 @contextmanager
 def twophase_transaction(*engines):
     connections = [
         e.contextual_connect()
-        for e in engines ]
+        for e in engines]
     txns = []
     to_rollback = []
     try:
@@ -556,6 +610,7 @@ def twophase_transaction(*engines):
         for txn in to_rollback:
             txn.rollback()
         raise
+
 
 class log_action(object):
     extra_proto = dict(
@@ -617,7 +672,8 @@ class log_action(object):
                 result['username'] = '*system'
             try:
                 result['url'] = request.url
-                ip_address = request.headers.get('X_FORWARDED_FOR', request.remote_addr)
+                ip_address = request.headers.get(
+                    'X_FORWARDED_FOR', request.remote_addr)
                 if ip_address is not None:
                     ip_address = ip_address.split(',')[0].strip()
                     result['ip_address'] = ip_address
@@ -627,8 +683,10 @@ class log_action(object):
                 pass
             return result
         except:
-            self._logger.warning('Error logging to rtstats, some info may be missing', exc_info=True)
+            self._logger.warning(
+                'Error logging to rtstats, some info may be missing', exc_info=True)
             return result
+
 
 def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
     """Return limit, page - both converted to int and constrained to
@@ -646,7 +704,9 @@ def paging_sanitizer(limit, page, total_count, zero_based_pages=True):
 def _add_inline_line_numbers_to_text(text):
     markup_text = '<div class="codehilite"><pre>'
     for line_num, line in enumerate(text.splitlines(), 1):
-        markup_text = markup_text + '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (line_num, line_num, line)
+        markup_text = markup_text + \
+            '<span id="l%s" class="code_block"><span class="lineno">%s</span> %s</span>' % (
+                line_num, line_num, line)
     markup_text = markup_text + '</pre></div>'
     return markup_text
 
@@ -662,16 +722,21 @@ def _add_table_line_numbers_to_text(text):
         return '\n'.join(map(_prepend_whitespaces, range(start, max_num), [max_num] * l))
 
     lines = text.splitlines(True)
-    linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + _len_to_str_column(len(lines)) + '</pre></div></td>'
-    markup_text = '<table class="codehilitetable"><tbody><tr>' + linenumbers + '<td class="code"><div class="codehilite"><pre>'
+    linenumbers = '<td class="linenos"><div class="linenodiv"><pre>' + \
+        _len_to_str_column(len(lines)) + '</pre></div></td>'
+    markup_text = '<table class="codehilitetable"><tbody><tr>' + \
+        linenumbers + '<td class="code"><div class="codehilite"><pre>'
     for line_num, line in enumerate(lines, 1):
-        markup_text = markup_text + '<span id="l%s" class="code_block">%s</span>' % (line_num, line)
+        markup_text = markup_text + \
+            '<span id="l%s" class="code_block">%s</span>' % (line_num, line)
     markup_text = markup_text + '</pre></div></td></tr></tbody></table>'
     return markup_text
 
 
 INLINE = 'inline'
 TABLE = 'table'
+
+
 def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
     """
     renders markdown using allura enhacements if file is in markdown format
@@ -698,6 +763,8 @@ def render_any_markup(name, text, code_mode=False, linenumbers_style=TABLE):
 # copied from jinja2 dev
 # latest release, 2.6, implements this incorrectly
 # can remove and use jinja2 implementation after upgrading to 2.7
+
+
 def do_filesizeformat(value, binary=False):
     """Format the value like a 'human-readable' file size (i.e. 13 kB,
 4.1 MB, 102 Bytes, etc). Per default decimal prefixes are used (Mega,
@@ -763,6 +830,7 @@ def datetimeformat(value, format='%Y-%m-%d %H:%M:%S'):
 @contextmanager
 def log_output(log):
     class Writer(object):
+
         def __init__(self, func):
             self.func = func
             self.closed = False
@@ -783,6 +851,7 @@ def log_output(log):
         sys.stdout = _stdout
         sys.stderr = _stderr
 
+
 def topological_sort(items, partial_order):
     """Perform topological sort.
        items is a list of items to be sorted.
@@ -793,7 +862,8 @@ def topological_sort(items, partial_order):
 
        Modified from: http://www.bitformation.com/art/python_toposort.html
     """
-    # Original topological sort code written by Ofer Faigon (www.bitformation.com) and used with permission
+    # Original topological sort code written by Ofer Faigon
+    # (www.bitformation.com) and used with permission
 
     def add_arc(graph, fromnode, tonode):
         """Add an arc to a graph. Can create multiple arcs.
@@ -814,8 +884,8 @@ def topological_sort(items, partial_order):
     # Note that our representation does not contain reference loops to
     # cause GC problems even when the represented graph contains loops,
     # because we keep the node names rather than references to the nodes.
-    graph = defaultdict(lambda:[0])
-    for a,b in partial_order:
+    graph = defaultdict(lambda: [0])
+    for a, b in partial_order:
         add_arc(graph, a, b)
 
     # Step 2 - find all roots (nodes with zero incoming arcs).
@@ -923,6 +993,7 @@ def null_contextmanager(*args, **kw):
 
 
 class exceptionless(object):
+
     '''Decorator making the decorated function return 'error_result' on any
     exceptions rather than propagating exceptions up the stack
     '''
@@ -933,13 +1004,15 @@ class exceptionless(object):
 
     def __call__(self, fun):
         fname = 'exceptionless(%s)' % fun.__name__
+
         def inner(*args, **kwargs):
             try:
                 return fun(*args, **kwargs)
             except Exception as e:
                 if self.log:
-                    self.log.exception('Error calling %s(args=%s, kwargs=%s): %s',
-                            fname, args, kwargs, str(e))
+                    self.log.exception(
+                        'Error calling %s(args=%s, kwargs=%s): %s',
+                        fname, args, kwargs, str(e))
                 return self.error_result
         inner.__name__ = fname
         return inner
@@ -961,7 +1034,7 @@ def urlopen(url, retries=3, codes=(408,), timeout=None):
             return urllib2.urlopen(url, timeout=timeout)
         except (urllib2.HTTPError, socket.timeout) as e:
             if attempts < retries and (isinstance(e, socket.timeout) or
-                    e.code in codes):
+                                       e.code in codes):
                 attempts += 1
                 continue
             else:
@@ -971,7 +1044,9 @@ def urlopen(url, retries=3, codes=(408,), timeout=None):
                     url_string = url
                 if timeout is None:
                     timeout = socket.getdefaulttimeout()
-                log.exception('Failed after %s retries on url with a timeout of %s: %s: %s', attempts, timeout, url_string, e)
+                log.exception(
+                    'Failed after %s retries on url with a timeout of %s: %s: %s',
+                    attempts, timeout, url_string, e)
                 raise e
 
 
@@ -1014,9 +1089,11 @@ def iter_entry_points(group, *a, **kw):
 
     """
     def active_eps():
-        disabled = aslist(tg.config.get('disable_entry_points.' + group), sep=',')
+        disabled = aslist(
+            tg.config.get('disable_entry_points.' + group), sep=',')
         return [ep for ep in pkg_resources.iter_entry_points(group, *a, **kw)
                 if ep.name not in disabled]
+
     def unique_eps(entry_points):
         by_name = defaultdict(list)
         for ep in entry_points:
@@ -1027,6 +1104,7 @@ def iter_entry_points(group, *a, **kw):
                 yield eps[0]
             else:
                 yield subclass(eps)
+
     def subclass(entry_points):
         loaded = dict((ep, ep.load()) for ep in entry_points)
         for ep, cls in loaded.iteritems():
@@ -1035,7 +1113,7 @@ def iter_entry_points(group, *a, **kw):
             if all([issubclass(cls, other) for other in others]):
                 return ep
         raise ImportError('Ambiguous [allura] entry points detected. ' +
-                'Multiple entry points with name "%s".' % entry_points[0].name)
+                          'Multiple entry points with name "%s".' % entry_points[0].name)
     return iter(unique_eps(active_eps()) if group == 'allura' else active_eps())
 
 

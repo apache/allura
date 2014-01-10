@@ -30,6 +30,7 @@ from forgeimporters import base
 
 
 class TestGoogleCodeProjectExtractor(TestCase):
+
     def setUp(self):
         self._p_urlopen = mock.patch.object(base.ProjectExtractor, 'urlopen')
         # self._p_soup = mock.patch.object(google, 'BeautifulSoup')
@@ -50,24 +51,30 @@ class TestGoogleCodeProjectExtractor(TestCase):
                     raise
 
     def test_init(self):
-        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(
+            'my-project', 'project_info')
 
-        self.urlopen.assert_called_once_with('http://code.google.com/p/my-project/')
+        self.urlopen.assert_called_once_with(
+            'http://code.google.com/p/my-project/')
         self.soup.assert_called_once_with(self.urlopen.return_value)
         self.assertEqual(extractor.page, self.soup.return_value)
 
     def test_get_page(self):
-        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(
+            'my-project', 'project_info')
         self.assertEqual(1, self.urlopen.call_count)
         page = extractor.get_page('project_info')
         self.assertEqual(1, self.urlopen.call_count)
-        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/'])
+        self.assertEqual(
+            page, extractor._page_cache['http://code.google.com/p/my-project/'])
         page = extractor.get_page('project_info')
         self.assertEqual(1, self.urlopen.call_count)
-        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/'])
+        self.assertEqual(
+            page, extractor._page_cache['http://code.google.com/p/my-project/'])
         page = extractor.get_page('source_browse')
         self.assertEqual(2, self.urlopen.call_count)
-        self.assertEqual(page, extractor._page_cache['http://code.google.com/p/my-project/source/browse/'])
+        self.assertEqual(
+            page, extractor._page_cache['http://code.google.com/p/my-project/source/browse/'])
         parser = mock.Mock(return_value='parsed')
         page = extractor.get_page('url', parser=parser)
         self.assertEqual(page, 'parsed')
@@ -76,10 +83,11 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_get_page_url(self):
         extractor = google.GoogleCodeProjectExtractor('my-project')
         self.assertEqual(extractor.get_page_url('project_info'),
-                'http://code.google.com/p/my-project/')
+                         'http://code.google.com/p/my-project/')
 
     def test_get_short_description(self):
-        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(
+            'my-project', 'project_info')
         extractor.page.find.return_value.text = 'My Super Project'
 
         extractor.get_short_description(self.project)
@@ -92,22 +100,25 @@ class TestGoogleCodeProjectExtractor(TestCase):
     def test_get_icon(self, M, File):
         File.return_value.type = 'image/png'
         File.return_value.file = 'data'
-        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(
+            'my-project', 'project_info')
         extractor.page.find.return_value.get.return_value = 'http://example.com/foo/bar/my-logo.png'
 
         extractor.get_icon(self.project)
 
         extractor.page.find.assert_called_once_with(itemprop='image')
-        File.assert_called_once_with('http://example.com/foo/bar/my-logo.png', 'my-logo.png')
+        File.assert_called_once_with(
+            'http://example.com/foo/bar/my-logo.png', 'my-logo.png')
         M.ProjectFile.save_image.assert_called_once_with(
             'my-logo.png', 'data', 'image/png', square=True,
-            thumbnail_size=(48,48), thumbnail_meta={
+            thumbnail_size=(48, 48), thumbnail_meta={
                 'project_id': self.project._id, 'category': 'icon'})
 
     @mock.patch.object(google, 'M')
     def test_get_license(self, M):
         self.project.trove_license = []
-        extractor = google.GoogleCodeProjectExtractor('my-project', 'project_info')
+        extractor = google.GoogleCodeProjectExtractor(
+            'my-project', 'project_info')
         extractor.page.find.return_value.findNext.return_value.find.return_value.text = '  New BSD License  '
         trove = M.TroveCategory.query.get.return_value
 
@@ -115,27 +126,31 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
         extractor.page.find.assert_called_once_with(text='Code license')
         extractor.page.find.return_value.findNext.assert_called_once_with()
-        extractor.page.find.return_value.findNext.return_value.find.assert_called_once_with('a')
+        extractor.page.find.return_value.findNext.return_value.find.assert_called_once_with(
+            'a')
         self.assertEqual(self.project.trove_license, [trove._id])
-        M.TroveCategory.query.get.assert_called_once_with(fullname='BSD License')
+        M.TroveCategory.query.get.assert_called_once_with(
+            fullname='BSD License')
 
         M.TroveCategory.query.get.reset_mock()
         extractor.page.find.return_value.findNext.return_value.find.return_value.text = 'non-existant license'
         extractor.get_license(self.project)
-        M.TroveCategory.query.get.assert_called_once_with(fullname='Other/Proprietary License')
+        M.TroveCategory.query.get.assert_called_once_with(
+            fullname='Other/Proprietary License')
 
     def _make_extractor(self, html):
         from BeautifulSoup import BeautifulSoup
         with mock.patch.object(base.ProjectExtractor, 'urlopen'):
-            extractor = google.GoogleCodeProjectExtractor('allura-google-importer')
+            extractor = google.GoogleCodeProjectExtractor(
+                'allura-google-importer')
         extractor.page = BeautifulSoup(html)
         extractor.get_page = lambda pagename: extractor.page
-        extractor.url="http://test/source/browse"
+        extractor.url = "http://test/source/browse"
         return extractor
 
     def test_get_repo_type_happy_path(self):
         extractor = self._make_extractor(
-                '<span id="crumb_root">\nsvn/&nbsp;</span>')
+            '<span id="crumb_root">\nsvn/&nbsp;</span>')
         self.assertEqual('svn', extractor.get_repo_type())
 
     def test_get_repo_type_no_crumb_root(self):
@@ -143,18 +158,19 @@ class TestGoogleCodeProjectExtractor(TestCase):
         with self.assertRaises(Exception) as cm:
             extractor.get_repo_type()
         self.assertEqual(str(cm.exception),
-                "Couldn't detect repo type: no #crumb_root in "
-                "http://test/source/browse")
+                         "Couldn't detect repo type: no #crumb_root in "
+                         "http://test/source/browse")
 
     def test_get_repo_type_unknown_repo_type(self):
         extractor = self._make_extractor(
-                '<span id="crumb_root">cvs</span>')
+            '<span id="crumb_root">cvs</span>')
         with self.assertRaises(Exception) as cm:
             extractor.get_repo_type()
         self.assertEqual(str(cm.exception), "Unknown repo type: cvs")
 
     def test_empty_issue(self):
-        empty_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/empty-issue.html')).read()
+        empty_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/empty-issue.html')).read()
         gpe = self._make_extractor(empty_issue)
         self.assertIsNone(gpe.get_issue_owner())
         self.assertEqual(gpe.get_issue_status(), '')
@@ -164,74 +180,82 @@ class TestGoogleCodeProjectExtractor(TestCase):
 
     @without_module('html2text')
     def test_get_issue_basic_fields(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_creator().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_creator().url,
+                         'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_owner().url,
+                         'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_status(), 'Started')
         self._p_soup.stop()
         self.assertEqual(gpe.get_issue_summary(), 'Test "Issue"')
         assert_equal(gpe.get_issue_description(),
-                'Test \\*Issue\\* for testing\n'
-                '\n'
-                '&nbsp; 1\\. Test List\n'
-                '&nbsp; 2\\. Item\n'
-                '\n'
-                '\\*\\*Testing\\*\\*\n'
-                '\n'
-                ' \\* Test list 2\n'
-                ' \\* Item\n'
-                '\n'
-                '\\# Test Section\n'
-                '\n'
-                '&nbsp;&nbsp;&nbsp; p = source\\.test\\_issue\\.post\\(\\)\n'
-                '&nbsp;&nbsp;&nbsp; p\\.count = p\\.count \\*5 \\#\\* 6\n'
-                '&nbsp;&nbsp;&nbsp; if p\\.count &gt; 5:\n'
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
-                '\n'
-                'References: [issue 1](#1), [r2]\n'
-                '\n'
-                'That\'s all'
-            )
-        self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
+                     'Test \\*Issue\\* for testing\n'
+                     '\n'
+                     '&nbsp; 1\\. Test List\n'
+                     '&nbsp; 2\\. Item\n'
+                     '\n'
+                     '\\*\\*Testing\\*\\*\n'
+                     '\n'
+                     ' \\* Test list 2\n'
+                     ' \\* Item\n'
+                     '\n'
+                     '\\# Test Section\n'
+                     '\n'
+                     '&nbsp;&nbsp;&nbsp; p = source\\.test\\_issue\\.post\\(\\)\n'
+                     '&nbsp;&nbsp;&nbsp; p\\.count = p\\.count \\*5 \\#\\* 6\n'
+                     '&nbsp;&nbsp;&nbsp; if p\\.count &gt; 5:\n'
+                     '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
+                     '\n'
+                     'References: [issue 1](#1), [r2]\n'
+                     '\n'
+                     'That\'s all'
+                     )
+        self.assertEqual(gpe.get_issue_created_date(),
+                         'Thu Aug  8 15:33:52 2013')
         self.assertEqual(gpe.get_issue_stars(), 1)
 
     @skipif(module_not_available('html2text'))
     def test_get_issue_basic_fields_html2text(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_creator().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_creator().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_creator().url,
+                         'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_owner().name, 'john...@gmail.com')
-        self.assertEqual(gpe.get_issue_owner().url, 'http://code.google.com/u/101557263855536553789/')
+        self.assertEqual(gpe.get_issue_owner().url,
+                         'http://code.google.com/u/101557263855536553789/')
         self.assertEqual(gpe.get_issue_status(), 'Started')
         self._p_soup.stop()
         self.assertEqual(gpe.get_issue_summary(), 'Test "Issue"')
         assert_equal(gpe.get_issue_description(),
-                'Test \\*Issue\\* for testing\n'
-                '\n'
-                '&nbsp; 1. Test List\n'
-                '&nbsp; 2. Item\n'
-                '\n'
-                '\\*\\*Testing\\*\\*\n'
-                '\n'
-                ' \\* Test list 2\n'
-                ' \\* Item\n'
-                '\n'
-                '\\# Test Section\n'
-                '\n'
-                '&nbsp;&nbsp;&nbsp; p = source.test\\_issue.post\\(\\)\n'
-                '&nbsp;&nbsp;&nbsp; p.count = p.count \\*5 \\#\\* 6\n'
-                '&nbsp;&nbsp;&nbsp; if p.count &gt; 5:\n'
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
-                '\n'
-                'References: [issue 1](#1), [r2]\n'
-                '\n'
-                'That\'s all'
-            )
-        self.assertEqual(gpe.get_issue_created_date(), 'Thu Aug  8 15:33:52 2013')
+                     'Test \\*Issue\\* for testing\n'
+                     '\n'
+                     '&nbsp; 1. Test List\n'
+                     '&nbsp; 2. Item\n'
+                     '\n'
+                     '\\*\\*Testing\\*\\*\n'
+                     '\n'
+                     ' \\* Test list 2\n'
+                     ' \\* Item\n'
+                     '\n'
+                     '\\# Test Section\n'
+                     '\n'
+                     '&nbsp;&nbsp;&nbsp; p = source.test\\_issue.post\\(\\)\n'
+                     '&nbsp;&nbsp;&nbsp; p.count = p.count \\*5 \\#\\* 6\n'
+                     '&nbsp;&nbsp;&nbsp; if p.count &gt; 5:\n'
+                     '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; print "Not &lt; 5 &amp; \\!= 5"\n'
+                     '\n'
+                     'References: [issue 1](#1), [r2]\n'
+                     '\n'
+                     'That\'s all'
+                     )
+        self.assertEqual(gpe.get_issue_created_date(),
+                         'Thu Aug  8 15:33:52 2013')
         self.assertEqual(gpe.get_issue_stars(), 1)
 
     def test_get_issue_summary(self):
@@ -253,168 +277,180 @@ class TestGoogleCodeProjectExtractor(TestCase):
         self.assertEqual(gpe.get_issue_summary(), u'My Summary')
 
     def test_get_issue_mod_date(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_mod_date(), 'Thu Aug  8 15:36:57 2013')
 
     def test_get_issue_labels(self):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         self.assertEqual(gpe.get_issue_labels(), [
-                'Type-Defect',
-                'Priority-Medium',
-                'Milestone-Release1.0',
-                'OpSys-All',
-                'Component-Logic',
-                'Performance',
-                'Security',
-                'OpSys-Windows',
-                'OpSys-OSX',
-            ])
+            'Type-Defect',
+            'Priority-Medium',
+            'Milestone-Release1.0',
+            'OpSys-All',
+            'Component-Logic',
+            'Performance',
+            'Security',
+            'OpSys-Windows',
+            'OpSys-OSX',
+        ])
 
     @mock.patch.object(base, 'StringIO')
     def test_get_issue_attachments(self, StringIO):
-        self.urlopen.return_value.info.return_value = {'content-type': 'text/plain; foo'}
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        self.urlopen.return_value.info.return_value = {
+            'content-type': 'text/plain; foo'}
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         attachments = gpe.get_issue_attachments()
         self.assertEqual(len(attachments), 1)
         self.assertEqual(attachments[0].filename, 'at1.txt')
-        self.assertEqual(attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
+        self.assertEqual(
+            attachments[0].url, 'http://allura-google-importer.googlecode.com/issues/attachment?aid=70000000&name=at1.txt&token=3REU1M3JUUMt0rJUg7ldcELt6LA%3A1376059941255')
         self.assertEqual(attachments[0].type, 'text/plain')
 
     @without_module('html2text')
     @mock.patch.object(base, 'StringIO')
     def test_iter_comments(self, StringIO):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         comments = list(gpe.iter_comments())
         self.assertEqual(len(comments), 4)
         expected = [
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:35:15 2013',
-                    'body': 'Test \\*comment\\* is a comment',
-                    'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
-                    'attachments': ['at2.txt'],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:35:34 2013',
-                    'body': 'Another comment with references: [issue 2](#2), [r1]',
-                    'updates': {},
-                    'attachments': [],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:36:39 2013',
-                    'body': 'Last comment',
-                    'updates': {},
-                    'attachments': ['at4.txt', 'at1.txt'],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:36:57 2013',
-                    'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
-                    'updates': {'Labels:': 'OpSys-OSX'},
-                    'attachments': [],
-                },
-            ]
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:15 2013',
+                'body': 'Test \\*comment\\* is a comment',
+                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                'attachments': ['at2.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:34 2013',
+                'body': 'Another comment with references: [issue 2](#2), [r1]',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:39 2013',
+                'body': 'Last comment',
+                'updates': {},
+                'attachments': ['at4.txt', 'at1.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:57 2013',
+                'body': 'Oh, I forgot one \\(with an inter\\-project reference to [issue other\\-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'updates': {'Labels:': 'OpSys-OSX'},
+                'attachments': [],
+            },
+        ]
         for actual, expected in zip(comments, expected):
             self.assertEqual(actual.author.name, expected['author.name'])
             self.assertEqual(actual.author.url, expected['author.url'])
             self.assertEqual(actual.created_date, expected['created_date'])
             self.assertEqual(actual.body, expected['body'])
             self.assertEqual(actual.updates, expected['updates'])
-            self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
+            self.assertEqual(
+                [a.filename for a in actual.attachments], expected['attachments'])
 
     @skipif(module_not_available('html2text'))
     @mock.patch.object(base, 'StringIO')
     def test_iter_comments_html2text(self, StringIO):
-        test_issue = open(pkg_resources.resource_filename('forgeimporters', 'tests/data/google/test-issue.html')).read()
+        test_issue = open(pkg_resources.resource_filename(
+            'forgeimporters', 'tests/data/google/test-issue.html')).read()
         gpe = self._make_extractor(test_issue)
         comments = list(gpe.iter_comments())
         self.assertEqual(len(comments), 4)
         expected = [
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:35:15 2013',
-                    'body': 'Test \\*comment\\* is a comment',
-                    'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
-                    'attachments': ['at2.txt'],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:35:34 2013',
-                    'body': 'Another comment with references: [issue 2](#2), [r1]',
-                    'updates': {},
-                    'attachments': [],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:36:39 2013',
-                    'body': 'Last comment',
-                    'updates': {},
-                    'attachments': ['at4.txt', 'at1.txt'],
-                },
-                {
-                    'author.name': 'john...@gmail.com',
-                    'author.url': 'http://code.google.com/u/101557263855536553789/',
-                    'created_date': 'Thu Aug  8 15:36:57 2013',
-                    'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
-                    'updates': {'Labels:': 'OpSys-OSX'},
-                    'attachments': [],
-                },
-            ]
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:15 2013',
+                'body': 'Test \\*comment\\* is a comment',
+                'updates': {'Status:': 'Started', 'Labels:': '-OpSys-Linux OpSys-Windows'},
+                'attachments': ['at2.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:35:34 2013',
+                'body': 'Another comment with references: [issue 2](#2), [r1]',
+                'updates': {},
+                'attachments': [],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:39 2013',
+                'body': 'Last comment',
+                'updates': {},
+                'attachments': ['at4.txt', 'at1.txt'],
+            },
+            {
+                'author.name': 'john...@gmail.com',
+                'author.url': 'http://code.google.com/u/101557263855536553789/',
+                'created_date': 'Thu Aug  8 15:36:57 2013',
+                'body': 'Oh, I forgot one \\(with an inter-project reference to [issue other-project:1](https://code.google.com/p/other-project/issues/detail?id=1)\\)',
+                'updates': {'Labels:': 'OpSys-OSX'},
+                'attachments': [],
+            },
+        ]
         for actual, expected in zip(comments, expected):
             self.assertEqual(actual.author.name, expected['author.name'])
             self.assertEqual(actual.author.url, expected['author.url'])
             self.assertEqual(actual.created_date, expected['created_date'])
             self.assertEqual(actual.body, expected['body'])
             self.assertEqual(actual.updates, expected['updates'])
-            self.assertEqual([a.filename for a in actual.attachments], expected['attachments'])
+            self.assertEqual(
+                [a.filename for a in actual.attachments], expected['attachments'])
 
     def test_get_issue_ids(self):
         extractor = google.GoogleCodeProjectExtractor(None)
-        extractor.get_page = mock.Mock(side_effect=((1, 2, 3),(2, 3, 4), ()))
+        extractor.get_page = mock.Mock(side_effect=((1, 2, 3), (2, 3, 4), ()))
         self.assertItemsEqual(extractor.get_issue_ids(start=10), (1, 2, 3, 4))
         self.assertEqual(extractor.get_page.call_count, 3)
         extractor.get_page.assert_has_calls([
-                mock.call('issues_csv', parser=google.csv_parser, start=10),
-                mock.call('issues_csv', parser=google.csv_parser, start=110),
-                mock.call('issues_csv', parser=google.csv_parser, start=210),
-            ])
+            mock.call('issues_csv', parser=google.csv_parser, start=10),
+            mock.call('issues_csv', parser=google.csv_parser, start=110),
+            mock.call('issues_csv', parser=google.csv_parser, start=210),
+        ])
 
     @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_page')
     @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_issue_ids')
     def test_iter_issue_ids(self, get_issue_ids, get_page):
         get_issue_ids.side_effect = [set([1, 2]), set([2, 3, 4])]
-        issue_ids = [i for i,e in list(google.GoogleCodeProjectExtractor.iter_issues('foo'))]
+        issue_ids = [i for i,
+                     e in list(google.GoogleCodeProjectExtractor.iter_issues('foo'))]
         self.assertEqual(issue_ids, [1, 2, 3, 4])
         get_issue_ids.assert_has_calls([
-                mock.call(start=0),
-                mock.call(start=-8),
-            ])
+            mock.call(start=0),
+            mock.call(start=-8),
+        ])
 
     @mock.patch.object(google.GoogleCodeProjectExtractor, '__init__')
     @mock.patch.object(google.GoogleCodeProjectExtractor, 'get_issue_ids')
     def test_iter_issue_ids_raises(self, get_issue_ids, __init__):
         get_issue_ids.side_effect = [set([1, 2, 3, 4, 5])]
         __init__.side_effect = [
-                None,
-                None,
-                HTTPError('fourohfour', 404, 'fourohfour', {}, mock.Mock()),  # should skip but keep going
-                None,
-                HTTPError('fubar', 500, 'fubar', {}, mock.Mock()),  # should be re-raised
-                None,
-            ]
+            None,
+            None,
+            # should skip but keep going
+            HTTPError('fourohfour', 404, 'fourohfour', {}, mock.Mock()),
+            None,
+            # should be re-raised
+            HTTPError('fubar', 500, 'fubar', {}, mock.Mock()),
+            None,
+        ]
         issue_ids = []
         try:
             for issue_id, extractor in google.GoogleCodeProjectExtractor.iter_issues('foo'):
@@ -425,7 +461,9 @@ class TestGoogleCodeProjectExtractor(TestCase):
             assert False, 'Missing expected raised exception'
         self.assertEqual(issue_ids, [1, 3])
 
+
 class TestUserLink(TestCase):
+
     def test_plain(self):
         tag = mock.Mock()
         tag.text.strip.return_value = 'name'
@@ -484,10 +522,11 @@ class TestComment(TestCase):
         self.assertEqual(comment.updates, {
             u'Summary:': u'Make PyChess keyboard accessible',
             u'Status:': u'Accepted',
-            })
+        })
 
 
 class TestAsMarkdown(TestCase):
+
     def soup(self, tag):
         return BeautifulSoup(u'<pre>%s</pre>' % tag).first()
 

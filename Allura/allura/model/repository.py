@@ -65,26 +65,28 @@ config = utils.ConfigProxy(
     common_prefix='forgemail.url')
 
 README_RE = re.compile('^README(\.[^.]*)?$', re.IGNORECASE)
-VIEWABLE_EXTENSIONS = ['.php','.py','.js','.java','.html','.htm','.yaml','.sh',
-    '.rb','.phtml','.txt','.bat','.ps1','.xhtml','.css','.cfm','.jsp','.jspx',
-    '.pl','.php4','.php3','.rhtml','.svg','.markdown','.json','.ini','.tcl','.vbs','.xsl']
+VIEWABLE_EXTENSIONS = [
+    '.php', '.py', '.js', '.java', '.html', '.htm', '.yaml', '.sh',
+    '.rb', '.phtml', '.txt', '.bat', '.ps1', '.xhtml', '.css', '.cfm', '.jsp', '.jspx',
+    '.pl', '.php4', '.php3', '.rhtml', '.svg', '.markdown', '.json', '.ini', '.tcl', '.vbs', '.xsl']
+
 
 class RepositoryImplementation(object):
 
     # Repository-specific code
-    def init(self): # pragma no cover
+    def init(self):  # pragma no cover
         raise NotImplementedError, 'init'
 
-    def clone_from(self, source_url): # pragma no cover
+    def clone_from(self, source_url):  # pragma no cover
         raise NotImplementedError, 'clone_from'
 
-    def commit(self, revision): # pragma no cover
+    def commit(self, revision):  # pragma no cover
         raise NotImplementedError, 'commit'
 
-    def all_commit_ids(self): # pragma no cover
+    def all_commit_ids(self):  # pragma no cover
         raise NotImplementedError, 'all_commit_ids'
 
-    def new_commits(self, all_commits=False): # pragma no cover
+    def new_commits(self, all_commits=False):  # pragma no cover
         '''Return a list of native commits in topological order (heads first).
 
         "commit" is a repo-native object, NOT a Commit object.
@@ -92,21 +94,22 @@ class RepositoryImplementation(object):
         '''
         raise NotImplementedError, 'new_commits'
 
-    def commit_parents(self, commit): # pragma no cover
+    def commit_parents(self, commit):  # pragma no cover
         '''Return a list of native commits for the parents of the given (native)
         commit'''
         raise NotImplementedError, 'commit_parents'
 
-    def refresh_commit_info(self, oid, lazy=True): # pragma no cover
+    def refresh_commit_info(self, oid, lazy=True):  # pragma no cover
         '''Refresh the data in the commit with id oid'''
         raise NotImplementedError, 'refresh_commit_info'
 
-    def _setup_hooks(self, source_path=None): # pragma no cover
+    def _setup_hooks(self, source_path=None):  # pragma no cover
         '''Install a hook in the repository that will ping the refresh url for
         the repo.  Optionally provide a path from which to copy existing hooks.'''
         raise NotImplementedError, '_setup_hooks'
 
-    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw): # pragma no cover
+    # pragma no cover
+    def log(self, revs=None, path=None, exclude=None, id_only=True, **kw):
         """
         Returns a generator that returns information about commits reachable
         by revs.
@@ -128,11 +131,11 @@ class RepositoryImplementation(object):
         """
         raise NotImplementedError, 'log'
 
-    def compute_tree_new(self, commit, path='/'): # pragma no cover
+    def compute_tree_new(self, commit, path='/'):  # pragma no cover
         '''Used in hg and svn to compute a git-like-tree lazily with the new models'''
         raise NotImplementedError, 'compute_tree'
 
-    def open_blob(self, blob): # pragma no cover
+    def open_blob(self, blob):  # pragma no cover
         '''Return a file-like object that contains the contents of the blob'''
         raise NotImplementedError, 'open_blob'
 
@@ -168,7 +171,8 @@ class RepositoryImplementation(object):
             object_id = commit._id
 
         if '/' in object_id:
-            object_id = os.path.join(object_id, self._repo.app.END_OF_REF_ESCAPE)
+            object_id = os.path.join(
+                object_id, self._repo.app.END_OF_REF_ESCAPE)
 
         return os.path.join(self._repo.url(), url_type, object_id) + '/'
 
@@ -178,7 +182,8 @@ class RepositoryImplementation(object):
         If create_repo_dir is True, also ensure that the directory
         of the repo itself exists.
         '''
-        if not self._repo.fs_path.endswith('/'): self._repo.fs_path += '/'
+        if not self._repo.fs_path.endswith('/'):
+            self._repo.fs_path += '/'
         fullname = self._repo.fs_path + self._repo.name
         # make the base dir for repo, regardless
         if not os.path.exists(self._repo.fs_path):
@@ -188,10 +193,11 @@ class RepositoryImplementation(object):
         return fullname
 
     def _setup_special_files(self, source_path=None):
-        magic_file = os.path.join(self._repo.fs_path, self._repo.name, '.SOURCEFORGE-REPOSITORY')
+        magic_file = os.path.join(
+            self._repo.fs_path, self._repo.name, '.SOURCEFORGE-REPOSITORY')
         with open(magic_file, 'w') as f:
             f.write(self._repo.repo_id)
-        os.chmod(magic_file, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+        os.chmod(magic_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
         self._setup_hooks(source_path)
 
     @property
@@ -232,17 +238,20 @@ class RepositoryImplementation(object):
         lcd_chunk_size = asint(tg.config.get('lcd_thread_chunk_size', 10))
         num_threads = 0
         for s in range(0, len(paths), lcd_chunk_size):
-            chunks.put(paths[s:s+lcd_chunk_size])
+            chunks.put(paths[s:s + lcd_chunk_size])
             num_threads += 1
+
         def get_ids():
             paths = set(chunks.get())
             try:
                 commit_id = commit._id
                 while paths and commit_id:
                     if time() - start_time >= timeout:
-                        log.error('last_commit_ids timeout for %s on %s', commit._id, ', '.join(paths))
+                        log.error('last_commit_ids timeout for %s on %s',
+                                  commit._id, ', '.join(paths))
                         break
-                    commit_id, changes = self._get_last_commit(commit._id, paths)
+                    commit_id, changes = self._get_last_commit(
+                        commit._id, paths)
                     if commit_id is None:
                         break
                     changed = prefix_paths_union(paths, changes)
@@ -288,27 +297,29 @@ class RepositoryImplementation(object):
         """
         raise NotImplemented('get_changes')
 
+
 class Repository(Artifact, ActivityObject):
-    BATCH_SIZE=100
+    BATCH_SIZE = 100
+
     class __mongometa__:
-        name='generic-repository'
+        name = 'generic-repository'
         indexes = ['upstream_repo.name']
     _impl = None
-    repo_id='repo'
-    type_s='Repository'
+    repo_id = 'repo'
+    type_s = 'Repository'
     _refresh_precompute = True
 
-    name=FieldProperty(str)
-    tool=FieldProperty(str)
-    fs_path=FieldProperty(str)
-    url_path=FieldProperty(str)
-    status=FieldProperty(str)
-    email_address=''
-    additional_viewable_extensions=FieldProperty(str)
+    name = FieldProperty(str)
+    tool = FieldProperty(str)
+    fs_path = FieldProperty(str)
+    url_path = FieldProperty(str)
+    status = FieldProperty(str)
+    email_address = ''
+    additional_viewable_extensions = FieldProperty(str)
     heads = FieldProperty(S.Deprecated)
     branches = FieldProperty(S.Deprecated)
     repo_tags = FieldProperty(S.Deprecated)
-    upstream_repo = FieldProperty(dict(name=str,url=str))
+    upstream_repo = FieldProperty(dict(name=str, url=str))
     default_branch_name = FieldProperty(str)
 
     def __init__(self, **kw):
@@ -358,7 +369,8 @@ class Repository(Artifact, ActivityObject):
         return urljoin(tg.config.get('scm.repos.tarball.url_prefix', '/'), r)
 
     def get_tarball_status(self, revision, path=None):
-        pathname = os.path.join(self.tarball_path, self.tarball_filename(revision, path))
+        pathname = os.path.join(
+            self.tarball_path, self.tarball_filename(revision, path))
         filename = '%s%s' % (pathname, '.zip')
         if os.path.isfile(filename):
             return 'complete'
@@ -368,12 +380,11 @@ class Repository(Artifact, ActivityObject):
             'task_name': 'allura.tasks.repo_tasks.tarball',
             'args': [revision, path or ''],
             'state': {'$in': ['busy', 'ready']},
-            })
+        })
 
         return task.state if task else None
 
-
-    def __repr__(self): # pragma no cover
+    def __repr__(self):  # pragma no cover
         return '<%s %s>' % (
             self.__class__.__name__,
             self.full_fs_path)
@@ -381,32 +392,46 @@ class Repository(Artifact, ActivityObject):
     # Proxy to _impl
     def init(self):
         return self._impl.init()
+
     def commit(self, rev):
         return self._impl.commit(rev)
+
     def all_commit_ids(self):
         return self._impl.all_commit_ids()
+
     def refresh_commit_info(self, oid, seen, lazy=True):
         return self._impl.refresh_commit_info(oid, seen, lazy)
+
     def open_blob(self, blob):
         return self._impl.open_blob(blob)
+
     def blob_size(self, blob):
         return self._impl.blob_size(blob)
+
     def shorthand_for_commit(self, oid):
         return self._impl.shorthand_for_commit(oid)
+
     def symbolics_for_commit(self, commit):
         return self._impl.symbolics_for_commit(commit)
+
     def url_for_commit(self, commit, url_type='ci'):
         return self._impl.url_for_commit(commit, url_type)
+
     def compute_tree_new(self, commit, path='/'):
         return self._impl.compute_tree_new(commit, path)
+
     def last_commit_ids(self, commit, paths):
         return self._impl.last_commit_ids(commit, paths)
+
     def get_changes(self, commit_id):
         return self._impl.get_changes(commit_id)
+
     def is_empty(self):
         return self._impl.is_empty()
+
     def is_file(self, path, rev=None):
         return self._impl.is_file(path, rev)
+
     def get_heads(self):
         """
         Return list of heads for the repo.
@@ -416,6 +441,7 @@ class Repository(Artifact, ActivityObject):
         try to remove the deprecated fields and clean this up.
         """
         return self._impl.heads
+
     def get_branches(self):
         """
         Return list of branches for the repo.
@@ -425,6 +451,7 @@ class Repository(Artifact, ActivityObject):
         should try to remove the deprecated fields and clean this up.
         """
         return self._impl.branches
+
     def get_tags(self):
         """
         Return list of tags for the repo.
@@ -434,15 +461,18 @@ class Repository(Artifact, ActivityObject):
         should try to remove the deprecated fields and clean this up.
         """
         return self._impl.tags
+
     @property
     def head(self):
         return self._impl.head
+
     def set_default_branch(self, name):
         return self._impl.set_default_branch(name)
 
     def _log(self, rev, skip, limit):
         head = self.commit(rev)
-        if head is None: return
+        if head is None:
+            return
         for _id in self.commitlog([head._id], skip, limit):
             ci = head.query.get(_id=_id)
             ci.set_context(self)
@@ -491,7 +521,7 @@ class Repository(Artifact, ActivityObject):
             branch = self.app.default_branch_name
         try:
             return self.commit(branch)
-        except: # pragma no cover
+        except:  # pragma no cover
             log.exception('Cannot get latest commit for a branch', branch)
             return None
 
@@ -500,17 +530,18 @@ class Repository(Artifact, ActivityObject):
 
     def refresh_url(self):
         return '/'.join([
-                tg.config.get('base_url', 'http://localhost:8080').rstrip('/'),
-                'auth/refresh_repo',
-                self.url().lstrip('/'),
-            ])
+            tg.config.get('base_url', 'http://localhost:8080').rstrip('/'),
+            'auth/refresh_repo',
+            self.url().lstrip('/'),
+        ])
 
     def shorthand_id(self):
         return self.name
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(
+            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return u'noreply@%s%s' % (domain, config.common_suffix)
 
     def index(self):
@@ -532,8 +563,9 @@ class Repository(Artifact, ActivityObject):
         '''Return a URL string suitable for copy/paste that describes _this_ repo,
            e.g., for use in a clone/checkout command
         '''
-        tpl = string.Template(tg.config.get('scm.host.%s.%s' % (category, self.tool)))
-        return tpl.substitute(dict(username=username, path=self.url_path+self.name))
+        tpl = string.Template(
+            tg.config.get('scm.host.%s.%s' % (category, self.tool)))
+        return tpl.substitute(dict(username=username, path=self.url_path + self.name))
 
     def clone_command(self, category, username=''):
         '''Return a string suitable for copy/paste that would clone this repo locally
@@ -544,20 +576,21 @@ class Repository(Artifact, ActivityObject):
         tpl = string.Template(tg.config.get('scm.clone.%s.%s' % (category, self.tool)) or
                               tg.config.get('scm.clone.%s' % self.tool))
         return tpl.substitute(dict(username=username,
-                                   source_url=self.clone_url(category, username),
+                                   source_url=self.clone_url(
+                                       category, username),
                                    dest_path=self.suggested_clone_dest_path()))
 
     def merge_requests_by_statuses(self, *statuses):
         return MergeRequest.query.find(dict(
-                app_config_id=self.app.config._id,
-                status={'$in':statuses})).sort(
+            app_config_id=self.app.config._id,
+            status={'$in': statuses})).sort(
             'request_number')
 
     @LazyProperty
     def _additional_viewable_extensions(self):
         ext_list = self.additional_viewable_extensions or ''
         ext_list = [ext.strip() for ext in ext_list.split(',') if ext]
-        ext_list += [ '.ini', '.gitignore', '.svnignore', 'README' ]
+        ext_list += ['.ini', '.gitignore', '.svnignore', 'README']
         return ext_list
 
     def guess_type(self, name):
@@ -586,16 +619,16 @@ class Repository(Artifact, ActivityObject):
             self.set_status('ready')
 
     def push_upstream_context(self):
-        project, rest=h.find_project(self.upstream_repo.name)
+        project, rest = h.find_project(self.upstream_repo.name)
         with h.push_context(project._id):
             app = project.app_instance(rest[0])
         return h.push_context(project._id, app_config_id=app.config._id)
 
     def pending_upstream_merges(self):
         q = {
-            'downstream.project_id':self.project_id,
-            'downstream.mount_point':self.app.config.options.mount_point,
-            'status':'open'}
+            'downstream.project_id': self.project_id,
+            'downstream.mount_point': self.app.config.options.mount_point,
+            'status': 'open'}
         with self.push_upstream_context():
             return MergeRequest.query.find(q).count()
 
@@ -634,26 +667,28 @@ class Repository(Artifact, ActivityObject):
         self.status = status
         session(self).flush(self)
 
-class MergeRequest(VersionedArtifact, ActivityObject):
-    statuses=['open', 'merged', 'rejected']
-    class __mongometa__:
-        name='merge-request'
-        indexes=['commit_id']
-        unique_indexes=[('app_config_id', 'request_number')]
-    type_s='MergeRequest'
 
-    request_number=FieldProperty(int)
-    status=FieldProperty(str, if_missing='open')
-    downstream=FieldProperty(dict(
-            project_id=S.ObjectId,
-            mount_point=str,
-            commit_id=str))
-    source_branch=FieldProperty(str,if_missing='')
-    target_branch=FieldProperty(str)
-    creator_id=FieldProperty(S.ObjectId, if_missing=lambda:c.user._id)
-    created=FieldProperty(datetime, if_missing=datetime.utcnow)
-    summary=FieldProperty(str)
-    description=FieldProperty(str)
+class MergeRequest(VersionedArtifact, ActivityObject):
+    statuses = ['open', 'merged', 'rejected']
+
+    class __mongometa__:
+        name = 'merge-request'
+        indexes = ['commit_id']
+        unique_indexes = [('app_config_id', 'request_number')]
+    type_s = 'MergeRequest'
+
+    request_number = FieldProperty(int)
+    status = FieldProperty(str, if_missing='open')
+    downstream = FieldProperty(dict(
+        project_id=S.ObjectId,
+        mount_point=str,
+        commit_id=str))
+    source_branch = FieldProperty(str, if_missing='')
+    target_branch = FieldProperty(str)
+    creator_id = FieldProperty(S.ObjectId, if_missing=lambda: c.user._id)
+    created = FieldProperty(datetime, if_missing=datetime.utcnow)
+    summary = FieldProperty(str)
+    description = FieldProperty(str)
 
     @property
     def activity_name(self):
@@ -701,13 +736,13 @@ class MergeRequest(VersionedArtifact, ActivityObject):
     @classmethod
     def upsert(cls, **kw):
         num = cls.query.find(dict(
-                app_config_id=c.app.config._id)).count()+1
+            app_config_id=c.app.config._id)).count() + 1
         while True:
             try:
                 r = cls(request_number=num, **kw)
                 session(r).flush(r)
                 return r
-            except pymongo.errors.DuplicateKeyError: # pragma no cover
+            except pymongo.errors.DuplicateKeyError:  # pragma no cover
                 session(r).expunge(r)
                 num += 1
 
@@ -725,6 +760,7 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
 
 class GitLikeTree(object):
+
     '''
     A tree node similar to that which is used in git
 
@@ -734,19 +770,22 @@ class GitLikeTree(object):
 
     def __init__(self):
         self.blobs = {}  # blobs[name] = oid
-        self.trees = defaultdict(GitLikeTree) #trees[name] = GitLikeTree()
+        self.trees = defaultdict(GitLikeTree)  # trees[name] = GitLikeTree()
         self._hex = None
 
     def get_tree(self, path):
-        if path.startswith('/'): path = path[1:]
-        if not path: return self
+        if path.startswith('/'):
+            path = path[1:]
+        if not path:
+            return self
         cur = self
         for part in path.split('/'):
             cur = cur.trees[part]
         return cur
 
     def get_blob(self, path):
-        if path.startswith('/'): path = path[1:]
+        if path.startswith('/'):
+            path = path[1:]
         path_parts = path.split('/')
         dirpath, last = path_parts[:-1], path_parts[-1]
         cur = self
@@ -755,7 +794,8 @@ class GitLikeTree(object):
         return cur.blobs[last]
 
     def set_blob(self, path, oid):
-        if path.startswith('/'): path = path[1:]
+        if path.startswith('/'):
+            path = path[1:]
         path_parts = path.split('/')
         dirpath, filename = path_parts[:-1], path_parts[-1]
         cur = self
@@ -774,9 +814,9 @@ class GitLikeTree(object):
     def __repr__(self):
         # this can't change, is used in hex() above
         lines = ['t %s %s' % (t.hex(), name)
-                  for name, t in self.trees.iteritems() ]
+                 for name, t in self.trees.iteritems()]
         lines += ['b %s %s' % (oid, name)
-                  for name, oid in self.blobs.iteritems() ]
+                  for name, oid in self.blobs.iteritems()]
         return h.really_unicode('\n'.join(sorted(lines))).encode('utf-8')
 
     def __unicode__(self):
@@ -784,13 +824,15 @@ class GitLikeTree(object):
 
     def pretty_tree(self, indent=0, recurse=True, show_id=True):
         '''For debugging, show a nice tree representation'''
-        lines = [' '*indent + 't %s %s' %
-                 (name, '\n'+t.unicode_full_tree(indent+2, show_id=show_id) if recurse else t.hex())
-                  for name, t in sorted(self.trees.iteritems()) ]
-        lines += [' '*indent + 'b %s %s' % (name, oid if show_id else '')
-                  for name, oid in sorted(self.blobs.iteritems()) ]
+        lines = [' ' * indent + 't %s %s' %
+                 (name, '\n' + t.unicode_full_tree(indent + 2, show_id=show_id)
+                  if recurse else t.hex())
+                 for name, t in sorted(self.trees.iteritems())]
+        lines += [' ' * indent + 'b %s %s' % (name, oid if show_id else '')
+                  for name, oid in sorted(self.blobs.iteritems())]
         output = h.really_unicode('\n'.join(lines)).encode('utf-8')
         return output
+
 
 def topological_sort(graph):
     '''Return the topological sort of a graph.
@@ -810,7 +852,8 @@ def topological_sort(graph):
         if not parents:
             graph.pop(nid)
             roots.append(nid)
-        for p_nid in parents: children[p_nid].append(nid)
+        for p_nid in parents:
+            children[p_nid].append(nid)
     # Topo sort
     while roots:
         n = roots.pop()

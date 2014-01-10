@@ -38,6 +38,7 @@ def test_extensions_cm():
 
 
 class TestBatchIndexer(TestCase):
+
     def setUp(self):
         session = mock.Mock()
         self.extcls = BatchIndexer
@@ -74,7 +75,8 @@ class TestBatchIndexer(TestCase):
         self.extcls.to_delete = del_index_ids
         self.extcls.to_add = set([4, 5, 6])
         self.ext.flush()
-        index_tasks.del_artifacts.post.assert_called_once_with(list(del_index_ids))
+        index_tasks.del_artifacts.post.assert_called_once_with(
+            list(del_index_ids))
         index_tasks.add_artifacts.post.assert_called_once_with([4, 5, 6])
         self.assertEqual(self.ext.to_delete, set())
         self.assertEqual(self.ext.to_add, set())
@@ -110,7 +112,7 @@ class TestBatchIndexer(TestCase):
         def on_post(chunk):
             if len(chunk) > 1:
                 raise pymongo.errors.InvalidDocument(
-                        "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
+                    "BSON document too large (16906035 bytes) - the connected server supports BSON document sizes up to 16777216 bytes.")
         index_tasks.add_artifacts.post.side_effect = on_post
         self.ext._post(index_tasks.add_artifacts, range(5))
         expected = [
@@ -124,7 +126,8 @@ class TestBatchIndexer(TestCase):
             mock.call([3]),
             mock.call([4])
         ]
-        self.assertEqual(expected, index_tasks.add_artifacts.post.call_args_list)
+        self.assertEqual(
+            expected, index_tasks.add_artifacts.post.call_args_list)
 
     @mock.patch('allura.tasks.index_tasks')
     def test__post_other_error(self, index_tasks):

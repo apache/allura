@@ -35,7 +35,8 @@ def main():
                   help='URL of wiki API to copy from like http://fromserver.com/rest/p/test/wiki/')
     op.add_option('-t', '--to-wiki', action='store', dest='to_wiki',
                   help='URL of wiki API to copy to like http://toserver.com/rest/p/test/wiki/')
-    op.add_option('-D', '--debug', action='store_true', dest='debug', default=False)
+    op.add_option('-D', '--debug', action='store_true',
+                  dest='debug', default=False)
     (options, args) = op.parse_args(sys.argv[1:])
 
     base_url = options.to_wiki.split('/rest/')[0]
@@ -44,15 +45,16 @@ def main():
     wiki_data = urllib.urlopen(options.from_wiki).read()
     wiki_json = json.loads(wiki_data)['pages']
     for p in wiki_json:
-        from_url = options.from_wiki+urllib.quote(p)
-        to_url = options.to_wiki+urllib.quote(p)
+        from_url = options.from_wiki + urllib.quote(p)
+        to_url = options.to_wiki + urllib.quote(p)
         try:
             page_data = urllib.urlopen(from_url).read()
             page_json = json.loads(page_data)
             if options.debug:
                 print page_json['text']
                 break
-            resp = oauth_client.request(to_url, 'POST', body=urllib.urlencode(dict(text=page_json['text'].encode('utf-8'))))
+            resp = oauth_client.request(
+                to_url, 'POST', body=urllib.urlencode(dict(text=page_json['text'].encode('utf-8'))))
             if resp[0]['status'] == '200':
                 print "Posted {0} to {1}".format(page_json['title'], to_url)
             else:
@@ -71,11 +73,13 @@ def make_oauth_client(base_url):
     cp = ConfigParser()
     cp.read(config_file)
 
-    REQUEST_TOKEN_URL = base_url+'/rest/oauth/request_token'
-    AUTHORIZE_URL = base_url+'/rest/oauth/authorize'
-    ACCESS_TOKEN_URL = base_url+'/rest/oauth/access_token'
-    oauth_key = option(cp, base_url, 'oauth_key', 'Forge API OAuth Key (%s/auth/oauth/): ' % base_url)
-    oauth_secret = option(cp, base_url, 'oauth_secret', 'Forge API Oauth Secret: ')
+    REQUEST_TOKEN_URL = base_url + '/rest/oauth/request_token'
+    AUTHORIZE_URL = base_url + '/rest/oauth/authorize'
+    ACCESS_TOKEN_URL = base_url + '/rest/oauth/access_token'
+    oauth_key = option(cp, base_url, 'oauth_key',
+                       'Forge API OAuth Key (%s/auth/oauth/): ' % base_url)
+    oauth_secret = option(cp, base_url, 'oauth_secret',
+                          'Forge API Oauth Secret: ')
     consumer = oauth.Consumer(oauth_key, oauth_secret)
 
     try:
@@ -87,7 +91,8 @@ def make_oauth_client(base_url):
         assert resp['status'] == '200', resp
 
         request_token = dict(urlparse.parse_qsl(content))
-        pin_url = "%s?oauth_token=%s" % (AUTHORIZE_URL, request_token['oauth_token'])
+        pin_url = "%s?oauth_token=%s" % (
+            AUTHORIZE_URL, request_token['oauth_token'])
         if getattr(webbrowser.get(), 'name', '') == 'links':
             # sandboxes
             print("Go to %s" % pin_url)
@@ -95,7 +100,8 @@ def make_oauth_client(base_url):
             webbrowser.open(pin_url)
         oauth_verifier = raw_input('What is the PIN? ')
 
-        token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
+        token = oauth.Token(
+            request_token['oauth_token'], request_token['oauth_token_secret'])
         token.set_verifier(oauth_verifier)
         client = oauth.Client(consumer, token)
         resp, content = client.request(ACCESS_TOKEN_URL, "GET")

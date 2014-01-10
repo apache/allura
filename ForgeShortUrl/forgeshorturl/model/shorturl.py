@@ -54,7 +54,7 @@ class ShortUrl(M.Artifact):
         except pymongo.errors.DuplicateKeyError:
             session(u).expunge(u)
             u = cls.query.get(short_name=shortname,
-                    app_config_id=c.app.config._id)
+                              app_config_id=c.app.config._id)
         return u
 
     def index(self):
@@ -74,11 +74,11 @@ class ShortUrl(M.Artifact):
     @classmethod
     def build_short_url(cls, app, short_name):
         return config['short_url.url_pattern'].format(
-                base_url=config['base_url'],
-                nbhd=app.project.neighborhood.url_prefix.strip('/'),
-                project=app.project.shortname,
-                mount_point=app.config.options.mount_point,
-                short_name=short_name)
+            base_url=config['base_url'],
+            nbhd=app.project.neighborhood.url_prefix.strip('/'),
+            project=app.project.shortname,
+            mount_point=app.config.options.mount_point,
+            short_name=short_name)
 
     def short_url(self):
         return self.build_short_url(self.app, self.short_name)

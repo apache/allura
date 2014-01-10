@@ -28,19 +28,21 @@ from allura.lib.spam.mollomfilter import MOLLOM_AVAILABLE, MollomSpamFilter
 
 @unittest.skipIf(not MOLLOM_AVAILABLE, "Mollom not available")
 class TestMollom(unittest.TestCase):
+
     @mock.patch('allura.lib.spam.mollomfilter.Mollom')
     def setUp(self, mollom_lib):
         self.mollom = MollomSpamFilter({})
+
         def side_effect(*args, **kw):
             # side effect to test that data being sent to
             # mollom can be successfully urlencoded
             urllib.urlencode(kw.get('data', {}))
             return dict(spam=2)
         self.mollom.service.checkContent = mock.Mock(side_effect=side_effect,
-                return_value=dict(spam=2))
+                                                     return_value=dict(spam=2))
         self.fake_artifact = mock.Mock(**{'url.return_value': 'artifact url'})
         self.fake_user = mock.Mock(display_name=u'Søme User',
-                email_addresses=['user@domain'])
+                                   email_addresses=['user@domain'])
         self.fake_headers = dict(
             REMOTE_ADDR='fallback ip',
             X_FORWARDED_FOR='some ip',
@@ -58,19 +60,22 @@ class TestMollom(unittest.TestCase):
     def test_check(self, request, c):
         request.headers = self.fake_headers
         c.user = None
-        self.mollom.check(self.content, artifact = self.artifact)
-        self.mollom.service.checkContent.assert_called_once_with(**self.expected_data)
+        self.mollom.check(self.content, artifact=self.artifact)
+        self.mollom.service.checkContent.assert_called_once_with(
+            **self.expected_data)
 
     @mock.patch('allura.lib.spam.mollomfilter.c')
     @mock.patch('allura.lib.spam.mollomfilter.request')
     def test_check_with_user(self, request, c):
         request.headers = self.fake_headers
         c.user = None
-        self.mollom.check(self.content, user=self.fake_user, artifact=self.artifact)
+        self.mollom.check(self.content, user=self.fake_user,
+                          artifact=self.artifact)
         expected_data = self.expected_data
         expected_data.update(authorName=u'Søme User'.encode('utf8'),
-                authorMail='user@domain')
-        self.mollom.service.checkContent.assert_called_once_with(**self.expected_data)
+                             authorMail='user@domain')
+        self.mollom.service.checkContent.assert_called_once_with(
+            **self.expected_data)
 
     @mock.patch('allura.lib.spam.mollomfilter.c')
     @mock.patch('allura.lib.spam.mollomfilter.request')
@@ -80,8 +85,9 @@ class TestMollom(unittest.TestCase):
         self.mollom.check(self.content, artifact=self.artifact)
         expected_data = self.expected_data
         expected_data.update(authorName=u'Søme User'.encode('utf8'),
-                authorMail='user@domain')
-        self.mollom.service.checkContent.assert_called_once_with(**self.expected_data)
+                             authorMail='user@domain')
+        self.mollom.service.checkContent.assert_called_once_with(
+            **self.expected_data)
 
     @mock.patch('allura.lib.spam.mollomfilter.c')
     @mock.patch('allura.lib.spam.mollomfilter.request')
@@ -92,8 +98,10 @@ class TestMollom(unittest.TestCase):
         request.remote_addr = self.fake_headers['REMOTE_ADDR']
         c.user = None
         self.mollom.check(self.content, artifact=self.artifact)
-        self.mollom.service.checkContent.assert_called_once_with(**self.expected_data)
+        self.mollom.service.checkContent.assert_called_once_with(
+            **self.expected_data)
 
     def test_submit_spam(self):
         self.mollom.submit_spam('test', artifact=self.artifact)
-        assert self.mollom.service.sendFeedback.call_args[0] == ('test_id', 'spam'), self.mollom.service.sendFeedback.call_args[0]
+        assert self.mollom.service.sendFeedback.call_args[0] == (
+            'test_id', 'spam'), self.mollom.service.sendFeedback.call_args[0]

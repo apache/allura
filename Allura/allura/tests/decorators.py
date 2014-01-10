@@ -53,8 +53,8 @@ def NullContextManager():
 
 
 def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
-        ordinal=None, post_install_hook=None, username='test-admin',
-        **override_options):
+              ordinal=None, post_install_hook=None, username='test-admin',
+              **override_options):
     def _with_tool(func):
         @wraps(func)
         def wrapped(*args, **kw):
@@ -62,7 +62,8 @@ def with_tool(project_shortname, ep_name, mount_point=None, mount_label=None,
             p = M.Project.query.get(shortname=project_shortname)
             c.project = p
             if mount_point and not p.app_instance(mount_point):
-                c.app = p.install_app(ep_name, mount_point, mount_label, ordinal, **override_options)
+                c.app = p.install_app(
+                    ep_name, mount_point, mount_label, ordinal, **override_options)
                 if post_install_hook:
                     post_install_hook(c.app)
 
@@ -87,7 +88,9 @@ with_tracker = with_tool('test', 'Tickets', 'bugs')
 with_wiki = with_tool('test', 'Wiki', 'wiki')
 with_url = with_tool('test', 'ShortUrl', 'url')
 
+
 class raises(object):
+
     '''
     Test helper in the form of a context manager, to assert that something raises an exception.
     After completion, the 'exc' attribute can be used to do further inspection of the exception
@@ -124,6 +127,7 @@ def without_module(*module_names):
 
 
 class patch_middleware_config(object):
+
     '''
     Context manager that patches the configuration used during middleware
     setup for Allura

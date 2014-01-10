@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 
 
 class MediawikiExtractor(object):
+
     """Base class for MediaWiki data provider"""
 
     def __init__(self, options):
@@ -40,6 +41,7 @@ class MediawikiExtractor(object):
 
 
 class MySQLExtractor(MediawikiExtractor):
+
     """Extract MediaWiki data to json.
 
     Use connection to MySQL database as a data source.
@@ -60,7 +62,8 @@ class MySQLExtractor(MediawikiExtractor):
         try:
             import MySQLdb
         except ImportError:
-            raise ImportError('GPL library MySQL-python is required for this operation')
+            raise ImportError(
+                'GPL library MySQL-python is required for this operation')
 
         if not self._connection:
             self._connection = MySQLdb.connect(**self.db_options)
@@ -147,7 +150,7 @@ class MySQLExtractor(MediawikiExtractor):
             # so we need to build path to file as follows
             md5 = hashlib.md5(name).hexdigest()
             path = os.path.join(self.options.attachments_dir,
-                               md5[:1], md5[:2], name)
+                                md5[:1], md5[:2], name)
             if os.path.isfile(path):
                 yield path
 
@@ -185,4 +188,5 @@ class MySQLExtractor(MediawikiExtractor):
         for filepath in self._attachments(page_id):
             self._save_attachment(filepath, 'pages', str(page_id),
                                   'attachments')
-        log.info('Extracted attachments for page %s (%s)', page_id, page['title'])
+        log.info('Extracted attachments for page %s (%s)',
+                 page_id, page['title'])

@@ -33,7 +33,8 @@ class TestGravatar(TestController):
         email = u'Vin\u00EDcius@example.com'
         expected_id = 'e00968255d68523b034a6a39c522efdb'
         actual_id = gravatar.id(email)
-        assert expected_id == actual_id, 'Expected gravitar ID %s, got %s' % (repr(expected_id), repr(actual_id))
+        assert expected_id == actual_id, 'Expected gravitar ID %s, got %s' % (
+            repr(expected_id), repr(actual_id))
 
     def test_url(self):
         email = 'Wolf@example.com'

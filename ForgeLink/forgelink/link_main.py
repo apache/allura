@@ -40,25 +40,26 @@ log = logging.getLogger(__name__)
 
 
 class ForgeLinkApp(Application):
+
     '''This is the Link app for PyForge'''
     __version__ = version.__version__
-    permissions = [ 'configure', 'read' ]
+    permissions = ['configure', 'read']
     permissions_desc = {
         'read': 'View link.',
     }
     config_options = Application.config_options + [
         ConfigOption('url', str, None)
     ]
-    searchable=True
-    exportable=True
-    tool_label='External Link'
-    default_mount_label='Link name'
-    default_mount_point='link'
-    ordinal=1
-    icons={
-        24:'images/ext_24.png',
-        32:'images/ext_32.png',
-        48:'images/ext_48.png'
+    searchable = True
+    exportable = True
+    tool_label = 'External Link'
+    default_mount_label = 'Link name'
+    default_mount_point = 'link'
+    ordinal = 1
+    icons = {
+        24: 'images/ext_24.png',
+        32: 'images/ext_32.png',
+        48: 'images/ext_48.png'
     }
 
     def __init__(self, project, config):
@@ -71,7 +72,7 @@ class ForgeLinkApp(Application):
     @h.exceptionless([], log)
     def sitemap(self):
         menu_id = self.config.options.mount_label
-        return [SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+        return [SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     def sidebar_menu(self):
         return []
@@ -89,14 +90,15 @@ class ForgeLinkApp(Application):
         self.config.acl = [
             M.ACE.allow(role_anon, 'read'),
             M.ACE.allow(role_admin, 'configure'),
-            ]
+        ]
 
     def uninstall(self, project):
         "Remove all the tool's artifacts from the database"
         super(ForgeLinkApp, self).uninstall(project)
 
     def bulk_export(self, f):
-        json.dump(RootRestController(self).link_json(), f, cls=jsonify.GenericJSON, indent=2)
+        json.dump(RootRestController(self).link_json(),
+                  f, cls=jsonify.GenericJSON, indent=2)
 
 
 class RootController(BaseController):
@@ -125,7 +127,7 @@ class LinkAdminController(DefaultAdminController):
     @expose()
     def index(self, **kw):
         flash('External link URL updated.')
-        redirect(c.project.url()+'admin/tools')
+        redirect(c.project.url() + 'admin/tools')
 
 
 class RootRestController(BaseController):

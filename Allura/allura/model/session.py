@@ -28,6 +28,7 @@ from allura.tasks import index_tasks
 
 log = logging.getLogger(__name__)
 
+
 class ArtifactSessionExtension(SessionExtension):
 
     def __init__(self, session):
@@ -41,14 +42,14 @@ class ArtifactSessionExtension(SessionExtension):
             self.objects_added = list(self.session.uow.new)
             self.objects_modified = list(self.session.uow.dirty)
             self.objects_deleted = list(self.session.uow.deleted)
-        else: # pragma no cover
+        else:  # pragma no cover
             st = state(obj)
             if st.status == st.new:
-                self.objects_added = [ obj ]
+                self.objects_added = [obj]
             elif st.status == st.dirty:
-                self.objects_modified = [ obj ]
+                self.objects_modified = [obj]
             elif st.status == st.deleted:
-                self.objects_deleted = [ obj ]
+                self.objects_deleted = [obj]
 
     def after_flush(self, obj=None):
         "Update artifact references, and add/update this artifact to solr"
@@ -61,13 +62,14 @@ class ArtifactSessionExtension(SessionExtension):
             try:
                 arefs = [
                     ArtifactReference.from_artifact(obj)
-                    for obj in self.objects_added + self.objects_modified ]
+                    for obj in self.objects_added + self.objects_modified]
                 for obj in self.objects_added + self.objects_modified:
                     Shortlink.from_artifact(obj)
                 # Flush shortlinks
                 main_orm_session.flush()
             except Exception:
-                log.exception("Failed to update artifact references. Is this a borked project migration?")
+                log.exception(
+                    "Failed to update artifact references. Is this a borked project migration?")
             self.update_index(self.objects_deleted, arefs)
             for obj in self.objects_added:
                 g.zarkov_event('create', extra=obj.index_id())
@@ -88,7 +90,9 @@ class ArtifactSessionExtension(SessionExtension):
         if arefs:
             index_tasks.add_artifacts.post([aref._id for aref in arefs])
 
+
 class BatchIndexer(ArtifactSessionExtension):
+
     """
     Tracks needed search index operations over the life of a
     :class:`ming.odm.session.ThreadLocalODMSession` session, and performs them
@@ -116,7 +120,7 @@ class BatchIndexer(ArtifactSessionExtension):
         from .index import ArtifactReference
         del_index_ids = [obj.index_id() for obj in objects_deleted]
         deleted_aref_ids = [aref._id for aref in
-            ArtifactReference.query.find(dict(_id={'$in': del_index_ids}))]
+                            ArtifactReference.query.find(dict(_id={'$in': del_index_ids}))]
         cls = self.__class__
         cls.to_add -= set(deleted_aref_ids)
         cls.to_delete |= set(del_index_ids)
@@ -157,7 +161,8 @@ class BatchIndexer(ArtifactSessionExtension):
         try:
             task_func.post(chunk)
         except pymongo.errors.InvalidDocument as e:
-            # there are many types of InvalidDocument, only recurse if its expected to help
+            # there are many types of InvalidDocument, only recurse if its
+            # expected to help
             if str(e).startswith('BSON document too large'):
                 cls._post(task_func, chunk[:len(chunk) // 2])
                 cls._post(task_func, chunk[len(chunk) // 2:])
@@ -172,6 +177,7 @@ def substitute_extensions(session, extensions=None):
     :class:`ming.odm.session.ThreadLocalODMSession` session.
     """
     original_exts = session._kwargs.get('extensions', [])
+
     def _set_exts(exts):
         session.flush()
         session.close()
@@ -179,7 +185,6 @@ def substitute_extensions(session, extensions=None):
     _set_exts(extensions or [])
     yield session
     _set_exts(original_exts)
-
 
 
 main_doc_session = Session.by_name('main')
@@ -190,7 +195,7 @@ project_orm_session = ThreadLocalORMSession(project_doc_session)
 task_orm_session = ThreadLocalORMSession(task_doc_session)
 artifact_orm_session = ThreadLocalORMSession(
     doc_session=project_doc_session,
-    extensions = [ ArtifactSessionExtension ])
+    extensions=[ArtifactSessionExtension])
 repository_orm_session = ThreadLocalORMSession(
     doc_session=main_doc_session,
-    extensions = [  ])
+    extensions=[])

@@ -28,6 +28,7 @@ from allura.lib import utils
 log = logging.getLogger('update-ordinals')
 log.addHandler(logging.StreamHandler(sys.stdout))
 
+
 def main():
     test = sys.argv[-1] == 'test'
     num_projects_examined = 0
@@ -37,7 +38,8 @@ def main():
             c.project = project
             mounts = project.ordered_mounts(include_hidden=True)
 
-            # ordered_mounts() means duplicate ordinals (if any) will be next to each other
+            # ordered_mounts() means duplicate ordinals (if any) will be next
+            # to each other
             duplicates_found = False
             prev_ordinal = None
             for mount in mounts:
@@ -48,9 +50,11 @@ def main():
 
             if duplicates_found:
                 if test:
-                    log.info('Would renumber mounts for project "%s".' % project.shortname)
+                    log.info('Would renumber mounts for project "%s".' %
+                             project.shortname)
                 else:
-                    log.info('Renumbering mounts for project "%s".' % project.shortname)
+                    log.info('Renumbering mounts for project "%s".' %
+                             project.shortname)
                     for i, mount in enumerate(mounts):
                         if 'ac' in mount:
                             mount['ac'].options['ordinal'] = i

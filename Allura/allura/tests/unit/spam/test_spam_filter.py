@@ -24,12 +24,14 @@ from allura.lib.spam import SpamFilter
 
 
 class MockFilter(SpamFilter):
+
     def check(*args, **kw):
         raise Exception("test exception")
         return True
 
 
 class TestSpamFilter(unittest.TestCase):
+
     def test_check(self):
         # default no-op impl always returns False
         self.assertFalse(SpamFilter({}).check('foo'))

@@ -37,6 +37,7 @@ def make_solr_from_config(push_servers, query_server=None, **kwargs):
 
 
 class Solr(object):
+
     """Solr interface that pushes updates to multiple solr instances.
 
     `push_servers`: list of servers to push to.
@@ -88,6 +89,7 @@ class Solr(object):
 class MockSOLR(object):
 
     class MockHits(list):
+
         @property
         def hits(self):
             return len(self)
@@ -113,7 +115,8 @@ class MockSOLR(object):
         # Parse query
         preds = []
         q_parts = shlex.split(q)
-        if fq: q_parts += fq
+        if fq:
+            q_parts += fq
         for part in q_parts:
             if part == '&&':
                 continue

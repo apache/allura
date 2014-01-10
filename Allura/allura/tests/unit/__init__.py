@@ -37,6 +37,7 @@ class MockPatchTestCase(object):
 
 
 class WithDatabase(MockPatchTestCase):
+
     def setUp(self):
         super(WithDatabase, self).setUp()
         clear_all_database_tables()

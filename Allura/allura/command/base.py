@@ -35,6 +35,7 @@ from allura.lib.helpers import iter_entry_points
 
 log = None
 
+
 @task
 def run_command(command, args):
     """Run paster command asynchronously"""
@@ -49,7 +50,10 @@ def run_command(command, args):
         raise Exception("Error parsing args: '%s'" % args)
     return command.run(arg_list)
 
-class EmptyClass(object): pass
+
+class EmptyClass(object):
+    pass
+
 
 class Command(command.Command):
     min_args = 1
@@ -58,6 +62,7 @@ class Command(command.Command):
     group_name = 'Allura'
 
     class __metaclass__(type):
+
         @property
         def __doc__(cls):
             return cls.parser.format_help()
@@ -84,17 +89,20 @@ class Command(command.Command):
     def basic_setup(self):
         global log, M
         if self.args[0]:
-            # Probably being called from the command line - load the config file
-            self.config = conf = appconfig('config:%s' % self.args[0],relative_to=os.getcwd())
+            # Probably being called from the command line - load the config
+            # file
+            self.config = conf = appconfig('config:%s' %
+                                           self.args[0], relative_to=os.getcwd())
             # ... logging does not understand section#subsection syntax
             logging_config = self.args[0].split('#')[0]
-            logging.config.fileConfig(logging_config, disable_existing_loggers=False)
+            logging.config.fileConfig(
+                logging_config, disable_existing_loggers=False)
             log = logging.getLogger('allura.command')
             log.info('Initialize command with config %r', self.args[0])
             load_environment(conf.global_conf, conf.local_conf)
             self.setup_globals()
             from allura import model
-            M=model
+            M = model
             ming.configure(**conf)
             if asbool(conf.get('activitystream.recording.enabled', False)):
                 activitystream.configure(**conf)
@@ -114,7 +122,8 @@ class Command(command.Command):
         self.registry.prepare()
         self.registry.register(pylons.tmpl_context, EmptyClass())
         self.registry.register(pylons.app_globals, self.globals)
-        self.registry.register(allura.credentials, allura.lib.security.Credentials())
+        self.registry.register(
+            allura.credentials, allura.lib.security.Credentials())
         pylons.tmpl_context.queued_messages = None
 
     def teardown_globals(self):

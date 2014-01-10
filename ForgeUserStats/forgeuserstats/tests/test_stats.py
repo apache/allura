@@ -31,8 +31,11 @@ from forgewiki import model as WM
 from forgetracker import model as TM
 
 
-test_project_with_repo = 'test2'  # important to be distinct from 'test' which ForgeGit uses, so that the tests can run in parallel and not clobber each other
-with_git = td.with_tool(test_project_with_repo, 'Git', 'src-git', 'Git', type='git')
+# important to be distinct from 'test' which ForgeGit uses, so that the
+# tests can run in parallel and not clobber each other
+test_project_with_repo = 'test2'
+with_git = td.with_tool(test_project_with_repo, 'Git',
+                        'src-git', 'Git', type='git')
 
 
 class TestStats(TestController):
@@ -46,7 +49,7 @@ class TestStats(TestController):
         user = User.by_username('test-user')
         init_logins = user.stats.tot_logins_count
         r = self.app.post('/auth/do_login', params=dict(
-                username=user.username, password='foo'))
+            username=user.username, password='foo'))
 
         assert user.stats.tot_logins_count == 1 + init_logins
         assert user.stats.getLastMonthLogins() == 1 + init_logins
@@ -57,8 +60,8 @@ class TestStats(TestController):
         initial_artifacts = c.user.stats.getArtifacts()
         initial_wiki = c.user.stats.getArtifacts(art_type="Wiki")
         self.app.post('/wiki/TestPage/update',
-            params=dict(title='TestPage', text='some text'),
-            extra_environ=dict(username=str(c.user.username)))
+                      params=dict(title='TestPage', text='some text'),
+                      extra_environ=dict(username=str(c.user.username)))
 
         artifacts = c.user.stats.getArtifacts()
         wiki = c.user.stats.getArtifacts(art_type="Wiki")
@@ -69,8 +72,8 @@ class TestStats(TestController):
         assert wiki['modified'] == initial_wiki['modified']
 
         self.app.post('/wiki/TestPage2/update',
-            params=dict(title='TestPage2', text='some text'),
-            extra_environ=dict(username=str(c.user.username)))
+                      params=dict(title='TestPage2', text='some text'),
+                      extra_environ=dict(username=str(c.user.username)))
 
         artifacts = c.user.stats.getArtifacts()
         wiki = c.user.stats.getArtifacts(art_type="Wiki")
@@ -81,8 +84,9 @@ class TestStats(TestController):
         assert wiki['modified'] == initial_wiki['modified']
 
         self.app.post('/wiki/TestPage2/update',
-            params=dict(title='TestPage2', text='some modified text'),
-            extra_environ=dict(username=str(c.user.username)))
+                      params=dict(title='TestPage2',
+                                  text='some modified text'),
+                      extra_environ=dict(username=str(c.user.username)))
 
         artifacts = c.user.stats.getArtifacts()
         wiki = c.user.stats.getArtifacts(art_type="Wiki")
@@ -95,12 +99,13 @@ class TestStats(TestController):
     @td.with_tool('test', 'tickets', mount_point='tickets', mount_label='tickets', username='test-admin')
     def test_tracker_stats(self):
         initial_tickets = c.user.stats.getTickets()
-        initial_tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
+        initial_tickets_artifacts = c.user.stats.getArtifacts(
+            art_type="Ticket")
 
         r = self.app.post('/tickets/save_ticket',
-            params={'ticket_form.summary':'test',
-                    'ticket_form.assigned_to' : str(c.user.username)},
-            extra_environ=dict(username=str(c.user.username)))
+                          params={'ticket_form.summary': 'test',
+                                  'ticket_form.assigned_to': str(c.user.username)},
+                          extra_environ=dict(username=str(c.user.username)))
 
         ticketnum = str(TM.Ticket.query.get(summary='test').ticket_num)
 
@@ -110,14 +115,16 @@ class TestStats(TestController):
         assert tickets['assigned'] == initial_tickets['assigned'] + 1
         assert tickets['solved'] == initial_tickets['solved']
         assert tickets['revoked'] == initial_tickets['revoked']
-        assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 1
-        assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified']
+        assert tickets_artifacts[
+            'created'] == initial_tickets_artifacts['created'] + 1
+        assert tickets_artifacts[
+            'modified'] == initial_tickets_artifacts['modified']
 
         r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-            params={'ticket_form.ticket_num' : ticketnum,
-                    'ticket_form.summary':'footext3',
-                    'ticket_form.status' : 'closed'},
-            extra_environ=dict(username=str(c.user.username)))
+                          params={'ticket_form.ticket_num': ticketnum,
+                                  'ticket_form.summary': 'footext3',
+                                  'ticket_form.status': 'closed'},
+                          extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
@@ -125,12 +132,14 @@ class TestStats(TestController):
         assert tickets['assigned'] == initial_tickets['assigned'] + 1
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked']
-        assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 1
-        assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 1
+        assert tickets_artifacts[
+            'created'] == initial_tickets_artifacts['created'] + 1
+        assert tickets_artifacts[
+            'modified'] == initial_tickets_artifacts['modified'] + 1
 
         r = self.app.post('/tickets/save_ticket',
-            params={'ticket_form.summary':'test2'},
-            extra_environ=dict(username=str(c.user.username)))
+                          params={'ticket_form.summary': 'test2'},
+                          extra_environ=dict(username=str(c.user.username)))
 
         ticketnum = str(TM.Ticket.query.get(summary='test2').ticket_num)
 
@@ -140,14 +149,16 @@ class TestStats(TestController):
         assert tickets['assigned'] == initial_tickets['assigned'] + 1
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked']
-        assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
-        assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 1
+        assert tickets_artifacts[
+            'created'] == initial_tickets_artifacts['created'] + 2
+        assert tickets_artifacts[
+            'modified'] == initial_tickets_artifacts['modified'] + 1
 
         r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-            params={'ticket_form.ticket_num' : ticketnum,
-                    'ticket_form.summary':'test2',
-                    'ticket_form.assigned_to' : str(c.user.username)},
-            extra_environ=dict(username=str(c.user.username)))
+                          params={'ticket_form.ticket_num': ticketnum,
+                                  'ticket_form.summary': 'test2',
+                                  'ticket_form.assigned_to': str(c.user.username)},
+                          extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
@@ -155,14 +166,16 @@ class TestStats(TestController):
         assert tickets['assigned'] == initial_tickets['assigned'] + 2
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked']
-        assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
-        assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 2
+        assert tickets_artifacts[
+            'created'] == initial_tickets_artifacts['created'] + 2
+        assert tickets_artifacts[
+            'modified'] == initial_tickets_artifacts['modified'] + 2
 
         r = self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-            params={'ticket_form.ticket_num' : ticketnum,
-                    'ticket_form.summary':'test2',
-                    'ticket_form.assigned_to' : 'test-user'},
-            extra_environ=dict(username=str(c.user.username)))
+                          params={'ticket_form.ticket_num': ticketnum,
+                                  'ticket_form.summary': 'test2',
+                                  'ticket_form.assigned_to': 'test-user'},
+                          extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
@@ -170,8 +183,11 @@ class TestStats(TestController):
         assert tickets['assigned'] == initial_tickets['assigned'] + 2
         assert tickets['solved'] == initial_tickets['solved'] + 1
         assert tickets['revoked'] == initial_tickets['revoked'] + 1
-        assert tickets_artifacts['created'] == initial_tickets_artifacts['created'] + 2
-        assert tickets_artifacts['modified'] == initial_tickets_artifacts['modified'] + 3
+        assert tickets_artifacts[
+            'created'] == initial_tickets_artifacts['created'] + 2
+        assert tickets_artifacts[
+            'modified'] == initial_tickets_artifacts['modified'] + 3
+
 
 class TestGitCommit(TestController, unittest.TestCase):
 
@@ -189,7 +205,8 @@ class TestGitCommit(TestController, unittest.TestCase):
     @td.with_wiki
     def setup_with_tools(self):
         setup_global_objects()
-        h.set_context(test_project_with_repo, 'src-git', neighborhood='Projects')
+        h.set_context(test_project_with_repo, 'src-git',
+                      neighborhood='Projects')
         repo_dir = pkg_resources.resource_filename(
             'forgeuserstats', 'tests/data')
         c.app.repo.fs_path = repo_dir

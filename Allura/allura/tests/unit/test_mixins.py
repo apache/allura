@@ -56,7 +56,7 @@ class TestVotableArtifact(object):
         vote.vote_down(self.user2)
         assert vote.votes_down == 2
         assert vote.votes_down_users == [self.user1.username,
-                                        self.user2.username]
+                                         self.user2.username]
 
         vote.vote_down(self.user1)  # unvote user1
         assert vote.votes_down == 1

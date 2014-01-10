@@ -17,7 +17,10 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import os, re, sys, subprocess
+import os
+import re
+import sys
+import subprocess
 
 signoff = re.compile('^Signed-off-by: ', flags=re.MULTILINE)
 parent = re.compile('^parent ', flags=re.MULTILINE)
@@ -25,7 +28,8 @@ no_commit = '0' * 40
 
 
 def run(*args):
-    p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(list(args), stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
     p.wait()
     return p.stdout.readlines()
 
@@ -45,16 +49,17 @@ def git_user():
 
 
 def unwrap_commit_ids(git_output):
-    return [ commit_id[:-1] for commit_id in git_output ]
+    return [commit_id[:-1] for commit_id in git_output]
 
 
 def all_commits_signed_off(from_rev, to_rev):
-    commits = unwrap_commit_ids(run('git', 'rev-list', '%s..%s' % (from_rev, to_rev)))
+    commits = unwrap_commit_ids(
+        run('git', 'rev-list', '%s..%s' % (from_rev, to_rev)))
     for commit in commits:
         raw_commit = ''.join(run('git', 'cat-file', '-p', commit))
         headers, body = raw_commit.split('\n\n', 1)
         num_parents = len(parent.findall(headers))
-        if num_parents<2 and not signoff.search(body):
+        if num_parents < 2 and not signoff.search(body):
             return False
     return True
 
@@ -66,31 +71,44 @@ def deny_update(message):
 
 def main():
     ref_name = sys.argv[1]  # the branch being updated, e.g., refs/heads/master
-    old_rev = sys.argv[2]   # the pre-update commit-id of that branch (or '0'*40 if we're creating the branch)
-    new_rev = sys.argv[3]   # the post-update commit-id of that branch (or '0'*40 if we're deleting the branch)
+    # the pre-update commit-id of that branch (or '0'*40 if we're creating the
+    # branch)
+    old_rev = sys.argv[2]
+    # the post-update commit-id of that branch (or '0'*40 if we're deleting
+    # the branch)
+    new_rev = sys.argv[3]
 
     (user_name, user_prefix) = git_user()
 
     if old_rev == no_commit:
         action = 'create'
-        merge_base = unwrap_commit_ids(run('git', 'merge-base', 'master', new_rev))[0]
-            # not ideal, since you probably branched off something more specific than master
+        merge_base = unwrap_commit_ids(
+            run('git', 'merge-base', 'master', new_rev))[0]
+            # not ideal, since you probably branched off something more
+            # specific than master
     elif new_rev == no_commit:
         action = 'destroy'
     else:
         action = 'update'
-        merge_base = unwrap_commit_ids(run('git', 'merge-base', old_rev, new_rev))[0]
+        merge_base = unwrap_commit_ids(
+            run('git', 'merge-base', old_rev, new_rev))[0]
 
     if ref_name.startswith('refs/heads/%s/' % user_prefix) or ref_name.startswith('refs/heads/ffa/') or user_name == 'wolf' or user_name == 'dbrondsema':
-        pass # no restrictions
+        pass  # no restrictions
     elif ref_name.startswith('refs/heads/'):
         substitutions = (user_name, ref_name, 'refs/heads/%s/*' % user_prefix)
         if action == 'create':
-            deny_update("You (%s) may not create '%s'; you have full rights over '%s'." % substitutions)
+            deny_update(
+                "You (%s) may not create '%s'; you have full rights over '%s'." %
+                substitutions)
         elif action == 'destroy':
-            deny_update("You (%s) may not destroy '%s'; you have full rights over '%s'." % substitutions)
+            deny_update(
+                "You (%s) may not destroy '%s'; you have full rights over '%s'." %
+                substitutions)
         elif old_rev != merge_base:
-            deny_update("You (%s) may not rewind or rebase '%s'; you have full rights over '%s'." % substitutions)
+            deny_update(
+                "You (%s) may not rewind or rebase '%s'; you have full rights over '%s'." %
+                substitutions)
 
     if ref_name.startswith('refs/heads/') and action != 'destroy' and not all_commits_signed_off(merge_base, new_rev):
         deny_update('Not all commits were signed-off.')

@@ -28,11 +28,13 @@ things that would make it faster, if we need/want to.
 2. Use multiprocessing to distribute the offsets to n subprocesses.
 """
 
-import os, sys
+import os
+import sys
 from datetime import datetime
 from jinja2 import Template
 
-import pylons, webob
+import pylons
+import webob
 from pylons import tmpl_context as c
 
 from allura import model as M
@@ -67,6 +69,7 @@ SITEMAP_TEMPLATE = """\
 </urlset>
 """
 
+
 def main(options, args):
     # This script will indirectly call app.sidebar_menu() for every app in
     # every project. Some of the sidebar_menu methods expect the
@@ -86,6 +89,7 @@ def main(options, args):
 
     now = datetime.utcnow().date()
     sitemap_content_template = Template(SITEMAP_TEMPLATE)
+
     def write_sitemap(urls, file_no):
         sitemap_content = sitemap_content_template.render(dict(
             now=now, locs=urls))
@@ -101,7 +105,7 @@ def main(options, args):
             c.project = p
             try:
                 locs += [BASE_URL + s.url if s.url[0] == '/' else s.url
-                        for s in p.sitemap(excluded_tools=['git', 'hg', 'svn'])]
+                         for s in p.sitemap(excluded_tools=['git', 'hg', 'svn'])]
             except Exception, e:
                 print "Error creating sitemap for project '%s': %s" %\
                     (p.shortname, e)
@@ -120,12 +124,14 @@ def main(options, args):
     if file_count:
         sitemap_index_vars = dict(
             now=now,
-            sitemaps = [
+            sitemaps=[
                 '%s/allura_sitemap/sitemap-%d.xml' % (BASE_URL, n)
                 for n in range(file_count)])
-        sitemap_index_content = Template(INDEX_TEMPLATE).render(sitemap_index_vars)
+        sitemap_index_content = Template(
+            INDEX_TEMPLATE).render(sitemap_index_vars)
         with open(os.path.join(output_path, 'sitemap.xml'), 'w') as f:
             f.write(sitemap_index_content)
+
 
 def parse_options():
     def validate(option, opt_str, value, parser):

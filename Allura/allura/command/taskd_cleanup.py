@@ -25,16 +25,17 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from allura import model as M
 import base
 
+
 class TaskdCleanupCommand(base.Command):
     summary = 'Tasks cleanup command'
     parser = base.Command.standard_parser(verbose=True)
     parser.add_option('-k', '--kill-stuck-taskd',
-            dest='kill', action='store_true',
-            help='automatically kill stuck taskd processes.  Be careful with this, a taskd process '
-                 'may just be very busy on certain operations and not able to respond to our status request')
+                      dest='kill', action='store_true',
+                      help='automatically kill stuck taskd processes.  Be careful with this, a taskd process '
+                      'may just be very busy on certain operations and not able to respond to our status request')
     parser.add_option('-n', '--num-retry-status-check',
-            dest='num_retry', type='int', default=5,
-            help='number of retries to read taskd status log after sending USR1 signal (5 by default)')
+                      dest='num_retry', type='int', default=5,
+                      help='number of retries to read taskd status log after sending USR1 signal (5 by default)')
     usage = '<ini file> [-k] <taskd status log file>'
     min_args = 2
     max_args = 2
@@ -48,12 +49,14 @@ class TaskdCleanupCommand(base.Command):
         self.suspicious_tasks = []
 
         taskd_pids = self._taskd_pids()
-        base.log.info('Taskd processes on %s: %s' % (self.hostname, taskd_pids))
+        base.log.info('Taskd processes on %s: %s' %
+                      (self.hostname, taskd_pids))
 
         # find stuck taskd processes
         base.log.info('Seeking for stuck taskd processes')
         for pid in taskd_pids:
-            base.log.info('...sending USR1 to %s and watching status log' % (pid))
+            base.log.info('...sending USR1 to %s and watching status log' %
+                          (pid))
             status = self._check_taskd_status(int(pid))
             if status != 'OK':
                 base.log.info('...taskd pid %s has stuck' % pid)
@@ -68,21 +71,25 @@ class TaskdCleanupCommand(base.Command):
         base.log.info('Seeking for forsaken busy tasks')
         tasks = [t for t in self._busy_tasks()
                  if t not in self.error_tasks]  # skip seen tasks
-        base.log.info('Found %s busy tasks on %s' % (len(tasks), self.hostname))
+        base.log.info('Found %s busy tasks on %s' %
+                      (len(tasks), self.hostname))
         for task in tasks:
             base.log.info('Verifying task %s' % task)
             pid = task.process.split()[-1]
             if pid not in taskd_pids:
                 # 'forsaken' task
                 base.log.info('Task is forsaken '
-                    '(can\'t find taskd with given pid). '
-                    'Setting state to \'error\'')
+                              '(can\'t find taskd with given pid). '
+                              'Setting state to \'error\'')
                 task.state = 'error'
                 task.result = 'Can\'t find taskd with given pid'
                 self.error_tasks.append(task)
             else:
-                # check if taskd with given pid really processing this task now:
-                base.log.info('Checking that taskd pid %s is really processing task %s' % (pid, task._id))
+                # check if taskd with given pid really processing this task
+                # now:
+                base.log.info(
+                    'Checking that taskd pid %s is really processing task %s' %
+                    (pid, task._id))
                 status = self._check_task(pid, task)
                 if status != 'OK':
                     # maybe task moved quickly and now is complete
@@ -106,7 +113,8 @@ class TaskdCleanupCommand(base.Command):
             if self.options.kill:
                 base.log.info('...stuck taskd processes were killed')
             else:
-                base.log.info('...to kill these processes run command with -k flag if you are sure they are really stuck')
+                base.log.info(
+                    '...to kill these processes run command with -k flag if you are sure they are really stuck')
         if self.error_tasks:
             base.log.info('Tasks marked as \'error\': %s' % self.error_tasks)
 
@@ -122,8 +130,8 @@ class TaskdCleanupCommand(base.Command):
     def _taskd_pids(self):
         # space after "taskd" to ensure no match on taskd_cleanup (ourself)
         p = subprocess.Popen(['pgrep', '-f', '/paster taskd '],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         tasks = []
         if p.returncode == 0:
@@ -134,11 +142,12 @@ class TaskdCleanupCommand(base.Command):
         if not retry:
             os.kill(int(pid), signal.SIGUSR1)
         p = subprocess.Popen(['tail', '-n1', self.taskd_status_log],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            base.log.error('Can\'t read taskd status log %s' % self.taskd_status_log)
+            base.log.error('Can\'t read taskd status log %s' %
+                           self.taskd_status_log)
             exit(1)
         return stdout
 
@@ -156,7 +165,8 @@ class TaskdCleanupCommand(base.Command):
         for i in range(self.options.num_retry):
             retry = False if i == 0 else True
             status = self._taskd_status(taskd_pid, retry)
-            line = 'taskd pid %s is currently handling task %s' % (taskd_pid, task)
+            line = 'taskd pid %s is currently handling task %s' % (
+                taskd_pid, task)
             if line in status:
                 return 'OK'
             base.log.info('retrying after one second')
@@ -168,7 +178,7 @@ class TaskdCleanupCommand(base.Command):
         # find all 'busy' tasks for this pid and mark them as 'error'
         tasks = list(self._busy_tasks(pid=pid))
         base.log.info('...taskd pid %s has assigned tasks: %s. '
-                'setting state to \'error\' for all of them' % (pid, tasks))
+                      'setting state to \'error\' for all of them' % (pid, tasks))
         for task in tasks:
             task.state = 'error'
             task.result = 'Taskd has stuck with this task'
@@ -178,7 +188,7 @@ class TaskdCleanupCommand(base.Command):
         complete_tasks = M.MonQTask.query.find({
             'state': 'complete',
             '_id': {'$in': [t._id for t in self.suspicious_tasks]}
-        });
+        })
         return [t._id for t in complete_tasks]
 
     def _check_suspicious_tasks(self):

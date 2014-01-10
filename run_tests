@@ -33,13 +33,14 @@ CONCURRENT_TESTS = (CPUS // CONCURRENT_SUITES) or 1
 PROC_TIMEOUT = 120
 
 ALT_PKG_PATHS = {
-        'Allura': 'allura/tests/',
-        }
+    'Allura': 'allura/tests/',
+}
 
 NOT_MULTIPROC_SAFE = [
-        'ForgeGit',
-        'ForgeSVN',
-        ]
+    'ForgeGit',
+    'ForgeSVN',
+]
+
 
 def run_one(cmd, **popen_kwargs):
     print '{} running {} {}'.format(threading.current_thread(), cmd, popen_kwargs)
@@ -114,13 +115,15 @@ def run_tests_in_parallel(options, nosetests_args):
 
     def get_pkg_path(pkg):
         return ALT_PKG_PATHS.get(pkg, '')
+
     def get_multiproc_args(pkg):
         if not use_multiproc:
             return ''
         return ('--processes={procs_per_suite} --process-timeout={proc_timeout}'.format(
-                    procs_per_suite=options.concurrent_tests,
-                    proc_timeout=PROC_TIMEOUT)
-                if pkg not in NOT_MULTIPROC_SAFE else '')
+            procs_per_suite=options.concurrent_tests,
+            proc_timeout=PROC_TIMEOUT)
+            if pkg not in NOT_MULTIPROC_SAFE else '')
+
     def get_concurrent_suites():
         if use_multiproc or '-n' in sys.argv:
             return options.concurrent_suites
@@ -141,8 +144,9 @@ def run_tests_in_parallel(options, nosetests_args):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     epilog=textwrap.dedent('''
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent('''
                                         All additional arguments are passed along to nosetests
                                           (e.g. -v --with-coverage)
                                         Note: --cover-package will be set automatically to the appropriate value'''))
@@ -152,9 +156,10 @@ def parse_args():
     parser.add_argument('-m', help='Number of tests to run concurrently in separate '
                                    'processes, per suite. Default: # CPUs / # concurrent suites',
                         dest='concurrent_tests', type=int, default=CONCURRENT_TESTS)
-    parser.add_argument('-p', help='List of packages to run tests on. Default: all',
-                        dest='packages', choices=get_packages(), default=get_packages(),
-                        nargs='+')
+    parser.add_argument(
+        '-p', help='List of packages to run tests on. Default: all',
+        dest='packages', choices=get_packages(), default=get_packages(),
+        nargs='+')
     return parser.parse_known_args()
 
 

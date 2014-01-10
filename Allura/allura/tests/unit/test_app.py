@@ -111,4 +111,3 @@ def install_app():
     app = Application(project, app_config)
     app.install(project)
     return app
-

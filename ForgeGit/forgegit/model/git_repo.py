@@ -50,7 +50,9 @@ log = logging.getLogger(__name__)
 gitdb.util.mman = gitdb.util.mman.__class__(
     max_open_handles=128)
 
+
 class GitLibCmdWrapper(object):
+
     def __init__(self, client):
         self.client = client
 
@@ -60,12 +62,14 @@ class GitLibCmdWrapper(object):
     def log(self, *args, **kwargs):
         return self.client.log(*args, **kwargs)
 
+
 class Repository(M.Repository):
-    tool_name='Git'
-    repo_id='git'
-    type_s='Git Repository'
+    tool_name = 'Git'
+    repo_id = 'git'
+    type_s = 'Git Repository'
+
     class __mongometa__:
-        name='git-repository'
+        name = 'git-repository'
 
     @LazyProperty
     def _impl(self):
@@ -86,11 +90,11 @@ class Repository(M.Repository):
             )
         else:
             fetch_command = (
-                    'git remote add merge_request {}\n'
-                    'git fetch merge_request'
-                ).format(
-                    merge_request.downstream_repo_url,
-                )
+                'git remote add merge_request {}\n'
+                'git fetch merge_request'
+            ).format(
+                merge_request.downstream_repo_url,
+            )
         return 'git checkout %s\n%s\ngit merge %s' % (
             merge_request.target_branch,
             fetch_command,
@@ -99,6 +103,7 @@ class Repository(M.Repository):
 
     def rev_to_commit_id(self, rev):
         return self._impl.rev_parse(rev).hexsha
+
 
 class GitImplementation(M.RepositoryImplementation):
     post_receive_template = string.Template(
@@ -157,7 +162,8 @@ class GitImplementation(M.RepositoryImplementation):
                 shutil.rmtree(fullname)
             if self.can_hotcopy(source_url):
                 shutil.copytree(source_url, fullname)
-                post_receive = os.path.join(self._repo.full_fs_path, 'hooks', 'post-receive')
+                post_receive = os.path.join(
+                    self._repo.full_fs_path, 'hooks', 'post-receive')
                 if os.path.exists(post_receive):
                     os.rename(post_receive, post_receive + '-user')
                 repo = git.Repo(fullname)
@@ -188,7 +194,8 @@ class GitImplementation(M.RepositoryImplementation):
                     url = ' at ' + request.url
                 except:
                     pass
-                log.exception('Error with rev_parse(%s)%s' % (str(rev) + '^0', url))
+                log.exception('Error with rev_parse(%s)%s' %
+                              (str(rev) + '^0', url))
         if result:
             result.set_context(self._repo)
         return result
@@ -201,21 +208,23 @@ class GitImplementation(M.RepositoryImplementation):
             return  # empty repo
         seen = set()
         for ci in self._git.iter_commits(all=True, topo_order=True):
-            if ci.binsha in seen: continue
+            if ci.binsha in seen:
+                continue
             seen.add(ci.binsha)
             yield ci.hexsha
 
     def new_commits(self, all_commits=False):
         graph = {}
 
-        to_visit = [ self._git.commit(rev=hd.object_id) for hd in self.heads ]
+        to_visit = [self._git.commit(rev=hd.object_id) for hd in self.heads]
         while to_visit:
             obj = to_visit.pop()
-            if obj.hexsha in graph: continue
+            if obj.hexsha in graph:
+                continue
             if not all_commits:
                 # Look up the object
                 if M.repo.Commit.query.find(dict(_id=obj.hexsha)).count():
-                    graph[obj.hexsha] = set() # mark as parentless
+                    graph[obj.hexsha] = set()  # mark as parentless
                     continue
             graph[obj.hexsha] = set(p.hexsha for p in obj.parents)
             to_visit += obj.parents
@@ -224,21 +233,22 @@ class GitImplementation(M.RepositoryImplementation):
     def refresh_commit_info(self, oid, seen, lazy=True):
         from allura.model.repo import CommitDoc
         ci_doc = CommitDoc.m.get(_id=oid)
-        if ci_doc and lazy: return False
+        if ci_doc and lazy:
+            return False
         ci = self._git.rev_parse(oid)
         args = dict(
             tree_id=ci.tree.hexsha,
-            committed = Object(
+            committed=Object(
                 name=h.really_unicode(ci.committer.name),
                 email=h.really_unicode(ci.committer.email),
                 date=datetime.utcfromtimestamp(ci.committed_date)),
-            authored = Object(
+            authored=Object(
                 name=h.really_unicode(ci.author.name),
                 email=h.really_unicode(ci.author.email),
                 date=datetime.utcfromtimestamp(ci.authored_date)),
             message=h.really_unicode(ci.message or ''),
             child_ids=[],
-            parent_ids = [ p.hexsha for p in ci.parents ])
+            parent_ids=[p.hexsha for p in ci.parents])
         if ci_doc:
             ci_doc.update(**args)
             ci_doc.m.save()
@@ -247,19 +257,21 @@ class GitImplementation(M.RepositoryImplementation):
             try:
                 ci_doc.m.insert(safe=True)
             except DuplicateKeyError:
-                if lazy: return False
+                if lazy:
+                    return False
         self.refresh_tree_info(ci.tree, seen, lazy)
         return True
 
     def refresh_tree_info(self, tree, seen, lazy=True):
         from allura.model.repo import TreeDoc
-        if lazy and tree.binsha in seen: return
+        if lazy and tree.binsha in seen:
+            return
         seen.add(tree.binsha)
         doc = TreeDoc(dict(
-                _id=tree.hexsha,
-                tree_ids=[],
-                blob_ids=[],
-                other_ids=[]))
+            _id=tree.hexsha,
+            tree_ids=[],
+            blob_ids=[],
+            other_ids=[]))
         for o in tree:
             if o.type == 'submodule':
                 continue
@@ -313,37 +325,38 @@ class GitImplementation(M.RepositoryImplementation):
                     if renamed and renamed['to'] == path:
                         rename_details['path'] = '/' + renamed['from']
                         # get first rev **before** rename
-                        _iter = self._git.iter_commits(revs, renamed['from'], max_count=2)
+                        _iter = self._git.iter_commits(
+                            revs, renamed['from'], max_count=2)
                         prev_rev = list(_iter)[1]
                         rename_details['commit_url'] = self._repo.url_for_commit(
                             prev_rev.hexsha
                         )
 
                     try:
-                        node = ci.tree/path
+                        node = ci.tree / path
                         size = node.size if node.type == 'blob' else None
                     except KeyError as e:
                         size = None
                     if rename_details:
                         path = rename_details['path'].strip('/')
                 yield {
-                        'id': ci.hexsha,
-                        'message': h.really_unicode(ci.message or '--none--'),
-                        'authored': {
-                                'name': h.really_unicode(ci.author.name or '--none--'),
-                                'email': h.really_unicode(ci.author.email),
-                                'date': datetime.utcfromtimestamp(ci.authored_date),
-                            },
-                        'committed': {
-                                'name': h.really_unicode(ci.committer.name or '--none--'),
-                                'email': h.really_unicode(ci.committer.email),
-                                'date': datetime.utcfromtimestamp(ci.committed_date),
-                            },
-                        'refs': refs,
-                        'parents': [pci.hexsha for pci in ci.parents],
-                        'size': size,
-                        'rename_details': rename_details,
-                    }
+                    'id': ci.hexsha,
+                    'message': h.really_unicode(ci.message or '--none--'),
+                    'authored': {
+                        'name': h.really_unicode(ci.author.name or '--none--'),
+                        'email': h.really_unicode(ci.author.email),
+                        'date': datetime.utcfromtimestamp(ci.authored_date),
+                    },
+                    'committed': {
+                        'name': h.really_unicode(ci.committer.name or '--none--'),
+                        'email': h.really_unicode(ci.committer.email),
+                        'date': datetime.utcfromtimestamp(ci.committed_date),
+                    },
+                    'refs': refs,
+                    'parents': [pci.hexsha for pci in ci.parents],
+                    'size': size,
+                    'rename_details': rename_details,
+                }
 
     def _iter_commits_with_refs(self, *args, **kwargs):
         """
@@ -376,7 +389,8 @@ class GitImplementation(M.RepositoryImplementation):
             D\t<some path> # other cases
             etc
         """
-        proc = self._git.git.log(*args, format='%H%x00%d', as_process=True, **kwargs)
+        proc = self._git.git.log(*args,
+                                 format='%H%x00%d', as_process=True, **kwargs)
         stream = proc.stdout
         commit_lines = []
         while True:
@@ -390,9 +404,11 @@ class GitImplementation(M.RepositoryImplementation):
                 ]
                 if commit_lines:
                     hexsha, decoration = commit_lines[0].split('\x00')
-                    refs = decoration.strip(' ()').split(', ') if decoration else []
+                    refs = decoration.strip(' ()').split(
+                        ', ') if decoration else []
                     renamed = {}
-                    if len(commit_lines) > 1:  # merge commits don't have any --name-status output
+                    # merge commits don't have any --name-status output
+                    if len(commit_lines) > 1:
                         name_stat_parts = commit_lines[1].split(' ')
                         if name_stat_parts[0] in ['R100', 'R096']:
                             renamed['from'] = name_stat_parts[1]
@@ -416,7 +432,8 @@ class GitImplementation(M.RepositoryImplementation):
         'Set up the git post-commit hook'
         text = self.post_receive_template.substitute(
             url=self._repo.refresh_url())
-        fn = os.path.join(self._repo.fs_path, self._repo.name, 'hooks', 'post-receive')
+        fn = os.path.join(self._repo.fs_path, self._repo.name,
+                          'hooks', 'post-receive')
         with open(fn, 'w') as fp:
             fp.write(text)
         os.chmod(fn, 0755)
@@ -425,8 +442,8 @@ class GitImplementation(M.RepositoryImplementation):
         evens = oid[::2]
         odds = oid[1::2]
         binsha = ''
-        for e,o in zip(evens, odds):
-            binsha += chr(int(e+o, 16))
+        for e, o in zip(evens, odds):
+            binsha += chr(int(e + o, 16))
         return git.Object.new_from_sha(self._git, binsha)
 
     def rev_parse(self, rev):
@@ -434,7 +451,8 @@ class GitImplementation(M.RepositoryImplementation):
 
     def symbolics_for_commit(self, commit):
         try:
-            branches = [b.name for b in self.branches if b.object_id == commit._id]
+            branches = [
+                b.name for b in self.branches if b.object_id == commit._id]
             tags = [t.name for t in self.tags if t.object_id == commit._id]
             return branches, tags
         except git.GitCommandError:
@@ -449,11 +467,14 @@ class GitImplementation(M.RepositoryImplementation):
         if not os.path.exists(self._repo.tarball_path):
             os.makedirs(self._repo.tarball_path)
         archive_name = self._repo.tarball_filename(commit)
-        filename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.zip'))
-        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' % (archive_name, '.tmp'))
+        filename = os.path.join(self._repo.tarball_path, '%s%s' %
+                                (archive_name, '.zip'))
+        tmpfilename = os.path.join(self._repo.tarball_path, '%s%s' %
+                                   (archive_name, '.tmp'))
         try:
             with open(tmpfilename, 'wb') as archive_file:
-                self._git.archive(archive_file, format='zip', treeish=commit, prefix=archive_name + '/')
+                self._git.archive(archive_file,
+                                  format='zip', treeish=commit, prefix=archive_name + '/')
             os.rename(tmpfilename, filename)
         finally:
             if os.path.exists(tmpfilename):
@@ -466,7 +487,7 @@ class GitImplementation(M.RepositoryImplementation):
         path = path.strip('/')
         ci = self._git.rev_parse(rev)
         try:
-            node = ci.tree/path
+            node = ci.tree / path
             return node.type == 'blob'
         except KeyError as e:
             return False
@@ -507,11 +528,11 @@ class GitImplementation(M.RepositoryImplementation):
         skip = 0
         while commit_id and not files:
             output = self._git.git.log(
-                    commit_id, '--', *paths,
-                    pretty='format:%H',
-                    name_only=True,
-                    max_count=1,
-                    skip=skip)
+                commit_id, '--', *paths,
+                pretty='format:%H',
+                name_only=True,
+                max_count=1,
+                skip=skip)
             lines = output.split('\n')
             commit_id = lines[0]
             files = prefix_paths_union(paths, set(lines[1:]))
@@ -525,13 +546,14 @@ class GitImplementation(M.RepositoryImplementation):
 
     def get_changes(self, commit_id):
         return self._git.git.log(
-                commit_id,
-                name_only=True,
-                pretty='format:',
-                max_count=1).splitlines()[1:]
+            commit_id,
+            name_only=True,
+            pretty='format:',
+            max_count=1).splitlines()[1:]
+
 
 class _OpenedGitBlob(object):
-    CHUNK_SIZE=4096
+    CHUNK_SIZE = 4096
 
     def __init__(self, stream):
         self._stream = stream
@@ -548,16 +570,18 @@ class _OpenedGitBlob(object):
             # Replenish buffer until we have a line break
             while '\n' not in buffer:
                 chars = self._stream.read(self.CHUNK_SIZE)
-                if not chars: break
+                if not chars:
+                    break
                 buffer += chars
-            if not buffer: break
+            if not buffer:
+                break
             eol = buffer.find('\n')
             if eol == -1:
                 # end without \n
                 yield buffer
                 break
-            yield buffer[:eol+1]
-            buffer = buffer[eol+1:]
+            yield buffer[:eol + 1]
+            buffer = buffer[eol + 1:]
 
     def close(self):
         pass

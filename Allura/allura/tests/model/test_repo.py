@@ -30,6 +30,7 @@ from alluratest.controller import setup_basic_test, setup_global_objects
 from allura import model as M
 from allura.lib import helpers as h
 
+
 class TestGitLikeTree(object):
 
     def test_set_blob(self):
@@ -38,7 +39,8 @@ class TestGitLikeTree(object):
 
         assert_equal(tree.blobs, {})
         assert_equal(tree.get_tree('dir').blobs, {})
-        assert_equal(tree.get_tree('dir').get_tree('dir2').blobs, {'file': 'file-oid'})
+        assert_equal(tree.get_tree('dir').get_tree('dir2')
+                     .blobs, {'file': 'file-oid'})
 
     def test_hex(self):
         tree = M.GitLikeTree()
@@ -46,8 +48,10 @@ class TestGitLikeTree(object):
         hex = tree.hex()
 
         # check the reprs. In case hex (below) fails, this'll be useful
-        assert_equal(repr(tree.get_tree('dir').get_tree('dir2')), 'b file-oid file')
-        assert_equal(repr(tree), 't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
+        assert_equal(repr(tree.get_tree('dir').get_tree('dir2')),
+                     'b file-oid file')
+        assert_equal(repr(tree),
+                     't 96af1772ecce1e6044e6925e595d9373ffcd2615 dir')
         # the hex() value shouldn't change, it's an important key
         assert_equal(hex, '4abba29a43411b9b7cecc1a74f0b27920554350d')
 
@@ -96,6 +100,7 @@ class RepoImplTestBase(object):
 
 
 class RepoTestBase(unittest.TestCase):
+
     def setUp(self):
         setup_basic_test()
 
@@ -126,10 +131,12 @@ class RepoTestBase(unittest.TestCase):
 
 
 class TestLastCommit(unittest.TestCase):
+
     def setUp(self):
         setup_basic_test()
         setup_global_objects()
-        self.repo = mock.Mock('repo', _commits=OrderedDict(), _last_commit=None)
+        self.repo = mock.Mock(
+            'repo', _commits=OrderedDict(), _last_commit=None)
         self.repo.shorthand_for_commit = lambda _id: _id[:6]
         self.repo.rev_to_commit_id = lambda rev: rev
         self.repo.log = self._log
@@ -145,44 +152,47 @@ class TestLastCommit(unittest.TestCase):
         tree_nodes = []
         blob_nodes = []
         sub_paths = defaultdict(list)
+
         def n(p):
             m = mock.Mock()
             m.name = p
             return m
         for p in tree_paths:
             if '/' in p:
-                node, sub = p.split('/',1)
+                node, sub = p.split('/', 1)
                 if node not in sub_paths:
                     tree_nodes.append(n(node))
                 sub_paths[node].append(sub)
             else:
                 blob_nodes.append(n(p))
         tree = mock.Mock(
-                commit=commit,
-                path=mock.Mock(return_value=path),
-                tree_ids=tree_nodes,
-                blob_ids=blob_nodes,
-                other_ids=[],
-                repo=self.repo,
-            )
-        tree.get_obj_by_path = lambda p: self._build_tree(commit, p, sub_paths[p])
-        tree.__getitem__ = lambda s, p: self._build_tree(commit, p, sub_paths[p])
+            commit=commit,
+            path=mock.Mock(return_value=path),
+            tree_ids=tree_nodes,
+            blob_ids=blob_nodes,
+            other_ids=[],
+            repo=self.repo,
+        )
+        tree.get_obj_by_path = lambda p: self._build_tree(
+            commit, p, sub_paths[p])
+        tree.__getitem__ = lambda s, p: self._build_tree(
+            commit, p, sub_paths[p])
         return tree
 
     def _add_commit(self, msg, tree_paths, diff_paths=None, parents=[]):
         suser = dict(
-                name='test',
-                email='test@example.com',
-                date=datetime(2013, 1, 1 + len(self.repo._commits)),
-            )
+            name='test',
+            email='test@example.com',
+            date=datetime(2013, 1, 1 + len(self.repo._commits)),
+        )
         commit = M.repo.Commit(
-                _id=str(ObjectId()),
-                message=msg,
-                parent_ids=[parent._id for parent in parents],
-                commited=suser,
-                authored=suser,
-                repo=self.repo,
-            )
+            _id=str(ObjectId()),
+            message=msg,
+            parent_ids=[parent._id for parent in parents],
+            commited=suser,
+            authored=suser,
+            repo=self.repo,
+        )
         commit.tree = self._build_tree(commit, '/', tree_paths)
         commit.get_tree = lambda c: commit.tree
         self._changes[commit._id].extend(diff_paths or tree_paths)
@@ -197,11 +207,12 @@ class TestLastCommit(unittest.TestCase):
 
     def test_single_commit(self):
         commit1 = self._add_commit('Commit 1', [
-                'file1',
-                'dir1/file2',
-            ])
+            'file1',
+            'dir1/file2',
+        ])
         lcd = M.repo.LastCommit.get(commit1.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit1.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit1.message)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 2)
         self.assertEqual(lcd.by_name['file1'], commit1._id)
@@ -209,10 +220,13 @@ class TestLastCommit(unittest.TestCase):
 
     def test_multiple_commits_no_overlap(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
         lcd = M.repo.LastCommit.get(commit3.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.commit_id, commit3._id)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 3)
@@ -222,10 +236,13 @@ class TestLastCommit(unittest.TestCase):
 
     def test_multiple_commits_with_overlap(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file1', 'file2'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'file2'], ['file1', 'file2'], [commit2])
         lcd = M.repo.LastCommit.get(commit3.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 3)
         self.assertEqual(lcd.by_name['file1'], commit3._id)
@@ -234,10 +251,13 @@ class TestLastCommit(unittest.TestCase):
 
     def test_multiple_commits_subdir_change(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1/file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
         lcd = M.repo.LastCommit.get(commit3.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 2)
         self.assertEqual(lcd.by_name['file1'], commit1._id)
@@ -245,11 +265,14 @@ class TestLastCommit(unittest.TestCase):
 
     def test_subdir_lcd(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1/file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
         tree = self._build_tree(commit3, '/dir1', ['file1', 'file2'])
         lcd = M.repo.LastCommit.get(tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.path, 'dir1')
         self.assertEqual(len(lcd.entries), 2)
         self.assertEqual(lcd.by_name['file1'], commit3._id)
@@ -257,12 +280,16 @@ class TestLastCommit(unittest.TestCase):
 
     def test_subdir_lcd_prev_commit(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1/file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
-        commit4 = self._add_commit('Commit 4', ['file1', 'dir1/file1', 'dir1/file2', 'file2'], ['file2'], [commit3])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file1'], [commit2])
+        commit4 = self._add_commit(
+            'Commit 4', ['file1', 'dir1/file1', 'dir1/file2', 'file2'], ['file2'], [commit3])
         tree = self._build_tree(commit4, '/dir1', ['file1', 'file2'])
         lcd = M.repo.LastCommit.get(tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.path, 'dir1')
         self.assertEqual(len(lcd.entries), 2)
         self.assertEqual(lcd.by_name['file1'], commit3._id)
@@ -270,69 +297,80 @@ class TestLastCommit(unittest.TestCase):
 
     def test_subdir_lcd_always_empty(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'file2'], ['file2'], [commit1])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'file2'], ['file2'], [commit1])
         tree = self._build_tree(commit2, '/dir1', [])
         lcd = M.repo.LastCommit.get(tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit1.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit1.message)
         self.assertEqual(lcd.path, 'dir1')
         self.assertEqual(lcd.entries, [])
 
     def test_subdir_lcd_emptied(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1/file1'])
-        commit2 = self._add_commit('Commit 2', ['file1'], ['dir1/file1'], [commit1])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1'], ['dir1/file1'], [commit1])
         tree = self._build_tree(commit2, '/dir1', [])
         lcd = M.repo.LastCommit.get(tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit2.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit2.message)
         self.assertEqual(lcd.path, 'dir1')
         self.assertEqual(lcd.entries, [])
 
     def test_existing_lcd_unchained(self):
         commit1 = self._add_commit('Commit 1', ['file1', 'dir1/file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['file1'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1', 'dir1/file2'], ['dir1/file2'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'dir1/file2'], ['file1'], [commit2])
         prev_lcd = M.repo.LastCommit(
-                path='dir1',
-                commit_id=commit2._id,
-                entries=[
-                    dict(
-                        name='file1',
-                        commit_id=commit1._id),
-                    dict(
-                        name='file2',
-                        commit_id=commit2._id),
-                ],
-            )
+            path='dir1',
+            commit_id=commit2._id,
+            entries=[
+                dict(
+                    name='file1',
+                    commit_id=commit1._id),
+                dict(
+                    name='file2',
+                    commit_id=commit2._id),
+            ],
+        )
         session(prev_lcd).flush()
         tree = self._build_tree(commit3, '/dir1', ['file1', 'file2'])
         lcd = M.repo.LastCommit.get(tree)
         self.assertEqual(lcd._id, prev_lcd._id)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit2.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit2.message)
         self.assertEqual(lcd.path, 'dir1')
         self.assertEqual(lcd.entries, prev_lcd.entries)
 
     def test_existing_lcd_partial(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'file2'], ['file2'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'file2', 'file3'], ['file3'], [commit2])
-        commit4 = self._add_commit('Commit 4', ['file1', 'file2', 'file3', 'file4'], ['file2', 'file4'], [commit3])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'file2'], ['file2'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'file2', 'file3'], ['file3'], [commit2])
+        commit4 = self._add_commit(
+            'Commit 4', ['file1', 'file2', 'file3', 'file4'], ['file2', 'file4'], [commit3])
         prev_lcd = M.repo.LastCommit(
-                path='',
-                commit_id=commit3._id,
-                entries=[
-                    dict(
-                        name='file1',
-                        commit_id=commit1._id),
-                    dict(
-                        name='file2',
-                        commit_id=commit2._id),
-                    dict(
-                        name='file3',
-                        commit_id=commit3._id),
-                ],
-            )
+            path='',
+            commit_id=commit3._id,
+            entries=[
+                dict(
+                    name='file1',
+                    commit_id=commit1._id),
+                dict(
+                    name='file2',
+                    commit_id=commit2._id),
+                dict(
+                    name='file3',
+                    commit_id=commit3._id),
+            ],
+        )
         session(prev_lcd).flush()
         lcd = M.repo.LastCommit.get(commit4.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit4.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit4.message)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 4)
         self.assertEqual(lcd.by_name['file1'], commit1._id)
@@ -355,11 +393,14 @@ class TestLastCommit(unittest.TestCase):
 
     def test_timeout(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
         with h.push_config(config, lcd_timeout=-1000):
             lcd = M.repo.LastCommit.get(commit3.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.commit_id, commit3._id)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 1)
@@ -367,12 +408,15 @@ class TestLastCommit(unittest.TestCase):
 
     def test_loop(self):
         commit1 = self._add_commit('Commit 1', ['file1'])
-        commit2 = self._add_commit('Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
-        commit3 = self._add_commit('Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
+        commit2 = self._add_commit(
+            'Commit 2', ['file1', 'dir1/file1'], ['dir1/file1'], [commit1])
+        commit3 = self._add_commit(
+            'Commit 3', ['file1', 'dir1/file1', 'file2'], ['file2'], [commit2])
         commit2.parent_ids = [commit3._id]
         session(commit2).flush(commit2)
         lcd = M.repo.LastCommit.get(commit3.tree)
-        self.assertEqual(self.repo._commits[lcd.commit_id].message, commit3.message)
+        self.assertEqual(
+            self.repo._commits[lcd.commit_id].message, commit3.message)
         self.assertEqual(lcd.commit_id, commit3._id)
         self.assertEqual(lcd.path, '')
         self.assertEqual(len(lcd.entries), 3)
@@ -381,11 +425,13 @@ class TestLastCommit(unittest.TestCase):
 
 
 class TestModelCache(unittest.TestCase):
+
     def setUp(self):
         self.cache = M.repo.ModelCache()
 
     def test_normalize_query(self):
-        self.assertEqual(self.cache._normalize_query({'foo': 1, 'bar': 2}), (('bar', 2), ('foo', 1)))
+        self.assertEqual(self.cache._normalize_query(
+            {'foo': 1, 'bar': 2}), (('bar', 2), ('foo', 1)))
 
     def test_model_query(self):
         q = mock.Mock(spec_set=['query'], query='foo')
@@ -398,8 +444,10 @@ class TestModelCache(unittest.TestCase):
     @mock.patch.object(M.repo.Tree.query, 'get')
     @mock.patch.object(M.repo.LastCommit.query, 'get')
     def test_get(self, lc_get, tr_get):
-        tree = tr_get.return_value = mock.Mock(spec=['_id', 'val'], _id='foo', val='bar')
-        lcd = lc_get.return_value = mock.Mock(spec=['_id', 'val'], _id='foo', val='qux')
+        tree = tr_get.return_value = mock.Mock(
+            spec=['_id', 'val'], _id='foo', val='bar')
+        lcd = lc_get.return_value = mock.Mock(
+            spec=['_id', 'val'], _id='foo', val='qux')
 
         val = self.cache.get(M.repo.Tree, {'_id': 'foo'})
         tr_get.assert_called_with(_id='foo')
@@ -411,7 +459,8 @@ class TestModelCache(unittest.TestCase):
 
     @mock.patch.object(M.repo.Tree.query, 'get')
     def test_get_no_query(self, tr_get):
-        tree1 = tr_get.return_value = mock.Mock(spec=['_id', 'val'], _id='foo', val='bar')
+        tree1 = tr_get.return_value = mock.Mock(
+            spec=['_id', 'val'], _id='foo', val='bar')
         val = self.cache.get(M.repo.Tree, {'_id': 'foo'})
         tr_get.assert_called_once_with(_id='foo')
         self.assertEqual(val, tree1)
@@ -423,7 +472,8 @@ class TestModelCache(unittest.TestCase):
 
     @mock.patch.object(M.repo.TreesDoc.m, 'get')
     def test_get_doc(self, tr_get):
-        trees = tr_get.return_value = mock.Mock(spec=['_id', 'val'], _id='foo', val='bar')
+        trees = tr_get.return_value = mock.Mock(
+            spec=['_id', 'val'], _id='foo', val='bar')
         val = self.cache.get(M.repo.TreesDoc, {'_id': 'foo'})
         tr_get.assert_called_once_with(_id='foo')
         self.assertEqual(val, trees)
@@ -431,8 +481,10 @@ class TestModelCache(unittest.TestCase):
     def test_set(self):
         tree = mock.Mock(spec=['_id', 'test_set'], _id='foo', val='test_set')
         self.cache.set(M.repo.Tree, {'val': 'test_set'}, tree)
-        self.assertEqual(self.cache._query_cache, {M.repo.Tree: {(('val', 'test_set'),): 'foo'}})
-        self.assertEqual(self.cache._instance_cache, {M.repo.Tree: {'foo': tree}})
+        self.assertEqual(self.cache._query_cache,
+                         {M.repo.Tree: {(('val', 'test_set'),): 'foo'}})
+        self.assertEqual(self.cache._instance_cache,
+                         {M.repo.Tree: {'foo': tree}})
 
     @mock.patch('bson.ObjectId')
     def test_set_none_id(self, obj_id):
@@ -441,16 +493,21 @@ class TestModelCache(unittest.TestCase):
         self.cache.set(M.repo.Tree, {'val1': 'test_set1'}, tree)
         self.cache.set(M.repo.Tree, {'val2': 'test_set2'}, tree)
         self.assertEqual(dict(self.cache._query_cache[M.repo.Tree]), {
-                (('val1', 'test_set1'),): 'OBJID',
-                (('val2', 'test_set2'),): 'OBJID',
-            })
-        self.assertEqual(self.cache._instance_cache, {M.repo.Tree: {'OBJID': tree}})
+            (('val1', 'test_set1'),): 'OBJID',
+            (('val2', 'test_set2'),): 'OBJID',
+        })
+        self.assertEqual(self.cache._instance_cache,
+                         {M.repo.Tree: {'OBJID': tree}})
         tree._id = '_id'
-        self.assertEqual(self.cache.get(M.repo.Tree, {'val1': 'test_set1'}), tree)
-        self.assertEqual(self.cache.get(M.repo.Tree, {'val2': 'test_set2'}), tree)
+        self.assertEqual(
+            self.cache.get(M.repo.Tree, {'val1': 'test_set1'}), tree)
+        self.assertEqual(
+            self.cache.get(M.repo.Tree, {'val2': 'test_set2'}), tree)
         self.cache.set(M.repo.Tree, {'val1': 'test_set2'}, tree)
-        self.assertEqual(self.cache.get(M.repo.Tree, {'val1': 'test_set1'}), tree)
-        self.assertEqual(self.cache.get(M.repo.Tree, {'val2': 'test_set2'}), tree)
+        self.assertEqual(
+            self.cache.get(M.repo.Tree, {'val1': 'test_set1'}), tree)
+        self.assertEqual(
+            self.cache.get(M.repo.Tree, {'val2': 'test_set2'}), tree)
 
     @mock.patch('bson.ObjectId')
     def test_set_none_val(self, obj_id):
@@ -458,29 +515,31 @@ class TestModelCache(unittest.TestCase):
         self.cache.set(M.repo.Tree, {'val1': 'test_set1'}, None)
         self.cache.set(M.repo.Tree, {'val2': 'test_set2'}, None)
         self.assertEqual(dict(self.cache._query_cache[M.repo.Tree]), {
-                (('val1', 'test_set1'),): None,
-                (('val2', 'test_set2'),): None,
-            })
+            (('val1', 'test_set1'),): None,
+            (('val2', 'test_set2'),): None,
+        })
         self.assertEqual(dict(self.cache._instance_cache[M.repo.Tree]), {})
         tree1 = mock.Mock(spec=['_id', 'val'], _id='tree1', val='test_set')
-        tree2 = mock.Mock(spec=['_model_cache_id', '_id', 'val'], _model_cache_id='tree2', _id='tree1', val='test_set2')
+        tree2 = mock.Mock(spec=['_model_cache_id', '_id', 'val'],
+                          _model_cache_id='tree2', _id='tree1', val='test_set2')
         self.cache.set(M.repo.Tree, {'val1': 'test_set1'}, tree1)
         self.cache.set(M.repo.Tree, {'val2': 'test_set2'}, tree2)
         self.assertEqual(dict(self.cache._query_cache[M.repo.Tree]), {
-                (('val1', 'test_set1'),): 'tree1',
-                (('val2', 'test_set2'),): 'tree2',
-            })
+            (('val1', 'test_set1'),): 'tree1',
+            (('val2', 'test_set2'),): 'tree2',
+        })
         self.assertEqual(dict(self.cache._instance_cache[M.repo.Tree]), {
-                'tree1': tree1,
-                'tree2': tree2,
-            })
+            'tree1': tree1,
+            'tree2': tree2,
+        })
 
     def test_instance_ids(self):
         tree1 = mock.Mock(spec=['_id', 'val'], _id='id1', val='tree1')
         tree2 = mock.Mock(spec=['_id', 'val'], _id='id2', val='tree2')
         self.cache.set(M.repo.Tree, {'val': 'tree1'}, tree1)
         self.cache.set(M.repo.Tree, {'val': 'tree2'}, tree2)
-        self.assertEqual(set(self.cache.instance_ids(M.repo.Tree)), set(['id1', 'id2']))
+        self.assertEqual(set(self.cache.instance_ids(M.repo.Tree)),
+                         set(['id1', 'id2']))
         self.assertEqual(self.cache.instance_ids(M.repo.LastCommit), [])
 
     @mock.patch.object(M.repo.Tree.query, 'find')
@@ -493,13 +552,13 @@ class TestModelCache(unittest.TestCase):
         self.cache.batch_load(M.repo.Tree, {'foo': {'$in': 'bar'}})
         tr_find.assert_called_with({'foo': {'$in': 'bar'}})
         self.assertEqual(self.cache._query_cache[M.repo.Tree], {
-                (('foo', 1),): 'id1',
-                (('foo', 2),): 'id2',
-            })
+            (('foo', 1),): 'id1',
+            (('foo', 2),): 'id2',
+        })
         self.assertEqual(self.cache._instance_cache[M.repo.Tree], {
-                'id1': m1,
-                'id2': m2,
-            })
+            'id1': m1,
+            'id2': m2,
+        })
 
     @mock.patch.object(M.repo.Tree.query, 'find')
     def test_batch_load_attrs(self, tr_find):
@@ -511,13 +570,13 @@ class TestModelCache(unittest.TestCase):
         self.cache.batch_load(M.repo.Tree, {'foo': {'$in': 'bar'}}, ['qux'])
         tr_find.assert_called_with({'foo': {'$in': 'bar'}})
         self.assertEqual(self.cache._query_cache[M.repo.Tree], {
-                (('qux', 3),): 'id1',
-                (('qux', 5),): 'id2',
-            })
+            (('qux', 3),): 'id1',
+            (('qux', 5),): 'id2',
+        })
         self.assertEqual(self.cache._instance_cache[M.repo.Tree], {
-                'id1': m1,
-                'id2': m2,
-            })
+            'id1': m1,
+            'id2': m2,
+        })
 
     def test_pruning(self):
         cache = M.repo.ModelCache(max_queries=3, max_instances=2)
@@ -533,18 +592,18 @@ class TestModelCache(unittest.TestCase):
         cache.get(M.repo.Tree, {'_id': 'f00'})
         cache.set(M.repo.Tree, {'val': 'b4r'}, tree3)
         self.assertEqual(cache._query_cache, {
-                M.repo.Tree: {
-                    (('_id', 'foo'),): 'foo',
-                    (('_id', 'f00'),): 'f00',
-                    (('val', 'b4r'),): 'f00',
-                },
-            })
+            M.repo.Tree: {
+                (('_id', 'foo'),): 'foo',
+                (('_id', 'f00'),): 'f00',
+                (('val', 'b4r'),): 'f00',
+            },
+        })
         self.assertEqual(cache._instance_cache, {
-                M.repo.Tree: {
-                    'f00': tree3,
-                    'foo': tree4,
-                },
-            })
+            M.repo.Tree: {
+                'f00': tree3,
+                'foo': tree4,
+            },
+        })
 
     def test_pruning_query_vs_instance(self):
         cache = M.repo.ModelCache(max_queries=3, max_instances=2)
@@ -555,17 +614,19 @@ class TestModelCache(unittest.TestCase):
         tree4 = mock.Mock(spec=['_id', '_val'], _id='tree4', val='zaz')
         cache.set(M.repo.Tree, {'keep_query_1': 'bar'}, tree1)
         cache.set(M.repo.Tree, {'drop_query_1': 'bar'}, tree2)
-        cache.set(M.repo.Tree, {'keep_query_2': 'bar'}, tree1)  # should refresh tree1 in _instance_cache
-        cache.set(M.repo.Tree, {'drop_query_2': 'bar'}, tree3)  # should drop tree2, not tree1, from _instance_cache
+        # should refresh tree1 in _instance_cache
+        cache.set(M.repo.Tree, {'keep_query_2': 'bar'}, tree1)
+        # should drop tree2, not tree1, from _instance_cache
+        cache.set(M.repo.Tree, {'drop_query_2': 'bar'}, tree3)
         self.assertEqual(cache._query_cache[M.repo.Tree], {
-                (('drop_query_1', 'bar'),): 'tree2',
-                (('keep_query_2', 'bar'),): 'keep',
-                (('drop_query_2', 'bar'),): 'tree3',
-            })
+            (('drop_query_1', 'bar'),): 'tree2',
+            (('keep_query_2', 'bar'),): 'keep',
+            (('drop_query_2', 'bar'),): 'tree3',
+        })
         self.assertEqual(cache._instance_cache[M.repo.Tree], {
-                'keep': tree1,
-                'tree3': tree3,
-            })
+            'keep': tree1,
+            'tree3': tree3,
+        })
 
     @mock.patch('bson.ObjectId')
     def test_pruning_no_id(self, obj_id):
@@ -577,13 +638,13 @@ class TestModelCache(unittest.TestCase):
         cache.set(M.repo.Tree, {'query_2': 'bar'}, tree1)
         cache.set(M.repo.Tree, {'query_3': 'bar'}, tree1)
         self.assertEqual(cache._instance_cache[M.repo.Tree], {
-                'id1': tree1,
-            })
+            'id1': tree1,
+        })
         self.assertEqual(cache._query_cache[M.repo.Tree], {
-                (('query_1', 'bar'),): 'id1',
-                (('query_2', 'bar'),): 'id1',
-                (('query_3', 'bar'),): 'id1',
-            })
+            (('query_1', 'bar'),): 'id1',
+            (('query_2', 'bar'),): 'id1',
+            (('query_3', 'bar'),): 'id1',
+        })
 
     @mock.patch('bson.ObjectId')
     def test_pruning_none(self, obj_id):
@@ -595,18 +656,20 @@ class TestModelCache(unittest.TestCase):
         cache.set(M.repo.Tree, {'query_3': 'bar'}, None)
         self.assertEqual(cache._instance_cache[M.repo.Tree], {})
         self.assertEqual(cache._query_cache[M.repo.Tree], {
-                (('query_1', 'bar'),): None,
-                (('query_2', 'bar'),): None,
-                (('query_3', 'bar'),): None,
-            })
+            (('query_1', 'bar'),): None,
+            (('query_2', 'bar'),): None,
+            (('query_3', 'bar'),): None,
+        })
 
     @mock.patch('allura.model.repo.session')
     @mock.patch.object(M.repo.Tree.query, 'get')
     def test_pruning_query_flush(self, tr_get, session):
         cache = M.repo.ModelCache(max_queries=3, max_instances=2)
         # ensure cache doesn't store None instances
-        tree1 = mock.Mock(name='tree1', spec=['_id', '_val'], _id='tree1', val='bar')
-        tree2 = mock.Mock(name='tree2', spec=['_id', '_val'], _id='tree2', val='fuz')
+        tree1 = mock.Mock(name='tree1',
+                          spec=['_id', '_val'], _id='tree1', val='bar')
+        tree2 = mock.Mock(name='tree2',
+                          spec=['_id', '_val'], _id='tree2', val='fuz')
         tr_get.return_value = tree2
         cache.set(M.repo.Tree, {'_id': 'tree1'}, tree1)
         cache.set(M.repo.Tree, {'_id': 'tree2'}, tree2)
@@ -614,16 +677,18 @@ class TestModelCache(unittest.TestCase):
         cache.get(M.repo.Tree, {'query_2': 'tree2'})
         cache.get(M.repo.Tree, {'query_3': 'tree2'})
         self.assertEqual(cache._query_cache[M.repo.Tree], {
-                (('query_1', 'tree2'),): 'tree2',
-                (('query_2', 'tree2'),): 'tree2',
-                (('query_3', 'tree2'),): 'tree2',
-            })
+            (('query_1', 'tree2'),): 'tree2',
+            (('query_2', 'tree2'),): 'tree2',
+            (('query_3', 'tree2'),): 'tree2',
+        })
         self.assertEqual(cache._instance_cache[M.repo.Tree], {
-                'tree1': tree1,
-                'tree2': tree2,
-            })
-        self.assertEqual(session.call_args_list, [mock.call(tree1), mock.call(tree2)])
-        self.assertEqual(session.return_value.flush.call_args_list, [mock.call(tree1), mock.call(tree2)])
+            'tree1': tree1,
+            'tree2': tree2,
+        })
+        self.assertEqual(session.call_args_list,
+                         [mock.call(tree1), mock.call(tree2)])
+        self.assertEqual(session.return_value.flush.call_args_list,
+                         [mock.call(tree1), mock.call(tree2)])
         assert not session.return_value.expunge.called
 
     @mock.patch('allura.model.repo.session')
@@ -637,14 +702,14 @@ class TestModelCache(unittest.TestCase):
         cache.set(M.repo.Tree, {'_id': 'tree2'}, tree2)
         cache.set(M.repo.Tree, {'_id': 'tree3'}, tree3)
         self.assertEqual(cache._query_cache[M.repo.Tree], {
-                (('_id', 'tree1'),): 'tree1',
-                (('_id', 'tree2'),): 'tree2',
-                (('_id', 'tree3'),): 'tree3',
-            })
+            (('_id', 'tree1'),): 'tree1',
+            (('_id', 'tree2'),): 'tree2',
+            (('_id', 'tree3'),): 'tree3',
+        })
         self.assertEqual(cache._instance_cache[M.repo.Tree], {
-                'tree2': tree2,
-                'tree3': tree3,
-            })
+            'tree2': tree2,
+            'tree3': tree3,
+        })
         session.assert_called_once_with(tree1)
         session.return_value.flush.assert_called_once_with(tree1)
         session.return_value.expunge.assert_called_once_with(tree1)

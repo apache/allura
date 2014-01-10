@@ -34,6 +34,7 @@ log = logging.getLogger(__name__)
 
 
 class MediawikiLoader(object):
+
     """Load MediaWiki data from json to Allura wiki tool"""
     TIMESTAMP_FMT = '%Y%m%d%H%M%S'
 
@@ -42,13 +43,13 @@ class MediawikiLoader(object):
         self.nbhd = M.Neighborhood.query.get(name=options.nbhd)
         if not self.nbhd:
             raise ValueError("Can't find neighborhood with name %s"
-                                  % options.nbhd)
+                             % options.nbhd)
         self.project = M.Project.query.get(shortname=options.project,
                                            neighborhood_id=self.nbhd._id)
         if not self.project:
             raise ValueError("Can't find project with shortname %s "
-                                  "and neighborhood_id %s"
-                                  % (options.project, self.nbhd._id))
+                             "and neighborhood_id %s"
+                             % (options.project, self.nbhd._id))
 
         self.wiki = self.project.app_instance('wiki')
         if not self.wiki:
@@ -132,10 +133,10 @@ class MediawikiLoader(object):
                 p = WM.Page.upsert(page['title'])
                 p.viewable_by = ['all']
                 p.text = mediawiki_internal_links2markdown(
-                            mediawiki2markdown(page['text']),
-                            page['title'])
+                    mediawiki2markdown(page['text']),
+                    page['title'])
                 timestamp = datetime.datetime.strptime(page['timestamp'],
-                                                        self.TIMESTAMP_FMT)
+                                                       self.TIMESTAMP_FMT)
                 p.mod_date = timestamp
                 c.user = (M.User.query.get(username=page['username'].lower())
                           or M.User.anonymous())
@@ -147,7 +148,8 @@ class MediawikiLoader(object):
                 gl = WM.Globals.query.get(app_config_id=self.wiki.config._id)
                 if gl is not None:
                     gl.root = page['title']
-            log.info('Loaded history of page %s (%s)', page['page_id'], page['title'])
+            log.info('Loaded history of page %s (%s)',
+                     page['page_id'], page['title'])
 
             self.load_talk(page_dir, page['title'])
             self.load_attachments(page_dir, page['title'])

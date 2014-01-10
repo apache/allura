@@ -27,6 +27,7 @@ from alluratest.controller import setup_basic_test
 from allura.lib.solr import Solr
 from allura.lib.search import solarize, search_app
 
+
 class TestSolr(unittest.TestCase):
 
     @mock.patch('allura.lib.solr.pysolr')
@@ -39,7 +40,8 @@ class TestSolr(unittest.TestCase):
 
         pysolr.reset_mock()
         solr = Solr(servers, 'server3', commit=False, commitWithin='10000')
-        calls = [mock.call('server1'), mock.call('server2'), mock.call('server3')]
+        calls = [mock.call('server1'), mock.call('server2'),
+                 mock.call('server3')]
         pysolr.Solr.assert_has_calls(calls)
         assert_equal(len(solr.push_pool), 2)
 
@@ -53,7 +55,7 @@ class TestSolr(unittest.TestCase):
         pysolr.reset_mock()
         solr.add('bar', somekw='value')
         calls = [mock.call('bar', commit=False,
-            commitWithin='10000', somekw='value')] * 2
+                           commitWithin='10000', somekw='value')] * 2
         pysolr.Solr().add.assert_has_calls(calls)
 
     @mock.patch('allura.lib.solr.pysolr')
@@ -115,7 +117,8 @@ class TestSolarize(unittest.TestCase):
         obj.index.return_value = {'text': '<script>alert(1)</script>'}
         assert_equal(solarize(obj), {'text': ''})
 
-        obj.index.return_value = {'text': '&lt;script&gt;alert(1)&lt;/script&gt;'}
+        obj.index.return_value = {'text':
+                                  '&lt;script&gt;alert(1)&lt;/script&gt;'}
         assert_equal(solarize(obj), {'text': '<script>alert(1)</script>'})
 
 
@@ -156,15 +159,17 @@ class TestSearch_app(unittest.TestCase):
         req.path = '/test/wiki/search'
         url_fn.side_effect = ['the-score-url', 'the-date-url']
         results = mock.Mock(hits=2, docs=[
-                {'id': 123, 'type_s':'WikiPage Snapshot', 'url_s':'/test/wiki/Foo', 'version_i':2},
-                {'id': 321, 'type_s':'Post'},
-            ], highlighting={
-                123: dict(title='some #ALLURA-HIGHLIGHT-START#Foo#ALLURA-HIGHLIGHT-END# stuff',
-                         text='scary <script>alert(1)</script> bar'),
-                321: dict(title='blah blah',
-                         text='less scary but still dangerous &lt;script&gt;alert(1)&lt;/script&gt; '
-                              'blah #ALLURA-HIGHLIGHT-START#bar#ALLURA-HIGHLIGHT-END# foo foo'),
-            },
+            {'id': 123, 'type_s': 'WikiPage Snapshot',
+             'url_s': '/test/wiki/Foo', 'version_i': 2},
+            {'id': 321, 'type_s': 'Post'},
+        ], highlighting={
+            123: dict(
+                title='some #ALLURA-HIGHLIGHT-START#Foo#ALLURA-HIGHLIGHT-END# stuff',
+                text='scary <script>alert(1)</script> bar'),
+            321: dict(title='blah blah',
+                      text='less scary but still dangerous &lt;script&gt;alert(1)&lt;/script&gt; '
+                      'blah #ALLURA-HIGHLIGHT-START#bar#ALLURA-HIGHLIGHT-END# foo foo'),
+        },
         )
         results.__iter__ = lambda self: iter(results.docs)
         solr_search.return_value = results
@@ -190,11 +195,11 @@ class TestSearch_app(unittest.TestCase):
                 'title_match': Markup('some <strong>Foo</strong> stuff'),
                 # HTML in the solr plaintext results get escaped
                 'text_match': Markup('scary &lt;script&gt;alert(1)&lt;/script&gt; bar'),
-                }, {
+            }, {
                 'id': 321,
                 'type_s': 'Post',
                 'title_match': Markup('blah blah'),
                 # highlighting in text
                 'text_match': Markup('less scary but still dangerous &amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt; blah <strong>bar</strong> foo foo'),
-                }]
+            }]
         ))

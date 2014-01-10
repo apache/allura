@@ -22,6 +22,7 @@ from ConfigParser import ConfigParser, NoOptionError
 
 config = ConfigParser()
 
+
 def main():
     config.read('.setup-scm-cache')
     if not config.has_section('scm'):
@@ -45,14 +46,17 @@ def get_value(key, default):
         value = config.get('scm', key)
     except NoOptionError:
         value = raw_input('%s? [%s]' % key, default)
-        if not value: value = default
+        if not value:
+            value = default
         config.set('scm', key, value)
     return value
+
 
 def run(command):
     rc = os.system(command)
     assert rc == 0
     return rc
+
 
 def add_ldif(template, **values):
     fd, name = mkstemp()
@@ -61,7 +65,7 @@ def add_ldif(template, **values):
     run('ldapadd -Y EXTERNAL -H ldapi:/// -f %s' % name)
     os.remove(name)
 
-backend_ldif=string.Template('''
+backend_ldif = string.Template('''
 # Load dynamic backend modules
 dn: cn=module,cn=config
 objectClass: olcModuleList
@@ -92,7 +96,7 @@ olcAccess: to * by dn="cn=admin,$domain" write by * read
 
 ''')
 
-frontend_ldif=string.Template('''
+frontend_ldif = string.Template('''
 # Create top-level object in domain
 dn: $domain
 objectClass: top

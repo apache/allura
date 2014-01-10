@@ -24,6 +24,7 @@ from ming.utils import LazyProperty
 from allura.lib.security import require, has_access, require_access
 from .base import BaseController
 
+
 class AttachmentsController(BaseController):
     AttachmentControllerClass = None
 
@@ -35,10 +36,11 @@ class AttachmentsController(BaseController):
         if filename:
             if not args:
                 filename = request.path.rsplit('/', 1)[-1]
-            filename=unquote(filename)
+            filename = unquote(filename)
             return self.AttachmentControllerClass(filename, self.artifact), args
         else:
             raise exc.HTTPNotFound
+
 
 class AttachmentController(BaseController):
     AttachmentClass = None
@@ -55,7 +57,8 @@ class AttachmentController(BaseController):
     def attachment(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
         metadata['type'] = 'attachment'
-        attachment = self.AttachmentClass.query.get(filename=self.filename, **metadata)
+        attachment = self.AttachmentClass.query.get(
+            filename=self.filename, **metadata)
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
@@ -64,7 +67,8 @@ class AttachmentController(BaseController):
     def thumbnail(self):
         metadata = self.AttachmentClass.metadata_for(self.artifact)
         metadata['type'] = 'thumbnail'
-        attachment = self.AttachmentClass.query.get(filename=self.filename, **metadata)
+        attachment = self.AttachmentClass.query.get(
+            filename=self.filename, **metadata)
         if attachment is None:
             raise exc.HTTPNotFound
         return attachment
@@ -81,7 +85,7 @@ class AttachmentController(BaseController):
                 except exc.HTTPNotFound:
                     pass
             redirect(request.referer)
-        embed=False
+        embed = False
         if self.attachment.content_type and self.attachment.content_type.startswith('image/'):
             embed = True
         return self.attachment.serve(embed=embed)

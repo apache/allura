@@ -19,15 +19,15 @@ from pylons import tmpl_context as c
 from pylons import app_globals as g
 from formencode import validators as fev
 from tg import (
-        expose,
-        flash,
-        redirect,
-        validate,
-        )
+    expose,
+    flash,
+    redirect,
+    validate,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.lib.decorators import require_post
 from allura.lib import helpers as h
@@ -37,9 +37,9 @@ from allura import model as M
 from forgegit.git_main import ForgeGitApp
 
 from forgeimporters.base import (
-        ToolImporter,
-        ToolImportForm,
-        )
+    ToolImporter,
+    ToolImportForm,
+)
 from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
 
 
@@ -49,6 +49,7 @@ class GitHubRepoImportForm(ToolImportForm):
 
 
 class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
+
     def __init__(self):
         self.importer = GitHubRepoImporter()
 
@@ -61,7 +62,7 @@ class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
     def index(self, **kw):
         self.oauth_begin()
         return dict(importer=self.importer,
-                target_app=self.target_app)
+                    target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
@@ -70,14 +71,15 @@ class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
-                    project_name=gh_project_name,
-                    user_name=gh_user_name,
-                    mount_point=mount_point,
-                    mount_label=mount_label)
+                project_name=gh_project_name,
+                user_name=gh_user_name,
+                mount_point=mount_point,
+                mount_label=mount_label)
             flash('Repo import has begun. Your new repo will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -89,7 +91,7 @@ class GitHubRepoImporter(ToolImporter):
     tool_description = 'Import your repo from GitHub'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
-            mount_label=None, user_name=None, **kw):
+                    mount_label=None, user_name=None, **kw):
         """ Import a GitHub repo into a new Git Allura tool.
 
         """
@@ -107,9 +109,9 @@ class GitHubRepoImporter(ToolImporter):
             }
         )
         M.AuditLog.log(
-                'import tool %s from %s on %s' % (
-                    app.config.options.mount_point,
-                    project_name, self.source,
-                ), project=project, user=user, url=app.url)
+            'import tool %s from %s on %s' % (
+                app.config.options.mount_point,
+                project_name, self.source,
+            ), project=project, user=user, url=app.url)
         g.post_event('project_updated')
         return app

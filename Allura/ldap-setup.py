@@ -30,6 +30,7 @@ log = logging.getLogger('ldap-setup')
 
 config = ConfigParser()
 
+
 def main():
     config.read('.setup-scm-cache')
     if not config.has_section('scm'):
@@ -55,10 +56,12 @@ def main():
     os.chmod('/etc/ldap.secret', 0400)
     if get_value('add frontend ldif', 'y') == 'y':
         with tempfile(frontend_ldif, locals()) as name:
-            run('ldapadd -c -x -D cn=admin,%s -W -f %s -y /etc/ldap.secret' % (suffix, name))
+            run('ldapadd -c -x -D cn=admin,%s -W -f %s -y /etc/ldap.secret' %
+                (suffix, name))
     if get_value('add initial user/group', 'y') == 'y':
         with tempfile(initial_user_ldif, locals()) as name:
-            run('ldapadd -c -x -D cn=admin,%s -W -f %s -y /etc/ldap.secret' % (suffix, name))
+            run('ldapadd -c -x -D cn=admin,%s -W -f %s -y /etc/ldap.secret' %
+                (suffix, name))
     if get_value('setup ldap auth', 'y') == 'y':
         run('apt-get install libnss-ldap')
         run('dpkg-reconfigure ldap-auth-config')
@@ -76,17 +79,20 @@ def main():
         with open('/usr/share/ldapscripts/runtime.debian', 'w') as fp:
             fp.write(ldapscripts_debian)
 
+
 def get_value(key, default):
     try:
         default = config.get('scm', key)
     except NoOptionError:
         pass
     value = raw_input('%s? [%s]' % (key, default))
-    if not value: value = default
+    if not value:
+        value = default
     config.set('scm', key, value)
     with open('.setup-scm-cache', 'w') as fp:
         config.write(fp)
     return value
+
 
 def run(command):
     rc = os.system(command)
@@ -94,6 +100,7 @@ def run(command):
         log.error('Error running %s', command)
     assert rc == 0
     return rc
+
 
 @contextmanager
 def tempfile(template, values):
@@ -103,7 +110,7 @@ def tempfile(template, values):
     yield name
     os.remove(name)
 
-backend_ldif=string.Template('''
+backend_ldif = string.Template('''
 # Load dynamic backend modules
 dn: cn=module,cn=config
 objectClass: olcModuleList
@@ -134,7 +141,7 @@ olcAccess: to * by dn="cn=admin,$suffix" write by * read
 
 ''')
 
-frontend_ldif=string.Template('''
+frontend_ldif = string.Template('''
 # Create top-level object in domain
 dn: $suffix
 objectClass: top
@@ -167,7 +174,7 @@ objectClass: organizationalUnit
 ou: groups
 ''')
 
-initial_user_ldif=string.Template('''
+initial_user_ldif = string.Template('''
 dn: uid=john,ou=people,$suffix
 objectClass: inetOrgPerson
 objectClass: posixAccount
@@ -205,7 +212,7 @@ cn: example
 gidNumber: 10000
 ''')
 
-open_ldap_config=string.Template('''
+open_ldap_config = string.Template('''
 [open_ldap]
 nss_passwd=passwd: files ldap
 nss_group=group: files ldap
@@ -230,7 +237,7 @@ pam_session=session    required     pam_limits.so
         session    optional     pam_ldap.so
 ''')
 
-ldapscripts_conf=string.Template('''
+ldapscripts_conf = string.Template('''
 SERVER=127.0.0.1
 BINDDN='cn=admin,$suffix'
 BINDPWDFILE="/etc/ldapscripts/ldapscripts.passwd"
@@ -244,7 +251,7 @@ MIDSTART=10000
 ''')
 
 
-ldapscripts_debian='''
+ldapscripts_debian = '''
 ### Allura-customized
 ### This file predefine some ldapscripts variables for Debian boxes.
 #

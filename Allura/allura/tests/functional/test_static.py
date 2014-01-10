@@ -17,6 +17,7 @@
 
 from allura.tests import TestController
 
+
 class TestStatic(TestController):
 
     def test_static_controller(self):

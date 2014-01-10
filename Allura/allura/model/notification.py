@@ -58,9 +58,11 @@ from .auth import User
 
 log = logging.getLogger(__name__)
 
-MAILBOX_QUIESCENT=None # Re-enable with [#1384]: timedelta(minutes=10)
+MAILBOX_QUIESCENT = None  # Re-enable with [#1384]: timedelta(minutes=10)
+
 
 class Notification(MappedClass):
+
     '''
     Temporarily store notifications that will be emailed or displayed as a web flash.
     This does not contain any recipient information.
@@ -74,31 +76,33 @@ class Notification(MappedClass):
     _id = FieldProperty(str, if_missing=h.gen_message_id)
 
     # Classify notifications
-    neighborhood_id = ForeignIdProperty('Neighborhood', if_missing=lambda:c.project.neighborhood._id)
-    project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
-    tool_name = FieldProperty(str, if_missing=lambda:c.app.config.tool_name)
+    neighborhood_id = ForeignIdProperty(
+        'Neighborhood', if_missing=lambda: c.project.neighborhood._id)
+    project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
+    app_config_id = ForeignIdProperty(
+        'AppConfig', if_missing=lambda: c.app.config._id)
+    tool_name = FieldProperty(str, if_missing=lambda: c.app.config.tool_name)
     ref_id = ForeignIdProperty('ArtifactReference')
     topic = FieldProperty(str)
 
     # Notification Content
-    in_reply_to=FieldProperty(str)
-    references=FieldProperty([str])
-    from_address=FieldProperty(str)
-    reply_to_address=FieldProperty(str)
-    subject=FieldProperty(str)
-    text=FieldProperty(str)
-    link=FieldProperty(str)
-    author_id=ForeignIdProperty('User')
-    feed_meta=FieldProperty(S.Deprecated)
+    in_reply_to = FieldProperty(str)
+    references = FieldProperty([str])
+    from_address = FieldProperty(str)
+    reply_to_address = FieldProperty(str)
+    subject = FieldProperty(str)
+    text = FieldProperty(str)
+    link = FieldProperty(str)
+    author_id = ForeignIdProperty('User')
+    feed_meta = FieldProperty(S.Deprecated)
     artifact_reference = FieldProperty(S.Deprecated)
     pubdate = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     ref = RelationProperty('ArtifactReference')
 
     view = jinja2.Environment(
-            loader=jinja2.PackageLoader('allura', 'templates'),
-            auto_reload=asbool(config.get('auto_reload_templates', True)),
+        loader=jinja2.PackageLoader('allura', 'templates'),
+        auto_reload=asbool(config.get('auto_reload_templates', True)),
     )
 
     @classmethod
@@ -155,19 +159,24 @@ class Notification(MappedClass):
                     attach.file.seek(0, 2)
                     bytecount = attach.file.tell()
                     attach.file.seek(0)
-                    text = "%s %s (%s; %s) " % (text, attach.filename, h.do_filesizeformat(bytecount), attach.type)
+                    text = "%s %s (%s; %s) " % (
+                        text, attach.filename, h.do_filesizeformat(bytecount), attach.type)
 
             subject = post.subject or ''
             if post.parent_id and not subject.lower().startswith('re:'):
                 subject = 'Re: ' + subject
             author = post.author()
             msg_id = artifact.url() + post._id
-            parent_msg_id = artifact.url() + post.parent_id if post.parent_id else artifact.message_id()
+            parent_msg_id = artifact.url() + \
+                post.parent_id if post.parent_id else artifact.message_id(
+                )
             d = dict(
                 _id=msg_id,
-                from_address=str(author._id) if author != User.anonymous() else None,
+                from_address=str(
+                    author._id) if author != User.anonymous() else None,
                 reply_to_address='"%s" <%s>' % (
-                    subject_prefix, getattr(artifact, 'email_address', u'noreply@in.sf.net')),
+                    subject_prefix, getattr(
+                        artifact, 'email_address', u'noreply@in.sf.net')),
                 subject=subject_prefix + subject,
                 text=text,
                 in_reply_to=parent_msg_id,
@@ -181,7 +190,7 @@ class Notification(MappedClass):
             return n
         else:
             subject = kwargs.pop('subject', '%s modified by %s' % (
-                    h.get_first(idx, 'title'),c.user.get_pref('display_name')))
+                h.get_first(idx, 'title'), c.user.get_pref('display_name')))
             reply_to = '"%s" <%s>' % (
                 h.get_first(idx, 'title'),
                 getattr(artifact, 'email_address', u'noreply@in.sf.net'))
@@ -206,23 +215,27 @@ class Notification(MappedClass):
             d['text'] = ''
         try:
             ''' Add addional text to the notification e-mail based on the artifact type '''
-            template = cls.view.get_template('mail/' + artifact.type_s + '.txt')
-            d['text'] += template.render(dict(c=c, g=g, config=config, data=artifact, post=post, h=h))
+            template = cls.view.get_template(
+                'mail/' + artifact.type_s + '.txt')
+            d['text'] += template.render(dict(c=c, g=g,
+                                         config=config, data=artifact, post=post, h=h))
         except jinja2.TemplateNotFound:
             pass
         except:
             ''' Catch any errors loading or rendering the template,
             but the notification still gets sent if there is an error
             '''
-            log.warn('Could not render notification template %s' % artifact.type_s, exc_info=True)
+            log.warn('Could not render notification template %s' %
+                     artifact.type_s, exc_info=True)
 
         assert d['reply_to_address'] is not None
         project = c.project
         if d.get('project_id', c.project._id) != c.project._id:
             project = Project.query.get(_id=d['project_id'])
         if project.notifications_disabled:
-            log.info('Notifications disabled for project %s, not sending %s(%r)',
-                     project.shortname, topic, artifact)
+            log.info(
+                'Notifications disabled for project %s, not sending %s(%r)',
+                project.shortname, topic, artifact)
             return None
         n = cls(ref_id=artifact.index_id(),
                 topic=topic,
@@ -264,10 +277,12 @@ class Notification(MappedClass):
     def send_direct(self, user_id):
         user = User.query.get(_id=ObjectId(user_id), disabled=False)
         artifact = self.ref.artifact
-        log.debug('Sending direct notification %s to user %s', self._id, user_id)
+        log.debug('Sending direct notification %s to user %s',
+                  self._id, user_id)
         # Don't send if user disabled
         if not user:
-            log.debug("Skipping notification - enabled user %s not found" % user_id)
+            log.debug("Skipping notification - enabled user %s not found" %
+                      user_id)
             return
         # Don't send if user doesn't have read perms to the artifact
         if user and artifact and \
@@ -275,9 +290,10 @@ class Notification(MappedClass):
             log.debug("Skipping notification - User %s doesn't have read "
                       "access to artifact %s" % (user_id, str(self.ref_id)))
             log.debug("User roles [%s]; artifact ACL [%s]; PSC ACL [%s]",
-                    ', '.join([str(r) for r in security.Credentials.get().user_roles(user_id=user_id, project_id=artifact.project._id).reaching_ids]),
-                    ', '.join([str(a) for a in artifact.acl]),
-                    ', '.join([str(a) for a in artifact.parent_security_context().acl]))
+                      ', '.join([str(r) for r in security.Credentials.get().user_roles(
+                          user_id=user_id, project_id=artifact.project._id).reaching_ids]),
+                      ', '.join([str(a) for a in artifact.acl]),
+                      ', '.join([str(a) for a in artifact.parent_security_context().acl]))
             return
         allura.tasks.mail_tasks.sendmail.post(
             destinations=[str(user_id)],
@@ -293,23 +309,27 @@ class Notification(MappedClass):
     @classmethod
     def send_digest(self, user_id, from_address, subject, notifications,
                     reply_to_address=None):
-        if not notifications: return
+        if not notifications:
+            return
         user = User.query.get(_id=ObjectId(user_id), disabled=False)
         if not user:
-            log.debug("Skipping notification - enabled user %s not found " % user_id)
+            log.debug("Skipping notification - enabled user %s not found " %
+                      user_id)
             return
         # Filter out notifications for which the user doesn't have read
         # permissions to the artifact.
         artifact = self.ref.artifact
+
         def perm_check(notification):
             return not (user and artifact) or \
-                    security.has_access(artifact, 'read', user)()
+                security.has_access(artifact, 'read', user)()
         notifications = filter(perm_check, notifications)
 
-        log.debug('Sending digest of notifications [%s] to user %s', ', '.join([n._id for n in notifications]), user_id)
+        log.debug('Sending digest of notifications [%s] to user %s', ', '.join(
+            [n._id for n in notifications]), user_id)
         if reply_to_address is None:
             reply_to_address = from_address
-        text = [ 'Digest of %s' % subject ]
+        text = ['Digest of %s' % subject]
         for n in notifications:
             text.append('From: %s' % n.from_address)
             text.append('Subject: %s' % (n.subject or '(no subject)'))
@@ -328,9 +348,11 @@ class Notification(MappedClass):
 
     @classmethod
     def send_summary(self, user_id, from_address, subject, notifications):
-        if not notifications: return
-        log.debug('Sending summary of notifications [%s] to user %s', ', '.join([n._id for n in notifications]), user_id)
-        text = [ 'Digest of %s' % subject ]
+        if not notifications:
+            return
+        log.debug('Sending summary of notifications [%s] to user %s', ', '.join(
+            [n._id for n in notifications]), user_id)
+        text = ['Digest of %s' % subject]
         for n in notifications:
             text.append('From: %s' % n.from_address)
             text.append('Subject: %s' % (n.subject or '(no subject)'))
@@ -349,6 +371,7 @@ class Notification(MappedClass):
 
 
 class Mailbox(MappedClass):
+
     '''
     Holds a queue of notifications for an artifact, or a user (webflash messages)
     for a subscriber.
@@ -361,19 +384,21 @@ class Mailbox(MappedClass):
         unique_indexes = [
             ('user_id', 'project_id', 'app_config_id',
              'artifact_index_id', 'topic', 'is_flash'),
-            ]
+        ]
         indexes = [
             ('project_id', 'artifact_index_id'),
             ('is_flash', 'user_id'),
             ('type', 'next_scheduled'),  # for q_digest
             ('type', 'queue_empty'),  # for q_direct
-            ('project_id', 'app_config_id', 'artifact_index_id', 'topic'), # for deliver()
+            # for deliver()
+            ('project_id', 'app_config_id', 'artifact_index_id', 'topic'),
         ]
 
     _id = FieldProperty(S.ObjectId)
-    user_id = ForeignIdProperty('User', if_missing=lambda:c.user._id)
-    project_id = ForeignIdProperty('Project', if_missing=lambda:c.project._id)
-    app_config_id = ForeignIdProperty('AppConfig', if_missing=lambda:c.app.config._id)
+    user_id = ForeignIdProperty('User', if_missing=lambda: c.user._id)
+    project_id = ForeignIdProperty('Project', if_missing=lambda: c.project._id)
+    app_config_id = ForeignIdProperty(
+        'AppConfig', if_missing=lambda: c.app.config._id)
 
     # Subscription filters
     artifact_title = FieldProperty(str)
@@ -385,9 +410,9 @@ class Mailbox(MappedClass):
     is_flash = FieldProperty(bool, if_missing=False)
     type = FieldProperty(S.OneOf('direct', 'digest', 'summary', 'flash'))
     frequency = FieldProperty(dict(
-            n=int,unit=S.OneOf('day', 'week', 'month')))
+        n=int, unit=S.OneOf('day', 'week', 'month')))
     next_scheduled = FieldProperty(datetime, if_missing=datetime.utcnow)
-    last_modified = FieldProperty(datetime, if_missing=datetime(2000,1,1))
+    last_modified = FieldProperty(datetime, if_missing=datetime(2000, 1, 1))
 
     # a list of notification _id values
     queue = FieldProperty([str])
@@ -398,17 +423,20 @@ class Mailbox(MappedClass):
 
     @classmethod
     def subscribe(
-        cls,
-        user_id=None, project_id=None, app_config_id=None,
-        artifact=None, topic=None,
-        type='direct', n=1, unit='day'):
-        if user_id is None: user_id = c.user._id
-        if project_id is None: project_id = c.project._id
-        if app_config_id is None: app_config_id = c.app.config._id
+            cls,
+            user_id=None, project_id=None, app_config_id=None,
+            artifact=None, topic=None,
+            type='direct', n=1, unit='day'):
+        if user_id is None:
+            user_id = c.user._id
+        if project_id is None:
+            project_id = c.project._id
+        if app_config_id is None:
+            app_config_id = c.app.config._id
         tool_already_subscribed = cls.query.get(user_id=user_id,
-            project_id=project_id,
-            app_config_id=app_config_id,
-            artifact_index_id=None)
+                                                project_id=project_id,
+                                                app_config_id=app_config_id,
+                                                artifact_index_id=None)
         if tool_already_subscribed:
             return
         if artifact is None:
@@ -421,13 +449,14 @@ class Mailbox(MappedClass):
             artifact_url = artifact.url()
             artifact_index_id = i['id']
             artifact_already_subscribed = cls.query.get(user_id=user_id,
-                project_id=project_id,
-                app_config_id=app_config_id,
-                artifact_index_id=artifact_index_id)
+                                                        project_id=project_id,
+                                                        app_config_id=app_config_id,
+                                                        artifact_index_id=artifact_index_id)
             if artifact_already_subscribed:
                 return
-        d = dict(user_id=user_id, project_id=project_id, app_config_id=app_config_id,
-                 artifact_index_id=artifact_index_id, topic=topic)
+        d = dict(
+            user_id=user_id, project_id=project_id, app_config_id=app_config_id,
+            artifact_index_id=artifact_index_id, topic=topic)
         sess = session(cls)
         try:
             mbox = cls(
@@ -446,44 +475,51 @@ class Mailbox(MappedClass):
             mbox.frequency.unit = unit
             sess.flush(mbox)
         if not artifact_index_id:
-            # Unsubscribe from individual artifacts when subscribing to the tool
+            # Unsubscribe from individual artifacts when subscribing to the
+            # tool
             for other_mbox in cls.query.find(dict(
-                user_id=user_id, project_id=project_id, app_config_id=app_config_id)):
+                    user_id=user_id, project_id=project_id, app_config_id=app_config_id)):
                 if other_mbox is not mbox:
                     other_mbox.delete()
 
     @classmethod
     def unsubscribe(
-        cls,
-        user_id=None, project_id=None, app_config_id=None,
-        artifact_index_id=None, topic=None):
-        if user_id is None: user_id = c.user._id
-        if project_id is None: project_id = c.project._id
-        if app_config_id is None: app_config_id = c.app.config._id
+            cls,
+            user_id=None, project_id=None, app_config_id=None,
+            artifact_index_id=None, topic=None):
+        if user_id is None:
+            user_id = c.user._id
+        if project_id is None:
+            project_id = c.project._id
+        if app_config_id is None:
+            app_config_id = c.app.config._id
         cls.query.remove(dict(
-                user_id=user_id,
-                project_id=project_id,
-                app_config_id=app_config_id,
-                artifact_index_id=artifact_index_id,
-                topic=topic))
+            user_id=user_id,
+            project_id=project_id,
+            app_config_id=app_config_id,
+            artifact_index_id=artifact_index_id,
+            topic=topic))
 
     @classmethod
     def subscribed(
-        cls, user_id=None, project_id=None, app_config_id=None,
-        artifact=None, topic=None):
-        if user_id is None: user_id = c.user._id
-        if project_id is None: project_id = c.project._id
-        if app_config_id is None: app_config_id = c.app.config._id
+            cls, user_id=None, project_id=None, app_config_id=None,
+            artifact=None, topic=None):
+        if user_id is None:
+            user_id = c.user._id
+        if project_id is None:
+            project_id = c.project._id
+        if app_config_id is None:
+            app_config_id = c.app.config._id
         if artifact is None:
             artifact_index_id = None
         else:
             i = artifact.index()
             artifact_index_id = i['id']
         return cls.query.find(dict(
-                user_id=user_id,
-                project_id=project_id,
-                app_config_id=app_config_id,
-                artifact_index_id=artifact_index_id)).count() != 0
+            user_id=user_id,
+            project_id=project_id,
+            app_config_id=app_config_id,
+            artifact_index_id=artifact_index_id)).count() != 0
 
     @classmethod
     def deliver(cls, nid, artifact_index_id, topic):
@@ -492,20 +528,21 @@ class Mailbox(MappedClass):
         to the appropriate mailboxes.
         '''
         d = {
-            'project_id':c.project._id,
-            'app_config_id':c.app.config._id,
-            'artifact_index_id':{'$in':[None, artifact_index_id]},
-            'topic':{'$in':[None, topic]}
-            }
+            'project_id': c.project._id,
+            'app_config_id': c.app.config._id,
+            'artifact_index_id': {'$in': [None, artifact_index_id]},
+            'topic': {'$in': [None, topic]}
+        }
         mboxes = cls.query.find(d).all()
-        log.debug('Delivering notification %s to mailboxes [%s]', nid, ', '.join([str(m._id) for m in mboxes]))
+        log.debug('Delivering notification %s to mailboxes [%s]', nid, ', '.join(
+            [str(m._id) for m in mboxes]))
         for mbox in mboxes:
             try:
                 mbox.query.update(
-                    {'$push':dict(queue=nid),
-                     '$set':dict(last_modified=datetime.utcnow(),
-                                 queue_empty=False),
-                    })
+                    {'$push': dict(queue=nid),
+                     '$set': dict(last_modified=datetime.utcnow(),
+                                  queue_empty=False),
+                     })
                 # Make sure the mbox doesn't stick around to be flush()ed
                 session(mbox).expunge(mbox)
             except:
@@ -528,26 +565,29 @@ class Mailbox(MappedClass):
             queue_empty=False,
         )
         if MAILBOX_QUIESCENT:
-            q_direct['last_modified']={'$lt':now - MAILBOX_QUIESCENT}
+            q_direct['last_modified'] = {'$lt': now - MAILBOX_QUIESCENT}
         q_digest = dict(
             type={'$in': ['digest', 'summary']},
-            next_scheduled={'$lt':now})
+            next_scheduled={'$lt': now})
 
         def find_and_modify_direct_mbox():
             return cls.query.find_and_modify(
                 query=q_direct,
                 update={'$set': dict(
-                            queue=[],
-                            queue_empty=True,
-                        )},
+                    queue=[],
+                    queue_empty=True,
+                )},
                 new=False)
 
         for mbox in take_while_true(find_and_modify_direct_mbox):
             try:
                 mbox.fire(now)
             except:
-                log.exception('Error firing mbox: %s with queue: [%s]', str(mbox._id), ', '.join(mbox.queue))
-                raise  # re-raise so we don't keep (destructively) trying to process mboxes
+                log.exception(
+                    'Error firing mbox: %s with queue: [%s]', str(mbox._id), ', '.join(mbox.queue))
+                # re-raise so we don't keep (destructively) trying to process
+                # mboxes
+                raise
 
         for mbox in cls.query.find(q_digest):
             next_scheduled = now
@@ -571,12 +611,14 @@ class Mailbox(MappedClass):
         '''
         Send all notifications that this mailbox has enqueued.
         '''
-        notifications = Notification.query.find(dict(_id={'$in':self.queue}))
+        notifications = Notification.query.find(dict(_id={'$in': self.queue}))
         notifications = notifications.all()
         if len(notifications) != len(self.queue):
-            log.error('Mailbox queue error: Mailbox %s queued [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
+            log.error('Mailbox queue error: Mailbox %s queued [%s], found [%s]', str(
+                self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
         else:
-            log.debug('Firing mailbox %s notifications [%s], found [%s]', str(self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
+            log.debug('Firing mailbox %s notifications [%s], found [%s]', str(
+                self._id), ', '.join(self.queue), ', '.join([n._id for n in notifications]))
         if self.type == 'direct':
             ngroups = defaultdict(list)
             for n in notifications:
@@ -586,7 +628,8 @@ class Mailbox(MappedClass):
                         # Messages must be sent individually so they can be replied
                         # to individually
                     else:
-                        key = (n.subject, n.from_address, n.reply_to_address, n.author_id)
+                        key = (n.subject, n.from_address,
+                               n.reply_to_address, n.author_id)
                         ngroups[key].append(n)
                 except:
                     # log error but keep trying to deliver other notifications,
@@ -633,18 +676,19 @@ class MailFooter(object):
     @classmethod
     def standard(cls, notification):
         return cls._render('mail/footer.txt',
-            notification=notification,
-            prefix=config.get('forgemail.url', 'https://sourceforge.net'))
+                           notification=notification,
+                           prefix=config.get('forgemail.url', 'https://sourceforge.net'))
 
     @classmethod
     def monitored(cls, toaddr, app_url, setting_url):
         return cls._render('mail/monitor_email_footer.txt',
-            email=toaddr,
-            app_url=app_url,
-            setting_url=setting_url)
+                           email=toaddr,
+                           app_url=app_url,
+                           setting_url=setting_url)
 
 
 class SiteNotification(MappedClass):
+
     """
     Storage for site-wide notification.
     """
@@ -656,7 +700,8 @@ class SiteNotification(MappedClass):
     _id = FieldProperty(S.ObjectId)
     content = FieldProperty(str, if_missing='')
     active = FieldProperty(bool, if_missing=True)
-    impressions = FieldProperty(int, if_missing=lambda:config.get('site_notification.impressions', 0))
+    impressions = FieldProperty(
+        int, if_missing=lambda: config.get('site_notification.impressions', 0))
 
     @classmethod
     def current(cls):

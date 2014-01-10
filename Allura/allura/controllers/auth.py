@@ -15,7 +15,9 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-import logging, string, os
+import logging
+import string
+import os
 from urllib import urlencode
 import datetime
 
@@ -48,7 +50,7 @@ from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
 
-OID_PROVIDERS=[
+OID_PROVIDERS = [
     ('OpenID', '${username}'),
     ('Yahoo!', 'http://yahoo.com'),
     ('Google', 'https://www.google.com/accounts/o8/id'),
@@ -60,16 +62,18 @@ OID_PROVIDERS=[
     ('Vidoop', 'http://${username}.myvidoop.com/'),
     ('Verisign', 'http://${username}.pip.verisignlabs.com/'),
     ('ClaimID', 'http://openid.claimid.com/${username}/'),
-    ('AOL', 'http://openid.aol.com/${username}/') ]
+    ('AOL', 'http://openid.aol.com/${username}/')]
+
 
 class F(object):
     login_form = LoginForm()
     recover_password_change_form = forms.PasswordChangeBase()
     forgotten_password_form = ForgottenPasswordForm()
-    subscription_form=SubscriptionForm()
+    subscription_form = SubscriptionForm()
     registration_form = forms.RegistrationForm(action='/auth/save_new')
     oauth_application_form = OAuthApplicationForm(action='register')
-    oauth_revocation_form = OAuthRevocationForm(action='/auth/preferences/revoke_oauth')
+    oauth_revocation_form = OAuthRevocationForm(
+        action='/auth/preferences/revoke_oauth')
     change_personal_data_form = forms.PersonalDataForm()
     add_socialnetwork_form = forms.AddSocialNetworkForm()
     remove_socialnetwork_form = forms.RemoveSocialNetworkForm()
@@ -83,6 +87,7 @@ class F(object):
     remove_inactive_period_form = forms.RemoveInactivePeriodForm()
     save_skill_form = forms.AddUserSkillForm()
     remove_skill_form = forms.RemoveSkillForm()
+
 
 class AuthController(BaseController):
 
@@ -125,7 +130,8 @@ class AuthController(BaseController):
         else:
             oid_url = username
         return verify_oid(oid_url, failure_redirect='.',
-                          return_to='login_process_oid?%s' % urlencode(dict(return_to=return_to)),
+                          return_to='login_process_oid?%s' % urlencode(
+                              dict(return_to=return_to)),
                           title='OpenID Login',
                           prompt='Click below to continue')
 
@@ -160,11 +166,13 @@ class AuthController(BaseController):
         login_url = config.get('auth.login_url', '/auth/')
         if not hash:
             redirect(login_url)
-        user_record = M.User.query.find({'tool_data.AuthPasswordReset.hash': hash}).first()
+        user_record = M.User.query.find(
+            {'tool_data.AuthPasswordReset.hash': hash}).first()
         if not user_record:
             flash('Unable to process reset, please try again')
             redirect(login_url)
-        hash_expiry = user_record.get_tool_data('AuthPasswordReset', 'hash_expiry')
+        hash_expiry = user_record.get_tool_data(
+            'AuthPasswordReset', 'hash_expiry')
         if not hash_expiry or hash_expiry < datetime.datetime.utcnow():
             flash('Unable to process reset, please try again')
             redirect(login_url)
@@ -330,18 +338,19 @@ To reset your password on %s, please visit the following URL:
             return 'No project at %s' % repo_path
         if not rest:
             return '%s does not include a repo mount point' % repo_path
-        h.set_context(project.shortname, rest[0], neighborhood=project.neighborhood)
+        h.set_context(project.shortname,
+                      rest[0], neighborhood=project.neighborhood)
         if c.app is None or not getattr(c.app, 'repo'):
             return 'Cannot find repo at %s' % repo_path
         allura.tasks.repo_tasks.refresh.post()
         return '%r refresh queued.\n' % c.app.repo
 
-
     def _auth_repos(self, user):
         def _unix_group_name(neighborhood, shortname):
             'shameless copied from sfx_api.py'
-            path = neighborhood.url_prefix + shortname[len(neighborhood.shortname_prefix):]
-            parts = [ p for p in path.split('/') if p ]
+            path = neighborhood.url_prefix + \
+                shortname[len(neighborhood.shortname_prefix):]
+            parts = [p for p in path.split('/') if p]
             if len(parts) == 2 and parts[0] == 'p':
                 parts = parts[1:]
             return '.'.join(reversed(parts))
@@ -361,7 +370,6 @@ To reset your password on %s, please visit the following URL:
         repos.sort()
         return repos
 
-
     @expose('json:')
     def repo_permissions(self, repo_path=None, username=None, **kw):
         """Expects repo_path to be a filesystem path like
@@ -371,11 +379,12 @@ To reset your password on %s, please visit the following URL:
 
         Returns JSON describing this user's permissions on that repo.
         """
-        disallow = dict(allow_read=False, allow_write=False, allow_create=False)
+        disallow = dict(allow_read=False, allow_write=False,
+                        allow_create=False)
         # Find the user
         user = M.User.by_username(username)
         if not user:
-            response.status=404
+            response.status = 404
             return dict(disallow, error='unknown user')
         if not repo_path:
             return dict(allow_write=self._auth_repos(user))
@@ -387,7 +396,7 @@ To reset your password on %s, please visit the following URL:
             project, neighborhood = parts[0].split('.')
         else:
             project, neighborhood = parts[0], 'p'
-        parts = [ neighborhood, project ] + parts[1:]
+        parts = [neighborhood, project] + parts[1:]
         project_path = '/' + '/'.join(parts)
         project, rest = h.find_project(project_path)
         if project is None:
@@ -407,6 +416,7 @@ To reset your password on %s, please visit the following URL:
                     allow_write=has_access(c.app, 'write')(user=user),
                     allow_create=has_access(c.app, 'create')(user=user))
 
+
 class PreferencesController(BaseController):
 
     def _check_security(self):
@@ -419,9 +429,9 @@ class PreferencesController(BaseController):
         menu = provider.account_navigation()
         api_token = M.ApiToken.query.get(user_id=c.user._id)
         return dict(
-                menu=menu,
-                api_token=api_token,
-            )
+            menu=menu,
+            api_token=api_token,
+        )
 
     @h.vardec
     @expose()
@@ -436,14 +446,15 @@ class PreferencesController(BaseController):
                **kw):
         if config.get('auth.method', 'local') == 'local':
             if not preferences.get('display_name'):
-                flash("Display Name cannot be empty.",'error')
+                flash("Display Name cannot be empty.", 'error')
                 redirect('.')
             c.user.set_pref('display_name', preferences['display_name'])
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
                     del c.user.email_addresses[i]
-                    if obj: obj.delete()
+                    if obj:
+                        obj.delete()
             c.user.set_pref('email_address', primary_addr)
             if new_addr.get('claim'):
                 if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
@@ -451,14 +462,15 @@ class PreferencesController(BaseController):
                 else:
                     c.user.email_addresses.append(new_addr['addr'])
                     em = M.EmailAddress.upsert(new_addr['addr'])
-                    em.claimed_by_user_id=c.user._id
+                    em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
             for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
                 obj = c.user.openid_object(old_oid)
                 if data.get('delete') or not obj:
                     del c.user.open_ids[i]
-                    if obj: obj.delete()
-            for k,v in preferences.iteritems():
+                    if obj:
+                        obj.delete()
+            for k, v in preferences.iteritems():
                 if k == 'results_per_page':
                     v = int(v)
                 c.user.set_pref(k, v)
@@ -478,7 +490,8 @@ class PreferencesController(BaseController):
     @require_post()
     def del_api_token(self):
         tok = M.ApiToken.query.get(user_id=c.user._id)
-        if tok is None: return
+        if tok is None:
+            return
         tok.delete()
         redirect(request.referer)
 
@@ -513,6 +526,7 @@ class PreferencesController(BaseController):
         c.user.set_pref('disable_user_messages', not allow_user_messages)
         redirect(request.referer)
 
+
 class UserInfoController(BaseController):
 
     def __init__(self, *args, **kwargs):
@@ -537,12 +551,13 @@ class UserInfoController(BaseController):
         require_authenticated()
         c.user.set_pref('sex', kw['sex'])
         c.user.set_pref('birthdate', kw.get('birthdate'))
-        localization={'country':kw.get('country'), 'city':kw.get('city')}
+        localization = {'country': kw.get('country'), 'city': kw.get('city')}
         c.user.set_pref('localization', localization)
         c.user.set_pref('timezone', kw['timezone'])
 
         flash('Your personal data was successfully updated!')
         redirect('.')
+
 
 class UserSkillsController(BaseController):
 
@@ -564,11 +579,13 @@ class UserSkillsController(BaseController):
         l = []
         parents = []
         if kw.get('selected_category') is not None:
-            selected_skill = M.TroveCategory.query.get(trove_cat_id=int(kw.get('selected_category')))
+            selected_skill = M.TroveCategory.query.get(
+                trove_cat_id=int(kw.get('selected_category')))
         elif self.category:
             selected_skill = self.category
         else:
-            l = M.TroveCategory.query.find(dict(trove_parent_id=0, show_as_skill=True)).all()
+            l = M.TroveCategory.query.find(
+                dict(trove_parent_id=0, show_as_skill=True)).all()
             selected_skill = None
         if selected_skill:
             l = [scat for scat in selected_skill.subcategories
@@ -580,10 +597,10 @@ class UserSkillsController(BaseController):
         provider = plugin.AuthenticationProvider.get(request)
         menu = provider.account_navigation()
         return dict(
-            skills_list = l,
-            selected_skill = selected_skill,
-            parents = parents,
-            menu = menu,
+            skills_list=l,
+            selected_skill=selected_skill,
+            parents=parents,
+            menu=menu,
             add_details_fields=(len(l) == 0))
 
     @expose()
@@ -617,6 +634,7 @@ class UserSkillsController(BaseController):
         c.user.set_pref('skills', s)
         flash('Your skills list was successfully updated!')
         redirect('.')
+
 
 class UserContactsController(BaseController):
 
@@ -693,6 +711,7 @@ class UserContactsController(BaseController):
         flash('Your personal contacts were successfully updated!')
         redirect('.')
 
+
 class UserAvailabilityController(BaseController):
 
     def _check_security(self):
@@ -741,6 +760,7 @@ class UserAvailabilityController(BaseController):
         flash('Your availability timeslots were successfully updated!')
         redirect('.')
 
+
 class SubscriptionsController(BaseController):
 
     def _check_security(self):
@@ -752,16 +772,17 @@ class SubscriptionsController(BaseController):
         c.form = F.subscription_form
         c.revoke_access = F.oauth_revocation_form
         subscriptions = []
-        mailboxes = M.Mailbox.query.find(dict(user_id=c.user._id, is_flash=False))
+        mailboxes = M.Mailbox.query.find(
+            dict(user_id=c.user._id, is_flash=False))
         mailboxes = list(mailboxes.ming_cursor)
         project_collection = M.Project.query.mapper.collection
         app_collection = M.AppConfig.query.mapper.collection
         projects = dict(
             (p._id, p) for p in project_collection.m.find(dict(
-                    _id={'$in': [mb.project_id for mb in mailboxes ]})))
+                _id={'$in': [mb.project_id for mb in mailboxes]})))
         app_index = dict(
             (ac._id, ac) for ac in app_collection.m.find(dict(
-                    _id={'$in': [mb.app_config_id for mb in mailboxes]})))
+                _id={'$in': [mb.app_config_id for mb in mailboxes]})))
 
         for mb in mailboxes:
             project = projects.get(mb.project_id, None)
@@ -772,15 +793,16 @@ class SubscriptionsController(BaseController):
             if app_config is None:
                 continue
             subscriptions.append(dict(
-                    subscription_id=mb._id,
-                    project_name=project.name,
-                    mount_point=app_config.options['mount_point'],
-                    artifact_title=dict(text=mb.artifact_title, href=mb.artifact_url),
-                    topic=mb.topic,
-                    type=mb.type,
-                    frequency=mb.frequency.unit,
-                    artifact=mb.artifact_index_id,
-                    subscribed=True))
+                subscription_id=mb._id,
+                project_name=project.name,
+                mount_point=app_config.options['mount_point'],
+                artifact_title=dict(
+                    text=mb.artifact_title, href=mb.artifact_url),
+                topic=mb.topic,
+                type=mb.type,
+                frequency=mb.frequency.unit,
+                artifact=mb.artifact_index_id,
+                subscribed=True))
 
         my_projects = dict((p._id, p) for p in c.user.my_projects())
         my_tools = app_collection.m.find(dict(
@@ -788,7 +810,7 @@ class SubscriptionsController(BaseController):
         for tool in my_tools:
             p_id = tool.project_id
             subscribed = M.Mailbox.subscribed(
-                    project_id=p_id, app_config_id=tool._id)
+                project_id=p_id, app_config_id=tool._id)
             if not subscribed:
                 subscriptions.append(dict(
                     tool_id=tool._id,
@@ -826,6 +848,7 @@ class SubscriptionsController(BaseController):
 
         redirect(request.referer)
 
+
 class OAuthController(BaseController):
 
     def _check_security(self):
@@ -839,16 +862,17 @@ class OAuthController(BaseController):
         access_tokens = M.OAuthAccessToken.for_user(c.user)
         provider = plugin.AuthenticationProvider.get(request)
         return dict(
-                menu=provider.account_navigation(),
-                consumer_tokens=consumer_tokens,
-                access_tokens=access_tokens,
-            )
+            menu=provider.account_navigation(),
+            consumer_tokens=consumer_tokens,
+            access_tokens=access_tokens,
+        )
 
     @expose()
     @require_post()
     @validate(F.oauth_application_form, error_handler=index)
     def register(self, application_name=None, application_description=None, **kw):
-        M.OAuthConsumerToken(name=application_name, description=application_description)
+        M.OAuthConsumerToken(name=application_name,
+                             description=application_description)
         flash('OAuth Application registered')
         redirect('.')
 
@@ -886,18 +910,18 @@ class OAuthController(BaseController):
             flash('Invalid app ID', 'error')
             redirect('.')
         request_token = M.OAuthRequestToken(
-                consumer_token_id=consumer_token._id,
-                user_id=c.user._id,
-                callback='manual',
-                validation_pin=h.nonce(20),
-                is_bearer=True,
-            )
+            consumer_token_id=consumer_token._id,
+            user_id=c.user._id,
+            callback='manual',
+            validation_pin=h.nonce(20),
+            is_bearer=True,
+        )
         access_token = M.OAuthAccessToken(
-                consumer_token_id=consumer_token._id,
-                request_token_id=c.user._id,
-                user_id=request_token.user_id,
-                is_bearer=True,
-            )
+            consumer_token_id=consumer_token._id,
+            request_token_id=c.user._id,
+            user_id=request_token.user_id,
+            is_bearer=True,
+        )
         redirect('.')
 
     @expose()

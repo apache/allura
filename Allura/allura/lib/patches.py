@@ -26,6 +26,7 @@ import simplejson
 
 from allura.lib import helpers as h
 
+
 def apply():
     old_lookup_template_engine = tg.decorators.Decoration.lookup_template_engine
 
@@ -67,7 +68,7 @@ def apply():
         '''Monkey-patched to use 301 redirects for SEO'''
         response_type = getattr(request, 'response_type', None)
         if (request.method == 'GET' and request.path.endswith('/')
-                and not response_type and len(request.params)==0):
+                and not response_type and len(request.params) == 0):
             raise webob.exc.HTTPMovedPermanently(location=request.url[:-1])
         return func(*args, **kwargs)
 
@@ -77,18 +78,17 @@ def apply():
         '''Monkey-patched to use 301 redirects for SEO'''
         response_type = getattr(request, 'response_type', None)
         if (request.method == 'GET' and not(request.path.endswith('/'))
-                and not response_type and len(request.params)==0):
-            raise webob.exc.HTTPMovedPermanently(location=request.url+'/')
+                and not response_type and len(request.params) == 0):
+            raise webob.exc.HTTPMovedPermanently(location=request.url + '/')
         return func(*args, **kwargs)
-
 
     # http://blog.watchfire.com/wfblog/2011/10/json-based-xss-exploitation.html
     # change < to its unicode escape when rendering JSON out of turbogears
     # This is to avoid IE9 and earlier, which don't know the json content type
     # and may attempt to render JSON data as HTML if the URL ends in .html
-    
     original_tg_jsonify_GenericJSON_encode = tg.jsonify.GenericJSON.encode
-    escape_pattern_with_lt = re.compile(simplejson.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
+    escape_pattern_with_lt = re.compile(
+        simplejson.encoder.ESCAPE.pattern.rstrip(']') + '<' + ']')
 
     @h.monkeypatch(tg.jsonify.GenericJSON)
     def encode(self, o):
@@ -96,8 +96,8 @@ def apply():
         # encode_basestring_ascii() and encode_basestring_ascii may likely be c-compiled
         # and thus not monkeypatchable
         with h.push_config(self, ensure_ascii=False), \
-             h.push_config(simplejson.encoder, ESCAPE=escape_pattern_with_lt), \
-             mock.patch.dict(simplejson.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
+                h.push_config(simplejson.encoder, ESCAPE=escape_pattern_with_lt), \
+                mock.patch.dict(simplejson.encoder.ESCAPE_DCT, {'<': r'\u003C'}):
             return original_tg_jsonify_GenericJSON_encode(self, o)
 
 
@@ -106,11 +106,13 @@ def apply():
 # over and over
 old_controller_call = tg.controllers.DecoratedController._call
 
+
 def newrelic():
     @h.monkeypatch(tg.controllers.DecoratedController,
                    tg.controllers.decoratedcontroller.DecoratedController)
     def _call(self, controller, *args, **kwargs):
         '''Set NewRelic transaction name to actual controller name'''
         import newrelic.agent
-        newrelic.agent.set_transaction_name(newrelic.agent.callable_name(controller))
+        newrelic.agent.set_transaction_name(
+            newrelic.agent.callable_name(controller))
         return old_controller_call(self, controller, *args, **kwargs)

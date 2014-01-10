@@ -33,9 +33,11 @@ from alluratest.controller import setup_unit_test
 
 
 class File(M.File):
+
     class __mongometa__:
         session = M.session.main_orm_session
 Mapper.compile_all()
+
 
 class TestFile(TestCase):
 
@@ -128,8 +130,8 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve())
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
-                f._id.generation_time).encode('utf-8'))
-            assert_equal([ 'test1' ], response_body)
+                                                               f._id.generation_time).encode('utf-8'))
+            assert_equal(['test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert 'Content-Disposition' not in response.headers
 
@@ -141,11 +143,11 @@ class TestFile(TestCase):
                 patch('allura.lib.utils.etag_cache') as etag_cache:
             response_body = list(f.serve(embed=False))
             etag_cache.assert_called_once_with(u'{}?{}'.format(f.filename,
-                f._id.generation_time).encode('utf-8'))
-            assert_equal([ 'test1' ], response_body)
+                                                               f._id.generation_time).encode('utf-8'))
+            assert_equal(['test1'], response_body)
             assert_equal(response.content_type, f.content_type)
             assert_equal(response.headers['Content-Disposition'],
-                'attachment;filename="te s\xe0\xad\xae1.txt"')
+                         'attachment;filename="te s\xe0\xad\xae1.txt"')
 
     def test_image(self):
         path = os.path.join(
@@ -154,7 +156,7 @@ class TestFile(TestCase):
             f, t = File.save_image(
                 'user.png',
                 fp,
-                thumbnail_size=(16,16),
+                thumbnail_size=(16, 16),
                 square=True,
                 save_original=True)
         self.session.flush()
@@ -171,7 +173,7 @@ class TestFile(TestCase):
         f, t = File.save_image(
             'file.txt',
             StringIO('blah'),
-            thumbnail_size=(16,16),
+            thumbnail_size=(16, 16),
             square=True,
             save_original=True)
         assert f == None
@@ -181,14 +183,15 @@ class TestFile(TestCase):
         f, t = File.save_image(
             'bogus.png',
             StringIO('bogus data here!'),
-            thumbnail_size=(16,16),
+            thumbnail_size=(16, 16),
             square=True,
             save_original=True)
         assert f == None
         assert t == None
 
     def test_partial_image_as_attachment(self):
-        path = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        path = os.path.join(os.path.dirname(__file__),
+                            '..', 'data', 'user.png')
         fp = BytesIO(open(path, 'rb').read(500))
         c.app.config._id = None
         attachment = M.BaseAttachment.save_attachment('user.png', fp,
@@ -198,11 +201,13 @@ class TestFile(TestCase):
         assert_equal(attachment.filename, 'user.png')
 
     def test_attachment_name_encoding(self):
-        path = os.path.join(os.path.dirname(__file__), '..', 'data', 'user.png')
+        path = os.path.join(os.path.dirname(__file__),
+                            '..', 'data', 'user.png')
         fp = open(path, 'rb')
         c.app.config._id = None
-        attachment = M.BaseAttachment.save_attachment(b'Strukturpr\xfcfung.dvi', fp,
-                                                      save_original=True)
+        attachment = M.BaseAttachment.save_attachment(
+            b'Strukturpr\xfcfung.dvi', fp,
+            save_original=True)
         assert type(attachment) != tuple   # tuple is for (img, thumb) pairs
         assert_equal(attachment.filename, u'Strukturpr\xfcfung.dvi')
 

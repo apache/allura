@@ -42,7 +42,8 @@ def test_unicode_lookup():
     with h.push_config(c, app=app):
         root = None
         field = 'milestone'
-        milestone_urlparam = '%D0%9F%D0%B5%D1%80%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%B8%D0%B2%D0%B0' # u'Перспектива'
+        # u'Перспектива'
+        milestone_urlparam = '%D0%9F%D0%B5%D1%80%D1%81%D0%BF%D0%B5%D0%BA%D1%82%D0%B8%D0%B2%D0%B0'
         mc = MilestoneController(root, field, milestone_urlparam)
 
     assert mc.milestone  # check that it is found

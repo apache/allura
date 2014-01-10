@@ -37,31 +37,31 @@ class TestPackagePathLoader(TestCase):
         ]
         for ep in eps:
             ep.name = ep.ep_name
-        resource_filename.side_effect = lambda m, r: 'path:'+m
+        resource_filename.side_effect = lambda m, r: 'path:' + m
 
         paths = PackagePathLoader()._load_paths()
 
         assert_equal(paths, [
-                ['site-theme', None],
-                ['ep0', 'path:eps.ep0'],
-                ['ep1', 'path:eps.ep1'],
-                ['ep2', 'path:eps.ep2'],
-                ['allura', '/'],
-            ])
+            ['site-theme', None],
+            ['ep0', 'path:eps.ep0'],
+            ['ep1', 'path:eps.ep1'],
+            ['ep2', 'path:eps.ep2'],
+            ['allura', '/'],
+        ])
         assert_equal(type(paths[0]), list)
         assert_equal(resource_filename.call_args_list, [
-                mock.call('eps.ep0', ''),
-                mock.call('eps.ep1', ''),
-                mock.call('eps.ep2', ''),
-            ])
+            mock.call('eps.ep0', ''),
+            mock.call('eps.ep1', ''),
+            mock.call('eps.ep2', ''),
+        ])
 
     @mock.patch('pkg_resources.iter_entry_points')
     def test_load_rules(self, iter_entry_points):
         eps = iter_entry_points.return_value.__iter__.return_value = [
-                mock.Mock(ep_name='ep0', rules=[('>', 'allura')]),
-                mock.Mock(ep_name='ep1', rules=[('=', 'allura')]),
-                mock.Mock(ep_name='ep2', rules=[('<', 'allura')]),
-            ]
+            mock.Mock(ep_name='ep0', rules=[('>', 'allura')]),
+            mock.Mock(ep_name='ep1', rules=[('=', 'allura')]),
+            mock.Mock(ep_name='ep2', rules=[('<', 'allura')]),
+        ]
         for ep in eps:
             ep.name = ep.ep_name
             ep.load.return_value.template_path_rules = ep.rules
@@ -72,8 +72,8 @@ class TestPackagePathLoader(TestCase):
         assert_equal(replacement_rules, {'allura': 'ep1'})
 
         eps = iter_entry_points.return_value.__iter__.return_value = [
-                mock.Mock(ep_name='ep0', rules=[('?', 'allura')]),
-            ]
+            mock.Mock(ep_name='ep0', rules=[('?', 'allura')]),
+        ]
         for ep in eps:
             ep.name = ep.ep_name
             ep.load.return_value.template_path_rules = ep.rules
@@ -84,63 +84,63 @@ class TestPackagePathLoader(TestCase):
         ppl._replace_signpost = mock.Mock()
         paths = [
                 ['site-theme', None],
-                ['ep0', '/ep0'],
-                ['ep1', '/ep1'],
-                ['ep2', '/ep2'],
-                ['allura', '/'],
-            ]
+            ['ep0', '/ep0'],
+            ['ep1', '/ep1'],
+            ['ep2', '/ep2'],
+            ['allura', '/'],
+        ]
         rules = {
-                'allura': 'ep2',
-                'site-theme': 'ep1',
-                'foo': 'ep1',
-                'ep0': 'bar',
-            }
+            'allura': 'ep2',
+            'site-theme': 'ep1',
+            'foo': 'ep1',
+            'ep0': 'bar',
+        }
 
         ppl._replace_signposts(paths, rules)
 
         assert_equal(paths, [
-                ['site-theme', '/ep1'],
-                ['ep0', '/ep0'],
-                ['allura', '/ep2'],
-            ]);
+            ['site-theme', '/ep1'],
+            ['ep0', '/ep0'],
+            ['allura', '/ep2'],
+        ])
 
     def test_sort_paths(self):
         paths = [
                 ['site-theme', None],
-                ['ep0', '/ep0'],
-                ['ep1', '/ep1'],
-                ['ep2', '/ep2'],
-                ['ep3', '/ep3'],
-                ['allura', '/'],
-            ]
+            ['ep0', '/ep0'],
+            ['ep1', '/ep1'],
+            ['ep2', '/ep2'],
+            ['ep3', '/ep3'],
+            ['allura', '/'],
+        ]
         rules = [
-                ('allura', 'ep0'),
-                ('ep3', 'ep1'),
-                ('ep2', 'ep1'),
-                ('ep4', 'ep1'),  # rules referencing missing paths
-                ('ep2', 'ep5'),
-            ]
+            ('allura', 'ep0'),
+            ('ep3', 'ep1'),
+            ('ep2', 'ep1'),
+            ('ep4', 'ep1'),  # rules referencing missing paths
+            ('ep2', 'ep5'),
+        ]
 
         PackagePathLoader()._sort_paths(paths, rules)
 
         assert_equal(paths, [
-                ['site-theme', None],
-                ['ep2', '/ep2'],
-                ['ep3', '/ep3'],
-                ['ep1', '/ep1'],
-                ['allura', '/'],
-                ['ep0', '/ep0'],
-            ])
+            ['site-theme', None],
+            ['ep2', '/ep2'],
+            ['ep3', '/ep3'],
+            ['ep1', '/ep1'],
+            ['allura', '/'],
+            ['ep0', '/ep0'],
+        ])
 
     def test_init_paths(self):
-        paths =  [
-                ['root', '/'],
-                ['none', None],
-                ['tail', '/tail'],
-            ]
+        paths = [
+            ['root', '/'],
+            ['none', None],
+            ['tail', '/tail'],
+        ]
         ppl = PackagePathLoader()
         ppl._load_paths = mock.Mock(return_value=paths)
-        ppl._load_rules = mock.Mock(return_value=('order_rules','repl_rules'))
+        ppl._load_rules = mock.Mock(return_value=('order_rules', 'repl_rules'))
         ppl._replace_signposts = mock.Mock()
         ppl._sort_paths = mock.Mock()
 
@@ -177,27 +177,33 @@ class TestPackagePathLoader(TestCase):
         output = ppl.get_source('env', 'allura.ext.admin:templates/audit.html')
 
         assert_equal(output, 'fs_load')
-        fs_loader().get_source.assert_called_once_with('env', 'override/allura/ext/admin/templates/audit.html')
+        fs_loader().get_source.assert_called_once_with(
+            'env', 'override/allura/ext/admin/templates/audit.html')
 
         fs_loader().get_source.reset_mock()
-        fs_loader().get_source.side_effect = [jinja2.TemplateNotFound('test'), 'fs_load']
+        fs_loader().get_source.side_effect = [
+            jinja2.TemplateNotFound('test'), 'fs_load']
 
         with mock.patch('pkg_resources.resource_filename') as rf:
             rf.return_value = 'resource'
             # no override, ':' in template
-            output = ppl.get_source('env', 'allura.ext.admin:templates/audit.html')
-            rf.assert_called_once_with('allura.ext.admin', 'templates/audit.html')
+            output = ppl.get_source(
+                'env', 'allura.ext.admin:templates/audit.html')
+            rf.assert_called_once_with(
+                'allura.ext.admin', 'templates/audit.html')
 
         assert_equal(output, 'fs_load')
         assert_equal(fs_loader().get_source.call_count, 2)
         fs_loader().get_source.assert_called_with('env', 'resource')
 
         fs_loader().get_source.reset_mock()
-        fs_loader().get_source.side_effect = [jinja2.TemplateNotFound('test'), 'fs_load']
+        fs_loader().get_source.side_effect = [
+            jinja2.TemplateNotFound('test'), 'fs_load']
 
         # no override, ':' not in template
         output = ppl.get_source('env', 'templates/audit.html')
 
         assert_equal(output, 'fs_load')
         assert_equal(fs_loader().get_source.call_count, 2)
-        fs_loader().get_source.assert_called_with('env', 'templates/audit.html')
+        fs_loader().get_source.assert_called_with(
+            'env', 'templates/audit.html')

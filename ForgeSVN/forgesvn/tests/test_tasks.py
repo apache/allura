@@ -35,6 +35,7 @@ from allura.tasks import repo_tasks
 
 from forgesvn.tests import with_svn
 
+
 class TestRepoTasks(unittest.TestCase):
 
     def setUp(self):
@@ -76,5 +77,6 @@ class TestRepoTasks(unittest.TestCase):
     def test_uninstall(self):
         with mock.patch.object(shutil, 'rmtree') as f:
             repo_tasks.uninstall()
-            f.assert_called_with(os.path.join(tg.config['scm.repos.root'], 'svn/p/test/src'),
-                                 ignore_errors=True)
+            f.assert_called_with(
+                os.path.join(tg.config['scm.repos.root'], 'svn/p/test/src'),
+                ignore_errors=True)

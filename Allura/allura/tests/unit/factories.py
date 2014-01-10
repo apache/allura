@@ -66,7 +66,7 @@ def create_post(slug):
     author = create_user(username='someguy')
     return Post(slug=slug,
                 thread_id=thread._id,
-                full_slug='%s:%s' % (thread._id,slug),
+                full_slug='%s:%s' % (thread._id, slug),
                 discussion_id=discussion._id,
                 author_id=author._id)
 
@@ -84,4 +84,3 @@ def create_discussion():
 @flush_on_return
 def create_user(**kw):
     return User(**kw)
-

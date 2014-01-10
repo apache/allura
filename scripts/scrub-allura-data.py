@@ -37,7 +37,7 @@ def public(obj, project=None):
     role_anon = M.ProjectRole.by_name(name='*anonymous', project=project)
     if not role_anon:
         log.info('Missing *anonymous role for project "%s"' %
-                project.shortname)
+                 project.shortname)
         return False
     read = M.ACE.allow(role_anon._id, 'read')
     return read in obj.acl
@@ -72,7 +72,7 @@ def scrub_project(p, options):
             if ac.options.get('TicketMonitoringEmail'):
                 log.info('%s options.TicketMonitoringEmail from the %s/%s '
                          'tool on project "%s"' % (preamble, tool_name,
-                             mount_point, p.shortname))
+                                                   mount_point, p.shortname))
                 if not options.dry_run:
                     ac.options['TicketMonitoringEmail'] = None
             for tickets in utils.chunked_find(TM.Ticket, q):
@@ -86,7 +86,7 @@ def scrub_project(p, options):
             if counter > 0:
                 log.info('%s %s tickets from the %s/%s tool on '
                          'project "%s"' % (preamble, counter, tool_name,
-                             mount_point, p.shortname))
+                                           mount_point, p.shortname))
         elif tool_name == 'discussion':
             for forums in utils.chunked_find(DM.Forum, q):
                 for f in forums:
@@ -96,7 +96,7 @@ def scrub_project(p, options):
             if counter > 0:
                 log.info('%s %s forums from the %s/%s tool on '
                          'project "%s"' % (preamble, counter, tool_name,
-                             mount_point, p.shortname))
+                                           mount_point, p.shortname))
 
 
 def main(options):
@@ -121,25 +121,25 @@ def main(options):
             (preamble, M.User.query.find().count()))
     log.info('%s monitoring_email addresses from %s Forum documents' %
             (preamble, DM.Forum.query.find({"monitoring_email":
-                    {"$nin": [None, ""]}}).count()))
+                                            {"$nin": [None, ""]}}).count()))
 
     if not options.dry_run:
         M.EmailAddress.query.remove()
         M.User.query.update({}, {"$set": {"email_addresses": []}}, multi=True)
         DM.Forum.query.update({"monitoring_email": {"$nin": [None, ""]}},
-                {"$set": {"monitoring_email": None}}, multi=True)
+                              {"$set": {"monitoring_email": None}}, multi=True)
     return 0
 
 
 def parse_options():
     import argparse
     parser = argparse.ArgumentParser(
-            description='Removes private data from the Allura MongoDB.')
+        description='Removes private data from the Allura MongoDB.')
     parser.add_argument('--dry-run', dest='dry_run', default=False,
-            action='store_true',
-            help='Run in test mode (no updates will be applied).')
+                        action='store_true',
+                        help='Run in test mode (no updates will be applied).')
     parser.add_argument('--log', dest='log_level', default='INFO',
-            help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
+                        help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
     return parser.parse_args()
 
 if __name__ == '__main__':

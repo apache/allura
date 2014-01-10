@@ -134,6 +134,7 @@ class ForgeShortUrlApp(Application):
 
 
 class RootController(BaseController):
+
     def __init__(self):
         c.short_url_lightbox = W.short_url_lightbox
 
@@ -203,10 +204,10 @@ class ShortURLAdminController(DefaultAdminController):
         validators.NotEmpty(),
         validators.Regex(
             r'^[-_a-zA-Z0-9]+$',
-            messages={'invalid': 'must include only letters, numbers, dashes and underscores.'}
+            messages={'invalid':
+                      'must include only letters, numbers, dashes and underscores.'}
         )
     )
-
 
     def __init__(self, app):
         self.app = app
@@ -253,7 +254,7 @@ class ShortURLAdminController(DefaultAdminController):
                     redirect(request.referer)
                 else:
                     msg = ('update short url %s from %s to %s'
-                            % (short_url, shorturl.full_url, full_url))
+                           % (short_url, shorturl.full_url, full_url))
                     flash("Short url updated")
 
             else:
@@ -273,5 +274,5 @@ class ShortURLAdminController(DefaultAdminController):
             M.AuditLog.log(msg)
             redirect(request.referer)
         return dict(
-                app=self.app,
-                url_len=len(ShortUrl.build_short_url(c.app, short_name='')))
+            app=self.app,
+            url_len=len(ShortUrl.build_short_url(c.app, short_name='')))

@@ -40,6 +40,7 @@ logging.basicConfig()
 fuse.fuse_python_api = (0, 2)
 fuse.feature_assert('stateful_files', 'has_init')
 
+
 class check_access(object):
 
     def __init__(self, *args, **kwargs):
@@ -58,10 +59,12 @@ class check_access(object):
         return wrapper
 
     def check(self, inst, path, mode):
-        if mode is None: return
+        if mode is None:
+            return
         rc = inst.access(path, mode)
         if rc:
-            raise OSError(errno.EPERM, path,'Permission denied')
+            raise OSError(errno.EPERM, path, 'Permission denied')
+
 
 class check_and_translate(check_access):
 
@@ -69,12 +72,14 @@ class check_and_translate(check_access):
         super(check_and_translate, self).check(inst, path, mode)
         return inst._to_global(path)
 
+
 def flag2mode(flags):
     md = {os.O_RDONLY: 'r', os.O_WRONLY: 'w', os.O_RDWR: 'w+'}
     m = md[flags & (os.O_RDONLY | os.O_WRONLY | os.O_RDWR)]
     if flags | os.O_APPEND:
         m = m.replace('w', 'a', 1)
     return m
+
 
 class AccessFS(fuse.Fuse):
 
@@ -148,7 +153,8 @@ class AccessFS(fuse.Fuse):
         os.utime("." + path, times)
 
     def access(self, path, mode):
-        if mode & (os.R_OK|os.W_OK) == 0: return
+        if mode & (os.R_OK | os.W_OK) == 0:
+            return
         ctx = fuse.FuseGetContext()
         entry = self.perm_cache.get(ctx['uid'], path)
         if (mode & entry) != mode:
@@ -157,7 +163,7 @@ class AccessFS(fuse.Fuse):
     def _assert_access(self, path, mode):
         rc = self.access(path, mode)
         if rc:
-            raise OSError(errno.EPERM, path,'Permission denied')
+            raise OSError(errno.EPERM, path, 'Permission denied')
 
     def statfs(self):
         """
@@ -191,18 +197,19 @@ class AccessFS(fuse.Fuse):
 
     def make_file_class(self):
         class FSAccessFile(AccessFile):
-            filesystem=self
+            filesystem = self
         return FSAccessFile
 
+
 class AccessFile(fuse.FuseFileInfo):
-    direct_io=False
+    direct_io = False
     keep_cache = False
     needs_write = (
         os.O_WRONLY
         | os.O_RDWR
         | os.O_APPEND
         | os.O_CREAT
-        | os.O_TRUNC )
+        | os.O_TRUNC)
 
     def __init__(self, path, flags, *mode):
         access_mode = os.R_OK
@@ -272,9 +279,9 @@ class AccessFile(fuse.FuseFileInfo):
 
         # Convert fcntl-ish lock parameters to Python's weird
         # lockf(3)/flock(2) medley locking API...
-        op = { fcntl.F_UNLCK : fcntl.LOCK_UN,
-               fcntl.F_RDLCK : fcntl.LOCK_SH,
-               fcntl.F_WRLCK : fcntl.LOCK_EX }[kw['l_type']]
+        op = {fcntl.F_UNLCK: fcntl.LOCK_UN,
+              fcntl.F_RDLCK: fcntl.LOCK_SH,
+              fcntl.F_WRLCK: fcntl.LOCK_EX}[kw['l_type']]
         if cmd == fcntl.F_GETLK:
             return -errno.EOPNOTSUPP
         elif cmd == fcntl.F_SETLK:
@@ -286,6 +293,7 @@ class AccessFile(fuse.FuseFileInfo):
             return -errno.EINVAL
 
         fcntl.lockf(self.fd, op, kw['l_start'], kw['l_len'])
+
 
 class PermissionCache(object):
 
@@ -305,7 +313,8 @@ class PermissionCache(object):
             if elapsed > self._timeout:
                 print 'Timeout!', elapsed
                 uname = self._uid_cache.get(uid)
-                entry = self._refresh_result(uid, path, self._api_lookup(uname, path))
+                entry = self._refresh_result(
+                    uid, path, self._api_lookup(uname, path))
                 return entry
             return entry
         except KeyError:
@@ -327,20 +336,22 @@ class PermissionCache(object):
             self._host
             + '/auth/repo_permissions?'
             + urllib.urlencode(dict(
-                    repo_path=path,
-                    username=uname)))
+                repo_path=path,
+                username=uname)))
         print 'Checking access for %s at %s (%s)' % (uname, url, path)
         fp = urllib2.urlopen(url)
         result = json.load(fp)
         print result
         entry = 0
-        if result['allow_read']: entry |= os.R_OK
-        if result['allow_write']: entry |= os.W_OK
+        if result['allow_read']:
+            entry |= os.R_OK
+        if result['allow_write']:
+            entry |= os.W_OK
         return entry
 
     def _refresh_result(self, uid, path, value):
         with self._lock:
-            if (uid,path) in self._data:
+            if (uid, path) in self._data:
                 self._data[uid, path] = (value, time.time())
             else:
                 if len(self._data) >= self._size:
@@ -362,10 +373,11 @@ class PermissionCache(object):
         '''Convert paths from the form /SCM/neighborhood/project/a/b/c to
         /SCM/project.neighborhood/a/b/c
         '''
-        parts = [ p for p in path.split(os.path.sep) if p ]
+        parts = [p for p in path.split(os.path.sep) if p]
         scm, nbhd, proj, rest = parts[0], parts[1], parts[2], parts[3:]
-        parts = ['/SCM/%s.%s' % (proj, nbhd) ] + rest
+        parts = ['/SCM/%s.%s' % (proj, nbhd)] + rest
         return '/'.join(parts)
+
 
 class UnixUsernameCache(object):
 
@@ -381,6 +393,7 @@ class UnixUsernameCache(object):
         self._cache[uid] = uname
         return uname
 
+
 def main():
 
     usage = """
@@ -389,8 +402,8 @@ Userspace nullfs-alike: mirror the filesystem tree from some point on.
 """ + fuse.Fuse.fusage
 
     server = AccessFS(version="%prog " + fuse.__version__,
-                 usage=usage,
-                 dash_s_do='setsingle')
+                      usage=usage,
+                      dash_s_do='setsingle')
 
     server.parser.add_option(mountopt="root", metavar="PATH", default='/',
                              help="mirror filesystem from under PATH [default: %default]")

@@ -23,15 +23,15 @@ from formencode import validators as fev
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from tg import (
-        expose,
-        flash,
-        redirect,
-        validate,
-        )
+    expose,
+    flash,
+    redirect,
+    validate,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.controllers import BaseController
 from allura.lib import validators as v
@@ -39,8 +39,8 @@ from allura.lib.decorators import require_post
 from allura import model as M
 
 from forgeimporters.base import (
-        ToolImporter,
-        )
+    ToolImporter,
+)
 from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.google import GoogleCodeProjectNameValidator
 
@@ -96,7 +96,8 @@ class GoogleRepoImportForm(fe.schema.Schema):
         gc_project_name = value['gc_project_name']
         mount_point = value['mount_point']
         try:
-            repo_type = GoogleCodeProjectExtractor(gc_project_name).get_repo_type()
+            repo_type = GoogleCodeProjectExtractor(
+                gc_project_name).get_repo_type()
         except urllib2.HTTPError as e:
             if e.code == 404:
                 msg = 'No such project'
@@ -108,13 +109,15 @@ class GoogleRepoImportForm(fe.schema.Schema):
             raise
         tool_class = REPO_APPS[repo_type]
         try:
-            value['mount_point'] = v.MountPointValidator(tool_class).to_python(mount_point)
+            value['mount_point'] = v.MountPointValidator(
+                tool_class).to_python(mount_point)
         except fe.Invalid as e:
             raise fe.Invalid('mount_point:' + str(e), value, state)
         return value
 
 
 class GoogleRepoImportController(BaseController):
+
     def __init__(self):
         self.importer = GoogleRepoImporter()
 
@@ -126,7 +129,7 @@ class GoogleRepoImportController(BaseController):
     @expose('jinja:forgeimporters.google:templates/code/index.html')
     def index(self, **kw):
         return dict(importer=self.importer,
-                target_app=self.target_app)
+                    target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
@@ -135,13 +138,14 @@ class GoogleRepoImportController(BaseController):
     def create(self, gc_project_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
-                    project_name=gc_project_name,
-                    mount_point=mount_point,
-                    mount_label=mount_label)
+                project_name=gc_project_name,
+                mount_point=mount_point,
+                mount_label=mount_label)
             flash('Repo import has begun. Your new repo will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -153,7 +157,7 @@ class GoogleRepoImporter(ToolImporter):
     tool_description = 'Import your primary SVN, Git, or Hg repo from Google Code'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
-            mount_label=None, **kw):
+                    mount_label=None, **kw):
         """ Import a Google Code repo into a new SVN, Git, or Hg Allura tool.
 
         """
@@ -161,19 +165,19 @@ class GoogleRepoImporter(ToolImporter):
         repo_type = extractor.get_repo_type()
         repo_url = get_repo_url(project_name, repo_type)
         app = project.install_app(
-                REPO_ENTRY_POINTS[repo_type],
-                mount_point=mount_point or 'code',
-                mount_label=mount_label or 'Code',
-                init_from_url=repo_url,
-                import_id={
-                        'source': self.source,
-                        'project_name': project_name,
-                    }
-            )
+            REPO_ENTRY_POINTS[repo_type],
+            mount_point=mount_point or 'code',
+            mount_label=mount_label or 'Code',
+            init_from_url=repo_url,
+            import_id={
+                'source': self.source,
+                'project_name': project_name,
+            }
+        )
         M.AuditLog.log(
-                'import tool %s from %s on %s' % (
-                    app.config.options.mount_point,
-                    project_name, self.source,
-                ), project=project, user=user, url=app.url)
+            'import tool %s from %s on %s' % (
+                app.config.options.mount_point,
+                project_name, self.source,
+            ), project=project, user=user, url=app.url)
         g.post_event('project_updated')
         return app

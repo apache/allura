@@ -77,8 +77,8 @@ class TestGitUserPermissions(TestController):
     def _check_repo(self, path, username='test-admin', **kw):
         url = '/auth/repo_permissions'
         r = self.app.get(url, params=dict(
-                repo_path=path,
-                username=username), **kw)
+            repo_path=path,
+            username=username), **kw)
         try:
             return r.json
         except:
@@ -86,7 +86,8 @@ class TestGitUserPermissions(TestController):
 
     @with_git
     def test_list_repos(self):
-        r = self.app.get('/auth/repo_permissions', params=dict(username='test-admin'), status=200)
+        r = self.app.get('/auth/repo_permissions',
+                         params=dict(username='test-admin'), status=200)
         assert_equal(json.loads(r.body), {"allow_write": [
             '/git/test/src-git',
         ]})

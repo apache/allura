@@ -23,6 +23,7 @@ from unittest import TestCase
 from allura.tests import TestController
 from allura import model as M
 
+
 class TestGitHubImportController(TestController, TestCase):
 
     def test_index(self):
@@ -34,11 +35,13 @@ class TestGitHubImportController(TestController, TestCase):
         assert '<input name="tool_option" value="import_history" type="checkbox" checked="checked"/>' in r
 
     def test_login_overlay(self):
-        r = self.app.get('/p/import_project/github/', extra_environ=dict(username='*anonymous'))
+        r = self.app.get('/p/import_project/github/',
+                         extra_environ=dict(username='*anonymous'))
         self.assertIn('GitHub Project Importer', r)
         self.assertIn('Login Required', r)
 
-        r = self.app.post('/p/import_project/github/process', extra_environ=dict(username='*anonymous'), status=302)
+        r = self.app.post('/p/import_project/github/process',
+                          extra_environ=dict(username='*anonymous'), status=302)
         self.assertIn('/auth/', r.location)
 
 
@@ -65,7 +68,8 @@ class TestGitHubOAuth(TestController):
         assert_equal(r.location, redirect)
         session.__setitem__.assert_has_calls([
             call('github.oauth.state', 'state'),
-            call('github.oauth.redirect', 'http://localhost/p/import_project/github/')
+            call('github.oauth.redirect',
+                 'http://localhost/p/import_project/github/')
         ])
         session.save.assert_called_once()
 
@@ -78,4 +82,5 @@ class TestGitHubOAuth(TestController):
         assert_equal(user.get_tool_data('GitHubProjectImport', 'token'), 'abc')
 
         r = self.app.get('/p/import_project/github/')
-        assert_equal(r.status_int, 200)  # token in user data, so oauth isn't triggered
+        # token in user data, so oauth isn't triggered
+        assert_equal(r.status_int, 200)

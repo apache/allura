@@ -34,9 +34,11 @@ def setUp():
     setup_basic_test()
     setup_with_tools()
 
+
 @td.with_wiki
 def setup_with_tools():
     setup_global_objects()
+
 
 @with_setup(setUp)
 def test_neighborhood():
@@ -75,7 +77,8 @@ def test_neighborhood():
     for style in styles_list:
         assert test_css_dict[style['name']] == style['value']
         if style['name'] == 'titlebarcolor':
-            assert '<option value="dark" selected="selected">' in style['additional']
+            assert '<option value="dark" selected="selected">' in style[
+                'additional']
 
     # Check neighborhood custom css showing
     neighborhood.features['css'] = 'none'

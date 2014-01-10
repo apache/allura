@@ -38,7 +38,9 @@ from ming.orm import session
 
 log = logging.getLogger(__name__)
 
+
 class UserStatsListener(EventsListener):
+
     def newArtifact(self, art_type, art_datetime, project, user):
         stats = user.stats
         if not stats:
@@ -67,7 +69,8 @@ class UserStatsListener(EventsListener):
         elif event_type == "revoked":
             stats.addRevokedTicket(ticket.mod_date, project)
         elif event_type == "closed":
-            stats.addClosedTicket(ticket.created_date,ticket.mod_date,project)
+            stats.addClosedTicket(
+                ticket.created_date, ticket.mod_date, project)
 
     def newCommit(self, newcommit, project, user):
         stats = user.stats
@@ -86,25 +89,26 @@ class UserStatsListener(EventsListener):
     def newOrganization(self, organization):
         pass
 
+
 class ForgeUserStatsApp(Application):
     __version__ = version.__version__
-    tool_label='UserStats'
-    default_mount_label='Stats'
-    default_mount_point='stats'
+    tool_label = 'UserStats'
+    default_mount_label = 'Stats'
+    default_mount_point = 'stats'
     permissions = ['configure', 'read', 'write',
-                    'unmoderated_post', 'post', 'moderate', 'admin']
+                   'unmoderated_post', 'post', 'moderate', 'admin']
     permissions_desc = {
         'read': 'View user stats.',
         'admin': 'Toggle stats visibility.',
     }
     max_instances = 0
-    ordinal=15
+    ordinal = 15
     config_options = Application.config_options
     default_external_feeds = []
-    icons={
-        24:'userstats/images/stats_24.png',
-        32:'userstats/images/stats_32.png',
-        48:'userstats/images/stats_48.png'
+    icons = {
+        24: 'userstats/images/stats_24.png',
+        32: 'userstats/images/stats_32.png',
+        48: 'userstats/images/stats_48.png'
     }
     root = ForgeUserStatsController()
 
@@ -129,7 +133,7 @@ class ForgeUserStatsApp(Application):
         menu_id = self.config.options.mount_label
         with h.push_config(c, app=self):
             return [
-                SitemapEntry(menu_id, '.')[self.sidebar_menu()] ]
+                SitemapEntry(menu_id, '.')[self.sidebar_menu()]]
 
     @property
     def show_discussion(self):
@@ -149,16 +153,16 @@ class ForgeUserStatsApp(Application):
 
     def admin_menu(self):
         links = [SitemapEntry(
-                     'Settings', c.project.url() + 'userstats/settings')]
+            'Settings', c.project.url() + 'userstats/settings')]
         return links
 
     def install(self, project):
-        #It doesn't make any sense to install the tool twice on the same
-        #project therefore, if it already exists, it doesn't install it
-        #a second time.
+        # It doesn't make any sense to install the tool twice on the same
+        # project therefore, if it already exists, it doesn't install it
+        # a second time.
         for tool in project.app_configs:
             if tool.tool_name == 'userstats':
-                if self.config.options.mount_point!=tool.options.mount_point:
+                if self.config.options.mount_point != tool.options.mount_point:
                     project.uninstall_app(self.config.options.mount_point)
                     return
 

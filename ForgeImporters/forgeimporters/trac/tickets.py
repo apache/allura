@@ -24,15 +24,15 @@ from ming.orm import session
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 from tg import (
-        expose,
-        flash,
-        redirect,
-        validate,
-        )
+    expose,
+    flash,
+    redirect,
+    validate,
+)
 from tg.decorators import (
-        with_trailing_slash,
-        without_trailing_slash,
-        )
+    with_trailing_slash,
+    without_trailing_slash,
+)
 
 from allura.controllers import BaseController
 from allura.lib.decorators import require_post
@@ -40,14 +40,14 @@ from allura.lib import validators as v
 from allura.lib import helpers as h
 from allura.model import AuditLog
 from allura.scripts.trac_export import (
-        export,
-        DateJSONEncoder,
-        )
+    export,
+    DateJSONEncoder,
+)
 
 from forgeimporters.base import (
-        ToolImporter,
-        ToolImportForm,
-        )
+    ToolImporter,
+    ToolImportForm,
+)
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.import_support import ImportSupport
 from forgetracker import model as TM
@@ -59,6 +59,7 @@ class TracTicketImportForm(ToolImportForm):
 
 
 class TracTicketImportController(BaseController):
+
     def __init__(self):
         self.importer = TracTicketImporter()
 
@@ -70,7 +71,7 @@ class TracTicketImportController(BaseController):
     @expose('jinja:forgeimporters.trac:templates/tickets/index.html')
     def index(self, **kw):
         return dict(importer=self.importer,
-                target_app=self.target_app)
+                    target_app=self.target_app)
 
     @without_trailing_slash
     @expose()
@@ -79,15 +80,16 @@ class TracTicketImportController(BaseController):
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
-                    project_name=trac_url,
-                    mount_point=mount_point,
-                    mount_label=mount_label,
-                    trac_url=trac_url,
-                    user_map=user_map)
+                project_name=trac_url,
+                mount_point=mount_point,
+                mount_label=mount_label,
+                trac_url=trac_url,
+                user_map=user_map)
             flash('Ticket import has begun. Your new tracker will be available '
-                    'when the import is complete.')
+                  'when the import is complete.')
         else:
-            flash('There are too many imports pending at this time.  Please wait and try again.', 'error')
+            flash(
+                'There are too many imports pending at this time.  Please wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -99,39 +101,39 @@ class TracTicketImporter(ToolImporter):
     tool_description = 'Import your tickets from Trac'
 
     def import_tool(self, project, user, project_name=None, mount_point=None,
-            mount_label=None, trac_url=None, user_map=None, **kw):
+                    mount_label=None, trac_url=None, user_map=None, **kw):
         """ Import Trac tickets into a new Allura Tracker tool.
 
         """
         trac_url = trac_url.rstrip('/') + '/'
         mount_point = mount_point or 'tickets'
         app = project.install_app(
-                'Tickets',
-                mount_point=mount_point,
-                mount_label=mount_label or 'Tickets',
-                open_status_names='new assigned accepted reopened',
-                closed_status_names='closed',
-                import_id={
-                        'source': self.source,
-                        'trac_url': trac_url,
-                    },
-            )
+            'Tickets',
+            mount_point=mount_point,
+            mount_label=mount_label or 'Tickets',
+            open_status_names='new assigned accepted reopened',
+            closed_status_names='closed',
+            import_id={
+                'source': self.source,
+                'trac_url': trac_url,
+            },
+        )
         session(app.config).flush(app.config)
         session(app.globals).flush(app.globals)
         try:
             with h.push_config(c, app=app):
                 TracImportSupport().perform_import(
-                        json.dumps(export(trac_url), cls=DateJSONEncoder),
-                        json.dumps({
-                            'user_map': json.loads(user_map) if user_map else {},
-                            'usernames_match': self.usernames_match(trac_url),
-                            }),
-                        )
+                    json.dumps(export(trac_url), cls=DateJSONEncoder),
+                    json.dumps({
+                        'user_map': json.loads(user_map) if user_map else {},
+                        'usernames_match': self.usernames_match(trac_url),
+                    }),
+                )
             AuditLog.log(
                 'import tool %s from %s' % (
-                        app.config.options.mount_point,
-                        trac_url,
-                    ),
+                    app.config.options.mount_point,
+                    trac_url,
+                ),
                 project=project, user=user, url=app.url,
             )
             g.post_event('project_updated')
@@ -156,6 +158,7 @@ class TracTicketImporter(ToolImporter):
 
 
 class TracImportSupport(ImportSupport):
+
     """Provides Trac-specific ticket and comment text processing."""
 
     def ticket_link(self, m):
@@ -176,7 +179,7 @@ class TracImportSupport(ImportSupport):
             status={'$in': ['ok', 'pending']})).sort('timestamp')
 
         if comment <= comments.count():
-            return comments.all()[comment-1].slug
+            return comments.all()[comment - 1].slug
 
     def comment_link(self, m):
         """Convert a Trac-style comment url to it's equivalent Allura url."""
@@ -205,9 +208,11 @@ class TracImportSupport(ImportSupport):
             * Escape double-brackets
 
         """
-        comment_pattern = re.compile('\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
+        comment_pattern = re.compile(
+            '\[(\S*\s*\S*)\]\(\S*/(\d+\n*\d*)#comment:(\d+)\)')
         ticket_pattern = re.compile('(?<=\])\(\S*ticket/(\d+)(?:\?[^)]*)?\)')
-        changeset_pattern = re.compile(r'(?<=\])\(\S*/changeset/(\d+)(?:\?[^]]*)?\)')
+        changeset_pattern = re.compile(
+            r'(?<=\])\(\S*/changeset/(\d+)(?:\?[^]]*)?\)')
         brackets_pattern = re.compile('\[\[([^]]*)\]\]')
 
         text = comment_pattern.sub(self.comment_link, text)
@@ -223,4 +228,3 @@ class TracImportSupport(ImportSupport):
     def description_processing(self, description_text):
         """Modify ticket description before ticket is created."""
         return self.link_processing(description_text)
-

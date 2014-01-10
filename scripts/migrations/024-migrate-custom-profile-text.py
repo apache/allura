@@ -32,9 +32,10 @@ log = logging.getLogger(__name__)
 default_description = r'^\s*(?:You can edit this description in the admin page)?\s*$'
 
 default_personal_project_tmpl = ("This is the personal project of %s."
-            " This project is created automatically during user registration"
-            " as an easy place to store personal data that doesn't need its own"
-            " project such as cloned repositories.\n\n%s")
+                                 " This project is created automatically during user registration"
+                                 " as an easy place to store personal data that doesn't need its own"
+                                 " project such as cloned repositories.\n\n%s")
+
 
 def main():
     users = M.Neighborhood.query.get(name='Users')
@@ -53,10 +54,12 @@ def main():
                 try:
                     app = p.install_app('wiki')
                 except Exception as e:
-                    log.error("Unable to install wiki for user %s: %s" % (user.username, str(e)))
+                    log.error("Unable to install wiki for user %s: %s" %
+                              (user.username, str(e)))
                     continue
 
-            page = WM.Page.query.get(app_config_id=app.config._id, title='Home')
+            page = WM.Page.query.get(
+                app_config_id=app.config._id, title='Home')
             if page is None:
                 continue
 
@@ -67,9 +70,11 @@ def main():
             if "This is the personal project of" in page.text:
                 if description not in page.text:
                     page.text = "%s\n\n%s" % (page.text, description)
-                    log.info("Update wiki home page text for %s" % user.username)
+                    log.info("Update wiki home page text for %s" %
+                             user.username)
             elif "This is the default page" in page.text:
-                page.text = default_personal_project_tmpl % (user.display_name, description)
+                page.text = default_personal_project_tmpl % (
+                    user.display_name, description)
                 log.info("Update wiki home page text for %s" % user.username)
             else:
                 pass

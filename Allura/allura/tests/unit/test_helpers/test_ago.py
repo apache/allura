@@ -22,6 +22,7 @@ from allura.lib import helpers
 
 
 class TestAgo:
+
     def setUp(self):
         self.start_time = datetime(2010, 1, 1, 0, 0, 0)
 
@@ -45,9 +46,9 @@ class TestAgo:
         self.assertTimeSince('2 days ago', 2010, 1, 2, 13, 0, 0)
 
     def test_that_months_are_rounded(self):
-        self.assertTimeSince('2010-01-01', 2010,2,8,0,0,0)
-        self.assertTimeSince('2010-01-01', 2010,2,9,0,0,0)
-        self.assertTimeSince('2010-01-01', 2010,2,20,0,0,0)
+        self.assertTimeSince('2010-01-01', 2010, 2, 8, 0, 0, 0)
+        self.assertTimeSince('2010-01-01', 2010, 2, 9, 0, 0, 0)
+        self.assertTimeSince('2010-01-01', 2010, 2, 20, 0, 0, 0)
 
     def test_that_years_are_rounded(self):
         self.assertTimeSince('2010-01-01', 2011, 6, 1, 0, 0, 0)
@@ -61,4 +62,3 @@ class TestAgo:
         with patch('allura.lib.helpers.datetime') as datetime_class:
             datetime_class.utcnow.return_value = end_time
             return helpers.ago(self.start_time)
-

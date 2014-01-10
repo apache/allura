@@ -24,19 +24,23 @@ from allura import model as M
 from allura.lib import security
 from allura.tests import decorators as td
 
+
 def setUp():
     setup_basic_test()
     setup_with_tools()
+
 
 @td.with_wiki
 def setup_with_tools():
     setup_global_objects()
     g.set_app('wiki')
 
+
 def test_role_assignments():
     admin = M.User.by_username('test-admin')
     user = M.User.by_username('test-user')
     anon = M.User.anonymous()
+
     def check_access(perm):
         pred = security.has_access(c.app, perm)
         return pred(user=admin), pred(user=user), pred(user=anon)

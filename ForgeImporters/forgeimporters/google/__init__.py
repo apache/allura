@@ -36,6 +36,7 @@ from forgeimporters.base import File
 
 log = logging.getLogger(__name__)
 
+
 def _as_text(node, chunks=None):
     """
     Similar to node.text, but preserves whitespace around tags,
@@ -52,6 +53,7 @@ def _as_text(node, chunks=None):
             _as_text(n, chunks)
     return ''.join(chunks)
 
+
 def _as_markdown(tag, project_name):
     fragments = []
     for fragment in tag:
@@ -60,7 +62,8 @@ def _as_markdown(tag, project_name):
             qs = parse_qs(href.query)
             gc_link = not href.netloc or href.netloc == 'code.google.com'
             path_parts = href.path.split('/')
-            target_project = path_parts[2] if gc_link and len(path_parts) >= 3 else ''
+            target_project = path_parts[
+                2] if gc_link and len(path_parts) >= 3 else ''
             internal_link = target_project == project_name
             if gc_link and internal_link and 'id' in qs:
                 # rewrite issue 123 project-internal issue links
@@ -69,28 +72,36 @@ def _as_markdown(tag, project_name):
                 # rewrite r123 project-internal revision links
                 fragment = '[r%s]' % qs['r'][0]
             elif gc_link:
-                # preserve GC-internal links (probably issue PROJECT:123 inter-project issue links)
+                # preserve GC-internal links (probably issue PROJECT:123
+                # inter-project issue links)
                 fragment = '[%s](%s)' % (
-                        h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True),
-                        urljoin('https://code.google.com/p/%s/issues/' % project_name, fragment['href']),
-                    )
+                    h.plain2markdown(
+                        fragment.text, preserve_multiple_spaces=True, has_html_entities=True),
+                    urljoin('https://code.google.com/p/%s/issues/' %
+                            project_name, fragment['href']),
+                )
             else:
                 # convert all other links to Markdown syntax
                 fragment = '[%s](%s)' % (fragment.text, fragment['href'])
         elif getattr(fragment, 'name', None) == 'i':
-            # preserve styling of "(No comment was entered for this change.)" messages
-            fragment = '*%s*' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+            # preserve styling of "(No comment was entered for this change.)"
+            # messages
+            fragment = '*%s*' % h.plain2markdown(fragment.text,
+                                                 preserve_multiple_spaces=True, has_html_entities=True)
         elif getattr(fragment, 'name', None) == 'b':
             # preserve styling of issue template
-            fragment = '**%s**' % h.plain2markdown(fragment.text, preserve_multiple_spaces=True, has_html_entities=True)
+            fragment = '**%s**' % h.plain2markdown(fragment.text,
+                                                   preserve_multiple_spaces=True, has_html_entities=True)
         elif getattr(fragment, 'name', None) == 'br':
             # preserve forced line-breaks
             fragment = '\n'
         else:
             # convert all others to plain MD
-            fragment = h.plain2markdown(unicode(fragment), preserve_multiple_spaces=True, has_html_entities=True)
+            fragment = h.plain2markdown(
+                unicode(fragment), preserve_multiple_spaces=True, has_html_entities=True)
         fragments.append(fragment)
     return ''.join(fragments).strip()
+
 
 def csv_parser(page):
     lines = page.readlines()
@@ -107,9 +118,9 @@ def csv_parser(page):
 
 class GoogleCodeProjectNameValidator(fev.FancyValidator):
     not_empty = True
-    messages={
-            'invalid': 'Please enter a project URL, or a project name containing only letters, numbers, and dashes.',
-        }
+    messages = {
+        'invalid': 'Please enter a project URL, or a project name containing only letters, numbers, and dashes.',
+    }
 
     def _to_python(self, value, state=None):
         url = urlparse(value.strip())
@@ -127,30 +138,31 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     RE_REPO_TYPE = re.compile(r'(svn|hg|git)')
 
     PAGE_MAP = {
-            'project_info': BASE_URL + '/p/{project_name}/',
-            'source_browse': BASE_URL + '/p/{project_name}/source/browse/',
-            'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&sort=ID&start={start}',
-            'issue': BASE_URL + '/p/{project_name}/issues/detail?id={issue_id}',
-        }
+        'project_info': BASE_URL + '/p/{project_name}/',
+        'source_browse': BASE_URL + '/p/{project_name}/source/browse/',
+        'issues_csv': BASE_URL + '/p/{project_name}/issues/csv?can=1&colspec=ID&sort=ID&start={start}',
+        'issue': BASE_URL + '/p/{project_name}/issues/detail?id={issue_id}',
+    }
 
-    LICENSE_MAP = defaultdict(lambda:'Other/Proprietary License', {
-            'Apache License 2.0': 'Apache License V2.0',
-            'Artistic License/GPL': 'Artistic License',
-            'Eclipse Public License 1.0': 'Eclipse Public License',
-            'GNU GPL v2': 'GNU General Public License version 2.0 (GPLv2)',
-            'GNU GPL v3': 'GNU General Public License version 3.0 (GPLv3)',
-            'GNU Lesser GPL': 'GNU Library or Lesser General Public License version 2.0 (LGPLv2)',
-            'MIT License': 'MIT License',
-            'Mozilla Public License 1.1': 'Mozilla Public License 1.1 (MPL 1.1)',
-            'New BSD License': 'BSD License',
-            'Other Open Source': 'Open Software License',
-        })
+    LICENSE_MAP = defaultdict(lambda: 'Other/Proprietary License', {
+        'Apache License 2.0': 'Apache License V2.0',
+        'Artistic License/GPL': 'Artistic License',
+        'Eclipse Public License 1.0': 'Eclipse Public License',
+        'GNU GPL v2': 'GNU General Public License version 2.0 (GPLv2)',
+        'GNU GPL v3': 'GNU General Public License version 3.0 (GPLv3)',
+        'GNU Lesser GPL': 'GNU Library or Lesser General Public License version 2.0 (LGPLv2)',
+        'MIT License': 'MIT License',
+        'Mozilla Public License 1.1': 'Mozilla Public License 1.1 (MPL 1.1)',
+        'New BSD License': 'BSD License',
+        'Other Open Source': 'Open Software License',
+    })
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
     def get_short_description(self, project):
         page = self.get_page('project_info')
-        project.short_description = page.find(itemprop='description').text.strip()
+        project.short_description = page.find(
+            itemprop='description').text.strip()
 
     def get_icon(self, project):
         page = self.get_page('project_info')
@@ -165,12 +177,13 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
             filetype = 'image/png'
         M.ProjectFile.save_image(
             icon_name, icon.file, filetype,
-            square=True, thumbnail_size=(48,48),
+            square=True, thumbnail_size=(48, 48),
             thumbnail_meta={'project_id': project._id, 'category': 'icon'})
 
     def get_license(self, project):
         page = self.get_page('project_info')
-        license = page.find(text='Code license').findNext().find('a').text.strip()
+        license = page.find(text='Code license').findNext().find(
+            'a').text.strip()
         trove = M.TroveCategory.query.get(fullname=self.LICENSE_MAP[license])
         project.trove_license.append(trove._id)
 
@@ -179,7 +192,7 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         repo_type = page.find(id="crumb_root")
         if not repo_type:
             raise Exception("Couldn't detect repo type: no #crumb_root in "
-                    "{0}".format(self.url))
+                            "{0}".format(self.url))
         re_match = self.RE_REPO_TYPE.match(repo_type.text.lower())
         if re_match:
             return re_match.group(0)
@@ -200,13 +213,14 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
                     yield (int(issue_id), cls(project_name, 'issue', issue_id=issue_id))
                 except HTTPError as e:
                     if e.code == 404:
-                        log.warn('Unable to load GC issue: %s #%s: %s: %s', project_name, issue_id, e, e.url)
+                        log.warn('Unable to load GC issue: %s #%s: %s: %s',
+                                 project_name, issue_id, e, e.url)
                         continue
                     else:
                         raise
             # get any new issues that were created while importing
             # (jumping back a few in case some were deleted and new ones added)
-            new_ids = extractor.get_issue_ids(start=len(issue_ids)-10)
+            new_ids = extractor.get_issue_ids(start=len(issue_ids) - 10)
             issue_ids = new_ids - issue_ids
 
     def get_issue_ids(self, start=0):
@@ -223,7 +237,8 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return issue_ids
 
     def get_issue_summary(self):
-        text = self.page.find(id='issueheader').findAll('td', limit=2)[1].span.text.strip()
+        text = self.page.find(id='issueheader').findAll(
+            'td', limit=2)[1].span.text.strip()
         bs = BeautifulSoup(text, convertEntities=BeautifulSoup.HTML_ENTITIES)
         return bs.text
 
@@ -246,14 +261,16 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         return UserLink(a)
 
     def get_issue_status(self):
-        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Status:')).findNext().span
+        tag = self.page.find(id='issuemeta').find(
+            'th', text=re.compile('Status:')).findNext().span
         if tag:
             return tag.text.strip()
         else:
             return ''
 
     def get_issue_owner(self):
-        tag = self.page.find(id='issuemeta').find('th', text=re.compile('Owner:')).findNext().find(True, 'userlink')
+        tag = self.page.find(id='issuemeta').find(
+            'th', text=re.compile('Owner:')).findNext().find(True, 'userlink')
         if tag:
             return UserLink(tag)
         else:
@@ -277,19 +294,23 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
         for comment in self.page.findAll('div', 'issuecomment'):
             yield Comment(comment, self.project_name)
 
+
 class UserLink(object):
+
     def __init__(self, tag):
         self.name = tag.text.strip()
         if tag.get('href'):
-            self.url = urljoin(GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
+            self.url = urljoin(
+                GoogleCodeProjectExtractor.BASE_URL, tag.get('href'))
         else:
             self.url = None
 
     def __str__(self):
         if self.url:
-            return '[{name}]({url})'.format(name = self.name, url = self.url)
+            return '[{name}]({url})'.format(name=self.name, url=self.url)
         else:
             return self.name
+
 
 def _get_attachments(tag):
     attachment_links = tag.find('div', 'attachments')
@@ -307,9 +328,12 @@ def _get_attachments(tag):
     else:
         return []
 
+
 class Comment(object):
+
     def __init__(self, tag, project_name):
-        self.author = UserLink(tag.find('span', 'author').find(True, 'userlink'))
+        self.author = UserLink(
+            tag.find('span', 'author').find(True, 'userlink'))
         self.created_date = tag.find('span', 'date').get('title')
         self.body = _as_markdown(tag.find('pre'), project_name)
         self._get_updates(tag)
@@ -318,28 +342,30 @@ class Comment(object):
     def _get_updates(self, tag):
         _updates = tag.find('div', 'updates')
         self.updates = {
-                b.text: b.nextSibling.strip()
-                for b in _updates.findAll('b')} if _updates else {}
+            b.text: b.nextSibling.strip()
+            for b in _updates.findAll('b')} if _updates else {}
 
     @property
     def annotated_text(self):
         text = (
-                u'*Originally posted by:* {author}\n'
-                u'\n'
-                u'{body}\n'
-                u'\n'
-                u'{updates}'
-            ).format(
-                author=self.author,
-                body=self.body,
-                updates='\n'.join(
-                        '**%s** %s' % (k,v)
-                        for k,v in self.updates.items()
-                    ),
-            )
+            u'*Originally posted by:* {author}\n'
+            u'\n'
+            u'{body}\n'
+            u'\n'
+            u'{updates}'
+        ).format(
+            author=self.author,
+            body=self.body,
+            updates='\n'.join(
+                '**%s** %s' % (k, v)
+                for k, v in self.updates.items()
+            ),
+        )
         return text
 
+
 class Attachment(File):
+
     def __init__(self, url):
         url = urljoin(GoogleCodeProjectExtractor.BASE_URL, url)
         filename = parse_qs(urlparse(url).query)['name'][0]

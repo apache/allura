@@ -29,14 +29,15 @@ from allura.lib import validators as V
 
 stats_preferences_form = StatsPreferencesForm()
 
+
 class ForgeUserStatsCatController(BaseController):
 
     @expose()
     def _lookup(self, category, *remainder):
         cat = M.TroveCategory.query.get(shortname=category)
-        return ForgeUserStatsCatController(category = cat), remainder
+        return ForgeUserStatsCatController(category=cat), remainder
 
-    def __init__(self, category = None):
+    def __init__(self, category=None):
         self.category = category
         super(ForgeUserStatsCatController, self).__init__()
 
@@ -59,6 +60,7 @@ class ForgeUserStatsCatController(BaseController):
         ret_dict['category'] = self.category
         return ret_dict
 
+
 class ForgeUserStatsController(BaseController):
 
     category = ForgeUserStatsCatController()
@@ -74,9 +76,9 @@ class ForgeUserStatsController(BaseController):
         if not self.user.stats:
             UserStats.create(self.user)
         return dict(
-            user = self.user,
-            form = StatsPreferencesForm(
-                action = c.project.url() + 'userstats/change_settings'))
+            user=self.user,
+            form=StatsPreferencesForm(
+                action=c.project.url() + 'userstats/change_settings'))
 
     @expose()
     @require_post()
@@ -115,29 +117,29 @@ class ForgeUserStatsController(BaseController):
         ret_dict['last_login'] = stats.last_login
         if stats.last_login:
             ret_dict['last_login_days'] = \
-                (datetime.utcnow()-stats.last_login).days
+                (datetime.utcnow() - stats.last_login).days
 
         categories = {}
         for p in self.user.my_projects():
             for cat in p.trove_topic:
-                cat = M.TroveCategory.query.get(_id = cat)
+                cat = M.TroveCategory.query.get(_id=cat)
                 if categories.get(cat):
                     categories[cat] += 1
                 else:
                     categories[cat] = 1
-        categories = sorted(categories.items(), key=lambda (x,y): y,reverse=True)
+        categories = sorted(categories.items(),
+                            key=lambda (x, y): y, reverse=True)
 
         ret_dict['lastmonth_logins'] = stats.getLastMonthLogins()
         ret_dict['categories'] = categories
         days = ret_dict['days']
         if days >= 30:
             ret_dict['permonthlogins'] = \
-                round(stats.tot_logins_count*30.0/days,2)
+                round(stats.tot_logins_count * 30.0 / days, 2)
         else:
             ret_dict['permonthlogins'] = 'n/a'
 
         return ret_dict
-
 
     @expose('jinja:forgeuserstats:templates/commits.html')
     @with_trailing_slash
@@ -154,8 +156,8 @@ class ForgeUserStatsController(BaseController):
 
         commits = stats.getCommitsByCategory()
         return dict(
-            user = self.user,
-            data = commits)
+            user=self.user,
+            data=commits)
 
     @expose('jinja:forgeuserstats:templates/artifacts.html')
     @with_trailing_slash
@@ -173,8 +175,8 @@ class ForgeUserStatsController(BaseController):
         stats = self.user.stats
         artifacts = stats.getArtifactsByCategory(detailed=True)
         return dict(
-            user = self.user,
-            data = artifacts)
+            user=self.user,
+            data=artifacts)
 
     @expose('jinja:forgeuserstats:templates/tickets.html')
     @with_trailing_slash
@@ -215,22 +217,22 @@ def _getDataForCategory(category, stats):
     days = (datetime.utcnow() - stats.start_date).days
     if days >= 30:
         pmartifacts = dict(
-            created = round(totartifacts['created']*30.0/days,2),
-            modified=round(totartifacts['modified']*30.0/days,2))
+            created=round(totartifacts['created'] * 30.0 / days, 2),
+            modified=round(totartifacts['modified'] * 30.0 / days, 2))
         pmcommits = dict(
-            number=round(totcommits['number']*30.0/days,2),
-            lines=round(totcommits['lines']*30.0/days,2))
+            number=round(totcommits['number'] * 30.0 / days, 2),
+            lines=round(totcommits['lines'] * 30.0 / days, 2))
         pmtickets = dict(
-            assigned=round(tottickets['assigned']*30.0/days,2),
-            revoked=round(tottickets['revoked']*30.0/days,2),
-            solved=round(tottickets['solved']*30.0/days,2),
+            assigned=round(tottickets['assigned'] * 30.0 / days, 2),
+            revoked=round(tottickets['revoked'] * 30.0 / days, 2),
+            solved=round(tottickets['solved'] * 30.0 / days, 2),
             averagesolvingtime='n/a')
         for key in artifacts_by_type:
             value = artifacts_by_type[key]
             artifacts_by_type[key]['pmcreated'] = \
-                round(value['created']*30.0/days,2)
-            artifacts_by_type[key]['pmmodified']= \
-                round(value['modified']*30.0/days,2)
+                round(value['created'] * 30.0 / days, 2)
+            artifacts_by_type[key]['pmmodified'] = \
+                round(value['modified'] * 30.0 / days, 2)
     else:
         pmartifacts = dict(created='n/a', modified='n/a')
         pmcommits = dict(number='n/a', lines='n/a')
@@ -241,18 +243,18 @@ def _getDataForCategory(category, stats):
             averagesolvingtime='n/a')
         for key in artifacts_by_type:
             artifacts_by_type[key]['pmcreated'] = 'n/a'
-            artifacts_by_type[key]['pmmodified']= 'n/a'
+            artifacts_by_type[key]['pmmodified'] = 'n/a'
 
     return dict(
-        days = days,
-        totcommits = totcommits,
-        lastmonthcommits = lmcommits,
-        lastmonthtickets = lm_tickets,
-        tottickets = tottickets,
-        permonthcommits = pmcommits,
-        totartifacts = totartifacts,
-        lastmonthartifacts = lm_totartifacts,
-        permonthartifacts = pmartifacts,
-        artifacts_by_type = artifacts_by_type,
-        lastmonth_artifacts_by_type = lm_artifacts_by_type,
-        permonthtickets = pmtickets)
+        days=days,
+        totcommits=totcommits,
+        lastmonthcommits=lmcommits,
+        lastmonthtickets=lm_tickets,
+        tottickets=tottickets,
+        permonthcommits=pmcommits,
+        totartifacts=totartifacts,
+        lastmonthartifacts=lm_totartifacts,
+        permonthartifacts=pmartifacts,
+        artifacts_by_type=artifacts_by_type,
+        lastmonth_artifacts_by_type=lm_artifacts_by_type,
+        permonthtickets=pmtickets)

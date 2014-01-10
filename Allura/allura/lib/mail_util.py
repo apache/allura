@@ -38,14 +38,16 @@ RE_MESSAGE_ID = re.compile(r'<(?:[^>]*/)?([^>]*)>')
 config = ConfigProxy(
     common_suffix='forgemail.domain',
     return_path='forgemail.return_path')
-EMAIL_VALIDATOR=fev.Email(not_empty=True)
+EMAIL_VALIDATOR = fev.Email(not_empty=True)
+
 
 def Header(text, *more_text):
     '''Helper to make sure we encode headers properly'''
     if isinstance(text, header.Header):
         return text
     # email.header.Header handles str vs unicode differently
-    # see http://docs.python.org/library/email.header.html#email.header.Header.append
+    # see
+    # http://docs.python.org/library/email.header.html#email.header.Header.append
     if type(text) != unicode:
         raise TypeError('This must be unicode: %r' % text)
     head = header.Header(text)
@@ -55,6 +57,7 @@ def Header(text, *more_text):
         head.append(m)
     return head
 
+
 def AddrHeader(fromaddr):
     '''Accepts any of:
         Header() instance
@@ -63,9 +66,9 @@ def AddrHeader(fromaddr):
     '''
     if isinstance(fromaddr, basestring) and ' <' in fromaddr:
         name, addr = fromaddr.rsplit(' <', 1)
-        addr = '<' + addr # restore the char we just split off
+        addr = '<' + addr  # restore the char we just split off
         addrheader = Header(name, addr)
-        if str(addrheader).startswith('=?'): # encoding escape chars
+        if str(addrheader).startswith('=?'):  # encoding escape chars
             # then quoting the name is no longer necessary
             name = name.strip('"')
             addrheader = Header(name, addr)
@@ -111,6 +114,7 @@ def parse_address(addr):
             raise exc.AddressException, 'Unknown tool: ' + domain
     return userpart, project, app
 
+
 def parse_message(data):
     # Parse the email to its constituent parts
     parser = email.feedparser.FeedParser()
@@ -149,10 +153,12 @@ def parse_message(data):
             result['payload'] = result['payload'].decode(charset)
     return result
 
+
 def identify_sender(peer, email_address, headers, msg):
     from allura import model as M
     # Dumb ID -- just look for email address claimed by a particular user
-    addr = M.EmailAddress.query.get(_id=M.EmailAddress.canonical(email_address))
+    addr = M.EmailAddress.query.get(
+        _id=M.EmailAddress.canonical(email_address))
     if addr and addr.claimed_by_user_id:
         return addr.claimed_by_user()
     from_address = headers.get('From', '').strip()
@@ -163,11 +169,13 @@ def identify_sender(peer, email_address, headers, msg):
         return addr.claimed_by_user()
     return M.User.anonymous()
 
+
 def encode_email_part(content, content_type):
     try:
         return MIMEText(content.encode('ascii'), content_type, 'ascii')
     except:
         return MIMEText(content.encode('utf-8'), content_type, 'utf-8')
+
 
 def make_multipart_message(*parts):
     msg = MIMEMultipart('related')
@@ -178,17 +186,23 @@ def make_multipart_message(*parts):
         alt.attach(part)
     return msg
 
+
 def _parse_message_id(msgid):
-    if msgid is None: return []
-    return [ mo.group(1)
-             for mo in RE_MESSAGE_ID.finditer(msgid) ]
+    if msgid is None:
+        return []
+    return [mo.group(1)
+            for mo in RE_MESSAGE_ID.finditer(msgid)]
+
 
 def _parse_smtp_addr(addr):
     addr = str(addr)
     addrs = _parse_message_id(addr)
-    if addrs and addrs[0]: return addrs[0]
-    if '@' in addr: return addr
+    if addrs and addrs[0]:
+        return addrs[0]
+    if '@' in addr:
+        return addr
     return u'noreply@in.sf.net'
+
 
 def isvalid(addr):
     '''return True if addr is a (possibly) valid email address, false
@@ -199,13 +213,15 @@ def isvalid(addr):
     except fev.Invalid:
         return False
 
+
 class SMTPClient(object):
 
     def __init__(self):
         self._client = None
 
-    def sendmail(self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message,
-                 sender=None, references=None, cc=None, to=None):
+    def sendmail(
+            self, addrs, fromaddr, reply_to, subject, message_id, in_reply_to, message,
+            sender=None, references=None, cc=None, to=None):
         if not addrs:
             return
         if to:
@@ -232,7 +248,7 @@ class SMTPClient(object):
             message['References'] = Header(*references)
         content = message.as_string()
         smtp_addrs = map(_parse_smtp_addr, addrs)
-        smtp_addrs = [ a for a in smtp_addrs if isvalid(a) ]
+        smtp_addrs = [a for a in smtp_addrs if isvalid(a)]
         if not smtp_addrs:
             log.warning('No valid addrs in %s, so not sending mail',
                         map(unicode, addrs))
@@ -263,7 +279,8 @@ class SMTPClient(object):
                 timeout=float(tg.config.get('smtp_timeout', 10)),
             )
         if tg.config.get('smtp_user', None):
-            smtp_client.login(tg.config['smtp_user'], tg.config['smtp_password'])
+            smtp_client.login(tg.config['smtp_user'],
+                              tg.config['smtp_password'])
         if asbool(tg.config.get('smtp_tls', False)):
             smtp_client.starttls()
         self._client = smtp_client

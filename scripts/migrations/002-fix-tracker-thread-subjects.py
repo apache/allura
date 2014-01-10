@@ -27,15 +27,19 @@ from forgetracker import model as TM
 
 log = logging.getLogger(__name__)
 
+
 def main():
     test = sys.argv[-1] == 'test'
     all_projects = M.Project.query.find().all()
     log.info('Fixing tracker thread subjects')
     for project in all_projects:
-        if project.parent_id: continue
+        if project.parent_id:
+            continue
         c.project = project
-        all_tickets = TM.Ticket.query.find() # will find all tickets for all trackers in this project
-        if not all_tickets.count(): continue
+        # will find all tickets for all trackers in this project
+        all_tickets = TM.Ticket.query.find()
+        if not all_tickets.count():
+            continue
         for ticket in all_tickets:
             thread = ticket.get_discussion_thread()
             thread.subject = ''

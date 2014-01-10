@@ -29,9 +29,10 @@ from allura.lib import helpers as h
 from allura.lib import utils
 from . import base
 
+
 class ScriptCommand(base.Command):
-    min_args=2
-    max_args=None
+    min_args = 2
+    max_args = None
     usage = '<ini file> <script> ...'
     summary = 'Run a script as if it were being run at the paster shell prompt'
     parser = base.Command.standard_parser(verbose=True)
@@ -50,7 +51,7 @@ class ScriptCommand(base.Command):
                 warnings.simplefilter("ignore", category=exc.SAWarning)
             self.basic_setup()
             request = webob.Request.blank('--script--', environ={
-                    'paste.registry':self.registry})
+                'paste.registry': self.registry})
             self.registry.register(pylons.request, request)
             if self.options.pdb:
                 base.log.info('Installing exception hook')
@@ -59,13 +60,15 @@ class ScriptCommand(base.Command):
                 ns = dict(__name__='__main__')
                 sys.argv = self.args[1:]
                 if self.options.profile:
-                    cProfile.run(fp, '%s.profile' % os.path.basename(self.args[1]))
+                    cProfile.run(fp, '%s.profile' %
+                                 os.path.basename(self.args[1]))
                 else:
                     exec fp in ns
 
+
 class SetToolAccessCommand(base.Command):
-    min_args=3
-    max_args=None
+    min_args = 3
+    max_args = None
     usage = '<ini file> <project_shortname> <neighborhood_name> <access_level>...'
     summary = ('Set the tool statuses that are permitted to be installed on a'
                ' given project')
@@ -77,7 +80,7 @@ class SetToolAccessCommand(base.Command):
         extra_status = []
         for s in self.args[3:]:
             s = s.lower()
-            if s=='production':
+            if s == 'production':
                 print ('All projects always have access to prodcution tools,'
                        ' so removing from list.')
                 continue

@@ -50,4 +50,3 @@ def fake_redirect_patch(test_case):
 
 def fake_request_patch(test_case):
     return patch('allura.controllers.discuss.request')
-

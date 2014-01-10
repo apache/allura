@@ -37,6 +37,7 @@ class GoogleCodeProjectForm(base.ProjectImportForm):
 
 
 class GoogleCodeProjectImporter(base.ProjectImporter):
+
     """
     Project importer for Google Code.
 

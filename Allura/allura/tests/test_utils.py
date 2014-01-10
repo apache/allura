@@ -36,6 +36,7 @@ from allura.lib import utils
 
 @patch.dict('allura.lib.utils.tg.config', clear=True, foo='bar', baz='true')
 class TestConfigProxy(unittest.TestCase):
+
     def setUp(self):
         self.cp = utils.ConfigProxy(mybaz="baz")
 
@@ -68,7 +69,8 @@ class TestChunkedIterator(unittest.TestCase):
         assert len(chunks[0]) == 2, chunks[0]
 
     def test_filter_on_sort_key(self):
-        query = {'username': {'$in': ['sample-user-1', 'sample-user-2', 'sample-user-3']}}
+        query = {'username':
+                 {'$in': ['sample-user-1', 'sample-user-2', 'sample-user-3']}}
         chunks = list(utils.chunked_find(M.User,
                                          query,
                                          2,
@@ -82,6 +84,7 @@ class TestChunkedIterator(unittest.TestCase):
 
 
 class TestChunkedList(unittest.TestCase):
+
     def test_chunked_list(self):
         l = range(10)
         chunks = list(utils.chunked_list(l, 3))
@@ -116,7 +119,7 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(
             ValueError,
             utils.AntiSpam.validate_request,
-            r, now=time.time()+24*60*60+1)
+            r, now=time.time() + 24 * 60 * 60 + 1)
 
     def test_invalid_future(self):
         form = dict(a='1', b='2')
@@ -124,7 +127,7 @@ class TestAntispam(unittest.TestCase):
         self.assertRaises(
             ValueError,
             utils.AntiSpam.validate_request,
-            r, now=time.time()-10)
+            r, now=time.time() - 10)
 
     def test_invalid_spinner(self):
         form = dict(a='1', b='2')
@@ -141,14 +144,16 @@ class TestAntispam(unittest.TestCase):
 
     def _encrypt_form(self, **kwargs):
         encrypted_form = dict(
-            (self.a.enc(k), v) for k,v in kwargs.items())
+            (self.a.enc(k), v) for k, v in kwargs.items())
         encrypted_form.setdefault(self.a.enc('honey0'), '')
         encrypted_form.setdefault(self.a.enc('honey1'), '')
         encrypted_form['spinner'] = self.a.spinner_text
         encrypted_form['timestamp'] = self.a.timestamp_text
         return encrypted_form
 
+
 class TestTruthyCallable(unittest.TestCase):
+
     def test_everything(self):
         def wrapper_func(bool_flag):
             def predicate(bool_flag=bool_flag):
@@ -184,6 +189,7 @@ class TestCaseInsensitiveDict(unittest.TestCase):
 
 
 class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
+
     def test_render(self):
         code = '#!/usr/bin/env python\n'\
                'print "Hello, world!"'
@@ -198,6 +204,7 @@ class TestLineAnchorCodeHtmlFormatter(unittest.TestCase):
 
 
 class TestIsTextFile(unittest.TestCase):
+
     def test_is_text_file(self):
         here_dir = path.dirname(__file__)
         assert utils.is_text_file(open(path.join(
@@ -216,7 +223,7 @@ class TestCodeStats(unittest.TestCase):
     def test_generate_code_stats(self):
         blob = Mock()
         blob.text = \
-"""class Person(object):
+            """class Person(object):
 
     def __init__(self, name='Alice'):
         self.name = name
@@ -231,6 +238,7 @@ class TestCodeStats(unittest.TestCase):
         assert stats['data_line_count'] == 5
         assert stats['code_size'] == len(blob.text)
 
+
 class TestHTMLSanitizer(unittest.TestCase):
 
     def test_html_sanitizer_iframe(self):
@@ -240,5 +248,7 @@ class TestHTMLSanitizer(unittest.TestCase):
 
     def test_html_sanitizer_youtube_iframe(self):
         p = utils.ForgeHTMLSanitizer('utf-8', '')
-        p.feed('<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
-        assert_equal(p.output(),'<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        p.feed(
+            '<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')
+        assert_equal(
+            p.output(), '<div><iframe src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed"></iframe></div>')

@@ -45,7 +45,7 @@ class TestImportController(TestRestApiBase):
             assert 0, "form error?"
         return resp.follow()
 
-    def set_api_ticket(self, caps={'import': ['Projects','test']}):
+    def set_api_ticket(self, caps={'import': ['Projects', 'test']}):
         api_ticket = M.ApiTicket(user_id=c.user._id, capabilities=caps,
                                  expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
@@ -55,19 +55,19 @@ class TestImportController(TestRestApiBase):
     def test_no_capability(self):
         here_dir = os.path.dirname(__file__)
 
-        self.set_api_ticket({'import2': ['Projects','test']})
+        self.set_api_ticket({'import2': ['Projects', 'test']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=open(here_dir + '/data/sf.json').read(), options='{}')
+                             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 403
 
         self.set_api_ticket({'import': ['Projects', 'test2']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=open(here_dir + '/data/sf.json').read(), options='{}')
+                             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 403
 
         self.set_api_ticket({'import': ['Projects', 'test']})
         resp = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=open(here_dir + '/data/sf.json').read(), options='{}')
+                             doc=open(here_dir + '/data/sf.json').read(), options='{}')
         assert resp.status_int == 200
 
     @staticmethod
@@ -79,9 +79,12 @@ class TestImportController(TestRestApiBase):
         assert_equal(from_api['description'], org['description'])
         assert_equal(from_api['summary'], org['summary'])
         assert_equal(from_api['ticket_num'], org['id'])
-        assert_equal(from_api['created_date'], self.time_normalize(org['date']))
-        assert_equal(from_api['mod_date'], self.time_normalize(org['date_updated']))
-        assert_equal(from_api['custom_fields']['_resolution'], org['resolution'])
+        assert_equal(from_api['created_date'],
+                     self.time_normalize(org['date']))
+        assert_equal(from_api['mod_date'],
+                     self.time_normalize(org['date_updated']))
+        assert_equal(from_api['custom_fields']
+                     ['_resolution'], org['resolution'])
         assert_false('_cc' in from_api['custom_fields'])
         assert_equal(from_api['custom_fields']['_private'], org['private'])
 
@@ -90,7 +93,7 @@ class TestImportController(TestRestApiBase):
         here_dir = os.path.dirname(__file__)
         doc_text = open(here_dir + '/data/sf.json').read()
         r = self.api_post('/rest/p/test/bugs/validate_import',
-            doc=doc_text, options='{}')
+                          doc=doc_text, options='{}')
         assert not r.json['errors']
 
     @td.with_tracker
@@ -99,16 +102,17 @@ class TestImportController(TestRestApiBase):
             custom_fields=[
                 dict(name='_resolution', label='Resolution', type='select',
                      options='oné "one and á half" two'),
-               ],
+            ],
             open_status_names='aa bb',
             closed_status_names='cc',
-            )
+        )
         self.app.post(
             '/admin/bugs/set_custom_fields',
             params=variable_encode(params))
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + timedelta(days=1))
+        api_ticket = M.ApiTicket(
+            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
+            expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
 
@@ -116,7 +120,7 @@ class TestImportController(TestRestApiBase):
         doc_json = json.loads(doc_text)
         ticket_json = doc_json['trackers']['default']['artifacts'][0]
         r = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+                          doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
         assert r.json['status'], r.json
 
         ming.orm.ThreadLocalORMSession.flush_all()
@@ -130,8 +134,9 @@ class TestImportController(TestRestApiBase):
     @td.with_tracker
     def test_import(self):
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + timedelta(days=1))
+        api_ticket = M.ApiTicket(
+            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
+            expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
 
@@ -139,7 +144,7 @@ class TestImportController(TestRestApiBase):
         doc_json = json.loads(doc_text)
         ticket_json = doc_json['trackers']['default']['artifacts'][0]
         r = self.api_post('/rest/p/test/bugs/perform_import',
-            doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+                          doc=doc_text, options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
         assert r.json['status']
         assert r.json['errors'] == []
 
@@ -147,7 +152,8 @@ class TestImportController(TestRestApiBase):
         M.MonQTask.run_ready()
         ming.orm.ThreadLocalORMSession.flush_all()
 
-        indexed_tickets = filter(lambda a: a['type_s'] == 'Ticket', g.solr.db.values())
+        indexed_tickets = filter(
+            lambda a: a['type_s'] == 'Ticket', g.solr.db.values())
         assert_equal(len(indexed_tickets), 1)
         assert_equal(indexed_tickets[0]['summary_t'], ticket_json['summary'])
         assert_equal(indexed_tickets[0]['ticket_num_i'], ticket_json['id'])
@@ -176,14 +182,15 @@ class TestImportController(TestRestApiBase):
 
         """
         here_dir = os.path.dirname(__file__)
-        api_ticket = M.ApiTicket(user_id=c.user._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + timedelta(days=1))
+        api_ticket = M.ApiTicket(
+            user_id=c.user._id, capabilities={'import': ['Projects', 'test']},
+            expires=datetime.utcnow() + timedelta(days=1))
         ming.orm.session(api_ticket).flush()
         self.set_api_token(api_ticket)
 
         doc_text = open(here_dir + '/data/milestone-tickets.json').read()
         r = self.api_post('/rest/p/test/bugs/perform_import', doc=doc_text,
-            options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
+                          options='{"user_map": {"hinojosa4": "test-admin", "ma_boehm": "test-user"}}')
         assert r.json['status'], r.json
 
         ming.orm.ThreadLocalORMSession.flush_all()
@@ -192,7 +199,8 @@ class TestImportController(TestRestApiBase):
 
         with h.push_context('test', mount_point='bugs', neighborhood='Projects'):
             for milestone_fld in c.app.globals.milestone_fields:
-                milestone_names = [ms['name'] for ms in milestone_fld['milestones']]
+                milestone_names = [ms['name']
+                                   for ms in milestone_fld['milestones']]
                 assert 'open_milestone' in milestone_names, milestone_names
                 assert 'closed_milestone' in milestone_names, milestone_names
                 for milestone in milestone_fld['milestones']:

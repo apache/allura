@@ -46,9 +46,11 @@ config = ConfigProxy(common_suffix='forgemail.domain')
 
 
 class ConfigOption(object):
+
     """Definition of a configuration option for an :class:`Application`.
 
     """
+
     def __init__(self, name, ming_type, default, label=None):
         """Create a new ConfigOption.
 
@@ -67,14 +69,16 @@ class ConfigOption(object):
 
 
 class SitemapEntry(object):
+
     """A labeled URL, which may optionally have
     :class:`children <SitemapEntry>`.
 
     Used for generating trees of links.
 
     """
+
     def __init__(self, label, url=None, children=None, className=None,
-            ui_icon=None, small=None, tool_name=None, matching_urls=None):
+                 ui_icon=None, small=None, tool_name=None, matching_urls=None):
         """Create a new SitemapEntry.
 
         """
@@ -112,7 +116,8 @@ class SitemapEntry(object):
         l = ['<SitemapEntry ']
         l.append('    label=%r' % self.label)
         l.append('    url=%r' % self.url)
-        l.append('    children=%s' % repr(self.children).replace('\n', '\n    '))
+        l.append('    children=%s' %
+                 repr(self.children).replace('\n', '\n    '))
         l.append('>')
         return '\n'.join(l)
 
@@ -130,12 +135,12 @@ class SitemapEntry(object):
         if url is not None:
             url = basejoin(app.url, url)
         return SitemapEntry(lbl, url, [
-                ch.bind_app(app) for ch in self.children],
-                className=self.className,
-                ui_icon=self.ui_icon,
-                small=self.small,
-                tool_name=self.tool_name,
-                matching_urls=self.matching_urls)
+            ch.bind_app(app) for ch in self.children],
+            className=self.className,
+            ui_icon=self.ui_icon,
+            small=self.small,
+            tool_name=self.tool_name,
+            matching_urls=self.matching_urls)
 
     def extend(self, sitemap_entries):
         """Extend our children with ``sitemap_entries``.
@@ -167,6 +172,7 @@ class SitemapEntry(object):
 
 
 class Application(object):
+
     """
     The base Allura pluggable application
 
@@ -239,9 +245,9 @@ class Application(object):
     ordinal = 0
     hidden = False
     icons = {
-        24:'images/admin_24.png',
-        32:'images/admin_32.png',
-        48:'images/admin_48.png'
+        24: 'images/admin_24.png',
+        32: 'images/admin_32.png',
+        48: 'images/admin_48.png'
     }
 
     def __init__(self, project, app_config_object):
@@ -331,7 +337,8 @@ class Application(object):
         :rtype: bool
 
         """
-        tools_list = [tool.tool_name.lower() for tool in self.project.app_configs]
+        tools_list = [tool.tool_name.lower()
+                      for tool in self.project.app_configs]
         return tools_list.count(self.config.tool_name.lower()) < self.max_instances
 
     @classmethod
@@ -349,7 +356,7 @@ class Application(object):
 
         """
         re = (h.re_relaxed_tool_mount_point if cls.relaxed_mount_points
-                else h.re_tool_mount_point)
+              else h.re_tool_mount_point)
         return re.match(mount_point)
 
     @classmethod
@@ -373,7 +380,7 @@ class Application(object):
         if resource:
             resource_path = os.path.join('nf', resource)
             url = (g.forge_static(resource) if cls.has_resource(resource_path)
-                    else g.theme_href(resource))
+                   else g.theme_href(resource))
         return url
 
     @classmethod
@@ -430,10 +437,10 @@ class Application(object):
         """
         if user and user != model.User.anonymous():
             model.Mailbox.subscribe(
-                    type='direct',
-                    user_id=user._id,
-                    project_id=self.project._id,
-                    app_config_id=self.config._id)
+                type='direct',
+                user_id=user._id,
+                project_id=self.project._id,
+                app_config_id=self.config._id)
 
     @classmethod
     def default_options(cls):
@@ -460,13 +467,14 @@ class Application(object):
 
     def uninstall(self, project=None, project_id=None):
         'Whatever logic is required to tear down a tool'
-        if project_id is None: project_id = project._id
+        if project_id is None:
+            project_id = project._id
         # De-index all the artifacts belonging to this tool in one fell swoop
         g.solr.delete(q='project_id_s:"%s" AND mount_point_s:"%s"' % (
-                project_id, self.config.options['mount_point']))
+            project_id, self.config.options['mount_point']))
         for d in model.Discussion.query.find({
-                'project_id':project_id,
-                'app_config_id':self.config._id}):
+                'project_id': project_id,
+                'app_config_id': self.config._id}):
             d.delete()
         self.config.delete()
         session(self.config).flush()
@@ -526,13 +534,17 @@ class Application(object):
         :return: a list of :class:`SitemapEntries <allura.app.SitemapEntry>`
 
         """
-        admin_url = c.project.url()+'admin/'+self.config.options.mount_point+'/'
+        admin_url = c.project.url() + 'admin/' + \
+            self.config.options.mount_point + '/'
         links = []
         if self.permissions and has_access(c.project, 'admin')():
-            links.append(SitemapEntry('Permissions', admin_url + 'permissions'))
+            links.append(
+                SitemapEntry('Permissions', admin_url + 'permissions'))
         if force_options or len(self.config_options) > 3:
-            links.append(SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
-        links.append(SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
+            links.append(
+                SitemapEntry('Options', admin_url + 'options', className='admin_modal'))
+        links.append(
+            SitemapEntry('Label', admin_url + 'edit_label', className='admin_modal'))
         return links
 
     def handle_message(self, topic, message):
@@ -571,7 +583,8 @@ class Application(object):
             fp = StringIO(message['payload'])
             self.AttachmentClass.save_attachment(
                 message['filename'], fp,
-                content_type=message.get('content_type', 'application/octet-stream'),
+                content_type=message.get(
+                    'content_type', 'application/octet-stream'),
                 discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id,
@@ -580,16 +593,19 @@ class Application(object):
         # Handle duplicates
         post = self.PostClass.query.get(_id=message_id)
         if post:
-            log.info('Existing message_id %s found - saving this as text attachment' % message_id)
+            log.info(
+                'Existing message_id %s found - saving this as text attachment' %
+                message_id)
             fp = StringIO(message['payload'])
             post.attach(
                 'alternate', fp,
-                content_type=message.get('content_type', 'application/octet-stream'),
+                content_type=message.get(
+                    'content_type', 'application/octet-stream'),
                 discussion_id=thd.discussion_id,
                 thread_id=thd._id,
                 post_id=message_id)
         else:
-            text=message['payload'] or '--no text body--'
+            text = message['payload'] or '--no text body--'
             post = thd.post(
                 message_id=message_id,
                 parent_id=parent_id,
@@ -607,6 +623,7 @@ class Application(object):
 
 
 class DefaultAdminController(BaseController):
+
     """Provides basic admin functionality for an :class:`Application`.
 
     To add more admin functionality for your Application, extend this
@@ -619,6 +636,7 @@ class DefaultAdminController(BaseController):
                 self.admin = MyAdminController(self)
 
     """
+
     def __init__(self, app):
         """Instantiate this controller for an :class:`app <Application>`.
 
@@ -642,7 +660,8 @@ class DefaultAdminController(BaseController):
         user = model.User.by_username(username)
         if not user:
             return dict(error='User "%s" not found' % username)
-        ace = model.ACE.deny(model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
+        ace = model.ACE.deny(
+            model.ProjectRole.by_user(user, upsert=True)._id, perm, reason)
         if not model.ACL.contains(ace, self.app.acl):
             self.app.acl.append(ace)
             return dict(user_id=str(user._id), username=user.username, reason=reason)
@@ -744,7 +763,8 @@ class DefaultAdminController(BaseController):
                 redirect('..')
             for opt in self.app.config_options:
                 if opt in Application.config_options:
-                    continue  # skip base options (mount_point, mount_label, ordinal)
+                    # skip base options (mount_point, mount_label, ordinal)
+                    continue
                 val = kw.get(opt.name, '')
                 if opt.ming_type == bool:
                     val = asbool(val or False)
@@ -778,15 +798,16 @@ class DefaultAdminController(BaseController):
             del_group_ids = []
             group_ids = args.get('value', [])
             if isinstance(new_group_ids, basestring):
-                new_group_ids = [ new_group_ids ]
+                new_group_ids = [new_group_ids]
             if isinstance(group_ids, basestring):
-                group_ids = [ group_ids ]
+                group_ids = [group_ids]
 
             for acl in old_acl:
                 if (acl['permission'] == perm) and (str(acl['role_id']) not in group_ids) and acl['access'] != model.ACE.DENY:
                     del_group_ids.append(str(acl['role_id']))
 
-            get_role = lambda _id: model.ProjectRole.query.get(_id=ObjectId(_id))
+            get_role = lambda _id: model.ProjectRole.query.get(
+                _id=ObjectId(_id))
             groups = map(get_role, group_ids)
             new_groups = map(get_role, new_group_ids)
             del_groups = map(get_role, del_group_ids)
@@ -794,8 +815,10 @@ class DefaultAdminController(BaseController):
             if new_groups or del_groups:
                 model.AuditLog.log('updated "%s" permission: "%s" => "%s" for %s' % (
                     perm,
-                    ', '.join(map(lambda role: role.name, groups+del_groups)),
-                    ', '.join(map(lambda role: role.name, groups+new_groups)),
+                    ', '.join(
+                        map(lambda role: role.name, groups + del_groups)),
+                    ', '.join(
+                        map(lambda role: role.name, groups + new_groups)),
                     self.app.config.options['mount_point']))
 
             role_ids = map(ObjectId, group_ids + new_group_ids)

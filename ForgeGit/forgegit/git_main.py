@@ -42,17 +42,19 @@ from .controllers import BranchBrowser
 
 log = logging.getLogger(__name__)
 
+
 class ForgeGitApp(RepositoryApp):
+
     '''This is the Git app for PyForge'''
     __version__ = version.__version__
-    tool_label='Git'
-    tool_description="""
+    tool_label = 'Git'
+    tool_description = """
         Git is a distributed version control system designed to
         handle everything from small to very large projects with speed
         and efficiency.
     """
-    ordinal=2
-    forkable=True
+    ordinal = 2
+    forkable = True
 
     def __init__(self, project, config):
         super(ForgeGitApp, self).__init__(project, config)
@@ -68,7 +70,8 @@ class ForgeGitApp(RepositoryApp):
 
     @property
     def default_branch_name(self):
-        default_branch_name = getattr(self.repo, 'default_branch_name', 'master')
+        default_branch_name = getattr(
+            self.repo, 'default_branch_name', 'master')
         if not default_branch_name:
             default_branch_name = 'master'
         return default_branch_name
@@ -76,9 +79,10 @@ class ForgeGitApp(RepositoryApp):
     def admin_menu(self):
         links = []
         links.append(SitemapEntry(
-                'Set default branch',
-                c.project.url()+'admin/'+self.config.options.mount_point+'/' + 'set_default_branch_name',
-                className='admin_modal'))
+            'Set default branch',
+            c.project.url() + 'admin/' + self.config.options.mount_point +
+            '/' + 'set_default_branch_name',
+            className='admin_modal'))
         links += super(ForgeGitApp, self).admin_menu()
         return links
 
@@ -91,7 +95,8 @@ class ForgeGitApp(RepositoryApp):
             status='initializing',
             fs_path=self.config.options.get('fs_path'))
         ThreadLocalORMSession.flush_all()
-        cloned_from_project_id = self.config.options.get('cloned_from_project_id')
+        cloned_from_project_id = self.config.options.get(
+            'cloned_from_project_id')
         cloned_from_repo_id = self.config.options.get('cloned_from_repo_id')
         init_from_url = self.config.options.get('init_from_url')
         init_from_path = self.config.options.get('init_from_path')
@@ -112,7 +117,8 @@ class ForgeGitApp(RepositoryApp):
 
 def git_timers():
     return [
-        Timer('git_lib.{method_name}', git.Repo, 'rev_parse', 'iter_commits', 'commit'),
+        Timer('git_lib.{method_name}', git.Repo,
+              'rev_parse', 'iter_commits', 'commit'),
         Timer('git_lib.{method_name}', GM.git_repo.GitLibCmdWrapper, 'log'),
     ]
 

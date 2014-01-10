@@ -29,6 +29,7 @@ from allura.tests import decorators as td
 
 
 class TestActivityController(TestController):
+
     def setUp(self, *args, **kwargs):
         super(TestActivityController, self).setUp(*args, **kwargs)
         self._enabled = config.get('activitystream.enabled', 'false')
@@ -58,37 +59,37 @@ class TestActivityController(TestController):
         from activitystream.storage.base import StoredActivity
         from bson import ObjectId
         director.get_timeline.return_value = [StoredActivity(**{
-            "_id" : ObjectId("529fa331033c5e6406d8b338"),
-            "obj" : {
-                    "activity_extras" : {
-                            "allura_id" : "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.sourceforge.net",
-                            "summary" : "Just wanted to leave a comment on this..."
-                    },
-                    "activity_url" : "/p/test/tickets/_discuss/thread/08e74efd/ed7c/",
-                    "activity_name" : "a comment"
+            "_id": ObjectId("529fa331033c5e6406d8b338"),
+            "obj": {
+                "activity_extras": {
+                    "allura_id": "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.sourceforge.net",
+                    "summary": "Just wanted to leave a comment on this..."
+                },
+                "activity_url": "/p/test/tickets/_discuss/thread/08e74efd/ed7c/",
+                "activity_name": "a comment"
             },
-            "target" : {
-                    "activity_extras" : {
-                            "allura_id" : "Ticket:529f57a6033c5e5985db2efa",
-                            "summary" : "Make activitystream timeline look better"
-                    },
-                    "activity_url" : "/p/test/tickets/34/",
-                    "activity_name" : "ticket #34"
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
             },
-            "actor" : {
-                    "activity_extras" : {
-                            "icon_url" : "/u/test-admin/user_icon",
-                            "allura_id" : "User:521f96cb033c5e2587adbdff"
-                    },
-                    "activity_url" : "/u/test-admin/",
-                    "activity_name" : "Administrator 1",
-                    "node_id" : "User:521f96cb033c5e2587adbdff"
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
             },
-            "verb" : "posted",
-            "published" : dateutil.parser.parse("2013-12-04T21:48:19.817"),
-            "score" : 1386193699,
-            "node_id" : "Project:527a6584033c5e62126f5a60",
-            "owner_id" : "Project:527a6584033c5e62126f5a60"
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
         })]
         r = self.app.get('/p/test/activity/')
         timeline = r.html.find('ul', 'timeline')
@@ -156,7 +157,7 @@ class TestActivityController(TestController):
     @td.with_user_project('test-user-1')
     def test_background_aggregation(self):
         self.app.get('/u/test-admin/activity/follow?follow=True',
-                extra_environ=dict(username='test-user-1'))
+                     extra_environ=dict(username='test-user-1'))
         # new ticket, creates activity
         d = {'ticket_form.summary': 'New Ticket'}
         self.app.post('/bugs/save_ticket', params=d)

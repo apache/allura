@@ -49,7 +49,7 @@ class TestProjectRegistrationProvider(object):
     def test_suggest_name(self):
         f = self.provider.suggest_name
         assert_equals(f('A More Than Fifteen Character Name', Mock()),
-                'amorethanfifteencharactername')
+                      'amorethanfifteencharactername')
 
     @patch('allura.model.Project')
     def test_shortname_validator(self, Project):
@@ -58,14 +58,18 @@ class TestProjectRegistrationProvider(object):
         v = self.provider.shortname_validator.to_python
 
         v('thisislegit', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v, 'not valid', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v, 'this-is-valid-but-too-long', neighborhood=nbhd)
-        assert_raises(ProjectShortnameInvalid, v, 'this is invalid and too long', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v,
+                      'not valid', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v,
+                      'this-is-valid-but-too-long', neighborhood=nbhd)
+        assert_raises(ProjectShortnameInvalid, v,
+                      'this is invalid and too long', neighborhood=nbhd)
         Project.query.get.return_value = Mock()
         assert_raises(ProjectConflict, v, 'thisislegit', neighborhood=nbhd)
 
 
 class TestThemeProvider(object):
+
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
     @patch('pylons.request')
@@ -103,7 +107,8 @@ class TestThemeProvider(object):
         note.impressions = 2
         request.cookies = {'site-notification': 'deadbeef-1-false'}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-2-False', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with(
+            'site-notification', 'deadbeef-2-False', max_age=timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -124,7 +129,8 @@ class TestThemeProvider(object):
         note.impressions = 1
         request.cookies = {'site-notification': '0ddba11-1000-true'}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with(
+            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -135,7 +141,8 @@ class TestThemeProvider(object):
         note.impressions = 0
         request.cookies = {}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with(
+            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
 
     @patch('allura.model.notification.SiteNotification')
     @patch('pylons.response')
@@ -146,4 +153,5 @@ class TestThemeProvider(object):
         note.impressions = 0
         request.cookies = {'site-notification': 'deadbeef-1000-true-bad'}
         assert_is(ThemeProvider().get_site_notification(), note)
-        response.set_cookie.assert_called_once_with('site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))
+        response.set_cookie.assert_called_once_with(
+            'site-notification', 'deadbeef-1-False', max_age=timedelta(days=365))

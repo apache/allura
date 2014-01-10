@@ -38,10 +38,12 @@ class TestLinkApi(TestRestApiBase):
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], None)
 
-        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'), url='http://google.com')
+        r = self.api_post(u'/rest/p/test/link'.encode('utf-8'),
+                          url='http://google.com')
         assert_equal(r.json['url'], 'http://google.com')
 
-        self.api_post(u'/rest/p/test/link'.encode('utf-8'), url='http://yahoo.com')
+        self.api_post(u'/rest/p/test/link'.encode('utf-8'),
+                      url='http://yahoo.com')
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
 
@@ -50,13 +52,15 @@ class TestLinkApi(TestRestApiBase):
         assert_equal(r.json['url'], 'http://yahoo.com')
 
     def test_rest_link_get_permissions(self):
-        self.app.get('/rest/p/test/link', extra_environ={'username': '*anonymous'}, status=200)
+        self.app.get('/rest/p/test/link',
+                     extra_environ={'username': '*anonymous'}, status=200)
         p = M.Project.query.get(shortname='test')
         acl = p.app_instance('link').config.acl
         anon = M.ProjectRole.by_name('*anonymous')._id
         anon_read = M.ACE.allow(anon, 'read')
         acl.remove(anon_read)
-        self.app.get('/rest/p/test/link', extra_environ={'username': '*anonymous'}, status=401)
+        self.app.get('/rest/p/test/link',
+                     extra_environ={'username': '*anonymous'}, status=401)
 
     def test_rest_link_post_permissions(self):
         self.app.post('/rest/p/test/link',
@@ -74,7 +78,3 @@ class TestLinkApi(TestRestApiBase):
                       status=200)
         r = self.api_get(u'/rest/p/test/link'.encode('utf-8'))
         assert_equal(r.json['url'], 'http://yahoo.com')
-
-
-
-

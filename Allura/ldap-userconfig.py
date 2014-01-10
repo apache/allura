@@ -22,10 +22,12 @@ import sys
 import pwd
 import grp
 
+
 def main():
     command = sys.argv[1]
     uname = sys.argv[2]
     eval(command)(uname, *sys.argv[3:])
+
 
 def init(uname):
     home = os.path.join('/home', uname)
@@ -38,6 +40,7 @@ def init(uname):
     os.chmod(ssh, 0700)
     os.chown(home, u.pw_uid, g.gr_gid)
     os.chown(ssh, u.pw_uid, g.gr_gid)
+
 
 def upload(uname, pubkey):
     keyfile = os.path.join('/home', uname, '.ssh', 'authorized_keys')

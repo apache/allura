@@ -53,7 +53,8 @@ class TestBulkExport(object):
         page = WM.Page.upsert('Return of the Jedi')
         page.text = 'Star Wars Episode VI: Return of the Jedi'
         page.commit()
-        page = WM.Page.query.get(app_config_id=self.wiki.config._id, title='Home')
+        page = WM.Page.query.get(
+            app_config_id=self.wiki.config._id, title='Home')
         page.deleted = True
         page.commit()
 
@@ -75,9 +76,11 @@ class TestBulkExport(object):
         assert_equal(len(pages[0]['discussion_thread']['posts']), 2)
 
         assert_equal(pages[1]['title'], 'Return of the Jedi')
-        assert_equal(pages[1]['text'], 'Star Wars Episode VI: Return of the Jedi')
+        assert_equal(pages[1]['text'],
+                     'Star Wars Episode VI: Return of the Jedi')
         assert_equal(len(pages[1]['discussion_thread']['posts']), 0)
 
         assert_equal(pages[2]['title'], 'The Empire Strikes Back')
-        assert_equal(pages[2]['text'], 'Star Wars Episode V: The Empire Strikes Back')
+        assert_equal(pages[2]['text'],
+                     'Star Wars Episode V: The Empire Strikes Back')
         assert_equal(len(pages[2]['discussion_thread']['posts']), 0)

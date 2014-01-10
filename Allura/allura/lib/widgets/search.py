@@ -21,9 +21,10 @@ import jinja2
 
 from allura.lib.widgets import form_fields as ffw
 
+
 class SearchResults(ew_core.Widget):
-    template='jinja:allura:templates/widgets/search_results.html'
-    defaults=dict(
+    template = 'jinja:allura:templates/widgets/search_results.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         results=None,
         limit=None,
@@ -32,8 +33,8 @@ class SearchResults(ew_core.Widget):
         search_error=None)
 
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
 
     def resources(self):
         for f in self.fields:
@@ -43,7 +44,7 @@ class SearchResults(ew_core.Widget):
 
 
 class SearchHelp(ffw.Lightbox):
-    defaults=dict(
+    defaults = dict(
         ffw.Lightbox.defaults,
         name='search_help_modal',
         trigger='a.search_help_modal')
@@ -51,7 +52,8 @@ class SearchHelp(ffw.Lightbox):
     def __init__(self, comments=True, history=True):
         super(SearchHelp, self).__init__()
         # can't use g.jinja2_env since this widget gets imported too early :(
-        jinja2_env = jinja2.Environment(loader=jinja2.PackageLoader('allura', 'templates/widgets'))
+        jinja2_env = jinja2.Environment(
+            loader=jinja2.PackageLoader('allura', 'templates/widgets'))
         self.content = jinja2_env.get_template('search_help.html').render(dict(
             comments=comments,
             history=history,

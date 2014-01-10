@@ -27,6 +27,7 @@ from allura.lib import utils
 
 log = logging.getLogger(__name__)
 
+
 def main(options):
     log.addHandler(logging.StreamHandler(sys.stdout))
     log.setLevel(getattr(logging, options.log_level.upper()))
@@ -34,17 +35,19 @@ def main(options):
     nbhd = M.Neighborhood.query.get(name=options.neighborhood)
     if not nbhd:
         return 'Invalid neighborhood "%s".' % options.neighborhood
-    admin_role = M.ProjectRole.by_name('Admin', project=nbhd.neighborhood_project)
-    nbhd_admin = admin_role.users_with_role(project=nbhd.neighborhood_project)[0].user
+    admin_role = M.ProjectRole.by_name(
+        'Admin', project=nbhd.neighborhood_project)
+    nbhd_admin = admin_role.users_with_role(
+        project=nbhd.neighborhood_project)[0].user
     log.info('Making updates as neighborhood admin "%s"' % nbhd_admin.username)
 
     q = {'neighborhood_id': nbhd._id,
-            'is_nbhd_project': False, 'deleted':False}
+         'is_nbhd_project': False, 'deleted': False}
     private_count = public_count = 0
     for projects in utils.chunked_find(M.Project, q):
         for p in projects:
             role_anon = M.ProjectRole.upsert(name='*anonymous',
-                    project_id=p.root_project._id)
+                                             project_id=p.root_project._id)
             if M.ACE.allow(role_anon._id, 'read') not in p.acl:
                 if options.test:
                     log.info('Would be made public: "%s"' % p.shortname)
@@ -66,17 +69,18 @@ def main(options):
         log.info('Made public: %s' % private_count)
     return 0
 
+
 def parse_options():
     import argparse
     parser = argparse.ArgumentParser(
-            description='Make all projects in a neighborhood public.')
+        description='Make all projects in a neighborhood public.')
     parser.add_argument('neighborhood', metavar='NEIGHBORHOOD', type=str,
-            help='Neighborhood name.')
+                        help='Neighborhood name.')
     parser.add_argument('--test', dest='test', default=False,
-            action='store_true',
-            help='Run in test mode (no updates will be applied).')
+                        action='store_true',
+                        help='Run in test mode (no updates will be applied).')
     parser.add_argument('--log', dest='log_level', default='INFO',
-            help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
+                        help='Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL).')
     return parser.parse_args()
 
 if __name__ == '__main__':

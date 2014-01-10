@@ -38,6 +38,7 @@ def main():
 def get_versions():
     return sys.argv[1], sys.argv[2], sys.argv[3]
 
+
 def get_tickets(from_ref, to_ref):
     repo = git.Repo('.')
     ticket_nums = set()
@@ -48,6 +49,7 @@ def get_tickets(from_ref, to_ref):
             ticket_nums.add(match.group(1))
     return list(ticket_nums)
 
+
 def get_ticket_summaries(tickets):
     summaries = {}
     r = requests.get(API_URL.format(' '.join(tickets)))
@@ -57,11 +59,12 @@ def get_ticket_summaries(tickets):
         summaries[ticket['ticket_num']] = ticket['summary']
     return summaries
 
+
 def print_changelog(version, summaries):
     print 'Version {version}  ({date})\n'.format(**{
-            'version': version,
-            'date': datetime.utcnow().strftime('%B %Y'),
-        })
+        'version': version,
+        'date': datetime.utcnow().strftime('%B %Y'),
+    })
     for ticket in sorted(summaries.keys()):
         print " * [#{0}] {1}".format(ticket, summaries[ticket])
 

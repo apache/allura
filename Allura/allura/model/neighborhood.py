@@ -36,10 +36,12 @@ from .types import MarkdownCache
 
 log = logging.getLogger(__name__)
 
+
 class NeighborhoodFile(File):
+
     class __mongometa__:
         session = main_orm_session
-        indexes = [ 'neighborhood_id' ]
+        indexes = ['neighborhood_id']
 
     neighborhood_id = FieldProperty(S.ObjectId)
 
@@ -51,7 +53,9 @@ re_bgcolor_titlebar = re.compile('background\-color:([^;}]+);')
 re_color_titlebar = re.compile('color:([^;}]+);')
 re_icon_theme = re.compile('neo-icon-set-(ffffff|454545)-256x350.png')
 
+
 class Neighborhood(MappedClass):
+
     '''Provide a grouping of related projects.
 
     url_prefix - location of neighborhood (may include scheme and/or host)
@@ -60,11 +64,12 @@ class Neighborhood(MappedClass):
     class __mongometa__:
         session = main_orm_session
         name = 'neighborhood'
-        unique_indexes = [ 'url_prefix' ]
+        unique_indexes = ['url_prefix']
 
     _id = FieldProperty(S.ObjectId)
     name = FieldProperty(str)
-    url_prefix = FieldProperty(str) # e.g. http://adobe.openforge.com/ or projects/
+    # e.g. http://adobe.openforge.com/ or projects/
+    url_prefix = FieldProperty(str)
     shortname_prefix = FieldProperty(str, if_missing='')
     css = FieldProperty(str, if_missing='')
     homepage = FieldProperty(str, if_missing='')
@@ -107,7 +112,7 @@ class Neighborhood(MappedClass):
         if url.startswith('//'):
             try:
                 return request.scheme + ':' + url
-            except TypeError: # pragma no cover
+            except TypeError:  # pragma no cover
                 return 'http:' + url
         else:
             return url
@@ -154,12 +159,17 @@ class Neighborhood(MappedClass):
         return self.features['max_projects']
 
     def get_css_for_picker(self):
-        projecttitlefont = {'label': 'Project title, font', 'name': 'projecttitlefont', 'value':'', 'type': 'font'}
-        projecttitlecolor = {'label': 'Project title, color', 'name': 'projecttitlecolor', 'value':'', 'type': 'color'}
-        barontop = {'label': 'Bar on top', 'name': 'barontop', 'value': '', 'type': 'color'}
-        titlebarbackground = {'label': 'Title bar, background', 'name': 'titlebarbackground', 'value': '', 'type': 'color'}
-        titlebarcolor = {'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color',
-                         'additional': """<label>Icons theme:</label> <select name="css-addopt-icon-theme" class="add_opt">
+        projecttitlefont = {'label': 'Project title, font',
+                            'name': 'projecttitlefont', 'value': '', 'type': 'font'}
+        projecttitlecolor = {'label': 'Project title, color',
+                             'name': 'projecttitlecolor', 'value': '', 'type': 'color'}
+        barontop = {'label': 'Bar on top', 'name':
+                    'barontop', 'value': '', 'type': 'color'}
+        titlebarbackground = {'label': 'Title bar, background',
+                              'name': 'titlebarbackground', 'value': '', 'type': 'color'}
+        titlebarcolor = {
+            'label': 'Title bar, foreground', 'name': 'titlebarcolor', 'value': '', 'type': 'color',
+            'additional': """<label>Icons theme:</label> <select name="css-addopt-icon-theme" class="add_opt">
                         <option value="default">default</option>
                         <option value="dark"%(titlebarcolor_dark)s>dark</option>
                         <option value="white"%(titlebarcolor_white)s>white</option>
@@ -206,8 +216,9 @@ class Neighborhood(MappedClass):
                             elif icon_theme == "454545":
                                 titlebarcolor_white = ' selected="selected"'
 
-        titlebarcolor['additional'] = titlebarcolor['additional'] % {'titlebarcolor_dark': titlebarcolor_dark,
-                                                                     'titlebarcolor_white': titlebarcolor_white}
+        titlebarcolor[
+            'additional'] = titlebarcolor['additional'] % {'titlebarcolor_dark': titlebarcolor_dark,
+                                                           'titlebarcolor_white': titlebarcolor_white}
 
         styles_list = []
         styles_list.append(projecttitlefont)
@@ -226,32 +237,35 @@ class Neighborhood(MappedClass):
 
         css_text = ""
         if 'projecttitlefont' in css_form_dict and css_form_dict['projecttitlefont'] != '':
-           css_text += "/*projecttitlefont*/.project_title{font-family:%s;}\n" % (css_form_dict['projecttitlefont'])
+            css_text += "/*projecttitlefont*/.project_title{font-family:%s;}\n" % (
+                css_form_dict['projecttitlefont'])
 
         if 'projecttitlecolor' in css_form_dict and css_form_dict['projecttitlecolor'] != '':
-           css_text += "/*projecttitlecolor*/.project_title{color:%s;}\n" % (css_form_dict['projecttitlecolor'])
+            css_text += "/*projecttitlecolor*/.project_title{color:%s;}\n" % (
+                css_form_dict['projecttitlecolor'])
 
         if 'barontop' in css_form_dict and css_form_dict['barontop'] != '':
-           css_text += "/*barontop*/.pad h2.colored {background-color:%(bgcolor)s; background-image: none;}\n" % \
-                       {'bgcolor': css_form_dict['barontop']}
+            css_text += "/*barontop*/.pad h2.colored {background-color:%(bgcolor)s; background-image: none;}\n" % \
+                        {'bgcolor': css_form_dict['barontop']}
 
         if 'titlebarbackground' in css_form_dict and css_form_dict['titlebarbackground'] != '':
-           css_text += "/*titlebarbackground*/.pad h2.title{background-color:%(bgcolor)s; background-image: none;}\n" % \
-                       {'bgcolor': css_form_dict['titlebarbackground']}
+            css_text += "/*titlebarbackground*/.pad h2.title{background-color:%(bgcolor)s; background-image: none;}\n" % \
+                        {'bgcolor': css_form_dict['titlebarbackground']}
 
         if 'titlebarcolor' in css_form_dict and css_form_dict['titlebarcolor'] != '':
-           icon_theme = ''
-           if 'addopt-icon-theme' in css_form_dict:
-               if css_form_dict['addopt-icon-theme'] == "dark":
-                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               g.theme_href(''),
-                               'images/neo-icon-set-ffffff-256x350.png')
-               elif css_form_dict['addopt-icon-theme'] == "white":
-                  icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
-                               g.theme_href(''),
-                               'images/neo-icon-set-454545-256x350.png')
+            icon_theme = ''
+            if 'addopt-icon-theme' in css_form_dict:
+                if css_form_dict['addopt-icon-theme'] == "dark":
+                    icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                                 g.theme_href(''),
+                        'images/neo-icon-set-ffffff-256x350.png')
+                elif css_form_dict['addopt-icon-theme'] == "white":
+                    icon_theme = ".pad h2.dark small b.ico {background-image: url('%s%s');}" % (
+                                 g.theme_href(''),
+                        'images/neo-icon-set-454545-256x350.png')
 
-           css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;} %s\n" % (css_form_dict['titlebarcolor'], icon_theme)
+            css_text += "/*titlebarcolor*/.pad h2.title, .pad h2.title small a {color:%s;} %s\n" % (
+                css_form_dict['titlebarcolor'], icon_theme)
 
         return css_text
 
@@ -262,7 +276,8 @@ class Neighborhood(MappedClass):
         if not self.anchored_tools:
             return dict()
         try:
-            anchored_tools = [at.strip() for at in self.anchored_tools.split(',')]
+            anchored_tools = [at.strip()
+                              for at in self.anchored_tools.split(',')]
             return OrderedDict((tool.split(':')[0].lower(), tool.split(':')[1]) for tool in anchored_tools)
         except Exception:
             log.warning("anchored_tools isn't valid", exc_info=True)

@@ -19,7 +19,10 @@
 a specific entity (e.g. user, project, ...). To do so, the new classes should
 overwrite the methods defined here, which will be called when the related
 event happens, so that the statistics for the given entity are updated.'''
+
+
 class EventsListener:
+
     def newArtifact(self, art_type, art_datetime, project, user):
         pass
 
@@ -46,7 +49,10 @@ class EventsListener:
 
 '''This class simply allows to iterate through all the registered listeners,
 so that all of them are called to update statistics.'''
+
+
 class PostEvent:
+
     def __init__(self, listeners):
         self.listeners = listeners
 
@@ -58,7 +64,8 @@ class PostEvent:
         self.__iterate('newArtifact', art_type, art_datetime, project, user)
 
     def modifiedArtifact(self, art_type, art_datetime, project, user):
-        self.__iterate('modifiedArtifact',art_type,art_datetime,project,user)
+        self.__iterate('modifiedArtifact', art_type,
+                       art_datetime, project, user)
 
     def newUser(self, user):
         self.__iterate('newUser', user)
@@ -77,4 +84,3 @@ class PostEvent:
 
     def addUserToOrganization(self, organization):
         self.__iterate('addUserToOrganization', organization)
-

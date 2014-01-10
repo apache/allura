@@ -20,7 +20,9 @@ from ming import schema as S
 
 EVERYONE, ALL_PERMISSIONS = None, '*'
 
+
 class MarkdownCache(S.Object):
+
     def __init__(self, **kw):
         super(MarkdownCache, self).__init__(
             fields=dict(
@@ -29,14 +31,17 @@ class MarkdownCache(S.Object):
                 render_time=S.Float()),
             **kw)
 
+
 class ACE(S.Object):
+
     '''ACE - access control entry'''
     ALLOW, DENY = 'ALLOW', 'DENY'
+
     def __init__(self, permissions, **kwargs):
         if permissions is None:
-            permission=S.String()
+            permission = S.String()
         else:
-            permission=S.OneOf('*', *permissions)
+            permission = S.OneOf('*', *permissions)
         super(ACE, self).__init__(
             fields=dict(
                 access=S.OneOf(self.ALLOW, self.DENY),
@@ -67,6 +72,7 @@ class ACE(S.Object):
         return (
             ace.role_id in (role_id, EVERYONE)
             and ace.permission in (permission, ALL_PERMISSIONS))
+
 
 class ACL(S.Array):
 

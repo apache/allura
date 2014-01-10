@@ -56,26 +56,30 @@ from filesystem import File
 
 log = logging.getLogger(__name__)
 
+
 class ProjectFile(File):
+
     class __mongometa__:
         session = main_orm_session
         indexes = [('project_id', 'category')]
 
-    project_id=FieldProperty(S.ObjectId)
-    category=FieldProperty(str)
-    caption=FieldProperty(str)
-    sort=FieldProperty(int)
+    project_id = FieldProperty(S.ObjectId)
+    category = FieldProperty(str)
+    caption = FieldProperty(str)
+    sort = FieldProperty(int)
+
 
 class ProjectCategory(MappedClass):
+
     class __mongometa__:
         session = main_orm_session
-        name='project_category'
+        name = 'project_category'
 
-    _id=FieldProperty(S.ObjectId)
+    _id = FieldProperty(S.ObjectId)
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
-    name=FieldProperty(str)
-    label=FieldProperty(str, if_missing='')
-    description=FieldProperty(str, if_missing='')
+    name = FieldProperty(str)
+    label = FieldProperty(str, if_missing='')
+    description = FieldProperty(str, if_missing='')
 
     @property
     def parent_category(self):
@@ -85,13 +89,15 @@ class ProjectCategory(MappedClass):
     def subcategories(self):
         return self.query.find(dict(parent_id=self._id)).all()
 
+
 class TroveCategory(MappedClass):
+
     class __mongometa__:
         session = main_orm_session
-        name='trove_category'
-        indexes = [ 'trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath' ]
+        name = 'trove_category'
+        indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
 
-    _id=FieldProperty(S.ObjectId)
+    _id = FieldProperty(S.ObjectId)
     trove_cat_id = FieldProperty(int, if_missing=None)
     trove_parent_id = FieldProperty(int, if_missing=None)
     shortname = FieldProperty(str, if_missing='')
@@ -145,16 +151,20 @@ class TroveCategory(MappedClass):
             fullpath=self.fullpath,
         )
 
+
 class ProjectMapperExtension(MapperExtension):
+
     def after_insert(self, obj, st, sess):
         g.zarkov_event('project_create', project=obj)
 
+
 class Project(MappedClass, ActivityNode, ActivityObject):
-    _perms_base = [ 'read', 'update', 'admin', 'create']
-    _perms_init = _perms_base + [ 'register' ]
+    _perms_base = ['read', 'update', 'admin', 'create']
+    _perms_init = _perms_base + ['register']
+
     class __mongometa__:
         session = main_orm_session
-        name='project'
+        name = 'project'
         indexes = [
             'name',
             'neighborhood_id',
@@ -164,55 +174,55 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ('deleted', 'shortname', 'neighborhood_id'),
             ('neighborhood_id', 'is_nbhd_project', 'deleted')]
         unique_indexes = [('neighborhood_id', 'shortname')]
-        extensions = [ ProjectMapperExtension ]
+        extensions = [ProjectMapperExtension]
 
     # Project schema
-    _id=FieldProperty(S.ObjectId)
+    _id = FieldProperty(S.ObjectId)
     parent_id = FieldProperty(S.ObjectId, if_missing=None)
     neighborhood_id = ForeignIdProperty(Neighborhood)
     shortname = FieldProperty(str)
-    name=FieldProperty(str)
-    show_download_button=FieldProperty(S.Deprecated)
-    short_description=FieldProperty(str, if_missing='')
-    summary=FieldProperty(str, if_missing='')
-    description=FieldProperty(str, if_missing='')
+    name = FieldProperty(str)
+    show_download_button = FieldProperty(S.Deprecated)
+    short_description = FieldProperty(str, if_missing='')
+    summary = FieldProperty(str, if_missing='')
+    description = FieldProperty(str, if_missing='')
     description_cache = FieldProperty(MarkdownCache)
-    homepage_title=FieldProperty(str, if_missing='')
-    external_homepage=FieldProperty(str, if_missing='')
-    support_page=FieldProperty(str, if_missing='')
-    support_page_url=FieldProperty(str, if_missing='')
-    socialnetworks=FieldProperty([dict(socialnetwork=str,accounturl=str)])
-    removal=FieldProperty(str, if_missing='')
-    moved_to_url=FieldProperty(str, if_missing='')
+    homepage_title = FieldProperty(str, if_missing='')
+    external_homepage = FieldProperty(str, if_missing='')
+    support_page = FieldProperty(str, if_missing='')
+    support_page_url = FieldProperty(str, if_missing='')
+    socialnetworks = FieldProperty([dict(socialnetwork=str, accounturl=str)])
+    removal = FieldProperty(str, if_missing='')
+    moved_to_url = FieldProperty(str, if_missing='')
     removal_changed_date = FieldProperty(datetime, if_missing=datetime.utcnow)
-    export_controlled=FieldProperty(bool, if_missing=False)
-    export_control_type=FieldProperty(str, if_missing=None)
-    database=FieldProperty(S.Deprecated)
-    database_uri=FieldProperty(S.Deprecated)
-    is_root=FieldProperty(bool)
+    export_controlled = FieldProperty(bool, if_missing=False)
+    export_control_type = FieldProperty(str, if_missing=None)
+    database = FieldProperty(S.Deprecated)
+    database_uri = FieldProperty(S.Deprecated)
+    is_root = FieldProperty(bool)
     acl = FieldProperty(ACL(permissions=_perms_init))
-    neighborhood_invitations=FieldProperty([S.ObjectId])
+    neighborhood_invitations = FieldProperty([S.ObjectId])
     neighborhood = RelationProperty(Neighborhood)
     app_configs = RelationProperty('AppConfig')
     category_id = FieldProperty(S.ObjectId, if_missing=None)
     deleted = FieldProperty(bool, if_missing=False)
     labels = FieldProperty([str])
     last_updated = FieldProperty(datetime, if_missing=None)
-    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
+    tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
     ordinal = FieldProperty(int, if_missing=0)
     database_configured = FieldProperty(bool, if_missing=True)
     _extra_tool_status = FieldProperty([str])
-    trove_root_database=FieldProperty([S.ObjectId])
-    trove_developmentstatus=FieldProperty([S.ObjectId])
-    trove_audience=FieldProperty([S.ObjectId])
-    trove_license=FieldProperty([S.ObjectId])
-    trove_os=FieldProperty([S.ObjectId])
-    trove_language=FieldProperty([S.ObjectId])
-    trove_topic=FieldProperty([S.ObjectId])
-    trove_natlanguage=FieldProperty([S.ObjectId])
-    trove_environment=FieldProperty([S.ObjectId])
+    trove_root_database = FieldProperty([S.ObjectId])
+    trove_developmentstatus = FieldProperty([S.ObjectId])
+    trove_audience = FieldProperty([S.ObjectId])
+    trove_license = FieldProperty([S.ObjectId])
+    trove_os = FieldProperty([S.ObjectId])
+    trove_language = FieldProperty([S.ObjectId])
+    trove_topic = FieldProperty([S.ObjectId])
+    trove_natlanguage = FieldProperty([S.ObjectId])
+    trove_environment = FieldProperty([S.ObjectId])
     tracking_id = FieldProperty(str, if_missing='')
-    is_nbhd_project=FieldProperty(bool, if_missing=False)
+    is_nbhd_project = FieldProperty(bool, if_missing=False)
 
     # transient properties
     notifications_disabled = False
@@ -249,13 +259,13 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             result.append(SitemapEntry('Child Projects'))
             result += [
                 SitemapEntry(p.name or p.script_name, p.script_name)
-                for p in sps ]
+                for p in sps]
         return result
 
     def troves_by_type(self, trove_type):
         troves = getattr(self, 'trove_%s' % trove_type)
         if troves:
-            return TroveCategory.query.find({'_id':{'$in': troves}}).all()
+            return TroveCategory.query.find({'_id': {'$in': troves}}).all()
         else:
             return []
 
@@ -266,7 +276,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         troves = {}
         for attr in dir(self):
             if attr.startswith('trove_'):
-                trove_type = attr.replace('trove_','')
+                trove_type = attr.replace('trove_', '')
                 nice_name = dict(
                     natlanguage='translation',
                     root_database='database',
@@ -301,7 +311,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if url.startswith('//'):
             try:
                 return request.scheme + ':' + url
-            except TypeError: # pragma no cover
+            except TypeError:  # pragma no cover
                 return 'http:' + url
         else:
             return url
@@ -312,8 +322,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def get_screenshots(self):
         return ProjectFile.query.find(dict(
-                project_id=self._id,
-                category='screenshot')).sort('sort').all()
+            project_id=self._id,
+            category='screenshot')).sort('sort').all()
 
     @LazyProperty
     def icon(self):
@@ -327,20 +337,23 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def parent_project(self):
-        if self.is_root: return None
+        if self.is_root:
+            return None
         return self.query.get(_id=self.parent_id)
 
     def _get_private(self):
         """Return True if this project is private, else False."""
         role_anon = ProjectRole.anonymous(project=self)
         return ACE.allow(role_anon._id, 'read') not in self.acl
+
     def _set_private(self, val):
         """Set whether this project is private or not."""
         new_val = bool(val)
         role_anon = ProjectRole.anonymous(project=self)
         ace = ACE.allow(role_anon._id, 'read')
         curr_val = ace not in self.acl
-        if new_val == curr_val: return
+        if new_val == curr_val:
+            return
         if new_val:
             self.acl.remove(ace)
         else:
@@ -358,12 +371,14 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         '''
         user = None
         if self.is_user_project:
-            user = plugin.AuthenticationProvider.get(request).user_by_project_shortname(self.shortname[2:])
+            user = plugin.AuthenticationProvider.get(
+                request).user_by_project_shortname(self.shortname[2:])
         return user
 
     @LazyProperty
     def root_project(self):
-        if self.is_root: return self
+        if self.is_root:
+            return self
         return self.parent_project.root_project
 
     @LazyProperty
@@ -373,9 +388,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         projects = set([self])
         while True:
             new_projects = set(
-                self.query.find(dict(parent_id={'$in':[p._id for p in projects]})))
+                self.query.find(dict(parent_id={'$in': [p._id for p in projects]})))
             new_projects.update(projects)
-            if new_projects == projects: break
+            if new_projects == projects:
+                break
             projects = new_projects
         return projects
 
@@ -395,17 +411,17 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def menus(cls, projects):
         '''Return a dict[project_id] = sitemap of sitemaps, efficiently'''
         from allura.app import SitemapEntry
-        pids = [ p._id for p in projects ]
+        pids = [p._id for p in projects]
         project_index = dict((p._id, p) for p in projects)
         entry_index = dict((pid, []) for pid in pids)
         q_subprojects = cls.query.find(dict(
-                parent_id={'$in': pids},
-                deleted=False))
+            parent_id={'$in': pids},
+            deleted=False))
         for sub in q_subprojects:
             entry_index[sub.parent_id].append(
                 dict(ordinal=sub.ordinal, entry=SitemapEntry(sub.name, sub.url())))
         q_app_configs = AppConfig.query.find(dict(
-                project_id={'$in': pids}))
+            project_id={'$in': pids}))
         for ac in q_app_configs:
             App = ac.load()
             project = project_index[ac.project_id]
@@ -413,13 +429,14 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             if app.is_visible_to(c.user):
                 for sm in app.main_menu():
                     entry = sm.bind_app(app)
-                    entry.ui_icon='tool-%s' % ac.tool_name
+                    entry.ui_icon = 'tool-%s' % ac.tool_name
                     ordinal = ac.options.get('ordinal', 0)
-                    entry_index[ac.project_id].append({'ordinal':ordinal,'entry':entry})
+                    entry_index[ac.project_id].append(
+                        {'ordinal': ordinal, 'entry': entry})
 
         sitemaps = dict((pid, []) for pid in pids)
         for pid, entries in entry_index.iteritems():
-            entries.sort(key=lambda e:e['ordinal'])
+            entries.sort(key=lambda e: e['ordinal'])
             sitemap = sitemaps[pid]
             for e in entries:
                 sitemap.append(e['entry'])
@@ -433,7 +450,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         for icon in ProjectFile.query.find(dict(
                 project_id={'$in': result.keys()},
                 category='icon')):
-            result[icon.project_id] = project_index[icon.project_id].url() + 'icon'
+            result[icon.project_id] = project_index[
+                icon.project_id].url() + 'icon'
         return result
 
     @classmethod
@@ -467,7 +485,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             ordinal = sub.ordinal + delta_ordinal
             if ordinal > max_ordinal:
                 max_ordinal = ordinal
-            entries.append({'ordinal':sub.ordinal + delta_ordinal,'entry':SitemapEntry(sub.name, sub.url())})
+            entries.append({'ordinal': sub.ordinal + delta_ordinal,
+                           'entry': SitemapEntry(sub.name, sub.url())})
         for ac in self.app_configs + [a.config for a in new_tools]:
             if excluded_tools and ac.tool_name in excluded_tools:
                 continue
@@ -476,7 +495,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 App = ac.load()
             # If so, we don't want it listed
             except KeyError as e:
-                log.exception('AppConfig %s references invalid tool %s', ac._id, ac.tool_name)
+                log.exception('AppConfig %s references invalid tool %s',
+                              ac._id, ac.tool_name)
                 continue
             app = App(self, ac)
             if app.is_visible_to(c.user):
@@ -485,19 +505,23 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     entry.tool_name = ac.tool_name
                     entry.ui_icon = 'tool-%s' % entry.tool_name.lower()
                     if not self.is_nbhd_project and (entry.tool_name.lower() in anchored_tools.keys()):
-                        ordinal = anchored_tools.keys().index(entry.tool_name.lower())
+                        ordinal = anchored_tools.keys().index(
+                            entry.tool_name.lower())
                     elif ac.tool_name == 'admin':
                         ordinal = 100
                     else:
-                        ordinal = int(ac.options.get('ordinal', 0)) + delta_ordinal
+                        ordinal = int(ac.options.get('ordinal', 0)) + \
+                            delta_ordinal
                     if self.is_nbhd_project and entry.label == 'Admin':
                         entry.matching_urls.append('%s_admin/' % self.url())
                     if ordinal > max_ordinal:
                         max_ordinal = ordinal
-                    entries.append({'ordinal':ordinal,'entry':entry})
+                    entries.append({'ordinal': ordinal, 'entry': entry})
 
         if self == self.neighborhood.neighborhood_project and h.has_access(self.neighborhood, 'admin'):
-            entries.append({'ordinal': max_ordinal + 1,'entry':SitemapEntry('Moderate', "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
+            entries.append(
+                {'ordinal': max_ordinal + 1, 'entry': SitemapEntry('Moderate',
+                                                                   "%s_moderate/" % self.neighborhood.url(), ui_icon="tool-admin")})
             max_ordinal += 1
 
         entries = sorted(entries, key=lambda e: e['ordinal'])
@@ -512,7 +536,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             for tool, label in anchored_tools.iteritems():
                 if (tool not in installed_tools) and (self.app_instance(tool) is None):
                     try:
-                        new_tools.append(self.install_app(tool, tool, label, i))
+                        new_tools.append(
+                            self.install_app(tool, tool, label, i))
                     except Exception:
                         log.error('%s is not available' % tool, exc_info=True)
                 i += 1
@@ -528,7 +553,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         grouped_nav = OrderedDict()
         # count how many tools of each type we have
         counts = Counter([e.tool_name.lower() for e in sitemap if e.tool_name])
-        grouping_threshold = self.get_tool_data('allura', 'grouping_threshold', 1)
+        grouping_threshold = self.get_tool_data(
+            'allura', 'grouping_threshold', 1)
         for e in sitemap:
             # if it's not a tool, add to navbar and continue
             if not e.tool_name:
@@ -543,7 +569,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 if tool_name not in grouped_nav:
                     child = deepcopy(e)
                     # change label to be the tool name (type)
-                    e.label = g.entry_points['tool'][tool_name].tool_label + u' \u25be'
+                    e.label = g.entry_points['tool'][
+                        tool_name].tool_label + u' \u25be'
                     # add tool url to list of urls that will match this nav entry
                     # have to do this before changing the url to the list page
                     e.matching_urls.append(e.url)
@@ -552,7 +579,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     e.children.append(child)
                     grouped_nav[tool_name] = e
                 else:
-                    # add tool url to list of urls that will match this nav entry
+                    # add tool url to list of urls that will match this nav
+                    # entry
                     grouped_nav[tool_name].matching_urls.append(e.url)
                     if len(grouped_nav[tool_name].children) < 10:
                         grouped_nav[tool_name].children.append(e)
@@ -571,7 +599,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def subprojects(self):
-        q = self.query.find(dict(shortname={'$gt':self.shortname},
+        q = self.query.find(dict(shortname={'$gt': self.shortname},
                                  neighborhood_id=self.neighborhood._id)).sort('shortname')
         for project in q:
             if project.shortname.startswith(self.shortname + '/'):
@@ -590,7 +618,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def named_roles(self):
-        roles_ids = [r['_id'] for r in g.credentials.project_roles(self.root_project._id).named]
+        roles_ids = [r['_id']
+                     for r in g.credentials.project_roles(self.root_project._id).named]
         roles = sorted(
             ProjectRole.query.find({'_id': {'$in': roles_ids}}),
             key=lambda r: r.name.lower())
@@ -604,10 +633,12 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             except fe.Invalid as e:
                 raise exceptions.ToolError(str(e))
         if ordinal is None:
-            ordinal = int(self.ordered_mounts(include_hidden=True)[-1]['ordinal']) + 1
+            ordinal = int(self.ordered_mounts(include_hidden=True)
+                          [-1]['ordinal']) + 1
         options = App.default_options()
         options['mount_point'] = mount_point
-        options['mount_label'] = mount_label or App.default_mount_label or mount_point
+        options[
+            'mount_label'] = mount_label or App.default_mount_label or mount_point
         options['ordinal'] = int(ordinal)
         options.update(override_options)
         cfg = AppConfig(
@@ -622,7 +653,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def uninstall_app(self, mount_point):
         app = self.app_instance(mount_point)
-        if app is None: return
+        if app is None:
+            return
         if self.support_page == app.config.options.mount_point:
             self.support_page = ''
         with h.push_config(c, project=self, app=app):
@@ -636,15 +668,15 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if app_config is None:
             return None
         App = app_config.load()
-        if App is None: # pragma no cover
+        if App is None:  # pragma no cover
             return None
         else:
             return App(self, app_config)
 
     def app_config(self, mount_point):
         return AppConfig.query.find({
-                'project_id':self._id,
-                'options.mount_point':mount_point}).first()
+            'project_id': self._id,
+            'options.mount_point': mount_point}).first()
 
     def app_config_by_tool_type(self, tool_type):
         for ac in self.app_configs:
@@ -654,7 +686,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     def new_subproject(self, name, install_apps=True, user=None, project_name=None):
         provider = plugin.ProjectRegistrationProvider.get()
         try:
-            provider.shortname_validator.to_python(name, check_allowed=False, neighborhood=self.neighborhood)
+            provider.shortname_validator.to_python(
+                name, check_allowed=False, neighborhood=self.neighborhood)
         except exceptions.Invalid as e:
             raise exceptions.ToolError, 'Mount point "%s" is invalid' % name
         return provider.register_subproject(self, name, user or c.user, install_apps, project_name=project_name)
@@ -668,7 +701,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         self.install_anchored_tools()
 
         for sub in self.direct_subprojects:
-            result.append({'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
+            result.append(
+                {'ordinal': int(sub.ordinal + i), 'sub': sub, 'rank': 1})
         for ac in self.app_configs:
             App = g.entry_points['tool'].get(ac.tool_name)
             if include_hidden or App and not App.hidden:
@@ -676,8 +710,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                     ordinal = anchored_tools.keys().index(ac.tool_name.lower())
                 else:
                     ordinal = int(ac.options.get('ordinal', 0)) + i
-                rank = 0 if ac.options.get('mount_point', None) == 'home' else 1
-                result.append({'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
+                rank = 0 if ac.options.get(
+                    'mount_point', None) == 'home' else 1
+                result.append(
+                    {'ordinal': int(ordinal), 'ac': ac, 'rank': rank})
         return sorted(result, key=lambda e: (e['ordinal'], e['rank']))
 
     def first_mount_visible(self, user):
@@ -698,7 +734,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         project.'''
         ordered_mounts = self.ordered_mounts(include_hidden=include_hidden)
         return int(ordered_mounts[-1]['ordinal']) + 1 \
-               if ordered_mounts else 0
+            if ordered_mounts else 0
 
     def delete(self):
         # Cascade to subprojects
@@ -710,18 +746,19 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         MappedClass.delete(self)
 
     def breadcrumbs(self):
-        entry = ( self.name, self.url() )
+        entry = (self.name, self.url())
         if self.parent_project:
-            return self.parent_project.breadcrumbs() + [ entry ]
+            return self.parent_project.breadcrumbs() + [entry]
         else:
-            return [ (self.neighborhood.name, self.neighborhood.url())] + [ entry ]
+            return [(self.neighborhood.name, self.neighborhood.url())] + [entry]
 
     def users(self):
         '''Find all the users who have named roles for this project'''
         named_roles = security.RoleCache(
             g.credentials,
             g.credentials.project_roles(project_id=self.root_project._id).named)
-        uids = [uid for uid in named_roles.userids_that_reach if uid is not None]
+        uids = [
+            uid for uid in named_roles.userids_that_reach if uid is not None]
         return list(User.query.find({'_id': {'$in': uids}, 'disabled': False}))
 
     def users_with_role(self, *role_names):
@@ -746,26 +783,29 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         u = User.by_username(username)
         if not u:
             return None
-        named_roles = g.credentials.project_roles(project_id=self.root_project._id).named
+        named_roles = g.credentials.project_roles(
+            project_id=self.root_project._id).named
         for r in named_roles.roles_that_reach:
-            if r.get('user_id') == u._id: return u
+            if r.get('user_id') == u._id:
+                return u
         return None
 
     def configure_project(
-        self,
-        users=None, apps=None,
-        is_user_project=False,
-        is_private_project=False):
+            self,
+            users=None, apps=None,
+            is_user_project=False,
+            is_private_project=False):
         from allura import model as M
 
         self.notifications_disabled = True
-        if users is None: users = [ c.user ]
+        if users is None:
+            users = [c.user]
         if apps is None:
             apps = []
             if is_user_project:
                 apps += [('Wiki', 'wiki', 'Wiki'),
-                        ('profile', 'profile', 'Profile'),
-                       ]
+                         ('profile', 'profile', 'Profile'),
+                         ]
             apps += [
                 ('admin', 'admin', 'Admin'),
                 ('search', 'search', 'Search'),
@@ -774,25 +814,30 @@ class Project(MappedClass, ActivityNode, ActivityObject):
                 apps.append(('activity', 'activity', 'Activity'))
         with h.push_config(c, project=self, user=users[0]):
             # Install default named roles (#78)
-            root_project_id=self.root_project._id
-            role_admin = M.ProjectRole.upsert(name='Admin', project_id=root_project_id)
-            role_developer = M.ProjectRole.upsert(name='Developer', project_id=root_project_id)
-            role_member = M.ProjectRole.upsert(name='Member', project_id=root_project_id)
-            role_auth = M.ProjectRole.upsert(name='*authenticated', project_id=root_project_id)
-            role_anon = M.ProjectRole.upsert(name='*anonymous', project_id=root_project_id)
+            root_project_id = self.root_project._id
+            role_admin = M.ProjectRole.upsert(
+                name='Admin', project_id=root_project_id)
+            role_developer = M.ProjectRole.upsert(
+                name='Developer', project_id=root_project_id)
+            role_member = M.ProjectRole.upsert(
+                name='Member', project_id=root_project_id)
+            role_auth = M.ProjectRole.upsert(
+                name='*authenticated', project_id=root_project_id)
+            role_anon = M.ProjectRole.upsert(
+                name='*anonymous', project_id=root_project_id)
             # Setup subroles
-            role_admin.roles = [ role_developer._id ]
-            role_developer.roles = [ role_member._id ]
+            role_admin.roles = [role_developer._id]
+            role_developer.roles = [role_member._id]
             self.acl = [
                 ACE.allow(role_developer._id, 'read'),
-                ACE.allow(role_member._id, 'read') ]
+                ACE.allow(role_member._id, 'read')]
             self.acl += [
                 M.ACE.allow(role_admin._id, perm)
-                for perm in self.permissions ]
+                for perm in self.permissions]
             self.private = is_private_project
             for user in users:
                 pr = ProjectRole.by_user(user, project=self, upsert=True)
-                pr.roles = [ role_admin._id ]
+                pr.roles = [role_admin._id]
             session(self).flush(self)
             # Setup apps
             for i, (ep_name, mount_point, label) in enumerate(apps):
@@ -818,7 +863,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     def social_account(self, socialnetwork):
         try:
-            account = (sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
+            account = (
+                sn for sn in self.socialnetworks if sn.socialnetwork == socialnetwork).next()
         except StopIteration:
             return None
         else:
@@ -832,7 +878,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             self.socialnetworks.append(dict(
                 socialnetwork=socialnetwork,
                 accounturl=accounturl
-                ))
+            ))
 
     def bulk_export_path(self):
         shortname = self.shortname
@@ -843,9 +889,9 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         elif not self.is_root:
             shortname = self.shortname.split('/')[0]
         return config['bulk_export_path'].format(
-                nbhd=self.neighborhood.url_prefix.strip('/'),
-                project=shortname,
-                c=c,
+            nbhd=self.neighborhood.url_prefix.strip('/'),
+            project=shortname,
+            c=c,
         )
 
     def bulk_export_filename(self):
@@ -878,7 +924,6 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         else:
             return 'busy'
 
-
     def __json__(self):
         return dict(
             shortname=self.shortname,
@@ -894,18 +939,23 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             moved_to_url=self.moved_to_url,
             preferred_support_tool=self.support_page,
             preferred_support_url=self.support_page_url,
-            developers=[u.__json__() for u in self.users_with_role('Developer')],
+            developers=[u.__json__()
+                        for u in self.users_with_role('Developer')],
             tools=[dict(name=t.tool_name, mount_point=t.options.mount_point, label=t.options.mount_label)
                    for t in self.app_configs if h.has_access(t, 'read')],
             labels=list(self.labels),
             categories={
-                n: [t.__json__() for t in ts] for n, ts in self.all_troves().items()},
+                n: [t.__json__(
+                ) for t in ts] for n, ts in self.all_troves().items()},
             icon_url=h.absurl(self.url() + 'icon') if self.icon else None,
-            screenshots = [
+            screenshots=[
                 dict(
-                    url = h.absurl(self.url() + 'screenshot/' + urllib.quote(ss.filename)),
-                    thumbnail_url = h.absurl(self.url() + 'screenshot/' + urllib.quote(ss.filename) + '/thumb'),
-                    caption = ss.caption,
+                    url=h.absurl(self.url() + 'screenshot/' +
+                                 urllib.quote(ss.filename)),
+                    thumbnail_url=h.absurl(
+                        self.url(
+                        ) + 'screenshot/' + urllib.quote(ss.filename) + '/thumb'),
+                    caption=ss.caption,
                 )
                 for ss in self.get_screenshots()
             ]
@@ -913,6 +963,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
 
 class AppConfig(MappedClass):
+
     """
     Configuration information for an instantiated :class:`Application <allura.app.Application>`
     in a project
@@ -923,22 +974,22 @@ class AppConfig(MappedClass):
 
     class __mongometa__:
         session = project_orm_session
-        name='config'
+        name = 'config'
         indexes = [
             'project_id',
             'options.import_id',
             ('options.mount_point', 'project_id')]
 
     # AppConfig schema
-    _id=FieldProperty(S.ObjectId)
-    project_id=ForeignIdProperty(Project)
-    discussion_id=ForeignIdProperty('Discussion')
-    tool_name=FieldProperty(str)
-    version=FieldProperty(str)
-    options=FieldProperty(None)
+    _id = FieldProperty(S.ObjectId)
+    project_id = ForeignIdProperty(Project)
+    discussion_id = ForeignIdProperty('Discussion')
+    tool_name = FieldProperty(str)
+    version = FieldProperty(str)
+    options = FieldProperty(None)
     project = RelationProperty(Project, via='project_id')
     discussion = RelationProperty('Discussion', via='discussion_id')
-    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
+    tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
 
     acl = FieldProperty(ACL())
 
@@ -975,10 +1026,11 @@ class AppConfig(MappedClass):
 
     def breadcrumbs(self):
         return self.project.breadcrumbs() + [
-            (self.options.mount_point, self.url()) ]
+            (self.options.mount_point, self.url())]
 
     def __json__(self):
         return dict(
             _id=self._id,
-            options=self.options._deinstrument(),  # strip away the ming instrumentation
+            # strip away the ming instrumentation
+            options=self.options._deinstrument(),
         )

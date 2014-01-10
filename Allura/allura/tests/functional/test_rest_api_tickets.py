@@ -30,8 +30,10 @@ class TestApiTicket(TestRestApiBase):
         if not expire:
             expire = timedelta(days=1)
         test_admin = M.User.query.get(username='test-admin')
-        api_ticket = M.ApiTicket(user_id=test_admin._id, capabilities={'import': ['Projects','test']},
-                                 expires=datetime.utcnow() + expire)
+        api_ticket = M.ApiTicket(
+            user_id=test_admin._id, capabilities={
+                'import': ['Projects', 'test']},
+            expires=datetime.utcnow() + expire)
         session(api_ticket).flush()
         self.set_api_token(api_ticket)
 
@@ -47,7 +49,8 @@ class TestApiTicket(TestRestApiBase):
 
     def test_bad_timestamp(self):
         self.set_api_ticket()
-        r = self.api_post('/rest/p/test/wiki/', api_timestamp=(datetime.utcnow() + timedelta(days=1)).isoformat())
+        r = self.api_post('/rest/p/test/wiki/',
+                          api_timestamp=(datetime.utcnow() + timedelta(days=1)).isoformat())
         assert r.status_int == 403
 
     def test_bad_path(self):

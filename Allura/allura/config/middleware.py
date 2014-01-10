@@ -59,6 +59,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
     root = app_conf.get('override_root', 'root')
     return _make_core_app(root, global_conf, full_stack, **app_conf)
 
+
 def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     """
     Set allura up with the settings found in the PasteDeploy configuration
@@ -124,7 +125,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
                                " the zarkov.host setting in your ini file."
 
     app = tg.TGApp()
-    if asbool(config.get('auth.method', 'local')=='sfx'):
+    if asbool(config.get('auth.method', 'local') == 'sfx'):
         import sfx.middleware
         d = h.config_with_prefix(config, 'auth.')
         d.update(h.config_with_prefix(config, 'sfx.'))
@@ -146,7 +147,7 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     if (asbool(app_conf.get('auth.method', 'local') == 'sfx')
             and config.get('override_root') != 'task'):
         app = SSLMiddleware(app, app_conf.get('no_redirect.pattern'),
-                app_conf.get('force_ssl.pattern'))
+                            app_conf.get('force_ssl.pattern'))
     # Setup resource manager, widget context SOP
     app = ew.WidgetMiddleware(
         app,
@@ -166,20 +167,24 @@ def _make_core_app(root, global_conf, full_stack=True, **app_conf):
     # "task" wsgi would get a 2nd request to /error/document if we used this middleware
     if config.get('override_root') != 'task':
         # Converts exceptions to HTTP errors, shows traceback in debug mode
-        tg.error.footer_html = '<!-- %s %s -->'  # don't use TG footer with extra CSS & images that take time to load
-        app = tg.error.ErrorHandler(app, global_conf, **config['pylons.errorware'])
+        # don't use TG footer with extra CSS & images that take time to load
+        tg.error.footer_html = '<!-- %s %s -->'
+        app = tg.error.ErrorHandler(
+            app, global_conf, **config['pylons.errorware'])
 
         # Make sure that the wsgi.scheme is set appropriately when we
         # have the funky HTTP_X_SFINC_SSL  environ var
-        if asbool(app_conf.get('auth.method', 'local')=='sfx'):
+        if asbool(app_conf.get('auth.method', 'local') == 'sfx'):
             app = set_scheme_middleware(app)
-        
+
         # Redirect some status codes to /error/document
         if asbool(config['debug']):
             app = StatusCodeRedirect(app, base_config.handle_status_codes)
         else:
-            app = StatusCodeRedirect(app, base_config.handle_status_codes + [500])
+            app = StatusCodeRedirect(
+                app, base_config.handle_status_codes + [500])
     return app
+
 
 def set_scheme_middleware(app):
     def SchemeMiddleware(environ, start_response):
@@ -188,17 +193,21 @@ def set_scheme_middleware(app):
         return app(environ, start_response)
     return SchemeMiddleware
 
+
 def allura_globals_middleware(app):
     def AlluraGlobalsMiddleware(environ, start_response):
         import allura.lib.security
         import allura.lib.app_globals
         registry = environ['paste.registry']
-        registry.register(allura.credentials, allura.lib.security.Credentials())
+        registry.register(allura.credentials,
+                          allura.lib.security.Credentials())
         return app(environ, start_response)
     return AlluraGlobalsMiddleware
 
+
 def get_tg_vars(context):
-    import pylons, tg
+    import pylons
+    import tg
     from allura.lib import helpers as h
     from urllib import quote, quote_plus
     context.setdefault('g', pylons.app_globals)
@@ -208,8 +217,8 @@ def get_tg_vars(context):
     context.setdefault('response', pylons.response)
     context.setdefault('url', pylons.url)
     context.setdefault('tg', dict(
-            config=tg.config,
-            flash_obj=tg.flash,
-            quote=quote,
-            quote_plus=quote_plus,
-            url=tg.url))
+        config=tg.config,
+        flash_obj=tg.flash,
+        quote=quote,
+        quote_plus=quote_plus,
+        url=tg.url))

@@ -44,6 +44,7 @@ log = logging.getLogger(__name__)
 
 
 class Discussion(Artifact, ActivityObject):
+
     class __mongometa__:
         name = 'discussion'
     type_s = 'Discussion'
@@ -95,9 +96,9 @@ class Discussion(Artifact, ActivityObject):
     @LazyProperty
     def last_post(self):
         q = self.post_class().query.find(dict(
-                discussion_id=self._id,
-                status='ok'
-                ))\
+            discussion_id=self._id,
+            status='ok'
+        ))\
             .sort('timestamp', pymongo.DESCENDING)\
             .limit(1)
         return q.first()
@@ -132,6 +133,7 @@ class Discussion(Artifact, ActivityObject):
 
 
 class Thread(Artifact, ActivityObject):
+
     class __mongometa__:
         name = 'thread'
         indexes = [
@@ -141,7 +143,7 @@ class Thread(Artifact, ActivityObject):
              ('last_post_date', pymongo.DESCENDING),
              ('mod_date', pymongo.DESCENDING)),
             ('discussion_id',),
-            ]
+        ]
     type_s = 'Thread'
 
     _id = FieldProperty(str, if_missing=lambda: h.nonce(8))
@@ -174,7 +176,7 @@ class Thread(Artifact, ActivityObject):
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
                    for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
-                ]
+                   ]
         )
 
     @property
@@ -193,7 +195,8 @@ class Thread(Artifact, ActivityObject):
                 session(thread).flush(thread)
                 return thread
             except DuplicateKeyError as err:
-                log.warning('Got DuplicateKeyError: attempt #%s, trying again. %s', i, err)
+                log.warning(
+                    'Got DuplicateKeyError: attempt #%s, trying again. %s', i, err)
                 if i == 4:
                     raise
                 session(thread).expunge(thread)
@@ -221,9 +224,9 @@ class Thread(Artifact, ActivityObject):
     @property
     def post_count(self):
         return Post.query.find(dict(
-                discussion_id=self.discussion_id,
-                thread_id=self._id,
-                status={'$in': ['ok', 'pending']})).count()
+            discussion_id=self.discussion_id,
+            thread_id=self._id,
+            status={'$in': ['ok', 'pending']})).count()
 
     def primary(self):
         if self.ref is None:
@@ -241,7 +244,8 @@ class Thread(Artifact, ActivityObject):
         if self.app.tool_label.lower() == 'tickets':
             link = p.url_paginated()
         if self.ref:
-            Feed.post(self.primary(), title=p.subject, description=p.text, link=link)
+            Feed.post(self.primary(), title=p.subject,
+                      description=p.text, link=link)
         return p
 
     def is_spam(self, post):
@@ -285,25 +289,25 @@ class Thread(Artifact, ActivityObject):
         ''' Notify moderators that a post needs approval [#2963] '''
         artifact = self.artifact or self
         subject = '[%s:%s] Moderation action required' % (
-                c.project.shortname, c.app.config.options.mount_point)
+            c.project.shortname, c.app.config.options.mount_point)
         author = post.author()
         url = self.discussion_class().query.get(_id=self.discussion_id).url()
         text = ('The following submission requires approval at %s before '
                 'it can be approved for posting:\n\n%s'
                 % (h.absurl(url + 'moderate'), post.text))
         n = Notification(
-                ref_id=artifact.index_id(),
-                topic='message',
-                link=artifact.url(),
-                _id=artifact.url() + post._id,
-                from_address=str(author._id) if author != User.anonymous()
-                                             else None,
-                reply_to_address=u'noreply@in.sf.net',
-                subject=subject,
-                text=text,
-                in_reply_to=post.parent_id,
-                author_id=author._id,
-                pubdate=datetime.utcnow())
+            ref_id=artifact.index_id(),
+            topic='message',
+            link=artifact.url(),
+            _id=artifact.url() + post._id,
+            from_address=str(author._id) if author != User.anonymous()
+            else None,
+            reply_to_address=u'noreply@in.sf.net',
+            subject=subject,
+            text=text,
+            in_reply_to=post.parent_id,
+            author_id=author._id,
+            pubdate=datetime.utcnow())
         users = self.app_config.project.users()
         for u in users:
             if (has_access(self, 'moderate', u)
@@ -318,7 +322,7 @@ class Thread(Artifact, ActivityObject):
     @property
     def last_post(self):
         q = self.post_class().query.find(dict(
-                thread_id=self._id)).sort('timestamp', pymongo.DESCENDING)
+            thread_id=self._id)).sort('timestamp', pymongo.DESCENDING)
         return q.first()
 
     def create_post_threads(self, posts):
@@ -337,10 +341,10 @@ class Thread(Artifact, ActivityObject):
                     timestamp=None, style='threaded', status=None):
         if timestamp:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
-                    status={'$in': ['ok', 'pending']}, timestamp=timestamp)
+                         status={'$in': ['ok', 'pending']}, timestamp=timestamp)
         else:
             terms = dict(discussion_id=self.discussion_id, thread_id=self._id,
-                    status={'$in': ['ok', 'pending']})
+                         status={'$in': ['ok', 'pending']})
         if status:
             terms['status'] = status
         q = self.post_class().query.find(terms)
@@ -371,10 +375,10 @@ class Thread(Artifact, ActivityObject):
     def index(self):
         result = Artifact.index(self)
         result.update(
-           title=self.subject or '(no subject)',
-           name_s=self.subject,
-           views_i=self.num_views,
-           text=self.subject)
+            title=self.subject or '(no subject)',
+            name_s=self.subject,
+            views_i=self.num_views,
+            text=self.subject)
         return result
 
     def _get_subscription(self):
@@ -400,6 +404,7 @@ class Thread(Artifact, ActivityObject):
 
 
 class PostHistory(Snapshot):
+
     class __mongometa__:
         name = 'post_history'
 
@@ -434,11 +439,13 @@ class PostHistory(Snapshot):
 
 
 class Post(Message, VersionedArtifact, ActivityObject):
+
     class __mongometa__:
         name = 'post'
         history_class = PostHistory
         indexes = [
-            ('discussion_id', 'status', 'timestamp'),  # used in general lookups, last_post, etc
+            # used in general lookups, last_post, etc
+            ('discussion_id', 'status', 'timestamp'),
             'thread_id'
         ]
     type_s = 'Post'
@@ -488,10 +495,10 @@ class Post(Message, VersionedArtifact, ActivityObject):
         artifact_access = True
         if self.thread.artifact:
             artifact_access = security.has_access(self.thread.artifact, perm,
-                    user, self.thread.artifact.project)
+                                                  user, self.thread.artifact.project)
 
         return artifact_access and security.has_access(self, perm, user,
-                self.project)
+                                                       self.project)
 
     @property
     def activity_extras(self):
@@ -500,7 +507,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         # strip all tags, and truncate near the 80 char mark
         LEN = 80
         summary = jinja2.Markup.escape(
-                g.markdown.cached_convert(self, 'text')).striptags()
+            g.markdown.cached_convert(self, 'text')).striptags()
         if len(summary) > LEN:
             split = max(summary.find(' ', LEN), LEN)
             summary = summary[:split] + '...'
@@ -595,6 +602,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             def find_i(posts):
                 '''Find the index number of this post in the display order'''
                 q = []
+
                 def traverse(posts):
                     for p in posts:
                         if p['post']._id == self._id:
@@ -616,7 +624,6 @@ class Post(Message, VersionedArtifact, ActivityObject):
         if page == 0:
             return '%s?limit=%s#%s' % (url, limit, slug)
         return '%s?limit=%s&page=%s#%s' % (url, limit, page, slug)
-
 
     def shorthand_id(self):
         if self.thread:
@@ -643,12 +650,13 @@ class Post(Message, VersionedArtifact, ActivityObject):
             return
         self.status = 'ok'
         author = self.author()
-        author_role = ProjectRole.by_user(author, project=self.project, upsert=True)
+        author_role = ProjectRole.by_user(
+            author, project=self.project, upsert=True)
         security.simple_grant(
             self.acl, author_role._id, 'moderate')
         self.commit()
         if (c.app.config.options.get('PostingPolicy') == 'ApproveOnceModerated'
-            and author._id != None):
+                and author._id != None):
             security.simple_grant(
                 self.acl, author_role._id, 'unmoderated_post')
         if notify:
@@ -663,7 +671,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             artifact.update_stats()
         if self.text:
             g.director.create_activity(author, 'posted', self, target=artifact,
-                    related_nodes=[self.app_config.project])
+                                       related_nodes=[self.app_config.project])
 
     def notify(self, file_info=None, check_dup=False):
         if self.project.notifications_disabled:
@@ -674,7 +682,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
         if not n:
             n = Notification.post(artifact, 'message', post=self,
                                   file_info=file_info)
-        if not n: return
+        if not n:
+            return
         if (hasattr(artifact, "monitoring_email")
                 and artifact.monitoring_email):
             if hasattr(artifact, 'notify_post'):

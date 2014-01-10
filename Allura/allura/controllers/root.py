@@ -18,7 +18,9 @@
 #       under the License.
 
 """Main Controller"""
-import logging, string, os
+import logging
+import string
+import os
 from datetime import datetime
 from collections import defaultdict
 
@@ -54,10 +56,13 @@ log = logging.getLogger(__name__)
 
 TGFlash.static_template = '''$('#messages').notify('%(message)s', {status: '%(status)s'});'''
 
+
 class W:
     project_summary = plw.ProjectSummary()
 
+
 class RootController(WsgiDispatchController):
+
     """
     The root controller for the allura application.
 
@@ -78,8 +83,8 @@ class RootController(WsgiDispatchController):
     nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
-    if config.get('trovecategories.enableediting', 'false')=='true':
-        categories=TroveCategoryController()
+    if config.get('trovecategories.enableediting', 'false') == 'true':
+        categories = TroveCategoryController()
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
@@ -93,9 +98,10 @@ class RootController(WsgiDispatchController):
     def _setup_request(self):
         c.project = c.app = None
         c.memoize_cache = {}
-        c.user = plugin.AuthenticationProvider.get(request).authenticate_request()
+        c.user = plugin.AuthenticationProvider.get(
+            request).authenticate_request()
         assert c.user is not None, ('c.user should always be at least User.anonymous(). '
-            'Did you run `paster setup-app` to create the database?')
+                                    'Did you run `paster setup-app` to create the database?')
 
     def _cleanup_request(self):
         pass
@@ -105,8 +111,9 @@ class RootController(WsgiDispatchController):
     def index(self, **kw):
         """Handle the front-page."""
         neighborhoods = M.Neighborhood.query.find().sort('name')
-        categories = M.ProjectCategory.query.find({'parent_id':None}).sort('name').all()
+        categories = M.ProjectCategory.query.find(
+            {'parent_id': None}).sort('name').all()
         c.custom_sidebar_menu = [
-            SitemapEntry(cat.label, '/browse/'+cat.name) for cat in categories
+            SitemapEntry(cat.label, '/browse/' + cat.name) for cat in categories
         ]
-        return dict(neighborhoods=neighborhoods,title="All Neighborhoods")
+        return dict(neighborhoods=neighborhoods, title="All Neighborhoods")

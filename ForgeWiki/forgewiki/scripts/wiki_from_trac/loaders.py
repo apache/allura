@@ -41,13 +41,15 @@ def load_data(doc_file_name=None, optparser=None, options=None):
                 if not isinstance(k, basestring) or not isinstance(v, basestring):
                     raise ValueError
         except ValueError:
-            optparser.error('--user-map should specify JSON file with format {"original_user": "sf_user", ...}')
+            optparser.error(
+                '--user-map should specify JSON file with format {"original_user": "sf_user", ...}')
         finally:
             f.close()
 
     import_options['user_map'] = user_map
 
-    cli = AlluraImportApiClient(options.base_url, options.api_key, options.secret_key, options.verbose)
+    cli = AlluraImportApiClient(
+        options.base_url, options.api_key, options.secret_key, options.verbose)
     doc_txt = open(doc_file_name).read()
 
     if options.wiki:

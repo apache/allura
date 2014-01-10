@@ -30,6 +30,7 @@ from allura.lib.widgets import form_fields as ffw
 
 from bson import ObjectId
 
+
 class CardField(ew._Jinja2Widget):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/card_field.html'
     sort_key = None
@@ -74,8 +75,10 @@ width: 148px;
     });
 });''')
 
+
 class GroupCard(CardField):
-    new_item=ew.InputField(field_type='text', attrs=dict(placeholder='type a username'))
+    new_item = ew.InputField(
+        field_type='text', attrs=dict(placeholder='type a username'))
     sort_key = 'user.username'
 
     def item_display(self, item):
@@ -87,6 +90,7 @@ class GroupCard(CardField):
     def role_name(self, role_id):
         return M.ProjectRole.query.get(_id=ObjectId(role_id)).name
 
+
 class _GroupSelect(ew.SingleSelectField):
 
     def options(self):
@@ -94,10 +98,11 @@ class _GroupSelect(ew.SingleSelectField):
         anon_role = M.ProjectRole.anonymous()
         options = [
             ew.Option(py_value=role._id, label=role.name)
-            for role in c.project.named_roles ]
+            for role in c.project.named_roles]
         options.append(ew.Option(py_value=auth_role._id, label=auth_role.name))
         options.append(ew.Option(py_value=anon_role._id, label=anon_role.name))
         return options
+
 
 class PermissionCard(CardField):
     new_item = _GroupSelect()
@@ -111,7 +116,7 @@ class PermissionCard(CardField):
 
 
 class GroupSettings(ff.CsrfForm):
-    submit_text=None
+    submit_text = None
 
     @property
     def hidden_fields(self):
@@ -126,27 +131,32 @@ class GroupSettings(ff.CsrfForm):
         save = ew.SubmitButton(label='Save')
         delete = ew.SubmitButton(label='Delete Group')
 
+
 class NewGroupSettings(ff.AdminForm):
-    submit_text='Save'
+    submit_text = 'Save'
+
     class fields(ew_core.NameList):
         name = ew.InputField(label='Name')
 
+
 class ScreenshotAdmin(ff.AdminForm):
-    defaults=dict(
+    defaults = dict(
         ff.AdminForm.defaults,
         enctype='multipart/form-data')
 
     @property
     def fields(self):
         fields = [
-            ew.InputField(name='screenshot', field_type='file', label='New Screenshot'),
+            ew.InputField(name='screenshot', field_type='file',
+                          label='New Screenshot'),
             ew.InputField(name='caption', field_type="text", label='Caption')
         ]
         return fields
 
+
 class MetadataAdmin(ff.AdminForm):
     template = 'jinja:allura.ext.admin:templates/admin_widgets/metadata_admin.html'
-    defaults=dict(
+    defaults = dict(
         ff.AdminForm.defaults,
         show_export_control=False,
         enctype='multipart/form-data')
@@ -155,14 +165,14 @@ class MetadataAdmin(ff.AdminForm):
         name = ew.InputField(field_type='text',
                              label='Name',
                              validator=formencode.All(
-                                fev.UnicodeString(not_empty=True, max=40),
-                                V.MaxBytesValidator(max=40)),
+                                 fev.UnicodeString(not_empty=True, max=40),
+                                 V.MaxBytesValidator(max=40)),
                              attrs=dict(maxlength=40,
                                         title="This is the publicly viewable name of the project, and will appear on project listings. It should be what you want to see as the project title in search listing."))
         summary = ew.InputField(field_type="text", label='Short Summary',
                                 validator=formencode.All(
-                                   fev.UnicodeString(max=70),
-                                   V.MaxBytesValidator(max=70)),
+                                    fev.UnicodeString(max=70),
+                                    V.MaxBytesValidator(max=70)),
                                 attrs=dict(maxlength=70))
         short_description = ew.TextArea(label='Full Description',
                                         validator=formencode.All(
@@ -173,24 +183,31 @@ class MetadataAdmin(ff.AdminForm):
         external_homepage = ew.InputField(field_type="text", label='Homepage',
                                           validator=fev.URL(add_http=True))
         support_page = ew.InputField(field_type="text", label='Support Page')
-        support_page_url = ew.InputField(field_type="text", label='Support Page URL',
-                                         validator=fev.URL(add_http=True, if_empty=''))
+        support_page_url = ew.InputField(
+            field_type="text", label='Support Page URL',
+            validator=fev.URL(add_http=True, if_empty=''))
         removal = ew.InputField(field_type="text", label='Removal')
-        moved_to_url = ew.InputField(field_type="text", label='Moved Project to URL',
-                                     validator=fev.URL(add_http=True, if_empty=''))
-        export_controlled = ew.InputField(field_type="text", label='Export Control')
-        export_control_type = ew.InputField(field_type="text", label='Export Control Type')
+        moved_to_url = ew.InputField(
+            field_type="text", label='Moved Project to URL',
+            validator=fev.URL(add_http=True, if_empty=''))
+        export_controlled = ew.InputField(
+            field_type="text", label='Export Control')
+        export_control_type = ew.InputField(
+            field_type="text", label='Export Control Type')
         delete = ew.InputField(field_type="hidden", label='Delete')
         delete_icon = ew.InputField(field_type="hidden", label='Delete Icon')
         undelete = ew.InputField(field_type="hidden", label='Undelete')
-        tracking_id = ew.InputField(field_type="text", label="Analytics Tracking ID")
-        twitter_handle = ew.InputField(field_type="text", label='Twitter Handle')
+        tracking_id = ew.InputField(
+            field_type="text", label="Analytics Tracking ID")
+        twitter_handle = ew.InputField(
+            field_type="text", label='Twitter Handle')
         facebook_page = ew.InputField(field_type="text", label='Facebook page',
                                       validator=fev.URL(add_http=True))
 
+
 class AuditLog(ew_core.Widget):
-    template='jinja:allura.ext.admin:templates/widgets/audit.html'
-    defaults=dict(
+    template = 'jinja:allura.ext.admin:templates/widgets/audit.html'
+    defaults = dict(
         ew_core.Widget.defaults,
         entries=None,
         limit=None,
@@ -198,8 +215,8 @@ class AuditLog(ew_core.Widget):
         count=0)
 
     class fields(ew_core.NameList):
-        page_list=ffw.PageList()
-        page_size=ffw.PageSize()
+        page_list = ffw.PageList()
+        page_size = ffw.PageSize()
 
     def resources(self):
         for f in self.fields:
@@ -209,14 +226,15 @@ class AuditLog(ew_core.Widget):
 
 class BlockUser(ffw.Lightbox):
     defaults = dict(
-            ffw.Lightbox.defaults,
-            name='block-user-modal',
-            trigger='a.block-user',
-            content_template='allura.ext.admin:templates/widgets/block_user.html')
+        ffw.Lightbox.defaults,
+        name='block-user-modal',
+        trigger='a.block-user',
+        content_template='allura.ext.admin:templates/widgets/block_user.html')
+
 
 class BlockList(ffw.Lightbox):
     defaults = dict(
-            ffw.Lightbox.defaults,
-            name='block-list-modal',
-            trigger='a.block-list',
-            content_template='allura.ext.admin:templates/widgets/block_list.html')
+        ffw.Lightbox.defaults,
+        name='block-list-modal',
+        trigger='a.block-list',
+        content_template='allura.ext.admin:templates/widgets/block_list.html')

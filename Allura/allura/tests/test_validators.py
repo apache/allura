@@ -50,6 +50,7 @@ class TestJsonFile(unittest.TestCase):
     val = v.JsonFile
 
     class FieldStorage(object):
+
         def __init__(self, content):
             self.value = content
 
@@ -65,6 +66,7 @@ class TestUserMapFile(unittest.TestCase):
     val = v.UserMapJsonFile()
 
     class FieldStorage(object):
+
         def __init__(self, content):
             self.value = content
 
@@ -86,7 +88,8 @@ class TestUserValidator(unittest.TestCase):
     val = v.UserValidator
 
     def test_valid(self):
-        self.assertEqual(M.User.by_username('root'), self.val.to_python('root'))
+        self.assertEqual(M.User.by_username('root'),
+                         self.val.to_python('root'))
 
     def test_invalid(self):
         with self.assertRaises(fe.Invalid) as cm:
@@ -158,7 +161,8 @@ class TestTaskValidator(unittest.TestCase):
     val = v.TaskValidator
 
     def test_valid(self):
-        self.assertEqual(dummy_task, self.val.to_python('allura.tests.test_validators.dummy_task'))
+        self.assertEqual(
+            dummy_task, self.val.to_python('allura.tests.test_validators.dummy_task'))
 
     def test_invalid_name(self):
         with self.assertRaises(fe.Invalid) as cm:
@@ -168,7 +172,8 @@ class TestTaskValidator(unittest.TestCase):
     def test_import_failure(self):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('allura.does.not.exist')
-        self.assertEqual(str(cm.exception), 'Could not import "allura.does.not.exist"')
+        self.assertEqual(str(cm.exception),
+                         'Could not import "allura.does.not.exist"')
 
     def test_attr_lookup_failure(self):
         with self.assertRaises(fe.Invalid) as cm:
@@ -178,7 +183,8 @@ class TestTaskValidator(unittest.TestCase):
     def test_not_a_task(self):
         with self.assertRaises(fe.Invalid) as cm:
             self.val.to_python('allura.tests.test_validators.setUp')
-        self.assertEqual(str(cm.exception), '"allura.tests.test_validators.setUp" is not a task.')
+        self.assertEqual(str(cm.exception),
+                         '"allura.tests.test_validators.setUp" is not a task.')
 
 
 class TestPathValidator(unittest.TestCase):

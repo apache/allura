@@ -19,7 +19,8 @@
 
 
 import re
-import os, allura
+import os
+import allura
 import unittest
 import hashlib
 from mock import patch
@@ -47,52 +48,59 @@ def setUp():
     setup_basic_test()
     setup_with_tools()
 
+
 @td.with_wiki
 def setup_with_tools():
     setup_global_objects()
+
 
 @td.with_wiki
 def test_app_globals():
     g.oid_session()
     g.oid_session()
     with h.push_context('test', 'wiki', neighborhood='Projects'):
-        assert g.app_static('css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
-        assert g.url('/foo', a='foo bar') == 'http://localhost/foo?a=foo+bar', g.url('/foo', a='foo bar')
+        assert g.app_static(
+            'css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')
+        assert g.url(
+            '/foo', a='foo bar') == 'http://localhost/foo?a=foo+bar', g.url('/foo', a='foo bar')
         assert g.url('/foo') == 'http://localhost/foo', g.url('/foo')
 
 
-@with_setup(teardown=setUp) # reset everything we changed
+@with_setup(teardown=setUp)  # reset everything we changed
 def test_macro_projects():
     file_name = 'neo-icon-set-454545-256x350.png'
-    file_path = os.path.join(allura.__path__[0],'nf','allura','images',file_name)
+    file_path = os.path.join(
+        allura.__path__[0], 'nf', 'allura', 'images', file_name)
 
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     c.project = p_test
     icon_file = open(file_path)
     M.ProjectFile.save_image(
-                file_name, icon_file, content_type='image/png',
-                square=True, thumbnail_size=(48,48),
-                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+        file_name, icon_file, content_type='image/png',
+        square=True, thumbnail_size=(48, 48),
+        thumbnail_meta=dict(project_id=c.project._id, category='icon'))
     icon_file.close()
-    p_test2 = M.Project.query.get(shortname='test2', neighborhood_id=p_nbhd._id)
+    p_test2 = M.Project.query.get(
+        shortname='test2', neighborhood_id=p_nbhd._id)
     c.project = p_test2
     icon_file = open(file_path)
     M.ProjectFile.save_image(
-                file_name, icon_file, content_type='image/png',
-                square=True, thumbnail_size=(48,48),
-                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+        file_name, icon_file, content_type='image/png',
+        square=True, thumbnail_size=(48, 48),
+        thumbnail_meta=dict(project_id=c.project._id, category='icon'))
     icon_file.close()
-    p_sub1 =  M.Project.query.get(shortname='test/sub1', neighborhood_id=p_nbhd._id)
+    p_sub1 = M.Project.query.get(
+        shortname='test/sub1', neighborhood_id=p_nbhd._id)
     c.project = p_sub1
     icon_file = open(file_path)
     M.ProjectFile.save_image(
-                file_name, icon_file, content_type='image/png',
-                square=True, thumbnail_size=(48,48),
-                thumbnail_meta=dict(project_id=c.project._id,category='icon'))
+        file_name, icon_file, content_type='image/png',
+        square=True, thumbnail_size=(48, 48),
+        thumbnail_meta=dict(project_id=c.project._id, category='icon'))
     icon_file.close()
-    p_test.labels = [ 'test', 'root' ]
-    p_sub1.labels = [ 'test', 'sub1' ]
+    p_test.labels = ['test', 'root']
+    p_sub1.labels = ['test', 'sub1']
     # Make one project private
     p_test.private = False
     p_sub1.private = False
@@ -132,7 +140,8 @@ def test_macro_projects():
         assert '<img alt="A Subproject Logo"' in r, r
         r = g.markdown_wiki.convert('[[projects show_total=True sort=random]]')
         assert '<p class="macro_projects_total">3 Projects</p>' in r, r
-        r = g.markdown_wiki.convert('[[projects show_total=True private=True sort=random]]')
+        r = g.markdown_wiki.convert(
+            '[[projects show_total=True private=True sort=random]]')
         assert '<p class="macro_projects_total">1 Projects</p>' in r, r
         assert '<img alt="Test 2 Logo"' in r, r
         assert '<img alt="Test Project Logo"' not in r, r
@@ -149,14 +158,19 @@ def test_macro_download_button():
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[download_button]]')
-    assert_equal(r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' % p_test._id)
+    assert_equal(
+        r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' %
+        p_test._id)
+
 
 def test_macro_gittip_button():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
     with h.push_config(c, project=p_test):
         r = g.markdown_wiki.convert('[[gittip_button username=test]]')
-    assert_equal(r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
+    assert_equal(
+        r, u'<div class="markdown_content"><p><iframe height="22pt" src="https://www.gittip.com/test/widget.html" style="border: 0; margin: 0; padding: 0;" width="48pt"></iframe></p>\n</div>')
+
 
 def test_macro_neighborhood_feeds():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
@@ -168,7 +182,7 @@ def test_macro_neighborhood_feeds():
         # Make project private & verify we don't see its new feed items
         anon = M.User.anonymous()
         p_test.acl.insert(0, M.ACE.deny(
-                M.ProjectRole.anonymous(p_test)._id, 'read'))
+            M.ProjectRole.anonymous(p_test)._id, 'read'))
         ThreadLocalORMSession.flush_all()
         pg = WM.Page.query.get(title='Home', app_config_id=c.app.config._id)
         pg.text = 'Change'
@@ -177,7 +191,8 @@ def test_macro_neighborhood_feeds():
         r = g.markdown_wiki.convert('[[neighborhood_feeds tool_name=wiki]]')
         new_len = len(r)
         assert new_len == orig_len
-        p = BM.BlogPost(title='test me', neighborhood_id=p_test.neighborhood_id)
+        p = BM.BlogPost(title='test me',
+                        neighborhood_id=p_test.neighborhood_id)
         p.text = 'test content'
         p.state = 'published'
         p.make_slug()
@@ -188,7 +203,8 @@ def test_macro_neighborhood_feeds():
             r = g.markdown_wiki.convert('[[neighborhood_blog_posts]]')
         assert 'test content' in r
 
-@with_setup(setUp, setUp) # start clean and reset everything we change
+
+@with_setup(setUp, setUp)  # start clean and reset everything we change
 def test_macro_members():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -197,31 +213,35 @@ def test_macro_members():
     ThreadLocalORMSession.flush_all()
     r = g.markdown_wiki.convert('[[members limit=2]]')
     assert_equal(r, '<div class="markdown_content"><h6>Project Members:</h6>\n'
-        '<ul class="md-users-list">\n'
-        '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li><li><a href="/u/test-user/">Test User</a></li>\n'
-        '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>\n'
-        '</ul>\n'
-        '</div>')
+                 '<ul class="md-users-list">\n'
+                 '<li><a href="/u/test-admin/">Test Admin</a> (admin)</li><li><a href="/u/test-user/">Test User</a></li>\n'
+                 '<li class="md-users-list-more"><a href="/p/test/_members">All Members</a></li>\n'
+                 '</ul>\n'
+                 '</div>')
 
-@with_setup(teardown=setUp) # reset everything we changed
+
+@with_setup(teardown=setUp)  # reset everything we changed
 def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Admin <script>'
     r = g.markdown_wiki.convert('[[members]]')
     assert_equal(r, u'<div class="markdown_content"><h6>Project Members:</h6>\n'
-        u'<ul class="md-users-list">\n'
-        u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>\n'
-        u'</ul>\n</div>')
+                 u'<ul class="md-users-list">\n'
+                 u'<li><a href="/u/test-admin/">Test Admin &lt;script&gt;</a> (admin)</li>\n'
+                 u'</ul>\n</div>')
 
-@with_setup(teardown=setUp) # reset everything we changed
+
+@with_setup(teardown=setUp)  # reset everything we changed
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin <script>'
     with h.push_context('test', neighborhood='Projects'):
         r = g.markdown_wiki.convert('[[project_admins]]')
-    assert_equal(r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
+    assert_equal(
+        r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
 
-@with_setup(teardown=setUp) # reset everything we changed
+
+@with_setup(teardown=setUp)  # reset everything we changed
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -266,10 +286,12 @@ def test_macro_include_extra_br():
 
 
 def test_macro_embed():
-    r = g.markdown_wiki.convert('[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
+    r = g.markdown_wiki.convert(
+        '[[embed url=http://www.youtube.com/watch?v=kOLpSPEA72U]]')
     assert '''<div class="grid-20"><iframe height="270" src="http://www.youtube.com/embed/kOLpSPEA72U?feature=oembed" width="480"></iframe></div>''' in r
     r = g.markdown_wiki.convert('[[embed url=http://vimeo.com/46163090]]')
-    assert_equal(r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')
+    assert_equal(
+        r, '<div class="markdown_content"><p>[[embed url=http://vimeo.com/46163090]]</p></div>')
 
 
 def test_markdown_toc():
@@ -299,15 +321,19 @@ def test_wiki_artifact_links():
         text = g.markdown.convert('See [test:wiki:Home]')
         assert '<a class="alink" href="/p/test/wiki/Home/">[test:wiki:Home]</a>' in text, text
 
+
 def test_markdown_links():
-    text = g.markdown.convert('Read [here](http://foobar.sf.net/) about our project')
+    text = g.markdown.convert(
+        'Read [here](http://foobar.sf.net/) about our project')
     assert_in('href="http://foobar.sf.net/">here</a> about', text)
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
     assert_in('href="/p/foobar/blah">here</a> about', text)
 
     text = g.markdown.convert('Read <http://foobar.sf.net/> about our project')
-    assert_in('href="http://foobar.sf.net/">http://foobar.sf.net/</a> about', text)
+    assert_in(
+        'href="http://foobar.sf.net/">http://foobar.sf.net/</a> about', text)
+
 
 def test_markdown_and_html():
     with h.push_context('test', neighborhood='Projects'):
@@ -317,10 +343,12 @@ def test_markdown_and_html():
 
 def test_markdown_within_html():
     with h.push_context('test', neighborhood='Projects'):
-        r = g.markdown_wiki.convert('<div style="float:left" markdown>**blah**</div>')
+        r = g.markdown_wiki.convert(
+            '<div style="float:left" markdown>**blah**</div>')
     assert '''<div style="float: left;">
 <p><strong>blah</strong></p>
 </div>''' in r, r
+
 
 def test_markdown_with_html_comments():
     text = g.markdown.convert('test <!-- comment -->')
@@ -342,7 +370,8 @@ def test_markdown_basics():
         text = g.markdown.convert('# Foo!\n[Rooted]')
         assert '<a href=' not in text, text
 
-    assert '<br' in g.markdown.convert('Multi\nLine'), g.markdown.convert('Multi\nLine')
+    assert '<br' in g.markdown.convert(
+        'Multi\nLine'), g.markdown.convert('Multi\nLine')
     assert '<br' not in g.markdown.convert('Multi\n\nLine')
 
     g.markdown.convert("<class 'foo'>")  # should not raise an exception
@@ -354,7 +383,7 @@ Some text in a regular paragraph
     for i in range(10):
         print i
 ''')
-    assert 'http://localhost/' in  g.forge_markdown(email=True).convert('[Home]')
+    assert 'http://localhost/' in g.forge_markdown(email=True).convert('[Home]')
     assert 'class="codehilite"' in g.markdown.convert('''
 ~~~~
 def foo(): pass
@@ -370,7 +399,8 @@ def test_markdown_autolink():
     # beginning of doc
     assert_in('<a href=', g.markdown.convert('http://sf.net abc'))
     # beginning of a line
-    assert_in('<br />\n<a href="http://', g.markdown.convert('foobar\nhttp://sf.net abc'))
+    assert_in('<br />\n<a href="http://',
+              g.markdown.convert('foobar\nhttp://sf.net abc'))
     # no conversion of these urls:
     assert_in('a blahttp://sdf.com z',
               g.markdown.convert('a blahttp://sdf.com z'))
@@ -384,7 +414,8 @@ def test_markdown_autolink():
 def test_markdown_autolink_with_escape():
     # \_ is unnecessary but valid markdown escaping and should be considered as a regular underscore
     # (it occurs during html2text conversion during project migrations)
-    r = g.markdown.convert('a http://www.phpmyadmin.net/home\_page/security/\#target b')
+    r = g.markdown.convert(
+        'a http://www.phpmyadmin.net/home\_page/security/\#target b')
     assert 'href="http://www.phpmyadmin.net/home_page/security/#target"' in r, r
 
 
@@ -428,7 +459,8 @@ def test_sort_updated():
     with h.push_context(p_nbhd.neighborhood_project._id):
         r = g.markdown_wiki.convert('[[projects sort=last_updated]]')
         project_names = get_project_names(r)
-        updated_at = get_projects_property_in_the_same_order(project_names, 'last_updated')
+        updated_at = get_projects_property_in_the_same_order(
+            project_names, 'last_updated')
         assert updated_at == sorted(updated_at, reverse=True)
 
 
@@ -445,7 +477,8 @@ def test_filtering():
     with h.push_config(c,
                        project=p_nbhd.neighborhood_project,
                        user=M.User.by_username('test-admin')):
-        r = g.markdown_wiki.convert('[[projects category="%s"]]' % random_trove.fullpath)
+        r = g.markdown_wiki.convert(
+            '[[projects category="%s"]]' % random_trove.fullpath)
         project_names = get_project_names(r)
         assert_equal([test_project.name], project_names)
 
@@ -464,9 +497,11 @@ def test_projects_macro():
         assert two_column_style not in r
 
         # test project download button
-        r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=True]]')
+        r = g.markdown_wiki.convert(
+            '[[projects display_mode=list show_download_button=True]]')
         assert 'download-button' in r
-        r = g.markdown_wiki.convert('[[projects display_mode=list show_download_button=False]]')
+        r = g.markdown_wiki.convert(
+            '[[projects display_mode=list show_download_button=False]]')
         assert 'download-button' not in r
 
 
@@ -480,6 +515,7 @@ def test_limit_tools_macro():
         assert '<span>Admin</span>' not in r
         r = g.markdown_wiki.convert('[[projects grid_view_tools=wiki,admin]]')
         assert '<span>Admin</span>' in r
+
 
 @td.with_user_project('test-admin')
 @td.with_user_project('test-user-1')
@@ -512,7 +548,8 @@ def test_hideawards_macro():
     award.full = u'Award full'
     award.created_by_neighborhood_id = p_nbhd._id
 
-    project = M.Project.query.get(neighborhood_id=p_nbhd._id, shortname=u'test')
+    project = M.Project.query.get(
+        neighborhood_id=p_nbhd._id, shortname=u'test')
 
     award_grant = M.AwardGrant(award=award,
                                granted_by_neighborhood=p_nbhd,
@@ -526,6 +563,7 @@ def test_hideawards_macro():
         r = g.markdown_wiki.convert('[[projects show_awards_banner=False]]')
         assert '<div class="feature">Award short</div>' not in r, r
 
+
 def get_project_names(r):
     """
     Extracts a list of project names from a wiki page HTML.
@@ -536,6 +574,7 @@ def get_project_names(r):
     re_proj_names = re.compile('<h2><a[^>]+>(.+)<\/a><\/h2>')
     return [e for e in re_proj_names.findall(r)]
 
+
 def get_projects_property_in_the_same_order(names, prop):
     """
     Returns a list of projects properties `prop` in the same order as
@@ -543,11 +582,12 @@ def get_projects_property_in_the_same_order(names, prop):
     It is required because results of the query are not in the same order as names.
     """
     projects = M.Project.query.find(dict(name={'$in': names})).all()
-    projects_dict = dict([(p['name'],p[prop]) for p in projects])
+    projects_dict = dict([(p['name'], p[prop]) for p in projects])
     return [projects_dict[name] for name in names]
 
 
 class TestCachedMarkdown(unittest.TestCase):
+
     def setUp(self):
         self.md = ForgeMarkdown()
         self.post = M.Post()
@@ -555,7 +595,8 @@ class TestCachedMarkdown(unittest.TestCase):
         self.expected_html = u'<p><strong>bold</strong></p>'
 
     def test_bad_source_field_name(self):
-        self.assertRaises(AttributeError, self.md.cached_convert, self.post, 'no_such_field')
+        self.assertRaises(AttributeError, self.md.cached_convert,
+                          self.post, 'no_such_field')
 
     def test_missing_cache_field(self):
         delattr(self.post, 'text_cache')
@@ -577,7 +618,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertEqual(html, self.expected_html)
         self.assertEqual(html, self.post.text_cache.html)
         self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
-                self.post.text_cache.md5)
+                         self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')
@@ -588,7 +629,7 @@ class TestCachedMarkdown(unittest.TestCase):
         self.assertNotEqual(old, html)
         self.assertEqual(html, self.post.text_cache.html)
         self.assertEqual(hashlib.md5(self.post.text).hexdigest(),
-                self.post.text_cache.md5)
+                         self.post.text_cache.md5)
         self.assertTrue(self.post.text_cache.render_time > 0)
 
     @patch.dict('allura.lib.app_globals.config', markdown_cache_threshold='0')

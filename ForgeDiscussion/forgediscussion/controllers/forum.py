@@ -39,27 +39,31 @@ from forgediscussion import tasks
 
 log = logging.getLogger(__name__)
 
+
 class pass_validator(object):
+
     def validate(self, v, s):
         return v
-pass_validator=pass_validator()
+pass_validator = pass_validator()
+
 
 class ModelConfig(object):
-    Discussion=DM.Forum
-    Thread=DM.ForumThread
-    Post=DM.ForumPost
-    Attachment=M.DiscussionAttachment
+    Discussion = DM.Forum
+    Thread = DM.ForumThread
+    Post = DM.ForumPost
+    Attachment = M.DiscussionAttachment
+
 
 class WidgetConfig(object):
     # Forms
     subscription_form = DW.SubscriptionForm()
-    subscribe_form=SubscribeForm()
+    subscribe_form = SubscribeForm()
     edit_post = DW.EditPost(show_subject=True)
     moderate_post = FW.ModeratePost()
     moderate_thread = FW.ModerateThread()
     flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
-    moderate_posts=DW.ModeratePosts()
+    moderate_posts = DW.ModeratePosts()
     # Other widgets
     discussion = FW.Forum()
     thread = FW.Thread()
@@ -68,9 +72,10 @@ class WidgetConfig(object):
     announcements_table = FW.AnnouncementsTable()
     discussion_header = FW.ForumHeader()
 
+
 class ForumController(DiscussionController):
-    M=ModelConfig
-    W=WidgetConfig
+    M = ModelConfig
+    W = WidgetConfig
 
     def _check_security(self):
         require_access(self.discussion, 'read')
@@ -98,13 +103,14 @@ class ForumController(DiscussionController):
                    limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, threads=None, limit=25, page=0, count=0, **kw):
         if self.discussion.deleted:
-            redirect(self.discussion.url()+'deleted')
+            redirect(self.discussion.url() + 'deleted')
         limit, page, start = g.handle_paging(limit, page)
-        c.subscribed=M.Mailbox.subscribed(artifact=self.discussion)
+        c.subscribed = M.Mailbox.subscribed(artifact=self.discussion)
         threads = DM.ForumThread.query.find(dict(discussion_id=self.discussion._id, num_replies={'$gt': 0})) \
                                       .sort([('flags', pymongo.DESCENDING), ('last_post_date', pymongo.DESCENDING)])
-        response =  super(ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(),
-                                                       limit=limit, page=page, count=threads.count(), **kw)
+        response = super(
+            ForumController, self).index(threads=threads.skip(start).limit(int(limit)).all(),
+                                         limit=limit, page=page, count=threads.count(), **kw)
         c.discussion_header = self.W.discussion_header
         c.whole_forum_subscription_form = self.W.subscribe_form
         return response
@@ -134,7 +140,7 @@ class ForumThreadController(ThreadController):
                    limit=validators.Int(if_empty=25, if_invalid=25)))
     def index(self, limit=25, page=0, count=0, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url()+'deleted')
+            redirect(self.thread.discussion.url() + 'deleted')
         return super(ForumThreadController, self).index(limit=limit, page=page, count=count, show_moderate=True, **kw)
 
     @h.vardec
@@ -144,7 +150,7 @@ class ForumThreadController(ThreadController):
     def moderate(self, **kw):
         require_access(self.thread, 'moderate')
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url()+'deleted')
+            redirect(self.thread.discussion.url() + 'deleted')
         args = self.W.moderate_thread.validate(kw, None)
         tasks.calc_forum_stats.post(self.thread.discussion.shortname)
         if args.pop('delete', None):
@@ -158,6 +164,7 @@ class ForumThreadController(ThreadController):
         self.thread.flags = args.pop('flags', [])
         redirect(self.thread.url())
 
+
 class ForumPostController(PostController):
 
     @h.vardec
@@ -166,7 +173,7 @@ class ForumPostController(PostController):
     @utils.AntiSpam.validate('Spambot protection engaged')
     def index(self, **kw):
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url()+'deleted')
+            redirect(self.thread.discussion.url() + 'deleted')
         return super(ForumPostController, self).index(**kw)
 
     @expose()
@@ -175,7 +182,7 @@ class ForumPostController(PostController):
     def moderate(self, **kw):
         require_access(self.post.thread, 'moderate')
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
-            redirect(self.thread.discussion.url()+'deleted')
+            redirect(self.thread.discussion.url() + 'deleted')
         args = self.W.moderate_post.validate(kw, None)
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)
@@ -184,6 +191,7 @@ class ForumPostController(PostController):
             tasks.calc_thread_stats.post(new_thread._id)
             redirect(request.referer)
         super(ForumPostController, self).moderate(**kw)
+
 
 class ForumModerationController(ModerationController):
     PostModel = DM.ForumPost

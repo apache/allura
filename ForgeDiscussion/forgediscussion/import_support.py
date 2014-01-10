@@ -30,14 +30,17 @@ from forgediscussion import model as DM
 
 log = logging.getLogger(__name__)
 
+
 def validate_import(json, username_mapping, default_username=None):
     warnings = []
     schema = make_schema(username_mapping, default_username, warnings)
     json = schema.validate(json)
     return warnings, json
 
+
 def perform_import(json, username_mapping, default_username=None, create_users=False):
-    if create_users: default_username=create_user
+    if create_users:
+        default_username = create_user
 
     # Validate the import, create missing users
     warnings, json = validate_import(json, username_mapping, default_username)
@@ -69,41 +72,43 @@ def perform_import(json, username_mapping, default_username=None, create_users=F
                 subject=head['subject'])
             for p in posts:
                 p = create_post(f._id, t._id, p)
-            t.first_post_id=p._id
+            t.first_post_id = p._id
             ThreadLocalORMSession.flush_all()
             t.update_stats()
         ThreadLocalORMSession.flush_all()
         f.update_stats()
     return warnings
 
+
 def make_schema(user_name_map, default_username, warnings):
     USER = AlluraUser(user_name_map, default_username, warnings)
     TIMESTAMP = TimeStamp()
 
     POST = {
-        'msg_id':str,
-        'is_followup_to':str,
-        'is_deleted':str,
-        'thread_id':str,
-        'poster_name':str,
-        'poster_user':USER,
-        'subject':str,
-        'date':TIMESTAMP,
-        'body':str,
-        }
+        'msg_id': str,
+        'is_followup_to': str,
+        'is_deleted': str,
+        'thread_id': str,
+        'poster_name': str,
+        'poster_user': USER,
+        'subject': str,
+        'date': TIMESTAMP,
+        'body': str,
+    }
 
     FORUM = {
         'name': str,
         'description': str,
-        'threads': { str: [ POST ] },
-        }
+        'threads': {str: [POST]},
+    }
 
     result = S.SchemaItem.make({
-            'class':str,
-            'trackers':[None],
-            'forums': { str: FORUM }
-            })
+        'class': str,
+        'trackers': [None],
+        'forums': {str: FORUM}
+    })
     return result
+
 
 class AlluraUser(S.FancySchemaItem):
 
@@ -131,6 +136,7 @@ class AlluraUser(S.FancySchemaItem):
     def _from_python(self, value, state):
         return value.username
 
+
 class TimeStamp(S.FancySchemaItem):
 
     def _validate(self, value, **kwargs):
@@ -140,6 +146,7 @@ class TimeStamp(S.FancySchemaItem):
             raise S.Invalid('%s is not int()-able' % value, value, None)
         value = datetime.utcfromtimestamp(value)
         return value
+
 
 def create_user(json_username):
     allura_username = c.project.shortname + '-' + json_username
@@ -155,6 +162,7 @@ def create_user(json_username):
         except:
             raise
     return allura_username
+
 
 def create_post(discussion_id, thread_id, json_post):
     p = DM.ForumPost(

@@ -45,6 +45,7 @@ from forgegit import model as GM
 from forgegit.tests import with_git
 from forgewiki import model as WM
 
+
 class TestNewGit(unittest.TestCase):
 
     def setUp(self):
@@ -61,7 +62,7 @@ class TestNewGit(unittest.TestCase):
         c.app.repo.fs_path = repo_dir
         c.app.repo.name = 'testgit.git'
         self.repo = c.app.repo
-        #self.repo = GM.Repository(
+        # self.repo = GM.Repository(
         #     name='testgit.git',
         #     fs_path=repo_dir,
         #     url_path = '/test/',
@@ -80,7 +81,8 @@ class TestNewGit(unittest.TestCase):
         assert self.rev.tree._id == self.rev.tree_id
         assert self.rev.summary == self.rev.message.splitlines()[0]
         assert self.rev.shorthand_id() == '[1e146e]'
-        assert self.rev.symbolic_ids == (['master'], ['foo']), self.rev.symbolic_ids
+        assert self.rev.symbolic_ids == (
+            ['master'], ['foo']), self.rev.symbolic_ids
         assert self.rev.url() == (
             '/p/test/src-git/ci/'
             '1e146e67985dcd71c74de79613719bef7bddca4a/')
@@ -112,6 +114,7 @@ class TestNewGit(unittest.TestCase):
                 '/p/test/src-git/ci/'
                 '1e146e67985dcd71c74de79613719bef7bddca4a/')
 
+
 class TestGitRepo(unittest.TestCase, RepoImplTestBase):
 
     def setUp(self):
@@ -127,9 +130,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.repo = GM.Repository(
             name='testgit.git',
             fs_path=repo_dir,
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+            url_path='/test/',
+            tool='git',
+            status='creating')
         self.repo.refresh()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
@@ -137,10 +140,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_init(self):
         repo = GM.Repository(
             name='testgit.git',
-            fs_path=g.tmpdir+'/',
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+            fs_path=g.tmpdir + '/',
+            url_path='/test/',
+            tool='git',
+            status='creating')
         dirname = os.path.join(repo.fs_path, repo.name)
         if os.path.exists(dirname):
             shutil.rmtree(dirname)
@@ -151,9 +154,9 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         repo = GM.Repository(
             name='testgit.git',
             fs_path=g.tmpdir + '/',
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+            url_path='/test/',
+            tool='git',
+            status='creating')
         repo_path = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         dirname = os.path.join(repo.fs_path, repo.name)
@@ -161,19 +164,23 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             shutil.rmtree(dirname)
         repo.init()
         repo._impl.clone_from(repo_path)
-        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
-        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
-        assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
-        assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
+        assert not os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+        assert not os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+        assert os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+        assert os.stat(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
 
     @mock.patch('forgegit.model.git_repo.g.post_event')
     def test_clone(self, post_event):
         repo = GM.Repository(
             name='testgit.git',
             fs_path=g.tmpdir + '/',
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+            url_path='/test/',
+            tool='git',
+            status='creating')
         repo_path = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         dirname = os.path.join(repo.fs_path, repo.name)
@@ -182,12 +189,18 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         repo.init()
         repo._impl.clone_from(repo_path)
         assert len(list(repo.log()))
-        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
-        assert not os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
-        assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
-        assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
-        with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
-        self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
+        assert not os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+        assert not os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+        assert os.path.exists(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+        assert os.stat(
+            os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
+        with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
+            c = f.read()
+        self.assertIn(
+            'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
         self.assertIn('exec $DIR/post-receive-user\n', c)
         shutil.rmtree(dirname)
 
@@ -197,10 +210,10 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         with h.push_config(tg.config, **{'scm.git.hotcopy': 'True'}):
             repo = GM.Repository(
                 name='testgit.git',
-                fs_path=g.tmpdir+'/',
-                url_path = '/test/',
-                tool = 'git',
-                status = 'creating')
+                fs_path=g.tmpdir + '/',
+                url_path='/test/',
+                tool='git',
+                status='creating')
             repo.app.config.options['hotcopy'] = True
             repo_path = pkg_resources.resource_filename(
                 'forgegit', 'tests/data/testgit.git')
@@ -211,12 +224,18 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             repo._impl.clone_from(repo_path)
             assert not clone_from.called
             assert len(list(repo.log()))
-            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
-            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
-            assert os.path.exists(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
-            assert os.stat(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
-            with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f: c = f.read()
-            self.assertIn('curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
+            assert os.path.exists(
+                os.path.join(g.tmpdir, 'testgit.git/hooks/update'))
+            assert os.path.exists(
+                os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive-user'))
+            assert os.path.exists(
+                os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))
+            assert os.stat(
+                os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive'))[0] & stat.S_IXUSR
+            with open(os.path.join(g.tmpdir, 'testgit.git/hooks/post-receive')) as f:
+                c = f.read()
+            self.assertIn(
+                'curl -s http://localhost/auth/refresh_repo/p/test/src-git/\n', c)
             self.assertIn('exec $DIR/post-receive-user\n', c)
             shutil.rmtree(dirname)
 
@@ -283,7 +302,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'refs': [],
              'size': None,
              'rename_details': {}},
-            ])
+        ])
 
     def test_log_unicode(self):
         entries = list(self.repo.log(path=u'völundr', id_only=False))
@@ -316,7 +335,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
              'refs': [],
              'size': 15,
              'rename_details': {}},
-            ])
+        ])
 
     def test_commit(self):
         entry = self.repo.commit('HEAD')
@@ -342,13 +361,15 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
         self.assertEqual(new_tree.other_ids, orig_tree.other_ids)
 
     def test_notification_email(self):
-        send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
+        send_notifications(
+            self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', ])
         ThreadLocalORMSession.flush_all()
         n = M.Notification.query.find(
             dict(subject='[test:src-git] [1e146e] - Rick Copeland: Change README')).first()
         assert n
         assert 'master: ' in n.text, n.text
-        send_notifications(self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
+        send_notifications(
+            self.repo, ['1e146e67985dcd71c74de79613719bef7bddca4a', 'df30427c488aeab84b2352bdf88a3b19223f9d7a'])
         ThreadLocalORMSession.flush_all()
         assert M.Notification.query.find(
             dict(subject='[test:src-git] 2 new commits to Test Project Git')).first()
@@ -356,50 +377,59 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
     def test_tarball(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
-            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
-        assert_equal(self.repo.tarball_path, os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
-        assert_equal(self.repo.tarball_url('HEAD'), 'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
+            os.remove(
+                os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+        assert_equal(self.repo.tarball_path,
+                     os.path.join(tmpdir, 'git/t/te/test/testgit.git'))
+        assert_equal(self.repo.tarball_url('HEAD'),
+                     'file:///git/t/te/test/testgit.git/test-src-git-HEAD.zip')
         self.repo.tarball('HEAD')
-        assert os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+        assert os.path.isfile(
+            os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
 
     def test_all_commit_ids(self):
         cids = list(self.repo.all_commit_ids())
         heads = [
-                '1e146e67985dcd71c74de79613719bef7bddca4a',  # master
-                '5c47243c8e424136fd5cdd18cd94d34c66d1955c',  # zz
-            ]
+            '1e146e67985dcd71c74de79613719bef7bddca4a',  # master
+            '5c47243c8e424136fd5cdd18cd94d34c66d1955c',  # zz
+        ]
         self.assertIn(cids[0], heads)  # repo head comes first
         for head in heads:
             self.assertIn(head, cids)  # all branches included
-        self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')  # repo root comes last
+        # repo root comes last
+        self.assertEqual(cids[-1], '9a7df788cf800241e3bb5a849c8870f2f8259d98')
 
     def test_ls(self):
         lcd_map = self.repo.commit('HEAD').tree.ls()
         self.assertEqual(lcd_map, [{
-                'href': u'README',
-                'kind': 'BLOB',
-                'last_commit': {
+            'href': u'README',
+            'kind': 'BLOB',
+            'last_commit': {
                     'author': u'Rick Copeland',
-                    'author_email': u'rcopeland@geek.net',
-                    'author_url': None,
-                    'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
-                    'href': u'/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
-                    'shortlink': u'[1e146e]',
-                    'summary': u'Change README'},
-                'name': u'README'}])
+                'author_email': u'rcopeland@geek.net',
+                'author_url': None,
+                'date': datetime.datetime(2010, 10, 7, 18, 44, 11),
+                'href': u'/p/test/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/',
+                'shortlink': u'[1e146e]',
+                'summary': u'Change README'},
+            'name': u'README'}])
 
     def test_tarball_status(self):
         tmpdir = tg.config['scm.repos.tarball.root']
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip")):
-            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+            os.remove(
+                os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
         if os.path.isfile(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp")):
-            os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
+            os.remove(
+                os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.tmp"))
         if os.path.isdir(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/")):
-            os.removedirs(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/"))
+            os.removedirs(
+                os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD/"))
         self.repo.tarball('HEAD')
         assert_equal(self.repo.get_tarball_status('HEAD'), 'complete')
 
-        os.remove(os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
+        os.remove(
+            os.path.join(tmpdir, "git/t/te/test/testgit.git/test-src-git-HEAD.zip"))
         assert_equal(self.repo.get_tarball_status('HEAD'), None)
 
     def test_tarball_status_task(self):
@@ -415,7 +445,7 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             'task_name': 'allura.tasks.repo_tasks.tarball',
             'args': ['HEAD', ''],
             'state': {'$in': ['busy', 'ready']},
-            })
+        })
 
         # task is running
         task.state = 'busy'
@@ -433,25 +463,29 @@ class TestGitRepo(unittest.TestCase, RepoImplTestBase):
             repo2 = GM.Repository(
                 name='test',
                 fs_path=d.path,
-                url_path = '/test/',
-                tool = 'git',
-                status = 'creating')
+                url_path='/test/',
+                tool='git',
+                status='creating')
             repo2.init()
             assert repo2.is_empty()
             repo2.refresh()
             ThreadLocalORMSession.flush_all()
             assert repo2.is_empty()
 
+
 class TestGitImplementation(unittest.TestCase):
+
     def test_branches(self):
         repo_dir = pkg_resources.resource_filename(
             'forgegit', 'tests/data/testgit.git')
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.branches, [
-                Object(name='master', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
-                Object(name='zz', object_id='5c47243c8e424136fd5cdd18cd94d34c66d1955c')
-            ])
+            Object(name='master',
+                   object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
+            Object(name='zz',
+                   object_id='5c47243c8e424136fd5cdd18cd94d34c66d1955c')
+        ])
 
     def test_tags(self):
         repo_dir = pkg_resources.resource_filename(
@@ -459,8 +493,9 @@ class TestGitImplementation(unittest.TestCase):
         repo = mock.Mock(full_fs_path=repo_dir)
         impl = GM.git_repo.GitImplementation(repo)
         self.assertEqual(impl.tags, [
-                Object(name='foo', object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
-            ])
+            Object(name='foo',
+                   object_id='1e146e67985dcd71c74de79613719bef7bddca4a'),
+        ])
 
     def test_last_commit_ids(self):
         repo_dir = pkg_resources.resource_filename(
@@ -469,12 +504,12 @@ class TestGitImplementation(unittest.TestCase):
         impl = GM.git_repo.GitImplementation(repo)
         lcd = lambda c, p: impl.last_commit_ids(mock.Mock(_id=c), p)
         self.assertEqual(lcd('13951944969cf45a701bf90f83647b309815e6d5', ['f2.txt', 'f3.txt']), {
-                'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
-                'f3.txt': '653667b582ef2950c1954a0c7e1e8797b19d778a',
-            })
+            'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
+            'f3.txt': '653667b582ef2950c1954a0c7e1e8797b19d778a',
+        })
         self.assertEqual(lcd('259c77dd6ee0e6091d11e429b56c44ccbf1e64a3', ['f2.txt', 'f3.txt']), {
-                'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
-            })
+            'f2.txt': '259c77dd6ee0e6091d11e429b56c44ccbf1e64a3',
+        })
 
     def test_last_commit_ids_threaded(self):
         with h.push_config(tg.config, lcd_thread_chunk_size=1):
@@ -488,7 +523,8 @@ class TestGitImplementation(unittest.TestCase):
             repo = mock.Mock(full_fs_path=repo_dir)
             _git.side_effect = ValueError
             impl = GM.git_repo.GitImplementation(repo)
-            lcds = impl.last_commit_ids(mock.Mock(_id='13951944969cf45a701bf90f83647b309815e6d5'), ['f2.txt', 'f3.txt'])
+            lcds = impl.last_commit_ids(
+                mock.Mock(_id='13951944969cf45a701bf90f83647b309815e6d5'), ['f2.txt', 'f3.txt'])
             self.assertEqual(lcds, {})
 
 
@@ -507,9 +543,9 @@ class TestGitCommit(unittest.TestCase):
         self.repo = GM.Repository(
             name='testgit.git',
             fs_path=repo_dir,
-            url_path = '/test/',
-            tool = 'git',
-            status = 'creating')
+            url_path='/test/',
+            tool='git',
+            status='creating')
         self.repo.refresh()
         self.rev = self.repo.commit('HEAD')
         ThreadLocalORMSession.flush_all()
@@ -517,7 +553,8 @@ class TestGitCommit(unittest.TestCase):
 
     def test_url(self):
         assert self.rev.url().endswith('ca4a/')
-        assert self.repo._impl.url_for_commit('master').endswith('master/'), self.repo._impl.url_for_commit('master')
+        assert self.repo._impl.url_for_commit('master').endswith(
+            'master/'), self.repo._impl.url_for_commit('master')
 
     def test_committer_url(self):
         assert self.rev.committer_url is None
@@ -530,9 +567,9 @@ class TestGitCommit(unittest.TestCase):
 
     def test_diff(self):
         diffs = (self.rev.diffs.added
-                 +self.rev.diffs.removed
-                 +self.rev.diffs.changed
-                 +self.rev.diffs.copied)
+                 + self.rev.diffs.removed
+                 + self.rev.diffs.changed
+                 + self.rev.diffs.copied)
         for d in diffs:
             print d
 
@@ -540,30 +577,33 @@ class TestGitCommit(unittest.TestCase):
         # path only
         commits = list(self.repo.log(id_only=True))
         assert_equal(commits, [
-                "1e146e67985dcd71c74de79613719bef7bddca4a",
-                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
-                "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
-                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-            ])
+            "1e146e67985dcd71c74de79613719bef7bddca4a",
+            "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+            "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
+            "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+        ])
         commits = list(self.repo.log(self.repo.head, 'README', id_only=True))
         assert_equal(commits, [
-                "1e146e67985dcd71c74de79613719bef7bddca4a",
-                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
-            ])
-        commits = list(self.repo.log("df30427c488aeab84b2352bdf88a3b19223f9d7a", 'README', id_only=True))
+            "1e146e67985dcd71c74de79613719bef7bddca4a",
+            "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+        ])
+        commits = list(
+            self.repo.log("df30427c488aeab84b2352bdf88a3b19223f9d7a", 'README', id_only=True))
         assert_equal(commits, [
-                "df30427c488aeab84b2352bdf88a3b19223f9d7a",
-            ])
+            "df30427c488aeab84b2352bdf88a3b19223f9d7a",
+        ])
         commits = list(self.repo.log(self.repo.head, '/a/b/c/', id_only=True))
         assert_equal(commits, [
-                "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
-                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-            ])
-        commits = list(self.repo.log("9a7df788cf800241e3bb5a849c8870f2f8259d98", '/a/b/c/', id_only=True))
+            "6a45885ae7347f1cac5103b0050cc1be6a1496c8",
+            "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+        ])
+        commits = list(
+            self.repo.log("9a7df788cf800241e3bb5a849c8870f2f8259d98", '/a/b/c/', id_only=True))
         assert_equal(commits, [
-                "9a7df788cf800241e3bb5a849c8870f2f8259d98",
-            ])
-        commits = list(self.repo.log(self.repo.head, '/does/not/exist/', id_only=True))
+            "9a7df788cf800241e3bb5a849c8870f2f8259d98",
+        ])
+        commits = list(
+            self.repo.log(self.repo.head, '/does/not/exist/', id_only=True))
         assert_equal(commits, [])
 
 

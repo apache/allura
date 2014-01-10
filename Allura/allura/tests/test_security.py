@@ -32,15 +32,18 @@ def _allow(obj, role, perm):
     ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
 
+
 def _deny(obj, role, perm):
     obj.acl.insert(0, M.ACE.deny(role._id, perm))
     ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
 
+
 def _add_to_group(user, role):
     M.ProjectRole.by_user(user, upsert=True).roles.append(role._id)
     ThreadLocalODMSession.flush_all()
     Credentials.get().clear()
+
 
 class TestSecurity(TestController):
 
@@ -50,21 +53,28 @@ class TestSecurity(TestController):
     def test_anon(self):
         self.app.get('/security/*anonymous/forbidden', status=302)
         self.app.get('/security/*anonymous/needs_auth', status=302)
-        self.app.get('/security/*anonymous/needs_project_access_fail', status=302)
-        self.app.get('/security/*anonymous/needs_artifact_access_fail', status=302)
+        self.app.get('/security/*anonymous/needs_project_access_fail',
+                     status=302)
+        self.app.get(
+            '/security/*anonymous/needs_artifact_access_fail', status=302)
 
     @td.with_wiki
     def test_auth(self):
         self.app.get('/security/test-admin/forbidden', status=403)
         self.app.get('/security/test-admin/needs_auth', status=200)
-        self.app.get('/security/test-admin/needs_project_access_fail', status=403)
-        self.app.get('/security/test-admin/needs_project_access_ok', status=200)
+        self.app.get('/security/test-admin/needs_project_access_fail',
+                     status=403)
+        self.app.get('/security/test-admin/needs_project_access_ok',
+                     status=200)
         # This should fail b/c test-user doesn't have the permission
-        self.app.get('/security/test-user/needs_artifact_access_fail', extra_environ=dict(username='test-user'), status=403)
+        self.app.get('/security/test-user/needs_artifact_access_fail',
+                     extra_environ=dict(username='test-user'), status=403)
         # This should succeed b/c users with the 'admin' permission on a
         # project implicitly have all permissions to everything in the project
-        self.app.get('/security/test-admin/needs_artifact_access_fail', status=200)
-        self.app.get('/security/test-admin/needs_artifact_access_ok', status=200)
+        self.app.get(
+            '/security/test-admin/needs_artifact_access_fail', status=200)
+        self.app.get('/security/test-admin/needs_artifact_access_ok',
+                     status=200)
 
     @td.with_wiki
     def test_all_allowed(self):
@@ -77,21 +87,29 @@ class TestSecurity(TestController):
         anon_role = M.ProjectRole.by_name('*anonymous')
         test_user = M.User.by_username('test-user')
 
-        assert_equal(all_allowed(wiki, admin_role), set(['configure', 'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'admin', 'delete']))
-        assert_equal(all_allowed(wiki, dev_role), set(['read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete']))
-        assert_equal(all_allowed(wiki, member_role), set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
-        assert_equal(all_allowed(wiki, auth_role), set(['read', 'post', 'unmoderated_post']))
+        assert_equal(all_allowed(wiki, admin_role), set(
+            ['configure', 'read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'admin', 'delete']))
+        assert_equal(all_allowed(wiki, dev_role), set(
+            ['read', 'create', 'edit', 'unmoderated_post', 'post', 'moderate', 'delete']))
+        assert_equal(all_allowed(wiki, member_role),
+                     set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
+        assert_equal(all_allowed(wiki, auth_role),
+                     set(['read', 'post', 'unmoderated_post']))
         assert_equal(all_allowed(wiki, anon_role), set(['read']))
-        assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))
+        assert_equal(all_allowed(wiki, test_user),
+                     set(['read', 'post', 'unmoderated_post']))
 
         _add_to_group(test_user, member_role)
 
-        assert_equal(all_allowed(wiki, test_user), set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
+        assert_equal(all_allowed(wiki, test_user),
+                     set(['read', 'create', 'edit', 'unmoderated_post', 'post']))
 
         _deny(wiki, auth_role, 'unmoderated_post')
 
-        assert_equal(all_allowed(wiki, member_role), set(['read', 'create', 'edit', 'post']))
-        assert_equal(all_allowed(wiki, test_user), set(['read', 'create', 'edit', 'post']))
+        assert_equal(all_allowed(wiki, member_role),
+                     set(['read', 'create', 'edit', 'post']))
+        assert_equal(all_allowed(wiki, test_user),
+                     set(['read', 'create', 'edit', 'post']))
 
     @td.with_wiki
     def test_deny_vs_allow(self):
@@ -104,7 +122,6 @@ class TestSecurity(TestController):
         auth_role = M.ProjectRole.by_name('*authenticated')
         test_user = M.User.by_username('test-user')
 
-
         # confirm that *anon has expected access
         assert has_access(page, 'read', anon_role)()
         assert has_access(page, 'post', anon_role)()
@@ -114,7 +131,8 @@ class TestSecurity(TestController):
         assert has_access(page, 'read', test_user)()
         assert has_access(page, 'post', test_user)()
         assert has_access(page, 'unmoderated_post', test_user)()
-        assert_equal(all_allowed(page, test_user), set(['read', 'post', 'unmoderated_post']))
+        assert_equal(all_allowed(page, test_user),
+                     set(['read', 'post', 'unmoderated_post']))
 
         _deny(page, auth_role, 'read')
 
@@ -126,11 +144,11 @@ class TestSecurity(TestController):
         # FIXME: all_allowed doesn't respect blocked user feature
         #assert_equal(all_allowed(page, test_user), set(['post', 'unmoderated_post']))
 
-
         assert has_access(wiki, 'read', test_user)()
         assert has_access(wiki, 'post', test_user)()
         assert has_access(wiki, 'unmoderated_post', test_user)()
-        assert_equal(all_allowed(wiki, test_user), set(['read', 'post', 'unmoderated_post']))
+        assert_equal(all_allowed(wiki, test_user),
+                     set(['read', 'post', 'unmoderated_post']))
 
         _deny(wiki, anon_role, 'read')
         _allow(wiki, auth_role, 'read')
@@ -169,6 +187,7 @@ class TestSecurity(TestController):
         wiki = c.project.app_instance('wiki')
         user = M.User.by_username('test-user')
         assert has_access(wiki, 'read', user)()
-        wiki.acl.append(M.ACE.deny(M.ProjectRole.by_user(user, upsert=True)._id, 'read', 'Spammer'))
+        wiki.acl.append(
+            M.ACE.deny(M.ProjectRole.by_user(user, upsert=True)._id, 'read', 'Spammer'))
         Credentials.get().clear()
         assert not has_access(wiki, 'read', user)()

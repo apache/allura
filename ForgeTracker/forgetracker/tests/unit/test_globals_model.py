@@ -30,6 +30,7 @@ from allura.lib import helpers as h
 
 
 class TestGlobalsModel(TrackerTestWithModel):
+
     def setUp(self):
         super(TestGlobalsModel, self).setUp()
         c.project.install_app('Tickets', 'doc-bugs')
@@ -57,7 +58,8 @@ class TestGlobalsModel(TrackerTestWithModel):
         now = datetime.utcnow()
         mock_dt.utcnow.return_value = now
         gbl = Globals()
-        gbl._bin_counts_data = [{'summary': 'foo', 'hits': 1}, {'summary': 'bar', 'hits': 2}]
+        gbl._bin_counts_data = [{'summary': 'foo', 'hits': 1},
+                                {'summary': 'bar', 'hits': 2}]
         gbl.invalidate_bin_counts = mock.Mock()
 
         # not expired, finds bin
@@ -105,13 +107,15 @@ class TestGlobalsModel(TrackerTestWithModel):
         mock_dt.utcnow.return_value = now
         gbl = Globals()
         gbl._bin_counts_invalidated = now - timedelta(minutes=1)
-        mock_bin.query.find.return_value = [mock.Mock(summary='foo', terms='bar')]
+        mock_bin.query.find.return_value = [
+            mock.Mock(summary='foo', terms='bar')]
         mock_search().hits = 5
 
         assert_equal(gbl._bin_counts_data, [])  # sanity pre-check
         gbl.update_bin_counts()
         assert mock_bin.query.find.called
-        mock_search.assert_called_with(forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False)
+        mock_search.assert_called_with(
+            forgetracker.model.Ticket, 'bar', rows=0, short_timeout=False)
         assert_equal(gbl._bin_counts_data, [{'summary': 'foo', 'hits': 5}])
         assert_equal(gbl._bin_counts_expire, now + timedelta(minutes=60))
         assert_equal(gbl._bin_counts_invalidated, None)
@@ -119,12 +123,16 @@ class TestGlobalsModel(TrackerTestWithModel):
     def test_append_new_labels(self):
         gbl = Globals()
         assert_equal(gbl.append_new_labels([], ['tag1']), ['tag1'])
-        assert_equal(gbl.append_new_labels(['tag1', 'tag2'], ['tag2']), ['tag1', 'tag2'])
-        assert_equal(gbl.append_new_labels(['tag1', 'tag2'], ['tag3']), ['tag1', 'tag2', 'tag3'])
-        assert_equal(gbl.append_new_labels(['tag1', 'tag2', 'tag3'], ['tag2']), ['tag1', 'tag2', 'tag3'])
+        assert_equal(
+            gbl.append_new_labels(['tag1', 'tag2'], ['tag2']), ['tag1', 'tag2'])
+        assert_equal(gbl.append_new_labels(
+            ['tag1', 'tag2'], ['tag3']), ['tag1', 'tag2', 'tag3'])
+        assert_equal(gbl.append_new_labels(
+            ['tag1', 'tag2', 'tag3'], ['tag2']), ['tag1', 'tag2', 'tag3'])
 
 
 class TestCustomFields(TrackerTestWithModel):
+
     def test_it_has_sortable_custom_fields(self):
         tracker_globals = globals_with_custom_fields(
             [dict(label='Iteration Number',
@@ -136,7 +144,8 @@ class TestCustomFields(TrackerTestWithModel):
         expected = [dict(sortable_name='_point_estimate_s',
                          name='_point_estimate',
                          label='Point Estimate')]
-        assert tracker_globals.sortable_custom_fields_shown_in_search() == expected
+        assert tracker_globals.sortable_custom_fields_shown_in_search(
+        ) == expected
 
 
 def globals_with_custom_fields(custom_fields):

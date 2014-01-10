@@ -54,6 +54,7 @@ from .timeline import ActivityNode, ActivityObject
 
 log = logging.getLogger(__name__)
 
+
 def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     """
     Returns a bytestring version of 's', encoded as specified in 'encoding'.
@@ -73,7 +74,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # know how to print itself properly. We shouldn't raise a
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
-                        errors) for arg in s])
+                                           errors) for arg in s])
             return unicode(s).encode(encoding, errors)
     elif isinstance(s, unicode):
         r = s.encode(encoding, errors)
@@ -83,9 +84,11 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
     else:
         return s
 
+
 def generate_smart_str(params):
     for (key, value) in params:
         yield smart_str(key), smart_str(value)
+
 
 def urlencode(params):
     """
@@ -102,12 +105,14 @@ class ApiAuthMixIn(object):
         try:
             # Validate timestamp
             timestamp = iso8601.parse_date(params['api_timestamp'])
-            timestamp_utc = timestamp.replace(tzinfo=None) - timestamp.utcoffset()
+            timestamp_utc = timestamp.replace(
+                tzinfo=None) - timestamp.utcoffset()
             if abs(datetime.utcnow() - timestamp_utc) > timedelta(minutes=10):
                 return False
             # Validate signature
             api_signature = params['api_signature']
-            params = sorted((k,v) for k,v in params.iteritems() if k != 'api_signature')
+            params = sorted((k, v)
+                            for k, v in params.iteritems() if k != 'api_signature')
             string_to_sign = path + '?' + urlencode(params)
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             return digest.hexdigest() == api_signature
@@ -115,18 +120,23 @@ class ApiAuthMixIn(object):
             return False
 
     def sign_request(self, path, params):
-        if hasattr(params, 'items'): params = params.items()
+        if hasattr(params, 'items'):
+            params = params.items()
         has_api_key = has_api_timestamp = has_api_signature = False
-        for k,v in params:
-            if k == 'api_key': has_api_key = True
-            if k == 'api_timestamp': has_api_timestamp = True
-            if k == 'api_signature': has_api_signature = True
+        for k, v in params:
+            if k == 'api_key':
+                has_api_key = True
+            if k == 'api_timestamp':
+                has_api_timestamp = True
+            if k == 'api_signature':
+                has_api_signature = True
         if not has_api_key:
             params.append(('api_key', self.api_key))
         if not has_api_timestamp:
             params.append(('api_timestamp', datetime.utcnow().isoformat()))
         if not has_api_signature:
-            string_to_sign = urllib.quote(path) + '?' + urlencode(sorted(params))
+            string_to_sign = urllib.quote(path) + \
+                '?' + urlencode(sorted(params))
             digest = hmac.new(self.secret_key, string_to_sign, hashlib.sha256)
             params.append(('api_signature', digest.hexdigest()))
         return params
@@ -136,14 +146,15 @@ class ApiAuthMixIn(object):
 
 
 class ApiToken(MappedClass, ApiAuthMixIn):
+
     class __mongometa__:
-        name='api_token'
+        name = 'api_token'
         session = main_orm_session
-        unique_indexes = [ 'user_id' ]
+        unique_indexes = ['user_id']
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    api_key = FieldProperty(str, if_missing=lambda:str(uuid.uuid4()))
+    api_key = FieldProperty(str, if_missing=lambda: str(uuid.uuid4()))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
 
     user = RelationProperty('User')
@@ -154,17 +165,19 @@ class ApiToken(MappedClass, ApiAuthMixIn):
 
 
 class ApiTicket(MappedClass, ApiAuthMixIn):
+
     class __mongometa__:
-        name='api_ticket'
+        name = 'api_ticket'
         session = main_orm_session
     PREFIX = 'tck'
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User')
-    api_key = FieldProperty(str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
+    api_key = FieldProperty(
+        str, if_missing=lambda: ApiTicket.PREFIX + h.nonce(20))
     secret_key = FieldProperty(str, if_missing=h.cryptographic_nonce)
     expires = FieldProperty(datetime, if_missing=None)
-    capabilities = FieldProperty({str:None})
+    capabilities = FieldProperty({str: None})
     mod_date = FieldProperty(datetime, if_missing=datetime.utcnow)
 
     user = RelationProperty('User')
@@ -183,16 +196,18 @@ class ApiTicket(MappedClass, ApiAuthMixIn):
     def get_capability(self, key):
         return self.capabilities.get(key)
 
+
 class EmailAddress(MappedClass):
     re_format = re.compile('^.* <(.*)>$')
+
     class __mongometa__:
-        name='email_address'
+        name = 'email_address'
         session = main_orm_session
         indexes = [
             'claimed_by_user_id']
 
     _id = FieldProperty(str)
-    claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
+    claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
     confirmed = FieldProperty(bool)
     nonce = FieldProperty(str)
 
@@ -236,14 +251,16 @@ please visit the following URL:
             message_id=h.gen_message_id(),
             text=text)
 
+
 class OpenId(MappedClass):
+
     class __mongometa__:
-        name='openid'
+        name = 'openid'
         session = main_orm_session
 
     _id = FieldProperty(str)
-    claimed_by_user_id=FieldProperty(S.ObjectId, if_missing=None)
-    display_identifier=FieldProperty(str)
+    claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
+    display_identifier = FieldProperty(str)
 
     @classmethod
     def upsert(cls, url, display_identifier):
@@ -256,8 +273,9 @@ class OpenId(MappedClass):
 
     def claimed_by_user(self):
         if self.claimed_by_user_id:
-            result = User.query.get(_id=self.claimed_by_user_id, disabled=False)
-        else: # pragma no cover
+            result = User.query.get(
+                _id=self.claimed_by_user_id, disabled=False)
+        else:  # pragma no cover
             result = User.register(
                 dict(username=None, password=None,
                      display_name=self.display_identifier,
@@ -266,9 +284,11 @@ class OpenId(MappedClass):
             self.claimed_by_user_id = result._id
         return result
 
+
 class AuthGlobals(MappedClass):
+
     class __mongometa__:
-        name='auth_globals'
+        name = 'auth_globals'
         session = main_orm_session
 
     _id = FieldProperty(int)
@@ -277,12 +297,13 @@ class AuthGlobals(MappedClass):
     @classmethod
     def upsert(cls):
         r = cls.query.get()
-        if r is not None: return r
+        if r is not None:
+            return r
         try:
             r = cls(_id=0)
             session(r).flush(r)
             return r
-        except pymongo.errors.DuplicateKeyError: # pragma no cover
+        except pymongo.errors.DuplicateKeyError:  # pragma no cover
             session(r).flush(r)
             r = cls.query.get()
             return r
@@ -291,68 +312,70 @@ class AuthGlobals(MappedClass):
     def get_next_uid(cls):
         cls.upsert()
         g = cls.query.find_and_modify(
-            query={}, update={'$inc':{'next_uid': 1}},
+            query={}, update={'$inc': {'next_uid': 1}},
             new=True)
         return g.next_uid
 
 
 class User(MappedClass, ActivityNode, ActivityObject):
-    SALT_LEN=8
+    SALT_LEN = 8
+
     class __mongometa__:
-        name='user'
+        name = 'user'
         session = main_orm_session
-        indexes = [ 'tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash' ]
-        unique_indexes = [ 'username' ]
+        indexes = ['tool_data.sfx.userid', 'tool_data.AuthPasswordReset.hash']
+        unique_indexes = ['username']
 
-    _id=FieldProperty(S.ObjectId)
-    sfx_userid=FieldProperty(S.Deprecated)
-    username=FieldProperty(str)
-    open_ids=FieldProperty([str])
-    email_addresses=FieldProperty([str])
-    password=FieldProperty(str)
-    projects=FieldProperty(S.Deprecated)
-    tool_preferences=FieldProperty({str:{str:None}}) # full mount point: prefs dict
-    tool_data = FieldProperty({str:{str:None}}) # entry point: prefs dict
-    display_name=FieldProperty(str)
-    disabled=FieldProperty(bool, if_missing=False)
+    _id = FieldProperty(S.ObjectId)
+    sfx_userid = FieldProperty(S.Deprecated)
+    username = FieldProperty(str)
+    open_ids = FieldProperty([str])
+    email_addresses = FieldProperty([str])
+    password = FieldProperty(str)
+    projects = FieldProperty(S.Deprecated)
+    # full mount point: prefs dict
+    tool_preferences = FieldProperty({str: {str: None}})
+    tool_data = FieldProperty({str: {str: None}})  # entry point: prefs dict
+    display_name = FieldProperty(str)
+    disabled = FieldProperty(bool, if_missing=False)
     # Don't use directly, use get/set_pref() instead
-    preferences=FieldProperty(dict(
-            results_per_page=int,
-            email_address=str,
-            email_format=str,
-            disable_user_messages=bool))
+    preferences = FieldProperty(dict(
+        results_per_page=int,
+        email_address=str,
+        email_format=str,
+        disable_user_messages=bool))
 
-    #Personal data
-    sex=FieldProperty(
+    # Personal data
+    sex = FieldProperty(
         S.OneOf('Male', 'Female', 'Other', 'Unknown',
-        if_missing='Unknown'))
-    birthdate=FieldProperty(S.DateTime, if_missing=None)
+                if_missing='Unknown'))
+    birthdate = FieldProperty(S.DateTime, if_missing=None)
 
-    #Availability information
-    availability=FieldProperty([dict(
+    # Availability information
+    availability = FieldProperty([dict(
         week_day=str,
         start_time=dict(h=int, m=int),
         end_time=dict(h=int, m=int))])
-    localization=FieldProperty(dict(city=str,country=str))
-    timezone=FieldProperty(str)
-    sent_user_message_times=FieldProperty([S.DateTime])
-    inactiveperiod=FieldProperty([dict(
+    localization = FieldProperty(dict(city=str, country=str))
+    timezone = FieldProperty(str)
+    sent_user_message_times = FieldProperty([S.DateTime])
+    inactiveperiod = FieldProperty([dict(
         start_date=S.DateTime,
         end_date=S.DateTime)])
 
-    #Additional contacts
-    socialnetworks=FieldProperty([dict(socialnetwork=str,accounturl=str)])
-    telnumbers=FieldProperty([str])
-    skypeaccount=FieldProperty(str)
-    webpages=FieldProperty([str])
+    # Additional contacts
+    socialnetworks = FieldProperty([dict(socialnetwork=str, accounturl=str)])
+    telnumbers = FieldProperty([str])
+    skypeaccount = FieldProperty(str)
+    webpages = FieldProperty([str])
 
-    #Skills list
+    # Skills list
     skills = FieldProperty([dict(
-        category_id = S.ObjectId,
-        level = S.OneOf('low', 'high', 'medium'),
+        category_id=S.ObjectId,
+        level=S.OneOf('low', 'high', 'medium'),
         comment=str)])
 
-    #Statistics
+    # Statistics
     stats_id = FieldProperty(S.ObjectId, if_missing=None)
 
     def can_send_user_message(self):
@@ -366,7 +389,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         now = datetime.utcnow()
         time_interval = timedelta(seconds=g.user_message_time_interval)
         self.sent_user_message_times = [t for t in self.sent_user_message_times
-                if t + time_interval > now]
+                                        if t + time_interval > now]
         return len(self.sent_user_message_times) < g.user_message_max_messages
 
     def time_to_next_user_message(self):
@@ -379,14 +402,15 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if self.can_send_user_message():
             return 0
         return self.sent_user_message_times[0] + \
-                timedelta(seconds=g.user_message_time_interval) - \
-                datetime.utcnow()
+            timedelta(seconds=g.user_message_time_interval) - \
+            datetime.utcnow()
 
     def send_user_message(self, user, subject, message, cc):
         """Send a user message (email) to ``user``.
 
         """
-        tmpl = g.jinja2_env.get_template('allura:ext/user_profile/templates/message.html')
+        tmpl = g.jinja2_env.get_template(
+            'allura:ext/user_profile/templates/message.html')
         tmpl_context = {
             'message_text': message,
             'site_name': config['site_name'],
@@ -438,7 +462,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def remove_socialnetwork(self, socialnetwork, oldurl):
         for el in self.socialnetworks:
-            if el.socialnetwork==socialnetwork and el.accounturl==oldurl:
+            if el.socialnetwork == socialnetwork and el.accounturl == oldurl:
                 del self.socialnetworks[self.socialnetworks.index(el)]
                 return
 
@@ -447,7 +471,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def remove_telephonenumber(self, oldvalue):
         for el in self.telnumbers:
-            if el==oldvalue:
+            if el == oldvalue:
                 del self.telnumbers[self.telnumbers.index(el)]
                 return
 
@@ -456,15 +480,15 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def remove_webpage(self, oldvalue):
         for el in self.webpages:
-            if el==oldvalue:
+            if el == oldvalue:
                 del self.webpages[self.webpages.index(el)]
                 return
 
     def add_timeslot(self, weekday, starttime, endtime):
         self.availability.append(
-           dict(week_day=weekday,
-                start_time=starttime,
-                end_time=endtime))
+            dict(week_day=weekday,
+                 start_time=starttime,
+                 end_time=endtime))
 
     def remove_timeslot(self, weekday, starttime, endtime):
         oldel = dict(week_day=weekday, start_time=starttime, end_time=endtime)
@@ -475,8 +499,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def add_inactive_period(self, startdate, enddate):
         self.inactiveperiod.append(
-           dict(start_date=startdate,
-                end_date=enddate))
+            dict(start_date=startdate,
+                 end_date=enddate))
 
     def remove_inactive_period(self, startdate, enddate):
         oldel = dict(start_date=startdate, end_date=enddate)
@@ -508,28 +532,28 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
             dif_days_start = convtime1.weekday() - today.weekday()
             dif_days_end = convtime2.weekday() - today.weekday()
-            index = (week_day.index(t['week_day'])+dif_days_start) % 7
+            index = (week_day.index(t['week_day']) + dif_days_start) % 7
             week_day_start = week_day[index]
             week_day_end = week_day[index]
 
             if week_day_start == week_day_end:
                 retlist.append(dict(
-                    week_day = week_day_start,
-                    start_time = convtime1.time(),
-                    end_time = convtime2.time()))
+                    week_day=week_day_start,
+                    start_time=convtime1.time(),
+                    end_time=convtime2.time()))
             else:
                 retlist.append(dict(
-                    week_day = week_day_start,
-                    start_time = convtime1.time(),
-                    end_time = time(23, 59)))
+                    week_day=week_day_start,
+                    start_time=convtime1.time(),
+                    end_time=time(23, 59)))
                 retlist.append(dict(
-                    week_day = week_day_end,
-                    start_time = time(0, 0),
-                    end_time = convtime2.time()))
+                    week_day=week_day_end,
+                    start_time=time(0, 0),
+                    end_time=convtime2.time()))
 
         return sorted(
             retlist,
-            key=lambda k:(week_day.index(k['week_day']), k['start_time']))
+            key=lambda k: (week_day.index(k['week_day']), k['start_time']))
 
     def get_skills(self):
         from allura.model.project import TroveCategory
@@ -549,9 +573,9 @@ class User(MappedClass, ActivityNode, ActivityObject):
             (starth, startm) = (start.get('h'), start.get('m'))
             (endh, endm) = (end.get('h'), end.get('m'))
             newdict = dict(
-                week_day  = el.get('week_day'),
-                start_time= time(starth,startm,0),
-                end_time  = time(endh,endm,0))
+                week_day=el.get('week_day'),
+                start_time=time(starth, startm, 0),
+                end_time=time(endh, endm, 0))
             retval.append(newdict)
         return retval
 
@@ -559,7 +583,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         retval = []
         for el in self.inactiveperiod:
             d1, d2 = (el.get('start_date'), el.get('end_date'))
-            newdict = dict(start_date = d1, end_date = d2)
+            newdict = dict(start_date=d1, end_date=d2)
             if include_past_periods or newdict['end_date'] > datetime.today():
                 retval.append(newdict)
         return retval
@@ -573,10 +597,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
         try:
             private_project = self.private_project()
         except:
-            log.warn('Error getting/creating user-project for %s', self.username, exc_info=True)
+            log.warn('Error getting/creating user-project for %s',
+                     self.username, exc_info=True)
             private_project = None
         if private_project and private_project.icon:
-            icon_url = self.url()+'user_icon'
+            icon_url = self.url() + 'user_icon'
         elif self.preferences.email_address:
             icon_url = g.gravatar(self.preferences.email_address)
         return icon_url
@@ -584,7 +609,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
     @classmethod
     def upsert(cls, username):
         u = cls.query.get(username=username)
-        if u is not None: return u
+        if u is not None:
+            return u
         try:
             u = cls(username=username)
             session(u).flush(u)
@@ -596,7 +622,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
     @classmethod
     def by_email_address(cls, addr):
         ea = EmailAddress.query.get(_id=addr)
-        if ea is None: return None
+        if ea is None:
+            return None
         return ea.claimed_by_user()
 
     @classmethod
@@ -629,14 +656,16 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def claim_openid(self, oid_url):
         oid_obj = OpenId.upsert(oid_url, self.get_pref('display_name'))
         oid_obj.claimed_by_user_id = self._id
-        if oid_url in self.open_ids: return
+        if oid_url in self.open_ids:
+            return
         self.open_ids.append(oid_url)
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
         email_addr = EmailAddress.upsert(addr)
         email_addr.claimed_by_user_id = self._id
-        if addr in self.email_addresses: return
+        if addr in self.email_addresses:
+            return
         self.email_addresses.append(addr)
 
     def claim_only_addresses(self, *addresses):
@@ -644,12 +673,13 @@ class User(MappedClass, ActivityNode, ActivityObject):
         attribute to True on all.
         '''
         self.email_addresses = [
-            EmailAddress.canonical(a) for a in addresses ]
+            EmailAddress.canonical(a) for a in addresses]
         addresses = set(self.email_addresses)
         for addr in EmailAddress.query.find(
-            dict(claimed_by_user_id=self._id)):
+                dict(claimed_by_user_id=self._id)):
             if addr._id in addresses:
-                if not addr.confirmed: addr.confirmed = True
+                if not addr.confirmed:
+                    addr.confirmed = True
                 addresses.remove(addr._id)
             else:
                 addr.delete()
@@ -689,16 +719,21 @@ class User(MappedClass, ActivityNode, ActivityObject):
         n = self.neighborhood
         auth_provider = plugin.AuthenticationProvider.get(request)
         project_shortname = auth_provider.user_project_shortname(self)
-        p = M.Project.query.get(shortname=project_shortname, neighborhood_id=n._id)
+        p = M.Project.query.get(
+            shortname=project_shortname, neighborhood_id=n._id)
         if p and p.deleted:
-            # really delete it, since registering a new project would conflict with the "deleted" one
-            log.info('completely deleting user project (was already flagged as deleted) %s', project_shortname)
+            # really delete it, since registering a new project would conflict
+            # with the "deleted" one
+            log.info(
+                'completely deleting user project (was already flagged as deleted) %s',
+                project_shortname)
             p.delete()
             ThreadLocalORMSession.flush_all()
             p = None
         if not p and not self.is_anonymous():
             # create user-project on demand if it is missing
-            p = n.register_project(project_shortname, user=self, user_project=True)
+            p = n.register_project(
+                project_shortname, user=self, user_project=True)
         return p
 
     @property
@@ -714,8 +749,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
         """
         if self.is_anonymous():
             return
-        reaching_role_ids = list(g.credentials.user_roles(user_id=self._id).reaching_ids_set)
-        reaching_roles = ProjectRole.query.find({'_id': {'$in': reaching_role_ids}}).all()
+        reaching_role_ids = list(
+            g.credentials.user_roles(user_id=self._id).reaching_ids_set)
+        reaching_roles = ProjectRole.query.find(
+            {'_id': {'$in': reaching_role_ids}}).all()
         if not role_name:
             named_roles = [r for r in reaching_roles
                            if r.name and r.project and not r.project.deleted]
@@ -724,7 +761,8 @@ class User(MappedClass, ActivityNode, ActivityObject):
                            if r.name == role_name and r.project and not r.project.deleted]
         seen_project_ids = set()
         for r in named_roles:
-            if r.project_id in seen_project_ids: continue
+            if r.project_id in seen_project_ids:
+                continue
             seen_project_ids.add(r.project_id)
             yield r.project
 
@@ -750,7 +788,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def withskill(cls, skill):
-        return cls.query.find({"skills.category_id" : skill._id})
+        return cls.query.find({"skills.category_id": skill._id})
 
     def __json__(self):
         return dict(
@@ -759,13 +797,17 @@ class User(MappedClass, ActivityNode, ActivityObject):
             url=h.absurl(self.url()),
         )
 
+
 class OldProjectRole(MappedClass):
+
     class __mongometa__:
         session = project_orm_session
-        name='user'
-        unique_indexes = [ ('user_id', 'project_id', 'name') ]
+        name = 'user'
+        unique_indexes = [('user_id', 'project_id', 'name')]
+
 
 class ProjectRole(MappedClass):
+
     """
     Per-project roles, called "Groups" in the UI.
     This can be a proxy for a single user.  It can also inherit roles.
@@ -778,13 +820,13 @@ class ProjectRole(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
-        name='project_role'
-        unique_indexes = [ ('user_id', 'project_id', 'name') ]
+        name = 'project_role'
+        unique_indexes = [('user_id', 'project_id', 'name')]
         indexes = [
             ('user_id',),
-            ('project_id', 'name'), # used in ProjectRole.by_name()
+            ('project_id', 'name'),  # used in ProjectRole.by_name()
             ('roles',),
-            ]
+        ]
 
     _id = FieldProperty(S.ObjectId)
     user_id = ForeignIdProperty('User', if_missing=None)
@@ -800,34 +842,40 @@ class ProjectRole(MappedClass):
         super(ProjectRole, self).__init__(**kw)
 
     def display(self):
-        if self.name: return self.name
+        if self.name:
+            return self.name
         if self.user_id:
             u = self.user
-            if u.username: uname = u.username
-            elif u.get_pref('display_name'): uname = u.get_pref('display_name')
-            else: uname = u._id
+            if u.username:
+                uname = u.username
+            elif u.get_pref('display_name'):
+                uname = u.get_pref('display_name')
+            else:
+                uname = u._id
             return '*user-%s' % uname
-        return '**unknown name role: %s' % self._id # pragma no cover
+        return '**unknown name role: %s' % self._id  # pragma no cover
 
     @classmethod
     def by_user(cls, user, project=None, upsert=False):
-        if project is None: project = c.project
+        if project is None:
+            project = c.project
         if user.is_anonymous():
             return cls.anonymous(project)
         if upsert:
             return cls.upsert(
-                    user_id=user._id,
-                    project_id=project.root_project._id,
-                )
+                user_id=user._id,
+                project_id=project.root_project._id,
+            )
         else:
             return cls.query.get(
-                    user_id=user._id,
-                    project_id=project.root_project._id,
-                )
+                user_id=user._id,
+                project_id=project.root_project._id,
+            )
 
     @classmethod
     def by_name(cls, name, project=None):
-        if project is None: project = c.project
+        if project is None:
+            project = c.project
         if hasattr(project, 'root_project'):
             project = project.root_project
         if hasattr(project, '_id'):
@@ -850,7 +898,8 @@ class ProjectRole(MappedClass):
     @classmethod
     def upsert(cls, **kw):
         obj = cls.query.get(**kw)
-        if obj is not None: return obj
+        if obj is not None:
+            return obj
         try:
             obj = cls(**kw)
             session(obj).insert_now(obj, state(obj))
@@ -865,13 +914,13 @@ class ProjectRole(MappedClass):
             return '*' == self.name[0]
         if self.user_id:
             return True
-        return False # pragma no cover
+        return False  # pragma no cover
 
     @property
     def user(self):
         if (self.user_id is None
-            and self.name
-            and self.name != '*anonymous'):
+                and self.name
+                and self.name != '*anonymous'):
             return None
         return User.query.get(_id=self.user_id)
 
@@ -885,21 +934,21 @@ class ProjectRole(MappedClass):
         return self.query.find({'roles': self._id}).all()
 
     def child_roles(self):
-        to_check = []+self.roles
+        to_check = [] + self.roles
         found_roles = []
         while to_check:
             checking = to_check.pop()
             for role in self.query.find({'_id': checking}).all():
                 if role not in found_roles:
                     found_roles.append(role)
-                    to_check=to_check+role.roles
+                    to_check = to_check + role.roles
         return found_roles
 
     def users_with_role(self, project=None):
         if not project:
             project = c.project
         return self.query.find(dict(project_id=project._id,
-            user_id={'$ne': None}, roles=self._id)).all()
+                                    user_id={'$ne': None}, roles=self._id)).all()
 
 audit_log = collection(
     'audit_log', main_doc_session,
@@ -910,6 +959,7 @@ audit_log = collection(
     Field('timestamp', datetime, if_missing=datetime.utcnow),
     Field('url', str),
     Field('message', str))
+
 
 class AuditLog(object):
 
@@ -941,7 +991,7 @@ class AuditLog(object):
         return cls(project_id=project._id, user_id=user._id, url=url, message=message)
 
 main_orm_session.mapper(AuditLog, audit_log, properties=dict(
-        project_id=ForeignIdProperty('Project'),
-        project=RelationProperty('Project'),
-        user_id=ForeignIdProperty('User'),
-        user=RelationProperty('User')))
+    project_id=ForeignIdProperty('Project'),
+    project=RelationProperty('Project'),
+    user_id=ForeignIdProperty('User'),
+    user=RelationProperty('User')))

@@ -38,6 +38,7 @@ log = logging.getLogger(__name__)
 
 
 class ForgeActivityApp(Application):
+
     """Project Activity page for projects."""
     __version__ = version.__version__
     default_mount_point = 'activity'
@@ -49,19 +50,22 @@ class ForgeActivityApp(Application):
         self.root = ForgeActivityController(self)
         self.api_root = ForgeActivityRestController(self)
 
-    def admin_menu(self): # pragma no cover
+    def admin_menu(self):  # pragma no cover
         return []
 
     def install(self, project):
-        pass # pragma no cover
+        pass  # pragma no cover
 
     def uninstall(self, project):
-        pass # pragma no cover
+        pass  # pragma no cover
+
 
 class W:
     follow_toggle = FollowToggle()
 
+
 class ForgeActivityController(BaseController):
+
     def __init__(self, app, *args, **kw):
         super(ForgeActivityController, self).__init__(*args, **kw)
         self.app = app
@@ -77,7 +81,8 @@ class ForgeActivityController(BaseController):
 
     def _get_activities_data(self, **kw):
         activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = request.cookies.get(
+            'activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
         if not activity_enabled:
             raise exc.HTTPNotFound()
@@ -92,8 +97,8 @@ class ForgeActivityController(BaseController):
 
         following = g.director.is_connected(c.user, followee)
         timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
-                limit=kw.get('limit', 100), actor_only=actor_only,
-                filter_func=perm_check(c.user))
+                                           limit=kw.get('limit', 100), actor_only=actor_only,
+                                           filter_func=perm_check(c.user))
         return dict(followee=followee, following=following, timeline=timeline)
 
     @expose('jinja:forgeactivity:templates/index.html')
@@ -108,11 +113,11 @@ class ForgeActivityController(BaseController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = {
-                'title': 'Activity for %s' % data['followee'].shortname,
-                'link': h.absurl(self.app.url),
-                'description': 'Recent activity for %s' % data['followee'].shortname,
-                'language': u'en',
-            }
+            'title': 'Activity for %s' % data['followee'].shortname,
+            'link': h.absurl(self.app.url),
+            'description': 'Recent activity for %s' % data['followee'].shortname,
+            'language': u'en',
+        }
         if request.environ['PATH_INFO'].endswith('.atom'):
             feed = FG.Atom1Feed(**d)
         else:
@@ -121,23 +126,24 @@ class ForgeActivityController(BaseController):
             url = h.absurl(t.obj.activity_url.encode('utf-8'))
             feed.add_item(title=u'%s %s %s%s' % (
                                 t.actor.activity_name,
-                                t.verb,
-                                t.obj.activity_name,
-                                ' on %s' % t.target.activity_name if t.target.activity_name else '',
-                            ),
-                          link=url,
-                          pubdate=t.published,
-                          description=t.obj.activity_extras.get('summary'),
-                          unique_id=url,
-                          author_name=t.actor.activity_name,
-                          author_link=h.absurl(t.actor.activity_url))
+                t.verb,
+                t.obj.activity_name,
+                ' on %s' % t.target.activity_name if t.target.activity_name else '',
+            ),
+                link=url,
+                pubdate=t.published,
+                description=t.obj.activity_extras.get('summary'),
+                unique_id=url,
+                author_name=t.actor.activity_name,
+                author_link=h.absurl(t.actor.activity_url))
         return feed.writeString('utf-8')
 
     @expose('json:')
     @validate(W.follow_toggle)
     def follow(self, follow, **kw):
         activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get('activitystream.enabled', activity_enabled)
+        activity_enabled = request.cookies.get(
+            'activitystream.enabled', activity_enabled)
         activity_enabled = asbool(activity_enabled)
         if not activity_enabled:
             raise exc.HTTPNotFound()
@@ -167,6 +173,7 @@ class ForgeActivityController(BaseController):
 
 
 class ForgeActivityRestController(BaseController):
+
     def __init__(self, app, *args, **kw):
         super(ForgeActivityRestController, self).__init__(*args, **kw)
         self.app = app
@@ -175,17 +182,17 @@ class ForgeActivityRestController(BaseController):
     def index(self, **kw):
         data = self.app.root._get_activities_data(**kw)
         return {
-                'following': data['following'],
-                'followee': {
-                    'activity_name': data['followee'].shortname,
-                    'activity_url': data['followee'].url(),
-                    'activity_extras': {},
-                },
-                'timeline': [{
-                        'published': '%s UTC' % a.published,
-                        'actor': a.actor._deinstrument(),
-                        'verb': a.verb,
-                        'obj': a.obj._deinstrument(),
-                        'target': a.target._deinstrument(),
-                    } for a in data['timeline']],
-            }
+            'following': data['following'],
+            'followee': {
+                'activity_name': data['followee'].shortname,
+                'activity_url': data['followee'].url(),
+                'activity_extras': {},
+            },
+            'timeline': [{
+                'published': '%s UTC' % a.published,
+                'actor': a.actor._deinstrument(),
+                'verb': a.verb,
+                'obj': a.obj._deinstrument(),
+                'target': a.target._deinstrument(),
+            } for a in data['timeline']],
+        }

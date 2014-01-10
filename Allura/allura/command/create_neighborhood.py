@@ -23,31 +23,32 @@ from bson import ObjectId
 from allura import model as M
 from allura.lib import plugin, exceptions
 
+
 class CreateNeighborhoodCommand(base.Command):
-    min_args=3
-    max_args=None
+    min_args = 3
+    max_args = None
     usage = '<ini file> <neighborhood_shortname> <admin1> [<admin2>...]'
     summary = 'Create a new neighborhood with the listed admins'
     parser = base.Command.standard_parser(verbose=True)
 
     def command(self):
         self.basic_setup()
-        admins = [ M.User.by_username(un) for un in self.args[2:] ]
+        admins = [M.User.by_username(un) for un in self.args[2:]]
         shortname = self.args[1]
         n = M.Neighborhood(
             name=shortname,
             url_prefix='/' + shortname + '/',
-            features=dict(private_projects = False,
-                          max_projects = 500,
-                          css = 'none',
-                          google_analytics = False))
+            features=dict(private_projects=False,
+                          max_projects=500,
+                          css='none',
+                          google_analytics=False))
         project_reg = plugin.ProjectRegistrationProvider.get()
         project_reg.register_neighborhood_project(n, admins)
 
 
 class UpdateNeighborhoodCommand(base.Command):
-    min_args=3
-    max_args=None
+    min_args = 3
+    max_args = None
     usage = '<ini file> <neighborhood> <home_tool_active>'
     summary = 'Activate Home application for neighborhood\r\n' \
         '\t<neighborhood> - the neighborhood name or _id\r\n' \
@@ -64,8 +65,8 @@ class UpdateNeighborhoodCommand(base.Command):
         if not nb:
             nb = M.Neighborhood.query.get(_id=ObjectId(shortname))
         if nb is None:
-            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s " \
-                "could not be found in the database" % shortname)
+            raise exceptions.NoSuchNeighborhoodError("The neighborhood %s "
+                                                     "could not be found in the database" % shortname)
         tool_value = self.args[2].lower()
         if tool_value[:1] == "t":
             home_tool_active = True

@@ -38,7 +38,7 @@ class GitHubMarkdownConverter(object):
             nextline = False
             for p in self.code_patterns:
                 if line.startswith(p):
-                    prev_line = lines[i-1].strip() if (i-1) >= 0 else ''
+                    prev_line = lines[i - 1].strip() if (i - 1) >= 0 else ''
                     if len(prev_line) > 0 and not in_block:
                         new_lines.append('')
                     if p == '```':
@@ -62,10 +62,12 @@ class GitHubMarkdownConverter(object):
                 if inline_matches:
                     # need to not handle inline blocks as a text
                     for i, m in enumerate(inline_matches):
-                        line = line.replace(m, '<inline_block>%s</inline_block>' % i)
+                        line = line.replace(
+                            m, '<inline_block>%s</inline_block>' % i)
                     line = self._handle_non_code(line)
                     for i, m in enumerate(inline_matches):
-                        line = line.replace('<inline_block>%s</inline_block>' % i, m)
+                        line = line.replace(
+                            '<inline_block>%s</inline_block>' % i, m)
                     new_lines.append(line)
                 else:
                     new_lines.append(self._handle_non_code(line))

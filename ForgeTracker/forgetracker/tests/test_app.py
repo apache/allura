@@ -29,6 +29,7 @@ from forgetracker.tests.functional.test_root import TrackerTestController
 
 
 class TestBulkExport(TrackerTestController):
+
     @td.with_tracker
     def setup_with_tools(self):
         super(TestBulkExport, self).setup_with_tools()
@@ -49,7 +50,8 @@ class TestBulkExport(TrackerTestController):
         f.seek(0)
         tracker = json.loads(f.read())
 
-        tickets = sorted(tracker['tickets'], key=operator.itemgetter('summary'))
+        tickets = sorted(tracker['tickets'],
+                         key=operator.itemgetter('summary'))
         assert_equal(len(tickets), 2)
         ticket_foo = tickets[1]
         assert_equal(ticket_foo['summary'], 'foo')
@@ -62,9 +64,11 @@ class TestBulkExport(TrackerTestController):
         assert_true('options' in tracker_config.keys())
         assert_equal(tracker_config['options']['mount_point'], 'bugs')
 
-        milestones = sorted(tracker['milestones'], key=operator.itemgetter('name'))
+        milestones = sorted(tracker['milestones'],
+                            key=operator.itemgetter('name'))
         assert_equal(milestones[0]['name'], '1.0')
         assert_equal(milestones[1]['name'], '2.0')
 
-        saved_bins_summaries = [bin['summary'] for bin in tracker['saved_bins']]
+        saved_bins_summaries = [bin['summary']
+                                for bin in tracker['saved_bins']]
         assert_true('Closed Tickets' in saved_bins_summaries)

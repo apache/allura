@@ -34,9 +34,11 @@ config = utils.ConfigProxy(
 
 log = logging.getLogger(__name__)
 
+
 class Forum(M.Discussion):
+
     class __mongometa__:
-        name='forum'
+        name = 'forum'
     type_s = 'Discussion'
 
     parent_id = FieldProperty(schema.ObjectId, if_missing=None)
@@ -74,14 +76,15 @@ class Forum(M.Discussion):
 
     @property
     def email_address(self):
-        domain = '.'.join(reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
+        domain = '.'.join(
+            reversed(self.app.url[1:-1].split('/'))).replace('_', '-')
         return '%s@%s%s' % (self.shortname.replace('/', '.'), domain, config.common_suffix)
 
     @LazyProperty
     def announcements(self):
         return self.thread_class().query.find(dict(
-                app_config_id=self.app_config_id,
-                flags='Announcement')).all()
+            app_config_id=self.app_config_id,
+            flags='Announcement')).all()
 
     def breadcrumbs(self):
         if self.parent:
@@ -113,12 +116,14 @@ class Forum(M.Discussion):
             subject = data['headers'].get('Subject', subject)
         if parent_id is not None:
             parent = self.post_class().query.get(_id=parent_id)
-            if parent: return parent.thread, parent_id
+            if parent:
+                return parent.thread, parent_id
         if message_id:
             post = self.post_class().query.get(_id=message_id)
-            if post: return post.thread, None
+            if post:
+                return post.thread, None
         # Otherwise it's a new thread
-        return self.thread_class()(discussion_id=self._id,subject=subject), None
+        return self.thread_class()(discussion_id=self._id, subject=subject), None
 
     @property
     def discussion_thread(self):
@@ -138,12 +143,15 @@ class Forum(M.Discussion):
                     self.app.config.options.mount_point)))
         return super(Forum, self).get_mail_footer(notification, toaddr)
 
+
 class ForumFile(M.File):
-    forum_id=FieldProperty(schema.ObjectId)
+    forum_id = FieldProperty(schema.ObjectId)
+
 
 class ForumThread(M.Thread):
+
     class __mongometa__:
-        name='forum_thread'
+        name = 'forum_thread'
         indexes = [
             'flags',
             'discussion_id',
@@ -178,7 +186,8 @@ class ForumThread(M.Thread):
         return self
 
     def post(self, subject, text, message_id=None, parent_id=None, **kw):
-        post = super(ForumThread, self).post(text, message_id=message_id, parent_id=parent_id, **kw)
+        post = super(ForumThread, self).post(
+            text, message_id=message_id, parent_id=parent_id, **kw)
         if not self.first_post_id:
             self.first_post_id = post._id
             self.num_replies = 1
@@ -188,22 +197,25 @@ class ForumThread(M.Thread):
     def set_forum(self, new_forum):
         self.post_class().query.update(
             dict(discussion_id=self.discussion_id, thread_id=self._id),
-            {'$set':dict(discussion_id=new_forum._id)}, multi=True)
+            {'$set': dict(discussion_id=new_forum._id)}, multi=True)
         self.attachment_class().query.update(
-            {'discussion_id':self.discussion_id, 'thread_id':self._id},
-            {'$set':dict(discussion_id=new_forum._id)})
+            {'discussion_id': self.discussion_id, 'thread_id': self._id},
+            {'$set': dict(discussion_id=new_forum._id)})
         self.discussion_id = new_forum._id
 
 
 class ForumPostHistory(M.PostHistory):
+
     class __mongometa__:
-        name='post_history'
+        name = 'post_history'
 
     artifact_id = ForeignIdProperty('ForumPost')
 
+
 class ForumPost(M.Post):
+
     class __mongometa__:
-        name='forum_post'
+        name = 'forum_post'
         history_class = ForumPostHistory
         indexes = [
             'timestamp',  # for the posts_24hr site_stats query
@@ -252,32 +264,35 @@ class ForumPost(M.Post):
         # Set the thread ID on my replies and attachments
         old_slug = self.slug + '/', self.full_slug + '/'
         reply_re = re.compile(self.slug + '/.*')
-        self.slug, self.full_slug = self.make_slugs(parent=parent, timestamp=self.timestamp)
+        self.slug, self.full_slug = self.make_slugs(
+            parent=parent, timestamp=self.timestamp)
         placeholder.text = 'Discussion moved to [here](%s#post-%s)' % (
             thread.url(), self.slug)
         new_slug = self.slug + '/', self.full_slug + '/'
-        self.discussion_id=thread.discussion_id
-        self.thread_id=thread._id
-        self.parent_id=new_parent_id
+        self.discussion_id = thread.discussion_id
+        self.thread_id = thread._id
+        self.parent_id = new_parent_id
         self.text = 'Discussion moved from [here](%s#post-%s)\n\n%s' % (
             placeholder.thread.url(), placeholder.slug, self.text)
         reply_tree = self.query.find(dict(slug=reply_re)).all()
         for post in reply_tree:
             post.slug = new_slug[0] + post.slug[len(old_slug[0]):]
             post.full_slug = new_slug[1] + post.slug[len(old_slug[1]):]
-            post.discussion_id=self.discussion_id
-            post.thread_id=self.thread_id
-        for post in [ self ] + reply_tree:
+            post.discussion_id = self.discussion_id
+            post.thread_id = self.thread_id
+        for post in [self] + reply_tree:
             for att in post.attachments:
-                att.discussion_id=self.discussion_id
-                att.thread_id=self.thread_id
+                att.discussion_id = self.discussion_id
+                att.thread_id = self.thread_id
+
 
 class ForumAttachment(M.DiscussionAttachment):
-    DiscussionClass=Forum
-    ThreadClass=ForumThread
-    PostClass=ForumPost
+    DiscussionClass = Forum
+    ThreadClass = ForumThread
+    PostClass = ForumPost
+
     class __mongometa__:
-        polymorphic_identity='ForumAttachment'
-    attachment_type=FieldProperty(str, if_missing='ForumAttachment')
+        polymorphic_identity = 'ForumAttachment'
+    attachment_type = FieldProperty(str, if_missing='ForumAttachment')
 
 Mapper.compile_all()

@@ -32,6 +32,7 @@ from allura.lib import helpers as h
 from allura.tests import decorators as td
 from forgewiki import model as WM
 
+
 class TestNotification(unittest.TestCase):
 
     def setUp(self):
@@ -45,7 +46,7 @@ class TestNotification(unittest.TestCase):
         _clear_notifications()
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
-        M.notification.MAILBOX_QUIESCENT=None # disable message combining
+        M.notification.MAILBOX_QUIESCENT = None  # disable message combining
 
     def test_subscribe_unsubscribe(self):
         M.Mailbox.subscribe(type='direct')
@@ -56,7 +57,7 @@ class TestNotification(unittest.TestCase):
             app_config_id=c.app.config._id,
             user_id=c.user._id)).all()
         assert len(subscriptions) == 1
-        assert subscriptions[0].type=='direct'
+        assert subscriptions[0].type == 'direct'
         assert M.Mailbox.query.find().count() == 1
         M.Mailbox.unsubscribe()
         ThreadLocalORMSession.flush_all()
@@ -74,28 +75,28 @@ class TestNotification(unittest.TestCase):
         wiki = c.project.app_instance('wiki')
         page = WM.Page.query.get(app_config_id=wiki.config._id)
         notification = M.Notification(
-                _id='_id',
-                ref=page.ref,
-                from_address='from_address',
-                reply_to_address='reply_to_address',
-                in_reply_to='in_reply_to',
-                references=['a'],
-                subject='subject',
-                text='text',
-            )
+            _id='_id',
+            ref=page.ref,
+            from_address='from_address',
+            reply_to_address='reply_to_address',
+            in_reply_to='in_reply_to',
+            references=['a'],
+            subject='subject',
+            text='text',
+        )
         notification.footer = lambda: ' footer'
         notification.send_direct(c.user._id)
         sendmail.post.assert_called_once_with(
-                destinations=[str(c.user._id)],
-                fromaddr='from_address',
-                reply_to='reply_to_address',
-                subject='subject',
-                message_id='_id',
-                in_reply_to='in_reply_to',
-                references=['a'],
-                sender='wiki@test.p.in.sf.net',
-                text='text footer',
-            )
+            destinations=[str(c.user._id)],
+            fromaddr='from_address',
+            reply_to='reply_to_address',
+            subject='subject',
+            message_id='_id',
+            in_reply_to='in_reply_to',
+            references=['a'],
+            sender='wiki@test.p.in.sf.net',
+            text='text footer',
+        )
 
     @mock.patch('allura.tasks.mail_tasks.sendmail')
     def test_send_direct_no_access(self, sendmail):
@@ -106,14 +107,14 @@ class TestNotification(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         notification = M.Notification(
-                _id='_id',
-                ref=page.ref,
-                from_address='from_address',
-                reply_to_address='reply_to_address',
-                in_reply_to='in_reply_to',
-                subject='subject',
-                text='text',
-            )
+            _id='_id',
+            ref=page.ref,
+            from_address='from_address',
+            reply_to_address='reply_to_address',
+            in_reply_to='in_reply_to',
+            subject='subject',
+            text='text',
+        )
         notification.footer = lambda: ' footer'
         notification.send_direct(c.user._id)
         assert_equal(sendmail.post.call_count, 0)
@@ -136,29 +137,30 @@ class TestNotification(unittest.TestCase):
         wiki = project1.app_instance('wiki')
         page = WM.Page.query.get(app_config_id=wiki.config._id)
         notification = M.Notification(
-                _id='_id',
-                ref=page.ref,
-                from_address='from_address',
-                reply_to_address='reply_to_address',
-                in_reply_to='in_reply_to',
-                references=['a'],
-                subject='subject',
-                text='text',
-            )
+            _id='_id',
+            ref=page.ref,
+            from_address='from_address',
+            reply_to_address='reply_to_address',
+            in_reply_to='in_reply_to',
+            references=['a'],
+            subject='subject',
+            text='text',
+        )
         notification.footer = lambda: ' footer'
         c.project = project2
         notification.send_direct(c.user._id)
         sendmail.post.assert_called_once_with(
-                destinations=[str(c.user._id)],
-                fromaddr='from_address',
-                reply_to='reply_to_address',
-                subject='subject',
-                message_id='_id',
-                in_reply_to='in_reply_to',
-                references=['a'],
-                sender='wiki@test.p.in.sf.net',
-                text='text footer',
-            )
+            destinations=[str(c.user._id)],
+            fromaddr='from_address',
+            reply_to='reply_to_address',
+            subject='subject',
+            message_id='_id',
+            in_reply_to='in_reply_to',
+            references=['a'],
+            sender='wiki@test.p.in.sf.net',
+            text='text footer',
+        )
+
 
 class TestPostNotifications(unittest.TestCase):
 
@@ -175,7 +177,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
-        M.notification.MAILBOX_QUIESCENT=None # disable message combining
+        M.notification.MAILBOX_QUIESCENT = None  # disable message combining
         while M.MonQTask.run_ready('setup'):
             ThreadLocalORMSession.flush_all()
 
@@ -206,7 +208,7 @@ class TestPostNotifications(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         M.MonQTask.run_ready()
         ThreadLocalORMSession.flush_all()
-        assert M.Mailbox.query.find().count()==1
+        assert M.Mailbox.query.find().count() == 1
         mbox = M.Mailbox.query.get()
         assert len(mbox.queue) == 1
         assert not mbox.queue_empty
@@ -218,10 +220,13 @@ class TestPostNotifications(unittest.TestCase):
         self._post_notification()
         ThreadLocalORMSession.flush_all()
 
-        assert_equal(M.Notification.query.get()['from_address'], '"Test Admin" <test-admin@users.localhost>')
+        assert_equal(M.Notification.query.get()
+                     ['from_address'], '"Test Admin" <test-admin@users.localhost>')
         assert_equal(M.Mailbox.query.find().count(), 2)
 
-        M.MonQTask.run_ready()  # sends the notification out into "mailboxes", and from mailboxes into email tasks
+        # sends the notification out into "mailboxes", and from mailboxes into
+        # email tasks
+        M.MonQTask.run_ready()
         mboxes = M.Mailbox.query.find().all()
         assert_equal(len(mboxes), 2)
         assert_equal(len(mboxes[0].queue), 1)
@@ -230,16 +235,20 @@ class TestPostNotifications(unittest.TestCase):
         assert not mboxes[1].queue_empty
 
         email_tasks = M.MonQTask.query.find({'state': 'ready'}).all()
-        assert_equal(len(email_tasks), 2)  # make sure both subscribers will get an email
+        # make sure both subscribers will get an email
+        assert_equal(len(email_tasks), 2)
 
         first_destinations = [e.kwargs['destinations'][0] for e in email_tasks]
         assert_in(str(c.user._id), first_destinations)
         assert_in(str(user2._id), first_destinations)
-        assert_equal(email_tasks[0].kwargs['fromaddr'], '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(email_tasks[1].kwargs['fromaddr'], '"Test Admin" <test-admin@users.localhost>')
+        assert_equal(email_tasks[0].kwargs['fromaddr'],
+                     '"Test Admin" <test-admin@users.localhost>')
+        assert_equal(email_tasks[1].kwargs['fromaddr'],
+                     '"Test Admin" <test-admin@users.localhost>')
         assert_equal(email_tasks[0].kwargs['sender'], 'wiki@test.p.in.sf.net')
         assert_equal(email_tasks[1].kwargs['sender'], 'wiki@test.p.in.sf.net')
-        assert email_tasks[0].kwargs['text'].startswith('Home modified by Test Admin')
+        assert email_tasks[0].kwargs['text'].startswith(
+            'Home modified by Test Admin')
         assert 'you indicated interest in ' in email_tasks[0].kwargs['text']
 
     def test_permissions(self):
@@ -249,6 +258,7 @@ class TestPostNotifications(unittest.TestCase):
         u = M.User.query.get(username='test-admin')
         self._subscribe(user=u)
         # Simulate a permission check failure.
+
         def patched_has_access(*args, **kw):
             def predicate(*args, **kw):
                 return False
@@ -272,14 +282,13 @@ class TestPostNotifications(unittest.TestCase):
 
     def test_footer(self):
         footer = MailFooter.monitored(
-                'test@mail.com',
-                'http://test1.com',
-                'http://test2.com')
+            'test@mail.com',
+            'http://test1.com',
+            'http://test2.com')
         assert 'test@mail.com is subscribed to http://test1.com' in footer
         assert 'admin can change settings at http://test2.com' in footer
         footer = MailFooter.standard(M.Notification())
         assert 'Sent from sourceforge.net because you indicated interest in' in footer
-
 
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)
@@ -288,6 +297,7 @@ class TestPostNotifications(unittest.TestCase):
 
     def _post_notification(self):
         return M.Notification.post(self.pg, 'metadata')
+
 
 class TestSubscriptionTypes(unittest.TestCase):
 
@@ -304,7 +314,7 @@ class TestSubscriptionTypes(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         self.pg = WM.Page.query.get(app_config_id=c.app.config._id)
-        M.notification.MAILBOX_QUIESCENT=None # disable message combining
+        M.notification.MAILBOX_QUIESCENT = None  # disable message combining
 
     def test_direct_sub(self):
         self._subscribe()
@@ -316,13 +326,13 @@ class TestSubscriptionTypes(unittest.TestCase):
 
     def test_digest_sub(self):
         self._subscribe(type='digest')
-        self._post_notification(text='x'*1024)
+        self._post_notification(text='x' * 1024)
         self._post_notification()
         M.Mailbox.fire_ready()
 
     def test_summary_sub(self):
         self._subscribe(type='summary')
-        self._post_notification(text='x'*1024)
+        self._post_notification(text='x' * 1024)
         self._post_notification()
         M.Mailbox.fire_ready()
 
@@ -333,8 +343,9 @@ class TestSubscriptionTypes(unittest.TestCase):
         self._test_message()
 
         self.setUp()
-        M.notification.MAILBOX_QUIESCENT=timedelta(minutes=1)
-        # will raise "assert msg is not None" since the new message is not 1 min old:
+        M.notification.MAILBOX_QUIESCENT = timedelta(minutes=1)
+        # will raise "assert msg is not None" since the new message is not 1
+        # min old:
         self.assertRaises(AssertionError, self._test_message)
 
     def _test_message(self):
@@ -347,8 +358,8 @@ class TestSubscriptionTypes(unittest.TestCase):
         ThreadLocalORMSession.flush_all()
         ThreadLocalORMSession.close_all()
         msg = M.MonQTask.query.get(
-                task_name='allura.tasks.mail_tasks.sendmail',
-                state='ready')
+            task_name='allura.tasks.mail_tasks.sendmail',
+            state='ready')
         assert msg is not None
         assert 'Home@wiki.test.p' in msg.kwargs['reply_to']
         u = M.User.by_username('test-admin')
@@ -371,6 +382,7 @@ class TestSubscriptionTypes(unittest.TestCase):
     @mock.patch('allura.model.notification.Notification')
     def test_direct_accumulation(self, mocked_notification, mocked_defaultdict):
         class OrderedDefaultDict(collections.OrderedDict):
+
             def __init__(self, factory=list, *a, **kw):
                 self._factory = factory
                 super(OrderedDefaultDict, self).__init__(*a, **kw)
@@ -383,24 +395,35 @@ class TestSubscriptionTypes(unittest.TestCase):
                 return value
 
         notifications = mocked_notification.query.find.return_value.all.return_value = [
-                mock.Mock(_id='n0', topic='metadata', subject='s1', from_address='f1', reply_to_address='rt1', author_id='a1'),
-                mock.Mock(_id='n1', topic='metadata', subject='s2', from_address='f2', reply_to_address='rt2', author_id='a2'),
-                mock.Mock(_id='n2', topic='metadata', subject='s2', from_address='f2', reply_to_address='rt2', author_id='a2'),
-                mock.Mock(_id='n3', topic='message', subject='s3', from_address='f3', reply_to_address='rt3', author_id='a3'),
-                mock.Mock(_id='n4', topic='message', subject='s3', from_address='f3', reply_to_address='rt3', author_id='a3'),
-            ]
+            mock.Mock(_id='n0', topic='metadata', subject='s1',
+                      from_address='f1', reply_to_address='rt1', author_id='a1'),
+            mock.Mock(_id='n1', topic='metadata', subject='s2',
+                      from_address='f2', reply_to_address='rt2', author_id='a2'),
+            mock.Mock(_id='n2', topic='metadata', subject='s2',
+                      from_address='f2', reply_to_address='rt2', author_id='a2'),
+            mock.Mock(_id='n3', topic='message', subject='s3',
+                      from_address='f3', reply_to_address='rt3', author_id='a3'),
+            mock.Mock(_id='n4', topic='message', subject='s3',
+                      from_address='f3', reply_to_address='rt3', author_id='a3'),
+        ]
         mocked_defaultdict.side_effect = OrderedDefaultDict
 
         u0 = bson.ObjectId()
-        mbox = M.Mailbox(type='direct', user_id=u0, queue=['n0', 'n1', 'n2', 'n3', 'n4'])
+        mbox = M.Mailbox(type='direct', user_id=u0,
+                         queue=['n0', 'n1', 'n2', 'n3', 'n4'])
         mbox.fire('now')
 
-        mocked_notification.query.find.assert_called_once_with({'_id': {'$in': ['n0', 'n1', 'n2', 'n3', 'n4']}})
-        # first notification should be sent direct, as its key values are unique
+        mocked_notification.query.find.assert_called_once_with(
+            {'_id': {'$in': ['n0', 'n1', 'n2', 'n3', 'n4']}})
+        # first notification should be sent direct, as its key values are
+        # unique
         notifications[0].send_direct.assert_called_once_with(u0)
-        # next two notifications should be sent as a digest as they have matching key values
-        mocked_notification.send_digest.assert_called_once_with(u0, 'f2', 's2', [notifications[1], notifications[2]], 'rt2')
-        # final two should be sent direct even though they matching keys, as they are messages
+        # next two notifications should be sent as a digest as they have
+        # matching key values
+        mocked_notification.send_digest.assert_called_once_with(
+            u0, 'f2', 's2', [notifications[1], notifications[2]], 'rt2')
+        # final two should be sent direct even though they matching keys, as
+        # they are messages
         notifications[3].send_direct.assert_called_once_with(u0)
         notifications[4].send_direct.assert_called_once_with(u0)
 
@@ -433,21 +456,25 @@ class TestSubscriptionTypes(unittest.TestCase):
         user = M.User.by_username('test-admin')
         user.disabled = True
         ThreadLocalORMSession.flush_all()
-        M.Notification.send_digest(user._id, 'test@mail.com', 'subject', [notification])
+        M.Notification.send_digest(
+            user._id, 'test@mail.com', 'subject', [notification])
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
         assert_equal(count, 0)
         user.disabled = False
         ThreadLocalORMSession.flush_all()
-        M.Notification.send_digest(user._id, 'test@mail.com', 'subject', [notification])
+        M.Notification.send_digest(
+            user._id, 'test@mail.com', 'subject', [notification])
         count = M.MonQTask.query.find(dict(
             task_name='allura.tasks.mail_tasks.sendmail',
             state='ready')).count()
         assert_equal(count, 1)
 
+
 def _clear_subscriptions():
         M.Mailbox.query.remove({})
+
 
 def _clear_notifications():
         M.Notification.query.remove({})

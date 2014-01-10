@@ -27,6 +27,7 @@ from allura.controllers.repository import topo_sort
 from allura.model.repository import zipdir, prefix_paths_union
 from alluratest.controller import setup_unit_test
 
+
 class TestCommitRunBuilder(unittest.TestCase):
 
     def setUp(self):
@@ -34,10 +35,10 @@ class TestCommitRunBuilder(unittest.TestCase):
         commits = [
             M.repo.CommitDoc.make(dict(
                 _id=str(i)))
-            for i in range(10) ]
-        for p,c in zip(commits, commits[1:]):
-            p.child_ids = [ c._id ]
-            c.parent_ids = [ p._id ]
+            for i in range(10)]
+        for p, c in zip(commits, commits[1:]):
+            p.child_ids = [c._id]
+            c.parent_ids = [p._id]
         for ci in commits:
             ci.m.save()
         self.commits = commits
@@ -73,7 +74,9 @@ class TestCommitRunBuilder(unittest.TestCase):
             crb.cleanup()
         self.assertEqual(M.repo.CommitRunDoc.m.count(), 1)
 
+
 class TestTopoSort(unittest.TestCase):
+
     def test_commit_dates_out_of_order(self):
         """Commits should be sorted by their parent/child relationships,
         regardless of the date on the commit.
@@ -102,7 +105,7 @@ class TestTopoSort(unittest.TestCase):
             'dev':        datetime.datetime(2012, 6, 1)}
         result = topo_sort(children, parents, dates, head_ids)
         self.assertEqual(list(result), ['dev', 'dev@{1}', 'master',
-            'master@{1}', 'master@{2}', 'master@{3}'])
+                                        'master@{1}', 'master@{2}', 'master@{3}'])
 
 
 def tree(name, id, trees=None, blobs=None):
@@ -142,6 +145,7 @@ class TestTree(unittest.TestCase):
 
 
 class TestBlob(unittest.TestCase):
+
     def test_context_no_create(self):
         blob = M.repo.Blob(Mock(), Mock(), Mock())
         blob.path = Mock(return_value='path')
@@ -208,6 +212,7 @@ class TestBlob(unittest.TestCase):
 
 
 class TestCommit(unittest.TestCase):
+
     def test_activity_extras(self):
         commit = M.repo.Commit()
         commit.shorthand_id = MagicMock(return_value='abcdef')
@@ -269,7 +274,8 @@ class TestCommit(unittest.TestCase):
         tree = commit.get_tree()
         commit.repo.compute_tree_new.assert_called_once_with(commit)
         assert not tree_get.called
-        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree'))
+        c.model_cache.get.assert_called_once_with(
+            M.repo.Tree, dict(_id='tree'))
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
@@ -279,7 +285,8 @@ class TestCommit(unittest.TestCase):
         tree = commit.get_tree()
         assert not commit.repo.compute_tree_new.called
         assert not tree_get.called
-        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree2'))
+        c.model_cache.get.assert_called_once_with(
+            M.repo.Tree, dict(_id='tree2'))
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
@@ -288,11 +295,13 @@ class TestCommit(unittest.TestCase):
         c.model_cache.get.return_value = None
         tree_get.return_value = _tree
         tree = commit.get_tree()
-        c.model_cache.get.assert_called_once_with(M.repo.Tree, dict(_id='tree2'))
+        c.model_cache.get.assert_called_once_with(
+            M.repo.Tree, dict(_id='tree2'))
         commit.repo.compute_tree_new.assert_called_once_with(commit)
         assert_equal(commit.tree_id, 'tree')
         tree_get.assert_called_once_with(_id='tree')
-        c.model_cache.set.assert_called_once_with(M.repo.Tree, dict(_id='tree'), _tree)
+        c.model_cache.set.assert_called_once_with(
+            M.repo.Tree, dict(_id='tree'), _tree)
         _tree.set_context.assert_called_once_with(commit)
         assert_equal(tree, _tree)
 
@@ -304,6 +313,7 @@ class TestCommit(unittest.TestCase):
 
 
 class TestZipDir(unittest.TestCase):
+
     @patch('allura.model.repository.Popen')
     @patch('allura.model.repository.tg')
     def test_popen_called(self, tg, popen):
@@ -314,14 +324,16 @@ class TestZipDir(unittest.TestCase):
         src = '/fake/path/to/repo'
         zipfile = '/fake/zip/file.tmp'
         zipdir(src, zipfile)
-        popen.assert_called_once_with(['/bin/zip', '-y', '-q', '-r', zipfile, 'repo'],
-                cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
+        popen.assert_called_once_with(
+            ['/bin/zip', '-y', '-q', '-r', zipfile, 'repo'],
+            cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
         popen.reset_mock()
         src = '/fake/path/to/repo/'
         zipdir(src, zipfile, exclude='file.txt')
         popen.assert_called_once_with(
-                ['/bin/zip', '-y', '-q', '-r', zipfile, 'repo', '-x', 'file.txt'],
-                cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
+            ['/bin/zip', '-y', '-q', '-r',
+             zipfile, 'repo', '-x', 'file.txt'],
+            cwd='/fake/path/to', stdout=PIPE, stderr=PIPE)
 
     @patch('allura.model.repository.Popen')
     @patch('allura.model.repository.tg')
@@ -335,14 +347,15 @@ class TestZipDir(unittest.TestCase):
             zipdir(src, zipfile)
         emsg = str(cm.exception)
         self.assertTrue(
-                "Command: "
-                "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', 'repo'] "
-                "returned non-zero exit code 1" in emsg)
+            "Command: "
+            "['/bin/zip', '-y', '-q', '-r', '/fake/zip/file.tmp', 'repo'] "
+            "returned non-zero exit code 1" in emsg)
         self.assertTrue("STDOUT: 1" in emsg)
         self.assertTrue("STDERR: 2" in emsg)
 
 
 class TestPrefixPathsUnion(unittest.TestCase):
+
     def test_disjoint(self):
         a = set(['a1', 'a2', 'a3'])
         b = set(['b1', 'b1/foo', 'b2'])

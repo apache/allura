@@ -25,8 +25,9 @@ from allura import model as M
 from allura.lib.widgets import form_fields as ffw
 from allura.lib import helpers as h
 
+
 class TicketCustomFields(ew.CompoundField):
-    template='jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
+    template = 'jinja:forgetracker:templates/tracker_widgets/ticket_custom_fields.html'
 
     def __init__(self, *args, **kwargs):
         super(TicketCustomFields, self).__init__(*args, **kwargs)
@@ -49,8 +50,9 @@ class TicketCustomFields(ew.CompoundField):
                     self._fields.append(TicketCustomField.make(cf))
         return self._fields
 
+
 class GenericTicketForm(ew.SimpleForm):
-    defaults=dict(
+    defaults = dict(
         ew.SimpleForm.defaults,
         name="ticket_form",
         submit_text='Save',
@@ -74,7 +76,8 @@ class GenericTicketForm(ew.SimpleForm):
 
         display = field.display(**ctx)
         if ctx['errors'] and field.show_errors and not ignore_errors:
-            display = "%s<div class='error'>%s</div>" % (display, ctx['errors'])
+            display = "%s<div class='error'>%s</div>" % (display,
+                                                         ctx['errors'])
         return display
 
     def _add_current_value_to_user_field(self, field, user):
@@ -97,21 +100,30 @@ class GenericTicketForm(ew.SimpleForm):
     def fields(self):
         fields = [
             ew.TextField(name='summary', label='Title',
-                attrs={'style':'width: 425px','placeholder':'Title'},
-                validator=fev.UnicodeString(not_empty=True, messages={'empty':"You must provide a Title"})),
-            ffw.MarkdownEdit(label='Description',name='description',
-                    attrs={'style':'width: 95%'}),
+                         attrs={'style': 'width: 425px',
+                                'placeholder': 'Title'},
+                         validator=fev.UnicodeString(
+                             not_empty=True, messages={
+                                 'empty': "You must provide a Title"})),
+            ffw.MarkdownEdit(label='Description', name='description',
+                             attrs={'style': 'width: 95%'}),
             ew.SingleSelectField(name='status', label='Status',
-                options=lambda: c.app.globals.all_status_names.split()),
+                                 options=lambda: c.app.globals.all_status_names.split(
+                                 )),
             ffw.ProjectUserCombo(name='assigned_to', label='Owner'),
-            ffw.LabelEdit(label='Labels',name='labels', className='ticket_form_tags'),
-            ew.Checkbox(name='private', label='Mark as Private', attrs={'class':'unlabeled'}),
-            ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
+            ffw.LabelEdit(label='Labels', name='labels',
+                          className='ticket_form_tags'),
+            ew.Checkbox(name='private', label='Mark as Private',
+                        attrs={'class': 'unlabeled'}),
+            ew.InputField(name='attachment', label='Attachment', field_type='file', attrs={
+                          'multiple': 'True'}, validator=fev.FieldStorageUploadConverter(if_missing=None)),
             ffw.MarkdownEdit(name='comment', label='Comment',
-                        attrs={'style':'min-height:7em; width:97%'}),
-            ew.SubmitButton(label=self.submit_text,name='submit',
-                attrs={'class':"ui-button ui-widget ui-state-default ui-button-text-only"}),
-            ew.HiddenField(name='ticket_num', validator=fev.Int(if_missing=None)),
+                             attrs={'style': 'min-height:7em; width:97%'}),
+            ew.SubmitButton(label=self.submit_text, name='submit',
+                            attrs={
+                                'class': "ui-button ui-widget ui-state-default ui-button-text-only"}),
+            ew.HiddenField(name='ticket_num',
+                           validator=fev.Int(if_missing=None)),
         ]
         # milestone is kind of special because of the layout
         # add it to the main form rather than handle with the other customs
@@ -122,8 +134,10 @@ class GenericTicketForm(ew.SimpleForm):
                     break
         return ew_core.NameList(fields)
 
+
 class TicketForm(GenericTicketForm):
-    template='jinja:forgetracker:templates/tracker_widgets/ticket_form.html'
+    template = 'jinja:forgetracker:templates/tracker_widgets/ticket_form.html'
+
     @property
     def fields(self):
         fields = ew_core.NameList(super(TicketForm, self).fields)
@@ -132,7 +146,8 @@ class TicketForm(GenericTicketForm):
         return fields
 
     def resources(self):
-        for r in super(TicketForm, self).resources(): yield r
+        for r in super(TicketForm, self).resources():
+            yield r
         yield ew.JSScript('''
         $(function(){
             $('#show_attach').click(function(evt) {
@@ -153,18 +168,21 @@ class TicketForm(GenericTicketForm):
             });
         });''')
 
+
 class TicketCustomField(object):
 
     def _select(field):
         options = []
-        field_options = h.split_select_field_options(h.really_unicode(field.options))
+        field_options = h.split_select_field_options(
+            h.really_unicode(field.options))
 
         for opt in field_options:
             selected = False
             if opt.startswith('*'):
                 opt = opt[1:]
                 selected = True
-            options.append(ew.Option(label=opt,html_value=opt,py_value=opt,selected=selected))
+            options.append(
+                ew.Option(label=opt, html_value=opt, py_value=opt, selected=selected))
         return ew.SingleSelectField(label=field.label, name=str(field.name), options=options)
 
     def _milestone(field):
@@ -206,8 +224,9 @@ class TicketCustomField(object):
         factory = cls.SELECTOR.get(field.get('type'), cls._default)
         return factory(field)
 
+
 class MilestoneField(ew.SingleSelectField):
-    template=ew.Snippet('''<select {{widget.j2_attrs({
+    template = ew.Snippet('''<select {{widget.j2_attrs({
                'id':id,
                'name':rendered_name,
                'multiple':multiple,
@@ -229,8 +248,10 @@ class MilestoneField(ew.SingleSelectField):
         context = super(MilestoneField, self).prepare_context(context)
 
         # group open / closed milestones
-        context['open_milestones'] = [opt for opt in self.options if not opt.complete]
-        context['closed_milestones'] = [opt for opt in self.options if opt.complete]
+        context['open_milestones'] = [
+            opt for opt in self.options if not opt.complete]
+        context['closed_milestones'] = [
+            opt for opt in self.options if opt.complete]
 
         # filter closed milestones entirely
         #value = context['value']

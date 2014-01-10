@@ -34,10 +34,13 @@ from .markdown_extensions import ForgeExtension
 
 log = getLogger(__name__)
 
+
 def solarize(obj):
-    if obj is None: return None
+    if obj is None:
+        return None
     doc = obj.index()
-    if doc is None: return None
+    if doc is None:
+        return None
     # if index() returned doc without text, assume empty text
     if not doc.get('text'):
         doc['text'] = ''
@@ -48,8 +51,10 @@ def solarize(obj):
     doc['text'] = jinja2.Markup.escape(text).striptags()
     return doc
 
+
 class SearchError(SolrError):
     pass
+
 
 def inject_user(q, user=None):
     '''Replace $USER with current user's name.'''
@@ -57,7 +62,8 @@ def inject_user(q, user=None):
         user = c.user
     return q.replace('$USER', '"%s"' % user.username) if q else q
 
-def search(q,short_timeout=False,ignore_errors=True,**kw):
+
+def search(q, short_timeout=False, ignore_errors=True, **kw):
     q = inject_user(q)
     try:
         if short_timeout:
@@ -68,7 +74,9 @@ def search(q,short_timeout=False,ignore_errors=True,**kw):
         log.exception('Error in solr search')
         if not ignore_errors:
             match = re.search(r'<pre>(.*)</pre>', str(e))
-            raise SearchError('Error running search query: %s' % (match.group(1) if match else e))
+            raise SearchError('Error running search query: %s' %
+                              (match.group(1) if match else e))
+
 
 def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw):
     """Performs SOLR search.
@@ -77,14 +85,15 @@ def search_artifact(atype, q, history=False, rows=10, short_timeout=False, **kw)
     """
     # first, grab an artifact and get the fields that it indexes
     a = atype.query.find().first()
-    if a is None: return # if there are no instance of atype, we won't find anything
+    if a is None:
+        return  # if there are no instance of atype, we won't find anything
     fields = a.index()
     # Now, we'll translate all the fld:
     q = atype.translate_query(q, fields)
     fq = [
         'type_s:%s' % fields['type_s'],
         'project_id_s:%s' % c.project._id,
-        'mount_point_s:%s' % c.app.config.options.mount_point ]
+        'mount_point_s:%s' % c.app.config.options.mount_point]
     if not history:
         fq.append('is_history_b:False')
     return search(q, fq=fq, rows=rows, short_timeout=short_timeout, ignore_errors=False, **kw)
@@ -97,8 +106,10 @@ def search_app(q='', fq=None, app=True, **kw):
     """
     history = kw.pop('history', None)
     if app and kw.pop('project', False):
-        # Used from app's search controller. If `project` is True, redirect to 'entire project search' page
-        redirect(c.project.url() + 'search/?' + urlencode(dict(q=q, history=history)))
+        # Used from app's search controller. If `project` is True, redirect to
+        # 'entire project search' page
+        redirect(c.project.url() + 'search/?' +
+                 urlencode(dict(q=q, history=history)))
     search_comments = kw.pop('search_comments', None)
     limit = kw.pop('limit', None)
     page = kw.pop('page', 0)
@@ -122,10 +133,11 @@ def search_app(q='', fq=None, app=True, **kw):
             allowed_types += ['Post']
         if app:
             fq = [
-                'project_id_s:%s'  % c.project._id,
+                'project_id_s:%s' % c.project._id,
                 'mount_point_s:%s' % c.app.config.options.mount_point,
                 '-deleted_b:true',
-                'type_s:(%s)' % ' OR '.join(['"%s"' % t for t in allowed_types])
+                'type_s:(%s)' % ' OR '.join(
+                    ['"%s"' % t for t in allowed_types])
             ] + fq
         search_params = {
             'qt': 'dismax',
@@ -138,7 +150,7 @@ def search_app(q='', fq=None, app=True, **kw):
             'sort': sort,
         }
         if not history:
-           search_params['fq'].append('is_history_b:False')
+            search_params['fq'].append('is_history_b:False')
         if parser == 'standard':
             search_params.pop('qt', None)
             search_params.pop('qf', None)
@@ -152,11 +164,14 @@ def search_app(q='', fq=None, app=True, **kw):
         if results:
             count = results.hits
             matches = results.highlighting
+
             def historize_urls(doc):
                 if doc.get('type_s', '').endswith(' Snapshot'):
                     if doc.get('url_s'):
-                        doc['url_s'] = doc['url_s'] + '?version=%s' % doc.get('version_i')
+                        doc['url_s'] = doc['url_s'] + \
+                            '?version=%s' % doc.get('version_i')
                 return doc
+
             def add_matches(doc):
                 m = matches.get(doc['id'], {})
                 title = h.get_first(m, 'title')
@@ -172,6 +187,7 @@ def search_app(q='', fq=None, app=True, **kw):
                 doc['title_match'] = title
                 doc['text_match'] = text or h.get_first(doc, 'text')
                 return doc
+
             def paginate_comment_urls(doc):
                 if doc.get('type_s', '') == 'Post':
                     aref = ArtifactReference.query.get(_id=doc.get('id'))
@@ -211,4 +227,4 @@ def find_shortlinks(text):
         output_format='html4')
     md.convert(text)
     link_index = md.treeprocessors['links'].alinks
-    return [ link for link in link_index if link is not None]
+    return [link for link in link_index if link is not None]

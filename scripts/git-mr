@@ -38,7 +38,7 @@ usage = "git mr [-a|-r] [--grep PATTERN] [upstream]"
 
 def main():
     parser = argparse.ArgumentParser(prog='git mr', usage=usage)
-    parser.add_argument('-r', action='store_true', 
+    parser.add_argument('-r', action='store_true',
                         dest='examine_remote_branches', default=False,
                         help='examine remote branches')
     parser.add_argument('-a', action='store_true',
@@ -60,49 +60,52 @@ def main():
         merged_branches = git('branch', '--merged', args.upstream)
         unmerged_branches = git('branch', '--no-merged', args.upstream)
 
-    merged_branches = [ line[2:] for line in merged_branches ]
-    unmerged_branches = [ line[2:] for line in unmerged_branches ]
+    merged_branches = [line[2:] for line in merged_branches]
+    unmerged_branches = [line[2:] for line in unmerged_branches]
     really_unmerged_branches = []
 
     if args.grep:
         filter = re.compile(args.grep[0])
-        merged_branches = [ b for b in merged_branches if filter.search(b) ]
-        unmerged_branches = [ b for b in unmerged_branches if filter.search(b) ]
+        merged_branches = [b for b in merged_branches if filter.search(b)]
+        unmerged_branches = [b for b in unmerged_branches if filter.search(b)]
 
     if merged_branches:
         print('Branches contained by %s:' % args.upstream)
         for branch in merged_branches:
-            print('  '+colorize('green', branch))
+            print('  ' + colorize('green', branch))
 
     if unmerged_branches:
         header_printed = False
         for branch in unmerged_branches:
-            commits = ''.join(git('cherry', args.upstream, branch, strip_eol=False))
+            commits = ''.join(
+                git('cherry', args.upstream, branch, strip_eol=False))
             if commits.find('+') == -1:
                 if not header_printed:
                     print('Branches probably merged to %s:' % args.upstream)
                     header_printed = True
-                print('  '+colorize('green', branch))
+                print('  ' + colorize('green', branch))
             else:
-                really_unmerged_branches += [ branch ]
+                really_unmerged_branches += [branch]
 
         if really_unmerged_branches:
             print('Branches probably not merged to %s:' % args.upstream)
             for branch in really_unmerged_branches:
-                print('  '+colorize('red', branch))
+                print('  ' + colorize('red', branch))
+
 
 def git(*args, **kw):
-    if len(args)==1 and isinstance(args[0], basestring):
+    if len(args) == 1 and isinstance(args[0], basestring):
         argv = shlex.split(args[0])
     else:
         argv = list(args)
     if argv[0] != 'git':
         argv.insert(0, 'git')
-    p = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(argv, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT)
     rc = p.wait()
     output = p.stdout.readlines()
     if kw.get('strip_eol', True):
-        output = [ line.rstrip('\n') for line in output ]
+        output = [line.rstrip('\n') for line in output]
     return output
 
 

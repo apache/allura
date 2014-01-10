@@ -22,9 +22,11 @@ from allura.scripts.scripttask import ScriptTask
 
 
 class TestScriptTask(unittest.TestCase):
+
     def setUp(self):
         class TestScriptTask(ScriptTask):
             _parser = mock.Mock()
+
             @classmethod
             def parser(cls):
                 return cls._parser

@@ -34,10 +34,10 @@ log = logging.getLogger(__name__)
 
 class GitHubProjectExtractor(base.ProjectExtractor):
     PAGE_MAP = {
-            'project_info': 'https://api.github.com/repos/{project_name}',
-            'issues': 'https://api.github.com/repos/{project_name}/issues',
-            'wiki_url': 'https://github.com/{project_name}.wiki',
-        }
+        'project_info': 'https://api.github.com/repos/{project_name}',
+        'issues': 'https://api.github.com/repos/{project_name}/issues',
+        'wiki_url': 'https://github.com/{project_name}.wiki',
+    }
     POSSIBLE_STATES = ('opened', 'closed')
     SUPPORTED_ISSUE_EVENTS = ('closed', 'reopened', 'assigned')
     NEXT_PAGE_URL_RE = re.compile(r'<([^>]*)>; rel="next"')
@@ -66,7 +66,8 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 
     def urlopen(self, url, **kw):
         try:
-            resp = super(GitHubProjectExtractor, self).urlopen(self.add_token(url), **kw)
+            resp = super(GitHubProjectExtractor, self).urlopen(
+                self.add_token(url), **kw)
         except urllib2.HTTPError as e:
             # GitHub will return 403 if rate limit exceeded.
             # We're checking for limit on every request below, but we still
@@ -95,10 +96,12 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return json.loads(page.read().decode('utf8')), next_page_url
 
     def get_page(self, page_name_or_url, **kw):
-        page = super(GitHubProjectExtractor, self).get_page(page_name_or_url, **kw)
+        page = super(GitHubProjectExtractor, self).get_page(
+            page_name_or_url, **kw)
         page, next_page_url = page
         while next_page_url:
-            p = super(GitHubProjectExtractor, self).get_page(next_page_url, **kw)
+            p = super(GitHubProjectExtractor,
+                      self).get_page(next_page_url, **kw)
             p, next_page_url = p
             page += p
         self.page = page
@@ -114,7 +117,8 @@ class GitHubProjectExtractor(base.ProjectExtractor):
         return self.get_page('project_info').get('clone_url')
 
     def iter_issues(self):
-        # github api doesn't allow getting closed and opened tickets in one query
+        # github api doesn't allow getting closed and opened tickets in one
+        # query
         issues = []
         url = self.get_page_url('issues') + '?state={state}'
         for state in self.POSSIBLE_STATES:
@@ -144,6 +148,7 @@ class GitHubProjectExtractor(base.ProjectExtractor):
 
 
 class GitHubOAuthMixin(object):
+
     '''Support for github oauth web application flow.'''
 
     def oauth_begin(self):
@@ -155,8 +160,10 @@ class GitHubOAuthMixin(object):
             return  # token already exists, nothing to do
         redirect_uri = request.url.rstrip('/') + '/oauth_callback'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-        auth_url, state = oauth.authorization_url('https://github.com/login/oauth/authorize')
-        session['github.oauth.state'] = state  # Used in callback to prevent CSRF
+        auth_url, state = oauth.authorization_url(
+            'https://github.com/login/oauth/authorize')
+        # Used in callback to prevent CSRF
+        session['github.oauth.state'] = state
         session['github.oauth.redirect'] = request.url
         session.save()
         redirect(auth_url)
@@ -168,11 +175,13 @@ class GitHubOAuthMixin(object):
         secret = config.get('github_importer.client_secret')
         if not client_id or not secret:
             return  # GitHub app is not configured
-        oauth = OAuth2Session(client_id, state=session.get('github.oauth.state'))
+        oauth = OAuth2Session(
+            client_id, state=session.get('github.oauth.state'))
         token = oauth.fetch_token(
             'https://github.com/login/oauth/access_token',
             client_secret=secret,
             authorization_response=request.url
         )
-        c.user.set_tool_data('GitHubProjectImport', token=token['access_token'])
+        c.user.set_tool_data('GitHubProjectImport',
+                             token=token['access_token'])
         redirect(session.get('github.oauth.redirect', '/'))

@@ -33,7 +33,9 @@ from alluratest.controller import TestController
 from forgesvn.tests import with_svn
 from allura.tests.decorators import with_tool
 
+
 class SVNTestController(TestController):
+
     def setUp(self):
         TestController.setUp(self)
         self.setup_with_tools()
@@ -95,7 +97,7 @@ class TestRootController(SVNTestController):
 
     def test_commit_browser_data(self):
         resp = self.app.get('/src/commit_browser_data')
-        data = json.loads(resp.body);
+        data = json.loads(resp.body)
         assert data['max_row'] == 5
         assert data['next_column'] == 1
         for val in data['built_tree'].values():
@@ -112,7 +114,8 @@ class TestRootController(SVNTestController):
             title = channel.find('title').text
             assert_equal(title, 'test SVN changes')
             description = channel.find('description').text
-            assert_equal(description, 'Recent changes to SVN repository in test project')
+            assert_equal(description,
+                         'Recent changes to SVN repository in test project')
             link = channel.find('link').text
             assert_equal(link, 'http://localhost/p/test/src/')
             commit = channel.find('item')
@@ -144,8 +147,10 @@ class TestRootController(SVNTestController):
 
     def test_file(self):
         resp = self.app.get('/src/1/tree/README')
-        assert 'README' in resp.html.find('h2', {'class':'dark title'}).contents[2]
-        content = str(resp.html.find('div', {'class':'clip grid-19 codebrowser'}))
+        assert 'README' in resp.html.find(
+            'h2', {'class': 'dark title'}).contents[2]
+        content = str(
+            resp.html.find('div', {'class': 'clip grid-19 codebrowser'}))
         assert 'This is readme' in content, content
         assert '<span id="l1" class="code_block">' in resp
         assert 'var hash = window.location.hash.substring(1);' in resp
@@ -233,30 +238,37 @@ class TestRootController(SVNTestController):
         form = r.html.find('form', 'tarball')
         assert_equal(form.button.text, 'Download Snapshot')
         assert_equal(form.get('action'), '/p/test/svn-tags/19/tarball')
-        assert_equal(form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
+        assert_equal(
+            form.find('input', attrs=dict(name='path')).get('value'), '/tags/tag-1.0')
 
-        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        r = self.app.get(
+            '/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], None)
-        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/tags/tag-1.0')).follow()
+        r = self.app.post('/p/test/svn-tags/19/tarball',
+                          dict(path='/tags/tag-1.0')).follow()
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
-        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
+        r = self.app.get(
+            '/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0')
         assert_equal(r.json['status'], 'complete')
 
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], None)
-        r = self.app.post('/p/test/svn-tags/19/tarball', dict(path='/trunk/')).follow()
+        r = self.app.post('/p/test/svn-tags/19/tarball',
+                          dict(path='/trunk/')).follow()
         assert 'Generating snapshot...' in r
         M.MonQTask.run_ready()
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk')
         assert_equal(r.json['status'], 'complete')
 
-        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
+        r = self.app.get(
+            '/p/test/svn-tags/19/tarball_status?path=/branches/aaa/')
         assert_equal(r.json['status'], None)
 
         # All of the following also should be ready because...
         # ...this is essentially the same as trunk snapshot
-        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/trunk/some/path/')
+        r = self.app.get(
+            '/p/test/svn-tags/19/tarball_status?path=/trunk/some/path/')
         assert_equal(r.json['status'], 'complete')
         r = self.app.get('/p/test/svn-tags/19/tarball_status')
         assert_equal(r.json['status'], 'complete')
@@ -267,7 +279,8 @@ class TestRootController(SVNTestController):
         r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/branches/')
         assert_equal(r.json['status'], 'complete')
         # ...this is essentially the same as tag snapshot
-        r = self.app.get('/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
+        r = self.app.get(
+            '/p/test/svn-tags/19/tarball_status?path=/tags/tag-1.0/dir')
         assert_equal(r.json['status'], 'complete')
 
 
@@ -297,6 +310,7 @@ class TestImportController(SVNTestController):
 
 
 class SVNTestRenames(TestController):
+
     def setUp(self):
         TestController.setUp(self)
         self.setup_with_tools()

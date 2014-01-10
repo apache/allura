@@ -22,6 +22,7 @@ from allura.app import SitemapEntry
 
 
 class TestSitemapEntry(unittest.TestCase):
+
     def test_matches_url(self):
         request = Mock(upath_info='/p/project/tool/artifact')
         s1 = SitemapEntry('tool', url='/p/project/tool')

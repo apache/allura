@@ -86,7 +86,8 @@ def setup_functional_test(config=None, app_name=DFL_APP_NAME):
     wsgiapp = loadapp('config:%s#%s' % (config, app_name),
                       relative_to=conf_dir)
     return wsgiapp
-setup_functional_test.__test__ = False  # sometimes __test__ above isn't sufficient
+# sometimes __test__ above isn't sufficient
+setup_functional_test.__test__ = False
 
 
 def setup_unit_test():
@@ -96,10 +97,11 @@ def setup_unit_test():
     except:
         pass
     REGISTRY.prepare()
-    REGISTRY.register(ew.widget_context, ew.core.WidgetContext('http', ew.ResourceManager()))
+    REGISTRY.register(ew.widget_context,
+                      ew.core.WidgetContext('http', ew.ResourceManager()))
     REGISTRY.register(g, Globals())
     REGISTRY.register(c, mock.Mock())
-    REGISTRY.register(url, lambda:None)
+    REGISTRY.register(url, lambda: None)
     REGISTRY.register(response, Response())
     REGISTRY.register(session, beaker.session.SessionObject({}))
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())
@@ -123,7 +125,8 @@ class TestController(object):
 
     def setUp(self):
         """Method called by nose before running each test"""
-        self.app = ValidatingTestApp(setup_functional_test(app_name=self.application_under_test))
+        self.app = ValidatingTestApp(
+            setup_functional_test(app_name=self.application_under_test))
         if self.validate_skip:
             self.app.validate_skip = self.validate_skip
         if asbool(tg.config.get('smtp.mock')):
@@ -164,8 +167,9 @@ class TestRestApiBase(TestController):
 
         return self._token_cache[username]
 
-    def _api_getpost(self, method, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', status=None, **params):
+    def _api_getpost(
+            self, method, path, api_key=None, api_timestamp=None, api_signature=None,
+            wrap_args=None, user='test-admin', status=None, **params):
         '''
         If you need to use one of the method kwargs as a URL parameter,
         pass params={...} as a dict instead of **kwargs
@@ -177,13 +181,16 @@ class TestRestApiBase(TestController):
         if status is None:
             status = [200, 201, 301, 302, 400, 403, 404]
         params = variabledecode.variable_encode(params, add_repetitions=False)
-        if api_key: params['api_key'] = api_key
-        if api_timestamp: params['api_timestamp'] = api_timestamp
-        if api_signature: params['api_signature'] = api_signature
+        if api_key:
+            params['api_key'] = api_key
+        if api_timestamp:
+            params['api_timestamp'] = api_timestamp
+        if api_signature:
+            params['api_signature'] = api_signature
 
         params = self.token(user).sign_request(path, params)
 
-        fn = self.app.post if method=='POST' else self.app.get
+        fn = self.app.post if method == 'POST' else self.app.get
 
         response = fn(
             str(path),
@@ -194,10 +201,12 @@ class TestRestApiBase(TestController):
         else:
             return response
 
-    def api_get(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', status=None, **params):
+    def api_get(
+            self, path, api_key=None, api_timestamp=None, api_signature=None,
+            wrap_args=None, user='test-admin', status=None, **params):
         return self._api_getpost('GET', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)
 
-    def api_post(self, path, api_key=None, api_timestamp=None, api_signature=None,
-                 wrap_args=None, user='test-admin', status=None, **params):
+    def api_post(
+            self, path, api_key=None, api_timestamp=None, api_signature=None,
+            wrap_args=None, user='test-admin', status=None, **params):
         return self._api_getpost('POST', path, api_key, api_timestamp, api_signature, wrap_args, user, status, **params)

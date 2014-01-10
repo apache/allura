@@ -20,7 +20,7 @@ from allura.lib.widgets import form_fields as ffw
 
 class ShortUrlFormWidget(ffw.Lightbox):
     defaults = dict(
-            ffw.Lightbox.defaults,
-            name='short-url-modal',
-            trigger='a.add-short-url, a.update-short-url',
-            content_template='forgeshorturl:templates/form.html')
+        ffw.Lightbox.defaults,
+        name='short-url-modal',
+        trigger='a.add-short-url, a.update-short-url',
+        content_template='forgeshorturl:templates/form.html')

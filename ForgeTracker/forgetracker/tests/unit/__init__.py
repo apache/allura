@@ -30,15 +30,16 @@ def setUp():
 
 
 class TrackerTestWithModel(object):
+
     def setUp(self):
         bootstrap.wipe_database()
         project_reg = plugin.ProjectRegistrationProvider.get()
         c.user = bootstrap.create_user('Test User')
         neighborhood = M.Neighborhood(name='Projects', url_prefix='/p/',
-            features=dict(private_projects = False,
-                          max_projects = None,
-                          css = 'none',
-                          google_analytics = False))
+                                      features=dict(private_projects=False,
+                                                    max_projects=None,
+                                                    css='none',
+                                                    google_analytics=False))
         project_reg.register_neighborhood_project(neighborhood, [c.user])
         c.project = neighborhood.register_project('test', c.user)
         c.project.install_app('Tickets', 'bugs')
@@ -47,4 +48,3 @@ class TrackerTestWithModel(object):
 
     def tearDown(self):
         ThreadLocalORMSession.close_all()
-

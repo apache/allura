@@ -48,9 +48,11 @@ def bulk_export(tools, filename=None, send_email=True):
 
 
 class BulkExport(object):
+
     def process(self, project, tools, user, filename=None, send_email=True):
         export_filename = filename or project.bulk_export_filename()
-        export_path = self.get_export_path(project.bulk_export_path(), export_filename)
+        export_path = self.get_export_path(
+            project.bulk_export_path(), export_filename)
         if not os.path.exists(export_path):
             os.makedirs(export_path)
         apps = [project.app_instance(tool) for tool in tools]
@@ -58,7 +60,8 @@ class BulkExport(object):
         results = [self.export(export_path, app) for app in exportable]
         exported = self.filter_successful(results)
         if exported:
-            zipdir(export_path, os.path.join(os.path.dirname(export_path), export_filename))
+            zipdir(export_path,
+                   os.path.join(os.path.dirname(export_path), export_filename))
         shutil.rmtree(export_path)
 
         if not user:
@@ -67,13 +70,14 @@ class BulkExport(object):
         if not send_email:
             return
 
-        tmpl = g.jinja2_env.get_template('allura:templates/mail/bulk_export.html')
+        tmpl = g.jinja2_env.get_template(
+            'allura:templates/mail/bulk_export.html')
         instructions = tg.config.get('bulk_export_download_instructions', '')
         instructions = instructions.format(
-                project=project.shortname,
-                filename=export_filename,
-                c=c,
-            )
+            project=project.shortname,
+            filename=export_filename,
+            c=c,
+        )
         exported_names = [a.config.options.mount_point for a in exported]
         tmpl_context = {
             'instructions': instructions,
@@ -110,7 +114,8 @@ class BulkExport(object):
             with open(json_file, 'w') as f:
                 app.bulk_export(f)
         except Exception as e:
-            log.error('Error exporting: %s on %s', tool, app.project.shortname, exc_info=True)
+            log.error('Error exporting: %s on %s', tool,
+                      app.project.shortname, exc_info=True)
             return None
         else:
             return app

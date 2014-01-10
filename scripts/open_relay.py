@@ -26,14 +26,16 @@ from ConfigParser import ConfigParser
 
 log = logging.getLogger(__name__)
 
+
 def main():
     cp = ConfigParser()
-    log.info('Read config from: %s', cp.read([os.path.join(os.environ['HOME'], '.open_relay.ini')]))
+    log.info('Read config from: %s',
+             cp.read([os.path.join(os.environ['HOME'], '.open_relay.ini')]))
     host = cp.get('open_relay', 'host')
     port = cp.getint('open_relay', 'port')
     ssl = cp.getboolean('open_relay', 'ssl')
     tls = cp.getboolean('open_relay', 'tls')
-    username=cp.get('open_relay', 'username')
+    username = cp.get('open_relay', 'username')
     password = cp.get('open_relay', 'password')
     smtp_client = MailClient(host,
                              port,
@@ -42,6 +44,7 @@ def main():
     MailServer(('0.0.0.0', 8826), None,
                smtp_client=smtp_client)
     asyncore.loop()
+
 
 class MailClient(object):
 
@@ -52,7 +55,8 @@ class MailClient(object):
         self._connect()
 
     def sendmail(self, mailfrom, rcpttos, data):
-        if str(mailfrom) == 'None': mailfrom = rcpttos[0]
+        if str(mailfrom) == 'None':
+            mailfrom = rcpttos[0]
         log.info('Sending mail to %s' % rcpttos)
         log.info('Sending mail from %s' % mailfrom)
         try:
@@ -70,6 +74,7 @@ class MailClient(object):
             self._client.starttls()
         if self.username:
             self._client.login(self.username, self.password)
+
 
 class MailServer(smtpd.SMTPServer):
 
