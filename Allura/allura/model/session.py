@@ -86,8 +86,22 @@ class ArtifactSessionExtension(SessionExtension):
         if objects_deleted:
             index_tasks.del_artifacts.post(
                 [obj.index_id() for obj in objects_deleted])
+        add_task = None
         if arefs:
-            index_tasks.add_artifacts.post([aref._id for aref in arefs])
+            add_task = index_tasks.add_artifacts.post([aref._id for aref in arefs])
+        try:
+            l = logging.getLogger('allura.debug7047')
+            from tg import request
+            task = request.environ.get('task')
+            if task and task.task_name == 'forgetracker.tasks.bulk_edit':
+                l.debug('session: %s %s', self.session.impl.db, self.session)
+                l.debug('arefs: %s', arefs)
+                l.debug('objects_added: %s', [o._id for o in self.objects_added])
+                l.debug('objects_modified: %s', [o._id for o in self.objects_modified])
+                l.debug('objects_deleted: %s', [o._id for o in self.objects_deleted])
+                l.debug('add_artifacts task: %s', add_task)
+        except:
+            log.info('error running extra debug', exc_info=True)
 
 
 class BatchIndexer(ArtifactSessionExtension):
