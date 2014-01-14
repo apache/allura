@@ -205,6 +205,6 @@ class TestSearch_app(unittest.TestCase):
         ))
 
     def test_escape_solr_arg(self):
-        text = 'milestone_s:: wont-fix'
+        text = 'some: weird "text" with symbols'
         escaped_text = escape_solr_arg(text)
-        assert_equal(escaped_text, 'milestone_s\:\: wont\-fix')
+        assert_equal(escaped_text, r'some\: weird \"text\" with symbols')

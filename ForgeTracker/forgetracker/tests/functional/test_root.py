@@ -1103,6 +1103,7 @@ class TestFunctionalController(TrackerTestController):
             'milestones-0.due_date': ''
         })
         ticket_view = self.app.get('/p/test/bugs/1/')
+        assert '1.0' not in ticket_view
         assert 'zzzé' in ticket_view
 
     def test_milestone_close(self):
