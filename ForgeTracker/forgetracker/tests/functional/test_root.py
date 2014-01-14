@@ -281,10 +281,7 @@ class TestFunctionalController(TrackerTestController):
             'summary': 'my ticket',
             'description': 'new description',
         })
-        # create_activity is called twice here:
-        #   - once for the ticket modification
-        #   - once for the auto-comment that's created for the ticket diff
-        assert create_activity.call_count == 2
+        assert create_activity.call_count == 1
         assert create_activity.call_args[0][1] == 'modified'
 
     def test_new_ticket(self):
@@ -671,6 +668,16 @@ class TestFunctionalController(TrackerTestController):
         r = self.app.get('/bugs/1/')
         assert '<span class="gd">-2</span>' in r, r.showbrowser()
         assert '<span class="gi">+4</span>' in r, r.showbrowser()
+
+    def test_meta_comment(self):
+        self.new_ticket(summary="foo")
+        self.app.post('/bugs/1/update_ticket', {
+            'summary': 'bar',
+            'comment': 'user comment',
+            })
+        t = tm.Ticket.query.get(ticket_num=1)
+        assert_true(t.discussion_thread.first_post.is_meta)
+        assert_false(t.discussion_thread.last_post.is_meta)
 
     def test_ticket_label_unlabel(self):
         summary = 'test labeling and unlabeling a ticket'

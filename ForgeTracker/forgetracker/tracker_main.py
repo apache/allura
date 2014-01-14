@@ -1430,7 +1430,7 @@ class TicketController(BaseController, FeedController):
         change_text = h.render_genshi_plaintext(
             tpl_fn,
             changelist=changes.get_changed())
-        post = thread.add_post(text=change_text)
+        thread.add_post(text=change_text, is_meta=True)
         self.ticket.commit()
         if comment:
             self.ticket.discussion_thread.post(text=comment)
