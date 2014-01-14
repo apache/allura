@@ -255,7 +255,7 @@ class Thread(Artifact, ActivityObject):
             return g.spam_checker.check(post.text, artifact=post, user=c.user)
 
     def post(self, text, message_id=None, parent_id=None,
-             timestamp=None, ignore_security=False, **kw):
+             timestamp=None, ignore_security=False, is_meta=False, **kw):
         if not ignore_security:
             require_access(self, 'post')
         if self.ref_id and self.artifact:
@@ -271,7 +271,8 @@ class Thread(Artifact, ActivityObject):
             thread_id=self._id,
             parent_id=parent_id,
             text=text,
-            status='pending')
+            status='pending',
+            is_meta=is_meta)
         if timestamp is not None:
             kwargs['timestamp'] = timestamp
         if message_id is not None:
@@ -462,6 +463,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
     edit_count = FieldProperty(int, if_missing=0)
     spam_check_id = FieldProperty(str, if_missing='')
     text_cache = FieldProperty(MarkdownCache)
+    # meta comment - system generated, describes changes to an artifact
+    is_meta = FieldProperty(bool, if_missing=False)
 
     thread = RelationProperty(Thread)
     discussion = RelationProperty(Discussion)
@@ -673,7 +676,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
         self.thread.update_stats()
         if hasattr(artifact, 'update_stats'):
             artifact.update_stats()
-        if self.text:
+        if self.text and not self.is_meta:
             g.director.create_activity(author, 'posted', self, target=artifact,
                                        related_nodes=[self.app_config.project])
 
