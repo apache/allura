@@ -200,6 +200,7 @@
             title_actions.appendTo(document.body);
             title_holder.text('\u00A0');
             vote.hide();
+            $('div.new-ticket-title label').hide();
             $('a.edit_ticket').addClass('btn_activate');
             $('textarea[name="ticket_form.description"]').trigger('editticket.forgetracker').focus();
             $('textarea[name="ticket_form.comment"]').val(not_posted_comment);
