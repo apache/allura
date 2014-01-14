@@ -33,17 +33,6 @@ class GittipButton(ew.Widget):
     project = None
 
 
-class DownloadButton(ew.Widget):
-    template = 'jinja:allura:templates/widgets/download_button.html'
-    params = ['project']
-    project = None
-
-    def resources(self):
-        yield ew.jinja2_ew.JSScript('''
-            $(function(){$(".download-button-%s").load("%s");
-        });''' % (self.project._id, self.project.best_download_url()))
-
-
 class NeighborhoodFeeds(ew.Widget):
     template = 'jinja:allura:templates/macro/neighborhood_feeds.html'
     params = ['feeds']

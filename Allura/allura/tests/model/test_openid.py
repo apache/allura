@@ -23,22 +23,17 @@ Model tests for openid_model
 import time
 
 import mock
-from pylons import tmpl_context as c, app_globals as g
-from pylons import request
-from webob import Request
 from openid.association import Association
 
 from ming.orm.ormsession import ThreadLocalORMSession
 
-from allura.lib.app_globals import Globals
+from alluratest.controller import setup_unit_test
 from allura import model as M
 from allura.lib import helpers as h
 
 
 def setUp():
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
-    request._push_object(Request.blank('/'))
+    setup_unit_test()
     ThreadLocalORMSession.close_all()
     M.EmailAddress.query.remove({})
     M.OpenIdNonce.query.remove({})

@@ -318,26 +318,6 @@ def gittip_button(username):
     response = button.display(username=username)
     return response
 
-# FIXME: this is SourceForge specific - need to provide a way for macros
-# to come from other packages
-
-
-@macro()
-def download_button():
-    from allura.lib.widgets.macros import DownloadButton
-    button = DownloadButton(project=c.project)
-    try:
-        res_mgr = g.resource_manager
-    except TypeError:
-        # e.g. "TypeError: No object (name: widget_context) has been registered for this thread"
-        # this is an ugly way to check to see if we're outside of a web request
-        # and avoid errors
-        return '[[download_button]]'
-    else:
-        res_mgr.register(button)
-        response = button.display(project=c.project)
-        return response
-
 
 @macro()
 def include(ref=None, **kw):
