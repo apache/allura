@@ -972,13 +972,13 @@ def split_select_field_options(field_options):
 
 
 @contextmanager
-def notifications_disabled(project):
+def notifications_disabled(project, disabled=True):
     """Temporarily disable email notifications on a project.
 
     """
     orig = project.notifications_disabled
     try:
-        project.notifications_disabled = True
+        project.notifications_disabled = disabled
         yield
     finally:
         project.notifications_disabled = orig

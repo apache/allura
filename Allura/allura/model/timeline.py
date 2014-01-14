@@ -17,7 +17,9 @@
 
 import bson
 import logging
+
 from ming.odm import Mapper
+from pylons import tmpl_context as c
 
 from activitystream import ActivityDirector
 from activitystream.base import NodeBase, ActivityObjectBase
@@ -38,6 +40,9 @@ class Director(ActivityDirector):
 
     def create_activity(self, actor, verb, obj, target=None,
                         related_nodes=None):
+        if c.project and c.project.notifications_disabled:
+            return
+
         from allura.model.project import Project
         super(Director, self).create_activity(actor, verb, obj,
                                               target=target, related_nodes=related_nodes)
