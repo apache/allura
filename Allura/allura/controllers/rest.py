@@ -19,6 +19,7 @@
 
 """REST Controller"""
 import logging
+from urllib import quote, unquote
 
 import oauth2 as oauth
 from webob import exc
@@ -56,7 +57,12 @@ class RestController(object):
                 token = M.ApiToken.get(api_key)
             else:
                 log.info('Authenticating with API ticket')
-            if token is not None and token.authenticate_request(request.path, request.params):
+            # Sometimes a path might be only partially escaped like /FAQ-Development,%20Bug%20Reporting,
+            # I don't know why.
+            path = quote(unquote(request.path))
+            if path != request.path:
+                log.info('Canonicalized %s to %s', request.path, path)
+            if token is not None and token.authenticate_request(path, request.params):
                 return token
             else:
                 log.info('API authentication failure')
