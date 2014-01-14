@@ -254,6 +254,7 @@ class Globals(object):
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
             admin=_cache_eps('allura.admin'),
+            macros=_cache_eps('allura.macros'),
         )
 
         # Zarkov logger

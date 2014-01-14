@@ -26,12 +26,15 @@ import hashlib
 from mock import patch
 
 from bson import ObjectId
-
 from nose.tools import with_setup, assert_equal, assert_in
 from pylons import tmpl_context as c, app_globals as g
 
 from ming.orm import ThreadLocalORMSession
-from alluratest.controller import setup_basic_test, setup_global_objects
+from alluratest.controller import (
+        setup_basic_test,
+        setup_global_objects,
+        setup_unit_test,
+        )
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -45,7 +48,12 @@ from forgeblog import model as BM
 def setUp():
     """Method called by nose once before running the package.  Some functions need it run again to reset data"""
     setup_basic_test()
+    setup_unit_test()
     setup_with_tools()
+
+
+def tearDown():
+    setUp()
 
 
 @td.with_wiki
@@ -65,7 +73,7 @@ def test_app_globals():
         assert g.url('/foo') == 'http://localhost/foo', g.url('/foo')
 
 
-@with_setup(teardown=setUp)  # reset everything we changed
+@with_setup(setUp)
 def test_macro_projects():
     file_name = 'neo-icon-set-454545-256x350.png'
     file_path = os.path.join(
@@ -152,16 +160,6 @@ def test_macro_projects():
         assert '<img alt="Test Project Logo"' not in r
 
 
-def test_macro_download_button():
-    p_nbhd = M.Neighborhood.query.get(name='Projects')
-    p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
-    with h.push_config(c, project=p_test):
-        r = g.markdown_wiki.convert('[[download_button]]')
-    assert_equal(
-        r, '<div class="markdown_content"><p><span class="download-button-%s" style="margin-bottom: 1em; display: block;"></span></p>\n</div>' %
-        p_test._id)
-
-
 def test_macro_gittip_button():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -203,7 +201,7 @@ def test_macro_neighborhood_feeds():
         assert 'test content' in r
 
 
-@with_setup(setUp, setUp)  # start clean and reset everything we change
+@with_setup(setUp)
 def test_macro_members():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)
@@ -219,7 +217,7 @@ def test_macro_members():
                  '</div>')
 
 
-@with_setup(teardown=setUp)  # reset everything we changed
+@with_setup(setUp)
 def test_macro_members_escaping():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Admin <script>'
@@ -230,7 +228,7 @@ def test_macro_members_escaping():
                  u'</ul>\n</div>')
 
 
-@with_setup(teardown=setUp)  # reset everything we changed
+@with_setup(setUp)
 def test_macro_project_admins():
     user = M.User.by_username('test-admin')
     user.display_name = u'Test Ådmin <script>'
@@ -240,7 +238,7 @@ def test_macro_project_admins():
         r, u'<div class="markdown_content"><h6>Project Admins:</h6>\n<ul class="md-users-list">\n<li><a href="/u/test-admin/">Test \xc5dmin &lt;script&gt;</a></li>\n</ul>\n</div>')
 
 
-@with_setup(teardown=setUp)  # reset everything we changed
+@with_setup(setUp)
 def test_macro_project_admins_one_br():
     p_nbhd = M.Neighborhood.query.get(name='Projects')
     p_test = M.Project.query.get(shortname='test', neighborhood_id=p_nbhd._id)

@@ -26,9 +26,9 @@ from paste.deploy import loadapp
 from paste.deploy.converters import asbool
 from paste.script.appinstall import SetupCommand
 from pylons import tmpl_context as c, app_globals as g
-from pylons import url, response, session
+from pylons import url, request, response, session
 import tg
-from webob import Response
+from webob import Response, Request
 import ew
 from ming.orm import ThreadLocalORMSession
 import ming.orm
@@ -101,6 +101,7 @@ def setup_unit_test():
     REGISTRY.register(g, Globals())
     REGISTRY.register(c, mock.Mock())
     REGISTRY.register(url, lambda: None)
+    REGISTRY.register(request, Request.blank('/'))
     REGISTRY.register(response, Response())
     REGISTRY.register(session, beaker.session.SessionObject({}))
     REGISTRY.register(allura.credentials, allura.lib.security.Credentials())

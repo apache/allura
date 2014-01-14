@@ -96,7 +96,6 @@ class TestAntispam(unittest.TestCase):
 
     def setUp(self):
         setup_unit_test()
-        pylons.request._push_object(Request.blank('/'))
         pylons.request.remote_addr = '127.0.0.1'
         self.a = utils.AntiSpam()
 

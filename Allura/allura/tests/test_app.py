@@ -15,17 +15,16 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from pylons import tmpl_context as c, app_globals as g
+from pylons import tmpl_context as c
 import mock
 from ming.base import Object
 
+from alluratest.controller import setup_unit_test
 from allura import app
-from allura.lib.app_globals import Globals
 
 
 def setUp():
-    g._push_object(Globals())
-    c._push_object(mock.Mock())
+    setup_unit_test()
     c.user._id = None
     c.project = mock.Mock()
     c.project.name = 'Test Project'
