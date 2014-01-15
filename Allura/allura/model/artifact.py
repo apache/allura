@@ -265,7 +265,7 @@ class Artifact(MappedClass):
         this Artifact belongs.
 
         """
-        return self.app_config.project
+        return getattr(self.app_config, 'project', None)
 
     @property
     def project_id(self):
