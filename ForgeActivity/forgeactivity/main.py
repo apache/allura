@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+import calendar
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -191,7 +192,7 @@ class ForgeActivityRestController(BaseController):
                 'activity_extras': {},
             },
             'timeline': [{
-                'published': '%s UTC' % a.published,
+                'published': calendar.timegm(a.published.timetuple()) * 1000,
                 'actor': a.actor._deinstrument(),
                 'verb': a.verb,
                 'obj': a.obj._deinstrument(),
