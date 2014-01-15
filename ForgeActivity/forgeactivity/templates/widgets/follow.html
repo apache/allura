@@ -16,7 +16,8 @@
        specific language governing permissions and limitations
        under the License.
 -#}
-<a  href="{{action}}?follow={{not following}}"
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+<a  href="{{action}}" data-following="{{following|lower}}" data-csrf="{{lib.csrf()}}"
     class="artifact_follow{{ ' active' if following }}"
     title="{{'Stop %sing' % action_label if following else action_label|capitalize}} {{thing}}"><b
         data-icon="{{g.icons[icon].char}}" class="ico {{g.icons[icon].css}}"

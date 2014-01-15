@@ -17,9 +17,15 @@
        under the License.
 -#}
 
+{% macro csrf() -%}
+  {% if request -%}
+    {{request.cookies['_session_id']}}
+  {%- endif %}
+{%- endmacro %}
+
 {% macro csrf_token() -%}
   {% if request %}
-    <input name="_session_id" type="hidden" value="{{request.cookies['_session_id']}}">
+    <input name="_session_id" type="hidden" value="{{csrf()}}">
   {% endif %}
 {%- endmacro %}
 

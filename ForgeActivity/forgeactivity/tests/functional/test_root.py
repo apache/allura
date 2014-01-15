@@ -123,7 +123,7 @@ class TestActivityController(TestController):
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
     def test_follow_user(self):
-        resp = self.app.get('/u/test-user-1/activity/follow?follow=True')
+        resp = self.app.post('/u/test-user-1/activity/follow', {'follow': 'True'})
         assert 'You are now following Test User 1' in resp, resp
 
     @td.with_tool('u/test-admin', 'activity')
@@ -156,7 +156,7 @@ class TestActivityController(TestController):
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
     def test_background_aggregation(self):
-        self.app.get('/u/test-admin/activity/follow?follow=True',
+        self.app.post('/u/test-admin/activity/follow', {'follow':'true'},
                      extra_environ=dict(username='test-user-1'))
         # new ticket, creates activity
         d = {'ticket_form.summary': 'New Ticket'}
