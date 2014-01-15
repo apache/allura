@@ -53,6 +53,7 @@ b.ico.ico-feed { background-position: -16px -176px; }
 b.ico.ico-close { background-position: -80px -128px; }
 b.ico.ico-vote-up { background-image: url('../images/vote_up.png'); }
 b.ico.ico-vote-down { background-image: url('../images/vote_down.png'); }
+b.ico.ico-star { background-position: -240px -96px; }
 
 
 #ticket_search_results_holder{

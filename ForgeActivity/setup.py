@@ -41,6 +41,9 @@ setup(name='ForgeActivity',
       [allura]
       activity=forgeactivity.main:ForgeActivityApp
 
+      [allura.user_profile.sections]
+      activity=forgeactivity.main:ForgeActivityProfileSection
+
       [easy_widgets.resources]
       ew_resources=forgeactivity.config.resources:register_ew_resources
       """,

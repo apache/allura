@@ -15,4 +15,4 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from .user_main import UserProfileApp
+from .user_main import UserProfileApp, ProfileSectionBase

@@ -3240,3 +3240,56 @@ ul.dropdown ul li a:hover {
 .content-maximized #restore-content {
     display: inline;
 }
+
+.user-activity {
+    position: absolute;
+    top: 60px;
+    right: 0px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.user-activity h3 {
+    background-color: #555555;
+    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
+    background-image: -moz-linear-gradient(top, #666666 0%, #555555 100%);
+    background-image: linear-gradient(top, #666666 0%, #555555 100%);
+    border: 1px solid #333333;
+    color: #fff;
+    padding: 10px;
+    font-weight: normal;
+    font-size: 14px;
+}
+.user-activity h3 a {
+    float: right;
+}
+.user-activity h3 b.ico {
+    background-image: url('../images/neo-icon-set-ffffff-256x350.png');
+}
+.user-activity .empty {
+    padding: 10px;
+    font-style: italic;
+}
+.user-activity ul {
+    margin: 0px;
+    list-style: none;
+}
+.user-activity ul li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+.user-activity ul li img {
+    vertical-align: text-bottom;
+}
+.user-activity ul li p {
+    padding: 5px 0 0 0;
+}
+.user-activity ul li time {
+    display: block;
+    text-align: right;
+    font-size: 10px;
+}
+.user-activity a.view-all {
+    display: block;
+    text-align: right;
+    padding: 5px 10px 5px 0;
+}

@@ -33,6 +33,8 @@ from allura.lib.security import require_authenticated
 from allura.model.timeline import perm_check
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
+from allura.model.timeline import perm_check
+from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
 
@@ -199,3 +201,29 @@ class ForgeActivityRestController(BaseController):
                 'target': a.target._deinstrument(),
             } for a in data['timeline']],
         }
+
+
+class ForgeActivityProfileSection(ProfileSectionBase):
+    template = 'forgeactivity:templates/widgets/profile_section.html'
+
+    def __init__(self, user, project):
+        self.user = user
+        self.project = project
+        self.activity_app = self.project.app_instance('activity')
+
+    def check_display(self):
+        return self.activity_app is not None
+
+    def prepare_context(self, context):
+        context.update({
+                'user': self.user,
+                'follow_toggle': W.follow_toggle,
+                'following': g.director.is_connected(c.user, self.user),
+                'timeline': g.director.get_timeline(
+                    self.user, page=0, limit=5,
+                    actor_only=True,
+                    filter_func=perm_check(c.user)),
+                'activity_app': self.activity_app,
+            })
+        g.register_js('activity_js/follow.js')
+        return context

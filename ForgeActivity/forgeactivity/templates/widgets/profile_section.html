@@ -1,0 +1,51 @@
+{#-
+       Licensed to the Apache Software Foundation (ASF) under one
+       or more contributor license agreements.  See the NOTICE file
+       distributed with this work for additional information
+       regarding copyright ownership.  The ASF licenses this file
+       to you under the Apache License, Version 2.0 (the
+       "License"); you may not use this file except in compliance
+       with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing,
+       software distributed under the License is distributed on an
+       "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+       KIND, either express or implied.  See the License for the
+       specific language governing permissions and limitations
+       under the License.
+-#}
+{% import 'allura:templates/jinja_master/lib.html' as lib with context %}
+{% import 'forgeactivity:templates/macros.html' as am with context %}
+
+<div class="user-activity grid-8">
+    <h3>
+        User Activity
+
+        {% if c.user and not c.user.is_anonymous() and c.user != user %}
+            {{follow_toggle.display(following=following, action=activity_app.url+'follow')}}
+        {% endif %}
+    </h3>
+    {% if not timeline %}
+        <p class="empty">No activity to display.</p>
+    {% else %}
+    <ul class="timeline">
+        {% for a in timeline %}
+        <li>
+            <b>
+                {{am.icon(a.actor, 16, 'avatar')}}{{am.activity_obj(a.actor)}} {{a.verb}} {{am.activity_obj(a.obj)}}
+                {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
+            </b>
+            {% if a.obj.activity_extras.get('summary') %}
+            <p>
+                {{ a.obj.activity_extras.get('summary') }}
+            </p>
+            {% endif %}
+            <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
+        </li>
+        {% endfor %}
+    </ul>
+    <a class="view-all" href="{{activity_app.url}}">View All</a>
+    {% endif %}
+</div>

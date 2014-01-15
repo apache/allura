@@ -16,13 +16,18 @@
 #       under the License.
 
 import logging
+import re
 
 import pkg_resources
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 from pylons import request
 from formencode import validators
 from tg import expose, redirect, validate, flash
+import tg
 from webob import exc
+from ming.utils import LazyProperty
+from jinja2 import Markup
 
 from allura import version
 from allura.app import Application, SitemapEntry
@@ -83,6 +88,18 @@ class UserProfileApp(Application):
     def uninstall(self, project):  # pragma no cover
         pass
 
+    @LazyProperty
+    def profile_sections(self):
+        sections = {}
+        for ep in h.iter_entry_points('allura.user_profile.sections'):
+            sections[ep.name] = ep.load()
+        section_ordering = tg.config.get('user_profile_sections.order', '')
+        ordered_sections = []
+        for section in re.split(r'\s*,\s*', section_ordering):
+            if section in sections:
+                ordered_sections.append(sections.pop(section))
+        return ordered_sections + sections.values()
+
 
 class UserProfileController(BaseController, FeedController):
 
@@ -114,7 +131,12 @@ class UserProfileController(BaseController, FeedController):
         if not user:
             raise exc.HTTPNotFound()
         provider = AuthenticationProvider.get(request)
-        return dict(user=user, reg_date=provider.user_registration_date(user))
+        sections = [section(user, c.project) for section in c.app.profile_sections]
+        return dict(
+                user=user,
+                reg_date=provider.user_registration_date(user),
+                sections=sections,
+            )
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing
@@ -162,3 +184,20 @@ class UserProfileController(BaseController, FeedController):
                 c.user.user_message_max_messages,
                 c.user.user_message_time_interval), 'error')
         return redirect(c.project.user_project_of.url())
+
+
+class ProfileSectionBase(object):
+    template = ''
+
+    def check_display(self):
+        return True
+
+    def prepare_context(self, context):
+        return context
+
+    def display(self, *a, **kw):
+        if not self.check_display():
+            return ''
+        tmpl = g.jinja2_env.get_template(self.template)
+        context = self.prepare_context({'h': h, 'c': c})
+        return Markup(tmpl.render(context))

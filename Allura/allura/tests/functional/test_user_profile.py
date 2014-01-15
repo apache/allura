@@ -16,6 +16,8 @@
 #       under the License.
 
 import mock
+import tg
+from nose.tools import assert_equal, assert_in, assert_not_in
 
 from allura.model import Project, User
 from allura.tests import decorators as td
@@ -149,3 +151,31 @@ class TestUserProfile(TestController):
         r = self.app.get('/u/test-user/profile/send_message', status=302)
         assert 'This user has disabled direct email messages' in self.webflash(
             r)
+
+    @td.with_user_project('test-user')
+    def test_profile_sections(self):
+        project = Project.query.get(shortname='u/test-user')
+        app = project.app_instance('profile')
+        def ep(n):
+            m = mock.Mock()
+            m.name = n
+            m.load()().display.return_value = 'Section %s' % n
+            return m
+        eps = map(ep, ['a', 'b', 'c', 'd'])
+        order = {'user_profile_sections.order': 'b, d,c , f '}
+        with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
+            with mock.patch.dict(tg.config, order):
+                iep.return_value = eps
+                sections = app.profile_sections
+                assert_equal(sections, [
+                        eps[1].load(),
+                        eps[3].load(),
+                        eps[2].load(),
+                        eps[0].load(),
+                    ])
+                r = self.app.get('/u/test-user/profile')
+                assert_in('Section a', r.body)
+                assert_in('Section b', r.body)
+                assert_in('Section c', r.body)
+                assert_in('Section d', r.body)
+                assert_not_in('Section f', r.body)

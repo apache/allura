@@ -290,6 +290,10 @@
         </ul>
       </div>
   {% endif %}
+
+  {% for section in sections %}
+    {{ section.display() }}
+  {% endfor %}
 {% endblock %}
 
 {% block extra_js %}
