@@ -31,6 +31,7 @@ from allura.controllers import BaseController
 from allura.lib.security import require_authenticated
 from allura.model.timeline import perm_check
 from allura.lib import helpers as h
+from allura.lib.decorators import require_post
 
 from .widgets.follow import FollowToggle
 
@@ -138,6 +139,7 @@ class ForgeActivityController(BaseController):
                 author_link=h.absurl(t.actor.activity_url))
         return feed.writeString('utf-8')
 
+    @require_post()
     @expose('json:')
     @validate(W.follow_toggle)
     def follow(self, follow, **kw):

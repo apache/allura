@@ -33,16 +33,18 @@ $(document).ready(function() {
     $('.artifact_follow').click(function(e) {
         e.preventDefault();
         var $link = $(this);
-        $.get(this.href, function(result) {
+        var data = {
+            '_session_id': $link.data('csrf'),
+            'follow': ! $link.data('following')
+        };
+        $.post(this.href, data, function(result) {
             flash(result.message, result.success ? 'success' : 'error');
-            console.log(result.following);
+            $link.data('following', result.following);
             if (result.following && !$link.hasClass('active')) {
-                $link.attr('href', $link.attr('href').replace(/True$/i, 'False'));
                 $link.addClass('active');
                 title_stop_following($link);
                 title_stop_following($link.find('b'));
             } else if (!result.following && $link.hasClass('active')) {
-                $link.attr('href', $link.attr('href').replace(/False$/i, 'True'));
                 $link.removeClass('active');
                 title_start_following($link);
                 title_start_following($link.find('b'));
