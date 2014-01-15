@@ -29,36 +29,32 @@
               {% if col['name'] == 'ticket_num' %}
                 #
               {% else %}
-                {{col['label']}}
+                {{col['label']}}<span class="filter-ico">&#x25BE;</span>
               {% endif %}
+              <ul class="ticket-filter" data-column="{{col['name']}}" style="display: none; position: absolute;">
+              <li><a data-sort-asc="{{col['sort_name']}}" title="{{col['label']}}">Sort A -> Z</a></li>
+              <li><a data-sort-desc="{{col['sort_name']}}" title="{{col['label']}}">Sort Z -> A</a></li>
+              {% if col['name'] in widget.filters.keys() %}
+                <li>Filter by {{col['label']}}</li>
+                <li>
+                  <select name="filter-{{col['name']}}" data-label="{{col['label']}}" multiple="multiple">
+                    {% for o in widget.filters[col['name']] %}
+                      <option value="{{o['value']}}"{% if o['selected'] %} selected="selected"{% endif %}>{{o['label']}}</label>
+                    {% endfor %}
+                  </select>
+                </li>
+                <li class="btns">
+                  <input type="button" value="Ok" class="apply-filters">
+                  <a href="#" class="close btn link">Cancel</a>
+                </li>
+              {% endif %}
+               </ul>
             </th>
           {% endfor %}
           <th style="width:15px">
             <a href="#" id="col_menu" title="Select Columns"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
           </th>
         </tr>
-
-        {% for col in columns if col['active'] %}
-          <tr class="ticket-filter" data-column="{{col['name']}}">
-            <th colspan="{{columns|length + 1}}">
-              <p><a data-sort="{{col['sort_name']}}" title="{{col['label']}}">Toggle sort by {{col['label']}}</a></p>
-              {% if col['name'] in widget.filters.keys() %}
-                <p>Filter by {{col['label']}}</p>
-                <p>
-                  <select name="filter-{{col['name']}}" data-label="{{col['label']}}" multiple="multiple">
-                    {% for o in widget.filters[col['name']] %}
-                      <option value="{{o['value']}}"{% if o['selected'] %} selected="selected"{% endif %}>{{o['label']}}</label>
-                    {% endfor %}
-                  </select>
-                  <input type="button" value="Ok" class="apply-filters">
-                  <a href="#" class="close btn link">Cancel</a>
-                </p>
-                <div style="clear:both;"></div>
-              {% endif %}
-            </th>
-          </tr>
-        {% endfor %}
-
       </thead>
       <tbody>
         {% for t in tickets %}

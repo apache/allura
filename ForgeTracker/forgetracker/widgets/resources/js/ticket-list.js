@@ -18,6 +18,20 @@
 */
 
 (function(){
+    function ico_active() {
+    $('.ticket-filter').each(function() {
+          if ($(this).find('select option').attr('selected')) {
+              $(this).siblings('span').css('color', 'green');
+          } else {
+              $(this).siblings('span').css('color', '');
+          }
+    });
+    }
+
+    $( document ).ready(function() {
+        ico_active();
+    });
+
     $('table.ticket-list td a').each(function(){
       var $this = $(this);
       $this.html($this.html().replace(/\//gi,'/&#8203;'));
@@ -41,13 +55,17 @@
         window.location = location;
     }
 
-    $('.ticket-filter a[data-sort]').click(function(){
-        var old_sort = sort.split(' '),
-            new_dir = {'asc':'desc', 'desc':'asc'}[old_sort[1]],
-            new_sort = $(this).attr('data-sort');
-        if ( new_sort !== old_sort[0] ){
-            new_dir = 'asc';
-        }
+    $('.ticket-filter a[data-sort-asc]').click(function(){
+        var new_sort = $(this).attr('data-sort-asc'),
+        new_dir = 'asc';
+        sort = new_sort + ' ' + new_dir;
+        page = 0;
+        requery();
+    });
+
+    $('.ticket-filter a[data-sort-desc]').click(function(){
+        var new_sort = $(this).attr('data-sort-desc'),
+        new_dir = 'desc';
         sort = new_sort + ' ' + new_dir;
         page = 0;
         requery();
@@ -69,10 +87,25 @@
       var column = $(this).attr('data-filter-toggle');
       var filter_selector = '.ticket-filter[data-column="' + column + '"]';
       var filter = $(this).parents('.ticket-list').find(filter_selector);
+
+      $('.ticket-filter').each(function() {
+           if ($(this).attr('data-column') != $(this).parents('.ticket-list').find(filter_selector).attr('data-column')) {
+               $(this).hide();
+           }
+      });
+      if ($(this).find('select').length == 0) {
+          $('.ticket-filter').css('height', '65px');
+      } else {
+          $('.ticket-filter').css('height', '370px');
+      }
+
       var visible = filter.is(':visible');
-      $('.ticket-filter').hide();
+      $(this).find('select').multiselect("close");
+      filter.hide();
+
       if (!visible) {
         filter.show();
+        $(this).find('select').multiselect("open");
       }
     });
 
@@ -82,8 +115,8 @@
         }
     });
     $('.ticket-filter .close').click(function(e) {
-      e.preventDefault();
-      $('.ticket-filter').hide();
+       e.preventDefault();
+       $('.ticket-filter').hide();
     });
     $('.ticket-filter .apply-filters').click(function() {
       filter = {};
@@ -95,6 +128,7 @@
         }
       });
       requery();
+      ico_active();
     });
 
     function select_active_filter() {

@@ -22,8 +22,25 @@
     padding: 0;
     list-style-type: none;
 }
-
-.ticket-filter { display: none; }
+.filter-ico {
+    font-size: 16px;
+}
+.ticket-filter {
+    display: none;
+    background: #E5E5E5;
+    margin: 6px 0;
+    padding: 0;
+    height: 65px;
+    border-radius: 4px;
+}
+.ticket-filter li {
+    list-style:none;
+    margin: 10px 5px 0 5px;
+}
+.ticket-filter .btns {
+    position: absolute;
+    bottom: 0px;
+}
 .ticket-filter a[data-sort] { cursor: pointer; }
 .ticket-list th[data-filter-toggle] { cursor: pointer; }
 .ticket-list th[data-filter-toggle]:hover { text-decoration: underline; }
