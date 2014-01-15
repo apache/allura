@@ -178,6 +178,8 @@ function addCommas(num) {
 }
 
 $(function(){
+    $('html').removeClass('no-js').addClass('js');
+
     // Add notifications for form submission.
     attach_form_retry('form.can-retry');
 
