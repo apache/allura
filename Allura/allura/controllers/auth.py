@@ -446,10 +446,12 @@ class PreferencesController(BaseController):
             for i, (old_a, data) in enumerate(zip(c.user.email_addresses, addr or [])):
                 obj = c.user.address_object(old_a)
                 if data.get('delete') or not obj:
+                    if primary_addr == c.user.email_addresses[i]:
+                        c.user.set_pref('email_address', None)
+                        primary_addr = None
                     del c.user.email_addresses[i]
                     if obj:
                         obj.delete()
-            c.user.set_pref('email_address', primary_addr)
             if new_addr.get('claim'):
                 if M.EmailAddress.query.get(_id=new_addr['addr'], confirmed=True):
                     flash('Email address already claimed', 'error')
@@ -458,6 +460,10 @@ class PreferencesController(BaseController):
                     em = M.EmailAddress.upsert(new_addr['addr'])
                     em.claimed_by_user_id = c.user._id
                     em.send_verification_link()
+            if not primary_addr and not c.user.get_pref('email_address') and c.user.email_addresses:
+                primary_addr = c.user.email_addresses[0]
+            if primary_addr:
+                c.user.set_pref('email_address', primary_addr)
             for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
                 obj = c.user.openid_object(old_oid)
                 if data.get('delete') or not obj:

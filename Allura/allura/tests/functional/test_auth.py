@@ -74,7 +74,13 @@ class TestAuth(TestController):
     def test_prefs(self):
         r = self.app.get('/auth/preferences/',
                          extra_environ=dict(username='test-admin'))
+        # check preconditions of test data
         assert 'test@example.com' not in r
+        assert 'test-admin@users.localhost' in r
+        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
+                     'test-admin@users.localhost')
+
+        # add test@example
         r = self.app.post('/auth/preferences/update', params={
             'preferences.display_name': 'Test Admin',
             'new_addr.addr': 'test@example.com',
@@ -84,27 +90,24 @@ class TestAuth(TestController):
             extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
         assert 'test@example.com' in r
+        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
+                     'test-admin@users.localhost')
+
+        # remove test-admin@users.localhost
         r = self.app.post('/auth/preferences/update', params={
             'preferences.display_name': 'Test Admin',
             'addr-1.ord': '1',
-            'addr-2.ord': '1',
-            'addr-2.delete': 'on',
+            'addr-1.delete': 'on',
+            'addr-2.ord': '2',
             'new_addr.addr': '',
             'primary_addr': 'test-admin@users.localhost',
             'preferences.email_format': 'plain'},
             extra_environ=dict(username='test-admin'))
         r = self.app.get('/auth/preferences/')
-        assert 'test@example.com' not in r
-        ea = M.EmailAddress.query.get(_id='test-admin@users.localhost')
-        ea.confirmed = True
-        ThreadLocalORMSession.flush_all()
-        r = self.app.post('/auth/preferences/update', params={
-            'preferences.display_name': 'Test Admin',
-            'new_addr.addr': 'test-admin@users.localhost',
-            'new_addr.claim': 'Claim Address',
-            'primary_addr': 'test-admin@users.localhost',
-            'preferences.email_format': 'plain'},
-            extra_environ=dict(username='test-admin'))
+        assert 'test-admin@users.localhost' not in r
+        # preferred address has changed to remaining address
+        assert_equal(M.User.query.get(username='test-admin').get_pref('email_address'),
+                     'test@example.com')
 
     @td.with_user_project('test-admin')
     def test_prefs_subscriptions(self):
