@@ -499,14 +499,6 @@ def test_projects_macro():
         r = g.markdown_wiki.convert('[[projects display_mode=list columns=3]]')
         assert two_column_style not in r
 
-        # test project download button
-        r = g.markdown_wiki.convert(
-            '[[projects display_mode=list show_download_button=True]]')
-        assert 'download-button' in r
-        r = g.markdown_wiki.convert(
-            '[[projects display_mode=list show_download_button=False]]')
-        assert 'download-button' not in r
-
 
 @td.with_wiki
 def test_limit_tools_macro():
