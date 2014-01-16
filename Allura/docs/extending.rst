@@ -64,3 +64,44 @@ The events that allura publishes are:
 * repo_cloned
 * repo_refreshed
 * repo_clone_task_failed
+
+
+Markdown Macros
+===============
+
+Most text inputs in Allura accept Markdown text which is parsed and turned into
+HTML before being rendered. The Markdown text may contain "macros" - custom
+commands which extend the Markdown language. Here's an example of a macro
+that comes with Allura::
+
+    [[project_admins]]
+
+Include this macro in a wiki page or other Markdown content, and when rendered
+it will be replaced by an actual list of the project's admin users.
+
+Extending Allura with your own macros is simple, requiring two basic steps:
+
+1. Decide on a name for your macro, then create a function with that name, and
+   decorate it with the `macro()` decorator from Allura. The function can
+   accept keyword arguments, and must return text or HTML. For example::
+
+    from allura.lib.macro import macro
+
+    @macro()
+    def hello(name='World'):
+        return "<p>Hello {}!</p>".format(name)
+
+2. Add an entry point for your macro to the `setup.py` for your package::
+
+    [allura.macros]
+    hello_macro = mypkg.mymodule:hello
+
+Note that the key name (`hello_macro` in this case) doesn't matter - the macro
+is named after the function name. Our example macro could be used in a couple
+ways::
+
+    [[hello]]
+    [[hello name=Universe]]
+
+For more help with macros, consult the source code for the macros that ship
+with Allura. You can find them in the `allura.lib.macro` package.

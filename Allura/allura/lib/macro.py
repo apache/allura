@@ -164,7 +164,7 @@ def project_blog_posts(max_number=5, sort='timestamp', summary=False, mount_poin
 def get_projects_for_macro(
         category=None, display_mode='grid', sort='last_updated',
         show_total=False, limit=100, labels='', award='', private=False,
-        columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+        columns=1, show_proj_icon=True, show_download_button=False, show_awards_banner=True,
         grid_view_tools='',
         initial_q={}):
     from allura.lib.widgets.project_list import ProjectList
@@ -267,7 +267,7 @@ def get_projects_for_macro(
 @macro('neighborhood-wiki')
 def projects(category=None, display_mode='grid', sort='last_updated',
              show_total=False, limit=100, labels='', award='', private=False,
-             columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+             columns=1, show_proj_icon=True, show_download_button=False, show_awards_banner=True,
              grid_view_tools=''):
     initial_q = dict(neighborhood_id=c.project.neighborhood_id)
     return get_projects_for_macro(
@@ -281,7 +281,7 @@ def projects(category=None, display_mode='grid', sort='last_updated',
 @macro('userproject-wiki')
 def my_projects(category=None, display_mode='grid', sort='last_updated',
                 show_total=False, limit=100, labels='', award='', private=False,
-                columns=1, show_proj_icon=True, show_download_button=True, show_awards_banner=True,
+                columns=1, show_proj_icon=True, show_download_button=False, show_awards_banner=True,
                 grid_view_tools=''):
 
     myproj_user = c.project.user_project_of
