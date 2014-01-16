@@ -173,6 +173,7 @@ class Thread(Artifact, ActivityObject):
                         subject=p.subject,
                         author=p.author().username,
                         timestamp=p.timestamp,
+                        last_edited=p.last_edit_date,
                         attachments=[dict(bytes=attach.length,
                                           url=h.absurl(attach.url())) for attach in p.attachments])
                    for p in self.query_posts(status='ok', style='chronological', limit=limit, page=page)
@@ -480,6 +481,7 @@ class Post(Message, VersionedArtifact, ActivityObject):
             text=self.text,
             flagged_by=map(str, self.flagged_by),
             timestamp=self.timestamp,
+            last_edited=self.last_edit_date,
             author_id=str(author._id),
             author=author.username)
 
