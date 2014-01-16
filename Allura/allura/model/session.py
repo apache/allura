@@ -101,7 +101,7 @@ class ArtifactSessionExtension(SessionExtension):
                 l.debug('objects_deleted: %s', [o._id for o in self.objects_deleted])
                 l.debug('add_artifacts task: %s', add_task)
         except:
-            log.info('error running extra debug', exc_info=True)
+            pass
 
 
 class BatchIndexer(ArtifactSessionExtension):
