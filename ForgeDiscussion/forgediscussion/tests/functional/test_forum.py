@@ -246,18 +246,10 @@ class TestForumAsync(TestController):
             if 'attachment' in link.get('href', ''):
                 self.app.get(str(link['href']))
                 self.app.post(str(link['href']), params=dict(delete='on'))
-        # Moderate
-        r = self.app.post(url + 'moderate',
-                          params=dict(subject='New Thread', delete='', promote='on'))
-        # Find new location
-        r = self.app.get(url)
-        link = [a for a in r.html.findAll('a')
-                if a.renderContents() == 'here']
-        url, slug = str(link[0]['href']).split('#')
-        slug = slug.split('-')[-1]
-        reply_slug = slug + str(reply.slug[4:])
+        reply_slug = str(reply.slug)
         r = self.app.post(url + reply_slug + '/moderate',
                           params=dict(subject='', delete='on'))
+        slug = reply_slug[:4]
         r = self.app.post(url + slug + '/moderate',
                           params=dict(subject='', delete='on'))
 
@@ -531,8 +523,6 @@ class TestForum(TestController):
             'div', {'class': 'display_post'})[0].find('p').string == 'aaa'
         assert thread.html.findAll(
             'div', {'class': 'display_post'})[1].find('p').string == 'bbb'
-        assert thread.response.body.count(
-            '<div class="promote_to_thread_form') == 1
         assert thread.response.body.count(
             '<div class="row reply_post_form') == 2
         assert thread.response.body.count('<div class="edit_post_form') == 2

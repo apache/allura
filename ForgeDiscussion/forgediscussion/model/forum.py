@@ -239,52 +239,6 @@ class ForumPost(M.Post):
     def primary(self):
         return self
 
-    def promote(self):
-        '''Make the post its own thread head'''
-        thd = self.thread_class()(
-            discussion_id=self.discussion_id,
-            subject=self.subject,
-            first_post_id=self._id)
-        self.move(thd, None)
-        return thd
-
-    def move(self, thread, new_parent_id):
-        # Add a placeholder to note the move
-        placeholder = self.thread.post(
-            subject='Discussion moved',
-            text='',
-            parent_id=self.parent_id)
-        placeholder.slug = self.slug
-        placeholder.full_slug = self.full_slug
-        placeholder.approve()
-        if new_parent_id:
-            parent = self.post_class().query.get(_id=new_parent_id)
-        else:
-            parent = None
-        # Set the thread ID on my replies and attachments
-        old_slug = self.slug + '/', self.full_slug + '/'
-        reply_re = re.compile(self.slug + '/.*')
-        self.slug, self.full_slug = self.make_slugs(
-            parent=parent, timestamp=self.timestamp)
-        placeholder.text = 'Discussion moved to [here](%s#post-%s)' % (
-            thread.url(), self.slug)
-        new_slug = self.slug + '/', self.full_slug + '/'
-        self.discussion_id = thread.discussion_id
-        self.thread_id = thread._id
-        self.parent_id = new_parent_id
-        self.text = 'Discussion moved from [here](%s#post-%s)\n\n%s' % (
-            placeholder.thread.url(), placeholder.slug, self.text)
-        reply_tree = self.query.find(dict(slug=reply_re)).all()
-        for post in reply_tree:
-            post.slug = new_slug[0] + post.slug[len(old_slug[0]):]
-            post.full_slug = new_slug[1] + post.slug[len(old_slug[1]):]
-            post.discussion_id = self.discussion_id
-            post.thread_id = self.thread_id
-        for post in [self] + reply_tree:
-            for att in post.attachments:
-                att.discussion_id = self.discussion_id
-                att.thread_id = self.thread_id
-
 
 class ForumAttachment(M.DiscussionAttachment):
     DiscussionClass = Forum

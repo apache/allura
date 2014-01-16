@@ -127,21 +127,6 @@ class ModerateThread(CsrfForm):
         delete = ew.SubmitButton(label='Delete Thread')
 
 
-class ModeratePost(CsrfForm):
-    submit_text = None
-    fields = [
-        ew.FieldSet(legend='Promote post to its own thread', fields=[
-            ew.TextField(name='subject', label='Thread title'),
-            ew.SubmitButton(name='promote', label='Promote to thread')])]
-
-
-class PromoteToThread(CsrfForm):
-    submit_text = None
-    fields = [
-        ew.TextField(name='subject', label='Thread title'),
-        ew.SubmitButton(name='promote', label='Promote to thread')]
-
-
 class ForumHeader(DW.DiscussionHeader):
     template = 'jinja:forgediscussion:templates/discussion_widgets/forum_header.html'
     widgets = dict(DW.DiscussionHeader.widgets,
@@ -161,9 +146,6 @@ class ThreadHeader(DW.ThreadHeader):
 
 class Post(DW.Post):
     show_subject = False
-    widgets = dict(DW.Post.widgets,
-                   promote_to_thread=PromoteToThread())
-
 
 class Thread(DW.Thread):
     defaults = dict(

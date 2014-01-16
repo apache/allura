@@ -298,7 +298,7 @@ class Post(HierWidget):
         page=0,
         limit=25,
         show_subject=False,
-        suppress_promote=False)
+        )
     widgets = dict(
         moderate_post=ModeratePost(),
         edit_post=EditPost(submit_text='Post'),
@@ -373,12 +373,6 @@ class Post(HierWidget):
                         return false;
                     });
                 }
-                if($('.promote_to_thread', post)){
-                    $('.promote_to_thread', post).click(function (ele) {
-                        $('.promote_to_thread_form', post).show();
-                        return false;
-                    });
-                }
                 if($('.shortlink', post)){
                     var popup = $('.shortlink_popup', post);
                     $('.shortlink', post).click(function(evt){
@@ -407,7 +401,6 @@ class PostThread(ew_core.Widget):
         page=0,
         limit=25,
         show_subject=False,
-        suppress_promote=False,
         parent=None,
         children=None)
 
