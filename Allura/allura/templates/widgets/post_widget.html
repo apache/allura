@@ -148,12 +148,6 @@
       </li>
     </ul>
   </div>
-
-  {% if h.has_access(value.thread, 'moderate')() and 'promote_to_thread' in widgets and not supress_promote %}
-  <div class="promote_to_thread_form push-{{3+indent}} span-{{16-indent}} last clear" style="display:none">
-    {{widgets.promote_to_thread.display(value=value, action=value.url()+'moderate')}}
-  </div>
-  {% endif %}
 </div>
 
 {% block extra_css %}

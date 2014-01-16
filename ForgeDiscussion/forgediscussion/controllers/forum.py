@@ -59,7 +59,6 @@ class WidgetConfig(object):
     subscription_form = DW.SubscriptionForm()
     subscribe_form = SubscribeForm()
     edit_post = DW.EditPost(show_subject=True)
-    moderate_post = FW.ModeratePost()
     moderate_thread = FW.ModerateThread()
     flag_post = DW.FlagPost()
     post_filter = DW.PostFilter()
@@ -183,13 +182,8 @@ class ForumPostController(PostController):
         require_access(self.post.thread, 'moderate')
         if self.thread.discussion.deleted and not has_access(c.app, 'configure')():
             redirect(self.thread.discussion.url() + 'deleted')
-        args = self.W.moderate_post.validate(kw, None)
         tasks.calc_thread_stats.post(self.post.thread._id)
         tasks.calc_forum_stats(self.post.discussion.shortname)
-        if args.pop('promote', None):
-            new_thread = self.post.promote()
-            tasks.calc_thread_stats.post(new_thread._id)
-            redirect(request.referer)
         super(ForumPostController, self).moderate(**kw)
 
 
