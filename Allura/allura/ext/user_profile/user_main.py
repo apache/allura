@@ -26,7 +26,6 @@ from formencode import validators
 from tg import expose, redirect, validate, flash
 import tg
 from webob import exc
-from ming.utils import LazyProperty
 from jinja2 import Markup
 
 from allura import version
@@ -88,8 +87,23 @@ class UserProfileApp(Application):
     def uninstall(self, project):  # pragma no cover
         pass
 
-    @LazyProperty
+    @property
     def profile_sections(self):
+        """
+        Loads and caches user profile sections.
+
+        Profile sections are loaded unless disabled (see
+        `allura.lib.helpers.iter_entry_points`) and are sorted according
+        to the `user_profile_sections.order` config value.
+
+        The config should contain a comma-separated list of entry point names
+        in the order that they should appear in the profile.  Unknown or
+        disabled sections are ignored, and available sections that are not
+        specified in the order come after all explicitly ordered sections,
+        sorted randomly.
+        """
+        if hasattr(UserProfileApp, '_sections'):
+            return UserProfileApp._sections
         sections = {}
         for ep in h.iter_entry_points('allura.user_profile.sections'):
             sections[ep.name] = ep.load()
@@ -98,7 +112,8 @@ class UserProfileApp(Application):
         for section in re.split(r'\s*,\s*', section_ordering):
             if section in sections:
                 ordered_sections.append(sections.pop(section))
-        return ordered_sections + sections.values()
+        UserProfileApp._sections = ordered_sections + sections.values()
+        return UserProfileApp._sections
 
 
 class UserProfileController(BaseController, FeedController):

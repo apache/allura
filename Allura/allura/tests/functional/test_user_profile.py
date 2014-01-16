@@ -173,9 +173,9 @@ class TestUserProfile(TestController):
                         eps[2].load(),
                         eps[0].load(),
                     ])
-                r = self.app.get('/u/test-user/profile')
-                assert_in('Section a', r.body)
-                assert_in('Section b', r.body)
-                assert_in('Section c', r.body)
-                assert_in('Section d', r.body)
-                assert_not_in('Section f', r.body)
+        r = self.app.get('/u/test-user/profile')
+        assert_in('Section a', r.body)
+        assert_in('Section b', r.body)
+        assert_in('Section c', r.body)
+        assert_in('Section d', r.body)
+        assert_not_in('Section f', r.body)
