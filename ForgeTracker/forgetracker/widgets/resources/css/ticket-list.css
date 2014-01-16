@@ -24,6 +24,7 @@
 }
 .filter-ico {
     font-size: 16px;
+    padding-left: 2px;
 }
 .ticket-filter {
     display: none;
@@ -39,7 +40,7 @@
 }
 .ticket-filter .btns {
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
 }
 .ticket-filter a[data-sort] { cursor: pointer; }
 .ticket-list th[data-filter-toggle] { cursor: pointer; }

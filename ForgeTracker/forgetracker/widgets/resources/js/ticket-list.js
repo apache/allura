@@ -18,6 +18,7 @@
 */
 
 (function(){
+
     function ico_active() {
     $('.ticket-filter').each(function() {
           if ($(this).find('select option').attr('selected')) {
@@ -28,7 +29,7 @@
     });
     }
 
-    $( document ).ready(function() {
+    $(document).ready(function() {
         ico_active();
     });
 
@@ -83,7 +84,8 @@
         }
     }).disableSelection();
 
-    $('.ticket-list th[data-filter-toggle]').click(function() {
+    $('.ticket-list th[data-filter-toggle]').click(function(event) {
+      event.stopPropagation();
       var column = $(this).attr('data-filter-toggle');
       var filter_selector = '.ticket-filter[data-column="' + column + '"]';
       var filter = $(this).parents('.ticket-list').find(filter_selector);
@@ -114,10 +116,7 @@
           return 'Filtering by ' + $(this.element[0]).attr('data-label');
         }
     });
-    $('.ticket-filter .close').click(function(e) {
-       e.preventDefault();
-       $('.ticket-filter').hide();
-    });
+
     $('.ticket-filter .apply-filters').click(function() {
       filter = {};
       $('.ticket-filter select').each(function() {
@@ -145,4 +144,13 @@
       }
     }
     select_active_filter();
+
+    $('html').click(function() {
+        $('.ticket-filter').hide()
+    });
+
+    $('.ui-multiselect-menu').click(function(event){
+        event.stopPropagation();
+    });
+
 })();

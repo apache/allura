@@ -2628,10 +2628,8 @@ class TestCustomUserField(TrackerTestController):
         kw = {'custom_fields._code_review': 'test-admin'}
         self.new_ticket(summary='test custom fields', **kw)
         r = self.app.get('/bugs/')
-        assert r.html.find(
-            'table', 'ticket-list').findAll('th')[7].text == 'Code Review'
-        assert r.html.find(
-            'table', 'ticket-list').tbody.tr.findAll('td')[7].text == 'Test Admin'
+        assert r.html.find('table', 'ticket-list').findAll('th')[7].text[:11] == 'Code Review'
+        assert r.html.find('table', 'ticket-list').tbody.tr.findAll('td')[7].text == 'Test Admin'
 
 
 class TestHelpTextOptions(TrackerTestController):
