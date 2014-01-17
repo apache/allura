@@ -102,7 +102,6 @@
       }
 
       var visible = filter.is(':visible');
-      $(this).find('select').multiselect("close");
       filter.hide();
 
       if (!visible) {

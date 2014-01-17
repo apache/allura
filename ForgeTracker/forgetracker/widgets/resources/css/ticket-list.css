@@ -22,12 +22,19 @@
     padding: 0;
     list-style-type: none;
 }
+#select_col_menu {
+    width: 15px;
+}
+#col_list_form {
+    display: none;
+}
 .filter-ico {
     font-size: 16px;
     padding-left: 2px;
 }
 .ticket-filter {
     display: none;
+    position: absolute;
     background: #E5E5E5;
     margin: 6px 0;
     padding: 0;

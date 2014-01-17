@@ -17,7 +17,7 @@
        under the License.
 -#}
 {% from 'allura:templates/jinja_master/lib.html' import abbr_date with context %}
-<div id="ticket_search_results_holder" style="clear:both">
+<div id="ticket_search_results_holder">
   {% if solr_error %}<p>{{solr_error}}</p>{% endif %}
   {{widget.fields['page_size'].display(page=page, count=count, limit=limit)}}
   {% if count %}
@@ -31,7 +31,7 @@
               {% else %}
                 {{col['label']}}<span class="filter-ico">&#x25BE;</span>
               {% endif %}
-              <ul class="ticket-filter" data-column="{{col['name']}}" style="display: none; position: absolute;">
+              <ul class="ticket-filter" data-column="{{col['name']}}">
               <li><a data-sort-asc="{{col['sort_name']}}" title="{{col['label']}}">Sort A -> Z</a></li>
               <li><a data-sort-desc="{{col['sort_name']}}" title="{{col['label']}}">Sort Z -> A</a></li>
               {% if col['name'] in widget.filters.keys() %}
@@ -50,7 +50,7 @@
                </ul>
             </th>
           {% endfor %}
-          <th style="width:15px">
+          <th id="select_col_menu">
             <a href="#" id="col_menu" title="Select Columns"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b></a>
           </th>
         </tr>
@@ -97,7 +97,7 @@
         {% endfor %}
       </tbody>
     </table>
-    <form action="." id="col_list_form" style="display:none">
+    <form action="." id="col_list_form">
       <input type="hidden" name="limit" value="{{limit}}">
       <input type="hidden" name="page" value="{{page}}">
       {% if sort %}
