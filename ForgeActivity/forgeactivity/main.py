@@ -119,6 +119,10 @@ class ForgeActivityController(BaseController):
     def index(self, **kw):
         return self._get_activities_data(**kw)
 
+    @expose('jinja:forgeactivity:templates/timeline.html')
+    def pjax(self, **kw):
+        return self._get_activities_data(**kw)
+
     @without_trailing_slash
     @expose()
     def feed(self, **kw):

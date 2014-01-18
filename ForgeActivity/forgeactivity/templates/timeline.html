@@ -1,4 +1,4 @@
-/*
+{#-
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
        distributed with this work for additional information
@@ -15,44 +15,21 @@
        KIND, either express or implied.  See the License for the
        specific language governing permissions and limitations
        under the License.
-*/
+-#}
 
-.activity {
-  padding: 0 20px 20px 20px;
-}
-.activity ul.timeline {
-  list-style: none;
-  margin: 0;
-}
-.activity ul.timeline li {
-  padding: 20px;
-  border-bottom: 1px solid #eee;
-}
-.activity ul.timeline li time {
-  font-size: 12px;
-  color: #777;
-}
-.activity ul.timeline li h1 {
-  padding: 0;
-  font-size: 16px;
-  line-height: 32px;
-}
-.activity ul.timeline li p {
-  padding: 0;
-  vertical-align: top;
-  font-size: 14px;
-}
-.activity ul.timeline li .avatar {
-  float: left;
-  margin: 10px 10px 0 0;
-}
-.activity .page_list {
-    margin-top: 5px;
-}
-.activity .show-more {
-    display: block;
-    text-align: center;
-}
-.activity .show-more.older {
-    margin-top: 10px;
-}
+{% import 'forgeactivity:templates/macros.html' as am with context %}
+
+{% for a in timeline %}
+<li id="{{a._id}}" data-page="{{page}}">
+  <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
+  <h1>
+      {{ am.icon(a.actor, 32, 'avatar') }}
+      {{am.activity_obj(a.actor)}} {{a.verb}} {{am.activity_obj(a.obj)}} {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
+  </h1>
+  {% if a.obj.activity_extras.get('summary') %}
+  <p>
+    {{ a.obj.activity_extras.get('summary') }}
+  </p>
+  {% endif %}
+</li>
+{% endfor %}

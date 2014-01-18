@@ -38,27 +38,18 @@
 {% endblock %}
 
 {% block content %}
+{% do g.register_forge_js('js/jquery.viewport.js') %}
+{% do g.register_app_js('js/activity.js') %}
+
 <div class="activity">
   {% if not timeline %}
     No activity to display.
   {% else %}
-    <ul class="timeline">
-        {% for a in timeline %}
-        <li>
-          <time datetime="{{a.published|datetimeformat}}" title="{{a.published|datetimeformat}}">{{h.ago(a.published, show_date_after=None)}}</time>
-          <h1>
-              {{ am.icon(a.actor, 32, 'avatar') }}
-              {{am.activity_obj(a.actor)}} {{a.verb}} {{am.activity_obj(a.obj)}} {% if a.target.activity_name %}on {{am.activity_obj(a.target)}}{% endif %}
-          </h1>
-          {% if a.obj.activity_extras.get('summary') %}
-          <p>
-            {{ a.obj.activity_extras.get('summary') }}
-          </p>
-          {% endif %}
-        </li>
-        {% endfor %}
+    <ul class="timeline" data-limit="{{limit}}">
+        {% include 'forgeactivity:templates/timeline.html' %}
         {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
     </ul>
+    {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
   {% endif %}
 </div>
 {% endblock %}
