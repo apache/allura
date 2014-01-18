@@ -49,10 +49,13 @@
 .activity .page_list {
     margin-top: 5px;
 }
-.activity .show-more {
+.activity .no-more.newer {
+    display: none;
+}
+.activity .show-more, .activity .no-more {
     display: block;
     text-align: center;
 }
-.activity .show-more.older {
+.activity .show-more.older, .activity .no-more.older {
     margin-top: 10px;
 }

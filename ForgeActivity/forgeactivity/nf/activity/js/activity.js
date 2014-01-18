@@ -17,8 +17,8 @@
        under the License.
 */
 
-ActivityBrowseOptions = {
-    maintainScrollState: true,
+ASOptions = {
+    maintainScrollHistory: true,
     usePjax: true,
     useHash: true,
     forceAdvancedScroll: false,
@@ -27,18 +27,20 @@ ActivityBrowseOptions = {
 }
 
 $(function() {
-    var hasAPI = window.history && window.history.pushState && window.history.replaceState;
-    var iOS4 = navigator.userAgent.match(/iP(od|one|ad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork/);
-    if (!hasAPI || iOS4) {
-        ActivityBrowseOptions.usePjax = false;
-    }
-    if (!ActivityBrowseOptions.usePjax) {
-        if (!ActivityBrowseOptions.useHash) {
-            ActivityBrowseOptions.maintainScrollState = false;
+    function detectFeatures() {
+        var hasAPI = window.history && window.history.pushState && window.history.replaceState;
+        var iOS4 = navigator.userAgent.match(/iP(od|one|ad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork/);
+        if (!hasAPI || iOS4) {
+            ASOptions.usePjax = false;
         }
-        if (!ActivityBrowseOptions.forceAdvancedScroll) {
-            ActivityBrowseOptions.useShowMore = false;
-            ActivityBrowseOptions.useInfiniteScroll = false;
+        if (!ASOptions.usePjax) {
+            if (!ASOptions.useHash) {
+                ASOptions.maintainScrollHistory = false;
+            }
+            if (!ASOptions.forceAdvancedScroll) {
+                ASOptions.useShowMore = false;
+                ASOptions.useInfiniteScroll = false;
+            }
         }
     }
 
@@ -46,12 +48,20 @@ $(function() {
     var oldScrollTop = null;
     var oldTop = null;
     function saveScrollPosition() {
+        // Save the relative position of the first visible element of
+        // interest for later restore to keep the important visible content
+        // at the same viewport position before / after DOM changes.
+        // TODO: This could be made more generic by making the "interesting
+        // elements" selector configurable.
         var $firstVisible = $('.timeline li:in-viewport:first');
         firstVisibleId = $firstVisible.attr('id');
         oldScrollTop = $(window).scrollTop();
         oldTop = $firstVisible.offset().top;
     }
+
     function restoreScrollPosition() {
+        // Restore the relative position of "interesting" content previously
+        // saved by saveScrollPosition.
         var $window = $(window);
         var $firstVisible = $('#'+firstVisibleId);
         if (!$firstVisible.length) {
@@ -66,7 +76,10 @@ $(function() {
         $(window).trigger('scroll');
     }
 
-    function maintainScrollState_pjax() {
+    function maintainScrollHistory_pjax() {
+        // Use the HTML5 history API to record page and scroll position.
+        // TODO: Page changes should pushState while just scroll changes
+        // should replaceState.
         var $firstVisibleActivity = $('.timeline li:in-viewport:first');
         var page = $firstVisibleActivity.data('page');
         var limit = $('.timeline').data('limit');
@@ -76,7 +89,11 @@ $(function() {
         }
     }
 
-    function maintainScrollState_hash() {
+    function maintainScrollHistory_hash() {
+        // Use the location.hash to record the scroll position.
+        // TODO/FIXME: This doesn't record the page for forceAdvancedPaging, and since
+        // the hash history is additive (confirm?), it can require clicking Back
+        // through all of your scrolling.
         var $firstVisibleActivity = $('.timeline li:in-viewport:first');
         saveScrollPosition();
         window.location.hash = $firstVisibleActivity.attr('id');  // causes jump...
@@ -86,48 +103,63 @@ $(function() {
     var delayed = null;
     function scrollHandler(event) {
         clearTimeout(delayed);
-        delayed = setTimeout(ActivityBrowseOptions.usePjax
-            ? maintainScrollState_pjax
-            : maintainScrollState_hash, 100);
+        var method = ASOptions.usePjax
+            ? maintainScrollHistory_pjax
+            : maintainScrollHistory_hash;
+        var delay = ASOptions.usePjax
+            ? 100   // scrolls replace history and don't affect scrolling, so more is ok
+            : 750;  // scrolls add history and affect scrolling, so make sure they're done
+        delayed = setTimeout(method, delay);
     }
 
-    function maintainScrollState() {
-        if (!ActivityBrowseOptions.maintainScrollState) {
+    function enableScrollHistory() {
+        // Attempt to record the scroll position in the browser history
+        // using either the HTML5 history API (aka PJAX) or via the location
+        // hash.  Otherwise, when the user clicks a link and then comes back,
+        // they will lose their scroll position and, in the case of advanced
+        // paging, which page they were on.  See: http://xkcd.com/1309/
+        if (!ASOptions.maintainScrollHistory) {
             return;
         }
         $(window).scroll(scrollHandler);
     }
 
     function pageOut(newer) {
+        // Remove a single page of either newer or older content.
         var $timeline = $('.timeline li');
-        var limit = $('.timeline').data('limit') || 100;
+        var limit = $('.timeline').data('limit');
         var range = newer ? [0, limit] : [-limit, undefined];
         $timeline.slice(range[0], range[1]).remove();
-        if (!newer && $('.show-more.older').hasClass('no-more')) {
-            $('.no-more').removeClass('no-more');
-            updateShowMore();
-        }
+        $('.no-more.'+(newer ? 'newer' : 'older')).remove();
     }
-    window.pageOut = pageOut;
 
     function pageIn(newer, url) {
+        // Load a single page of either newer or older content from the URL.
+        // If the added page causes too many to be on screen, calls pageOut
+        // to keep memory usage in check.  Also uses save/restoreScrollPosition
+        // to try to keep the same content in view at the same place.
         $.get(url, function(html) {
+            var $html = $(html);
+            var $timeline = $('.timeline');
+            var limit = $('.timeline').data('limit');
             saveScrollPosition();
-            if (newer) {
-                $('.timeline').prepend(html);
-            } else {
-                if (html.match(/^\s*$/)) {
-                    $('.show-more.older').addClass('no-more');
-                } else {
-                    $('.timeline').append(html);
-                }
+            if ($html.length < limit) {
+                var method = newer ? 'before' : 'after';
+                var cls = newer ? 'newer' : 'older';
+                $timeline[method]('<div class="no-more '+cls+'">No more activities</div>');
             }
+            var method = newer ? 'prepend' : 'append';
+            $timeline[method]($html);
             var firstPage = $('.timeline li:first').data('page');
             var lastPage = $('.timeline li:last').data('page');
             if (lastPage - firstPage >= 3) {
                 pageOut(!newer);
             }
-            if (ActivityBrowseOptions.useShowMore) {
+            if (ASOptions.useShowMore) {
+                // this has to be here instead of showMoreLink handler to
+                // ensure that scroll changes between added / removed content
+                // and Show More links combine properly and don't cause a jump
+                // due to hitting the edge of the page
                 updateShowMore();
             }
             restoreScrollPosition();
@@ -136,56 +168,56 @@ $(function() {
         });
     }
 
-    function makeShowMoreHandler(newer) {
-        // has to be factory to prevent closure memory leak
-        // see: https://www.meteor.com/blog/2013/08/13/an-interesting-kind-of-javascript-memory-leak
-        return function(event) {
-            event.preventDefault();
-            pageIn(newer, this.href);
-        };
-    }
-
     function makeShowMoreLink(newer, targetPage, limit) {
-        var $link = $('<a class="show-more">Show more</a>');
+        var $link = $('<a class="show-more">Show More</a>');
         $link.addClass(newer ? 'newer' : 'older');
         $link.attr('href', 'pjax?page='+targetPage+'&limit='+limit);
-        $link.click(makeShowMoreHandler(newer));  // has to be factory to prevent closure memory leak
+        $link.click(function(event) {
+            event.preventDefault();
+            pageIn(newer, this.href);
+        });
         return $link;
     }
 
     function updateShowMore() {
+        // Update the state of the Show More links when using "Show More"-style
+        // advanced paging.
         var $timeline = $('.timeline');
         if (!$timeline.length) {
             return;
         }
-        var noMoreActivities = $('.show-more.older').hasClass('no-more');
-        $('.page_list, .show-more').remove();
         var limit = $('.timeline').data('limit');
         var firstPage = $('.timeline li:first').data('page');
         var lastPage = $('.timeline li:last').data('page');
-        if (firstPage > 0) {
+        var noMoreNewer = firstPage == 0 || $('.no-more.newer').length;
+        var noMoreOlder = $('.no-more.older').length;
+        $('.show-more').remove();  // TODO: could update HREFs instead of always re-creating links
+        if (!noMoreNewer) {
             $timeline.before(makeShowMoreLink(true, firstPage-1, limit));
         }
-        if (noMoreActivities) {
-            $timeline.after('<div class="show-more older no-more">No more activities</div>');
-        } else {
+        if (!noMoreOlder) {
             $timeline.after(makeShowMoreLink(false, lastPage+1, limit));
         }
     }
-    window.updateShowMore = updateShowMore;
+
+    function enableShowMore() {
+        $('.page_list').remove();
+        updateShowMore();
+    }
 
     function enableInfiniteScroll() {
     }
 
     function enableAdvancedPaging() {
-        if (ActivityBrowseOptions.useInfiniteScroll) {
+        if (ASOptions.useInfiniteScroll) {
             enableInfiniteScroll();
-        } else if (ActivityBrowseOptions.useShowMore) {
-            updateShowMore();
+        } else if (ASOptions.useShowMore) {
+            enableShowMore();
         }
     }
 
-    maintainScrollState();  // http://xkcd.com/1309/
+    detectFeatures();
+    enableScrollHistory();
     enableAdvancedPaging();
 });
 

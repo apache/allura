@@ -47,7 +47,6 @@
   {% else %}
     <ul class="timeline" data-limit="{{limit}}">
         {% include 'forgeactivity:templates/timeline.html' %}
-        {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
     </ul>
     {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
   {% endif %}
