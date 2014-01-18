@@ -285,7 +285,9 @@ class PageList(ew_core.Widget):
         limit=None,
         count=0,
         page=0,
-        show_label=False)
+        show_label=True,
+        show_if_single_page=False,
+        force_next=False)
 
     def paginator(self, count, page, limit, zero_based_pages=True):
         page_offset = 1 if zero_based_pages else 0
@@ -297,6 +299,16 @@ class PageList(ew_core.Widget):
             return url(request.path, params)
         return paginate.Page(range(count), page + page_offset, int(limit),
                              url=page_url)
+
+    def prepare_context(self, context):
+        context = super(PageList, self).prepare_context(context)
+        count = context['count']
+        page = context['page']
+        limit = context['limit']
+        context['paginator'] = self.paginator(count, page, limit)
+        if context['force_next']:
+            context['paginator'].next_page = context['paginator'].page + 1
+        return context
 
     def resources(self):
         yield ew.CSSLink('css/page_list.css')

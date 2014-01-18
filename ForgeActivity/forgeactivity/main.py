@@ -22,7 +22,7 @@ from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
 from tg import expose, validate, config
 from tg.decorators import with_trailing_slash, without_trailing_slash
-from paste.deploy.converters import asbool
+from paste.deploy.converters import asbool, asint
 from webob import exc
 from webhelpers import feedgenerator as FG
 
@@ -33,6 +33,7 @@ from allura.lib.security import require_authenticated
 from allura.model.timeline import perm_check
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
+from allura.lib.widgets.form_fields import PageList
 from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
@@ -65,6 +66,7 @@ class ForgeActivityApp(Application):
 
 class W:
     follow_toggle = FollowToggle()
+    page_list = PageList()
 
 
 class ForgeActivityController(BaseController):
@@ -91,6 +93,7 @@ class ForgeActivityController(BaseController):
             raise exc.HTTPNotFound()
 
         c.follow_toggle = W.follow_toggle
+        c.page_list = W.page_list
         if c.project.is_user_project:
             followee = c.project.user_project_of
             actor_only = followee != c.user
@@ -103,7 +106,13 @@ class ForgeActivityController(BaseController):
                                            limit=kw.get('limit', 100),
                                            actor_only=actor_only,
                                            filter_func=perm_check(c.user))
-        return dict(followee=followee, following=following, timeline=timeline)
+        return dict(
+                followee=followee,
+                following=following,
+                timeline=timeline,
+                page=asint(kw.get('page', 0)),
+                limit=asint(kw.get('limit', 100)),
+            )
 
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash

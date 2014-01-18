@@ -18,8 +18,10 @@
 -#}
 <div>
   <div class="page_list">
-    {% set paginator = widget.paginator(count, page, limit) %}
-    {{paginator.pager('$link_first $link_previous ~2~ $link_next $link_last (Page $page of $page_count)')}}
+    {{paginator.pager(
+            format='$link_first $link_previous ~2~ $link_next $link_last' + (show_label and ' (Page $page of $page_count)' or ''),
+            show_if_single_page=show_if_single_page
+        )}}
   </div>
   <div class="clear"></div>
 </div>

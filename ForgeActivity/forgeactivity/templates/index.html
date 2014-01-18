@@ -57,6 +57,7 @@
           {% endif %}
         </li>
         {% endfor %}
+        {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
     </ul>
   {% endif %}
 </div>
