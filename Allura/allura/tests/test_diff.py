@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #       Licensed to the Apache Software Foundation (ASF) under one
 #       or more contributor license agreements.  See the NOTICE file
 #       distributed with this work for additional information
@@ -137,3 +138,9 @@ class TestHtmlSideBySideDiff(unittest.TestCase):
 '''.strip()
         html = self.diff.make_table(a, b, 'file a', 'file b')
         self.assertEquals(html, expected)
+
+    def test_unicode_make_table(self):
+        a = ['строка']
+        b = ['измененная строка']
+        html = self.diff.make_table(a, b, 'file a', 'file b')
+        assert u'строка' in html

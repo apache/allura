@@ -16,6 +16,7 @@
 #       under the License.
 
 import difflib
+from allura.lib import helpers as h
 
 
 class HtmlSideBySideDiff(object):
@@ -112,4 +113,4 @@ class HtmlSideBySideDiff(object):
         bdesc = bdesc or ''
         diff = difflib._mdiff(a, b, context=context)
         lines = [self._make_line(d) for d in diff]
-        return self.table_tmpl % (adesc, bdesc, '\n'.join(lines))
+        return h.really_unicode(self.table_tmpl % (adesc, bdesc, '\n'.join(lines)))
