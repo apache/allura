@@ -18,6 +18,7 @@
 */
 
 ASOptions = {
+    maxPages: 3,
     maintainScrollHistory: true,
     usePjax: true,
     useHash: true,
@@ -27,6 +28,17 @@ ASOptions = {
 }
 
 $(function() {
+    if (!$('.timeline li').length) {
+        return;  // no timeline, no paging
+    }
+
+    $.expr[':']['timeline-page'] = $.expr.createPseudo(function(page) {
+        // Select timeline elements by their page.  NB: only works on activity LIs.
+        return function(elem) {
+            return $(elem).data('page') == page;
+        }
+    });
+
     function detectFeatures() {
         var hasAPI = window.history && window.history.pushState && window.history.replaceState;
         var iOS4 = navigator.userAgent.match(/iP(od|one|ad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork/);
@@ -72,7 +84,6 @@ $(function() {
         var elemAdjustment = newTop - oldTop;
         var viewportAdjustment = scrollTop - oldScrollTop;
         $window.scrollTop(scrollTop + elemAdjustment - viewportAdjustment);
-        //console.log('restoreSP', oldTop, newTop, elemAdjustment, viewportAdjustment, scrollTop, $window.scrollTop());
         $(window).trigger('scroll');
     }
 
@@ -125,36 +136,35 @@ $(function() {
     }
 
     function pageOut(newer) {
-        // Remove a single page of either newer or older content.
+        // Remove newest or oldest page to keep memory usage in check.
         var $timeline = $('.timeline li');
-        var limit = $('.timeline').data('limit');
-        var range = newer ? [0, limit] : [-limit, undefined];
-        $timeline.slice(range[0], range[1]).remove();
+        var firstPage = $timeline.first().data('page');
+        var lastPage = $timeline.last().data('page');
+        var numPages = lastPage - firstPage + 1;
+        if (numPages <= ASOptions.maxPages) {
+            return;
+        }
+        var pageToRemove = newer ? firstPage : lastPage;
+        $('.timeline li:timeline-page('+pageToRemove+')').remove();
         $('.no-more.'+(newer ? 'newer' : 'older')).remove();
     }
 
     function pageIn(newer, url) {
         // Load a single page of either newer or older content from the URL.
-        // If the added page causes too many to be on screen, calls pageOut
+        // Then calls pageOut to ensure that not too many are loaded at once,
         // to keep memory usage in check.  Also uses save/restoreScrollPosition
         // to try to keep the same content in view at the same place.
         $.get(url, function(html) {
             var $html = $(html);
             var $timeline = $('.timeline');
+            var newPage = $html.data('page');
             var limit = $('.timeline').data('limit');
             saveScrollPosition();
-            if ($html.length < limit) {
-                var method = newer ? 'before' : 'after';
-                var cls = newer ? 'newer' : 'older';
-                $timeline[method]('<div class="no-more '+cls+'">No more activities</div>');
+            if ($html.length < limit || newPage == 0) {
+                makeNoMore(newer);
             }
-            var method = newer ? 'prepend' : 'append';
-            $timeline[method]($html);
-            var firstPage = $('.timeline li:first').data('page');
-            var lastPage = $('.timeline li:last').data('page');
-            if (lastPage - firstPage >= 3) {
-                pageOut(!newer);
-            }
+            $timeline[newer ? 'prepend' : 'append']($html);
+            pageOut(!newer);
             if (ASOptions.useShowMore) {
                 // this has to be here instead of showMoreLink handler to
                 // ensure that scroll changes between added / removed content
@@ -168,6 +178,13 @@ $(function() {
         });
     }
 
+    function makeNoMore(newer) {
+        var $timeline = $('.timeline');
+        var method = newer ? 'before' : 'after';
+        var cls = newer ? 'newer' : 'older';
+        $timeline[method]('<div class="no-more '+cls+'">No more activities</div>');
+    }
+
     function makeShowMoreLink(newer, targetPage, limit) {
         var $link = $('<a class="show-more">Show More</a>');
         $link.addClass(newer ? 'newer' : 'older');
@@ -176,32 +193,31 @@ $(function() {
             event.preventDefault();
             pageIn(newer, this.href);
         });
-        return $link;
+        $('.timeline')[newer ? 'before' : 'after']($link);
     }
 
     function updateShowMore() {
         // Update the state of the Show More links when using "Show More"-style
         // advanced paging.
-        var $timeline = $('.timeline');
-        if (!$timeline.length) {
-            return;
-        }
         var limit = $('.timeline').data('limit');
         var firstPage = $('.timeline li:first').data('page');
         var lastPage = $('.timeline li:last').data('page');
-        var noMoreNewer = firstPage == 0 || $('.no-more.newer').length;
+        var noMoreNewer = $('.no-more.newer').length;
         var noMoreOlder = $('.no-more.older').length;
         $('.show-more').remove();  // TODO: could update HREFs instead of always re-creating links
         if (!noMoreNewer) {
-            $timeline.before(makeShowMoreLink(true, firstPage-1, limit));
+            makeShowMoreLink(true, firstPage-1, limit);
         }
         if (!noMoreOlder) {
-            $timeline.after(makeShowMoreLink(false, lastPage+1, limit));
+            makeShowMoreLink(false, lastPage+1, limit);
         }
     }
 
     function enableShowMore() {
         $('.page_list').remove();
+        if ($('.timeline li:first').data('page') == 0) {
+            makeNoMore(true);
+        }
         updateShowMore();
     }
 
