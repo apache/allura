@@ -23,8 +23,8 @@ ASOptions = {
     usePjax: true,
     useHash: true,
     forceAdvancedScroll: false,
-    useShowMore: true,
-    useInfiniteScroll: false
+    useShowMore: false,
+    useInfiniteScroll: true
 }
 
 $(function() {
@@ -111,16 +111,16 @@ $(function() {
         restoreScrollPosition();
     }
 
-    var delayed = null;
+    var scrollHandlerDelayed = null;
     function scrollHandler(event) {
-        clearTimeout(delayed);
+        clearTimeout(scrollHandlerDelayed);
         var method = ASOptions.usePjax
             ? maintainScrollHistory_pjax
             : maintainScrollHistory_hash;
         var delay = ASOptions.usePjax
             ? 100   // scrolls replace history and don't affect scrolling, so more is ok
             : 750;  // scrolls add history and affect scrolling, so make sure they're done
-        delayed = setTimeout(method, delay);
+        scrollHandlerDelayed = setTimeout(method, delay);
     }
 
     function enableScrollHistory() {
@@ -149,11 +149,20 @@ $(function() {
         $('.no-more.'+(newer ? 'newer' : 'older')).remove();
     }
 
+    var pageInQueue = [];
     function pageIn(newer, url) {
         // Load a single page of either newer or older content from the URL.
         // Then calls pageOut to ensure that not too many are loaded at once,
         // to keep memory usage in check.  Also uses save/restoreScrollPosition
         // to try to keep the same content in view at the same place.
+        if ($('.no-more.'+(newer ? 'newer' : 'older')).length) {
+            return;
+        }
+        pageInQueue.push({newer: newer, url: url});
+        if (pageInQueue.length > 1) {
+            return;
+        }
+        var newerText = newer ? 'newer' : 'older';
         $.get(url, function(html) {
             var $html = $(html);
             var $timeline = $('.timeline');
@@ -173,6 +182,11 @@ $(function() {
                 updateShowMore();
             }
             restoreScrollPosition();
+            pageInQueue.shift();
+            if (pageInQueue.length) {
+                var next = pageInQueue.shift();
+                pageIn(next.newer, next.url);
+            }
         }).fail(function() {
             flash('Error loading activities', 'error');
         });
@@ -185,10 +199,15 @@ $(function() {
         $timeline[method]('<div class="no-more '+cls+'">No more activities</div>');
     }
 
-    function makeShowMoreLink(newer, targetPage, limit) {
+    function makePageUrl(targetPage) {
+        var limit = $('.timeline').data('limit');
+        return 'pjax?page='+targetPage+'&limit='+limit;
+    }
+
+    function makeShowMoreLink(newer, targetPage) {
         var $link = $('<a class="show-more">Show More</a>');
         $link.addClass(newer ? 'newer' : 'older');
-        $link.attr('href', 'pjax?page='+targetPage+'&limit='+limit);
+        $link.attr('href', makePageUrl(targetPage));
         $link.click(function(event) {
             event.preventDefault();
             pageIn(newer, this.href);
@@ -199,17 +218,16 @@ $(function() {
     function updateShowMore() {
         // Update the state of the Show More links when using "Show More"-style
         // advanced paging.
-        var limit = $('.timeline').data('limit');
         var firstPage = $('.timeline li:first').data('page');
         var lastPage = $('.timeline li:last').data('page');
         var noMoreNewer = $('.no-more.newer').length;
         var noMoreOlder = $('.no-more.older').length;
         $('.show-more').remove();  // TODO: could update HREFs instead of always re-creating links
         if (!noMoreNewer) {
-            makeShowMoreLink(true, firstPage-1, limit);
+            makeShowMoreLink(true, firstPage-1);
         }
         if (!noMoreOlder) {
-            makeShowMoreLink(false, lastPage+1, limit);
+            makeShowMoreLink(false, lastPage+1);
         }
     }
 
@@ -221,7 +239,34 @@ $(function() {
         updateShowMore();
     }
 
+    var currentPage = null;
+    function handleInfiniteScroll(event) {
+        var newPage = $('.timeline li:in-viewport:first').data('page');
+        if (newPage == currentPage) {
+            return;
+        }
+        var firstPage = $('.timeline li:first').data('page');
+        var lastPage = $('.timeline li:last').data('page');
+        var noMoreNewer = $('.no-more.newer').length;
+        var noMoreOlder = $('.no-more.older').length;
+        if (newPage < currentPage && !noMoreNewer) {
+            pageIn(true, makePageUrl(firstPage-1));
+        } else if (newPage > currentPage && !noMoreOlder) {
+            pageIn(false, makePageUrl(lastPage+1));
+        }
+        currentPage = newPage;
+    }
+
     function enableInfiniteScroll() {
+        $('.page_list').remove();
+        currentPage = $('.timeline li:first').data('page');
+        if (currentPage == 0) {
+            makeNoMore(true);
+        } else {
+            pageIn(true, makePageUrl(currentPage-1));
+        }
+        pageIn(false, makePageUrl(currentPage+1));
+        $(window).scroll(handleInfiniteScroll);
     }
 
     function enableAdvancedPaging() {
