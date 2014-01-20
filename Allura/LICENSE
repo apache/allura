@@ -241,3 +241,6 @@ For details, see allura/public/nf/js/spin.min.js
 
 Sylvester, which is available under the MIT license.
 For details, see allura/public/nf/js/sylvester.js
+
+Modernizr, which is available under the MIT license.
+For details, see allura/public/nf/js/modernizr.js
