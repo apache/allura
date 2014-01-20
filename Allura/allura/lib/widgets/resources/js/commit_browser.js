@@ -88,16 +88,6 @@ if($('#commit_graph')){
     highlighter.height = canvas.height;
     highlighter_ctx.fillStyle = "#ccc";
 
-    // Hide error message
-    Modernizr.load([
-      {
-        test: Modernizr.canvas,
-        yep: function() {
-          $('#commit_browser_canvas_message').hide();
-        }
-      }
-    ]);
-
     function setHeight(cnt) {
       /*
        * Set proper canvas height for cnt commits.
