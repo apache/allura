@@ -124,6 +124,7 @@ class TestRootController(_TestCase):
         assert 'tree/README?format=raw">Download</a>' not in resp
         assert 'Tree' in resp.html.findAll(
             'td')[2].text, resp.html.findAll('td')[2].text
+        assert 'byRick Copeland' in resp.html.findAll('td')[0].text, resp.html.findAll('td')[0].text
         resp = self.app.get(
             '/src-git/ci/1e146e67985dcd71c74de79613719bef7bddca4a/log/?path=/README')
         assert 'View' in resp.html.findAll('td')[2].text
