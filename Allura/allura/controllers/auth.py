@@ -76,6 +76,9 @@ class AuthController(BaseController):
         self.user_info = UserInfoController()
         self.subscriptions = SubscriptionsController()
         self.oauth = OAuthController()
+        urls = plugin.UserPreferencesProvider.get().additional_urls()
+        for u, method in urls:
+            setattr(self, u, method)
 
     @expose()
     def prefs(self, *args, **kwargs):

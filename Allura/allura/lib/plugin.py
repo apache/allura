@@ -983,6 +983,9 @@ class UserPreferencesProvider(object):
         '''
         raise NotImplementedError, 'find_by_display_name'
 
+    def additional_urls(self):
+        return []
+
 
 class LocalUserPreferencesProvider(UserPreferencesProvider):
 
@@ -1009,6 +1012,7 @@ class LocalUserPreferencesProvider(UserPreferencesProvider):
         users = M.User.query.find(dict(
             display_name=name_regex)).sort('username').all()
         return users
+
 
 
 class AdminExtension(object):
