@@ -29,6 +29,7 @@ Allura/allura/public/nf/js/jquery.maxlength.min.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/js/spin.min.js
 Allura/allura/public/nf/js/sylvester.js
+Allura/allura/public/nf/js/modernizr.js
 Allura/allura/tests/data/genshi_hello_tmpl
 Allura/allura/tests/data/test_mime/text_file.txt
 AlluraTest/jslint/
