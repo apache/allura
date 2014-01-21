@@ -75,7 +75,7 @@ def bootstrap(command, conf, vars):
         kw.update(make_project=make_user_projects)
         return create_user(*args, **kw)
 
-    # Our bootstrap doesn't play nicely with SFX project and user APIs
+    # Temporarily disable auth extensions to prevent unintended side-effects
     tg.config['auth.method'] = tg.config['registration.method'] = 'local'
     assert tg.config['auth.method'] == 'local'
     conf['auth.method'] = conf['registration.method'] = 'local'

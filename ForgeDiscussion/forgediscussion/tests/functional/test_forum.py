@@ -157,32 +157,32 @@ class TestForumAsync(TestController):
 
     def test_reply(self):
         self._post('testforum', 'Test Thread', 'Nothing here',
-                   message_id='test_reply@sf.net')
+                   message_id='test_reply@domain.net')
         assert_equal(FM.ForumThread.query.find().count(), 1)
         posts = FM.ForumPost.query.find()
         assert_equal(posts.count(), 1)
         assert_equal(FM.ForumThread.query.get().num_replies, 1)
         assert_equal(FM.ForumThread.query.get()
-                     .first_post_id, 'test_reply@sf.net')
+                     .first_post_id, 'test_reply@domain.net')
 
         post = posts.first()
         self._post('testforum', 'Test Reply', 'Nothing here, either',
                    message_id=post.thread.url() + post._id,
-                   in_reply_to=['test_reply@sf.net'])
+                   in_reply_to=['test_reply@domain.net'])
         assert_equal(FM.ForumThread.query.find().count(), 1)
         assert_equal(FM.ForumPost.query.find().count(), 2)
         assert_equal(FM.ForumThread.query.get()
-                     .first_post_id, 'test_reply@sf.net')
+                     .first_post_id, 'test_reply@domain.net')
 
     def test_attach(self):
         self._post('testforum', 'Attachment Thread', 'This is a text file',
-                   message_id='test.attach.100@sf.net',
+                   message_id='test.attach.100@domain.net',
                    filename='test.txt',
                    content_type='text/plain')
         self._post('testforum', 'Test Thread', 'Nothing here',
-                   message_id='test.attach.100@sf.net')
+                   message_id='test.attach.100@domain.net')
         self._post('testforum', 'Attachment Thread', 'This is a text file',
-                   message_id='test.attach.100@sf.net',
+                   message_id='test.attach.100@domain.net',
                    content_type='text/plain')
 
     def test_threads(self):
@@ -225,9 +225,9 @@ class TestForumAsync(TestController):
         params[post_form.find('textarea')['name']] = 'text'
         r = self.app.post(url + 'reply', params=params)
         self._post('testforum', 'Test Reply', 'Nothing here, either',
-                   message_id='test_posts@sf.net',
+                   message_id='test_posts@domain.net',
                    in_reply_to=[p._id])
-        reply = FM.ForumPost.query.get(_id='test_posts@sf.net')
+        reply = FM.ForumPost.query.get(_id='test_posts@domain.net')
         r = self.app.get(thd_url + reply.slug + '/')
         # Check attachments
         r = self.app.post(url + 'attach',

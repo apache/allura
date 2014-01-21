@@ -418,7 +418,7 @@ def send_notifications(repo, commit_ids):
     '''Create appropriate notification and feed objects for a refresh'''
     from allura.model import Feed, Notification
     commit_msgs = []
-    base_url = tg.config.get('base_url', 'sourceforge.net')
+    base_url = tg.config['base_url']
     for oids in utils.chunked_iter(commit_ids, QSIZE):
         chunk = list(oids)
         index = dict(

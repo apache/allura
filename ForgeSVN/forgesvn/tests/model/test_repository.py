@@ -162,10 +162,11 @@ class TestSVNRepo(unittest.TestCase, RepoImplTestBase):
         assert os.access(
             os.path.join(g.tmpdir, 'testsvn/hooks/post-commit'), os.X_OK)
         with open(os.path.join(g.tmpdir, 'testsvn/hooks/post-commit')) as f:
-            c = f.read()
+            hook_data = f.read()
         self.assertIn(
-            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n', c)
-        self.assertIn('exec $DIR/post-commit-user "$@"\n', c)
+            'curl -s http://localhost/auth/refresh_repo/p/test/src/\n',
+            hook_data)
+        self.assertIn('exec $DIR/post-commit-user "$@"\n', hook_data)
 
         repo.refresh(notify=False)
         assert len(list(repo.log()))

@@ -457,8 +457,8 @@ def gen_message_id(_id=None):
         addr = '%s.%s' % (_id, c.app.config.options['mount_point'])
     else:
         addr = _id
-    return '%s@%s.sourceforge.net' % (
-        addr, '.'.join(reversed(parts)))
+    return '%s@%s.%s' % (
+        addr, '.'.join(reversed(parts)), tg.config['domain'])
 
 
 class ProxiedAttrMeta(type):
@@ -533,23 +533,6 @@ def render_genshi_plaintext(template_name, **template_vars):
     stream = tt.generate(**template_vars)
     return stream.render(encoding='utf-8').decode('utf-8')
 
-site_url = None  # cannot set it just yet since tg.config is empty
-
-
-def full_url(url):
-    """Make absolute URL from the relative one.
-    """
-    global site_url
-    if site_url is None:
-        # XXX: add a separate tg option instead of re-using openid.realm
-        site_url = tg.config.get(
-            'openid.realm', 'https://newforge.sf.geek.net/')
-        site_url = site_url.replace('https:', 'http:')
-        if not site_url.endswith('/'):
-            site_url += '/'
-    if url.startswith('/'):
-        url = url[1:]
-    return site_url + url
 
 
 @tg.expose(content_type='text/plain')

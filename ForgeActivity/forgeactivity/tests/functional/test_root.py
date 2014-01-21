@@ -62,7 +62,7 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.sourceforge.net",
+                    "allura_id": "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.domain.net",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/_discuss/thread/08e74efd/ed7c/",

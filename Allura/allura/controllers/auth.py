@@ -140,7 +140,7 @@ class AuthController(BaseController):
         session['userid'] = c.user._id
         session.save()
         if not c.user.username:
-            flash('Please choose a user name for SourceForge, %s.'
+            flash('Please choose a user name, %s.'
                   % c.user.get_pref('display_name'))
             redirect('setup_openid_user')
         redirect(kw.pop('return_to', '/'))
@@ -312,10 +312,7 @@ To reset your password on %s, please visit the following URL:
     @expose()
     def logout(self):
         plugin.AuthenticationProvider.get(request).logout()
-        if config.get('auth.method', 'local') == 'sfx':
-            redirect(g.logout_url)
-        else:
-            redirect('/')
+        redirect(config.get('auth.post_logout_url', '/'))
 
     @expose()
     @require_post()
@@ -345,7 +342,6 @@ To reset your password on %s, please visit the following URL:
 
     def _auth_repos(self, user):
         def _unix_group_name(neighborhood, shortname):
-            'shameless copied from sfx_api.py'
             path = neighborhood.url_prefix + \
                 shortname[len(neighborhood.shortname_prefix):]
             parts = [p for p in path.split('/') if p]

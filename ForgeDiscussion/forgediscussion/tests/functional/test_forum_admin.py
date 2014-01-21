@@ -306,7 +306,7 @@ class TestForumAdmin(TestController):
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert 'Sent from sourceforge.net because email@monitoring.com is subscribed to http://localhost/p/test/discussion/testforum/' in email_tasks[
+        assert 'Sent from localhost because email@monitoring.com is subscribed to http://localhost/p/test/discussion/testforum/' in email_tasks[
             0].kwargs['text'], email_tasks[0].kwargs['text']
         assert 'a project admin can change settings at http://localhost/p/test/admin/discussion/forums' in email_tasks[
             0].kwargs['text']

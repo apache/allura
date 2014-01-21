@@ -819,7 +819,7 @@ To reset your password on %s, please visit the following URL:
         sendmail.post.assert_called_once_with(
             destinations=[email._id],
             fromaddr=config['forgemail.return_path'],
-            reply_to='noreply@sourceforge.net',
+            reply_to=config['forgemail.return_path'],
             subject='Password recovery',
             message_id=gen_message_id(),
             text=text)

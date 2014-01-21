@@ -260,13 +260,14 @@ class TestRootController(_TestCase):
 
     def test_refresh(self):
         notification = M.Notification.query.find(
-            dict(subject='[test:src-git] 5 new commits to Test Project Git')).first()
+            dict(subject='[test:src-git] 5 new commits to Test Project Git')
+            ).first()
         assert notification
         domain = '.'.join(
             reversed(c.app.url[1:-1].split('/'))).replace('_', '-')
-        common_suffix = tg.config.get('forgemail.domain', '.sourceforge.net')
+        common_suffix = tg.config['forgemail.domain']
         email = 'noreply@%s%s' % (domain, common_suffix)
-        assert email in notification['reply_to_address']
+        assert_in(email, notification['reply_to_address'])
 
     def test_file_force_display(self):
         ci = self._get_ci()

@@ -94,7 +94,7 @@ class TestNotification(unittest.TestCase):
             message_id='_id',
             in_reply_to='in_reply_to',
             references=['a'],
-            sender='wiki@test.p.in.sf.net',
+            sender='wiki@test.p.in.localhost',
             text='text footer',
         )
 
@@ -157,7 +157,7 @@ class TestNotification(unittest.TestCase):
             message_id='_id',
             in_reply_to='in_reply_to',
             references=['a'],
-            sender='wiki@test.p.in.sf.net',
+            sender='wiki@test.p.in.localhost',
             text='text footer',
         )
 
@@ -245,8 +245,8 @@ class TestPostNotifications(unittest.TestCase):
                      '"Test Admin" <test-admin@users.localhost>')
         assert_equal(email_tasks[1].kwargs['fromaddr'],
                      '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(email_tasks[0].kwargs['sender'], 'wiki@test.p.in.sf.net')
-        assert_equal(email_tasks[1].kwargs['sender'], 'wiki@test.p.in.sf.net')
+        assert_equal(email_tasks[0].kwargs['sender'], 'wiki@test.p.in.localhost')
+        assert_equal(email_tasks[1].kwargs['sender'], 'wiki@test.p.in.localhost')
         assert email_tasks[0].kwargs['text'].startswith(
             'Home modified by Test Admin')
         assert 'you indicated interest in ' in email_tasks[0].kwargs['text']
@@ -288,7 +288,8 @@ class TestPostNotifications(unittest.TestCase):
         assert 'test@mail.com is subscribed to http://test1.com' in footer
         assert 'admin can change settings at http://test2.com' in footer
         footer = MailFooter.standard(M.Notification())
-        assert 'Sent from sourceforge.net because you indicated interest in' in footer
+        self.assertIn('Sent from localhost because you indicated interest',
+                      footer)
 
     def _subscribe(self, **kw):
         self.pg.subscribe(type='direct', **kw)

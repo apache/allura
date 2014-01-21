@@ -287,10 +287,10 @@ class Application(object):
 
         Email address constructed from Application's url, and looks like this:
 
-            wiki@test.p.in.sf.net
+            wiki@test.p.in.domain.net
 
         where 'wiki@test.p' comes from app url (in this case /p/test/wiki/)
-        and '.in.sf.net' comes from 'forgemail.domain' config entry.
+        and '.in.domain.net' comes from 'forgemail.domain' config entry.
 
         Assumes self.url returns a url path without domain, starting with '/'
         """

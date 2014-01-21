@@ -100,7 +100,7 @@ class TestAppDefaults(WithDatabase):
 
     def test_email_address(self):
         self.app.url = '/p/project/mount-point/'
-        assert self.app.email_address == 'mount-point@project.p.in.sf.net'
+        assert self.app.email_address == 'mount-point@project.p.in.localhost'
 
 
 def install_app():

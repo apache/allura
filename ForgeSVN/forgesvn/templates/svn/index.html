@@ -87,7 +87,7 @@ svn import {{c.app.repo.clone_url('rw', c.user.username)}} -m "Initial commit"</
     &nbsp;
     <div class="message info scm-ssh-key">
       <div class="content">
-        Did you get asked for your SourceForge password during this process? You can securely use your Subversion repository and avoid having to re-enter your password by <a href="https://sourceforge.net/account/ssh">setting up an ssh-key</a>.
+      Did you get asked for your {{config.site_name}} password during this process? You can securely use your Subversion repository and avoid having to re-enter your password by <a href="https://{{config.domain}}/account/ssh">setting up an ssh-key</a>.
       </div>
     </div>
     {% else %}

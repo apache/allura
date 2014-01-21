@@ -163,7 +163,7 @@ class Globals(object):
             self.solr_short_timeout = None
         self.use_queue = asbool(config.get('use_queue', False))
 
-        # Load login/logout urls; only used for SFX logins
+        # Load login/logout urls; only used for customized logins
         self.login_url = config.get('auth.login_url', '/auth/')
         self.logout_url = config.get('auth.logout_url', '/auth/logout')
         self.login_fragment_url = config.get(
@@ -604,6 +604,10 @@ class Globals(object):
 
     def year(self):
         return datetime.datetime.utcnow().year
+
+    @LazyProperty
+    def noreply(self):
+        return unicode(config.get('noreply', 'noreply@%s' % config['domain']))
 
 
 class Icon(object):

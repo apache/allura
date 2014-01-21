@@ -143,21 +143,21 @@ def test_artifactlink():
 
 @with_setup(setUp, tearDown)
 def test_gen_messageid():
-    assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.sourceforge.net',
+    assert re.match(r'[0-9a-zA-Z]*.wiki@test.p.localhost',
                     h.gen_message_id())
 
 
 @with_setup(setUp, tearDown)
 def test_gen_messageid_with_id_set():
     oid = ObjectId()
-    assert re.match(r'%s.wiki@test.p.sourceforge.net' %
+    assert re.match(r'%s.wiki@test.p.localhost' %
                     str(oid), h.gen_message_id(oid))
 
 
 @with_setup(setUp, tearDown)
 def test_artifact_messageid():
     p = WM.Page(title='T')
-    assert re.match(r'%s.wiki@test.p.sourceforge.net' %
+    assert re.match(r'%s.wiki@test.p.localhost' %
                     str(p._id), p.message_id())
 
 

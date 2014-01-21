@@ -228,7 +228,7 @@ class TestIdentifySender(object):
 
 
 def test_parse_message_id():
-    assert_equal(_parse_message_id('<de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>, </p/libjpeg-turbo/patches/54/de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net>'), [
-        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
-        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.sourceforge.net',
+    assert_equal(_parse_message_id('<de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net>, </p/libjpeg-turbo/patches/54/de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net>'), [
+        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net',
+        'de31888f6be2d87dc377d9e713876bb514548625.patches@libjpeg-turbo.p.domain.net',
     ])

@@ -95,7 +95,7 @@
             $removal_original.attr('checked', true);
           }
         }
-        {% if config.get('auth.method', 'local') == 'sfx' %}
+        {% if not allow_project_undelete %}
         else if($(this).val()!=='deleted' && currently_deleted){
           alert('You may not undelete a project that has already been deleted.');
           $removal_original.attr('checked', true);

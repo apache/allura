@@ -73,9 +73,6 @@ class TestGitHubWikiImporter(TestCase):
                 project=p, user=u, url='foo')
             g.post_event.assert_called_once_with('project_updated')
 
-
-class TestGitHubWikiImporter(TestCase):
-
     def setUp(self):
         setup_basic_test()
         self.blob1 = Mock()
@@ -260,17 +257,17 @@ class TestGitHubWikiImporter(TestCase):
 
     def test_convert_gollum_external_links(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u'[[http://sf.net]]'), u'<http://sf.net>')
-        assert_equal(f(u'[[https://sf.net]]'), u'<https://sf.net>')
-        assert_equal(f(u'[[SourceForge|http://sf.net]]'),
-                     u'[SourceForge](http://sf.net)')
+        assert_equal(f(u'[[http://domain.net]]'), u'<http://domain.net>')
+        assert_equal(f(u'[[https://domain.net]]'), u'<https://domain.net>')
+        assert_equal(f(u'[[Site|http://domain.net]]'),
+                     u'[Site](http://domain.net)')
 
     def test_convert_gollum_external_links_escaped(self):
         f = GitHubWikiImporter().convert_gollum_tags
-        assert_equal(f(u"'[[http://sf.net]]"), u'[[http://sf.net]]')
-        assert_equal(f(u"'[[https://sf.net]]"), u'[[https://sf.net]]')
-        assert_equal(f(u"'[[SourceForge|http://sf.net]]"),
-                     u'[[SourceForge|http://sf.net]]')
+        assert_equal(f(u"'[[http://domain.net]]"), u'[[http://domain.net]]')
+        assert_equal(f(u"'[[https://domain.net]]"), u'[[https://domain.net]]')
+        assert_equal(f(u"'[[Site|http://domain.net]]"),
+                     u'[[Site|http://domain.net]]')
 
     def test_convert_gollum_toc(self):
         f = GitHubWikiImporter().convert_gollum_tags
@@ -283,7 +280,7 @@ class TestGitHubWikiImporter(TestCase):
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
-Our website is [[http://sf.net]].
+Our website is [[http://domain.net]].
 
 '[[Escaped Tag]]'''
 
@@ -291,7 +288,7 @@ Our website is [[http://sf.net]].
 
 More info at: [MoreInfo] [Even More Info]
 
-Our website is <http://sf.net>.
+Our website is <http://domain.net>.
 
 [[Escaped Tag]]'''
 
@@ -310,7 +307,7 @@ Our website is <http://sf.net>.
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
-Our website is [[http://sf.net]].
+Our website is [[http://domain.net]].
 
 '[[Escaped Tag]]
 
@@ -327,7 +324,7 @@ sha aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'''
 
 More info at: [MoreInfo] [Even More Info]
 
-Our website is <http://sf.net>.
+Our website is <http://domain.net>.
 
 [[Escaped Tag]]
 
@@ -354,7 +351,7 @@ sha [aaaaaa]'''
 
 More info at: [[MoreInfo]] [[Even More Info]]
 
-Our website is [[http://sf.net]].
+Our website is [[http://domain.net]].
 
 '[[Escaped Tag]]
 
@@ -364,7 +361,7 @@ Our website is [[http://sf.net]].
 
         result = u'''<p>Look at [[this page|Some Page]]</p>
 <p>More info at: [[MoreInfo]] [[Even More Info]]</p>
-<p>Our website is [[http://sf.net]].</p>
+<p>Our website is [[http://domain.net]].</p>
 <p>'[[Escaped Tag]]</p>
 <p>[External link to the wiki page](https://github.com/a/b/wiki/Page)</p>
 <p>[External link](https://github.com/a/b/issues/1)</p>'''

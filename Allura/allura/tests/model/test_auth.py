@@ -52,22 +52,22 @@ def test_password_encoder():
 
 @with_setup(setUp)
 def test_email_address():
-    addr = M.EmailAddress(_id='test_admin@sf.net',
+    addr = M.EmailAddress(_id='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
     ThreadLocalORMSession.flush_all()
     assert addr.claimed_by_user() == c.user
-    addr2 = M.EmailAddress.upsert('test@sf.net')
-    addr3 = M.EmailAddress.upsert('test_admin@sf.net')
+    addr2 = M.EmailAddress.upsert('test@domain.net')
+    addr3 = M.EmailAddress.upsert('test_admin@domain.net')
     assert addr3 is addr
     assert addr2 is not addr
     assert addr2
-    addr4 = M.EmailAddress.upsert('test@SF.NET')
+    addr4 = M.EmailAddress.upsert('test@DOMAIN.NET')
     assert addr4 is addr2
     with patch('allura.lib.app_globals.request', Request.blank('/')):
         addr.send_verification_link()
-    assert addr is c.user.address_object('test_admin@sf.net')
-    c.user.claim_address('test@SF.NET')
-    assert 'test@sf.net' in c.user.email_addresses
+    assert addr is c.user.address_object('test_admin@domain.net')
+    c.user.claim_address('test@DOMAIN.NET')
+    assert 'test@domain.net' in c.user.email_addresses
 
 
 @with_setup(setUp)
@@ -170,7 +170,7 @@ def test_project_role():
     ThreadLocalORMSession.flush_all()
     roles = g.credentials.user_roles(
         c.user._id, project_id=c.project.root_project._id)
-    roles_ids = [role['_id'] for role in roles]
+    roles_ids = [r['_id'] for r in roles]
     roles = M.ProjectRole.query.find({'_id': {'$in': roles_ids}})
     for pr in roles:
         assert pr.display()
@@ -225,7 +225,7 @@ def test_openid_claimed_by_user():
 
 @with_setup(setUp)
 def test_email_address_claimed_by_user():
-    addr = M.EmailAddress(_id='test_admin@sf.net',
+    addr = M.EmailAddress(_id='test_admin@domain.net',
                           claimed_by_user_id=c.user._id)
     c.user.disabled = True
     ThreadLocalORMSession.flush_all()

@@ -67,7 +67,9 @@ class IRCBotCommand(allura.command.Command):
 class IRCBot(asynchat.async_chat):
     TIME_BETWEEN_CONFIGS = timedelta(minutes=1)
 
-    def __init__(self, host, port, nick='sfbot'):
+    def __init__(self, host, port, nick=None):
+        if nick is None:
+            nick = tg.config.get('ircbot.nick', 'allurabot')
         self.logger = logging.getLogger(__name__)
         self.host = host
         self.port = port
@@ -79,7 +81,9 @@ class IRCBot(asynchat.async_chat):
         self.data = []
         self.channels = {}
         self.set_nick('000')
-        self.say('USER sfbot %s %s :SFBot 0.0' % (self.host, self.host))
+        self.say('USER {nick} {host} {host} :{nick} 0.0'.format(
+            nick=self.nick,
+            host=self.host))
         self.configure()
 
     def set_nick(self, suffix=None):
@@ -174,7 +178,7 @@ class IRCBot(asynchat.async_chat):
             index = art.index()
             text = index['snippet_s'] or h.get_first(index, 'title')
             url = urljoin(
-                tg.config.get('base_url', 'http://sourceforge.net'), index['url_s'])
+                tg.config['base_url'], index['url_s'])
             self.notice(rcpt, '[%s] - [%s](%s)' % (lnk.link, text, url))
 
     def log_channel(self, sender, cmd, rcpt, rest):

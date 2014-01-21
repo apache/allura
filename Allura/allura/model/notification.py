@@ -176,7 +176,7 @@ class Notification(MappedClass):
                     author._id) if author != User.anonymous() else None,
                 reply_to_address='"%s" <%s>' % (
                     subject_prefix, getattr(
-                        artifact, 'email_address', u'noreply@in.sf.net')),
+                        artifact, 'email_address', g.noreply)),
                 subject=subject_prefix + subject,
                 text=text,
                 in_reply_to=parent_msg_id,
@@ -193,7 +193,7 @@ class Notification(MappedClass):
                 h.get_first(idx, 'title'), c.user.get_pref('display_name')))
             reply_to = '"%s" <%s>' % (
                 h.get_first(idx, 'title'),
-                getattr(artifact, 'email_address', u'noreply@in.sf.net'))
+                getattr(artifact, 'email_address', g.noreply))
             d = dict(
                 from_address=reply_to,
                 reply_to_address=reply_to,
@@ -655,11 +655,11 @@ class Mailbox(MappedClass):
                         ', '.join([n._id for n in ns]), self._id, self.user_id)
         elif self.type == 'digest':
             Notification.send_digest(
-                self.user_id, u'noreply@in.sf.net', 'Digest Email',
+                self.user_id, g.noreply, 'Digest Email',
                 notifications)
         elif self.type == 'summary':
             Notification.send_summary(
-                self.user_id, u'noreply@in.sf.net', 'Digest Email',
+                self.user_id, g.noreply, 'Digest Email',
                 notifications)
 
 
@@ -676,12 +676,14 @@ class MailFooter(object):
     @classmethod
     def standard(cls, notification):
         return cls._render('mail/footer.txt',
+                           domain=config['domain'],
                            notification=notification,
-                           prefix=config.get('forgemail.url', 'https://sourceforge.net'))
+                           prefix=config['forgemail.url'])
 
     @classmethod
     def monitored(cls, toaddr, app_url, setting_url):
         return cls._render('mail/monitor_email_footer.txt',
+                           domain=config['domain'],
                            email=toaddr,
                            app_url=app_url,
                            setting_url=setting_url)

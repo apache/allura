@@ -125,8 +125,8 @@ class TestIndexTasks(unittest.TestCase):
                 5 == new_solr_size, "Solr additions didn't happen"
             M.main_orm_session.flush()
             M.main_orm_session.clear()
-            a = _TestArtifact.query.get(_shorthand_id='t3')
-            assert len(a.backrefs) == 5, a.backrefs
+            t3 = _TestArtifact.query.get(_shorthand_id='t3')
+            assert len(t3.backrefs) == 5, t3.backrefs
             assert_equal(find_slinks.call_args_list,
                          [mock.call(a.index().get('text')) for a in artifacts])
 
@@ -177,7 +177,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
@@ -185,7 +185,7 @@ class TestMailTasks(unittest.TestCase):
             body = body.split('\n')
 
             assert_equal(rcpts, [c.user.get_pref('email_address')])
-            assert_in('Reply-To: noreply@sf.net', body)
+            assert_in('Reply-To: %s' % g.noreply, body)
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
             assert_in('Subject: Test subject', body)
             # plain
@@ -200,7 +200,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=u'"По" <foo@bar.com>',
                 destinations=['blah@blah.com'],
                 text=u'Громады стройные теснятся',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'По оживлённым берегам',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
@@ -208,7 +208,7 @@ class TestMailTasks(unittest.TestCase):
             body = body.split('\n')
 
             assert_equal(rcpts, ['blah@blah.com'])
-            assert_in('Reply-To: noreply@sf.net', body)
+            assert_in('Reply-To: %s' % g.noreply, body)
 
             # The address portion must not be encoded, only the name portion can be.
             # Also it is apparently not necessary to have the double-quote separators present
@@ -233,13 +233,13 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 destinations=[str(destination_user._id)],
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: noreply@in.sf.net', body)
+            assert_in('From: %s' % g.noreply, body)
 
     def test_send_email_with_disabled_destination_user(self):
         c.user = M.User.by_username('test-admin')
@@ -252,7 +252,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 destinations=[str(destination_user._id)],
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 0)
@@ -264,7 +264,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
@@ -278,13 +278,13 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 2)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
-            assert_in('From: noreply@in.sf.net', body)
+            assert_in('From: %s' % g.noreply, body)
 
     def test_email_sender_to_headers(self):
         c.user = M.User.by_username('test-admin')
@@ -293,15 +293,15 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
-                sender=u'tickets@test.p.sf.net',
+                sender=u'tickets@test.p.domain.net',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
-            assert_in('Sender: tickets@test.p.sf.net', body)
+            assert_in('Sender: tickets@test.p.domain.net', body)
             assert_in('To: test@mail.com', body)
 
             _client.reset_mock()
@@ -309,16 +309,16 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
                 text=u'This is a test',
-                reply_to=u'123@tickets.test.p.sf.net',
+                reply_to=u'123@tickets.test.p.domain.net',
                 subject=u'Test subject',
-                sender=u'tickets@test.p.sf.net',
+                sender=u'tickets@test.p.domain.net',
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
             return_path, rcpts, body = _client.sendmail.call_args[0]
             body = body.split('\n')
             assert_in('From: "Test Admin" <test-admin@users.localhost>', body)
-            assert_in('Sender: tickets@test.p.sf.net', body)
-            assert_in('To: 123@tickets.test.p.sf.net', body)
+            assert_in('Sender: tickets@test.p.domain.net', body)
+            assert_in('To: 123@tickets.test.p.domain.net', body)
 
     def test_email_references_header(self):
         c.user = M.User.by_username('test-admin')
@@ -327,7 +327,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 references=['a', 'b', 'c'],
                 message_id=h.gen_message_id())
@@ -342,7 +342,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 references=u'ref',
                 message_id=h.gen_message_id())
@@ -359,7 +359,7 @@ class TestMailTasks(unittest.TestCase):
                 fromaddr=str(c.user._id),
                 toaddr='test@mail.com',
                 text=u'This is a test',
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=u'Test subject',
                 cc=u'someone@example.com',
                 message_id=h.gen_message_id())
@@ -375,7 +375,7 @@ class TestMailTasks(unittest.TestCase):
         with mock.patch.object(forgewiki.wiki_main.ForgeWikiApp, 'handle_message') as f:
             mail_tasks.route_email(
                 '0.0.0.0', c.user.email_addresses[0],
-                ['Page@wiki.test.p.in.sf.net'],
+                ['Page@wiki.test.p.in.localhost'],
                 'This is a mail message')
             args, kwargs = f.call_args
             assert args[0] == 'Page'
@@ -384,8 +384,8 @@ class TestMailTasks(unittest.TestCase):
     @td.with_tool('test', 'Tickets', 'bugs')
     def test_receive_autoresponse(self):
         message = '''Date: Wed, 30 Oct 2013 01:38:40 -0700
-From: <test-admin@sf.net>
-To: <1@bugs.test.p.in.sf.net>
+From: <test-admin@domain.net>
+To: <1@bugs.test.p.in.localhost>
 Message-ID: <super-unique-id>
 Subject: Not here Re: Message notification
 Precedence: bulk
@@ -399,7 +399,7 @@ I'm not here'''
             mail_tasks.route_email(
                 '0.0.0.0',
                 c.user.email_addresses[0],
-                ['1@bugs.test.p.in.sf.net'],
+                ['1@bugs.test.p.in.localhost'],
                 message)
             assert_equal(hm.call_count, 0)
 
@@ -500,8 +500,8 @@ class TestExportTasks(unittest.TestCase):
         assert_equal(len(tasks), 1)
         assert_equal(tasks[0].kwargs['subject'],
                      'Bulk export for project test completed')
-        assert_equal(tasks[0].kwargs['fromaddr'], 'noreply@sourceforge.net')
-        assert_equal(tasks[0].kwargs['reply_to'], 'noreply@sourceforge.net')
+        assert_equal(tasks[0].kwargs['fromaddr'], g.noreply)
+        assert_equal(tasks[0].kwargs['reply_to'], g.noreply)
         text = tasks[0].kwargs['text']
         assert_in('The bulk export for project test is completed.', text)
         assert_in('The following tools were exported:\n- wiki', text)

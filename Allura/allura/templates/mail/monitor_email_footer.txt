@@ -20,6 +20,6 @@
 
 ---
 
-Sent from sourceforge.net because {{email}} is subscribed to {{app_url}}
+Sent from {{domain}} because {{email}} is subscribed to {{app_url}}
 
 To unsubscribe from further messages, a project admin can change settings at {{setting_url}}.  Or, if this is a mailing list, you can unsubscribe from the mailing list.
