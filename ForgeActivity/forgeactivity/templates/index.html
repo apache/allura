@@ -43,12 +43,12 @@
 
 <div class="activity">
   {% if not timeline %}
-    No activity to display.
+    No {% if page > 0 %} more {% endif %} activity to display.
   {% else %}
     <ul class="timeline" data-limit="{{limit}}">
         {% include 'forgeactivity:templates/timeline.html' %}
     </ul>
-    {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=True)}}
   {% endif %}
+  {{c.page_list.display(limit=1, page=page, count=page+1, show_label=False, show_if_single_page=True, force_next=has_more)}}
 </div>
 {% endblock %}

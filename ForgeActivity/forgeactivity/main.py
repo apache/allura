@@ -106,13 +106,15 @@ class ForgeActivityController(BaseController):
                                            limit=kw.get('limit', 100),
                                            actor_only=actor_only,
                                            filter_func=perm_check(c.user))
+        page = asint(kw.get('page', 0))
+        limit = asint(kw.get('limit', 100))
         return dict(
-                followee=followee,
-                following=following,
-                timeline=timeline,
-                page=asint(kw.get('page', 0)),
-                limit=asint(kw.get('limit', 100)),
-            )
+            followee=followee,
+            following=following,
+            timeline=timeline,
+            page=page,
+            limit=limit,
+            has_more=len(timeline) == limit)
 
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
