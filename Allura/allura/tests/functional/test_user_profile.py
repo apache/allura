@@ -163,16 +163,16 @@ class TestUserProfile(TestController):
             return m
         eps = map(ep, ['a', 'b', 'c', 'd'])
         order = {'user_profile_sections.order': 'b, d,c , f '}
+        delattr(type(app), '_sections')
         with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
             with mock.patch.dict(tg.config, order):
                 iep.return_value = eps
                 sections = app.profile_sections
                 assert_equal(sections, [
-                        eps[1].load(),
-                        eps[3].load(),
-                        eps[2].load(),
-                        eps[0].load(),
-                    ])
+                    eps[1].load(),
+                    eps[3].load(),
+                    eps[2].load(),
+                    eps[0].load()])
         r = self.app.get('/u/test-user/profile')
         assert_in('Section a', r.body)
         assert_in('Section b', r.body)
