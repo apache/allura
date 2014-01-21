@@ -146,12 +146,12 @@ class UserProfileController(BaseController, FeedController):
         if not user:
             raise exc.HTTPNotFound()
         provider = AuthenticationProvider.get(request)
-        sections = [section(user, c.project) for section in c.app.profile_sections]
+        sections = [section(user, c.project)
+                    for section in c.app.profile_sections]
         return dict(
-                user=user,
-                reg_date=provider.user_registration_date(user),
-                sections=sections,
-            )
+            user=user,
+            reg_date=provider.user_registration_date(user),
+            sections=sections)
 
     def get_feed(self, project, app, user):
         """Return a :class:`allura.controllers.feed.FeedArgs` object describing

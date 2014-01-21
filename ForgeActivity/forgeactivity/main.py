@@ -33,7 +33,6 @@ from allura.lib.security import require_authenticated
 from allura.model.timeline import perm_check
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
-from allura.model.timeline import perm_check
 from allura.ext.user_profile import ProfileSectionBase
 
 from .widgets.follow import FollowToggle
@@ -101,7 +100,8 @@ class ForgeActivityController(BaseController):
 
         following = g.director.is_connected(c.user, followee)
         timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
-                                           limit=kw.get('limit', 100), actor_only=actor_only,
+                                           limit=kw.get('limit', 100),
+                                           actor_only=actor_only,
                                            filter_func=perm_check(c.user))
         return dict(followee=followee, following=following, timeline=timeline)
 
@@ -212,7 +212,12 @@ class ForgeActivityProfileSection(ProfileSectionBase):
         self.activity_app = self.project.app_instance('activity')
 
     def check_display(self):
-        return self.activity_app is not None
+        app_installed = self.activity_app is not None
+        activity_enabled = config.get('activitystream.enabled', False)
+        activity_enabled = request.cookies.get(
+            'activitystream.enabled', activity_enabled)
+        activity_enabled = asbool(activity_enabled)
+        return app_installed and activity_enabled
 
     def prepare_context(self, context):
         context.update({
