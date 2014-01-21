@@ -70,6 +70,22 @@ class ArtifactSessionExtension(SessionExtension):
             except Exception:
                 log.exception(
                     "Failed to update artifact references. Is this a borked project migration?")
+            try:
+                l = logging.getLogger('allura.debug7047')
+                from tg import request
+                task = request.environ.get('task')
+            except:
+                pass
+            else:
+                try:
+                    if task and task.task_name == 'forgetracker.tasks.bulk_edit':
+                        l.debug('this extension: %s', type(self))
+                        l.debug('active session extensions are: %s', artifact_orm_session._kwargs.get('extensions'))
+                        l.debug('threadlocal session is for: %s', [s.impl.db for s in artifact_orm_session._session_registry.values()])
+                        l.debug('current session is: %s', self.session.impl.db)
+                except Exception:
+                    log.info('error running extra debug pt1', exc_info=True)
+
             self.update_index(self.objects_deleted, arefs)
             for obj in self.objects_added:
                 g.zarkov_event('create', extra=obj.index_id())
@@ -93,15 +109,19 @@ class ArtifactSessionExtension(SessionExtension):
             l = logging.getLogger('allura.debug7047')
             from tg import request
             task = request.environ.get('task')
-            if task and task.task_name == 'forgetracker.tasks.bulk_edit':
-                l.debug('session: %s %s', self.session.impl.db, self.session)
-                l.debug('arefs: %s', arefs)
-                l.debug('objects_added: %s', [o._id for o in self.objects_added])
-                l.debug('objects_modified: %s', [o._id for o in self.objects_modified])
-                l.debug('objects_deleted: %s', [o._id for o in self.objects_deleted])
-                l.debug('add_artifacts task: %s', add_task)
         except:
             pass
+        else:
+            try:
+                if task and task.task_name == 'forgetracker.tasks.bulk_edit':
+                    #l.debug('session: %s %s', self.session.impl.db, self.session)
+                    l.debug('arefs: %s', arefs)
+                    l.debug('objects_added: %s', [o._id for o in self.objects_added])
+                    l.debug('objects_modified: %s', [o._id for o in self.objects_modified])
+                    l.debug('objects_deleted: %s', [o._id for o in self.objects_deleted])
+                    l.debug('add_artifacts task: %s', add_task)
+            except Exception:
+                log.info('error running extra debug pt2', exc_info=True)
 
 
 class BatchIndexer(ArtifactSessionExtension):
