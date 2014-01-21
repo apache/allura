@@ -477,11 +477,11 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
             val = val.replace(' ', '%20')
             tag[attr] = val
         if '://' in val:
-            if 'sf.net' in val or 'sourceforge.net' in val:
-                return
-            else:
-                tag['rel'] = 'nofollow'
-                return
+            for domain in re.split(r'\s*,\s*', config.get('nofollow_exempt_domains', '')):
+                if domain and domain in val:
+                    return
+            tag['rel'] = 'nofollow'
+            return
         if val.startswith('/'):
             return
         if val.startswith('.'):
@@ -495,7 +495,7 @@ class RelativeLinkRewriter(markdown.postprocessors.Postprocessor):
     def _rewrite_abs(self, tag, attr):
         self._rewrite(tag, attr)
         val = tag.get(attr)
-        val = urljoin(config.get('base_url', 'http://sourceforge.net/'), val)
+        val = urljoin(config['base_url'], val)
         tag[attr] = val
 
 

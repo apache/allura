@@ -257,8 +257,8 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         if sps:
             result.append(SitemapEntry('Child Projects'))
             result += [
-                SitemapEntry(p.name or p.script_name, p.script_name)
-                for p in sps]
+                SitemapEntry(sp.name or sp.script_name, sp.script_name)
+                for sp in sps]
         return result
 
     def troves_by_type(self, trove_type):

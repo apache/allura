@@ -29,6 +29,7 @@ from bson import ObjectId
 
 from nose.tools import with_setup, assert_equal, assert_in
 from pylons import tmpl_context as c, app_globals as g
+import tg
 
 from ming.orm import ThreadLocalORMSession
 from alluratest.controller import setup_basic_test, setup_global_objects
@@ -322,16 +323,21 @@ def test_wiki_artifact_links():
 
 
 def test_markdown_links():
+    with patch.dict(tg.config, {'nofollow_exempt_domains': 'foobar.net'}):
+        text = g.markdown.convert(
+            'Read [here](http://foobar.net/) about our project')
+        assert_in('href="http://foobar.net/">here</a> about', text)
+
     text = g.markdown.convert(
-        'Read [here](http://foobar.sf.net/) about our project')
-    assert_in('href="http://foobar.sf.net/">here</a> about', text)
+        'Read [here](http://foobar.net/) about our project')
+    assert_in('href="http://foobar.net/" rel="nofollow">here</a> about', text)
 
     text = g.markdown.convert('Read [here](/p/foobar/blah) about our project')
     assert_in('href="/p/foobar/blah">here</a> about', text)
 
-    text = g.markdown.convert('Read <http://foobar.sf.net/> about our project')
+    text = g.markdown.convert('Read <http://foobar.net/> about our project')
     assert_in(
-        'href="http://foobar.sf.net/">http://foobar.sf.net/</a> about', text)
+        'href="http://foobar.net/" rel="nofollow">http://foobar.net/</a> about', text)
 
 
 def test_markdown_and_html():
@@ -394,20 +400,20 @@ def test_markdown_autolink():
     s = g.markdown.convert('This is %s' % tgt)
     assert_equal(
         s, '<div class="markdown_content"><p>This is <a href="%s" rel="nofollow">%s</a></p></div>' % (tgt, tgt))
-    assert '<a href=' in g.markdown.convert('This is http://sf.net')
+    assert '<a href=' in g.markdown.convert('This is http://domain.net')
     # beginning of doc
-    assert_in('<a href=', g.markdown.convert('http://sf.net abc'))
+    assert_in('<a href=', g.markdown.convert('http://domain.net abc'))
     # beginning of a line
     assert_in('<br />\n<a href="http://',
-              g.markdown.convert('foobar\nhttp://sf.net abc'))
+              g.markdown.convert('foobar\nhttp://domain.net abc'))
     # no conversion of these urls:
     assert_in('a blahttp://sdf.com z',
               g.markdown.convert('a blahttp://sdf.com z'))
-    assert_in('literal <code>http://sf.net</code> literal',
-              g.markdown.convert('literal `http://sf.net` literal'))
-    assert_in('<pre>preformatted http://sf.net\n</pre>',
+    assert_in('literal <code>http://domain.net</code> literal',
+              g.markdown.convert('literal `http://domain.net` literal'))
+    assert_in('<pre>preformatted http://domain.net\n</pre>',
               g.markdown.convert('    :::text\n'
-                                 '    preformatted http://sf.net'))
+                                 '    preformatted http://domain.net'))
 
 
 def test_markdown_autolink_with_escape():

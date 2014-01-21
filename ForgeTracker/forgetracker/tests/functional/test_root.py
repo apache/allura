@@ -31,6 +31,7 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_in
 from nose.tools import assert_raises, assert_not_in, assert_items_equal
 from formencode.variabledecode import variable_encode
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 
 from alluratest.controller import TestController, setup_basic_test
 from allura import model as M
@@ -2259,7 +2260,7 @@ class TestFunctionalController(TrackerTestController):
                 fromaddr=str(c.user._id),
                 destinations=[str(c.user._id)],
                 text=text,
-                reply_to=u'noreply@sf.net',
+                reply_to=g.noreply,
                 subject=email.kwargs.subject,
                 message_id=h.gen_message_id())
             assert_equal(_client.sendmail.call_count, 1)
@@ -2496,7 +2497,7 @@ class TestEmailMonitoring(TrackerTestController):
         M.MonQTask.run_ready()
         email_tasks = M.MonQTask.query.find(
             dict(task_name='allura.tasks.mail_tasks.sendsimplemail')).all()
-        assert 'Sent from sourceforge.net because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in email_tasks[
+        assert 'Sent from localhost because mailinglist@example.com is subscribed to http://localhost/p/test/bugs/' in email_tasks[
             0].kwargs['text']
         assert 'a project admin can change settings at http://localhost/p/test/admin/bugs/options' in email_tasks[
             0].kwargs['text']

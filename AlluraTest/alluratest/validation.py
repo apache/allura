@@ -68,12 +68,6 @@ class Config(object):
             self.ini_config = conf
         return self.ini_config
 
-    @LazyProperty
-    def hostname(self):
-        if os.path.exists('/etc/soghost'):
-            with open('/etc/soghost') as fp:
-                return fp.read().strip()
-
     def validation_enabled(self, val_type):
         env_var = os.getenv('ALLURA_VALIDATION')
         if env_var == 'all':

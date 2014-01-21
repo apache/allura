@@ -108,12 +108,12 @@ class TestRootController(TestController):
         assert 'exists' in self.webflash(r)
 
     def test_shorturl_chars_restrictions(self):
-        d = dict(short_url='', full_url='http://sf.net/')
+        d = dict(short_url='', full_url='http://domain.net/')
         r = self.app.post('/admin/url/add', params=d)
         assert ShortUrl.query.find(
             dict(app_config_id=c.app.config._id)).count() == 0
         assert 'Please enter a value' in self.webflash(r)
-        d = dict(short_url='g*', full_url='http://sf.net/')
+        d = dict(short_url='g*', full_url='http://domain.net/')
         r = self.app.post('/admin/url/add', params=d)
         assert ShortUrl.query.find(
             dict(app_config_id=c.app.config._id)).count() == 0

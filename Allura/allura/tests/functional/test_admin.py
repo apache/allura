@@ -31,11 +31,6 @@ from pylons import tmpl_context as c, app_globals as g
 import mock
 
 
-try:
-    import sfx
-except ImportError:
-    sfx = None
-
 from allura.tests import TestController
 from allura.tests import decorators as td
 from alluratest.controller import TestRestApiBase

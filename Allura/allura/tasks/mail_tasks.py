@@ -36,7 +36,7 @@ def route_email(
         peer, mailfrom, rcpttos, data):
     '''Route messages according to their destination:
 
-    <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.sourceforge.net
+    <topic>@<mount_point>.<subproj2>.<subproj1>.<project>.projects.domain.net
     gets sent to c.app.handle_message(topic, message)
     '''
     try:
@@ -90,13 +90,13 @@ def sendmail(fromaddr, destinations, text, reply_to, subject,
     addrs_html = []
     addrs_multi = []
     if fromaddr is None:
-        fromaddr = u'noreply@in.sf.net'
+        fromaddr = g.noreply
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
-            fromaddr = u'noreply@in.sf.net'
+            fromaddr = g.noreply
         else:
             fromaddr = user.email_address_header()
     # Divide addresses based on preferred email formats
@@ -159,13 +159,13 @@ def sendsimplemail(
         cc=None):
     from allura import model as M
     if fromaddr is None:
-        fromaddr = u'noreply@in.sf.net'
+        fromaddr = g.noreply
     elif '@' not in fromaddr:
         log.warning('Looking up user with fromaddr: %s', fromaddr)
         user = M.User.query.get(_id=ObjectId(fromaddr), disabled=False)
         if not user:
             log.warning('Cannot find user with ID: %s', fromaddr)
-            fromaddr = u'noreply@in.sf.net'
+            fromaddr = g.noreply
         else:
             fromaddr = user.email_address_header()
     htmlparser = HTMLParser.HTMLParser()

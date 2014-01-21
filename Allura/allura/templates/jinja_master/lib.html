@@ -185,7 +185,7 @@
 <h1>Markdown Syntax Guide</h1>
 
 <div class="markdown_syntax_section md_ex_toc{{id}}">
-<p>SourceForge uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p>
+<p>{{config.site_name}} uses markdown syntax everywhere to allow you to create rich<br>text markup, and extends markdown in several ways to allow for quick linking<br>to other artifacts in your project. </p>
 <p>Markdown was created to be easy to read, easy to write, and still readable in plain text format.</p>
 
 <ul class="markdown_syntax_toc">
@@ -549,21 +549,21 @@ you will get a header
 <h2 id="md_ex_img{{id}}">Images</h2>
 <p>To include an image, just put a "!" in front of a text link:</p>
 <div class="codehilite"><pre>
-![alternate text](https://sourceforge.net/images/icon_linux.gif)
+![alternate text](https://{{config.domain}}/images/icon_linux.gif)
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''![alternate text](http://sourceforge.net/images/icon_linux.gif)''')}}
+{{g.markdown.convert('''![alternate text](http://'''+config.domain+'''/images/icon_linux.gif)''')}}
 
 <p>The "alternate text" will show up if the browser can't load the
 image.</p>
 <p>You can also use a title if you want, like this:</p>
 <div class="codehilite"><pre>
-![tiny arrow](https://sourceforge.net/images/icon_linux.gif "tiny arrow")
+![tiny arrow](https://{{config.domain}}/images/icon_linux.gif "tiny arrow")
 </pre></div>
 
 <p>Output:</p>
-{{g.markdown.convert('''![tiny arrow](http://sourceforge.net/images/icon_linux.gif "tiny arrow")''')}}
+{{g.markdown.convert('''![tiny arrow](http://'''+config.domain+'''/images/icon_linux.gif "tiny arrow")''')}}
 
 <p>To reference an attached image, just use the img macro.  You can add more attributes:</p>
 <div class="codehilite"><pre>

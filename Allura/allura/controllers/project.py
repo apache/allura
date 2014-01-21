@@ -301,7 +301,7 @@ class NeighborhoodProjectBrowseController(ProjectBrowseController):
 class HostNeighborhoodController(WsgiDispatchController, NeighborhoodController):
 
     '''Neighborhood controller with support for use as a root controller, for
-    instance, when using adobe.sourceforge.net (if this is allowed).
+    instance, when using adobe.domain.net (if this is allowed).
     '''
 
     auth = AuthController()
@@ -539,7 +539,10 @@ class NeighborhoodAdminController(object):
     def overview(self, **kw):
         set_nav(self.neighborhood)
         c.overview_form = W.neighborhood_overview_form
-        return dict(neighborhood=self.neighborhood)
+        allow_undelete = asbool(config.get('allow_project_undelete', True))
+        return dict(
+            neighborhood=self.neighborhood,
+            allow_project_undelete=allow_undelete)
 
     @without_trailing_slash
     @expose('jinja:allura:templates/neighborhood_admin_permissions.html')

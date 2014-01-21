@@ -26,14 +26,14 @@
 {% block header %}Project Admin{% endblock %}
 
 {% block content %}
-  <p>SourceForge projects come with a number of Tools, which can be configured and adjusted to your needs.</p>
+  <p>{{config.site_name}} projects come with a number of Tools, which can be configured and adjusted to your needs.</p>
 
   <div class="grid-2">
     <img src="{{g.forge_static('images/project_default.png')}}" alt="">
   </div>
   <div class="grid-13">
     <h3>Project Setup</h3>
-    <p>The first thing to do to setup your project is to create a solid description, so folks coming to your page can figure out what the project is all about. You'll then want to input information about the project, and we'll make sure all this relevant information gets added to the SourceForge sourceforge project directory.</p>
+    <p>The first thing to do to setup your project is to create a solid description, so folks coming to your page can figure out what the project is all about. You'll then want to input information about the project, and we'll make sure all this relevant information gets added to the {{config.site_name}} project directory.</p>
   </div>
   <div class="grid-4">
     <a href="overview">Update MetaData</a>
@@ -78,7 +78,7 @@
   </div>
   <div class="grid-13">
   <h3>Tickets</h3>
-    <p>With the SourceForge tracker you can keep track of items of work that need to be done. You can create one or more trackers for bugs, enhancements, tasks, that will help you plan and manage your development process.</p>
+    <p>With the {{config.site_name}} tracker you can keep track of items of work that need to be done. You can create one or more trackers for bugs, enhancements, tasks, that will help you plan and manage your development process.</p>
   </div>
   <div class="grid-4">
     {% for tool in c.project.app_configs %}

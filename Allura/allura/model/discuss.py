@@ -22,6 +22,7 @@ import jinja2
 import pymongo
 from pymongo.errors import DuplicateKeyError
 from pylons import tmpl_context as c, app_globals as g
+import tg
 
 from ming import schema
 from ming.orm.base import session
@@ -304,7 +305,7 @@ class Thread(Artifact, ActivityObject):
             _id=artifact.url() + post._id,
             from_address=str(author._id) if author != User.anonymous()
             else None,
-            reply_to_address=u'noreply@in.sf.net',
+            reply_to_address=g.noreply,
             subject=subject,
             text=text,
             in_reply_to=post.parent_id,

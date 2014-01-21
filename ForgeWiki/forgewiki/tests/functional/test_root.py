@@ -260,7 +260,7 @@ class TestRootController(TestController):
                                             Upload the backup of your data files to the project web.
 
                                             ~~~~~
-                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.sourceforge.net:
+                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.domain.net:
                                             ~~~~~
 
                                             In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:
@@ -295,7 +295,7 @@ class TestRootController(TestController):
                                             Upload the backup of your data files to the project web.
 
                                             ~~~~~
-                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.sourceforge.net:
+                                            scp projectname_mediawiki_files.tar.gz USERNAME@web.domain.net:
                                             ~~~~~
 
                                             In the project web shell, unpack the files to the images directory of you wiki installation. In the backup, the images are in a subfolder *projectname*, so follow these steps:

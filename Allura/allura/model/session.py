@@ -61,8 +61,8 @@ class ArtifactSessionExtension(SessionExtension):
             arefs = []
             try:
                 arefs = [
-                    ArtifactReference.from_artifact(obj)
-                    for obj in self.objects_added + self.objects_modified]
+                    ArtifactReference.from_artifact(o)
+                    for o in self.objects_added + self.objects_modified]
                 for obj in self.objects_added + self.objects_modified:
                     Shortlink.from_artifact(obj)
                 # Flush shortlinks
