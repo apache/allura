@@ -146,6 +146,16 @@ class ForgeWikiApp(Application):
             if globals is not None:
                 session(globals).flush(globals)
 
+    def default_root_page_text(self):
+        return """Welcome to your wiki!
+
+This is the default page, edit it as you see fit. To add a new page simply reference it within brackets, e.g.: [SamplePage].
+
+The wiki uses [Markdown](%s) syntax.
+
+[[members limit=20]]
+""" % (self.url + 'markdown_syntax/')
+
     @Property
     def show_discussion():
         def fget(self):
@@ -272,16 +282,7 @@ class ForgeWikiApp(Application):
             with h.push_config(c, app=self):
                 p = WM.Page.upsert(new_root)
                 p.viewable_by = ['all']
-                url = c.app.url + 'markdown_syntax' + '/'
-                p.text = """Welcome to your wiki!
-
-This is the default page, edit it as you see fit. To add a new page simply reference it within brackets, e.g.: [SamplePage].
-
-The wiki uses [Markdown](%s) syntax.
-
-[[members limit=20]]
-[[download_button]]
-""" % url
+                p.text = self.default_root_page_text()
                 p.commit()
 
     def uninstall(self, project):
