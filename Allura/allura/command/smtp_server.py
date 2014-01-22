@@ -50,8 +50,11 @@ class SMTPServerCommand(base.Command):
 class MailServer(smtpd.SMTPServer):
 
     def process_message(self, peer, mailfrom, rcpttos, data):
-        base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
-        base.log.info(' (%d bytes)', len(data))
-        allura.tasks.mail_tasks.route_email.post(
-            peer=peer, mailfrom=mailfrom, rcpttos=rcpttos, data=data)
-        base.log.info('Msg passed along')
+        try:
+            base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
+            base.log.info(' (%d bytes)', len(data))
+            allura.tasks.mail_tasks.route_email.post(
+                peer=peer, mailfrom=mailfrom, rcpttos=rcpttos, data=data)
+            base.log.info('Msg passed along')
+        except Exception:
+            base.log.exception('Error handling msg')
