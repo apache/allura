@@ -47,6 +47,10 @@ class F(object):
 
 
 class UserProfileApp(Application):
+    """
+    This is the Profile tool, which is automatically installed as
+    the default (first) tool on any user project.
+    """
     __version__ = version.__version__
     tool_label = 'Profile'
     max_instances = 0
@@ -90,7 +94,8 @@ class UserProfileApp(Application):
     @property
     def profile_sections(self):
         """
-        Loads and caches user profile sections.
+        Loads and caches user profile sections from the entry-point
+        group ``[allura.user_profile.sections]``.
 
         Profile sections are loaded unless disabled (see
         `allura.lib.helpers.iter_entry_points`) and are sorted according
@@ -202,15 +207,51 @@ class UserProfileController(BaseController, FeedController):
 
 
 class ProfileSectionBase(object):
+    """
+    This is the base class for sections on the Profile tool.
+
+    .. py:attribute:: template
+
+       A resource string pointing to the template for this section.  E.g.::
+
+           template = "allura.ext.user_profile:templates/projects.html"
+
+    Sections must be pointed to by an entry-point in the group
+    ``[allura.user_profile.sections]``.
+    """
     template = ''
 
+    def __init__(self, user, project):
+        """
+        Creates a section for the given :param:`user` and user
+        :param:`project`.  Stores the values as attributes of
+        the same name.
+        """
+        self.user = user
+        self.project = project
+
     def check_display(self):
+        """
+        Should return True if the section should be displayed.
+        """
         return True
 
     def prepare_context(self, context):
+        """
+        Should be overridden to add any values to the template context prior
+        to display.
+        """
         return context
 
     def display(self, *a, **kw):
+        """
+        Renders the section using the context from :meth:`prepare_context`
+        and the :attr:`template`, if :meth:`check_display` returns True.
+
+        If overridden or this base class is not used, this method should
+        return either plain text (which will be escaped) or a `jinja2.Markup`
+        instance.
+        """
         if not self.check_display():
             return ''
         tmpl = g.jinja2_env.get_template(self.template)
