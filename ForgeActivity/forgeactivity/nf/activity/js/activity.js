@@ -21,7 +21,7 @@ ASOptions = {
     maxPages: 3,
     maintainScrollHistory: true,
     usePjax: true,
-    useHash: true,
+    useHash: false, // not worth the jitter
     forceAdvancedScroll: false,
     useShowMore: false,
     useInfiniteScroll: true
