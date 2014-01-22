@@ -23,11 +23,6 @@
 
 {% block header %}{{ user.display_name|default(user.username) }}{% endblock %}
 
-{% block extra_css %}
-  <link rel="stylesheet" type="text/css"
-        href="{{g.app_static('css/user_profile.css')}}"/>
-{% endblock %}
-
 {% block head %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="feed.rss">
   <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
