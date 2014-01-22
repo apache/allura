@@ -532,7 +532,7 @@ class PageController(BaseController, FeedController):
                     hide_left_bar=hide_left_bar)
 
     @without_trailing_slash
-    @expose('json')
+    @expose('json:')
     @require_post()
     def delete(self):
         require_access(self.page, 'delete')
@@ -540,7 +540,7 @@ class PageController(BaseController, FeedController):
         return dict(location='../' + self.page.title + '/?deleted=True')
 
     @without_trailing_slash
-    @expose('json')
+    @expose('json:')
     @require_post()
     def undelete(self):
         require_access(self.page, 'delete')
@@ -600,7 +600,7 @@ class PageController(BaseController, FeedController):
             self.page.url())
 
     @without_trailing_slash
-    @expose('json')
+    @expose('json:')
     @require_post()
     @validate(dict(version=validators.Int(if_empty=1, if_invalid=1)))
     def revert(self, version, **kw):
