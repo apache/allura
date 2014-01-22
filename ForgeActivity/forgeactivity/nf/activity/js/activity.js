@@ -164,16 +164,21 @@ $(function() {
         }
         var newerText = newer ? 'newer' : 'older';
         $.get(url, function(html) {
-            var $html = $(html);
             var $timeline = $('.timeline');
-            var newPage = $html.data('page');
+            var empty = html.match(/^\s*$/);
+            var newestPage = newer && $('.timeline li:first').data('page') <= 1;
             var limit = $('.timeline').data('limit');
+            var fullPage = true;
             saveScrollPosition();
-            if ($html.length < limit || newPage == 0) {
+            if (!empty) {
+                $timeline[newer ? 'prepend' : 'append'](html);
+                var newPage = $timeline.find('li:' + (newer ? 'first' : 'last')).data('page');
+                fullPage = $timeline.find('li:timeline-page('+newPage+')').length == limit;
+                pageOut(!newer);
+            }
+            if (empty || !fullPage || newestPage) {
                 makeNoMore(newer);
             }
-            $timeline[newer ? 'prepend' : 'append']($html);
-            pageOut(!newer);
             if (ASOptions.useShowMore) {
                 // this has to be here instead of showMoreLink handler to
                 // ensure that scroll changes between added / removed content
