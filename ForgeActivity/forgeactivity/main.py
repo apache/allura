@@ -206,9 +206,8 @@ class ForgeActivityRestController(BaseController):
 class ForgeActivityProfileSection(ProfileSectionBase):
     template = 'forgeactivity:templates/widgets/profile_section.html'
 
-    def __init__(self, user, project):
-        self.user = user
-        self.project = project
+    def __init__(self, *a, **kw):
+        super(ForgeActivityProfileSection, self).__init__(*a, **kw)
         self.activity_app = self.project.app_instance('activity')
 
     def check_display(self):

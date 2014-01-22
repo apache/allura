@@ -15,8 +15,8 @@
        specific language governing permissions and limitations
        under the License.
 
-Extending Allura with Entry Points
-===================================
+Extension APIs and Entry Points
+===============================
 
 There are many extension points to extending Allura.  They all make themselves
 known to Allura via python entry points defined in ``setup.py``.  Many are then
@@ -35,6 +35,7 @@ The available extension points for Allura are:
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
 * ``[allura.timers]`` functions which return a list or single :class:`timermiddleware.Timer` which will be included in stats.log timings
+* :mod:`allura.ext.user_profile`
 
 A listing of available 3rd-party extensions is at https://forge-allura.apache.org/p/allura/wiki/Extensions/
 
