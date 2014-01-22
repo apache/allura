@@ -273,7 +273,7 @@ def test_log_if_changed():
 
 def test_get_tool_package():
     assert h.get_tool_package('tickets') == 'forgetracker'
-    assert h.get_tool_package('Wiki') == 'forgewiki'
+    assert h.get_tool_package('Tickets') == 'forgetracker'
     assert h.get_tool_package('wrong_tool') == ''
 
 

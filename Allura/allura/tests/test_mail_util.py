@@ -27,7 +27,7 @@ from ming.orm import ThreadLocalORMSession
 
 from alluratest.controller import setup_basic_test, setup_global_objects
 from allura.lib.utils import ConfigProxy
-
+from allura.app import Application
 from allura.lib.mail_util import (
     parse_address,
     parse_message,
@@ -74,7 +74,7 @@ class TestReactor(unittest.TestCase):
             'foo@wiki.test.p' + config.common_suffix)
         assert_equal(topic, 'foo')
         assert_equal(project.shortname, 'test')
-        assert_equal(app.__class__.__name__, 'ForgeWikiApp')
+        assert_true(isinstance(app, Application))
 
     def test_unicode_simple_message(self):
         charset = 'utf-8'
