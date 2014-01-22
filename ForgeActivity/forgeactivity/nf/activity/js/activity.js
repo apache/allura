@@ -210,14 +210,14 @@ $(function() {
     }
 
     function makeShowMoreLink(newer, targetPage) {
-        var $link = $('<a class="show-more">Show More</a>');
-        $link.addClass(newer ? 'newer' : 'older');
-        $link.attr('href', makePageUrl(targetPage));
-        $link.click(function(event) {
+        var cls = newer ? 'newer' : 'older';
+        var url = makePageUrl(targetPage);
+        var link = '<a class="show-more '+cls+'" href="'+url+'">Show More</a>';
+        $('.timeline')[newer ? 'before' : 'after'](link);
+        $('.show-more.'+cls).click(function(event) {
             event.preventDefault();
             pageIn(newer, this.href);
         });
-        $('.timeline')[newer ? 'before' : 'after']($link);
     }
 
     function updateShowMore() {
