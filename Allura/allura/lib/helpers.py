@@ -788,10 +788,14 @@ def log_if_changed(artifact, attr, new_val, message):
         setattr(artifact, attr, new_val)
 
 
-def get_tool_package(tool_name):
+def get_tool_packages(tool_name):
     "Return package for given tool (e.g. 'forgetracker' for 'tickets')"
+    from allura.app import Application
     app = g.entry_points['tool'].get(tool_name.lower())
-    return app.__module__.split('.')[0] if app else ''
+    if not app:
+        return []
+    classes = set(app.mro()) - {Application, object}
+    return [cls.__module__.split('.')[0] for cls in classes]
 
 
 def get_first(d, key):

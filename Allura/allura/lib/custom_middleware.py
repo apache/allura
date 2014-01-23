@@ -69,13 +69,13 @@ class StaticFilesMiddleware(object):
         for prefix, ep in self.directories:
             if environ['PATH_INFO'].startswith(prefix):
                 filename = environ['PATH_INFO'][len(prefix):]
-                file_path = pkg_resources.resource_filename(
-                    ep.module_name, os.path.join(
-                        'nf',
-                        ep.name.lower(),
-                        filename))
-                return fileapp.FileApp(file_path, [
-                    ('Access-Control-Allow-Origin', '*')])
+                resource_path = os.path.join('nf', ep.name.lower(), filename)
+                resource_cls = ep.load().has_resource(resource_path)
+                if resource_cls:
+                    file_path = pkg_resources.resource_filename(
+                        resource_cls.__module__, resource_path)
+                    return fileapp.FileApp(file_path, [
+                        ('Access-Control-Allow-Origin', '*')])
         filename = environ['PATH_INFO'][len(self.script_name):]
         file_path = pkg_resources.resource_filename(
             'allura', os.path.join(

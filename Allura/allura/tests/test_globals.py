@@ -35,6 +35,7 @@ from alluratest.controller import (
         setup_basic_test,
         setup_global_objects,
         setup_unit_test,
+        setup_functional_test,
         )
 
 from allura import model as M
@@ -467,6 +468,7 @@ def test_sort_updated():
         assert updated_at == sorted(updated_at, reverse=True)
 
 
+@with_setup(setup_functional_test)
 def test_filtering():
     # set up for test
     from random import choice

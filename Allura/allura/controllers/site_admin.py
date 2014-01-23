@@ -144,11 +144,12 @@ class SiteAdminController(object):
                 project_id=project._id)
             return True
 
-        tool_package = h.get_tool_package(appconf.tool_name)
+        tool_packages = h.get_tool_packages(appconf.tool_name)
         classes = set()
         for depth, cls in dfs(M.Artifact, build_model_inheritance_graph()):
-            if cls.__module__.startswith(tool_package + '.'):
-                classes.add(cls)
+            for pkg in tool_packages:
+                if cls.__module__.startswith(pkg + '.'):
+                    classes.add(cls)
         for cls in classes:
             for artifact in cls.query.find({"app_config_id": appconf._id}):
                 if artifact.url() == urlparse(url).path:
