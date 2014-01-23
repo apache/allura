@@ -26,6 +26,7 @@ Allura/allura/lib/widgets/resources/js/jquery.textarea.js
 Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
 Allura/allura/public/nf/js/jquery.flot.js
 Allura/allura/public/nf/js/jquery.maxlength.min.js
+Allura/allura/public/nf/js/jquery.viewport.js
 Allura/allura/public/nf/css/blueprint/
 Allura/allura/public/nf/js/spin.min.js
 Allura/allura/public/nf/js/sylvester.js
