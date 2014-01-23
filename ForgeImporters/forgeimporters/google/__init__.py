@@ -128,6 +128,9 @@ class GoogleCodeProjectNameValidator(fev.FancyValidator):
             project_name = os.path.basename(url.path.strip('/'))
         if not re.match(r'^[a-z0-9][a-z0-9-]{,61}$', project_name):
             raise fev.Invalid(self.message('invalid'))
+
+        if not GoogleCodeProjectExtractor(project_name).check_readable():
+            raise fev.Invalid('The project "%s" is not avalible for import' % value, value, state)
         return project_name
 
 
@@ -156,6 +159,10 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     })
 
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
+
+    def check_readable(self):
+        page = urllib.urlopen(self.get_page_url('project_info'))
+        return (page.getcode() == 200) and (page.geturl() == self.get_page_url('project_info'))
 
     def get_short_description(self, project):
         page = self.get_page('project_info')
