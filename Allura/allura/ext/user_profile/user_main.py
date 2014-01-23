@@ -255,5 +255,5 @@ class ProfileSectionBase(object):
         if not self.check_display():
             return ''
         tmpl = g.jinja2_env.get_template(self.template)
-        context = self.prepare_context({'h': h, 'c': c})
+        context = self.prepare_context({'h': h, 'c': c, 'g': g})
         return Markup(tmpl.render(context))

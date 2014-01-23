@@ -32,6 +32,7 @@
 {% endblock %}
 
 {% block actions %}
+    <a href="feed.rss" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
     {% if c.user and c.user != c.user.anonymous() and followee != c.user %}
         {{c.follow_toggle.display(following=following)}}
     {% endif %}
