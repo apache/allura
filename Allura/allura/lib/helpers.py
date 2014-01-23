@@ -794,7 +794,7 @@ def get_tool_packages(tool_name):
     app = g.entry_points['tool'].get(tool_name.lower())
     if not app:
         return []
-    classes = set(app.mro()) - {Application, object}
+    classes = [c for c in app.mro() if c not in (Application, object)]
     return [cls.__module__.split('.')[0] for cls in classes]
 
 
