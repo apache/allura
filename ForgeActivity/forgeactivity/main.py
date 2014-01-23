@@ -235,14 +235,14 @@ class ForgeActivityProfileSection(ProfileSectionBase):
 
     def prepare_context(self, context):
         context.update({
-                'user': self.user,
-                'follow_toggle': W.follow_toggle,
-                'following': g.director.is_connected(c.user, self.user),
-                'timeline': g.director.get_timeline(
-                    self.user, page=0, limit=5,
-                    actor_only=True,
-                    filter_func=perm_check(c.user)),
-                'activity_app': self.activity_app,
-            })
+            'user': self.user,
+            'follow_toggle': W.follow_toggle,
+            'following': g.director.is_connected(c.user, self.user),
+            'timeline': g.director.get_timeline(
+                self.user, page=0, limit=5,
+                actor_only=True,
+                filter_func=perm_check(c.user)),
+            'activity_app': self.activity_app,
+        })
         g.register_js('activity_js/follow.js')
         return context

@@ -403,7 +403,7 @@ class TestAuth(TestController):
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() == 0
         self.app.get('/p/test/admin/permissions',
-                         extra_environ=dict(username='aaa'), status=403)
+                     extra_environ=dict(username='aaa'), status=403)
         assert M.ProjectRole.query.find(
             dict(user_id=user._id, project_id=p._id)).count() <= 1
 
@@ -492,7 +492,7 @@ class TestPreferences(TestController):
         testvalue = 'testaccount'
         self.app.get('/auth/user_info/contacts/')
         self.app.post('/auth/user_info/contacts/skype_account',
-                          params=dict(skypeaccount=testvalue))
+                      params=dict(skypeaccount=testvalue))
         user = M.User.query.get(username='test-admin')
         assert user.skypeaccount == testvalue
 
@@ -500,8 +500,8 @@ class TestPreferences(TestController):
         socialnetwork = 'Facebook'
         accounturl = 'http://www.facebook.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
-                          params=dict(socialnetwork=socialnetwork,
-                                      accounturl=accounturl))
+                      params=dict(socialnetwork=socialnetwork,
+                                  accounturl=accounturl))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
             user.socialnetworks[0].socialnetwork == socialnetwork and \
@@ -511,8 +511,8 @@ class TestPreferences(TestController):
         socialnetwork2 = 'Twitter'
         accounturl2 = 'http://twitter.com/test'
         self.app.post('/auth/user_info/contacts/add_social_network',
-                          params=dict(socialnetwork=socialnetwork2,
-                                      accounturl='@test'))
+                      params=dict(socialnetwork=socialnetwork2,
+                                  accounturl='@test'))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 2 and \
             ({'socialnetwork': socialnetwork, 'accounturl': accounturl} in user.socialnetworks and
@@ -520,8 +520,8 @@ class TestPreferences(TestController):
 
         # Remove first social network account
         self.app.post('/auth/user_info/contacts/remove_social_network',
-                          params=dict(socialnetwork=socialnetwork,
-                                      account=accounturl))
+                      params=dict(socialnetwork=socialnetwork,
+                                  account=accounturl))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
             {'socialnetwork': socialnetwork2, 'accounturl':
@@ -529,7 +529,7 @@ class TestPreferences(TestController):
 
         # Add empty social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
-                          params=dict(accounturl=accounturl, socialnetwork=''))
+                      params=dict(accounturl=accounturl, socialnetwork=''))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
             {'socialnetwork': socialnetwork2, 'accounturl':
@@ -537,7 +537,7 @@ class TestPreferences(TestController):
 
         # Add invalid social network account
         self.app.post('/auth/user_info/contacts/add_social_network',
-                          params=dict(accounturl=accounturl, socialnetwork='invalid'))
+                      params=dict(accounturl=accounturl, socialnetwork='invalid'))
         user = M.User.query.get(username='test-admin')
         assert len(user.socialnetworks) == 1 and \
             {'socialnetwork': socialnetwork2, 'accounturl':
@@ -546,7 +546,7 @@ class TestPreferences(TestController):
         # Add telephone number
         telnumber = '+3902123456'
         self.app.post('/auth/user_info/contacts/add_telnumber',
-                          params=dict(newnumber=telnumber))
+                      params=dict(newnumber=telnumber))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers)
                 == 1 and (user.telnumbers[0] == telnumber))
@@ -554,35 +554,35 @@ class TestPreferences(TestController):
         # Add second telephone number
         telnumber2 = '+3902654321'
         self.app.post('/auth/user_info/contacts/add_telnumber',
-                          params=dict(newnumber=telnumber2))
+                      params=dict(newnumber=telnumber2))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers)
                 == 2 and telnumber in user.telnumbers and telnumber2 in user.telnumbers)
 
         # Remove first telephone number
         self.app.post('/auth/user_info/contacts/remove_telnumber',
-                          params=dict(oldvalue=telnumber))
+                      params=dict(oldvalue=telnumber))
         user = M.User.query.get(username='test-admin')
         assert (len(user.telnumbers) == 1 and telnumber2 in user.telnumbers)
 
         # Add website
         website = 'http://www.testurl.com'
         self.app.post('/auth/user_info/contacts/add_webpage',
-                          params=dict(newwebsite=website))
+                      params=dict(newwebsite=website))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and (website in user.webpages))
 
         # Add second website
         website2 = 'http://www.testurl2.com'
         self.app.post('/auth/user_info/contacts/add_webpage',
-                          params=dict(newwebsite=website2))
+                      params=dict(newwebsite=website2))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages)
                 == 2 and website in user.webpages and website2 in user.webpages)
 
         # Remove first website
         self.app.post('/auth/user_info/contacts/remove_webpage',
-                          params=dict(oldvalue=website))
+                      params=dict(oldvalue=website))
         user = M.User.query.get(username='test-admin')
         assert (len(user.webpages) == 1 and website2 in user.webpages)
 
@@ -739,8 +739,8 @@ class TestPreferences(TestController):
         # Remove a skill
         self.app.get('/auth/user_info/skills/')
         self.app.post('/auth/user_info/skills/remove_skill',
-                          params=dict(
-                              categoryid=str(skill_cat.trove_cat_id)))
+                      params=dict(
+                          categoryid=str(skill_cat.trove_cat_id)))
         user = M.User.query.get(username='test-admin')
         assert len(user.skills) == 0
 
@@ -974,7 +974,7 @@ class TestOAuth(TestController):
         req = Request.from_request.return_value = {
             'oauth_consumer_key': 'api_key'}
         self.app.post('/rest/oauth/request_token',
-                          params={'key': 'value'}, status=403)
+                      params={'key': 'value'}, status=403)
 
     def test_authorize_ok(self):
         user = M.User.by_username('test-admin')
@@ -997,7 +997,7 @@ class TestOAuth(TestController):
 
     def test_authorize_invalid(self):
         self.app.post('/rest/oauth/authorize',
-                          params={'oauth_token': 'api_key'}, status=403)
+                      params={'oauth_token': 'api_key'}, status=403)
 
     def test_do_authorize_no(self):
         user = M.User.by_username('test-admin')
@@ -1014,7 +1014,7 @@ class TestOAuth(TestController):
         )
         ThreadLocalORMSession.flush_all()
         self.app.post('/rest/oauth/do_authorize',
-                          params={'no': '1', 'oauth_token': 'api_key'})
+                      params={'no': '1', 'oauth_token': 'api_key'})
         assert_is_none(M.OAuthRequestToken.query.get(api_key='api_key'))
 
     def test_do_authorize_oob(self):

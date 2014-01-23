@@ -47,6 +47,7 @@ class F(object):
 
 
 class UserProfileApp(Application):
+
     """
     This is the Profile tool, which is automatically installed as
     the default (first) tool on any user project.
@@ -207,6 +208,7 @@ class UserProfileController(BaseController, FeedController):
 
 
 class ProfileSectionBase(object):
+
     """
     This is the base class for sections on the Profile tool.
 

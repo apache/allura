@@ -293,7 +293,7 @@ class TestImportController(SVNTestController):
     @patch('forgesvn.svn_main.allura.tasks.repo_tasks')
     def test_do_import(self, tasks):
         self.app.post('/p/test/admin/src/importer/do_import',
-                          {'checkout_url': 'http://fake.svn/'})
+                      {'checkout_url': 'http://fake.svn/'})
         assert not tasks.reclone.post.called
 
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
@@ -305,7 +305,7 @@ class TestImportController(SVNTestController):
     @with_tool('test', 'SVN', 'empty', 'empty SVN')
     def test_do_import_empty_repo(self, tasks):
         self.app.post('/p/test/admin/empty/importer/do_import',
-                          {'checkout_url': 'http://fake.svn/'})
+                      {'checkout_url': 'http://fake.svn/'})
         assert tasks.reclone.post.called
 
 

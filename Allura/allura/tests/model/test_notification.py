@@ -245,8 +245,10 @@ class TestPostNotifications(unittest.TestCase):
                      '"Test Admin" <test-admin@users.localhost>')
         assert_equal(email_tasks[1].kwargs['fromaddr'],
                      '"Test Admin" <test-admin@users.localhost>')
-        assert_equal(email_tasks[0].kwargs['sender'], 'wiki@test.p.in.localhost')
-        assert_equal(email_tasks[1].kwargs['sender'], 'wiki@test.p.in.localhost')
+        assert_equal(email_tasks[0].kwargs['sender'],
+                     'wiki@test.p.in.localhost')
+        assert_equal(email_tasks[1].kwargs['sender'],
+                     'wiki@test.p.in.localhost')
         assert email_tasks[0].kwargs['text'].startswith(
             'Home modified by Test Admin')
         assert 'you indicated interest in ' in email_tasks[0].kwargs['text']

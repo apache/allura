@@ -298,7 +298,7 @@ class Post(HierWidget):
         page=0,
         limit=25,
         show_subject=False,
-        )
+    )
     widgets = dict(
         moderate_post=ModeratePost(),
         edit_post=EditPost(submit_text='Post'),

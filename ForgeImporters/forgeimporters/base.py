@@ -129,7 +129,7 @@ def import_tool(importer_path, project_name=None, mount_point=None, mount_label=
         if app:
             with h.notifications_disabled(c.project, disabled=False):
                 g.director.create_activity(c.user, "imported", app.config,
-                        related_nodes=[c.project])
+                                           related_nodes=[c.project])
             handler.success(app)
 
 

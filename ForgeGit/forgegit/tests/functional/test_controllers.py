@@ -261,7 +261,7 @@ class TestRootController(_TestCase):
     def test_refresh(self):
         notification = M.Notification.query.find(
             dict(subject='[test:src-git] 5 new commits to Test Project Git')
-            ).first()
+        ).first()
         assert notification
         domain = '.'.join(
             reversed(c.app.url[1:-1].split('/'))).replace('_', '-')

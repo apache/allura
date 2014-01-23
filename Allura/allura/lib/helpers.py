@@ -534,7 +534,6 @@ def render_genshi_plaintext(template_name, **template_vars):
     return stream.render(encoding='utf-8').decode('utf-8')
 
 
-
 @tg.expose(content_type='text/plain')
 def json_validation_error(controller, **kwargs):
     result = dict(status='Validation Error',

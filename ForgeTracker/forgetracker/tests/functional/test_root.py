@@ -675,7 +675,7 @@ class TestFunctionalController(TrackerTestController):
         self.app.post('/bugs/1/update_ticket', {
             'summary': 'bar',
             'comment': 'user comment',
-            })
+        })
         t = tm.Ticket.query.get(ticket_num=1)
         assert_true(t.discussion_thread.first_post.is_meta)
         assert_false(t.discussion_thread.last_post.is_meta)

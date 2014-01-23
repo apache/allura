@@ -32,11 +32,11 @@ import tg
 
 from ming.orm import ThreadLocalORMSession
 from alluratest.controller import (
-        setup_basic_test,
-        setup_global_objects,
-        setup_unit_test,
-        setup_functional_test,
-        )
+    setup_basic_test,
+    setup_global_objects,
+    setup_unit_test,
+    setup_functional_test,
+)
 
 from allura import model as M
 from allura.lib import helpers as h
@@ -549,7 +549,7 @@ def test_hideawards_macro():
         neighborhood_id=p_nbhd._id, shortname=u'test')
 
     M.AwardGrant(award=award, granted_by_neighborhood=p_nbhd,
-            granted_to_project=project)
+                 granted_to_project=project)
 
     ThreadLocalORMSession.flush_all()
 

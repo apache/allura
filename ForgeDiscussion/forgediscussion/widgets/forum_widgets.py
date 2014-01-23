@@ -147,6 +147,7 @@ class ThreadHeader(DW.ThreadHeader):
 class Post(DW.Post):
     show_subject = False
 
+
 class Thread(DW.Thread):
     defaults = dict(
         DW.Thread.defaults,

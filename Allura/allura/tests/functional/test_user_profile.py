@@ -156,6 +156,7 @@ class TestUserProfile(TestController):
     def test_profile_sections(self):
         project = Project.query.get(shortname='u/test-user')
         app = project.app_instance('profile')
+
         def ep(n):
             m = mock.Mock()
             m.name = n

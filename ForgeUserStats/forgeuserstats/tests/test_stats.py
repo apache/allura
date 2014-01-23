@@ -101,9 +101,9 @@ class TestStats(TestController):
             art_type="Ticket")
 
         self.app.post('/tickets/save_ticket',
-                          params={'ticket_form.summary': 'test',
-                                  'ticket_form.assigned_to': str(c.user.username)},
-                          extra_environ=dict(username=str(c.user.username)))
+                      params={'ticket_form.summary': 'test',
+                              'ticket_form.assigned_to': str(c.user.username)},
+                      extra_environ=dict(username=str(c.user.username)))
 
         ticketnum = str(TM.Ticket.query.get(summary='test').ticket_num)
 
@@ -119,10 +119,10 @@ class TestStats(TestController):
             'modified'] == initial_tickets_artifacts['modified']
 
         self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-                          params={'ticket_form.ticket_num': ticketnum,
-                                  'ticket_form.summary': 'footext3',
-                                  'ticket_form.status': 'closed'},
-                          extra_environ=dict(username=str(c.user.username)))
+                      params={'ticket_form.ticket_num': ticketnum,
+                              'ticket_form.summary': 'footext3',
+                              'ticket_form.status': 'closed'},
+                      extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
@@ -136,8 +136,8 @@ class TestStats(TestController):
             'modified'] == initial_tickets_artifacts['modified'] + 1
 
         self.app.post('/tickets/save_ticket',
-                          params={'ticket_form.summary': 'test2'},
-                          extra_environ=dict(username=str(c.user.username)))
+                      params={'ticket_form.summary': 'test2'},
+                      extra_environ=dict(username=str(c.user.username)))
 
         ticketnum = str(TM.Ticket.query.get(summary='test2').ticket_num)
 
@@ -153,10 +153,10 @@ class TestStats(TestController):
             'modified'] == initial_tickets_artifacts['modified'] + 1
 
         self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-                          params={'ticket_form.ticket_num': ticketnum,
-                                  'ticket_form.summary': 'test2',
-                                  'ticket_form.assigned_to': str(c.user.username)},
-                          extra_environ=dict(username=str(c.user.username)))
+                      params={'ticket_form.ticket_num': ticketnum,
+                              'ticket_form.summary': 'test2',
+                              'ticket_form.assigned_to': str(c.user.username)},
+                      extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
@@ -170,10 +170,10 @@ class TestStats(TestController):
             'modified'] == initial_tickets_artifacts['modified'] + 2
 
         self.app.post('/tickets/%s/update_ticket_from_widget' % ticketnum,
-                          params={'ticket_form.ticket_num': ticketnum,
-                                  'ticket_form.summary': 'test2',
-                                  'ticket_form.assigned_to': 'test-user'},
-                          extra_environ=dict(username=str(c.user.username)))
+                      params={'ticket_form.ticket_num': ticketnum,
+                              'ticket_form.summary': 'test2',
+                              'ticket_form.assigned_to': 'test-user'},
+                      extra_environ=dict(username=str(c.user.username)))
 
         tickets = c.user.stats.getTickets()
         tickets_artifacts = c.user.stats.getArtifacts(art_type="Ticket")
