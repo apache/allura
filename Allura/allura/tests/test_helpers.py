@@ -271,10 +271,10 @@ def test_log_if_changed():
     assert AuditLogMock.logs[0] == 'updated value'
 
 
-def test_get_tool_package():
-    assert h.get_tool_package('tickets') == 'forgetracker'
-    assert h.get_tool_package('Tickets') == 'forgetracker'
-    assert h.get_tool_package('wrong_tool') == ''
+def test_get_tool_packages():
+    assert h.get_tool_packages('tickets') == ['forgetracker']
+    assert h.get_tool_packages('Tickets') == ['forgetracker']
+    assert h.get_tool_packages('wrong_tool') == []
 
 
 def test_get_first():
