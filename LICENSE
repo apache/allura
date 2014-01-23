@@ -233,6 +233,7 @@ under the MIT license.  For details, see the individual files:
     Allura/allura/lib/widgets/resources/js/jquery.tools.min.js
     Allura/allura/public/nf/js/jquery.flot.js
     Allura/allura/public/nf/js/jquery.maxlength.min.js
+    allura/public/nf/js/jquery.viewport.js
 
 Blueprint, which is available under the MIT license.
 For details, see Allura/allura/public/nf/css/blueprint/
@@ -245,3 +246,6 @@ For details, see Allura/allura/public/nf/js/sylvester.js
 
 JSLint, which is available under the MIT license.
 For details, see AlluraTest/jslint/
+
+Modernizr, which is available under the MIT license.
+For details, see Allura/allura/public/nf/js/modernizr.js
