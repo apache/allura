@@ -26,6 +26,7 @@
         {% if c.user and not c.user.is_anonymous() and c.user != user %}
             {{follow_toggle.display(following=following, action=activity_app.url+'follow')}}
         {% endif %}
+        <a href="feed.rss" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
     </h3>
     {% if not timeline %}
         <p class="empty">No activity to display.</p>

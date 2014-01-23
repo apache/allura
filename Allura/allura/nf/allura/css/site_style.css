@@ -3261,6 +3261,7 @@ ul.dropdown ul li a:hover {
 }
 .user-activity h3 a {
     float: right;
+    margin-left: 8px;
 }
 .user-activity h3 b.ico {
     background-image: url('../images/neo-icon-set-ffffff-256x350.png');
