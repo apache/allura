@@ -2322,6 +2322,14 @@ class TestFunctionalController(TrackerTestController):
             assert 'Subject: [test:bugs] #1 test <h2> ticket' in body
             assert '<p><strong> <a class="alink" href="http://localhost/p/test/bugs/1/">[bugs:#1]</a> test &lt;h2&gt; ticket</strong></p>' in body
 
+    @patch('forgetracker.search.query_filter_choices')
+    def test_multiselect(self, query_filter_choices):
+        self.new_ticket(summary='test')
+        self.new_ticket(summary='test2')
+        query_filter_choices.return_value = {'status': [('open', 2)], }
+        r = self.app.get('/bugs/')
+        assert '<option value="open">open (2)</label>' in r
+        query_filter_choices.assert_called_once_with('!status_s:wont-fix && !status_s:closed')
 
 class TestMilestoneAdmin(TrackerTestController):
 
