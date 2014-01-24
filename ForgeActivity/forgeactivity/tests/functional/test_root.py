@@ -62,10 +62,10 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "Post:971389ad979eaafa658beb807bf4629d30f5f642.tickets@test.p.domain.net",
+                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
-                "activity_url": "/p/test/tickets/_discuss/thread/08e74efd/ed7c/",
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
                 "activity_name": "a comment"
             },
             "target": {
@@ -103,7 +103,7 @@ class TestActivityController(TestController):
          Administrator 1
         </a>
         posted
-        <a href="/p/test/tickets/_discuss/thread/08e74efd/ed7c/">
+        <a href="/p/test/tickets/34/?limit=25#ed7c">
          a comment
         </a>
         on
@@ -134,7 +134,7 @@ class TestActivityController(TestController):
         self.app.get('/u/test-admin/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].username == 'test-admin'
-        assert director.get_timeline.call_args[1]['actor_only'] == False
+        assert director.get_timeline.call_args[1]['actor_only'] is False
 
     @td.with_tool('u/test-user-1', 'activity')
     @td.with_user_project('test-user-1')
@@ -143,7 +143,7 @@ class TestActivityController(TestController):
         self.app.get('/u/test-user-1/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].username == 'test-user-1'
-        assert director.get_timeline.call_args[1]['actor_only'] == True
+        assert director.get_timeline.call_args[1]['actor_only'] is True
 
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
@@ -151,7 +151,7 @@ class TestActivityController(TestController):
         self.app.get('/p/test/activity/')
         assert director.get_timeline.call_count == 1
         assert director.get_timeline.call_args[0][0].shortname == 'test'
-        assert director.get_timeline.call_args[1]['actor_only'] == False
+        assert director.get_timeline.call_args[1]['actor_only'] is False
 
     @td.with_tracker
     @td.with_tool('u/test-user-1', 'activity')
@@ -163,7 +163,8 @@ class TestActivityController(TestController):
         d = {'ticket_form.summary': 'New Ticket'}
         self.app.post('/bugs/save_ticket', params=d)
         orig_create_timeline = g.director.aggregator.create_timeline
-        with patch.object(g.director.aggregator, 'create_timeline') as create_timeline:
+        with patch.object(g.director.aggregator, 'create_timeline') as \
+                create_timeline:
             create_timeline.side_effect = orig_create_timeline
             M.MonQTask.run_ready()
             # 3 aggregations: 1 actor, 1 follower, 1 project
@@ -172,3 +173,219 @@ class TestActivityController(TestController):
             self.app.get('/u/test-admin/activity/')
             self.app.get('/u/test-user-1/activity/')
             assert_equal(create_timeline.call_count, 0)
+
+    @td.with_tool('test', 'activity')
+    @patch('forgeactivity.main.g.director')
+    def test_feed_rss_project(self, director):
+        from activitystream.storage.base import StoredActivity
+        from bson import ObjectId
+        director.get_timeline.return_value = [StoredActivity(**{
+            "_id": ObjectId("529fa331033c5e6406d8b338"),
+            "obj": {
+                "activity_extras": {
+                    "allura_id": "some_id",
+                    "summary": "Just wanted to leave a comment on this..."
+                },
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "a comment"
+            },
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
+            },
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
+            },
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
+        })]
+        r = self.app.get('/p/test/activity/feed.rss')
+        timeline = r.xml.find('channel')
+        assert_equal(1, len(timeline.findall('item')))
+        activity = timeline.find('item')
+        assert_equal(activity.find('pubDate').text,
+                     'Wed, 04 Dec 2013 21:48:19 -0000')
+        assert_equal(activity.find('title').text,
+                     'Administrator 1 posted a comment on ticket #34')
+        assert_equal(activity.find('description').text,
+                     'Just wanted to leave a comment on this...')
+        assert_equal(activity.find('link').text,
+                     'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    @patch('forgeactivity.main.g.director')
+    def test_feed_rss_user(self, director):
+        from activitystream.storage.base import StoredActivity
+        from bson import ObjectId
+        director.get_timeline.return_value = [StoredActivity(**{
+            "_id": ObjectId("529fa331033c5e6406d8b338"),
+            "obj": {
+                "activity_extras": {
+                    "allura_id": "some_id",
+                    "summary": "Just wanted to leave a comment on this..."
+                },
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "a comment"
+            },
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
+            },
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
+            },
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
+        })]
+        r = self.app.get('/u/test-user-1/activity/feed.rss')
+        timeline = r.xml.find('channel')
+        assert_equal(1, len(timeline.findall('item')))
+        activity = timeline.find('item')
+        assert_equal(activity.find('pubDate').text,
+                     'Wed, 04 Dec 2013 21:48:19 -0000')
+        assert_equal(activity.find('title').text,
+                     'Administrator 1 posted a comment on ticket #34')
+        assert_equal(activity.find('description').text,
+                     'Just wanted to leave a comment on this...')
+        assert_equal(activity.find('link').text,
+                     'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+
+    @td.with_tool('test', 'activity')
+    @patch('forgeactivity.main.g.director')
+    def test_feed_atom_project(self, director):
+        from activitystream.storage.base import StoredActivity
+        from bson import ObjectId
+        director.get_timeline.return_value = [StoredActivity(**{
+            "_id": ObjectId("529fa331033c5e6406d8b338"),
+            "obj": {
+                "activity_extras": {
+                    "allura_id": "some_id",
+                    "summary": "Just wanted to leave a comment on this..."
+                },
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "a comment"
+            },
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
+            },
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
+            },
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
+        })]
+        r = self.app.get('/p/test/activity/feed.atom')
+        timeline = r.xml
+        assert_equal(1, len(timeline.findall(
+            '{http://www.w3.org/2005/Atom}entry')))
+        activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}published').text,
+            '2013-12-04T21:48:19Z')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}title').text,
+            'Administrator 1 posted a comment on ticket #34')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}summary').text,
+            'Just wanted to leave a comment on this...')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}link').get('href'),
+            'http://localhost/p/test/tickets/34/?limit=25#ed7c')
+
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    @patch('forgeactivity.main.g.director')
+    def test_feed_atom_user(self, director):
+        from activitystream.storage.base import StoredActivity
+        from bson import ObjectId
+        director.get_timeline.return_value = [StoredActivity(**{
+            "_id": ObjectId("529fa331033c5e6406d8b338"),
+            "obj": {
+                "activity_extras": {
+                    "allura_id": "some_id",
+                    "summary": "Just wanted to leave a comment on this..."
+                },
+                "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
+                "activity_name": "a comment"
+            },
+            "target": {
+                "activity_extras": {
+                    "allura_id": "Ticket:529f57a6033c5e5985db2efa",
+                    "summary": "Make activitystream timeline look better"
+                },
+                "activity_url": "/p/test/tickets/34/",
+                "activity_name": "ticket #34"
+            },
+            "actor": {
+                "activity_extras": {
+                    "icon_url": "/u/test-admin/user_icon",
+                    "allura_id": "User:521f96cb033c5e2587adbdff"
+                },
+                "activity_url": "/u/test-admin/",
+                "activity_name": "Administrator 1",
+                "node_id": "User:521f96cb033c5e2587adbdff"
+            },
+            "verb": "posted",
+            "published": dateutil.parser.parse("2013-12-04T21:48:19.817"),
+            "score": 1386193699,
+            "node_id": "Project:527a6584033c5e62126f5a60",
+            "owner_id": "Project:527a6584033c5e62126f5a60"
+        })]
+        r = self.app.get('/u/test-user-1/activity/feed.atom')
+        timeline = r.xml
+        assert_equal(1, len(timeline.findall(
+            '{http://www.w3.org/2005/Atom}entry')))
+        activity = timeline.find('{http://www.w3.org/2005/Atom}entry')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}published').text,
+            '2013-12-04T21:48:19Z')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}title').text,
+            'Administrator 1 posted a comment on ticket #34')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}summary').text,
+            'Just wanted to leave a comment on this...')
+        assert_equal(
+            activity.find('{http://www.w3.org/2005/Atom}link').get('href'),
+            'http://localhost/p/test/tickets/34/?limit=25#ed7c')

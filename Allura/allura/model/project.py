@@ -228,7 +228,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
 
     @property
     def activity_name(self):
-        return self.shortname
+        return self.name
 
     @property
     def permissions(self):
