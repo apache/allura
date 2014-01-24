@@ -132,9 +132,10 @@ class ForgeActivityController(BaseController):
         response.headers['Content-Type'] = ''
         response.content_type = 'application/xml'
         d = {
-            'title': 'Activity for %s' % data['followee'].shortname,
+            'title': 'Activity for %s' % data['followee'].activity_name,
             'link': h.absurl(self.app.url),
-            'description': 'Recent activity for %s' % data['followee'].shortname,
+            'description': 'Recent activity for %s' % (
+                data['followee'].activity_name),
             'language': u'en',
         }
         if request.environ['PATH_INFO'].endswith('.atom'):
@@ -147,7 +148,7 @@ class ForgeActivityController(BaseController):
                                 t.actor.activity_name,
                 t.verb,
                 t.obj.activity_name,
-                ' on %s' % t.target.activity_name if t.target.activity_name else '',
+                ' on %s' % (t.target.activity_name or ''),
             ),
                 link=url,
                 pubdate=t.published,
