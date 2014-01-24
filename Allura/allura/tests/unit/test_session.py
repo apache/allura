@@ -27,11 +27,17 @@ from allura.model.session import BatchIndexer, substitute_extensions
 def test_extensions_cm():
     session = mock.Mock(_kwargs=dict(extensions=[]))
     extension = mock.Mock()
-    with substitute_extensions(session, [extension]) as sess:
-        assert session.flush.call_count == 1
-        assert session.close.call_count == 1
-        assert sess == session
-        assert sess._kwargs['extensions'] == [extension]
+    try:
+        with substitute_extensions(session, [extension]) as sess:
+            assert session.flush.call_count == 1
+            assert session.close.call_count == 1
+            assert sess == session
+            assert sess._kwargs['extensions'] == [extension]
+            raise ValueError('test')
+    except ValueError as e:
+        pass
+    else:
+        assert False, "Exception didn't propagate"
     assert session.flush.call_count == 2
     assert session.close.call_count == 2
     assert session._kwargs['extensions'] == []

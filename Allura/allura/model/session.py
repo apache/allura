@@ -222,8 +222,10 @@ def substitute_extensions(session, extensions=None):
         session.close()
         session._kwargs['extensions'] = exts
     _set_exts(extensions or [])
-    yield session
-    _set_exts(original_exts)
+    try:
+        yield session
+    finally:
+        _set_exts(original_exts)
 
 
 main_doc_session = Session.by_name('main')
