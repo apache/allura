@@ -6,7 +6,7 @@ kombu==1.0.4
 coverage==3.5a1-20110413
 ForgeHg==0.1.21
 ForgePastebin==0.3.0
-GoogleCodeWikiImporter==0.4.8
+GoogleCodeWikiImporter==0.4.9
 mechanize==0.2.4
 mercurial==1.4.3
 MySQL-python==1.2.3c1
