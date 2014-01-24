@@ -23,6 +23,7 @@ from collections import defaultdict
 import logging
 import os
 
+import requests
 from BeautifulSoup import BeautifulSoup
 from formencode import validators as fev
 
@@ -161,8 +162,8 @@ class GoogleCodeProjectExtractor(ProjectExtractor):
     DEFAULT_ICON = 'http://www.gstatic.com/codesite/ph/images/defaultlogo.png'
 
     def check_readable(self):
-        page = urllib.urlopen(self.get_page_url('project_info'))
-        return (page.getcode() == 200) and (page.geturl() == self.get_page_url('project_info'))
+        resp = requests.head(self.get_page_url('project_info'))
+        return resp.status_code == 200
 
     def get_short_description(self, project):
         page = self.get_page('project_info')

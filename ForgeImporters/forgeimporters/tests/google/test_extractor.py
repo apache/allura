@@ -460,18 +460,13 @@ class TestGoogleCodeProjectExtractor(TestCase):
             assert False, 'Missing expected raised exception'
         self.assertEqual(issue_ids, [1, 3])
 
-    @mock.patch.object(google.urllib, 'urlopen')
-    def test_check_readable(self, urlopen):
-        urlopen.return_value.getcode.return_value = 200
-        urlopen.return_value.geturl.return_value = 'http://code.google.com/p/my-project/'
+    @mock.patch.object(google.requests, 'head')
+    def test_check_readable(self, head):
+        head.return_value.status_code = 200
         assert google.GoogleCodeProjectExtractor('my-project').check_readable()
-
-        urlopen.return_value.getcode.return_value = 404
+        head.return_value.status_code = 404
         assert not google.GoogleCodeProjectExtractor('my-project').check_readable()
 
-        urlopen.return_value.getcode.return_value = 200
-        urlopen.return_value.geturl.return_value = 'http://not_valid_url'
-        assert not google.GoogleCodeProjectExtractor('my-project').check_readable()
 
 class TestUserLink(TestCase):
 
