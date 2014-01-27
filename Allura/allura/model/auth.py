@@ -743,7 +743,22 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def script_name(self):
         return '/u/' + self.username + '/'
 
-    def my_projects(self, role_name=None):
+    def my_projects(self):
+        if self.is_anonymous():
+            return
+        if not c.user:
+            c.user = self.anonymous()
+        user_roles = g.credentials.user_roles(user_id=c.user._id)
+        user_projects = [r['project_id'] for r in user_roles]
+
+        roles = g.credentials.user_roles(user_id=self._id)
+        projects = [r['project_id'] for r in roles]
+        from .project import Project
+        for p in Project.query.find({'_id': {'$in': projects}, 'deleted': False}):
+            if (p._id in user_projects) or h.has_access(p, 'read')():
+                yield p
+
+    def my_projects_by_role_name(self, role_name=None):
         """Return projects to which this user belongs.
 
         If ``role_name`` is provided, return only projects for which user has

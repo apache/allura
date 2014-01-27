@@ -40,11 +40,9 @@
     <b>Projects</b>
     <ul>
       {% for p in user.my_projects() %}
-        {% if h.has_access(p, 'read')() %}
-          <li>
-              <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
-          </li>
-        {% endif %}
+        <li>
+          <a class="project-name" href="{{p.url()}}">{{p.name}}</a>
+        </li>
       {% endfor %}
     </ul>
   </div>

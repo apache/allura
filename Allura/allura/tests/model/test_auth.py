@@ -96,6 +96,7 @@ def test_user():
     # delete one of the projects and make sure it won't appear in my_projects()
     p = M.Project.query.get(shortname='test2')
     p.deleted = True
+    ThreadLocalORMSession.flush_all()
     assert_equal(set(p.shortname for p in c.user.my_projects()),
                  set(['test', 'u/test-admin', 'adobe-1', '--init--']))
     u = M.User.register(dict(
@@ -237,7 +238,7 @@ def test_email_address_claimed_by_user():
 def test_user_projects_by_role():
     assert_equal(set(p.shortname for p in c.user.my_projects()),
                  set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')),
+    assert_equal(set(p.shortname for p in c.user.my_projects_by_role_name('Admin')),
                  set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     # Remove admin access from c.user to test2 project
     project = M.Project.query.get(shortname='test2')
@@ -250,7 +251,7 @@ def test_user_projects_by_role():
     g.credentials.clear()
     assert_equal(set(p.shortname for p in c.user.my_projects()),
                  set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
-    assert_equal(set(p.shortname for p in c.user.my_projects('Admin')),
+    assert_equal(set(p.shortname for p in c.user.my_projects_by_role_name('Admin')),
                  set(['test', 'u/test-admin', 'adobe-1', '--init--']))
 
 
