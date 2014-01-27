@@ -23,6 +23,7 @@ import urllib2
 from collections import defaultdict
 import traceback
 from urlparse import urlparse
+from datetime import datetime
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -117,13 +118,25 @@ def object_from_path(path):
 
 
 @task(notifications_disabled=True)
-def import_tool(importer_path, project_name=None, mount_point=None, mount_label=None, **kw):
+def import_tool(importer_path, project_name=None,
+                mount_point=None, mount_label=None, **kw):
     importer = object_from_path(importer_path)()
     with ImportErrorHandler(importer, project_name, c.project) as handler,\
-            M.session.substitute_extensions(M.artifact_orm_session, [M.session.BatchIndexer]):
-        app = importer.import_tool(
-            c.project, c.user, project_name=project_name,
-            mount_point=mount_point, mount_label=mount_label, **kw)
+            M.session.substitute_extensions(M.artifact_orm_session,
+                                            [M.session.BatchIndexer]):
+        try:
+            M.artifact_orm_session._get().skip_last_updated = True
+            app = importer.import_tool(
+                c.project, c.user, project_name=project_name,
+                mount_point=mount_point, mount_label=mount_label, **kw)
+            # manually update project's last_updated field at the end of the
+            # import instead of it being updated automatically by each artifact
+            # since long-running task can cause stale project data to be saved
+            M.Project.query.update(
+                {'_id': c.project._id},
+                {'$set': {'last_updated': datetime.utcnow()}})
+        finally:
+            M.artifact_orm_session._get().skip_last_updated = False
         M.artifact_orm_session.flush()
         M.session.BatchIndexer.flush()
         if app:

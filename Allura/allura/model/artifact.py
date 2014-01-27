@@ -65,11 +65,14 @@ class Artifact(MappedClass):
         ]
 
         def before_save(data):
-            if not getattr(artifact_orm_session._get(), 'skip_mod_date', False):
+            _session = artifact_orm_session._get()
+            skip_mod_date = getattr(_session, 'skip_mod_date', False)
+            skip_last_updated = getattr(_session, 'skip_last_updated', False)
+            if not skip_mod_date:
                 data['mod_date'] = datetime.utcnow()
             else:
                 log.debug('Not updating mod_date')
-            if c.project:
+            if c.project and not skip_last_updated:
                 c.project.last_updated = datetime.utcnow()
     type_s = 'Generic Artifact'
 

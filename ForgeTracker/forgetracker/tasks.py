@@ -16,6 +16,7 @@
 #       under the License.
 
 import logging
+from datetime import datetime
 
 from pylons import tmpl_context as c
 
@@ -41,4 +42,14 @@ def move_tickets(ticket_ids, destination_tracker_id):
 
 @task
 def bulk_edit(**post_data):
-    c.app.globals.update_tickets(**post_data)
+    try:
+        M.artifact_orm_session._get().skip_last_updated = True
+        c.app.globals.update_tickets(**post_data)
+        # manually update project's last_updated field at the end of the
+        # import instead of it being updated automatically by each artifact
+        # since long-running task can cause stale project data to be saved
+        M.Project.query.update(
+            {'_id': c.project._id},
+            {'$set': {'last_updated': datetime.utcnow()}})
+    finally:
+        M.artifact_orm_session._get().skip_last_updated = False

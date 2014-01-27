@@ -24,7 +24,7 @@ import re
 from datetime import datetime
 
 from pylons import tmpl_context as c
-from nose.tools import assert_raises
+from nose.tools import assert_raises, assert_equal
 from nose import with_setup
 from mock import patch
 from ming.orm.ormsession import ThreadLocalORMSession
@@ -197,3 +197,27 @@ def test_messages_unknown_lookup():
     m.author_id = ObjectId()  # something new
     assert type(m.author()) == M.User, type(m.author())
     assert m.author() == M.User.anonymous()
+
+
+@with_setup(setUp, tearDown)
+@patch('allura.model.artifact.datetime')
+def test_last_updated(_datetime):
+    c.project.last_updated = datetime(2014, 1, 1)
+    _datetime.utcnow.return_value = datetime(2014, 1, 2)
+    WM.Page(title='TestPage1')
+    ThreadLocalORMSession.flush_all()
+    assert_equal(c.project.last_updated, datetime(2014, 1, 2))
+
+
+@with_setup(setUp, tearDown)
+@patch('allura.model.artifact.datetime')
+def test_last_updated_disabled(_datetime):
+    c.project.last_updated = datetime(2014, 1, 1)
+    _datetime.utcnow.return_value = datetime(2014, 1, 2)
+    try:
+        M.artifact_orm_session._get().skip_last_updated = True
+        WM.Page(title='TestPage1')
+        ThreadLocalORMSession.flush_all()
+        assert_equal(c.project.last_updated, datetime(2014, 1, 1))
+    finally:
+        M.artifact_orm_session._get().skip_last_updated = False
