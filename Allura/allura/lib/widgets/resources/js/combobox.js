@@ -39,18 +39,18 @@
       function populateSelect(data) {
         select.children('option').remove();
         $('<option></option>').val('').appendTo(select);
-        var cur_user_in_data = false;
+        var selected_option_present = false;
         for (var i = 0; i < data.options.length; i++) {
           var label = data.options[i].label,
               value = data.options[i].value;
           var option = $('<option>' + label + '</option>').val(value);
           if (selected.val() === value) {
             option.attr('selected', 'selected');  // select initial value, if any
-            cur_user_in_data = true;
+            selected_option_present = true;
           }
           option.appendTo(select);
         }
-        if (!cur_user_in_data) {
+        if (!selected_option_present) {
           selected.attr('selected', 'selected');
           selected.appendTo(select);
         }
