@@ -647,13 +647,9 @@ class RootController(BaseController, FeedController):
 
         # it's just our original query mangled and sent back to us
         kw.pop('q', None)
-        solr_query = ''
-        t = TM.Ticket.query.find().first()
-        if t:
-            solr_query = t.translate_query(c.app.globals.not_closed_query, t.index())
         result = TM.Ticket.paged_query_or_search(c.app.config, c.user,
                                                  c.app.globals.not_closed_mongo_query,
-                                                 solr_query,
+                                                 c.app.globals.not_closed_query,
                                                  filter,
                                                  sort=sort, limit=int(limit), page=page,
                                                  deleted={'$in': show_deleted},

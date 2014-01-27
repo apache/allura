@@ -1212,6 +1212,10 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
             solr_sort = '%s %s' % (solr_col, sort_split[1])
         if not filter:
             result = cls.paged_query(app_config, user, query, sort=sort, limit=limit, page=page, **kw)
+
+            t = cls.query.find().first()
+            if t:
+                search_query = cls.translate_query(search_query, t.index())
             result['filter_choices'] = tsearch.query_filter_choices(search_query)
         else:
             result = cls.paged_search(app_config, user, search_query, filter=filter,
