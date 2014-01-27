@@ -45,10 +45,12 @@ class TestProjectExtractor(TestCase):
         self.assertEqual(r, urlopen.return_value)
 
 
+@mock.patch.object(base, 'datetime')
+@mock.patch.object(base, 'M')
 @mock.patch.object(base, 'object_from_path')
 @mock.patch.object(base, 'c')
 @mock.patch.object(base, 'g')
-def test_import_tool(g, c, object_from_path):
+def test_import_tool(g, c, object_from_path, M, _datetime):
     c.project = mock.Mock(name='project')
     c.user = mock.Mock(name='user')
     object_from_path.return_value = importer = mock.Mock()
@@ -58,11 +60,16 @@ def test_import_tool(g, c, object_from_path):
         'forgeimporters.base.ToolImporter', project_name='project_name',
         mount_point='mount_point', mount_label='mount_label')
     app = importer.return_value.import_tool.return_value
-    importer.return_value.import_tool.assert_called_once_with(c.project,
-                                                              c.user, project_name='project_name', mount_point='mount_point',
-                                                              mount_label='mount_label')
-    g.director.create_activity.assert_called_once_with(c.user, "imported",
-                                                       app.config, related_nodes=[c.project])
+    importer.return_value.import_tool.assert_called_once_with(
+        c.project,
+        c.user, project_name='project_name', mount_point='mount_point',
+        mount_label='mount_label')
+    M.Project.query.update.assert_called_once_with(
+        {'_id': c.project._id},
+        {'$set': {'last_updated': _datetime.utcnow()}})
+    g.director.create_activity.assert_called_once_with(
+        c.user, "imported",
+        app.config, related_nodes=[c.project])
     g.post_event.assert_called_once_with(
         'import_tool_task_succeeded',
         'source',
