@@ -95,5 +95,24 @@
       {{g.theme.add_user_skill.display(selected_skill=selected_skill.trove_cat_id, 
            action=selected_skill.shortname + "/save_skill")}}
     {% endif %}
+
+    <h3>Other possible actions</h3>
+    <div class="grid-20" style="margin-bottom:10px;"/>
+      <ul>
+        {%if tg.config.get('trovecategories.enableediting', 'false')=='true'%}
+          {% if selected_skill %}
+            <li>
+              <a href="/categories/{{selected_skill.shortname}}">
+                Create a new category in this list
+              </a>
+              if you want to add a more specific kind of skill which is not included here.
+            </li>
+          {% endif %}
+        {%endif%}
+        <li>
+          <a href="/auth/prefs">Go to you profile</a> to set the remaining personal preferences.
+        </li>
+      </ul>
+    </div>
   </div>
 {% endblock %}
