@@ -415,7 +415,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
             'message_text': message,
             'site_name': config['site_name'],
             'base_url': config['base_url'],
-            'username': c.user.username,
+            'user': c.user,
         }
         allura.tasks.mail_tasks.sendsimplemail.post(
             toaddr=user.get_pref('email_address'),
@@ -588,6 +588,10 @@ class User(MappedClass, ActivityNode, ActivityObject):
         return retval
 
     def url(self):
+        '''
+        Return the URL (relative to root domain) for this user's user-project.
+        This includes any special handling via the Auth Provider to determine the proper user-project name
+        '''
         return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
     @memoize
