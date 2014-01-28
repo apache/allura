@@ -89,11 +89,24 @@ class ProjectCategory(MappedClass):
         return self.query.find(dict(parent_id=self._id)).all()
 
 
+class TroveCategoryMapperExtension(MapperExtension):
+
+    def after_insert(self, obj, state, sess):
+        g.post_event('trove_category_created', obj._id)
+
+    def after_update(self, obj, state, sess):
+        g.post_event('trove_category_updated', obj._id)
+
+    def after_delete(self, obj, state, sess):
+        g.post_event('trove_category_deleted', obj._id)
+
+
 class TroveCategory(MappedClass):
 
     class __mongometa__:
         session = main_orm_session
         name = 'trove_category'
+        extensions = [TroveCategoryMapperExtension]
         indexes = ['trove_cat_id', 'trove_parent_id', 'shortname', 'fullpath']
 
     _id = FieldProperty(S.ObjectId)

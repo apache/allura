@@ -66,6 +66,9 @@ The events that allura publishes are:
 * repo_cloned
 * repo_refreshed
 * repo_clone_task_failed
+* trove_category_created
+* trove_category_updated
+* trove_category_deleted
 
 
 Markdown Macros
