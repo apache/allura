@@ -97,6 +97,7 @@ class ForgeConfig(AppConfig):
             auto_reload=config.auto_reload_templates,
             autoescape=True,
             bytecode_cache=bcc,
+            cache_size=config.get('jinja_cache_size', -1),
             extensions=['jinja2.ext.do', 'jinja2.ext.i18n'])
         jinja2_env.install_gettext_translations(pylons.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
