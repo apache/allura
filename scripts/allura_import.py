@@ -70,7 +70,12 @@ def main():
 
 
 def import_forum(cli, project, tool, user_map, doc_txt, validate=True):
-    url = '/rest/p/' + project + '/' + tool
+    from allura import model as M
+    p = M.Project.query.get(shortname=project)
+    url = '/rest/{project_url}/{tool}'.format(
+            project_url=p.url().strip('/'),
+            tool=tool,
+            )
     if validate:
         url += '/validate_import'
         print cli.call(url, doc=doc_txt, user_map=json.dumps(user_map))
