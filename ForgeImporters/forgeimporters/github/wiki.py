@@ -21,6 +21,8 @@ from datetime import datetime
 from tempfile import mkdtemp
 from shutil import rmtree
 
+from paste.deploy.converters import aslist
+
 from BeautifulSoup import BeautifulSoup
 import git
 from pylons import app_globals as g
@@ -81,7 +83,7 @@ class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
 
     @property
     def target_app(self):
-        return self.importer.target_app[0]
+        return aslist(self.importer.target_app)[0]
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/wiki/index.html')
