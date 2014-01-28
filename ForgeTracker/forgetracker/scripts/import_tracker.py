@@ -28,7 +28,12 @@ log = logging.getLogger(__name__)
 
 def import_tracker(cli, project, tool, import_options, doc_txt,
                    validate=True, verbose=False, cont=False):
-    url = '/rest/p/' + project + '/' + tool
+    from allura import model as M
+    p = M.Project.query.get(shortname=project)
+    url = '/rest/{project_url}/{tool}'.format(
+            project_url=p.url().strip('/'),
+            tool=tool,
+            )
     if validate:
         url += '/validate_import'
     else:
@@ -36,8 +41,7 @@ def import_tracker(cli, project, tool, import_options, doc_txt,
 
     existing_map = {}
     if cont:
-        existing_tickets = cli.call(
-            '/rest/p/' + project + '/' + tool + '/')['tickets']
+        existing_tickets = cli.call(url + '/')['tickets']
         for t in existing_tickets:
             existing_map[t['ticket_num']] = t['summary']
 
