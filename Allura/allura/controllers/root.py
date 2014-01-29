@@ -70,7 +70,7 @@ class RootController(WsgiDispatchController):
     nf = NewForgeController()
     search = SearchController()
     rest = RestController()
-    if config.get('trovecategories.enableediting', 'false') == 'true':
+    if config.get('trovecategories.enableediting', 'false') != 'false':
         categories = TroveCategoryController()
 
     def __init__(self):

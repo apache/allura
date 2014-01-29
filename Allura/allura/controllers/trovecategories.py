@@ -15,13 +15,15 @@
 #       specific language governing permissions and limitations
 #       under the License.
 
-from tg import expose, flash, redirect, validate
+from tg import expose, flash, redirect, validate, config
+from pylons import tmpl_context as c
 from string import digits, lowercase
 
-from allura.lib.security import require_authenticated
 from allura import model as M
-from allura.lib.decorators import require_post
 from allura.controllers import BaseController
+from allura.lib import helpers as h
+from allura.lib.decorators import require_post
+from allura.lib.security import require_authenticated, require_access
 from allura.lib.widgets import forms
 
 
@@ -36,6 +38,12 @@ class TroveCategoryController(BaseController):
     def _lookup(self, catshortname, *remainder):
         cat = M.TroveCategory.query.get(shortname=catshortname)
         return TroveCategoryController(category=cat), remainder
+
+    def _check_security(self):
+        if config.get('trovecategories.enableediting', 'false') == 'admin':
+            with h.push_context(config.get('site_admin_project', 'allura'),
+                                neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
+                require_access(c.project, 'admin')
 
     def __init__(self, category=None):
         self.category = category
