@@ -707,6 +707,11 @@ class MergeRequest(VersionedArtifact, ActivityObject):
             return c.app.url
 
     @LazyProperty
+    def downstream_repo(self):
+        with self.push_downstream_context():
+            return c.app.repo
+
+    @LazyProperty
     def downstream_repo_url(self):
         with self.push_downstream_context():
             return c.app.repo.clone_url(

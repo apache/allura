@@ -31,27 +31,42 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
 {% endblock %}
 
 {% block content %}
-  <p>
-    <a href="{{req.creator_url}}">{{req.creator_name}}</a>
-    would like you to merge {{ req.commits | count }} commits
-    from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
-    to {{ req.target_branch }}
-  </p>
+  {% if req.downstream_repo %}
+    <p>
+      <a href="{{req.creator_url}}">{{req.creator_name}}</a>
+      would like you to merge {{ req.commits | count }} commits
+      from <a href="{{req.downstream_url}}">{{req.downstream_url}}</a>
+      to {{ req.target_branch }}
+    </p>
 
-  <div>{{g.markdown.convert(req.description)}}</div>
+    <div>{{g.markdown.convert(req.description)}}</div>
 
-  {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
-  <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
+    {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
+    <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
 
-  {% if h.has_access(c.app, 'write')() %}
-     <div class="grid-19">To merge the commits, please execute the following commands in your working
-       copy: </div>
-     <div class="grid-19"><textarea
-        style="width:80%; height:60px;"
-        readonly
-        >{{ c.app.repo.merge_command(req) | safe }}</textarea></div>
-    {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
-     <br style="clear:both">
+    {% if h.has_access(c.app, 'write')() %}
+       <div class="grid-19">To merge the commits, please execute the following commands in your working
+         copy: </div>
+       <div class="grid-19"><textarea
+          style="width:80%; height:60px;"
+          readonly
+          >{{ c.app.repo.merge_command(req) | safe }}</textarea></div>
+      {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
+       <br style="clear:both">
+    {% endif %}
+  {% else %}
+    <p>
+      Original repository by
+      <a href="{{req.creator_url}}">{{req.creator_name}}</a>
+      is deleted
+    </p>
+
+    <div>{{g.markdown.convert(req.description)}}</div>
+
+    {% if h.has_access(c.app, 'write')() %}
+      {{ c.mr_dispose_form.display(action="save", value=dict(status=req.status)) }}
+       <br style="clear:both">
+    {% endif %}
   {% endif %}
 
 {% endblock %}
