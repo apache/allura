@@ -20,6 +20,7 @@ from unittest import TestCase
 import jinja2
 from nose.tools import assert_equal, assert_raises
 import mock
+from tg import config
 
 from allura.lib.package_path_loader import PackagePathLoader
 
@@ -166,6 +167,7 @@ class TestPackagePathLoader(TestCase):
         assert_equal(output1, 'fs_loader')
         assert output1 is output2
 
+    @mock.patch.dict(config, {'disable_template_overrides': False})
     @mock.patch('jinja2.FileSystemLoader')
     def test_get_source(self, fs_loader):
         ppl = PackagePathLoader()
@@ -206,3 +208,21 @@ class TestPackagePathLoader(TestCase):
         assert_equal(fs_loader().get_source.call_count, 2)
         fs_loader().get_source.assert_called_with(
             'env', 'templates/audit.html')
+
+    @mock.patch('jinja2.FileSystemLoader')
+    def test_override_disable(self, fs_loader):
+        ppl = PackagePathLoader()
+        ppl.init_paths = mock.Mock()
+        fs_loader().get_source.side_effect = jinja2.TemplateNotFound('test')
+
+        assert_raises(
+            jinja2.TemplateError,
+            ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
+        assert_equal(fs_loader().get_source.call_count, 1)
+        fs_loader().get_source.reset_mock()
+
+        with mock.patch.dict(config, {'disable_template_overrides': False}):
+            assert_raises(
+                jinja2.TemplateError,
+                ppl.get_source, 'env', 'allura.ext.admin:templates/audit.html')
+            assert_equal(fs_loader().get_source.call_count, 2)

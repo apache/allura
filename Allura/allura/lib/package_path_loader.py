@@ -126,6 +126,8 @@ import pkg_resources
 import os
 
 import jinja2
+from tg import config
+from paste.deploy.converters import asbool
 from ming.utils import LazyProperty
 
 from allura.lib.helpers import topological_sort, iter_entry_points
@@ -263,14 +265,16 @@ class PackagePathLoader(jinja2.BaseLoader):
         - module:path/to/template.html
         '''
         # look in all of the customized search locations...
-        try:
-            parts = [self.override_root] + template.split(':')
-            if len(parts) > 2:
-                parts[1:2] = parts[1].split('.')
-            return self.fs_loader.get_source(environment, os.path.join(*parts))
-        except jinja2.TemplateNotFound:
-            # fall-back to attempt non-override loading
-            pass
+        if not asbool(config.get('disable_template_overrides', False)):
+            try:
+                parts = [self.override_root] + template.split(':')
+                if len(parts) > 2:
+                    parts[1:2] = parts[1].split('.')
+                return self.fs_loader.get_source(environment,
+                                                 os.path.join(*parts))
+            except jinja2.TemplateNotFound:
+                # fall-back to attempt non-override loading
+                pass
 
         if ':' in template:
             package, path = template.split(':', 2)
