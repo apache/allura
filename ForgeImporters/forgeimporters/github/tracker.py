@@ -115,6 +115,9 @@ class GitHubTrackerImporter(ToolImporter):
                     mount_label=None, **kw):
         import_id_converter = ImportIdConverter.get()
         project_name = '%s/%s' % (kw['user_name'], project_name)
+        extractor = GitHubProjectExtractor(project_name, user=user)
+        if not extractor.has_tracker():
+            return
         app = project.install_app('tickets', mount_point, mount_label,
                                   EnableVoting=False,
                                   open_status_names='open',
@@ -127,7 +130,6 @@ class GitHubTrackerImporter(ToolImporter):
         self.github_markdown_converter = GitHubMarkdownConverter(
             kw['user_name'], project_name)
         ThreadLocalORMSession.flush_all()
-        extractor = GitHubProjectExtractor(project_name, user=user)
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, user=M.User.anonymous(), app=app):

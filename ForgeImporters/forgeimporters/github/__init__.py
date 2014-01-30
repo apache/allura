@@ -173,6 +173,9 @@ class GitHubProjectExtractor(base.ProjectExtractor):
     def has_wiki(self):
         return self.get_page('project_info').get('has_wiki')
 
+    def has_tracker(self):
+        return self.get_page('project_info').get('has_issues')
+
 
 class GitHubOAuthMixin(object):
 
