@@ -128,6 +128,8 @@ def make_safe_path_portion(ustr, relaxed=True):
     s = s.replace('--', '-')
     return s
 
+def escape_json(data):
+    return json.dumps(data).replace('<', '\u003C')
 
 def monkeypatch(*objs):
     def patchem(func):

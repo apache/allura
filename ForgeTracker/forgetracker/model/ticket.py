@@ -1192,7 +1192,7 @@ class Ticket(VersionedArtifact, ActivityObject, VotableArtifact):
                         count = count - 1
         return dict(tickets=tickets,
                     count=count, q=q, limit=limit, page=page, sort=sort,
-                    filter=json.dumps(filter),
+                    filter=filter,
                     filter_choices=tsearch.get_facets(matches),
                     solr_error=solr_error, **kw)
 
