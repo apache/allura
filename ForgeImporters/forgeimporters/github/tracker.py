@@ -46,11 +46,17 @@ from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 
-from . import GitHubProjectExtractor, GitHubOAuthMixin
-from ..base import ToolImporter
 from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
-from forgeimporters.base import ToolImportForm
+from forgeimporters.base import (
+    ToolImportForm,
+    ToolImporter,
+)
+from forgeimporters.github import (
+    GitHubProjectExtractor,
+    GitHubOAuthMixin,
+    GitHubProjectNameValidator,
+)
 from forgeimporters.github.utils import GitHubMarkdownConverter
 
 
@@ -58,7 +64,7 @@ log = logging.getLogger(__name__)
 
 
 class GitHubTrackerImportForm(ToolImportForm):
-    gh_project_name = fev.UnicodeString(not_empty=True)
+    gh_project_name = GitHubProjectNameValidator()
     gh_user_name = fev.UnicodeString(not_empty=True)
 
 

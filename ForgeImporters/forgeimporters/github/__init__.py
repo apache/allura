@@ -26,10 +26,33 @@ from tg import config, session, redirect, request, expose
 from tg.decorators import without_trailing_slash
 from pylons import tmpl_context as c
 from requests_oauthlib import OAuth2Session
+import requests
+from formencode import validators as fev
 
 from forgeimporters import base
 
 log = logging.getLogger(__name__)
+
+
+class GitHubProjectNameValidator(fev.FancyValidator):
+    not_empty = True
+    messages = {
+        'invalid': 'Valid symbols are: letters, numbers, dashes, '
+                   'underscores and periods',
+        'unavailable': 'This project is unavailable for import',
+    }
+
+    def _to_python(self, value, state=None):
+        user_name = state.full_dict.get('user_name', '')
+        user_name = state.full_dict.get('gh_user_name', user_name).strip()
+        project_name = value.strip()
+        full_project_name = '%s/%s' % (user_name, project_name)
+        if not re.match(r'^[a-zA-Z0-9-_.]+$', project_name):
+            raise fev.Invalid(self.message('invalid', state), value, state)
+
+        if not GitHubProjectExtractor(full_project_name).check_readable():
+            raise fev.Invalid(self.message('unavailable', state), value, state)
+        return project_name
 
 
 class GitHubProjectExtractor(base.ProjectExtractor):
@@ -82,6 +105,10 @@ class GitHubProjectExtractor(base.ProjectExtractor):
             self.wait_for_limit_reset(resp.info())
             return self.urlopen(url, **kw)
         return resp
+
+    def check_readable(self):
+        resp = requests.head(self.get_page_url('project_info'))
+        return resp.status_code == 200
 
     def get_next_page_url(self, link):
         if not link:

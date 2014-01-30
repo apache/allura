@@ -538,8 +538,10 @@ class TestGitHubWikiImportController(TestController, TestCase):
             r.html.find(attrs=dict(name='tool_option', value='import_history')))
 
     @with_wiki
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create(self, import_tool):
+    def test_create(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         params = dict(
             gh_user_name='spooky',
             gh_project_name='mulder',
@@ -555,8 +557,10 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(u'mulder', args['project_name'])
         self.assertEqual(u'spooky', args['user_name'])
         self.assertEqual(u'import_history', args['tool_option'])
+        self.assertEqual(requests.head.call_count, 1)
 
         # without history
+        requests.head.reset_mock()
         params.pop('tool_option')
         r = self.app.post(self.url + 'create', params, status=302)
         self.assertEqual(r.location, 'http://localhost/p/%s/admin/' %
@@ -567,10 +571,13 @@ class TestGitHubWikiImportController(TestController, TestCase):
         self.assertEqual(u'mulder', args['project_name'])
         self.assertEqual(u'spooky', args['user_name'])
         self.assertEqual(u'', args['tool_option'])
+        self.assertEqual(requests.head.call_count, 1)
 
     @with_wiki
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create_limit(self, import_tool):
+    def test_create_limit(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         p = M.Project.query.get(shortname=test_project_with_wiki)
         p.set_tool_data('GitHubWikiImporter', pending=1)
         ThreadLocalORMSession.flush_all()

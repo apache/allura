@@ -213,3 +213,10 @@ class TestGitHubProjectExtractor(TestCase):
             'Rate limit exceeded (10 requests/hour). '
             'Sleeping until 2013-10-25 09:32:02 UTC'
         )
+
+    @patch.object(github.requests, 'head')
+    def test_check_readable(self, head):
+        head.return_value.status_code = 200
+        assert github.GitHubProjectExtractor('my-project').check_readable()
+        head.return_value.status_code = 404
+        assert not github.GitHubProjectExtractor('my-project').check_readable()

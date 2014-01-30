@@ -24,20 +24,19 @@ from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
 
-from .. import base
-from . import tasks
-from . import GitHubOAuthMixin
+from forgeimporters import base
+from forgeimporters.github import (
+    tasks,
+    GitHubOAuthMixin,
+    GitHubProjectNameValidator,
+)
 
 
 log = logging.getLogger(__name__)
 
 
 class GitHubProjectForm(base.ProjectImportForm):
-    project_name = fev.Regex(r'^[a-zA-Z0-9-_.]+$',
-                             not_empty=True,
-                             messages={
-                                 'invalid': 'Valid symbols are: letters, numbers, dashes, underscores and periods',
-                             })
+    project_name = GitHubProjectNameValidator()
 
 
 class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):

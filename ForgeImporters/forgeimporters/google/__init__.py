@@ -118,7 +118,9 @@ def csv_parser(page):
 class GoogleCodeProjectNameValidator(fev.FancyValidator):
     not_empty = True
     messages = {
-        'invalid': 'Please enter a project URL, or a project name containing only letters, numbers, and dashes.',
+        'invalid': 'Please enter a project URL, or a project name containing '
+                   'only letters, numbers, and dashes.',
+        'unavailable': 'This project is unavailable for import',
     }
 
     def _to_python(self, value, state=None):
@@ -128,10 +130,10 @@ class GoogleCodeProjectNameValidator(fev.FancyValidator):
         else:
             project_name = os.path.basename(url.path.strip('/'))
         if not re.match(r'^[a-z0-9][a-z0-9-]{,61}$', project_name):
-            raise fev.Invalid(self.message('invalid'))
+            raise fev.Invalid(self.message('invalid', state), value, state)
 
         if not GoogleCodeProjectExtractor(project_name).check_readable():
-            raise fev.Invalid('The project "%s" is not avalible for import' % value, value, state)
+            raise fev.Invalid(self.message('unavailable', state), value, state)
         return project_name
 
 

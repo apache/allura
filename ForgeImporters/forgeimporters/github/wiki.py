@@ -52,7 +52,11 @@ from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
 )
-from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
+from forgeimporters.github import (
+    GitHubProjectExtractor,
+    GitHubOAuthMixin,
+    GitHubProjectNameValidator,
+)
 from forgeimporters.github.utils import GitHubMarkdownConverter
 from forgewiki import model as WM
 from forgewiki.converters import mediawiki2markdown
@@ -71,7 +75,7 @@ except ImportError:
 
 
 class GitHubWikiImportForm(ToolImportForm):
-    gh_project_name = fev.UnicodeString(not_empty=True)
+    gh_project_name = GitHubProjectNameValidator()
     gh_user_name = fev.UnicodeString(not_empty=True)
     tool_option = fev.UnicodeString(if_missing=u'')
 

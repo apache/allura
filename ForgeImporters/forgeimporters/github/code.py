@@ -39,12 +39,16 @@ from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
 )
-from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
+from forgeimporters.github import (
+    GitHubProjectExtractor,
+    GitHubOAuthMixin,
+    GitHubProjectNameValidator,
+)
 
 
 class GitHubRepoImportForm(ToolImportForm):
-    gh_project_name = fev.UnicodeString(not_empty=True)
     gh_user_name = fev.UnicodeString(not_empty=True)
+    gh_project_name = GitHubProjectNameValidator()
 
 
 class GitHubRepoImportController(BaseController, GitHubOAuthMixin):

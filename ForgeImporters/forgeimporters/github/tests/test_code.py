@@ -75,8 +75,10 @@ class TestGitHubImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_git
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create(self, import_tool):
+    def test_create(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         params = dict(
             gh_user_name='spooky',
             gh_project_name='poop',
@@ -84,11 +86,13 @@ class TestGitHubImportController(TestController, TestCase):
             mount_point='mymount',
         )
         r = self.app.post(
-            '/p/{}/admin/ext/import/github-repo/create'.format(test_project_with_repo),
+            '/p/{}/admin/ext/import/github-repo/create'.format(
+                test_project_with_repo),
             params,
             status=302)
         self.assertEqual(
-            r.location, 'http://localhost/p/{}/admin/'.format(test_project_with_repo))
+            r.location, 'http://localhost/p/{}/admin/'.format(
+                test_project_with_repo))
         self.assertEqual(
             u'mymount', import_tool.post.call_args[1]['mount_point'])
         self.assertEqual(
@@ -96,10 +100,13 @@ class TestGitHubImportController(TestController, TestCase):
         self.assertEqual(
             u'poop', import_tool.post.call_args[1]['project_name'])
         self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
+        self.assertEqual(requests.head.call_count, 1)
 
     @with_git
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create_limit(self, import_tool):
+    def test_create_limit(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         project = M.Project.query.get(shortname=test_project_with_repo)
         project.set_tool_data('GitHubRepoImporter', pending=1)
         ThreadLocalORMSession.flush_all()
@@ -110,7 +117,8 @@ class TestGitHubImportController(TestController, TestCase):
             mount_point='mymount',
         )
         r = self.app.post(
-            '/p/{}/admin/ext/import/github-repo/create'.format(test_project_with_repo),
+            '/p/{}/admin/ext/import/github-repo/create'.format(
+                test_project_with_repo),
             params,
             status=302).follow()
         self.assertIn('Please wait and try again', r)

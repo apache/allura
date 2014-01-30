@@ -45,8 +45,10 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name='mount_point')))
 
     @with_tracker
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create(self, import_tool):
+    def test_create(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         params = dict(
             gh_user_name='spooky',
             gh_project_name='mulder',
@@ -62,10 +64,13 @@ class TestGitHubTrackerImportController(TestController, TestCase):
         self.assertEqual(
             u'mulder', import_tool.post.call_args[1]['project_name'])
         self.assertEqual(u'spooky', import_tool.post.call_args[1]['user_name'])
+        self.assertEqual(requests.head.call_count, 1)
 
     @with_tracker
+    @patch('forgeimporters.github.requests')
     @patch('forgeimporters.base.import_tool')
-    def test_create_limit(self, import_tool):
+    def test_create_limit(self, import_tool, requests):
+        requests.head.return_value.status_code = 200
         p = M.Project.query.get(shortname=test_project_with_tracker)
         p.set_tool_data('GitHubTrackerImporter', pending=1)
         ThreadLocalORMSession.flush_all()
