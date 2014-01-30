@@ -143,14 +143,15 @@ class GitHubWikiImporter(ToolImporter):
     available_pages = []
 
     def import_tool(
-            self, project, user, project_name=None, mount_point=None, mount_label=None, user_name=None,
-            tool_option=None, **kw):
+            self, project, user, project_name=None, mount_point=None,
+            mount_label=None, user_name=None, tool_option=None, **kw):
         """ Import a GitHub wiki into a new Wiki Allura tool.
 
         """
         project_name = "%s/%s" % (user_name, project_name)
         extractor = GitHubProjectExtractor(project_name, user=user)
-        if not extractor.has_wiki():
+        wiki_avail = extractor.has_wiki()
+        if not wiki_avail:
             return
 
         self.github_wiki_url = extractor.get_page_url(
@@ -171,8 +172,19 @@ class GitHubWikiImporter(ToolImporter):
         try:
             M.session.artifact_orm_session._get().skip_mod_date = True
             with h.push_config(c, app=self.app):
-                self.import_pages(
-                    extractor.get_page_url('wiki_url'), history=with_history)
+                try:
+                    wiki_url = extractor.get_page_url('wiki_url')
+                    self.import_pages(wiki_url, history=with_history)
+                except git.GitCommandError:
+                    log.error(
+                        'Unable to clone GitHub wiki: '
+                        'wiki_url=%s; '
+                        'wiki_avail=%s; '
+                        'avail_url=%s',
+                        wiki_url, wiki_avail,
+                        extractor.get_page_url('project_info'),
+                        exc_info=True)
+                    raise
             ThreadLocalORMSession.flush_all()
             M.AuditLog.log(
                 'import tool %s from %s on %s' % (
