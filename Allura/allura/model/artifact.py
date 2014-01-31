@@ -178,6 +178,8 @@ class Artifact(MappedClass):
             if artifact is None:
                 continue
             artifact = artifact.primary()
+            if artifact is None:
+                continue
             # don't link to artifacts in deleted tools
             if hasattr(artifact, 'app_config') and artifact.app_config is None:
                 continue
