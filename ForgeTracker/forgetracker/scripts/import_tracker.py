@@ -27,11 +27,10 @@ log = logging.getLogger(__name__)
 
 
 def import_tracker(cli, project, tool, import_options, doc_txt,
-                   validate=True, verbose=False, cont=False):
-    from allura import model as M
-    p = M.Project.query.get(shortname=project)
-    url = '/rest/{project_url}/{tool}'.format(
-            project_url=p.url().strip('/'),
+        validate=True, verbose=False, cont=False, neighborhood='p'):
+    url = '/rest/{neighborhood}/{project}/{tool}'.format(
+            neighborhood=neighborhood,
+            project=project,
             tool=tool,
             )
     if validate:
