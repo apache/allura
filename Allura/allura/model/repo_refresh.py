@@ -36,6 +36,7 @@ from allura.model.repo import CommitRunDoc
 from allura.model.repo import Commit, Tree, LastCommit, ModelCache
 from allura.model.index import ArtifactReferenceDoc, ShortlinkDoc
 from allura.model.auth import User
+from allura.model.timeline import TransientActor
 
 log = logging.getLogger(__name__)
 
@@ -140,8 +141,10 @@ def refresh_repo(repo, all_commits=False, notify=True, new_clone=False):
                 user = User.by_username(new.committed.name)
             if user is not None:
                 g.statsUpdater.newCommit(new, repo.app_config.project, user)
-                g.director.create_activity(user, 'committed', new,
-                                           related_nodes=[repo.app_config.project])
+            actor = user or TransientActor(
+                    activity_name=new.committed.name or new.committed.emai)
+            g.director.create_activity(actor, 'committed', new,
+                                       related_nodes=[repo.app_config.project])
 
     log.info('Refresh complete for %s', repo.full_fs_path)
     g.post_event('repo_refreshed', len(commit_ids), all_commits, new_clone)

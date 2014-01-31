@@ -18,7 +18,11 @@
 -#}
 
 {% macro activity_obj(o) %}
-  <a href="{{o.activity_url}}">{{o.activity_name}}</a>
+  {% if o.activity_url %}
+    <a href="{{o.activity_url}}">{{o.activity_name}}</a>
+  {% else %}
+    {{o.activity_name}}
+  {% endif %}
 {% endmacro %}
 
 {% macro icon(o, size, className) -%}
