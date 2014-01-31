@@ -27,8 +27,8 @@ class FollowToggle(ew.SimpleForm):
         ew.SimpleForm.defaults,
         thing='project',
         action='follow',
-        action_label='watch',
-        icon='watch',
+        action_label='follow',
+        icon='star',
         following=False)
 
     class fields(ew_core.NameList):
@@ -42,8 +42,6 @@ class FollowToggle(ew.SimpleForm):
         if c.project.is_user_project:
             default_context.update(
                 thing=c.project.user_project_of.display_name,
-                action_label='follow',
-                icon='star',
             )
         else:
             default_context.update(thing=c.project.name)
