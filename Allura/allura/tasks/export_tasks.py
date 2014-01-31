@@ -114,6 +114,10 @@ class BulkExport(object):
         except Exception:
             log.error('Error exporting: %s on %s', tool,
                       app.project.shortname, exc_info=True)
+            try:
+                os.remove(json_file)
+            except:
+                pass
             return None
         else:
             return app
