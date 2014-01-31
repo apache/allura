@@ -24,6 +24,7 @@ from paste.script import command
 
 import allura.tasks
 from allura.command import base
+from allura.lib import helpers as h
 
 from paste.deploy.converters import asint
 
@@ -54,7 +55,8 @@ class MailServer(smtpd.SMTPServer):
             base.log.info('Msg Received from %s for %s', mailfrom, rcpttos)
             base.log.info(' (%d bytes)', len(data))
             allura.tasks.mail_tasks.route_email.post(
-                peer=peer, mailfrom=mailfrom, rcpttos=rcpttos, data=data)
+                peer=peer, mailfrom=mailfrom, rcpttos=rcpttos,
+                data=h.really_unicode(data))
             base.log.info('Msg passed along')
         except Exception:
             base.log.exception('Error handling msg')
