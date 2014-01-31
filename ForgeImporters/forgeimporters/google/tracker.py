@@ -26,26 +26,24 @@ from tg import (
     expose,
     flash,
     redirect,
-    validate,
 )
 from tg.decorators import (
     with_trailing_slash,
     without_trailing_slash,
 )
 
-from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post
 from allura import model as M
 
-from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.google import GoogleCodeProjectNameValidator
 from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
+    ToolImportController,
 )
 
 
@@ -53,14 +51,8 @@ class GoogleCodeTrackerImportForm(ToolImportForm):
     gc_project_name = GoogleCodeProjectNameValidator()
 
 
-class GoogleCodeTrackerImportController(BaseController):
-
-    def __init__(self):
-        self.importer = GoogleCodeTrackerImporter()
-
-    @property
-    def target_app(self):
-        return self.importer.target_app
+class GoogleCodeTrackerImportController(ToolImportController):
+    import_form = GoogleCodeTrackerImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.google:templates/tracker/index.html')
@@ -71,7 +63,6 @@ class GoogleCodeTrackerImportController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GoogleCodeTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -89,7 +80,7 @@ class GoogleCodeTrackerImportController(BaseController):
 
 class GoogleCodeTrackerImporter(ToolImporter):
     source = 'Google Code'
-    target_app = ForgeTrackerApp
+    target_app_ep_names = 'tickets'
     controller = GoogleCodeTrackerImportController
     tool_label = 'Issues'
     tool_description = 'Import your public tickets from Google Code'

@@ -31,7 +31,6 @@ from ming.orm import ThreadLocalORMSession
 from formencode import validators as fev
 from tg import (
     expose,
-    validate,
     flash,
     redirect,
 )
@@ -40,7 +39,6 @@ from tg.decorators import (
     without_trailing_slash,
 )
 
-from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib import utils
 from allura.lib.plugin import ImportIdConverter
@@ -51,6 +49,7 @@ from allura import model as M
 from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
+    ToolImportController,
 )
 from forgeimporters.github import (
     GitHubProjectExtractor,
@@ -65,14 +64,6 @@ from forgewiki.converters import mediawiki2markdown
 import logging
 log = logging.getLogger(__name__)
 
-TARGET_APPS = []
-
-try:
-    from forgewiki.wiki_main import ForgeWikiApp
-    TARGET_APPS.append(ForgeWikiApp)
-except ImportError:
-    pass
-
 
 class GitHubWikiImportForm(ToolImportForm):
     gh_project_name = GitHubProjectNameValidator()
@@ -80,14 +71,8 @@ class GitHubWikiImportForm(ToolImportForm):
     tool_option = fev.UnicodeString(if_missing=u'')
 
 
-class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
-
-    def __init__(self):
-        self.importer = GitHubWikiImporter()
-
-    @property
-    def target_app(self):
-        return aslist(self.importer.target_app)[0]
+class GitHubWikiImportController(ToolImportController, GitHubOAuthMixin):
+    import_form = GitHubWikiImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/wiki/index.html')
@@ -99,7 +84,6 @@ class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GitHubWikiImportForm(ForgeWikiApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -117,7 +101,8 @@ class GitHubWikiImportController(BaseController, GitHubOAuthMixin):
 
 
 class GitHubWikiImporter(ToolImporter):
-    target_app = TARGET_APPS
+    target_app_ep_names = 'wiki'
+
     controller = GitHubWikiImportController
     source = 'GitHub'
     tool_label = 'Wiki'

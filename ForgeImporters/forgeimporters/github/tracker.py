@@ -28,7 +28,6 @@ except ImportError:
 from formencode import validators as fev
 from tg import (
     expose,
-    validate,
     flash,
     redirect
 )
@@ -38,7 +37,6 @@ from tg.decorators import (
 )
 
 from allura import model as M
-from allura.controllers import BaseController
 from allura.lib import helpers as h
 from allura.lib.plugin import ImportIdConverter
 from allura.lib.decorators import require_post
@@ -46,11 +44,11 @@ from ming.orm import session, ThreadLocalORMSession
 from pylons import tmpl_context as c
 from pylons import app_globals as g
 
-from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker import model as TM
 from forgeimporters.base import (
-    ToolImportForm,
     ToolImporter,
+    ToolImportForm,
+    ToolImportController,
 )
 from forgeimporters.github import (
     GitHubProjectExtractor,
@@ -68,14 +66,8 @@ class GitHubTrackerImportForm(ToolImportForm):
     gh_user_name = fev.UnicodeString(not_empty=True)
 
 
-class GitHubTrackerImportController(BaseController, GitHubOAuthMixin):
-
-    def __init__(self):
-        self.importer = GitHubTrackerImporter()
-
-    @property
-    def target_app(self):
-        return self.importer.target_app
+class GitHubTrackerImportController(ToolImportController, GitHubOAuthMixin):
+    import_form = GitHubTrackerImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/tracker/index.html')
@@ -87,7 +79,6 @@ class GitHubTrackerImportController(BaseController, GitHubOAuthMixin):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GitHubTrackerImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -105,7 +96,7 @@ class GitHubTrackerImportController(BaseController, GitHubOAuthMixin):
 
 class GitHubTrackerImporter(ToolImporter):
     source = 'GitHub'
-    target_app = ForgeTrackerApp
+    target_app_ep_names = 'tickets'
     controller = GitHubTrackerImportController
     tool_label = 'Issues'
     max_ticket_num = 0

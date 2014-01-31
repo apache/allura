@@ -70,7 +70,7 @@ class TestGoogleRepoImporter(TestCase):
         app.url = 'foo'
         GoogleRepoImporter().import_tool(p, u, project_name='project_name')
         get_repo_url.assert_called_once_with('project_name', 'git')
-        p.install_app.assert_called_once_with('Git',
+        p.install_app.assert_called_once_with('git',
                                               mount_point='code',
                                               mount_label='Code',
                                               init_from_url='http://remote/clone/url/',
