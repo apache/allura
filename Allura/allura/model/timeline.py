@@ -47,7 +47,8 @@ class Director(ActivityDirector):
         super(Director, self).create_activity(actor, verb, obj,
                                               target=target, related_nodes=related_nodes)
         # aggregate actor and follower's timelines
-        create_timelines.post(actor.node_id)
+        if actor.node_id:
+            create_timelines.post(actor.node_id)
         # aggregate project and follower's timelines
         for node in [obj, target] + (related_nodes or []):
             if isinstance(node, Project):
@@ -97,6 +98,16 @@ class ActivityObject(ActivityObjectBase):
         if self.project is None:
             return False
         return security.has_access(self, perm, user, self.project)
+
+
+class TransientActor(NodeBase, ActivityObjectBase):
+    """An activity actor which is not a persistent Node in the network.
+
+    """
+    def __init__(self, activity_name):
+        NodeBase.__init__(self)
+        ActivityObjectBase.__init__(self)
+        self.activity_name = activity_name
 
 
 def perm_check(user):
