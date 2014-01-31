@@ -93,25 +93,6 @@
             {{lib.submit_button('Claim Address', name='new_addr.claim')}}
             </div>
 
-            {% if c.user.open_ids %}
-            <h3 class="grid-18">OpenIDs Claimed</h3>
-            <table class="grid-18">
-              <tr>
-                <th>OpenID</th>
-                <th></th>
-              </tr>
-              {% for oid in c.user.open_ids %}
-                {% set obj = c.user.openid_object(oid) %}
-              <tr>
-                <td>{{oid}}</td>
-                <td>{{lib.submit_button('Delete', 'oid-%s.delete' % loop.index0)}}</td>
-              </tr>
-              {% endfor %}
-            </table>
-            {% endif %}
-            <div class="grid-18">
-            <a href="/auth/claim_oid">Claim New OpenID</a>
-            </div>
         {% endif %}
         <div class="grid-18">
         {{lib.submit_button('Save Changes')}}

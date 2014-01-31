@@ -65,8 +65,6 @@ def setup_with_tools():
 
 @td.with_wiki
 def test_app_globals():
-    g.oid_session()
-    g.oid_session()
     with h.push_context('test', 'wiki', neighborhood='Projects'):
         assert g.app_static(
             'css/wiki.css') == '/nf/_static_/wiki/css/wiki.css', g.app_static('css/wiki.css')

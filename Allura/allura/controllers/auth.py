@@ -16,13 +16,11 @@
 #       under the License.
 
 import logging
-import string
 import os
-from urllib import urlencode
 import datetime
 
 import bson
-from tg import expose, session, flash, redirect, validate, config
+from tg import expose, flash, redirect, validate, config
 from tg.decorators import with_trailing_slash
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -31,7 +29,6 @@ from webob import exc as wexc
 import allura.tasks.repo_tasks
 from allura import model as M
 from allura.lib import validators as V
-from allura.lib.oid_helper import verify_oid, process_oid
 from allura.lib.security import require_authenticated, has_access
 from allura.lib import helpers as h
 from allura.lib import plugin
@@ -47,21 +44,6 @@ from allura.lib.widgets import forms
 from allura.controllers import BaseController
 
 log = logging.getLogger(__name__)
-
-OID_PROVIDERS = [
-    ('OpenID', '${username}'),
-    ('Yahoo!', 'http://yahoo.com'),
-    ('Google', 'https://www.google.com/accounts/o8/id'),
-    ('MyOpenID', 'http://${username}.myopenid.com/'),
-    ('LiveJournal', 'http://${username}.livejournal.com/'),
-    ('Flickr', 'http://www.filckr.com/photos/${username}/'),
-    ('Wordpress', 'http://${username}.wordpress.com/'),
-    ('Blogger', 'http://${username}.blogspot.com/'),
-    ('Vidoop', 'http://${username}.myvidoop.com/'),
-    ('Verisign', 'http://${username}.pip.verisignlabs.com/'),
-    ('ClaimID', 'http://openid.claimid.com/${username}/'),
-    ('AOL', 'http://openid.aol.com/${username}/')]
-
 
 class F(object):
     login_form = LoginForm()
@@ -114,46 +96,11 @@ class AuthController(BaseController):
         else:
             return_to = request.referer
         c.form = F.login_form
-        return dict(oid_providers=OID_PROVIDERS, return_to=return_to)
+        return dict(return_to=return_to)
 
     @expose('jinja:allura:templates/login_fragment.html')
     def login_fragment(self, *args, **kwargs):
         return self.index(*args, **kwargs)
-
-    @expose('jinja:allura:templates/custom_login.html')
-    def login_verify_oid(self, provider, username, return_to=None):
-        if provider:
-            oid_url = string.Template(provider).safe_substitute(
-                username=username)
-        else:
-            oid_url = username
-        return verify_oid(oid_url, failure_redirect='.',
-                          return_to='login_process_oid?%s' % urlencode(
-                              dict(return_to=return_to)),
-                          title='OpenID Login',
-                          prompt='Click below to continue')
-
-    @expose()
-    def login_process_oid(self, **kw):
-        oid_obj = process_oid(failure_redirect='.')
-        c.user = oid_obj.claimed_by_user()
-        session['userid'] = c.user._id
-        session.save()
-        if not c.user.username:
-            flash('Please choose a user name, %s.'
-                  % c.user.get_pref('display_name'))
-            redirect('setup_openid_user')
-        redirect(kw.pop('return_to', '/'))
-
-    @expose('jinja:allura:templates/bare_openid.html')
-    def bare_openid(self, url=None):
-        '''Called to notify the user that they must set up a 'real' (with
-        username) account when they have a pure openid account'''
-        return dict(location=url)
-
-    @expose('jinja:allura:templates/setup_openid_user.html')
-    def setup_openid_user(self):
-        return dict()
 
     @expose('jinja:allura:templates/create_account.html')
     def create_account(self, **kw):
@@ -267,47 +214,6 @@ To reset your password on %s, please visit the following URL:
         else:
             flash('Unknown verification link', 'error')
         redirect('/')
-
-    @expose()
-    @require_post()
-    def do_setup_openid_user(self, username=None, display_name=None):
-        u = M.User.by_username(username)
-        if u and username != c.user.username:
-            flash('That username is already taken.  Please choose another.',
-                  'error')
-            redirect('setup_openid_user')
-        c.user.username = username
-        c.user.set_pref('display_name', display_name)
-        if u is None:
-            n = M.Neighborhood.query.get(name='Users')
-            n.register_project('u/' + username, user_project=True)
-        flash('Your username has been set to %s.' % username)
-        redirect('/')
-
-    @expose('jinja:allura:templates/claim_openid.html')
-    def claim_oid(self):
-        return dict(oid_providers=OID_PROVIDERS)
-
-    @expose('jinja:allura:templates/custom_login.html')
-    def claim_verify_oid(self, provider, username):
-        if provider:
-            oid_url = string.Template(provider).safe_substitute(
-                username=username)
-        else:
-            oid_url = username
-        return verify_oid(oid_url, failure_redirect='claim_oid',
-                          return_to='claim_process_oid',
-                          title='Claim OpenID',
-                          prompt='Click below to continue')
-
-    @expose()
-    @require_post()
-    def claim_process_oid(self, **kw):
-        oid_obj = process_oid(failure_redirect='claim_oid')
-        if c.user:
-            c.user.claim_openid(oid_obj._id)
-            flash('Claimed %s' % oid_obj._id)
-        redirect('/auth/preferences/')
 
     @expose()
     def logout(self):
@@ -464,12 +370,6 @@ class PreferencesController(BaseController):
                 primary_addr = c.user.email_addresses[0]
             if primary_addr:
                 c.user.set_pref('email_address', primary_addr)
-            for i, (old_oid, data) in enumerate(zip(c.user.open_ids, oid or [])):
-                obj = c.user.openid_object(old_oid)
-                if data.get('delete') or not obj:
-                    del c.user.open_ids[i]
-                    if obj:
-                        obj.delete()
             for k, v in preferences.iteritems():
                 if k == 'results_per_page':
                     v = int(v)

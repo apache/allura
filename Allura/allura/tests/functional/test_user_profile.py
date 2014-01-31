@@ -30,7 +30,6 @@ class TestUserProfile(TestController):
     def test_profile(self):
         response = self.app.get('/u/test-admin/profile/')
         assert '<h2 class="dark title">Test Admin' in response
-        assert 'OpenIDs' in response
 
     def test_wrong_profile(self):
         self.app.get('/u/no-such-user/profile/', status=404)

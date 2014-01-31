@@ -70,22 +70,6 @@ def test_email_address():
     assert 'test@domain.net' in c.user.email_addresses
 
 
-@with_setup(setUp)
-def test_openid():
-    oid = M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID')
-    oid.claimed_by_user_id = c.user._id
-    ThreadLocalORMSession.flush_all()
-    assert oid.claimed_by_user() is c.user
-    assert M.OpenId.upsert(
-        'http://google.com/accounts/1', 'My Google OID') is oid
-    ThreadLocalORMSession.flush_all()
-    assert oid is c.user.openid_object(oid._id)
-    c.user.claim_openid('http://google.com/accounts/2')
-    oid2 = M.OpenId.upsert('http://google.com/accounts/2', 'My Google OID')
-    assert oid2._id in c.user.open_ids
-    ThreadLocalORMSession.flush_all()
-
-
 @td.with_user_project('test-admin')
 @with_setup(setUp)
 def test_user():
@@ -155,16 +139,6 @@ def test_user_project_does_not_create_on_demand_for_anonymous_user():
 
 
 @with_setup(setUp)
-def test_user_project_does_not_create_on_demand_for_openid_user():
-    u = M.User.register({'username': ''}, make_project=False)
-    ThreadLocalORMSession.flush_all()
-    assert not u.private_project()
-    assert not M.Project.query.get(shortname='u/')
-    assert not M.Project.query.get(shortname='u/anonymous')
-    assert not M.Project.query.get(shortname='u/*anonymous')
-
-
-@with_setup(setUp)
 def test_project_role():
     role = M.ProjectRole(project_id=c.project._id, name='test_role')
     M.ProjectRole.by_user(c.user, upsert=True).roles.append(role._id)
@@ -213,15 +187,6 @@ def test_dup_api_token():
         pass
     assert len(M.ApiToken.query.find().all()
                ) == 1, "Duplicate entries with unique key found"
-
-
-@with_setup(setUp)
-def test_openid_claimed_by_user():
-    oid = M.OpenId.upsert('http://google.com/accounts/1', 'My Google OID')
-    c.user.disabled = True
-    oid.claimed_by_user_id = c.user._id
-    ThreadLocalORMSession.flush_all()
-    assert oid.claimed_by_user() is None
 
 
 @with_setup(setUp)

@@ -172,8 +172,6 @@ class Globals(object):
         # Setup Gravatar
         self.gravatar = gravatar.url
 
-        self.oid_store = M.OpenIdStore()
-
         # Setup pygments
         self.pygments_formatter = utils.LineAnchorCodeHtmlFormatter(
             cssclass='codehilite',
@@ -556,14 +554,6 @@ class Globals(object):
         theme_name = config.get('theme', 'allura')
         return self.resource_manager.absurl(
             'theme/%s/%s' % (theme_name, href))
-
-    def oid_session(self):
-        if 'openid_info' in session:
-            return session['openid_info']
-        else:
-            session['openid_info'] = result = {}
-            session.save()
-            return result
 
     def forge_static(self, resource):
         base = config['static.url_base']

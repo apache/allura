@@ -65,7 +65,6 @@ setup(
         "pysolr",
         "Markdown >= 2.0.3",
         "Pygments >= 1.1.1",
-        "python-openid >= 2.2.4",
         "EasyWidgets >= 0.1.1",
         "iso8601",
         "chardet >= 1.0.1",

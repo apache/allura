@@ -252,39 +252,6 @@ please visit the following URL:
             text=text)
 
 
-class OpenId(MappedClass):
-
-    class __mongometa__:
-        name = 'openid'
-        session = main_orm_session
-
-    _id = FieldProperty(str)
-    claimed_by_user_id = FieldProperty(S.ObjectId, if_missing=None)
-    display_identifier = FieldProperty(str)
-
-    @classmethod
-    def upsert(cls, url, display_identifier):
-        result = cls.query.get(_id=url)
-        if not result:
-            result = cls(
-                _id=url,
-                display_identifier=display_identifier)
-        return result
-
-    def claimed_by_user(self):
-        if self.claimed_by_user_id:
-            result = User.query.get(
-                _id=self.claimed_by_user_id, disabled=False)
-        else:  # pragma no cover
-            result = User.register(
-                dict(username=None, password=None,
-                     display_name=self.display_identifier,
-                     open_ids=[self._id]),
-                make_project=False)
-            self.claimed_by_user_id = result._id
-        return result
-
-
 class AuthGlobals(MappedClass):
 
     class __mongometa__:
@@ -329,7 +296,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
     _id = FieldProperty(S.ObjectId)
     sfx_userid = FieldProperty(S.Deprecated)
     username = FieldProperty(str)
-    open_ids = FieldProperty([str])
     email_addresses = FieldProperty([str])
     password = FieldProperty(str)
     projects = FieldProperty(S.Deprecated)
@@ -652,16 +618,6 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     def address_object(self, addr):
         return EmailAddress.query.get(_id=addr, claimed_by_user_id=self._id)
-
-    def openid_object(self, oid):
-        return OpenId.query.get(_id=oid, claimed_by_user_id=self._id)
-
-    def claim_openid(self, oid_url):
-        oid_obj = OpenId.upsert(oid_url, self.get_pref('display_name'))
-        oid_obj.claimed_by_user_id = self._id
-        if oid_url in self.open_ids:
-            return
-        self.open_ids.append(oid_url)
 
     def claim_address(self, email_address):
         addr = EmailAddress.canonical(email_address)
