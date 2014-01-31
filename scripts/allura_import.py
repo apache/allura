@@ -60,20 +60,21 @@ def main():
     if options.tracker:
         import_tracker(
             cli, options.project, options.tracker, import_options, options, doc_txt,
-            validate=options.validate,
-            verbose=options.verbose)
+            validate=options.validate, verbose=options.verbose,
+            neighborhood=options.neighborhood)
     elif options.forum:
-        import_forum(cli, options.project, options.forum,
-                     user_map, doc_txt, validate=options.validate)
+        import_forum(cli, options.project, options.forum, user_map, doc_txt,
+                validate=options.validate, neighborhood=options.neighborhood)
     elif options.wiki:
-        import_wiki(cli, options.project, options.wiki, options, doc_txt)
+        import_wiki(cli, options.project, options.wiki, options, doc_txt,
+                neighborhood=options.neighborhood)
 
 
-def import_forum(cli, project, tool, user_map, doc_txt, validate=True):
-    from allura import model as M
-    p = M.Project.query.get(shortname=project)
-    url = '/rest/{project_url}/{tool}'.format(
-            project_url=p.url().strip('/'),
+def import_forum(cli, project, tool, user_map, doc_txt, validate=True,
+        neighborhood='p'):
+    url = '/rest/{neighborhood}/{project}/{tool}'.format(
+            neighborhood=neighborhood,
+            project=project,
             tool=tool,
             )
     if validate:
@@ -94,6 +95,9 @@ Import project data dump in JSON format into an Allura project.''')
                          dest='secret_key', help='Secret key')
     optparser.add_option('-p', '--project', dest='project',
                          help='Project to import to')
+    optparser.add_option('-n', '--neighborhood', dest='neighborhood',
+                         help="URL prefix of destination neighborhood (default is 'p')",
+                         default='p')
     optparser.add_option('-t', '--tracker', dest='tracker',
                          help='Tracker to import to')
     optparser.add_option('-f', '--forum', dest='forum',
@@ -119,6 +123,7 @@ Import project data dump in JSON format into an Allura project.''')
         optparser.error("Keys are required")
     if not options.project:
         optparser.error("Target project is required")
+    options.neighborhood = options.neighborhood.strip('/')
     return optparser, options, args
 
 
