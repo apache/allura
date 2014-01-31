@@ -26,54 +26,28 @@ from tg import (
     expose,
     flash,
     redirect,
-    validate,
 )
 from tg.decorators import (
     with_trailing_slash,
     without_trailing_slash,
 )
 
-from allura.controllers import BaseController
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
 from allura import model as M
 
 from forgeimporters.base import (
     ToolImporter,
+    ToolImportController,
 )
 from forgeimporters.google import GoogleCodeProjectExtractor
 from forgeimporters.google import GoogleCodeProjectNameValidator
 
-REPO_APPS = {}
-TARGET_APPS = []
-try:
-    from forgehg.hg_main import ForgeHgApp
-    TARGET_APPS.append(ForgeHgApp)
-    REPO_APPS['hg'] = ForgeHgApp
-except ImportError:
-    pass
-try:
-    from forgegit.git_main import ForgeGitApp
-    TARGET_APPS.append(ForgeGitApp)
-    REPO_APPS['git'] = ForgeGitApp
-except ImportError:
-    pass
-try:
-    from forgesvn.svn_main import ForgeSVNApp
-    TARGET_APPS.append(ForgeSVNApp)
-    REPO_APPS['svn'] = ForgeSVNApp
-except ImportError:
-    pass
 
 REPO_URLS = {
     'svn': 'http://{0}.googlecode.com/svn/',
     'git': 'https://code.google.com/p/{0}/',
     'hg': 'https://code.google.com/p/{0}/',
-}
-REPO_ENTRY_POINTS = {
-    'svn': 'SVN',
-    'git': 'Git',
-    'hg': 'Hg',
 }
 
 
@@ -81,14 +55,13 @@ def get_repo_url(project_name, type_):
     return REPO_URLS[type_].format(project_name)
 
 
-def get_repo_class(type_):
-    return REPO_APPS[type_]
-
-
 class GoogleRepoImportForm(fe.schema.Schema):
     gc_project_name = GoogleCodeProjectNameValidator()
     mount_point = fev.UnicodeString()
     mount_label = fev.UnicodeString()
+
+    def __init__(self, *args):
+        pass
 
     def _to_python(self, value, state):
         value = super(self.__class__, self)._to_python(value, state)
@@ -107,7 +80,7 @@ class GoogleRepoImportForm(fe.schema.Schema):
             raise fe.Invalid(msg, value, state)
         except Exception:
             raise
-        tool_class = REPO_APPS[repo_type]
+        tool_class = g.entry_points['tool'][repo_type]
         try:
             value['mount_point'] = v.MountPointValidator(
                 tool_class).to_python(mount_point)
@@ -116,14 +89,8 @@ class GoogleRepoImportForm(fe.schema.Schema):
         return value
 
 
-class GoogleRepoImportController(BaseController):
-
-    def __init__(self):
-        self.importer = GoogleRepoImporter()
-
-    @property
-    def target_app(self):
-        return self.importer.target_app[0]
+class GoogleRepoImportController(ToolImportController):
+    import_form = GoogleRepoImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.google:templates/code/index.html')
@@ -134,7 +101,6 @@ class GoogleRepoImportController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GoogleRepoImportForm(), error_handler=index)
     def create(self, gc_project_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -150,7 +116,7 @@ class GoogleRepoImportController(BaseController):
 
 
 class GoogleRepoImporter(ToolImporter):
-    target_app = TARGET_APPS
+    target_app_ep_names = ('git', 'hg', 'svn')
     source = 'Google Code'
     controller = GoogleRepoImportController
     tool_label = 'Source Code'
@@ -165,7 +131,7 @@ class GoogleRepoImporter(ToolImporter):
         repo_type = extractor.get_repo_type()
         repo_url = get_repo_url(project_name, repo_type)
         app = project.install_app(
-            REPO_ENTRY_POINTS[repo_type],
+            repo_type,
             mount_point=mount_point or 'code',
             mount_label=mount_label or 'Code',
             init_from_url=repo_url,

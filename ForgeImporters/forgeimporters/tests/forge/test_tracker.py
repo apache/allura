@@ -315,8 +315,8 @@ class TestForgeTrackerImportController(TestController, TestCase):
         """Mount Allura importer on the Tracker admin controller"""
         super(TestForgeTrackerImportController, self).setUp()
         from forgetracker.tracker_main import TrackerAdminController
-        TrackerAdminController._importer = tracker.ForgeTrackerImportController(
-        )
+        TrackerAdminController._importer = \
+                tracker.ForgeTrackerImportController(tracker.ForgeTrackerImporter())
 
     @with_tracker
     def test_index(self):

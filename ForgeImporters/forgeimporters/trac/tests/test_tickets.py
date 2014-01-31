@@ -111,8 +111,8 @@ class TestTracTicketImportController(TestController, TestCase):
         """Mount Trac import controller on the Tracker admin controller"""
         super(TestTracTicketImportController, self).setUp()
         from forgetracker.tracker_main import TrackerAdminController
-        self.importer = TrackerAdminController._importer = TracTicketImportController(
-        )
+        self.importer = TrackerAdminController._importer = \
+                TracTicketImportController(TracTicketImporter())
 
     @with_tracker
     def test_index(self):

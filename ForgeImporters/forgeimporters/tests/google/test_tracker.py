@@ -292,8 +292,9 @@ class TestGoogleCodeTrackerImportController(TestController, TestCase):
         """Mount Google Code importer on the Tracker admin controller"""
         super(TestGoogleCodeTrackerImportController, self).setUp()
         from forgetracker.tracker_main import TrackerAdminController
-        TrackerAdminController._importer = tracker.GoogleCodeTrackerImportController(
-        )
+        TrackerAdminController._importer = \
+                tracker.GoogleCodeTrackerImportController(
+                        tracker.GoogleCodeTrackerImporter())
 
     @with_tracker
     def test_index(self):

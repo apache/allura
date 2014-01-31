@@ -27,14 +27,12 @@ from tg import (
     expose,
     flash,
     redirect,
-    validate,
 )
 from tg.decorators import (
     with_trailing_slash,
     without_trailing_slash,
 )
 
-from allura.controllers import BaseController
 from allura.lib.decorators import require_post
 from allura.lib import validators as v
 from allura.lib import helpers as h
@@ -47,8 +45,8 @@ from allura.scripts.trac_export import (
 from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
+    ToolImportController,
 )
-from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.import_support import ImportSupport
 from forgetracker import model as TM
 
@@ -58,14 +56,8 @@ class TracTicketImportForm(ToolImportForm):
     user_map = v.UserMapJsonFile(as_string=True)
 
 
-class TracTicketImportController(BaseController):
-
-    def __init__(self):
-        self.importer = TracTicketImporter()
-
-    @property
-    def target_app(self):
-        return self.importer.target_app
+class TracTicketImportController(ToolImportController):
+    import_form = TracTicketImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.trac:templates/tickets/index.html')
@@ -76,7 +68,6 @@ class TracTicketImportController(BaseController):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(TracTicketImportForm(ForgeTrackerApp), error_handler=index)
     def create(self, trac_url, mount_point, mount_label, user_map=None, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -94,7 +85,7 @@ class TracTicketImportController(BaseController):
 
 
 class TracTicketImporter(ToolImporter):
-    target_app = ForgeTrackerApp
+    target_app_ep_names = 'tickets'
     source = 'Trac'
     controller = TracTicketImportController
     tool_label = 'Tickets'

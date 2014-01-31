@@ -22,7 +22,6 @@ from tg import (
     expose,
     flash,
     redirect,
-    validate,
 )
 from tg.decorators import (
     with_trailing_slash,
@@ -30,14 +29,12 @@ from tg.decorators import (
 )
 
 from allura.lib.decorators import require_post
-from allura.controllers import BaseController
 from allura import model as M
-
-from forgegit.git_main import ForgeGitApp
 
 from forgeimporters.base import (
     ToolImporter,
     ToolImportForm,
+    ToolImportController,
 )
 from forgeimporters.github import GitHubProjectExtractor, GitHubOAuthMixin
 
@@ -47,14 +44,8 @@ class GitHubRepoImportForm(ToolImportForm):
     gh_user_name = fev.UnicodeString(not_empty=True)
 
 
-class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
-
-    def __init__(self):
-        self.importer = GitHubRepoImporter()
-
-    @property
-    def target_app(self):
-        return self.importer.target_app
+class GitHubRepoImportController(ToolImportController, GitHubOAuthMixin):
+    import_form = GitHubRepoImportForm
 
     @with_trailing_slash
     @expose('jinja:forgeimporters.github:templates/code/index.html')
@@ -66,7 +57,6 @@ class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
     @without_trailing_slash
     @expose()
     @require_post()
-    @validate(GitHubRepoImportForm(ForgeGitApp), error_handler=index)
     def create(self, gh_project_name, gh_user_name, mount_point, mount_label, **kw):
         if self.importer.enforce_limit(c.project):
             self.importer.post(
@@ -83,7 +73,7 @@ class GitHubRepoImportController(BaseController, GitHubOAuthMixin):
 
 
 class GitHubRepoImporter(ToolImporter):
-    target_app = ForgeGitApp
+    target_app_ep_names = 'git'
     source = 'GitHub'
     controller = GitHubRepoImportController
     tool_label = 'Source Code'

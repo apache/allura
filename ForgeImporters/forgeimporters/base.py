@@ -340,6 +340,58 @@ class ProjectImporter(BaseController):
         pass
 
 
+class ToolImportControllerMeta(type):
+    def __call__(cls, importer, *args, **kw):
+        """ Decorate the `create` post handler with a validator that references
+        the appropriate App for this controller's importer.
+
+        """
+        if hasattr(cls, 'create') and getattr(cls.create.decoration, 'validation', None) is None:
+            cls.create = validate(cls.import_form(aslist(importer.target_app)[0]),
+                    error_handler=cls.index.__func__)(cls.create)
+        return type.__call__(cls, importer, *args, **kw)
+
+
+class ToolImportController(BaseController):
+    """ Base class for ToolImporter controllers.
+
+    """
+    __metaclass__ = ToolImportControllerMeta
+
+    def __init__(self, importer):
+        """
+        :param importer: :class:`ToolImporter` instance to which this
+            controller belongs.
+
+        """
+        self.importer = importer
+
+    @property
+    def target_app(self):
+        return aslist(self.importer.target_app)[0]
+
+
+class ToolImporterMeta(type):
+    def __init__(cls, name, bases, attrs):
+        if not (hasattr(cls, 'target_app_ep_names')
+                or hasattr(cls, 'target_app')):
+            raise AttributeError("{0} must define either "
+                    "`target_app` or `target_app_ep_names`".format(name))
+        return type.__init__(cls, name, bases, attrs)
+
+    def __call__(cls, *args, **kw):
+        """ Right before the first instance of cls is created, get
+        the list of target_app classes from ep names. Can't do this
+        at cls create/init time b/c g.entry_points is not guaranteed
+        to be loaded at that point.
+
+        """
+        if not getattr(cls, 'target_app', None):
+            cls.target_app = [g.entry_points['tool'][ep_name]
+                    for ep_name in aslist(cls.target_app_ep_names)]
+        return type.__call__(cls, *args, **kw)
+
+
 class ToolImporter(object):
 
     """
@@ -348,10 +400,18 @@ class ToolImporter(object):
     Subclasses are required to implement :meth:`import_tool()` described
     below and define the following attributes:
 
+    .. py:attribute:: target_app_ep_names
+
+       A string or list of strings which are entry point names of the
+       tool(s) to which this class imports. E.g.::
+
+            target_app_ep_names = ['git', 'hg']
+
     .. py:attribute:: target_app
 
        A reference or list of references to the tool(s) that this imports
-       to.  E.g.::
+       to.  This attribute is not required if `target_app_ep_names` is
+       defined (which is preferable). E.g.::
 
             target_app = [forgegit.ForgeGitApp, forgehg.ForgeHgApp]
 
@@ -366,7 +426,10 @@ class ToolImporter(object):
     .. py:attribute:: controller
 
        The controller for this importer, to handle single tool imports.
+
     """
+    __metaclass__ = ToolImporterMeta
+
     target_app = None  # app or list of apps
     source = None  # string description of source, must match project importer
     controller = None
@@ -519,7 +582,7 @@ class ProjectToolsImportController(object):
         hidden = set(aslist(config.get('hidden_importers'), sep=','))
         visible = lambda ep: ep.name not in hidden
         for ep in filter(visible, h.iter_entry_points('allura.importers')):
-            importer = ep.load()
+            importer = ep.load()()
             for tool in aslist(importer.target_app):
                 tools_with_importers.add(tool.tool_label)
                 importer_matrix[importer.source][tool.tool_label] = ep.name
@@ -530,9 +593,9 @@ class ProjectToolsImportController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        import_tool = ToolImporter.by_name(name)
-        if import_tool:
-            return import_tool.controller(), remainder
+        importer = ToolImporter.by_name(name)
+        if importer:
+            return importer.controller(importer), remainder
         else:
             raise exc.HTTPNotFound
 

@@ -132,6 +132,7 @@ class TestProjectImporter(TestCase):
     @mock.patch.object(base, 'M')
     @mock.patch.object(base, 'c')
     def test_process(self, c, M, import_tool, flash, redirect, by_name):
+        base.ToolImporter.target_app_ep_names = []
         by_name.return_value = base.ToolImporter()
 
         pi = base.ProjectImporter(mock.Mock())
@@ -183,8 +184,7 @@ TA2 = mock.Mock(tool_label='qux', tool_description='qux_desc')
 TA3 = mock.Mock(tool_label='baz', tool_description='baz_desc')
 
 
-class TI1Controller(object):
-
+class TI1Controller(base.ToolImportController):
     @expose()
     def index(self, *a, **kw):
         return 'test importer 1 controller webpage'
