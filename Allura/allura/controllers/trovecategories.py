@@ -18,6 +18,7 @@
 from tg import expose, flash, redirect, validate, config
 from pylons import tmpl_context as c
 from string import digits, lowercase
+from webob.exc import HTTPForbidden
 
 from allura import model as M
 from allura.controllers import BaseController
@@ -40,7 +41,13 @@ class TroveCategoryController(BaseController):
         return TroveCategoryController(category=cat), remainder
 
     def _check_security(self):
-        if config.get('trovecategories.enableediting', 'false') == 'admin':
+        enable_editing = config.get('trovecategories.enableediting', 'false')
+        if enable_editing == 'false':
+            raise HTTPForbidden()
+
+        require_authenticated()
+
+        if enable_editing == 'admin':
             with h.push_context(config.get('site_admin_project', 'allura'),
                                 neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
                 require_access(c.project, 'admin')
@@ -51,8 +58,6 @@ class TroveCategoryController(BaseController):
 
     @expose('jinja:allura:templates/trovecategories.html')
     def index(self, **kw):
-        require_authenticated()
-
         if self.category:
             selected_cat = self.category
             l = self.category.subcategories
@@ -74,8 +79,6 @@ class TroveCategoryController(BaseController):
     @require_post()
     @validate(F.add_category_form, error_handler=index)
     def create(self, **kw):
-        require_authenticated()
-
         name = kw.get('categoryname')
         upper_id = int(kw.get('uppercategory_id', 0))
 
@@ -121,8 +124,6 @@ class TroveCategoryController(BaseController):
     @require_post()
     @validate(F.remove_category_form, error_handler=index)
     def remove(self, **kw):
-        require_authenticated()
-
         cat = M.TroveCategory.query.get(trove_cat_id=int(kw['categoryid']))
         if cat.trove_parent_id:
             parent = M.TroveCategory.query.get(

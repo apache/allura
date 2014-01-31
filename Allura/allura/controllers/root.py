@@ -70,8 +70,7 @@ class RootController(WsgiDispatchController):
     nf = NewForgeController()
     search = SearchController()
     rest = RestController()
-    if config.get('trovecategories.enableediting', 'false') != 'false':
-        categories = TroveCategoryController()
+    categories = TroveCategoryController()
 
     def __init__(self):
         n_url_prefix = '/%s/' % request.path.split('/')[1]
