@@ -17,22 +17,21 @@
 
 import logging
 
-from formencode import validators as fev
-
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
 
 from allura.lib.decorators import require_post
 from allura.lib.validators import UserMapJsonFile
 
-from .. import base
+from forgeimporters import base
+from forgeimporters.trac import TracURLValidator
 
 
 log = logging.getLogger(__name__)
 
 
 class TracProjectForm(base.ProjectImportForm):
-    trac_url = fev.URL(not_empty=True)
+    trac_url = TracURLValidator()
     user_map = UserMapJsonFile(as_string=True)
 
 

@@ -14,3 +14,31 @@
 #       KIND, either express or implied.  See the License for the
 #       specific language governing permissions and limitations
 #       under the License.
+
+from formencode import validators as fev
+import requests
+
+
+class TracURLValidator(fev.URL):
+    not_empty = True
+    messages = {
+        'unavailable': 'This project is unavailable for import'
+    }
+
+    def _to_python(self, value, state=None):
+        value = super(TracURLValidator, self)._to_python(value, state)
+        # remove extraneous /wiki/[PageName] from the end of the URL
+        url_parts = value.split('/')
+        try:
+            wiki_in_url = url_parts.index('wiki')
+        except ValueError:
+            wiki_in_url = -1
+        if wiki_in_url >= len(url_parts) - 2:
+            value = '/'.join(url_parts[:wiki_in_url])
+        # normalize trailing slash
+        value = value.rstrip('/') + '/'
+
+        resp = requests.head(value, allow_redirects=True)
+        if resp.status_code != 200:
+            raise fev.Invalid(self.message('unavailable', state), value, state)
+        return value

@@ -47,12 +47,14 @@ from forgeimporters.base import (
     ToolImportForm,
     ToolImportController,
 )
+from forgeimporters.trac import TracURLValidator
+from forgetracker.tracker_main import ForgeTrackerApp
 from forgetracker.import_support import ImportSupport
 from forgetracker import model as TM
 
 
 class TracTicketImportForm(ToolImportForm):
-    trac_url = fev.URL(not_empty=True)
+    trac_url = TracURLValidator()
     user_map = v.UserMapJsonFile(as_string=True)
 
 
@@ -76,11 +78,12 @@ class TracTicketImportController(ToolImportController):
                 mount_label=mount_label,
                 trac_url=trac_url,
                 user_map=user_map)
-            flash('Ticket import has begun. Your new tracker will be available '
-                  'when the import is complete.')
+            flash('Ticket import has begun. Your new tracker will be '
+                  'available when the import is complete.')
         else:
             flash(
-                'There are too many imports pending at this time.  Please wait and try again.', 'error')
+                'There are too many imports pending at this time.  Please '
+                'wait and try again.', 'error')
         redirect(c.project.url() + 'admin/')
 
 
@@ -96,7 +99,6 @@ class TracTicketImporter(ToolImporter):
         """ Import Trac tickets into a new Allura Tracker tool.
 
         """
-        trac_url = trac_url.rstrip('/') + '/'
         mount_point = mount_point or 'tickets'
         app = project.install_app(
             'Tickets',
