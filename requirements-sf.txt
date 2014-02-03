@@ -20,7 +20,7 @@ wsgipreload==1.2
 pyzmq==2.1.7
 html2text==3.200.3dev-20121112
 PyMollom==0.1
-TracWikiImporter==0.3.6
+TracWikiImporter==0.3.7
 MediawikiImporter==0.0.2
 Unidecode==0.04.14
 

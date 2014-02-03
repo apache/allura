@@ -26,7 +26,7 @@ from IPython.testing.decorators import module_not_available, skipif
 
 from allura.tests import TestController
 from allura.tests.decorators import with_tracker
-from alluratest.controller import TestRestApiBase
+from alluratest.controller import TestRestApiBase, setup_unit_test
 
 from allura import model as M
 from forgetracker import model as TM
@@ -39,6 +39,9 @@ from forgeimporters.trac.tickets import (
 
 
 class TestTracTicketImporter(TestCase):
+
+    def setUp(self):
+        setup_unit_test()
 
     @patch('forgeimporters.trac.tickets.session')
     @patch('forgeimporters.trac.tickets.g')
@@ -69,9 +72,9 @@ class TestTracTicketImporter(TestCase):
             closed_status_names='closed',
             import_id={
                 'source': 'Trac',
-                'trac_url': 'http://example.com/trac/url/',
+                'trac_url': 'http://example.com/trac/url',
             })
-        export.assert_called_once_with('http://example.com/trac/url/')
+        export.assert_called_once_with('http://example.com/trac/url')
         ImportSupport.return_value.perform_import.assert_called_once_with(
             json.dumps(export.return_value),
             json.dumps({
@@ -80,7 +83,7 @@ class TestTracTicketImporter(TestCase):
             }),
         )
         AuditLog.log.assert_called_once_with(
-            'import tool bugs from http://example.com/trac/url/',
+            'import tool bugs from http://example.com/trac/url',
             project=project, user=user, url='foo')
         g.post_event.assert_called_once_with('project_updated')
 
@@ -122,15 +125,18 @@ class TestTracTicketImportController(TestController, TestCase):
         self.assertIsNotNone(r.html.find(attrs=dict(name="mount_point")))
 
     @with_tracker
+    @patch('forgeimporters.trac.requests.head')
     @patch('forgeimporters.base.import_tool')
-    def test_create(self, import_tool):
+    def test_create(self, import_tool, head):
+        head.return_value.status_code = 200
         params = dict(trac_url='http://example.com/trac/url',
                       mount_label='mylabel',
                       mount_point='mymount',
                       )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
-                          upload_files=[
-                              ('user_map', 'myfile', '{"orig_user": "new_user"}')],
+                          upload_files=[(
+                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                          )],
                           status=302)
         self.assertEqual(r.location, 'http://localhost/p/test/admin/')
         self.assertEqual(
@@ -139,12 +145,14 @@ class TestTracTicketImportController(TestController, TestCase):
             u'mylabel', import_tool.post.call_args[1]['mount_label'])
         self.assertEqual('{"orig_user": "new_user"}',
                          import_tool.post.call_args[1]['user_map'])
-        self.assertEqual(u'http://example.com/trac/url',
+        self.assertEqual(u'http://example.com/trac/url/',
                          import_tool.post.call_args[1]['trac_url'])
 
     @with_tracker
+    @patch('forgeimporters.trac.requests.head')
     @patch('forgeimporters.base.import_tool')
-    def test_create_limit(self, import_tool):
+    def test_create_limit(self, import_tool, head):
+        head.return_value.status_code = 200
         project = M.Project.query.get(shortname='test')
         project.set_tool_data('TracTicketImporter', pending=1)
         ThreadLocalORMSession.flush_all()
@@ -153,10 +161,26 @@ class TestTracTicketImportController(TestController, TestCase):
                       mount_point='mymount',
                       )
         r = self.app.post('/p/test/admin/bugs/_importer/create', params,
-                          upload_files=[
-                              ('user_map', 'myfile', '{"orig_user": "new_user"}')],
+                          upload_files=[(
+                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                          )],
                           status=302).follow()
         self.assertIn('Please wait and try again', r)
+        self.assertEqual(import_tool.post.call_count, 0)
+
+    @with_tracker
+    @patch('forgeimporters.trac.requests.head')
+    @patch('forgeimporters.base.import_tool')
+    def test_create_not_found(self, import_tool, head):
+        head.return_value.status_code = 404
+        params = dict(trac_url='http://example.com/trac/url',
+                      mount_label='mylabel',
+                      mount_point='mymount',
+                      )
+        r = self.app.post('/p/test/admin/bugs/_importer/create', params,
+                          upload_files=[(
+                              'user_map', 'myfile', '{"orig_user": "new_user"}'
+                          )])
         self.assertEqual(import_tool.post.call_count, 0)
 
 
