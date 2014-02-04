@@ -65,22 +65,6 @@
 </script>
 {% endblock %}
 {% block content %}
-  {% if prev %}
-  <p>
-    Parent:
-    <a href="{{prev.url()}}">{{prev.commit.shorthand_id()}}</a>
-    <a href="?diff={{prev.commit._id}}">(diff)</a>
-  </p>
-  {% endif %}
-
-  {% if next %}
-  <p>
-    Child:
-    <a href="{{next.url()}}">{{next.commit.shorthand_id()}}</a>
-    <a href="{{next.url()}}?diff={{blob.commit._id}}">(diff)</a>
-  </p>
-  {% endif %}
-
   {% if blob.has_image_view %}
     <p><a href="?format=raw">Download this file</a></p>
     <img src="?format=raw" alt=""/>

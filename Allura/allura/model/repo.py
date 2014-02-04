@@ -654,29 +654,6 @@ class Blob(object):
         return self.tree.url() + h.really_unicode(self.name)
 
     @LazyProperty
-    def prev_commit(self):
-        pcid = LastCommit._prev_commit_id(self.commit, self.path().strip('/'))
-        if pcid:
-            return self.repo.commit(pcid)
-        return None
-
-    @LazyProperty
-    def next_commit(self):
-        try:
-            path = self.path()
-            cur = self.commit
-            next = cur.context()['next']
-            while next:
-                cur = next[0]
-                next = cur.context()['next']
-                other_blob = cur.get_path(path, create=False)
-                if other_blob is None or other_blob._id != self._id:
-                    return cur
-        except:
-            log.exception('Lookup next_commit')
-            return None
-
-    @LazyProperty
     def _content_type_encoding(self):
         return self.repo.guess_type(self.name)
 
@@ -707,24 +684,6 @@ class Blob(object):
     @property
     def has_image_view(self):
         return self.content_type.startswith('image/')
-
-    def context(self):
-        path = self.path()
-        prev = self.prev_commit
-        next = self.next_commit
-        if prev is not None:
-            try:
-                prev = prev.get_path(path, create=False)
-            except KeyError:
-                prev = None
-        if next is not None:
-            try:
-                next = next.get_path(path, create=False)
-            except KeyError:
-                next = None
-        return dict(
-            prev=prev,
-            next=next)
 
     def open(self):
         return self.repo.open_blob(self)

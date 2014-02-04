@@ -615,13 +615,10 @@ class FileBrowser(BaseController):
             return self.diff(kw['barediff'], kw.pop('diformat', None))
         else:
             force_display = 'force' in kw
-            context = self._blob.context()
             stats = utils.generate_code_stats(self._blob)
             return dict(
                 blob=self._blob,
                 stats=stats,
-                prev=context.get('prev', None),
-                next=context.get('next', None),
                 force_display=force_display
             )
 
