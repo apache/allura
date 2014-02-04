@@ -78,10 +78,7 @@ class TestMakeSafePathPortion(TestCase):
 def test_escape_json():
     inputdata = {"foo": "bar</script><img src=foobar onerror=alert(1)>"}
     outputsample = '{"foo": "bar\u003C/script>\u003Cimg src=foobar onerror=alert(1)>"}'
-
     outputdata = h.escape_json(inputdata)
-
-    print outputdata
     assert_equals(outputdata, outputsample)
 
 def test_really_unicode():
