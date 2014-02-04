@@ -35,6 +35,7 @@ from allura.tests import TestController
 from allura.tests import decorators as td
 from allura import model as M
 from ming.orm.ormsession import ThreadLocalORMSession, session
+from allura.controllers import BaseController
 from tg import config
 from mock import patch
 from allura.lib import plugin
@@ -69,13 +70,13 @@ class TestAuth(TestController):
             username='test-usera', password='foo'))
         assert 'Invalid login' in str(r), r.showbrowser()
 
-    def test_auth_additional(self):
-        class TestProvider(plugin.LocalAuthenticationProvider):
-            def additional_url(self):
-                return ['/auth/send_verification_link',]
+    #def test_auth_additional(self):
+    #    class TestControl(BaseController):
+    #        def additional_url(self):
+     #           return ['/auth/send_verification_link',]
 
-        r = self.app.post('/auth/do_login', params=dict(
-                username='test-user', password='foo'))
+     #   r = self.app.post('/auth/do_login', params=dict(
+     #           username='test-user', password='foo'))
 
     @td.with_user_project('test-admin')
     def test_prefs(self):
