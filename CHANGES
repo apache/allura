@@ -1,6 +1,106 @@
+Version 1.1.0  (February 2014)
+
+Upgrade Instructions
+
+ * Run ensure_index command
+ * 3rd party tools that do not use EasyWidgets will need {{lib.csrf_token()}} added to each <form>
+
+New Features
+
+ * [#6777] Create a site-wide notification mechanism
+ * Improved activity stream display and events
+ * [#6694] Form to send message to a user
+ * [#6783] Create a process to reset forgotten passwords
+ * [#6804] API to install a tool
+ * [#6692] API for exports
+ * [#6692] Simpler oauth API via bearer tokens
+ * [#5475] Javascript not required for most forms any more
+ * [#5424] Provide instructions for running git/hg/svn services
+ * [#6896] Developer architecture docs
+ * [#4808] Factor out SourceForge-specific bits of Allura
+
+Bug Fixes & Minor Improvements:
+
+ * Many fixes and improvements for GitHub, Google Code, Trac and Allura importers
+ Code Tools:
+ * [#7006] hide misleading message on Browse Commits page
+ * [#6796] Render all (not just readme) markdown files in repos
+ * [#6801] Options to parallelize last_commit_ids
+ * [#6826] Mass edit emails have invalid To: address
+ * [#6821] Change hg browser to get "last commit" info from hg instead of mongo (if ForgeHg installed)
+ * [#6894] SVN/Git refresh hooks fail for redirects
+ * [#6905] better code snapshot status UX
+ * [#6938] AttributeError on fork listing page
+ * [#6982] SCM views should parse user/email pairs better
+ * [#7022] UnicodeDecodeError on side-by-side diff text
+ * [#6111] remove markdown rendering of commit messages, keep artifact linking
+ * [#4671] Delete old-style LastCommitDoc code
+ * [#6603] Certain code snapshots take forever even to queue up
+ * [#6686] Change git browser to get "last commit" info from git instead of mongo
+ * [#6743] unicode paths in code browser 500 error
+ Tickets:
+ * [#6852] Maximize view for ticket lists
+ * [#6803] Labels should be set without hitting enter
+ * [#6893] Former team member unassigned from ticket on metadata update
+ * [#2778] Tickets: milestone names are bound once they are equal
+ * [#4812] Title field for new tickets mistaken as search bar
+ * [#5749] setting to specify a default milestone
+ * [#6088] Ticket search help open in new window
+ * [#6328] Use In-Reply-To: and References: headers for outgoing ticket emails
+ * [#6381] Allura tickets system intermittently discards replies to comments
+ * [#7047] ticket bulk_edit task sometimes doesn't call add_artifacts
+ * [#4429] ticket bulk-edit forcibly always sets all custom boolean fields to True
+ * [#6646] bulk edit to add labels
+ * [#6752] bulk edit to change "private" field
+ * [#6979] Bulk edit on some milestones with ":" gives empty set
+ * [#6906] Fatal error when replying to tracker item
+ User profile:
+ * [#6833] Choice of social networks should be configurable
+ * [#7062] Set first email address as 'primary' automatically
+ * [#6676] User profile page should show date joined
+ Discussion:
+ * [#7063] Add last_edited field to discussion REST API
+ * [#7065] Slow post queries happening on invalid URLs
+ * [#6864] Add spam button for comments
+ * [#6910] Emails with empty or missing From: should be treated as anonymous
+ * [#6917] User block list not stopping posts-via-email
+ * [#5182] prevent out-of-office replies to allura notifications
+ * [#6249] Use a stable Sender: header in email notifications
+ Wiki:
+ * [#4373] wiki diff incorrectly shows a lot of changes
+ Project admin:
+ * [#6848] Coalesce scripts/migrations/*trove*.py into command/create_trove_categories.py
+ * [#6865] Project admin for categories should be sorted
+ * [#6866] Audit trail adds fb & twitter values even if they don't change
+ * [#6795] TroveCategory.children is slow
+ * [#6889] possible XSS on /p/add_project/
+ * [#5502] Prevent adding certain tools multiple times
+ System/Misc:
+ * Cache markdown rendering results
+ * [#6971] Task manager can't set c.project for user-projects
+ * [#7009] /nf/tool_icon_css doesn't preserve https for URLs
+ * improved smtp_server error handling
+ * [#4091] ensure_index takes for ever looping over every single project
+ * [#4723] Don't link to user-project when Anonymous
+ * [#5330] taskd leaves defunct git processes around
+ * [#6713] Slow /auth/bare_openid?url=/user/registration
+ * [#6484] Move ForgeWiki mediawiki importer (GPL dep) into standalone importer - NEEDS CONFIGTREE
+ * [#7005] allura.tasks.repo_tasks.clone clobbers Project record
+ For developers:
+ * [#7028] severely stunted landing page html after vagrant install
+ * [#6393] Allow plugins to register new markdown macros
+ * [#6994] Test improvements/speedups
+ * [#6942] Make custom tool icons work properly
+ * [#7119] Add config switch to disable template overriding
+ * [#6714] Rename & move User.project_role()
+ * [#6716] __json__ should return plain dicts
+ * [#6388] Tool to inspect performance, particularly between commits
+
+
 Version 1.0.1  (October 2013)
 
 Upgrade Instructions
+
  * Run ensure_index command
  * Add bulk export and importer_upload_path INI settings (see development.ini)
 
