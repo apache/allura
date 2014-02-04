@@ -146,62 +146,6 @@ class TestTree(unittest.TestCase):
 
 class TestBlob(unittest.TestCase):
 
-    def test_context_no_create(self):
-        blob = M.repo.Blob(Mock(), Mock(), Mock())
-        blob.path = Mock(return_value='path')
-        blob.prev_commit = Mock()
-        blob.next_commit = Mock()
-        blob.prev_commit.get_path.return_value = '_prev'
-        blob.next_commit.get_path.return_value = '_next'
-        context = blob.context()
-        assert_equal(context, {'prev': '_prev', 'next': '_next'})
-        blob.prev_commit.get_path.assert_called_with('path', create=False)
-        blob.next_commit.get_path.assert_called_with('path', create=False)
-
-        blob.prev_commit.get_path.side_effect = KeyError
-        blob.next_commit.get_path.side_effect = KeyError
-        context = blob.context()
-        assert_equal(context, {'prev': None, 'next': None})
-
-    @patch.object(M.repo.LastCommit, '_prev_commit_id')
-    def test_prev_commit_no_create(self, lc_pcid):
-        lc_pcid.return_value = None
-        blob = M.repo.Blob(Mock(), 'foo', 'bid')
-        blob.tree.path.return_value = '/path/'
-        pc = blob.prev_commit
-        lc_pcid.assert_called_once_with(blob.commit, 'path/foo')
-        assert not blob.repo.commit.called
-        assert_equal(pc, None)
-
-        lc_pcid.reset_mock()
-        lc_pcid.return_value = 'pcid'
-        blob = M.repo.Blob(Mock(), 'foo', 'bid')
-        blob.tree.path.return_value = '/path/'
-        blob.repo.commit.return_value = 'commit'
-        pc = blob.prev_commit
-        lc_pcid.assert_called_once_with(blob.commit, 'path/foo')
-        blob.repo.commit.assert_called_once_with('pcid')
-        assert_equal(pc, 'commit')
-
-    def test_next_commit_no_create(self):
-        blob = M.repo.Blob(MagicMock(), MagicMock(), MagicMock())
-        blob._id = 'blob1'
-        blob.path = Mock(return_value='path')
-        blob.commit.context().__getitem__.return_value = None
-        nc = blob.next_commit
-        assert_equal(nc, None)
-
-        _next = MagicMock()
-        _next.context().__getitem__.return_value = None
-        _next.get_path.return_value = Mock(_id='blob2')
-        blob = M.repo.Blob(MagicMock(), MagicMock(), MagicMock())
-        blob._id = 'blob1'
-        blob.path = Mock(return_value='path')
-        blob.commit.context().__getitem__.return_value = [_next]
-        nc = blob.next_commit
-        _next.get_path.assert_called_with('path', create=False)
-        assert_equal(nc, _next)
-
     def test_pypeline_view(self):
         blob = M.repo.Blob(Mock(), Mock(), Mock())
         blob._id = 'blob1'
