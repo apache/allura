@@ -17,8 +17,6 @@
 
 import logging
 
-from formencode import validators as fev
-
 from tg import expose, validate
 from tg.decorators import with_trailing_slash
 
@@ -58,10 +56,8 @@ class GitHubProjectImporter(base.ProjectImporter, GitHubOAuthMixin):
 
     @require_post()
     @expose()
-    @validate(process_validator)
+    @validate(process_validator, error_handler=index)
     def process(self, **kw):
-        if not type(kw['tools']) == list:
-            kw['tools'] = [kw['tools']]
         return super(self.__class__, self).process(**kw)
 
     @expose('json:')
