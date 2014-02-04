@@ -25,7 +25,7 @@ from datetime import datetime
 
 
 CHANGELOG = 'CHANGES'
-API_URL = 'http://sourceforge.net/rest/p/allura/tickets/search?q=ticket_num:({0})'
+API_URL = 'http://sourceforge.net/rest/p/allura/tickets/search?limit=1000&q=ticket_num:({0})'
 
 
 def main():

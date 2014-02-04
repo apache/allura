@@ -50,11 +50,11 @@ prompt DUMMY "Changelog updated; press enter when ready to commit" "enter"
 git add CHANGES
 git commit -m "CHANGES updated for ASF release $VERSION"
 
-DEFAULT_KEY=`grep default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
+DEFAULT_KEY=`grep ^default-key ~/.gnupg/gpg.conf | sed -e 's/default-key //'`
 if [[ -z "$DEFAULT_KEY" ]]; then
     DEFAULT_KEY=`gpg --list-secret-keys | head -3 | tail -1 | sed -e 's/^.*\///' | sed -e 's/ .*//'`
 fi
-prompt KEY "Key" "$DEFAULT_KEY"
+prompt KEY "PGP Key to sign with" "$DEFAULT_KEY"
 FINGERPRINT=`gpg --fingerprint $KEY | grep fingerprint | cut -d' ' -f 17-20 | sed -e 's/ //g'`
 
 prompt RAT_LOG_PASTEBIN_URL "URL for RAT log pastebin"
