@@ -16,6 +16,7 @@
 #       under the License.
 
 import json
+import re
 from bson import ObjectId
 import formencode as fe
 from formencode import validators as fev
@@ -321,6 +322,27 @@ class MapValidator(fev.FancyValidator):
                 value, state)
         return conv_value
 
+
+class YouTubeConverter(fev.FancyValidator):
+    """Takes a given YouTube URL. Ensures that the video_id
+    is contained in the URL. Returns a clean URL to use for iframe embedding.
+
+    REGEX: http://stackoverflow.com/a/10315969/25690
+    """
+
+    REGEX = ('^(?:https?:\/\/)?(?:www\.)?'+
+             '(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))'+
+             '((\w|-){11})(?:\S+)?$')
+
+    def _to_python(self, value, state):
+        match = re.match(YouTubeConverter.REGEX, value)
+        if match:
+            video_id = match.group(1)
+            return 'www.youtube.com/embed/{}?rel=0'.format(video_id)
+        else:
+            raise fe.Invalid(
+                "The URL does not appear to be a valid YouTube video.",
+                value, state)
 
 def convertDate(datestring):
     formats = ['%Y-%m-%d', '%Y.%m.%d', '%Y/%m/%d', '%Y\%m\%d', '%Y %m %d',
