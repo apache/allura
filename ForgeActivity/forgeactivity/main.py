@@ -215,6 +215,7 @@ class ForgeActivityRestController(BaseController):
                 'verb': a.verb,
                 'obj': a.obj._deinstrument(),
                 'target': a.target._deinstrument(),
+                'tags': a.tags._deinstrument(),
             } for a in data['timeline']],
         }
 

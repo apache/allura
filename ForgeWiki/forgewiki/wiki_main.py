@@ -655,7 +655,7 @@ class PageController(BaseController, FeedController):
         g.spam_checker.check(text, artifact=self.page,
                              user=c.user, content_type='wiki')
         g.director.create_activity(c.user, activity_verb, self.page,
-                                   target=c.project, tags=['wiki'])
+                                   related_nodes=[c.project], tags=['wiki'])
         if new_viewable_by:
             if new_viewable_by == 'all':
                 self.page.viewable_by.append('all')
