@@ -181,6 +181,8 @@ class MetadataAdmin(ff.AdminForm):
         icon = ew.FileField(label='Icon')
         external_homepage = ew.InputField(field_type="text", label='Homepage',
                                           validator=fev.URL(add_http=True))
+        video_url = ew.InputField(field_type="text", label="Video (YouTube)",
+                                  validator=V.YouTubeConverter())
         support_page = ew.InputField(field_type="text", label='Support Page')
         support_page_url = ew.InputField(
             field_type="text", label='Support Page URL',

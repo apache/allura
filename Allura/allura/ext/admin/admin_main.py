@@ -346,6 +346,7 @@ class ProjectAdminController(BaseController):
                icon=None,
                category=None,
                external_homepage='',
+               video_url='',
                support_page='',
                support_page_url='',
                twitter_handle='',
@@ -407,6 +408,10 @@ class ProjectAdminController(BaseController):
             M.AuditLog.log('change external home page to %s',
                            external_homepage)
             c.project.external_homepage = external_homepage
+        if video_url != c.project.video_url:
+            h.log_action(log, 'change video url').info('')
+            M.AuditLog.log('change video url to %s', video_url)
+            c.project.video_url = video_url
         if support_page != c.project.support_page:
             h.log_action(log, 'change project support page').info('')
             M.AuditLog.log('change project support page to %s', support_page)

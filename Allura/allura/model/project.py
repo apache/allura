@@ -188,6 +188,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
     description_cache = FieldProperty(MarkdownCache)
     homepage_title = FieldProperty(str, if_missing='')
     external_homepage = FieldProperty(str, if_missing='')
+    video_url = FieldProperty(str, if_missing='')
     support_page = FieldProperty(str, if_missing='')
     support_page_url = FieldProperty(str, if_missing='')
     socialnetworks = FieldProperty([dict(socialnetwork=str, accounturl=str)])
@@ -933,6 +934,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
             short_description=self.short_description,
             summary=self.summary,
             external_homepage=self.external_homepage,
+            video_url=self.video_url,
             socialnetworks=[dict(n) for n in self.socialnetworks],
             status=self.removal or 'active',
             moved_to_url=self.moved_to_url,
