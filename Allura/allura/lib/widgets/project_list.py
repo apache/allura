@@ -165,7 +165,8 @@ class ProjectScreenshots(ew_core.Widget):
     defaults = dict(
         ew_core.Widget.defaults,
         project=None,
-        edit=False)
+        edit=False,
+        dragable=False)
 
     def resources(self):
         yield ew.JSLink('js/screenshots.js')
