@@ -810,6 +810,10 @@ class TestRepo(_TestWithRepo):
         ci.committed.name = committer_name
         ci.committed.email = committer_email
         ci.author_url = '/u/test-committer/'
+        ci.activity_name = '[deadbeef]'
+        ci.activity_url = 'url'
+        ci.activity_extras = {}
+        del ci.node_id
         self.repo._impl.commit = mock.Mock(return_value=ci)
         self.repo._impl.new_commits = mock.Mock(
             return_value=['foo%d' % i for i in range(100)])
