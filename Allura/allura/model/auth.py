@@ -746,43 +746,25 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def my_projects(self):
         if self.is_anonymous():
             return
-        if not c.user:
-            c.user = self.anonymous()
-        user_roles = g.credentials.user_roles(user_id=c.user._id)
-        user_projects = [r['project_id'] for r in user_roles]
-
         roles = g.credentials.user_roles(user_id=self._id)
         projects = [r['project_id'] for r in roles]
         from .project import Project
-        for p in Project.query.find({'_id': {'$in': projects}, 'deleted': False}):
-            if (p._id in user_projects) or h.has_access(p, 'read')():
-                yield p
+        return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
 
     def my_projects_by_role_name(self, role_name=None):
-        """Return projects to which this user belongs.
-
-        If ``role_name`` is provided, return only projects for which user has
+        """
+        Return  only projects for which user has
         that role.
-
         """
         if self.is_anonymous():
             return
         reaching_role_ids = list(
             g.credentials.user_roles(user_id=self._id).reaching_ids_set)
         reaching_roles = ProjectRole.query.find(
-            {'_id': {'$in': reaching_role_ids}}).all()
-        if not role_name:
-            named_roles = [r for r in reaching_roles
-                           if r.name and r.project and not r.project.deleted]
-        else:
-            named_roles = [r for r in reaching_roles
-                           if r.name == role_name and r.project and not r.project.deleted]
-        seen_project_ids = set()
-        for r in named_roles:
-            if r.project_id in seen_project_ids:
-                continue
-            seen_project_ids.add(r.project_id)
-            yield r.project
+            {'_id': {'$in': reaching_role_ids}, 'name': role_name})
+        projects = [r['project_id'] for r in reaching_roles]
+        from .project import Project
+        return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
 
     def set_password(self, new_password):
         return plugin.AuthenticationProvider.get(request).set_password(
