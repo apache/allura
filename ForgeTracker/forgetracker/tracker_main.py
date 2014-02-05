@@ -856,7 +856,7 @@ class RootController(BaseController, FeedController):
         ticket.update(ticket_form)
         c.app.globals.invalidate_bin_counts()
         g.director.create_activity(c.user, 'created', ticket,
-                                   related_nodes=[c.project])
+                                   related_nodes=[c.project], tags=['ticket'])
         redirect(str(ticket.ticket_num) + '/')
 
     @with_trailing_slash
@@ -1435,7 +1435,7 @@ class TicketController(BaseController, FeedController):
         if comment:
             self.ticket.discussion_thread.post(text=comment)
         g.director.create_activity(c.user, 'modified', self.ticket,
-                                   related_nodes=[c.project])
+                                   related_nodes=[c.project], tags=['ticket'])
         c.app.globals.invalidate_bin_counts()
         redirect('.')
 

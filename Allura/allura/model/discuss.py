@@ -685,7 +685,8 @@ class Post(Message, VersionedArtifact, ActivityObject):
             artifact.update_stats()
         if self.text and not self.is_meta:
             g.director.create_activity(author, 'posted', self, target=artifact,
-                                       related_nodes=[self.app_config.project])
+                                       related_nodes=[self.app_config.project],
+                                       tags=['comment'])
 
     def notify(self, file_info=None, check_dup=False):
         if self.project.notifications_disabled:

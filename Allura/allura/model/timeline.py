@@ -39,13 +39,15 @@ class Director(ActivityDirector):
     """
 
     def create_activity(self, actor, verb, obj, target=None,
-                        related_nodes=None):
+                        related_nodes=None, tags=None):
         if c.project and c.project.notifications_disabled:
             return
 
         from allura.model.project import Project
         super(Director, self).create_activity(actor, verb, obj,
-                                              target=target, related_nodes=related_nodes)
+                                              target=target,
+                                              related_nodes=related_nodes,
+                                              tags=tags)
         # aggregate actor and follower's timelines
         if actor.node_id:
             create_timelines.post(actor.node_id)
