@@ -387,7 +387,8 @@ class ToolImporterMeta(type):
         """
         if not getattr(cls, 'target_app', None):
             cls.target_app = [g.entry_points['tool'][ep_name]
-                    for ep_name in aslist(cls.target_app_ep_names)]
+                    for ep_name in aslist(cls.target_app_ep_names)
+                    if ep_name in g.entry_points['tool']]
         return type.__call__(cls, *args, **kw)
 
 
