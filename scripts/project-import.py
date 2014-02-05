@@ -230,7 +230,7 @@ def create_project(p, nbhd, user, options):
                                                 project_name=p.name.name,
                                                 private_project=p.private)
         except Exception, e:
-            log.error('[%s] %s' % (worker_name, str(e)))
+            log.exception('[%s] %s' % (worker_name, str(e)))
             return 0
     else:
         log.info('[%s] Updating project "%s".' % (worker_name, shortname))
