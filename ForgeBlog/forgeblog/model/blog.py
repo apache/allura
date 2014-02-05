@@ -230,7 +230,7 @@ class BlogPost(M.VersionedArtifact, ActivityObject):
 
     def commit(self):
         activity = functools.partial(g.director.create_activity, c.user,
-                                     target=c.project)
+                                     target=c.project, tags=['blog'])
         self.subscribe()
         super(BlogPost, self).commit()
         if self.version > 1:

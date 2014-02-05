@@ -303,7 +303,8 @@ class PostController(BaseController):
             self.post.commit()
             g.director.create_activity(c.user, 'modified', self.post,
                                        target=self.post.thread.artifact or self.post.thread,
-                                       related_nodes=[self.post.app_config.project])
+                                       related_nodes=[self.post.app_config.project],
+                                       tags=['comment'])
             redirect(request.referer)
         elif request.method == 'GET':
             if version is not None:
