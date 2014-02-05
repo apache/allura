@@ -22,6 +22,7 @@ from ming.odm import ThreadLocalORMSession
 from allura.tests import TestController
 from allura.tests.decorators import with_tool
 from allura import model as M
+from alluratest.controller import setup_unit_test
 from forgeimporters.github.code import GitHubRepoImporter
 from forgeimporters.github import GitHubOAuthMixin
 
@@ -43,6 +44,7 @@ class TestGitHubRepoImporter(TestCase):
     @patch('forgeimporters.github.code.g')
     @patch('forgeimporters.github.code.GitHubProjectExtractor')
     def test_import_tool_happy_path(self, ghpe, g, M):
+        setup_unit_test()
         ghpe.return_value.get_repo_url.return_value = 'http://remote/clone/url/'
         p = self._make_project(gh_proj_name='myproject')
         u = Mock(name='c.user')

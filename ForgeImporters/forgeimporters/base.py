@@ -581,6 +581,8 @@ class ProjectToolsImportController(object):
         hidden = set(aslist(config.get('hidden_importers'), sep=','))
         visible = lambda ep: ep.name not in hidden
         for ep in filter(visible, h.iter_entry_points('allura.importers')):
+            # must instantiate to ensure importer.target_app is populated
+            # (see ToolImporterMeta.__call__)
             importer = ep.load()()
             for tool in aslist(importer.target_app):
                 tools_with_importers.add(tool.tool_label)
