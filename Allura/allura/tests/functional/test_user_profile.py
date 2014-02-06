@@ -164,7 +164,8 @@ class TestUserProfile(TestController):
             return m
         eps = map(ep, ['a', 'b', 'c', 'd'])
         order = {'user_profile_sections.order': 'b, d,c , f '}
-        delattr(type(app), '_sections')
+        if hasattr(type(app), '_sections'):
+            delattr(type(app), '_sections')
         with mock.patch('allura.lib.helpers.iter_entry_points') as iep:
             with mock.patch.dict(tg.config, order):
                 iep.return_value = eps
