@@ -537,6 +537,20 @@ class TestFork(_TestCase):
         assert 'git fetch git://git.localhost/p/test2/code master' in merge_instructions
         assert 'git merge {}'.format(c_id) in merge_instructions
 
+    def test_merge_request_with_deleted_repo(self):
+        self._request_merge()
+        h.set_context('test2', 'code', neighborhood='Projects')
+        c.app.repo.delete()
+        ThreadLocalORMSession.flush_all()
+
+        r = self.app.get('/p/test/src-git/merge-requests/')
+        assert '<i>(deleted)</i>' in r
+
+        r = self.app.get('/p/test/src-git/merge-requests/1/')
+        assert '''Original repository by
+      <a href="/u/test-admin/">Test Admin</a>
+      is deleted''' in r, r
+
     def test_merge_request_list_view(self):
         r, mr_num = self._request_merge()
         r = self.app.get('/p/test/src-git/merge-requests/')
