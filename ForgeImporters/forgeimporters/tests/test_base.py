@@ -69,7 +69,7 @@ def test_import_tool(g, c, object_from_path, M, _datetime):
         {'$set': {'last_updated': _datetime.utcnow()}})
     g.director.create_activity.assert_called_once_with(
         c.user, "imported",
-        app.config, related_nodes=[c.project])
+        app.config, related_nodes=[c.project], tags=['import'])
     g.post_event.assert_called_once_with(
         'import_tool_task_succeeded',
         'source',
