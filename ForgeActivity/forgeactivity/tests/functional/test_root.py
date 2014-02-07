@@ -47,12 +47,6 @@ class TestActivityController(TestController):
         config['activitystream.enabled'] = 'false'
         self.app.get('/activity/', status=404)
 
-    def test_index_override(self):
-        config['activitystream.enabled'] = 'false'
-        self.app.cookies['activitystream.enabled'] = 'true'
-        resp = self.app.get('/activity/')
-        assert 'No activity to display.' in resp
-
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_index_html(self, director):
