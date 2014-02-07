@@ -38,7 +38,12 @@ class TracURLValidator(fev.URL):
         # normalize trailing slash
         value = value.rstrip('/') + '/'
 
-        resp = requests.head(value, allow_redirects=True)
-        if resp.status_code != 200:
-            raise fev.Invalid(self.message('unavailable', state), value, state)
-        return value
+        try:
+            resp = requests.head(value, allow_redirects=True)
+        except IOError:
+            # fall through to 'raise' below
+            pass
+        else:
+            if resp.status_code == 200:
+                return value
+        raise fev.Invalid(self.message('unavailable', state), value, state)
