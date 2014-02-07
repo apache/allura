@@ -18,12 +18,10 @@
 -#}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% set screenshots = project.get_screenshots() %}
-{% if dragable %}
-  {% if screenshots.__len__() > 1 %}
+{% if draggable and screenshots.__len__() > 1 %}
   <p>Drag screenshots to sort.</p>
-  {% endif %}
 {% endif %}
-<div class="{% if dragable %}sortable{% endif %}">
+<div class="{% if draggable %}sortable{% endif %}">
   {% for ss in screenshots %}
   <div data-ss-id="{{ ss._id }}" class="screenshot">
     <div class="image">

@@ -65,7 +65,7 @@ class W:
     group_settings = aw.GroupSettings()
     new_group_settings = aw.NewGroupSettings()
     screenshot_admin = aw.ScreenshotAdmin()
-    screenshot_list = ProjectScreenshots(dragable=True)
+    screenshot_list = ProjectScreenshots(draggable=True)
     metadata_admin = aw.MetadataAdmin()
     audit = aw.AuditLog()
     page_list = ffw.PageList()
