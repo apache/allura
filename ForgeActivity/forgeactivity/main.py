@@ -85,10 +85,7 @@ class ForgeActivityController(BaseController):
         g.register_app_css('css/activity.css', app=self.app)
 
     def _get_activities_data(self, **kw):
-        activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get(
-            'activitystream.enabled', activity_enabled)
-        activity_enabled = asbool(activity_enabled)
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
             raise exc.HTTPNotFound()
 
@@ -162,10 +159,7 @@ class ForgeActivityController(BaseController):
     @expose('json:')
     @validate(W.follow_toggle)
     def follow(self, follow, **kw):
-        activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get(
-            'activitystream.enabled', activity_enabled)
-        activity_enabled = asbool(activity_enabled)
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if not activity_enabled:
             raise exc.HTTPNotFound()
 
@@ -229,10 +223,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
 
     def check_display(self):
         app_installed = self.activity_app is not None
-        activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get(
-            'activitystream.enabled', activity_enabled)
-        activity_enabled = asbool(activity_enabled)
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         return app_installed and activity_enabled
 
     def prepare_context(self, context):

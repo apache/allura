@@ -394,10 +394,7 @@ class ProjectController(FeedController):
     @with_trailing_slash
     def index(self, **kw):
         mount = c.project.first_mount_visible(c.user)
-        activity_enabled = config.get('activitystream.enabled', False)
-        activity_enabled = request.cookies.get(
-            'activitystream.enabled', activity_enabled)
-        activity_enabled = asbool(activity_enabled)
+        activity_enabled = asbool(config.get('activitystream.enabled', False))
         if mount is not None:
             if 'ac' in mount:
                 redirect(mount['ac'].options.mount_point + '/')
