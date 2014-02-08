@@ -398,6 +398,10 @@ class GitImplementation(M.RepositoryImplementation):
                     hexsha, decoration = commit_lines[0].split('\x00')
                     refs = decoration.strip(' ()').split(
                         ', ') if decoration else []
+                    tag_prefix = 'tag: '  # introduced in git 1.8.3
+                    for i, ref in enumerate(refs):
+                        if ref.startswith(tag_prefix):
+                            refs[i] = ref[len(tag_prefix):]
                     renamed = {}
                     # merge commits don't have any --name-status output
                     if len(commit_lines) > 1:
