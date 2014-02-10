@@ -40,6 +40,8 @@
         <th>Summary</th>
         <th>Repository</th>
         <th>Creator</th>
+        <th>Created</th>
+        <th>Updated</th>
       </tr>
     </thead>
     <tbody>
@@ -54,6 +56,8 @@
           <i>(deleted)</i>
         {% endif %}</td>
         <td><a href="{{req.creator_url}}">{{req.creator_name}}</a></td>
+        <td>{{lib.abbr_date(req.created)}}</td>
+        <td>{{lib.abbr_date(req.mod_date)}}</td>
       </tr>
       {% endfor %}
     </tbody>
