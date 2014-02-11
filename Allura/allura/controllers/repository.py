@@ -367,6 +367,49 @@ class MergeRequestController(object):
             limit=limit,
             count=self.req.discussion_thread.post_count)
 
+    @property
+    def mr_widget_edit(self):
+        source_branches = [
+            b.name
+            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+        target_branches = [
+            b.name
+            for b in c.app.repo.get_branches() + c.app.repo.get_tags()]
+        return SCMMergeRequestWidget(
+            source_branches=source_branches,
+            target_branches=target_branches)
+
+    @expose('jinja:allura:templates/repo/merge_request_edit.html')
+    def edit(self, **kw):
+        c.form = self.mr_widget_edit
+        if self.req['source_branch'] in c.form.source_branches:
+            source_branch = self.req['source_branch']
+        else:
+            source_branch = c.app.default_branch_name
+        if self.req['target_branch'] in c.form.target_branches:
+            target_branch = self.req['source_branch']
+        else:
+            target_branch = c.app.default_branch_name
+        return {
+            'source_branch': source_branch,
+            'target_branch': target_branch,
+            'description': self.req['description'],
+            'summary': self.req['summary']
+        }
+
+    @expose()
+    @require_post()
+    def do_request_merge_edit(self, **kw):
+        kw = self.mr_widget_edit.to_python(kw)
+        mr = M.MergeRequest.query.get(request_number=self.req['request_number'])
+        mr.target_branch = kw['target_branch']
+        mr.source_branch = kw['source_branch']
+        mr.description = kw['description']
+        M.Notification.post(
+            mr, 'merge_request',
+            subject='Merge request: ' + mr.summary)
+        redirect(mr.url())
+
     @expose()
     @require_post()
     @validate(mr_dispose_form)

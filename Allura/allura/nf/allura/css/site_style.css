@@ -3294,3 +3294,6 @@ ul.dropdown ul li a:hover {
     text-align: right;
     padding: 5px 10px 5px 0;
 }
+.markdown_preview.btn.edit{
+    margin-left: 10px;
+}
