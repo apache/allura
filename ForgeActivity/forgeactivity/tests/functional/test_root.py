@@ -47,6 +47,15 @@ class TestActivityController(TestController):
         config['activitystream.enabled'] = 'false'
         self.app.get('/activity/', status=404)
 
+    @td.with_tool('u/test-user-1', 'activity')
+    @td.with_user_project('test-user-1')
+    def test_anon_read(self):
+        r = self.app.get('/u/test-user-1',
+                extra_environ={'username': '*anonymous'}).follow().follow()
+        assert r.html.find('div', dict(id='top_nav')).find('a',
+                dict(href='/u/test-user-1/activity/')), \
+                        'No Activity tool in top nav'
+
     @td.with_tool('test', 'activity')
     @patch('forgeactivity.main.g.director')
     def test_index_html(self, director):

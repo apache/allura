@@ -28,8 +28,9 @@ from webhelpers import feedgenerator as FG
 
 from allura.app import Application
 from allura import version
+from allura import model as M
 from allura.controllers import BaseController
-from allura.lib.security import require_authenticated
+from allura.lib.security import require_authenticated, require_access
 from allura.model.timeline import perm_check
 from allura.lib import helpers as h
 from allura.lib.decorators import require_post
@@ -58,7 +59,10 @@ class ForgeActivityApp(Application):
         return []
 
     def install(self, project):
-        pass  # pragma no cover
+        role_anon = M.ProjectRole.by_name('*anonymous')._id
+        self.config.acl = [
+            M.ACE.allow(role_anon, 'read'),
+        ]
 
     def uninstall(self, project):
         pass  # pragma no cover
@@ -76,6 +80,9 @@ class ForgeActivityController(BaseController):
         self.app = app
         setattr(self, 'feed.atom', self.feed)
         setattr(self, 'feed.rss', self.feed)
+
+    def _check_security(self):
+        require_access(c.app, 'read')
 
     def _before(self, *args, **kw):
         """Runs before each request to this controller.
@@ -192,6 +199,9 @@ class ForgeActivityRestController(BaseController):
     def __init__(self, app, *args, **kw):
         super(ForgeActivityRestController, self).__init__(*args, **kw)
         self.app = app
+
+    def _check_security(self):
+        require_access(c.app, 'read')
 
     @expose('json:')
     def index(self, **kw):
