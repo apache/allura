@@ -124,6 +124,9 @@ setup(
     akismet = allura.lib.spam.akismetfilter:AkismetSpamFilter
     mollom = allura.lib.spam.mollomfilter:MollomSpamFilter
 
+    [allura.site_admin]
+    stats = allura.controllers.site_admin:StatsSiteAdminExtension
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand

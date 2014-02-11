@@ -68,7 +68,6 @@ class RootController(WsgiDispatchController):
     auth = AuthController()
     error = ErrorController()
     nf = NewForgeController()
-    nf.admin = SiteAdminController()
     search = SearchController()
     rest = RestController()
     if config.get('trovecategories.enableediting', 'false') == 'true':
@@ -80,6 +79,7 @@ class RootController(WsgiDispatchController):
         if n and not n.url_prefix.startswith('//'):
             n.bind_controller(self)
         self.browse = ProjectBrowseController()
+        self.nf.admin = SiteAdminController()
 
         super(RootController, self).__init__()
 

@@ -39,6 +39,11 @@ class TestSiteAdmin(TestController):
     def test_home(self):
         r = self.app.get('/nf/admin/', extra_environ=dict(
             username='root'))
+        assert 'Site Admin Home' in r
+
+    def test_stats(self):
+        r = self.app.get('/nf/admin/stats/', extra_environ=dict(
+            username='root'))
         assert 'Forge Site Admin' in r.html.find(
             'h2', {'class': 'dark title'}).contents[0]
         stats_table = r.html.find('table')

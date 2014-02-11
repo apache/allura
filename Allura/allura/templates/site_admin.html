@@ -16,6 +16,9 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+
+{% from 'allura:templates/jinja_master/sidebar_menu.html' import sidebar_item with context %}
+
 {% set hide_left_bar=False %}
 {% if page == 'new_projects' %}
   {% set hide_left_bar=True %}
@@ -32,15 +35,9 @@
 {% block sidebar_menu %}
 <div id="sidebar">
   <div>&nbsp;</div>
-  <ul>
-    <li class="{{page=='index' and 'active' or ''}}"><a href="{{sidebar_rel}}."><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Home</a></li>
-    <li class="{{page=='api_tickets' and 'active' or ''}}"><a href="{{sidebar_rel}}api_tickets"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>API Tickets</a></li>
-    <li class="{{page=='add_subscribers' and 'active' or ''}}"><a href="{{sidebar_rel}}add_subscribers"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Add Subscribers</a></li>
-    <li class="{{page=='new_projects' and 'active' or ''}}"><a href="{{sidebar_rel}}new_projects"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>New Projects</a></li>
-    <li class="{{page=='reclone_repo' and 'active' or ''}}"><a href="{{sidebar_rel}}reclone_repo"><b data-icon="{{g.icons['admin'].char}}" class="ico {{g.icons['admin'].css}}"></b>Reclone Repo</a></li>
-    <li class="{{page=='task_manager' and 'active' or ''}}"><a href="{{sidebar_rel}}task_manager?state=busy"><b data-icon="{{g.icons['stats'].char}}" class="ico {{g.icons['stats'].css}}"></b>Task Manager</a></li>
-
-  </ul>
+  {% for s in c.site_admin_sidebar_menu %}
+    {{sidebar_item(s)}}
+  {% endfor %}
 </div>
 {% endblock %}
 

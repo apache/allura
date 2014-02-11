@@ -31,6 +31,7 @@ The available extension points for Allura are:
 * :class:`allura.lib.plugin.AuthenticationProvider`
 * :class:`allura.lib.plugin.UserPreferencesProvider`
 * :class:`allura.lib.plugin.AdminExtension`
+* :class:`allura.lib.plugin.SiteAdminExtension`
 * :class:`allura.lib.spam.SpamFilter`
 * ``site_stats`` in the root API data.  Docs in :class:`allura.controllers.rest.RestController`
 * :mod:`allura.lib.package_path_loader` (for overriding templates)
