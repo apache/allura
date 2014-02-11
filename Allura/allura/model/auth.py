@@ -751,7 +751,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         from .project import Project
         return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
 
-    def my_projects_by_role_name(self, role_name=None):
+    def my_projects_by_role_name(self, role_name):
         """
         Return  only projects for which user has
         that role.
