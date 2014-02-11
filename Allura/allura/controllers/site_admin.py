@@ -25,14 +25,17 @@ from ming.orm import session
 import pymongo
 import bson
 import tg
+from pylons import app_globals as g
 from pylons import tmpl_context as c
 from pylons import request
 from formencode import validators, Invalid
 from webob.exc import HTTPNotFound
 
+from allura.app import SitemapEntry
 from allura.lib import helpers as h
 from allura.lib import validators as v
 from allura.lib.decorators import require_post
+from allura.lib.plugin import SiteAdminExtension
 from allura.lib.security import require_access
 from allura.lib.widgets import form_fields as ffw
 from allura import model as M
@@ -54,24 +57,40 @@ class SiteAdminController(object):
 
     def __init__(self):
         self.task_manager = TaskManagerController()
+        c.site_admin_sidebar_menu = self.sidebar_menu()
 
     def _check_security(self):
         with h.push_context(config.get('site_admin_project', 'allura'),
                             neighborhood=config.get('site_admin_project_nbhd', 'Projects')):
             require_access(c.project, 'admin')
 
+    @expose()
+    def _lookup(self, name, *remainder):
+        for ep_name in sorted(g.entry_points['site_admin'].keys()):
+            admin_extension = g.entry_points['site_admin'][ep_name]
+            controller = admin_extension().controllers.get(name)
+            if controller:
+                return controller(), remainder
+        raise HTTPNotFound, name
+
+    def sidebar_menu(self):
+        base_url = '/nf/admin/'
+        links = [
+            SitemapEntry('Home', base_url, ui_icon=g.icons['admin']),
+            SitemapEntry('API Tickets', base_url + 'api_tickets', ui_icon=g.icons['admin']),
+            SitemapEntry('Add Subscribers', base_url + 'add_subscribers', ui_icon=g.icons['admin']),
+            SitemapEntry('New Projects', base_url + 'new_projects', ui_icon=g.icons['admin']),
+            SitemapEntry('Reclone Repo', base_url + 'reclone_repo', ui_icon=g.icons['admin']),
+            SitemapEntry('Task Manager', base_url + 'task_manager?state=busy', ui_icon=g.icons['stats']),
+        ]
+        for ep_name in sorted(g.entry_points['site_admin']):
+            g.entry_points['site_admin'][ep_name]().update_sidebar_menu(links)
+        return links
+
     @expose('jinja:allura:templates/site_admin_index.html')
     @with_trailing_slash
     def index(self):
-        neighborhoods = []
-        for n in M.Neighborhood.query.find():
-            project_count = M.Project.query.find(
-                dict(neighborhood_id=n._id)).count()
-            configured_count = M.Project.query.find(
-                dict(neighborhood_id=n._id, database_configured=True)).count()
-            neighborhoods.append((n.name, project_count, configured_count))
-        neighborhoods.sort(key=lambda n: n[0])
-        return dict(neighborhoods=neighborhoods)
+        return {}
 
     @expose('jinja:allura:templates/site_admin_api_tickets.html')
     @without_trailing_slash
@@ -380,3 +399,27 @@ class TaskManagerController(object):
         except Invalid as e:
             error = str(e)
         return dict(doc=doc, error=error)
+
+
+class StatsController(object):
+    """Show neighborhood stats."""
+    @expose('jinja:allura:templates/site_admin_stats.html')
+    @with_trailing_slash
+    def index(self):
+        neighborhoods = []
+        for n in M.Neighborhood.query.find():
+            project_count = M.Project.query.find(
+                dict(neighborhood_id=n._id)).count()
+            configured_count = M.Project.query.find(
+                dict(neighborhood_id=n._id, database_configured=True)).count()
+            neighborhoods.append((n.name, project_count, configured_count))
+        neighborhoods.sort(key=lambda n: n[0])
+        return dict(neighborhoods=neighborhoods)
+
+
+class StatsSiteAdminExtension(SiteAdminExtension):
+    controllers = {'stats': StatsController}
+
+    def update_sidebar_menu(self, links):
+        links.append(SitemapEntry('Stats', '/nf/admin/stats',
+            ui_icon=g.icons['stats']))

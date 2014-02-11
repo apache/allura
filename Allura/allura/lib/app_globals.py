@@ -254,6 +254,7 @@ class Globals(object):
             stats=_cache_eps('allura.stats'),
             site_stats=_cache_eps('allura.site_stats'),
             admin=_cache_eps('allura.admin'),
+            site_admin=_cache_eps('allura.site_admin'),
             # macro eps are used solely for ensuring that external macros are
             # imported (after load, the ep itself is not used)
             macros=_cache_eps('allura.macros'),

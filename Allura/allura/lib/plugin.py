@@ -1038,6 +1038,36 @@ class AdminExtension(object):
         pass
 
 
+class SiteAdminExtension(object):
+    """
+    A base class for extending the site admin area in Allura.
+
+    After extending this, expose the extension by adding an entry point in your
+    setup.py::
+
+        [allura.site_admin]
+        myext = foo.bar.baz:MySiteAdminExtension
+
+    :ivar dict controllers: Mapping of str (url component) to
+        Controllers.  Can be implemented as a ``@property`` function.  The str
+        url components will be mounted at /nf/admin/STR/ and will
+        invoke the Controller.
+    """
+
+    controllers = {}
+
+    def update_sidebar_menu(self, sidebar_links):
+        """
+        Change the site admin sidebar by modifying ``sidebar_links``.
+
+        :param sidebar_links: site admin side bar links
+        :type sidebar_links: list of :class:`allura.app.SitemapEntry`
+
+        :rtype: ``None``
+        """
+        pass
+
+
 class ImportIdConverter(object):
 
     '''
