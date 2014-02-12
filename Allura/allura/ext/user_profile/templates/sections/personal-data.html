@@ -32,13 +32,15 @@
 
 {% block content %}
     <dl class="personal-data">
-        <dt>Joined:</dt><dd>{{auth.user_registration_date(user)}}</dd>
+        <dt>Username:</dt><dd>
+            {{user.username}}
+        </dd>
+        <dt>Joined:</dt><dd>
+            {{auth.user_registration_date(user)}}
+        </dd>
         <dt>Location:</dt><dd>
             {% set loc = user.get_pref('localization') %}
             {{ [loc.city, loc.country, timezone]|filter|join(' / ') }}
-        </dd>
-        <dt>Username:</dt><dd>
-            {{user.username}}
         </dd>
         <dt>Gender:</dt><dd>
             {{user.get_pref('sex')}}
@@ -52,7 +54,7 @@
         <dt>Web Site{% if user.get_pref('webpages')|length > 1 %}s{% endif %}:</dt><dd>
             {{user.get_pref('webpages')|filter|map('urlize', 20, true)|join(', ')}}
         </dd>
-        <dt>Availability:</dt><dd>
+        <dt>Availability (UTC):</dt><dd>
             <ol>
             {% for slot in user.get_localized_availability('utc') %}
                 <li>{{ slot.week_day }}: {{ slot.start_time.strftime('%H:%M') }} to {{ slot.end_time.strftime('%H:%M') }}</li>

@@ -751,7 +751,10 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         MappedClass.delete(self)
 
     def breadcrumbs(self):
-        entry = (self.name, self.url())
+        if self.is_user_project:
+            entry = (self.user_project_of.display_name, self.url())
+        else:
+            entry = (self.name, self.url())
         if self.parent_project:
             return self.parent_project.breadcrumbs() + [entry]
         else:

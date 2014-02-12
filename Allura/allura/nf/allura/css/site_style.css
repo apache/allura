@@ -2211,6 +2211,7 @@ nav .ico {
 #nav_menu_holder h2.project_summary {
   line-height: 1em;
   font-size: 16px;
+  height: 16px;
   font-weight: normal;
   margin-bottom: 0;
 }
@@ -3241,56 +3242,187 @@ ul.dropdown ul li a:hover {
     display: inline;
 }
 
-.user-activity {
-    position: absolute;
-    top: 60px;
-    right: 0px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+/* User Profile styles generated from _user_profile.scss */
+.profile-section {
+  width: 660px;
+  display: inline;
+  float: left;
+  overflow: hidden;
+  *zoom: 1;
+  margin: 0 10px;
+  margin: 0 0 10px 10px;
+  border: 1px solid #aaaaaa;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
 }
-.user-activity h3 {
-    background-color: #555555;
-    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
-    background-image: -moz-linear-gradient(top, #666666 0%, #555555 100%);
-    background-image: linear-gradient(top, #666666 0%, #555555 100%);
-    border: 1px solid #333333;
-    color: #fff;
-    padding: 10px;
-    font-weight: normal;
-    font-size: 14px;
+.profile-section > h3 {
+  background-color: #555555;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #666666), color-stop(100%, #555555));
+  background-image: -webkit-linear-gradient(#666666, #555555);
+  background-image: -moz-linear-gradient(#666666, #555555);
+  background-image: -o-linear-gradient(#666666, #555555);
+  background-image: linear-gradient(#666666, #555555);
+  border: 1px solid #333333;
+  color: #fff;
+  font-weight: normal;
+  font-size: 16px;
+  padding: 10px;
 }
-.user-activity h3 a {
-    float: right;
-    margin-left: 8px;
+.profile-section > h3 hr {
+  border: 1px solid #000;
+  background-color: #111;
+  opacity: .4;
 }
-.user-activity h3 b.ico {
+.profile-section > h3 .actions {
+  float: right;
+  color: #fff;
+  font-size: 14px;
+}
+.profile-section > h3 .actions a {
+  color: #fff;
+  text-decoration: underline;
+}
+.profile-section > h3 .actions a.icon {
+  text-decoration: none;
+}
+.profile-section > h3 .actions.active {
+  color: #cccccc !important;
+}
+.profile-section .section-body {
+  background-color: #fff;
+}
+
+.profile-section.activity {
+  width: 260px;
+  display: inline;
+  float: left;
+  overflow: hidden;
+  *zoom: 1;
+  margin: 0 10px;
+  float: right;
+  margin: 10px 10px 0 0;
+}
+.profile-section.activity .empty {
+  padding: 10px;
+  font-style: italic;
+  margin-bottom: 0;
+}
+.profile-section.activity ul {
+  margin: 0;
+  list-style: none;
+}
+.profile-section.activity ul li {
+  padding: 10px;
+  padding-bottom: 0;
+  border-bottom: 1px solid #cccccc;
+}
+.profile-section.activity ul li img {
+  vertical-align: text-bottom;
+}
+.profile-section.activity ul li p {
+  padding: 5px 0 0 0;
+}
+.profile-section.activity ul li time {
+  display: block;
+  text-align: right;
+  font-size: 10px;
+}
+.profile-section.activity a.view-all {
+  display: block;
+  text-align: right;
+  padding: 5px 10px;
+}
+.profile-section.personal-data {
+  margin-top: 10px;
+}
+.profile-section.personal-data .section-body {
+  padding: 10px;
+}
+.profile-section.personal-data dl dt {
+  display: inline-block;
+  font-weight: bold;
+  margin-right: 4px;
+  width: 130px;
+  vertical-align: top;
+}
+.profile-section.personal-data dl dd {
+  display: inline;
+}
+.profile-section.personal-data dl dd:after {
+  content: '\A';
+  white-space: pre;
+}
+.profile-section.personal-data dl dd ol {
+  list-style: none;
+  display: inline-block;
+  margin-left: 0;
+}
+.profile-section.projects ul, .profile-section.projects ol {
+  list-style: none;
+  margin: 0;
+}
+.profile-section.projects ul li, .profile-section.projects ol li {
+  clear: both;
+  border-top: 1px solid #e5e5e5;
+  padding: 10px;
+}
+.profile-section.projects ul img, .profile-section.projects ol img {
+  vertical-align: top;
+  margin-right: 10px;
+}
+.profile-section.projects ul .project-info, .profile-section.projects ol .project-info {
+  display: inline-block;
+}
+.profile-section.projects ul .project-info a, .profile-section.projects ol .project-info a {
+  font-weight: bold;
+}
+.profile-section.projects ul .project-info a:after, .profile-section.projects ol .project-info a:after {
+  content: '\A';
+  white-space: pre;
+}
+.profile-section.skills .section-body {
+  padding: 10px 0;
+}
+
+.profile-section.tools .section-body {
+  padding: 10px 0;
+}
+#user-message {
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+  color: #fff;
+  text-shadow: #333333 0 1px 0 !important;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #0099cc), color-stop(100%, #0077aa));
+  background-image: -webkit-linear-gradient(#0099cc 0%, #0077aa 100%);
+  background-image: -moz-linear-gradient(#0099cc 0%, #0077aa 100%);
+  background-image: -o-linear-gradient(#0099cc 0%, #0077aa 100%);
+  background-image: linear-gradient(#0099cc 0%, #0077aa 100%);
+  float: right;
+  display: block;
+  font-size: 15px;
+}
+#user-message b.ico {
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+}
+#user-message span {
+  display: block;
+}
+/* end of User Profile styles from _user_profile.scss */
+/* Use the right icon set for the User Activity and Send Message action buttons on User Profile */
+.profile-section.activity h3 b.ico,
+#user-message b.ico {
     background-image: url('../images/neo-icon-set-ffffff-256x350.png');
+    width: 16px;
+    height: 16px;
 }
-.user-activity .empty {
-    padding: 10px;
-    font-style: italic;
-}
-.user-activity ul {
-    margin: 0px;
-    list-style: none;
-}
-.user-activity ul li {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-}
-.user-activity ul li img {
-    vertical-align: text-bottom;
-}
-.user-activity ul li p {
-    padding: 5px 0 0 0;
-}
-.user-activity ul li time {
-    display: block;
-    text-align: right;
-    font-size: 10px;
-}
-.user-activity a.view-all {
-    display: block;
-    text-align: right;
-    padding: 5px 10px 5px 0;
+#user-message {
+    top: 10px;
 }

@@ -479,7 +479,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         week_day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
                     'Friday', 'Saturday', 'Sunday']
         avail = self.get_availability_timeslots()
-        usertimezone = timezone(self.get_pref('timezone'))
+        usertimezone = timezone(self.get_pref('timezone') or 'UTC')
         chosentimezone = timezone(tz_name)
         retlist = []
         for t in avail:

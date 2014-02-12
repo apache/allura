@@ -22,7 +22,9 @@
 {% if not c.project or (n.neighborhood_project == c.project and not n.show_title) %}
   <div id="nav_menu_missing"></div>
 {% else %}
+    {% if not c.project.is_user_project %}
     {{ theme_macros.breadcrumbs(c.project, c.app) }}
+    {% endif %}
     {{ theme_macros.project_header_right(c.project, c.app) }}
     {% if c.project.is_user_project %}
       {{lib.gravatar(c.project.user_project_of, size=48, className='project_icon')}}
