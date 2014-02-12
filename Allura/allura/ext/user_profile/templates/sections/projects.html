@@ -33,6 +33,7 @@
 {% block content %}
     <ul>
         {% for project in user.my_projects() %}
+        {% if project != c.project and not project.is_nbhd_project %}
         <li>
             {% if project.icon -%}
                 <img src="{{project.url()}}/icon?{{project.icon._id.generation_time}}" alt="Project Logo"/>
@@ -44,6 +45,7 @@
                 {{project.summary}}
             </span>
         </li>
+        {% endif %}
         {% endfor %}
     </ul>
 {% endblock %}

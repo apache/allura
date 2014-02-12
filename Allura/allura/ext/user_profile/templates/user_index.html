@@ -32,23 +32,20 @@
   <a href="{{c.app.url}}feed.rss" title="Follow"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}"></b></a>
 {% endblock %}
 
-{% block nav_menu %}{{super()}}{% endblock %}
+{% block nav_menu %}
+    {% if user != c.user %}
+    <a id="user-message" href="send_message" class="btn">
+        <b data-icon="{{g.icons['mail'].char}}" class="ico {{g.icons['mail'].css}}"></b>
+        <span>Send Message</span>
+    </a>
+    {% endif %}
+    {{super()}}
+{% endblock %}
 
 {% block top_nav %}{# disabled #}{% endblock %}
 
-{% block content %}
+{% block content_base %}
   {% for section in sections %}
     {{ section.display() }}
   {% endfor %}
-{% endblock %}
-
-{% block extra_js %}
-  <script type="text/javascript">
-     function changeTimezone(opt){
-       $("#timeslotslocal").hide();
-       $("#timeslotsutc").hide();
-       $("#timeslotsconverted").hide();
-       $("#timeslots" + opt).show();
-     }
-  </script>
 {% endblock %}

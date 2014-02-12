@@ -99,6 +99,7 @@
         {% endblock %}
       </div>
       <div id="content_base">
+      {% block content_base %}
 			  {% if not hide_left_bar %}
 			    {% block sidebar_menu %}
           {% include g.theme.sidebar_menu %}
@@ -132,6 +133,7 @@
           {% endif %}
           {% block after_content %}{% endblock %}
         </div>
+      {% endblock %}
       </div>
     </section>
     {{theme_macros.footer(g.year(), g.theme_href(''))}}
