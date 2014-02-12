@@ -31,6 +31,7 @@ convert them into boolean, for example, you should use the
 
 """
 import logging
+from functools import partial
 
 import tg
 import jinja2
@@ -102,6 +103,8 @@ class ForgeConfig(AppConfig):
         jinja2_env.install_gettext_translations(pylons.i18n)
         jinja2_env.filters['filesizeformat'] = helpers.do_filesizeformat
         jinja2_env.filters['datetimeformat'] = helpers.datetimeformat
+        jinja2_env.filters['filter'] = lambda s,t=None: filter(t and jinja2_env.tests[t], s)
+        jinja2_env.filters['map'] = helpers.map_jinja_filter
         jinja2_env.globals.update({'hasattr': hasattr})
         config['pylons.app_globals'].jinja2_env = jinja2_env
         # Jinja's unable to request c's attributes without strict_c

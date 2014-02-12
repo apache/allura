@@ -27,6 +27,8 @@ from tg import expose, redirect, validate, flash
 import tg
 from webob import exc
 from jinja2 import Markup
+from pytz import timezone
+from datetime import datetime
 
 from allura import version
 from allura.app import Application, SitemapEntry
@@ -257,5 +259,35 @@ class ProfileSectionBase(object):
         if not self.check_display():
             return ''
         tmpl = g.jinja2_env.get_template(self.template)
-        context = self.prepare_context({'h': h, 'c': c, 'g': g})
+        context = self.prepare_context({
+            'h': h,
+            'c': c,
+            'g': g,
+            'user': self.user,
+            'config': tg.config,
+            'auth': AuthenticationProvider.get(request),
+        })
         return Markup(tmpl.render(context))
+
+
+class PersonalDataSection(ProfileSectionBase):
+    template = 'allura.ext.user_profile:templates/sections/personal-data.html'
+
+    def prepare_context(self, context):
+        context['timezone'] = self.user.get_pref('timezone')
+        if context['timezone']:
+            tz = timezone(context['timezone'])
+            context['timezone'] = tz.tzname(datetime.utcnow())
+        return context
+
+
+class ProjectsSection(ProfileSectionBase):
+    template = 'allura.ext.user_profile:templates/sections/projects.html'
+
+
+class SkillsSection(ProfileSectionBase):
+    template = 'allura.ext.user_profile:templates/sections/skills.html'
+
+
+class ToolsSection(ProfileSectionBase):
+    template = 'allura.ext.user_profile:templates/sections/tools.html'
