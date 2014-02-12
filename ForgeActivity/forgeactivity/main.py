@@ -17,6 +17,7 @@
 
 import logging
 import calendar
+from itertools import islice, ifilter
 
 from pylons import tmpl_context as c, app_globals as g
 from pylons import request, response
@@ -99,19 +100,29 @@ class ForgeActivityController(BaseController):
             actor_only = False
 
         following = g.director.is_connected(c.user, followee)
-        timeline = g.director.get_timeline(followee, page=kw.get('page', 0),
-                                           limit=kw.get('limit', 100),
-                                           actor_only=actor_only,
-                                           filter_func=perm_check(c.user))
         page = asint(kw.get('page', 0))
-        limit = asint(kw.get('limit', 100))
+        limit = extra_limit = asint(kw.get('limit', 100))
+        # get more in case perm check filters some out
+        if page == 0 and limit <= 10:
+            extra_limit = limit * 20
+        timeline = g.director.get_timeline(followee, page,
+                                           limit=extra_limit,
+                                           actor_only=actor_only)
+        filtered_timeline = list(islice(ifilter(perm_check(c.user), timeline),
+                                        0, limit))
+        if extra_limit == limit:
+            # if we didn't ask for extra, then we expect there's more if we got all we asked for
+            has_more = len(timeline) == limit
+        else:
+            # if we did ask for extra, check filtered result
+            has_more = len(filtered_timeline) == limit
         return dict(
             followee=followee,
             following=following,
-            timeline=timeline,
+            timeline=filtered_timeline,
             page=page,
             limit=limit,
-            has_more=len(timeline) == limit)
+            has_more=has_more)
 
     @expose('jinja:forgeactivity:templates/index.html')
     @with_trailing_slash
@@ -227,14 +238,17 @@ class ForgeActivityProfileSection(ProfileSectionBase):
         return app_installed and activity_enabled
 
     def prepare_context(self, context):
+        full_timeline = g.director.get_timeline(
+            self.user, page=0, limit=100,
+            actor_only=True,
+        )
+        filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
+                                        0, 5))
         context.update({
             'user': self.user,
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),
-            'timeline': g.director.get_timeline(
-                self.user, page=0, limit=5,
-                actor_only=True,
-                filter_func=perm_check(c.user)),
+            'timeline': filtered_timeline,
             'activity_app': self.activity_app,
         })
         g.register_js('activity_js/follow.js')
