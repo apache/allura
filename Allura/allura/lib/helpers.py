@@ -32,6 +32,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import shlex
 import socket
+from functools import partial
 
 import tg
 import genshi.template
@@ -49,6 +50,7 @@ from tg.decorators import before_validate
 from formencode.variabledecode import variable_decode
 import formencode
 from jinja2 import Markup
+from jinja2.filters import contextfilter
 from paste.deploy.converters import asbool, aslist
 
 from webhelpers import date, feedgenerator, html, number, misc, text
@@ -1154,3 +1156,27 @@ def login_overlay(exceptions=None):
                 if request.path.rstrip('/').endswith('/%s' % exception):
                     raise
         c.show_login_overlay = True
+
+
+def get_filter(ctx, filter_name):
+    """
+    Gets a named Jinja2 filter, passing through
+    any context requested by the filter.
+    """
+    filter_ = ctx.environment.filters[filter_name]
+    if getattr(filter_, 'contextfilter', False):
+        return partial(filter_, ctx)
+    elif getattr(filter_, 'evalcontextfilter', False):
+        return partial(filter_, ctx.eval_ctx)
+    elif getattr(filter_, 'environmentfilter', False):
+        return partial(filter_, ctx.environment)
+
+
+@contextfilter
+def map_jinja_filter(ctx, seq, filter_name, *a, **kw):
+    """
+    A Jinja2 filter that applies the named filter with the
+    given args to the sequence this filter is applied to.
+    """
+    filter_ = get_filter(ctx, filter_name)
+    return [filter_(value, *a, **kw) for value in seq]

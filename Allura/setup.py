@@ -127,6 +127,12 @@ setup(
     [allura.site_admin]
     stats = allura.controllers.site_admin:StatsSiteAdminExtension
 
+    [allura.user_profile.sections]
+    personal-data = allura.ext.user_profile.user_main:PersonalDataSection
+    projects = allura.ext.user_profile.user_main:ProjectsSection
+    skills = allura.ext.user_profile.user_main:SkillsSection
+    tools = allura.ext.user_profile.user_main:ToolsSection
+
     [paste.paster_command]
     taskd = allura.command.taskd:TaskdCommand
     taskd_cleanup = allura.command.taskd_cleanup:TaskdCleanupCommand

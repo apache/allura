@@ -16,18 +16,24 @@
        specific language governing permissions and limitations
        under the License.
 -#}
+{% extends "allura.ext.user_profile:templates/profile_section_base.html" %}
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 {% import 'forgeactivity:templates/macros.html' as am with context %}
 
-<div class="user-activity grid-8">
-    <h3>
-        User Activity
+{% block title %}
+    User Activity
+{% endblock %}
 
-        {% if c.user and not c.user.is_anonymous() and c.user != user %}
-            {{follow_toggle.display(following=following, action=activity_app.url+'follow')}}
-        {% endif %}
-        <a href="feed.rss" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
-    </h3>
+{% block actions %}
+    {% if c.user and not c.user.is_anonymous() and c.user != user %}
+        {{follow_toggle.display(following=following, action=activity_app.url+'follow')}}
+    {% endif %}
+    <a href="feed.rss" title="RSS"><b data-icon="{{g.icons['feed'].char}}" class="ico {{g.icons['feed'].css}}" title="Feed"></b></a>
+{% endblock %}
+
+{% block section_class %}user-activity{% endblock %}
+
+{% block content %}
     {% if not timeline %}
         <p class="empty">No activity to display.</p>
     {% else %}
@@ -49,4 +55,4 @@
     </ul>
     <a class="view-all" href="{{activity_app.url}}">View All</a>
     {% endif %}
-</div>
+{% endblock %}

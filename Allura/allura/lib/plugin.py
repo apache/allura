@@ -173,7 +173,7 @@ class AuthenticationProvider(object):
                 'alt': 'Manage Personal Information',
             },
             {
-                'tabid': 'account_sfnet_beta_index',
+                'tabid': 'account_subscriptions',
                 'title': 'Subscriptions',
                 'target': "/auth/subscriptions",
                 'alt': 'Manage Subscription Preferences',
@@ -185,6 +185,10 @@ class AuthenticationProvider(object):
                 'alt': 'Manage OAuth Preferences',
             },
         ]
+
+    @LazyProperty
+    def account_urls(self):
+        return {m['tabid']: m['target'] for m in self.account_navigation()}
 
     def user_project_shortname(self, user):
         '''
