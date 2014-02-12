@@ -41,7 +41,7 @@ class TestActivityController(TestController):
 
     def test_index(self):
         resp = self.app.get('/activity/')
-        assert 'No activity to display.' in resp
+        assert 'No activity to display.' in resp, resp
 
     def test_index_disabled(self):
         config['activitystream.enabled'] = 'false'
@@ -65,7 +65,6 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
@@ -186,7 +185,6 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
@@ -238,7 +236,6 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
@@ -289,7 +286,6 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
@@ -346,7 +342,6 @@ class TestActivityController(TestController):
             "_id": ObjectId("529fa331033c5e6406d8b338"),
             "obj": {
                 "activity_extras": {
-                    "allura_id": "some_id",
                     "summary": "Just wanted to leave a comment on this..."
                 },
                 "activity_url": "/p/test/tickets/34/?limit=25#ed7c",
