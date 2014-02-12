@@ -580,6 +580,22 @@ class TestFork(_TestCase):
         assert_equal(_select_val(r, 'source_branch'), 'zz')
         assert_equal(_select_val(r, 'target_branch'), 'zz')
 
+    def test_merge_request_with_branch(self):
+        r = self.app.post('/p/test2/code/do_request_merge',
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'zz',
+                              'summary': 'summary',
+                              'description': 'description'}).follow()
+        assert '[5c4724]' not in r
+        r = self.app.post('/p/test2/code/do_request_merge',
+                          params={
+                              'source_branch': 'zz',
+                              'target_branch': 'master',
+                              'summary': 'summary',
+                              'description': 'description'}).follow()
+        assert '[5c4724]' in r
+
 
 class TestDiff(TestController):
 

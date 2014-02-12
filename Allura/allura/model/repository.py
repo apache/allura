@@ -727,9 +727,14 @@ class MergeRequest(VersionedArtifact, ActivityObject):
 
     def _commits(self):
         with self.push_downstream_context():
+            rev = self.app.repo.latest(branch=self.target_branch)
+            if rev:
+                commit = rev._id
+            else:
+                commit = self.app.repo.head
             return list(c.app.repo.log(
                 self.downstream.commit_id,
-                exclude=self.app.repo.head,
+                exclude=commit,
                 id_only=False))
 
     @classmethod
