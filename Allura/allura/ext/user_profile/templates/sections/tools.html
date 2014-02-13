@@ -32,8 +32,17 @@
 
 {% block content %}
     <ul>
-        {% for tool in c.project.ordered_mounts() %}
-        <li><a href="{{tool['ac'].url()}}">{{ tool['ac'].options.mount_label }}</a></li>
-        {% endfor %}
+    {% for tool in c.project.grouped_navbar_entries() %}
+        <li>
+            <a href="{{tool.url}}">{{ tool.label }}</a>
+            {% if tool.children %}
+            <ul>
+            {% for child in tool.children %}
+                <li><a href="{{child.url}}">{{ child.label }}</a></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+    {% endfor %}
     </ul>
 {% endblock %}
