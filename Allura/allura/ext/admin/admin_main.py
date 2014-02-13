@@ -386,7 +386,7 @@ class ProjectAdminController(BaseController):
             plugin.ProjectRegistrationProvider.get().undelete_project(
                 c.project, c.user)
             redirect('overview')
-        if name != c.project.name:
+        if name and name != c.project.name:
             h.log_action(log, 'change project name').info('')
             M.AuditLog.log('change project name to %s', name)
             c.project.name = name
