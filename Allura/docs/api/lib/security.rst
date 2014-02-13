@@ -15,45 +15,14 @@
        specific language governing permissions and limitations
        under the License.
 
-.. _model_module:
+.. _spam_module:
 
-:mod:`allura.model`
---------------------------------
+:mod:`allura.lib.security`
+-------------------------------------
 
-.. automodule:: allura.model
+.. automodule:: allura.lib.security
+    :members:
 
-  .. automodule:: allura.model.artifact
-
-    .. autoclass:: Artifact
+    .. autoclass:: RoleCache
         :members:
-        :special-members: __json__
-
-    .. autoclass:: Snapshot
-        :members:
-
-    .. autoclass:: VersionedArtifact
-        :members:
-
-    .. autoclass:: Message
-        :members:
-
-    .. autoclass:: Feed
-        :members:
-
-    .. autoclass:: VotableArtifact
-        :members:
-
-    .. autoclass:: MovedArtifact
-        :members:
-
-  .. automodule:: allura.model.auth
-
-    .. autoclass:: User
-        :members:
-
-    .. autoclass:: ProjectRole
-        :members:
-
-    .. autoclass:: AuditLog
-        :members:
-
+        :special-members: __init__

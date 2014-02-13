@@ -43,13 +43,15 @@ class Credentials(object):
 
     @property
     def project_role(self):
+        # bypass Ming model validation and use pymongo directly
+        # for improved performance
         from allura import model as M
         db = M.session.main_doc_session.db
         return db[M.ProjectRole.__mongometa__.name]
 
     @classmethod
     def get(cls):
-        'get the global Credentials instance'
+        'get the global :class:`Credentials` instance'
         import allura
         return allura.credentials
 
@@ -113,7 +115,7 @@ class Credentials(object):
 
     def project_roles(self, project_id):
         '''
-        :returns: a RoleCache of ProjectRoles for project_id
+        :returns: a :class:`RoleCache` of :class:`ProjectRoles <allura.model.auth.ProjectRole>` for project_id
         '''
         roles = self.projects.get(project_id)
         if roles is None:
@@ -123,7 +125,7 @@ class Credentials(object):
 
     def user_roles(self, user_id, project_id=None):
         '''
-        :returns: a RoleCache of ProjectRoles for given user_id and project_id, *anonymous and *authenticated checked as appropriate
+        :returns: a :class:`RoleCache` of :class:`ProjectRoles <allura.model.auth.ProjectRole>` for given user_id and optional project_id, ``*anonymous`` and ``*authenticated`` checked as appropriate
         '''
         roles = self.users.get((user_id, project_id))
         if roles is None:
@@ -154,8 +156,15 @@ class Credentials(object):
 
 
 class RoleCache(object):
+    '''
+    An iterable collection of :class:`ProjectRoles <allura.model.auth.ProjectRole>` that is cached after first use
+    '''
 
     def __init__(self, cred, q):
+        '''
+        :param `Credentials` cred: :class:`Credentials`
+        :param iterable q: An iterable (e.g a query) of :class:`ProjectRoles <allura.model.auth.ProjectRole>`
+        '''
         self.cred = cred
         self.q = q
 
@@ -361,24 +370,25 @@ def all_allowed(obj, user_or_role=None, project=None):
     '''
     List all the permission names that a given user or named role
     is allowed for a given object.  This list reflects the permissions
-    for which has_access() would return True for the user (or a user
+    for which ``has_access()`` would return True for the user (or a user
     in the given named role, e.g. Developer).
 
     Example:
 
-        Given a tracker with the following ACL (pseudo-code):
+        Given a tracker with the following ACL (pseudo-code)::
+
             [
                 ACE.allow(ProjectRole.by_name('Developer'), 'create'),
                 ACE.allow(ProjectRole.by_name('Member'), 'post'),
                 ACE.allow(ProjectRole.by_name('*anonymous'), 'read'),
             ]
 
-        And user1 is in the Member group, then all_allowed(tracker, user1)
-        will return:
+        And user1 is in the Member group, then ``all_allowed(tracker, user1)``
+        will return::
 
             set(['post', 'read'])
 
-        And all_allowed(tracker, ProjectRole.by_name('Developer')) will return:
+        And ``all_allowed(tracker, ProjectRole.by_name('Developer'))`` will return::
 
             set(['create', 'post', 'read'])
     '''
@@ -427,7 +437,7 @@ def all_allowed(obj, user_or_role=None, project=None):
 
 def require(predicate, message=None):
     '''
-    Example: require(has_access(c.app, 'read'))
+    Example: ``require(has_access(c.app, 'read'))``
 
     :param callable predicate: truth function to call
     :param str message: message to show upon failure
