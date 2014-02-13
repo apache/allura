@@ -47,21 +47,6 @@ Using Allura
 
    using
 
-Developing Allura
-=====================================================================
-
-.. toctree::
-   :maxdepth: 3
-
-   contributing
-   platform
-   platform_tour
-   guides/message_bus
-   guides/email
-   guides/permissions
-   tutorials/testing
-
-
 Extending Allura
 =====================================================================
 
@@ -76,6 +61,21 @@ Extending Allura
     * `Adding a Custom Icon <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-3-adding-a-custom-icon/>`_
     * `Adding a Sidebar Menu <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/adding-a-sidebar-menu/>`_
     * `Adding Custom CSS <https://sourceforge.net/u/vansteenburgh/allura-plugin-development/2013/12/part-5-adding-custom-css/>`_
+
+Developing Allura
+=====================================================================
+
+.. toctree::
+   :maxdepth: 3
+
+   contributing
+   platform
+   platform_tour
+   guides/message_bus
+   guides/email
+   guides/permissions
+   tutorials/testing
+
 
 API Documentation
 ==================

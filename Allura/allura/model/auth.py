@@ -556,7 +556,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
     def url(self):
         '''
         Return the URL (relative to root domain) for this user's user-project.
-        This includes any special handling via the Auth Provider to determine the proper user-project name
+        This includes any special handling via the :class:`~allura.lib.plugin.AuthenticationProvider` to determine the proper user-project name
         '''
         return '/%s/' % plugin.AuthenticationProvider.get(request).user_project_shortname(self)
 
@@ -772,7 +772,7 @@ class ProjectRole(MappedClass):
     :var user_id: used if this role is for a single user
     :var project_id:
     :var name:
-    :var roles: a list of other ProjectRole objectids
+    :var roles: a list of other :class:`ProjectRole` ``ObjectId`` values.  These roles are delegated through the current role.
     """
 
     class __mongometa__:
