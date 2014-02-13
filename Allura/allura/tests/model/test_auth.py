@@ -20,7 +20,7 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup, assert_equal, assert_not_in
+from nose.tools import with_setup, assert_equal, assert_not_in, assert_in
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch
@@ -268,7 +268,9 @@ def test_user_projects_unnamed():
         user_id=c.user._id,
         project_id=sub1._id)
     ThreadLocalORMSession.flush_all()
-    assert_not_in('test/sub1', [p.shortname for p in c.user.my_projects()])
+    project_names = [p.shortname for p in c.user.my_projects()]
+    assert_not_in('test/sub1', project_names)
+    assert_in('test', project_names)
 
 
 @patch.object(g, 'user_message_max_messages', 3)

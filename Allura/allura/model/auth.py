@@ -747,6 +747,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         if self.is_anonymous():
             return
         roles = g.credentials.user_roles(user_id=self._id)
+        # filter out projects to which the user belongs to no named groups (i.e., role['roles'] is empty)
         projects = [r['project_id'] for r in roles if r['roles']]
         from .project import Project
         return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
