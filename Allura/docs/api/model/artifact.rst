@@ -15,12 +15,29 @@
        specific language governing permissions and limitations
        under the License.
 
-:mod:`allura.lib.security`
+:mod:`allura.model.artifact`
 -------------------------------------
 
-.. automodule:: allura.lib.security
-    :members:
+.. automodule:: allura.model.artifact
 
-    .. autoclass:: RoleCache
-        :members:
-        :special-members: __init__
+  .. autoclass:: Artifact
+      :members:
+      :special-members: __json__
+
+  .. autoclass:: Snapshot
+      :members:
+
+  .. autoclass:: VersionedArtifact
+      :members:
+
+  .. autoclass:: Message
+      :members:
+
+  .. autoclass:: Feed
+      :members:
+
+  .. autoclass:: VotableArtifact
+      :members:
+
+  .. autoclass:: MovedArtifact
+      :members:

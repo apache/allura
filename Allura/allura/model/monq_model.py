@@ -55,8 +55,8 @@ class MonQTask(MappedClass):
         - task_name - full dotted name of the task function to run
         - process - identifier for which taskd process is working on the task
         - context - values used to set c.project, c.app, c.user for the task
-        - args - *args to be sent to the task function
-        - kwargs - **kwargs to be sent to the task function
+        - args - ``*args`` to be sent to the task function
+        - kwargs - ``**kwargs`` to be sent to the task function
         - result - if the task is complete, the return value. If in error, the traceback.
     '''
     states = ('ready', 'busy', 'error', 'complete', 'skipped')

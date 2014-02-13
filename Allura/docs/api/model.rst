@@ -20,40 +20,9 @@
 :mod:`allura.model`
 --------------------------------
 
-.. automodule:: allura.model
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
-  .. automodule:: allura.model.artifact
-
-    .. autoclass:: Artifact
-        :members:
-        :special-members: __json__
-
-    .. autoclass:: Snapshot
-        :members:
-
-    .. autoclass:: VersionedArtifact
-        :members:
-
-    .. autoclass:: Message
-        :members:
-
-    .. autoclass:: Feed
-        :members:
-
-    .. autoclass:: VotableArtifact
-        :members:
-
-    .. autoclass:: MovedArtifact
-        :members:
-
-  .. automodule:: allura.model.auth
-
-    .. autoclass:: User
-        :members:
-
-    .. autoclass:: ProjectRole
-        :members:
-
-    .. autoclass:: AuditLog
-        :members:
+   model/*
 
