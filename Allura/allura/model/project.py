@@ -158,6 +158,11 @@ class ProjectMapperExtension(MapperExtension):
 
 
 class Project(MappedClass, ActivityNode, ActivityObject):
+    '''
+    Projects contain tools, subprojects, and their own metadata.  They live
+    in exactly one :class:`~allura.model.neighborhood.Neighborhood`
+    '''
+
     _perms_base = ['read', 'update', 'admin', 'create']
     _perms_init = _perms_base + ['register']
 
@@ -544,7 +549,7 @@ class Project(MappedClass, ActivityNode, ActivityObject):
         return new_tools
 
     def grouped_navbar_entries(self):
-        """Return a ``allura.app.SitemapEntry`` list suitable for rendering
+        """Return a :class:`~allura.app.SitemapEntry` list suitable for rendering
         the project navbar with tools grouped together by tool type.
         """
         # get orginal (non-grouped) navbar entries
@@ -967,7 +972,7 @@ class AppConfig(MappedClass, ActivityObject):
 
     """
     Configuration information for an instantiated :class:`Application <allura.app.Application>`
-    in a project
+    in a :class:`Project`
 
     :var options: an object on which various options are stored.  options.mount_point is the url component for this app instance
     :var acl: a dict that maps permissions (strings) to lists of roles that have the permission

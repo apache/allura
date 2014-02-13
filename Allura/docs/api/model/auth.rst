@@ -15,12 +15,16 @@
        specific language governing permissions and limitations
        under the License.
 
-:mod:`allura.lib.security`
+:mod:`allura.model.auth`
 -------------------------------------
 
-.. automodule:: allura.lib.security
-    :members:
+.. automodule:: allura.model.auth
 
-    .. autoclass:: RoleCache
-        :members:
-        :special-members: __init__
+  .. autoclass:: User
+      :members:
+
+  .. autoclass:: ProjectRole
+      :members:
+
+  .. autoclass:: AuditLog
+      :members:

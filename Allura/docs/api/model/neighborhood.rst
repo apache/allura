@@ -15,12 +15,8 @@
        specific language governing permissions and limitations
        under the License.
 
-:mod:`allura.lib.security`
+:mod:`allura.model.neighborhood`
 -------------------------------------
 
-.. automodule:: allura.lib.security
-    :members:
-
-    .. autoclass:: RoleCache
-        :members:
-        :special-members: __init__
+.. automodule:: allura.model.neighborhood
+  :members:

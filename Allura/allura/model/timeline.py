@@ -69,6 +69,9 @@ class ActivityNode(NodeBase):
 
 
 class ActivityObject(ActivityObjectBase):
+    '''
+    Allura's base activity class.
+    '''
 
     @property
     def activity_name(self):
@@ -113,10 +116,11 @@ class TransientActor(NodeBase, ActivityObjectBase):
 
 
 def perm_check(user):
+    """
+    Return a function that returns True if ``user`` has 'read' access to a given activity,
+    otherwise returns False.
+    """
     def _perm_check(activity):
-        """Return True if c.user has 'read' access to this activity,
-        otherwise return False.
-        """
         extras_dict = activity.obj.activity_extras
         if not extras_dict:
             return True

@@ -33,8 +33,15 @@ class MarkdownCache(S.Object):
 
 
 class ACE(S.Object):
+    '''
+    Access Control Entry
 
-    '''ACE - access control entry'''
+    :var access: either ``ACE.ALLOW`` or ``ACE.DENY``
+    :var str reason: optional, user-entered text
+    :var role_id: _id for a :class:`~allura.model.auth.ProjectRole`
+    :var str permission: e.g. 'read', 'create', etc
+    '''
+
     ALLOW, DENY = 'ALLOW', 'DENY'
 
     def __init__(self, permissions, **kwargs):
@@ -75,6 +82,9 @@ class ACE(S.Object):
 
 
 class ACL(S.Array):
+    '''
+    Access Control List.  Is an array of :class:`ACE`
+    '''
 
     def __init__(self, permissions=None, **kwargs):
         super(ACL, self).__init__(
