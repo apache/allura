@@ -19,10 +19,10 @@
 {% import 'allura:templates/jinja_master/lib.html' as lib with context %}
 <form method="POST" action="update" enctype="multipart/form-data" id="metadata_form">
   <div class="grid-9">
+    {%if not c.project.is_user_project %}
     {{ widget.display_label(widget.fields.name) }}
     <br>
     {{widget.display_field(widget.fields.name) }}
-    {%if c.project.neighborhood.name != 'Users'%}
     <label for="shortname">Unixname</label>
     <br>
     <input id="shortname" type="text" disabled="disabled"
@@ -35,12 +35,14 @@
     {{ widget.display_label(widget.fields.video_url) }}
     <br>
     {{widget.display_field(widget.fields.video_url) }}
+    {% endif %}
 
     {{ widget.display_label(widget.fields.summary) }}
     <br>
     {{widget.display_field(widget.fields.summary) }}
     <br>
 
+    {%if not c.project.is_user_project %}
     {{ widget.display_label(widget.fields.short_description) }}
     <br>
     {{widget.display_field(widget.fields.short_description) }}
