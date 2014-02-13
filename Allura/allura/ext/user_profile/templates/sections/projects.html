@@ -32,20 +32,26 @@
 
 {% block content %}
     <ul>
-        {% for project in user.my_projects() %}
-        {% if project != c.project and not project.is_nbhd_project %}
-        <li>
+    {% for project in projects %}
+        <li{% if loop.index > 5 %} class="hidden"{% endif %}>
             {% if project.icon -%}
-                <img src="{{project.url()}}/icon?{{project.icon._id.generation_time}}" alt="Project Logo"/>
+                <img src="{{project.url()}}/icon?{{project.icon._id.generation_time}}" alt="Project Logo" width="48" height="48"/>
             {%- else -%}
-                <img src="{{g.forge_static('images/project_default.png')}}" alt="Project Logo"/>
+                <img src="{{g.forge_static('images/project_default.png')}}" alt="Project Logo" width="48" height="48"/>
             {%- endif -%}
             <span class="project-info">
                 <a href="{{project.url()}}">{{project.name}}</a>
                 {{project.summary}}
             </span>
         </li>
-        {% endif %}
-        {% endfor %}
+    {% endfor %}
     </ul>
+    {% if projects|length > 5 %}
+    <div class="show-more-projects">
+        <button onclick="$(this).hide().closest('.section-body').find('li.hidden').show()">
+            Show More
+            <b data-icon="{{g.icons['plus'].char}}" class="ico {{g.icons['plus'].css}}"></b>
+        </button>
+    </div>
+    {% endif %}
 {% endblock %}
