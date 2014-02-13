@@ -20,7 +20,7 @@
 """
 Model tests for auth
 """
-from nose.tools import with_setup, assert_equal
+from nose.tools import with_setup, assert_equal, assert_not_in, assert_in
 from pylons import tmpl_context as c, app_globals as g
 from webob import Request
 from mock import patch
@@ -253,6 +253,24 @@ def test_user_projects_by_role():
                  set(['test', 'test2', 'u/test-admin', 'adobe-1', '--init--']))
     assert_equal(set(p.shortname for p in c.user.my_projects_by_role_name('Admin')),
                  set(['test', 'u/test-admin', 'adobe-1', '--init--']))
+
+
+@td.with_user_project('test-admin')
+@with_setup(setUp)
+def test_user_projects_unnamed():
+    """
+    Confirm that spurious ProjectRoles associating a user with
+    a project to which they do not belong to any named group
+    don't cause the user to count as a member of the project.
+    """
+    sub1 = M.Project.query.get(shortname='test/sub1')
+    M.ProjectRole(
+        user_id=c.user._id,
+        project_id=sub1._id)
+    ThreadLocalORMSession.flush_all()
+    project_names = [p.shortname for p in c.user.my_projects()]
+    assert_not_in('test/sub1', project_names)
+    assert_in('test', project_names)
 
 
 @patch.object(g, 'user_message_max_messages', 3)
