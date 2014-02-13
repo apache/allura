@@ -3383,6 +3383,12 @@ ul.dropdown ul li a:hover {
   content: '\A';
   white-space: pre;
 }
+.profile-section.projects .show-more-projects {
+      text-align: center;
+  }
+.profile-section.projects .show-more-projects button {
+    float: none;
+}
 .profile-section.skills .section-body {
   padding: 10px 0;
 }

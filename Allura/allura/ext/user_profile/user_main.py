@@ -284,6 +284,13 @@ class PersonalDataSection(ProfileSectionBase):
 class ProjectsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/projects.html'
 
+    def prepare_context(self, context):
+        context['projects'] = [
+            project
+            for project in self.user.my_projects()
+            if project != c.project and (self.user == c.user or h.has_access(project, 'read'))]
+        return context
+
 
 class SkillsSection(ProfileSectionBase):
     template = 'allura.ext.user_profile:templates/sections/skills.html'
