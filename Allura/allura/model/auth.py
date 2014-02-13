@@ -750,7 +750,7 @@ class User(MappedClass, ActivityNode, ActivityObject):
         # filter out projects to which the user belongs to no named groups (i.e., role['roles'] is empty)
         projects = [r['project_id'] for r in roles if r['roles']]
         from .project import Project
-        return Project.query.find({'_id': {'$in': projects}, 'deleted': False})
+        return Project.query.find({'_id': {'$in': projects}, 'deleted': False}).sort('last_updated', pymongo.DESCENDING)
 
     def my_projects_by_role_name(self, role_name):
         """
