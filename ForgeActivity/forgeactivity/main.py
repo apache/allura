@@ -253,7 +253,7 @@ class ForgeActivityProfileSection(ProfileSectionBase):
             actor_only=True,
         )
         filtered_timeline = list(islice(ifilter(perm_check(c.user), full_timeline),
-                                        0, 5))
+                                        0, 8))
         context.update({
             'follow_toggle': W.follow_toggle,
             'following': g.director.is_connected(c.user, self.user),

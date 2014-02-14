@@ -32,8 +32,10 @@
 
 {% block content %}
     <ul>
-        {% for skill in user.get_skills() %}
+    {% for skill in user.get_skills() %}
         <li>{{ skill.skill.fullname }}</li>
-        {% endfor %}
+    {% else %}
+        <li class="empty">No skills entered.</li>
+    {% endfor %}
     </ul>
 {% endblock %}
