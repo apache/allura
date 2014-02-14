@@ -63,7 +63,7 @@ from allura.lib.widgets import analytics
 from allura.lib.security import Credentials
 from allura.lib.async import Connection, MockAMQ
 from allura.lib.solr import MockSOLR, make_solr_from_config
-from allura.lib.zarkov_helpers import ZarkovClient, zmq
+from allura.lib.zarkov_helpers import ZarkovClient
 
 log = logging.getLogger(__name__)
 
@@ -334,7 +334,7 @@ class Globals(object):
             mount_point=None,
             is_project_member=False)
 
-        if not zmq:
+        if not config.get('zarkov.host'):
             return
 
         user = user or getattr(c, 'user', None)
