@@ -52,7 +52,11 @@
             {{user.get_pref('skypeaccount')}}
         </dd>
         <dt>Web Site{% if user.get_pref('webpages')|length > 1 %}s{% endif %}:</dt><dd>
-            {{user.get_pref('webpages')|filter|map('urlize', 20, true)|join(', ')}}
+            <ol>
+            {% for webpage in user.get_pref('webpages') %}
+                <li>{{webpage|urlize(60)}}</li>
+            {% endfor %}
+            </ol>
         </dd>
         <dt>Availability (UTC):</dt><dd>
             <ol>
