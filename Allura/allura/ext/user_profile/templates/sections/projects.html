@@ -44,6 +44,8 @@
                 {{project.summary}}
             </span>
         </li>
+    {% else %}
+        <li class="empty">No projects to display.</li>
     {% endfor %}
     </ul>
     {% if projects|length > 5 %}

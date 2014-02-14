@@ -3294,6 +3294,10 @@ ul.dropdown ul li a:hover {
 .profile-section .section-body {
   background-color: #fff;
 }
+.profile-section .section-body .empty {
+    font-style: italic;
+    list-style: none;
+}
 
 .profile-section.activity {
   width: 260px;
@@ -3307,7 +3311,6 @@ ul.dropdown ul li a:hover {
 }
 .profile-section.activity .empty {
   padding: 10px;
-  font-style: italic;
   margin-bottom: 0;
 }
 .profile-section.activity ul {
@@ -3385,16 +3388,35 @@ ul.dropdown ul li a:hover {
 }
 .profile-section.projects .show-more-projects {
       text-align: center;
-  }
+}
 .profile-section.projects .show-more-projects button {
     float: none;
 }
 .profile-section.skills .section-body {
   padding: 10px 0;
 }
-
+.profile-section.skills .section-body ul {
+  margin-bottom: 0;
+  margin-left: 0;
+}
+.profile-section.skills .section-body li {
+  margin-left: 25px;
+}
+.profile-section.skills .section-body li.empty {
+  margin-left: 10px;
+}
 .profile-section.tools .section-body {
   padding: 10px 0;
+}
+.profile-section.tools .section-body ul {
+  margin-bottom: 0;
+  margin-left: 0;
+}
+.profile-section.tools .section-body li {
+  margin-left: 25px;
+}
+.profile-section.tools .section-body li.empty {
+  margin-left: 10px;
 }
 #user-message {
   -webkit-border-radius: 4px;

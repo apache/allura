@@ -38,19 +38,28 @@
         <dt>Joined:</dt><dd>
             {{auth.user_registration_date(user)}}
         </dd>
+        {% set loc = user.get_pref('localization') %}
+        {% if loc.city or loc.country or timezone %}
         <dt>Location:</dt><dd>
-            {% set loc = user.get_pref('localization') %}
             {{ [loc.city, loc.country, timezone]|filter|join(' / ') }}
         </dd>
+        {% endif %}
+        {% if user.get_pref('sex') not in (None, 'Unknown') %}
         <dt>Gender:</dt><dd>
             {{user.get_pref('sex')}}
         </dd>
+        {% endif %}
+        {% if user.get_pref('telnumbers') %}
         <dt>Phone Number:</dt><dd>
             {{user.get_pref('telnumbers')|join(', ')}}
         </dd>
+        {% endif %}
+        {% if user.get_pref('skypeaccount') %}
         <dt>Skype:</dt><dd>
             {{user.get_pref('skypeaccount')}}
         </dd>
+        {% endif %}
+        {% if user.get_pref('webpages') %}
         <dt>Web Site{% if user.get_pref('webpages')|length > 1 %}s{% endif %}:</dt><dd>
             <ol>
             {% for webpage in user.get_pref('webpages') %}
@@ -58,6 +67,8 @@
             {% endfor %}
             </ol>
         </dd>
+        {% endif %}
+        {% if user.get_pref('availability') %}
         <dt>Availability (UTC):</dt><dd>
             <ol>
             {% for slot in user.get_localized_availability('utc') %}
@@ -65,5 +76,6 @@
             {% endfor %}
             </ol>
         </dd>
+        {% endif %}
     </dl>
 {% endblock %}
