@@ -145,12 +145,12 @@ class Credentials(object):
 
     def users_with_named_role(self, project_id, name):
         """ returns in sorted order """
-        roles = self.project_roles(project_id)
-        return sorted(RoleCache(self, roles.find(name=name)).users_that_reach, key=lambda u: u.username)
+        role = RoleCache(self, self.project_role.find({'project_id': project_id, 'name': name}))
+        return sorted(role.users_that_reach, key=lambda u: u.username)
 
     def userids_with_named_role(self, project_id, name):
-        roles = self.project_roles(project_id)
-        return RoleCache(self, roles.find(name=name)).userids_that_reach
+        role = RoleCache(self, self.project_role.find({'project_id': project_id, 'name': name}))
+        return role.userids_that_reach
 
 
 class RoleCache(object):
