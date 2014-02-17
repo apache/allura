@@ -35,7 +35,14 @@
     <h4>Related</h4>
     <p>
     {% for related in related_artifacts %}
-      <a href="{{related.url()}}">{{related.type_s}}: {{related.link_text()}}</a><br>
+      {% set project=related.app_config.project.name %}
+      {% set tool=related.app_config.tool_name %}
+      {% if project and tool %}
+        {% set prefix='%s [%s]' % (project, tool) %}
+      {% elif tool %}
+        {% set prefix='[%s]' % (tool,) %}
+      {% endif %}
+      <a href="{{related.url()}}">{{prefix}} {{related.type_s}}: {{related.link_text()}}</a><br>
     {% endfor %}
     </p>
   {% endif %}

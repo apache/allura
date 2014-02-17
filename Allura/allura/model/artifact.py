@@ -193,7 +193,7 @@ class Artifact(MappedClass):
                     artifact.set_context(app.repo)
             if artifact not in related_artifacts and (getattr(artifact, 'deleted', False) == False):
                 related_artifacts.append(artifact)
-        return related_artifacts
+        return sorted(related_artifacts, key=lambda a: a.url())
 
     def subscribe(self, user=None, topic=None, type='direct', n=1, unit='day'):
         """Subscribe ``user`` to the :class:`allura.model.notification.Mailbox`
