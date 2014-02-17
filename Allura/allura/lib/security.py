@@ -234,17 +234,20 @@ class RoleCache(object):
     def reaching_roles(self):
         def _iter():
             to_visit = self.index.items()
+            project_ids = set([r['project_id'] for _id, r in to_visit])
+            pr_index = {r['_id']: r for r in self.cred.project_role.find({
+                'project_id': {'$in': list(project_ids)},
+                'user_id': None,
+            })}
             visited = set()
             while to_visit:
                 (rid, role) = to_visit.pop()
                 if rid in visited:
                     continue
                 yield role
-                pr_index = self.cred.project_roles(role['project_id']).index
-                if rid in pr_index:
-                    for i in pr_index[rid]['roles']:
-                        if i in pr_index:
-                            to_visit.append((i, pr_index[i]))
+                for i in role['roles']:
+                    if i in pr_index:
+                        to_visit.append((i, pr_index[i]))
         return RoleCache(self.cred, _iter())
 
     @LazyProperty
