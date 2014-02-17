@@ -39,14 +39,12 @@ Merge Request #{{req.request_number}}: {{req.summary}} ({{req.status}})
       to {{ req.target_branch }}
     </p>
 
+    <p><strong>Created:</strong> {{lib.abbr_date(req.created)}}</p>
+    <p><strong>Updated:</strong> {{lib.abbr_date(req.mod_date)}}</p>
+
     <div>{{g.markdown.convert(req.description)}}</div>
 
     {{ c.log_widget.display(value=req.commits, app=downstream_app) }}
-    <p>
-        Created: {{lib.abbr_date(req.created)}}
-        <br style="clear:both">
-        Updated: {{lib.abbr_date(req.mod_date)}}
-    </p>
 
     <div class="grid-19"><a href="#discussion_holder">Discuss</a></div>
 
