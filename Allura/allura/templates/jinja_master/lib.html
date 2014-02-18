@@ -36,7 +36,7 @@
     <p>
     {% for related in related_artifacts %}
       {% set project=related.app_config.project.name %}
-      {% set tool=related.app_config.tool_name %}
+      {% set tool=related.app_config.options.mount_label %}
       {% if project and tool %}
         {% set prefix='%s [%s]' % (project, tool) %}
       {% elif tool %}
