@@ -729,7 +729,11 @@ class User(MappedClass, ActivityNode, ActivityObject):
 
     @classmethod
     def anonymous(cls):
-        return User.query.get(_id=None)
+        # ming caches .get(_id=...) queries for the duration of a ming session
+        # but we don't even want to do this query once per request, it'll be the same always and forever
+        if not hasattr(cls, '_anonymous_user'):
+            cls._anonymous_user = User.query.get(_id=None)
+        return cls._anonymous_user
 
     def is_anonymous(self):
         return self._id is None or self.username == ''
