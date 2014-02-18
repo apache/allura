@@ -19,12 +19,12 @@
 {% if display_mode == 'list' %}
 <div class="list card{% if show_proj_icon%} proj_icon{% endif %}"
 	{%- if columns == 2 %} style="width: 330px"{% elif columns == 3 %} style="width: 220px"{% endif %}>
-  {% if accolades and show_awards_banner %}
+  {% if accolades %}
     <div class="box notch sponsor">
       <div class="feature">{{accolades[0].award.short}}</div>
-      {% if show_proj_icon and icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
+      {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
     </div>
-  {% elif show_proj_icon and icon_url %}
+  {% elif icon_url %}
     <div class="box">
       <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
     </div>
@@ -35,12 +35,12 @@
 </div>
 {% else %}
   <div class="border card">
-    {% if accolades and show_awards_banner %}
+    {% if accolades %}
       <div class="box notch sponsor">
         <div class="feature">{{accolades[0].award.short}}</div>
-        {% if show_proj_icon and icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
+        {% if icon_url %}<img src="{{icon_url}}" alt="{{value.name}} Logo"/>{% endif %}
       </div>
-    {% elif show_proj_icon and icon_url %}
+    {% elif icon_url %}
       <div class="box">
         <img src="{{icon_url}}" alt="{{value.name}} Logo"/>
       </div>
