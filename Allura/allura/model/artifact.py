@@ -763,6 +763,9 @@ class Feed(MappedClass):
              ('pubdate', pymongo.DESCENDING)),
             # used in ext/user_profile/user_main.py for user feeds
             'author_link',
+            # used in project feed
+            (('project_id', pymongo.ASCENDING),
+             ('pubdate', pymongo.DESCENDING)),
         ]
 
     _id = FieldProperty(S.ObjectId)
