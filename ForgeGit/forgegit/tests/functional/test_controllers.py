@@ -599,6 +599,39 @@ class TestFork(_TestCase):
                               'description': 'description'}).follow()
         assert '[5c4724]' in r
 
+    def test_merge_request_edit(self):
+        r = self.app.post('/p/test2/code/do_request_merge',
+            params={
+                'source_branch': 'zz',
+                'target_branch': 'master',
+                'summary': 'summary',
+                'description': 'description'}).follow()
+        assert 'href="edit">Edit</a>' in r
+        r = self.app.get('/p/test/src-git/merge-requests/1/edit')
+        assert 'value="summary"' in r
+        assert 'name="description">description</textarea>' in r
+        assert '<option selected value="zz">zz</option>' in r
+
+        r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
+            params={
+                'source_branch': 'zz',
+                'target_branch': 'master',
+                'summary': 'changed summary',
+                'description': 'changed description'},
+                extra_environ=dict(username='*anonymous'), status=302).follow()
+        assert 'Login' in r
+
+        r = self.app.post('/p/test/src-git/merge-requests/1/do_request_merge_edit',
+            params={
+                'source_branch': 'zz',
+                'target_branch': 'master',
+                'summary': 'changed summary',
+                'description': 'changed description'}).follow()
+        assert '<p>changed description</p' in r
+
+        r = self.app.post('/p/test/src-git/merge-requests')
+        assert '<a href="1/">changed summary</a>' in r
+
 
 class TestDiff(TestController):
 

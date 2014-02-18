@@ -381,6 +381,8 @@ class MergeRequestController(object):
 
     @expose('jinja:allura:templates/repo/merge_request_edit.html')
     def edit(self, **kw):
+        security.require(
+            security.has_access(self.req, 'write'), 'Write access required')
         c.form = self.mr_widget_edit
         if self.req['source_branch'] in c.form.source_branches:
             source_branch = self.req['source_branch']
@@ -400,8 +402,11 @@ class MergeRequestController(object):
     @expose()
     @require_post()
     def do_request_merge_edit(self, **kw):
+        security.require(
+            security.has_access(self.req, 'write'), 'Write access required')
         kw = self.mr_widget_edit.to_python(kw)
         mr = M.MergeRequest.query.get(request_number=self.req['request_number'])
+        mr.summary = kw['summary']
         mr.target_branch = kw['target_branch']
         mr.source_branch = kw['source_branch']
         mr.description = kw['description']
