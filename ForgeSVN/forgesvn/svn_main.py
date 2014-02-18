@@ -25,6 +25,7 @@ from ming.orm.ormsession import ThreadLocalORMSession
 from tg import expose, redirect, validate, flash
 from tg.decorators import with_trailing_slash, without_trailing_slash
 from timermiddleware import Timer
+from paste.deploy.converters import asint
 
 # Pyforge-specific imports
 import allura.tasks.repo_tasks
@@ -71,7 +72,7 @@ class ForgeSVNApp(RepositoryApp):
         default_root = RepoRootController()
         self.root.refresh = default_root.refresh
         self.root.commit_browser = default_root.commit_browser
-        self.root.commit_browser_data = default_root.commit_browser_data
+        self.root.commit_browser_data = SVNCommitBrowserController().commit_browser_data
         self.root.status = default_root.status
         self.admin = SVNRepoAdminController(self)
 
@@ -176,6 +177,36 @@ class SVNImportController(BaseController):
                 c.user, self.app.repo, 'error',
                 text="Can't import into non empty repository.")
         redirect(c.project.url() + 'admin/tools')
+
+
+class SVNCommitBrowserController(BaseController):
+
+    @without_trailing_slash
+    @expose('json:')
+    def commit_browser_data(self, start=None, limit=None, **kw):
+        data = {
+            'commits': [],
+            'next_column': 1,
+            'max_row': 0,
+            'built_tree': {},
+            'next_commit': None,
+        }
+        for i, commit in enumerate(c.app.repo.log(revs=start, id_only=False)):
+            if limit and i >= asint(limit):
+                data['next_commit'] = str(commit['id'])
+                break
+            data['commits'].append(str(commit['id']))
+            data['built_tree'][commit['id']] = {
+                'column': 0,
+                'parents': map(str, commit['parents']),
+                'short_id': '[%s]' % commit['id'],
+                'message': commit['message'],
+                'oid': str(commit['id']),
+                'row': i,
+                'url': c.app.repo.url_for_commit(commit['id']),
+            }
+        data['max_row'] = len(data['commits'])
+        return data
 
 
 def svn_timers():
